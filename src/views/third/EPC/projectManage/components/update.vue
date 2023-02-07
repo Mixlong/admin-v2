@@ -97,7 +97,7 @@ import {
   addFileConfig,
   editFileConfig,
   computerDictList,
-} from "@/api/third/versionManage";
+} from "@/api/third/epc/versionManage";
 export default {
   props: ["dictList"],
   data() {
@@ -230,16 +230,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
-          // if (this.form.firmwareConf.mid) {
-          //   this.form.firmwareConf.mid = Number(this.form.firmwareConf.mid);
-          // }
-          // console.log(this.form);
-          // if (this.form.firmwareConf.cid) {
-          //   this.form.firmwareConf.cid = Number(this.form.firmwareConf.cid);
-          // }
-          // if (this.form.firmwareConf.type) {
-          //   this.form.firmwareConf.type = Number(this.form.firmwareConf.type);
-          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;

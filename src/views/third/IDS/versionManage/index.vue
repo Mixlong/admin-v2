@@ -349,7 +349,7 @@ import {
   fileCancel,
   fileVersionList,
   computerNameList,
-} from "@/api/third/versionManage";
+} from "@/api/third/ids/versionManage";
 import { commonStatusList } from "@/utils/commonData";
 import CompUpdate from "./components/update";
 

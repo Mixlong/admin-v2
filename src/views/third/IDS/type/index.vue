@@ -223,7 +223,7 @@ import {
   listRoleType,
   addType,
   editType,
-} from "@/api/third/type";
+} from "@/api/third/ids/type";
 import { getCodeImg } from "@/api/base/code";
 
 export default {
@@ -408,11 +408,11 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          this.form.typeRoleList = [];
+          this.roleTypeCheckedList.forEach((r) => {
+            this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
+          });
           if (this.form.id !== undefined) {
-            this.roleTypeCheckedList.forEach((r) => {
-              this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
-            });
-
             editType(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
@@ -421,10 +421,6 @@ export default {
               }
             });
           } else {
-            this.roleTypeCheckedList.forEach((r) => {
-              this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
-            });
-
             addType(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
