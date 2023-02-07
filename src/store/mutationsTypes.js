@@ -1,0 +1,5 @@
+// 品类
+export const SET_CATEGORYLIST = 'SET_CATEGORYLIST';
+
+// 型号
+export const SET_COMPUTERLIST = 'SET_COMPUTERLIST';

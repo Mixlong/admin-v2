@@ -1,0 +1,5 @@
+// 品类
+export const GET_CATEGORYLIST = 'GET_CATEGORYLIST';
+
+// 型号
+export const GET_COMPUTERLIST = 'GET_COMPUTERLIST';
