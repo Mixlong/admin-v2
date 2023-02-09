@@ -327,12 +327,9 @@ export default {
     },
     handleDel(status) {
       if (status === 1) {
+        this.getCode();
         if (this.auth.code) {
           authType(this.auth).then((res) => {
-            if (res.code === 500) {
-              this.getCode();
-              return;
-            }
             this.delDialogVisible = false;
             this.msgSuccess("删除成功");
             this.loading = false;

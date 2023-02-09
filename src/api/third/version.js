@@ -28,9 +28,9 @@ export function listModelDict(query) {
 // 启用/禁用仪表
 export function authComputer(data) {
   return request({
-    url: '/computer/auth',
+    url: '/version/manage/auth',
     method: 'put',
-    data: data,
+    data
   });
 }
 
@@ -63,7 +63,7 @@ export function selectComputer(data) {
 // 启用、禁用
 export function changeStatus(data) {
   return request({
-    url: '/version/manage/auth',
+    url: '/version/manage/operation',
     method: 'put',
     data
   });

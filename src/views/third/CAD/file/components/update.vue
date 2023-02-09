@@ -70,35 +70,29 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item
-        label="硬件版本号："
-        prop="hardName"
-        v-if="form.type === 'hard_version'"
-      >
-        <div class="flex align-center">
+      <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+        <template v-if="form.type === 'hard_version'">
           <select-loadMore
             style="width: 100%"
-            v-model="form.hardName"
+            v-model="form.content"
             :data="hardData.data"
             :page="hardData.page"
             :hasMore="hardData.more"
             dictLabel="name"
-            :moreParams="true"
+            dictValue="name"
             :request="getHardList"
-            @getChange="getHardNo"
             placeholder="请选择硬件版本号"
           />
-        </div>
+        </template>
+        <template v-else>
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 8 }"
+            v-model="form.content"
+            placeholder="请输入文件描述"
+          />
+        </template>
       </el-form-item>
-      <el-form-item label="属性描述" prop="content">
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 1, maxRows: 8 }"
-          v-model="form.content"
-          placeholder="请输入文件描述"
-        />
-      </el-form-item>
-
       <el-form-item
         label="文件"
         prop="url"
@@ -287,6 +281,13 @@ export default {
         }
       }
     };
+    const validateContent = (rule, value, callback) => {
+      if (this.form.content === "" && this.isHaveTo) {
+        return callback(new Error("硬件版本号不能为空"));
+      } else {
+        callback();
+      }
+    };
     return {
       boleConfig: false,
       dialogVisible: false,
@@ -306,9 +307,7 @@ export default {
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
         ],
-        hardName: [
-          { required: true, message: "硬件版本号不能为空", trigger: "change" },
-        ],
+        content: [{ validator: validateContent, trigger: ["blur", "change"] }],
         url: [{ required: true, validator: validateUpload, trigger: "blur" }],
       },
       cidOptions: [],
@@ -323,6 +322,11 @@ export default {
         more: true,
       },
     };
+  },
+  computed: {
+    isHaveTo() {
+      return this.form.type === "hard_version";
+    },
   },
   watch: {
     form(val) {

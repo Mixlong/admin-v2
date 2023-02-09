@@ -19,7 +19,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="版本号" prop="projectId">
+      <el-form-item label="产品型号" prop="projectId">
         <el-select
           size="small"
           :loading="isCLoading"
@@ -27,7 +27,7 @@
           remote
           clearable
           v-model="queryParams.projectId"
-          placeholder="请输入版本号"
+          placeholder="请选择产品型号"
           @change="changeComputer"
           :remote-method="getComputerNameList"
         >
@@ -118,6 +118,8 @@
       :height="tableHeight()"
       border
       :row-class-name="tableRowClassName"
+      @cell-click="cellClick"
+      :cell-style="cellStyle"
       @selection-change="handleSelectionChange"
     >
       <el-table-column
@@ -134,14 +136,11 @@
         width="100"
       />
       <el-table-column
-        label="版本号"
+        label="产品型号"
         prop="versionName"
         align="center"
         width="130"
       />
-      <!-- <el-table-column label="ERP编码" prop="erp" align="center" width="130">
-        <span slot-scope="{ row }">{{ row.erp || "---" }}</span>
-      </el-table-column> -->
       <el-table-column
         label="属性"
         prop="typeName"
@@ -160,8 +159,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }">{{ row.content || "---" }}</span>
+      <el-table-column
+        label="属性描述"
+        prop="content"
+        align="center"
+        show-overflow-tooltip
+      >
+        <span slot-scope="{ row }" v-html="row.content"></span>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" width="75">
         <span slot-scope="{ row }">
@@ -642,7 +646,7 @@ export default {
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
-    handleUpdate(row) {
+    handleUpdate(row, typeName = "") {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
       this.$refs.compUpdate.form = Object.assign({}, row);
@@ -655,9 +659,11 @@ export default {
           false
         );
       }
+
       this.$refs.compUpdate.form.firmwareConf.fileConfId = row.id;
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = "修改";
+      this.$refs.compUpdate.typeName = typeName;
       this.title = "修改";
     },
     handleRevocation(id) {
@@ -680,6 +686,18 @@ export default {
         });
       } else {
         this.computerOptions = [];
+      }
+    },
+    cellClick(row, column, cell, event) {
+      switch (column.label) {
+        case "属性描述":
+          this.handleUpdate(row, "content");
+          break;
+      }
+    },
+    cellStyle({ row, column, rowIndex, columnIndex }) {
+      if (column.label == "属性描述") {
+        return `cursor: pointer;`;
       }
     },
   },
