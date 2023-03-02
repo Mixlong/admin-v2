@@ -118,29 +118,29 @@
       >
         <template slot-scope="scope">
           <el-button
-            size="mini"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:menu:edit']"
-            >修改</el-button
           >
+            修改
+          </el-button>
           <el-button
-            size="mini"
             type="text"
             icon="el-icon-plus"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:menu:add']"
-            >新增</el-button
           >
+            新增
+          </el-button>
           <el-button
-            size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:menu:remove']"
-            >删除</el-button
           >
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -258,8 +258,9 @@
                   v-for="dict in visibleOptions"
                   :key="dict.dictValue"
                   :label="dict.dictValue"
-                  >{{ dict.dictLabel }}</el-radio
                 >
+                  {{ dict.dictLabel }}
+                </el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -383,6 +384,7 @@ export default {
     /** 查询菜单下拉树结构 */
     getTreeselect() {
       listMenu().then((response) => {
+        debugger;
         this.menuOptions = [];
         const menu = { menuId: 0, menuName: "主类目", children: [] };
         menu.children = this.handleTree(response.data, "menuId");

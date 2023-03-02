@@ -2,45 +2,109 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="客户" prop="key">
-        <el-autocomplete style="width: 120px" size="small" clearable v-model="queryParams.key"
-          :fetch-suggestions="querySearchAsync" placeholder="请输入客户" @select="handleQuery"></el-autocomplete>
+        <el-autocomplete
+          style="width: 120px"
+          size="small"
+          clearable
+          v-model="queryParams.key"
+          :fetch-suggestions="querySearchAsync"
+          placeholder="请输入客户"
+          @select="handleQuery"
+        ></el-autocomplete>
       </el-form-item>
       <el-form-item label="产品型号" prop="baseModel">
-        <el-input style="width: 130px" size="small" clearable v-model="queryParams.baseModel" placeholder="请输入产品型号"
-          @keyup.enter.native="handleQuery">
+        <el-input
+          style="width: 130px"
+          size="small"
+          clearable
+          v-model="queryParams.baseModel"
+          placeholder="请输入产品型号"
+          @keyup.enter.native="handleQuery"
+        >
         </el-input>
       </el-form-item>
       <el-form-item label="需求" prop="demand">
-        <el-input style="width: 130px" size="small" clearable v-model="queryParams.demand" placeholder="请输入需求"
-          @keyup.enter.native="handleQuery">
+        <el-input
+          style="width: 130px"
+          size="small"
+          clearable
+          v-model="queryParams.demand"
+          placeholder="请输入需求"
+          @keyup.enter.native="handleQuery"
+        >
         </el-input>
       </el-form-item>
       <el-form-item label="送样时间" prop="sendTime">
-        <el-date-picker style="width: 130px" ref="datePicker" size="small" clearable v-model="queryParams.sendTime"
-          type="date" placeholder="选择日期时间" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="handleQuery">
+        <el-date-picker
+          style="width: 130px"
+          ref="datePicker"
+          size="small"
+          clearable
+          v-model="queryParams.sendTime"
+          type="date"
+          placeholder="选择日期时间"
+          format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd"
+          @change="handleQuery"
+        >
         </el-date-picker>
       </el-form-item>
       <el-form-item label="状态" prop="searchState">
-        <el-select style="width: 130px" size="small" clearable v-model="queryParams.searchState" placeholder="请选择"
-          @change="handleQuery">
-          <el-option v-for="(item, key) in pmList" :key="key" :label="item" :value="key">
+        <el-select
+          style="width: 130px"
+          size="small"
+          clearable
+          v-model="queryParams.searchState"
+          placeholder="请选择"
+          @change="handleQuery"
+        >
+          <el-option
+            v-for="(item, key) in pmList"
+            :key="key"
+            :label="item"
+            :value="key"
+          >
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+          >搜索</el-button
+        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
-      <el-row :gutter="20" type="flex" align="middle" justify="start" class="mt5 mb10" style="width:300px">
+      <el-row
+        :gutter="20"
+        type="flex"
+        align="middle"
+        justify="start"
+        class="mt5 mb10"
+        style="width: 300px"
+      >
         <el-col>
-          <el-checkbox v-model="queryParams.myself" @change="handleQuery" false-label="0" true-label="1">查看我的
+          <el-checkbox
+            v-model="queryParams.myself"
+            @change="handleQuery"
+            false-label="0"
+            true-label="1"
+            >查看我的
           </el-checkbox>
         </el-col>
         <el-col>
-          <el-checkbox v-model="viewParams.state" @change="simpleView">简略信息</el-checkbox>
+          <el-checkbox v-model="viewParams.state" @change="simpleView"
+            >简略信息</el-checkbox
+          >
         </el-col>
         <el-col>
-          <el-checkbox v-model="queryParams.state" @change="handleQuery">显示已完成</el-checkbox>
+          <el-checkbox v-model="queryParams.state" @change="handleQuery"
+            >显示已完成</el-checkbox
+          >
         </el-col>
         <el-col v-if="checkRole(['sale', 'admin'])">
           <el-badge :value="applyTotal > 0 ? applyTotal : ''" class="item">
@@ -48,18 +112,42 @@
           </el-badge>
         </el-col>
         <el-col>
-          <el-button part="warning" icon="el-icon-download" size="mini" @click="handleExport">导出</el-button>
+          <el-button
+            part="warning"
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            >导出</el-button
+          >
         </el-col>
         <el-col>
-          <el-button v-if="checkRole(['sale', 'admin'])" type="primary" icon="el-icon-plus" size="mini"
-            @click="handleAdd">新增</el-button>
+          <el-button
+            v-if="checkRole(['sale', 'admin'])"
+            type="primary"
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+            >新增</el-button
+          >
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table :row-class-name="rowName" v-loading="loading" :data="brandList" :height="tableHeight()"
-      :cell-style="cellStyle" @cell-click="cellClick" border>
-      <el-table-column label="基本信息" align="left" header-align="center" width="200">
+    <el-table
+      :row-class-name="rowName"
+      v-loading="loading"
+      :data="brandList"
+      :height="tableHeight()"
+      :cell-style="cellStyle"
+      @cell-click="cellClick"
+      border
+    >
+      <el-table-column
+        label="基本信息"
+        align="left"
+        header-align="center"
+        width="200"
+      >
         <template slot-scope="{ row }">
           <p>客户：{{ row.customerName }}</p>
           <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
@@ -73,16 +161,29 @@
           <p v-show="row.uiVersion">UI版本号：{{ row.uiVersion }}</p>
         </template>
       </el-table-column>
-      <el-table-column label="详细需求" prop="demand" align="center" v-if="viewParams.simple">
+      <el-table-column
+        label="详细需求"
+        prop="demand"
+        align="center"
+        v-if="viewParams.simple"
+      >
         <template slot-scope="scope">
           <div class="text-left" v-html="scope.row.demand"></div>
         </template>
       </el-table-column>
       <el-table-column label="配置需求表" width="200" align="center">
         <template slot-scope="{ row }">
-          <el-link v-show="row.demandObject" type="primary" @click="toGoodPage(row)">样品需求单</el-link>
-          <div v-for="(item, index) in checkListArr(row.checklist)" :key="index"
-            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
+          <el-link
+            v-show="row.demandObject"
+            type="primary"
+            @click="toGoodPage(row)"
+            >样品需求单</el-link
+          >
+          <div
+            v-for="(item, index) in checkListArr(row.checklist)"
+            :key="index"
+            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']"
+          >
             <preview-img :url="item" :srcList="[item]" />
             <p style="white-space: break-spaces; color: blue; margin-top: 2px">
               {{ transImg(item) }}
@@ -90,7 +191,13 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="当前进展" prop="progress" align="center" width="300" v-if="viewParams.simple">
+      <el-table-column
+        label="当前进展"
+        prop="progress"
+        align="center"
+        width="300"
+        v-if="viewParams.simple"
+      >
         <template slot-scope="scope">
           <div class="text-left" v-html="scope.row.progress"></div>
         </template>
@@ -99,54 +206,90 @@
         <template slot-scope="scope">
           <div>
             <!-- 责任人 -->
-            <span v-if="scope.row.state == 0">{{
-                principalName(scope.row.pm)
-            }}</span>
-            <span v-if="scope.row.state == 1">{{
-                principalName(scope.row.se)
-            }}</span>
-            <span v-if="scope.row.state == 2">{{
-                principalName(scope.row.follow)
-            }}</span>
-            <span v-if="scope.row.state == 3">{{
-                principalName(scope.row.test)
-            }}</span>
-            <span v-if="scope.row.state == 4">{{
-                principalName(scope.row.sell)
-            }}</span>
+            <span v-if="scope.row.state == 0">
+              {{ principalName(scope.row.pm) }}
+            </span>
+            <span v-if="scope.row.state == 1">
+              {{ principalName(scope.row.se) }}
+            </span>
+            <span v-if="scope.row.state == 2">
+              {{ principalName(scope.row.follow) }}
+            </span>
+            <span v-if="scope.row.state == 3">
+              {{ principalName(scope.row.test) }}
+            </span>
+            <span v-if="scope.row.state == 4">
+              {{ principalName(scope.row.sell) }}
+            </span>
           </div>
           <div>
             <!-- 状态 -->
-            <span v-if="scope.row.state == 0" class="text-blue">产品经理确认中</span>
+            <span v-if="scope.row.state == 0" class="text-blue"
+              >产品经理确认中</span
+            >
             <span v-if="scope.row.state == 1" class="text-green">SE确认中</span>
-            <span v-if="scope.row.state == 2" class="text-gray">样品加工中</span>
+            <span v-if="scope.row.state == 2" class="text-gray"
+              >样品加工中</span
+            >
             <span v-if="scope.row.state == 3" class="text-orange">测试中</span>
-            <span v-if="scope.row.state == 4" class="text-yellow">销售<br />验收</span>
+            <span v-if="scope.row.state == 4" class="text-yellow"
+              >销售<br />验收</span
+            >
             <span v-if="scope.row.state == 5" class="text-cyan">完成中</span>
             <span v-if="scope.row.state == 6" class="text-green">已完成</span>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="时间管理" align="center" prop="sendTime" width="160">
+      <el-table-column
+        label="时间管理"
+        align="center"
+        prop="sendTime"
+        width="160"
+      >
         <template slot-scope="scope">
           <span>送样时间</span>
-          <div v-if="
-            new Date(scope.row.sendTime + ' 20:00:00').getTime() >
-            new Date().getTime() && scope.row.state != 5
-          ">
-            <div class="text-shadow mb5"
-              :class="[difference(scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime)]">
-              {{ scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime }}
+          <div
+            v-if="
+              new Date(scope.row.sendTime + ' 20:00:00').getTime() >
+                new Date().getTime() && scope.row.state != 5
+            "
+          >
+            <div
+              class="text-shadow mb5"
+              :class="[
+                difference(
+                  scope.row.state === 6
+                    ? scope.row.actualTime
+                    : scope.row.sendTime
+                ),
+              ]"
+            >
+              {{
+                scope.row.state === 6
+                  ? scope.row.actualTime
+                  : scope.row.sendTime
+              }}
             </div>
-            <div class="flex justify-center align-center" style="transform: scale(0.8)">
-              <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
-                :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
+            <div
+              class="flex justify-center align-center"
+              style="transform: scale(0.8)"
+            >
+              <FlipDown
+                :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()"
+                :type="4"
+                :theme="1"
+                :timeUnit="['天', ':', ':']"
+                class="flip-down-style text-center"
+              />
             </div>
           </div>
           <div v-else>
-            <div class="text-shadow" :class="[
-              scope.row.state == 5 ? 'text-green' : 'text-red text-bold',
-            ]">
+            <div
+              class="text-shadow"
+              :class="[
+                scope.row.state == 5 ? 'text-green' : 'text-red text-bold',
+              ]"
+            >
               {{ scope.row.sendTime }}
             </div>
             <!-- <span v-if="scope.row.state != 5" class="text-red text-shadow">已逾期</span> -->
@@ -156,8 +299,11 @@
       </el-table-column>
       <el-table-column label="评审表" width="160" align="center">
         <template slot-scope="{ row }">
-          <div v-for="(item, index) in checkListArr(row.reviewer)" :key="index"
-            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
+          <div
+            v-for="(item, index) in checkListArr(row.reviewer)"
+            :key="index"
+            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']"
+          >
             <preview-img :url="item" :srcList="[item]" />
             <p style="white-space: break-spaces; color: blue; margin-top: 2px">
               {{ transImg(item) }}
@@ -169,65 +315,167 @@
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
             <div class="iflex" style="padding-left: 8px; height: 5px"></div>
-            <el-tooltip class="item font16" effect="dark" content="产品经理确认中" placement="top-end" v-if="
-              (checkRole(['admin']) || scope.row.pm == userId) &&
-              scope.row.state == 0
-            ">
-              <el-button icon="el-icon-check" type="text" class="text-green" @click="handleAuthChange(scope.row, 1)">
+            <el-tooltip
+              class="item font16"
+              effect="dark"
+              content="产品经理确认中"
+              placement="top-end"
+              v-if="
+                (checkRole(['admin']) || scope.row.pm == userId) &&
+                scope.row.state == 0
+              "
+            >
+              <el-button
+                icon="el-icon-check"
+                type="text"
+                class="text-green"
+                @click="handleAuthChange(scope.row, 1)"
+              >
               </el-button>
             </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="SE确认中" placement="top-end" v-if="
-              (checkRole(['admin']) || scope.row.se == userId) &&
-              scope.row.state == 1
-            ">
-              <el-button icon="el-icon-check" type="text" class="text-green" @click="handleAuthChange(scope.row, 2)">
+            <el-tooltip
+              class="item font16"
+              effect="dark"
+              content="SE确认中"
+              placement="top-end"
+              v-if="
+                (checkRole(['admin']) || scope.row.se == userId) &&
+                scope.row.state == 1
+              "
+            >
+              <el-button
+                icon="el-icon-check"
+                type="text"
+                class="text-green"
+                @click="handleAuthChange(scope.row, 2)"
+              >
               </el-button>
             </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="样品加工" placement="top-end" v-if="
-              (checkRole(['admin']) || scope.row.follow == userId) &&
-              scope.row.state == 2
-            ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 3)"></el-button>
+            <el-tooltip
+              class="item font16"
+              effect="dark"
+              content="样品加工"
+              placement="top-end"
+              v-if="
+                (checkRole(['admin']) || scope.row.follow == userId) &&
+                scope.row.state == 2
+              "
+            >
+              <el-button
+                size="small"
+                icon="el-icon-check"
+                type="text"
+                class="text-green"
+                @click="handleAuthChange(scope.row, 3)"
+              ></el-button>
             </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="测试" placement="top-end" v-if="
-              (checkRole(['admin']) || scope.row.test == userId) &&
-              scope.row.state == 3
-            ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 4)"></el-button>
+            <el-tooltip
+              class="item font16"
+              effect="dark"
+              content="测试"
+              placement="top-end"
+              v-if="
+                (checkRole(['admin']) || scope.row.test == userId) &&
+                scope.row.state == 3
+              "
+            >
+              <el-button
+                size="small"
+                icon="el-icon-check"
+                type="text"
+                class="text-green"
+                @click="handleAuthChange(scope.row, 4)"
+              ></el-button>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="销售" placement="top-end" v-if="
-              (checkRole(['admin']) || scope.row.sell == userId) &&
-              scope.row.state == 4
-            ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green font16"
-                @click="handleAuthChange(scope.row, 5)"></el-button>
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="销售"
+              placement="top-end"
+              v-if="
+                (checkRole(['admin']) || scope.row.sell == userId) &&
+                scope.row.state == 4
+              "
+            >
+              <el-button
+                size="small"
+                icon="el-icon-check"
+                type="text"
+                class="text-green font16"
+                @click="handleAuthChange(scope.row, 5)"
+              ></el-button>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="完成" placement="top-end"
-              v-if="checkRole(['admin']) && scope.row.state == 5">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green font16"
-                @click="handleAuthChange(scope.row, 6)"></el-button>
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="完成"
+              placement="top-end"
+              v-if="checkRole(['admin']) && scope.row.state == 5"
+            >
+              <el-button
+                size="small"
+                icon="el-icon-check"
+                type="text"
+                class="text-green font16"
+                @click="handleAuthChange(scope.row, 6)"
+              ></el-button>
             </el-tooltip>
 
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
-              @click="handleUpdate(scope.row)" />
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
-              @click="handleDelete(scope.row)" />
-            <el-tooltip class="item" effect="dark" content="附件" placement="top-end" v-if="scope.row.attachment">
-              <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
-                @click="handleDownload(scope.row)"></el-button>
+            <Tooltip
+              v-if="checkRole(['sale', 'admin'])"
+              icon="el-icon-edit"
+              content="编辑"
+              @click="handleUpdate(scope.row)"
+            />
+            <Tooltip
+              v-if="checkRole(['sale', 'admin'])"
+              icon="el-icon-delete"
+              :className="['text-red']"
+              content="删除"
+              @click="handleDelete(scope.row)"
+            />
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="附件"
+              placement="top-end"
+              v-if="scope.row.attachment"
+            >
+              <el-button
+                size="small"
+                icon="el-icon-download"
+                type="text"
+                class="text-green font16"
+                @click="handleDownload(scope.row)"
+              ></el-button>
             </el-tooltip>
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-      @pagination="getList" />
-    <el-dialog :close-on-click-modal="false" title="请确认是否删除" :visible.sync="open" width="310px">
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
+    <el-dialog
+      :close-on-click-modal="false"
+      title="请确认是否删除"
+      :visible.sync="open"
+      width="310px"
+    >
       <div class="padding-bottom-xl custom-code">
-        <Verify v-if="open" :codeLength="4" @success="codeSuccess" @error="codeError" :type="1" height="40px"></Verify>
+        <Verify
+          v-if="open"
+          :codeLength="4"
+          @success="codeSuccess"
+          @error="codeError"
+          :type="1"
+          height="40px"
+        ></Verify>
       </div>
     </el-dialog>
     <CompUpdate ref="compUpdate" :pmDictListOptions="pmDictListOptions" />
@@ -502,7 +750,7 @@ export default {
           } else if (j === "sendTime") {
             let name =
               new Date(v["sendTime"]).getTime() < new Date().getTime() &&
-                v["state"] != 5
+              v["state"] != 5
                 ? "\n已逾期"
                 : "";
             if (name) {
@@ -671,7 +919,7 @@ export default {
           method: "get",
           url,
           responseType: "arraybuffer",
-          onDownloadProgress: function (progressEvent) { },
+          onDownloadProgress: function (progressEvent) {},
         })
           .then((data) => {
             resolve(data.data);

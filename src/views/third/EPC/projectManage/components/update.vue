@@ -4,73 +4,65 @@
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
-    width="680px"
+    width="700px"
     append-to-body
     top="15vh"
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="130px"
-      class="form-data form-data-inline"
-      inline
-    >
-      <el-form-item label="品类" prop="categoryId">
-        <el-select
-          :disabled="!!form.id"
-          v-model="form.categoryId"
-          clearable
-          @change="changeCategory2"
-          size="small"
-          style="width: 185px"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="版本号">
-        <el-input
-          v-model.trim="form.versionName"
-          :disabled="!!form.id"
-        ></el-input>
-      </el-form-item>
-
-      <el-form-item label="属性" prop="type">
-        <el-select
-          v-model="form.type"
-          clearable
-          size="small"
-          style="width: 185px"
-          :disabled="!!form.id"
-          @change="$forceUpdate()"
-        >
-          <el-option
-            v-for="dict in fileTypeList"
-            :key="dict.key"
-            :label="dict.value"
-            :value="dict.key"
-          />
-        </el-select>
-      </el-form-item>
-
+    <el-form ref="form" :model="form" :rules="rules" label-width="100px" inline>
+      <template v-if="typeName !== 'content'">
+        <el-form-item label="品类" prop="categoryId">
+          <el-select
+            :disabled="!!form.id"
+            v-model="form.categoryId"
+            clearable
+            @change="changeCategory2"
+            size="small"
+            style="width: 185px"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="产品型号">
+          <el-input
+            v-model.trim="form.versionName"
+            :disabled="!!form.id"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="属性" prop="type">
+          <el-select
+            v-model="form.type"
+            clearable
+            size="small"
+            style="width: 185px"
+            :disabled="!!form.id"
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in fileTypeList"
+              :key="dict.key"
+              :label="dict.value"
+              :value="dict.key"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
       <el-form-item label="属性描述" prop="content">
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 1, maxRows: 8 }"
+        <tinymce
+          v-if="dialogVisible"
           v-model="form.content"
-          placeholder="请输入文件描述"
-        />
+          placeholder="请输入属性描述"
+          height="350"
+        ></tinymce>
       </el-form-item>
-
       <el-form-item
         label="文件"
         prop="url"
-        v-if="form.up == 1"
+        v-if="form.up == 1 && typeName !== 'content'"
         style="width: 100%"
       >
         <DrUpload
@@ -97,9 +89,11 @@ import {
   addFileConfig,
   editFileConfig,
   computerDictList,
-} from "@/api/third/versionManage";
+} from "@/api/third/epc/versionManage";
+import tinymce from "@/views/components/Editor";
 export default {
   props: ["dictList"],
+  components: { tinymce },
   data() {
     let validateUpload = (rule, value, callback) => {
       if (this.form.up === 0) {
@@ -117,9 +111,11 @@ export default {
       fileTypeList: [],
       computerFormOptions: [],
       similarList: [],
+      typeName: "",
       // 表单参数
       form: {
         url: "",
+        content: "",
       },
       title: "",
       // 表单校验
@@ -191,6 +187,7 @@ export default {
     reset() {
       this.form = {
         url: "",
+        content: "",
       };
       this.resetForm("form");
     },
@@ -230,16 +227,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
-          // if (this.form.firmwareConf.mid) {
-          //   this.form.firmwareConf.mid = Number(this.form.firmwareConf.mid);
-          // }
-          // console.log(this.form);
-          // if (this.form.firmwareConf.cid) {
-          //   this.form.firmwareConf.cid = Number(this.form.firmwareConf.cid);
-          // }
-          // if (this.form.firmwareConf.type) {
-          //   this.form.firmwareConf.type = Number(this.form.firmwareConf.type);
-          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;

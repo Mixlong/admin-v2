@@ -12,8 +12,6 @@
           v-model="queryParams.title"
           placeholder="请输入系统模块"
           clearable
-          style="width: 240px"
-          size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -22,8 +20,6 @@
           v-model="queryParams.operName"
           placeholder="请输入操作人员"
           clearable
-          style="width: 240px"
-          size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -32,8 +28,6 @@
           v-model="queryParams.businessType"
           placeholder="操作类型"
           clearable
-          size="small"
-          style="width: 185px"
         >
           <el-option
             v-for="dict in typeOptions"
@@ -147,10 +141,10 @@
         :show-overflow-tooltip="true"
       />
       <el-table-column
-        label="操作地点"
+        label="请求参数"
         align="center"
-        prop="operLocation"
-        :show-overflow-tooltip="true"
+        prop="operParam"
+        show-overflow-tooltip
       />
       <el-table-column
         label="操作状态"
@@ -165,7 +159,7 @@
         width="180"
       >
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.operTime) }}</span>
+          {{ parseTime(scope.row.operTime) }}
         </template>
       </el-table-column>
       <el-table-column
@@ -215,9 +209,9 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="请求地址：">{{ form.operUrl }}</el-form-item>
-            <el-form-item label="请求方式：">{{
-              form.requestMethod
-            }}</el-form-item>
+            <el-form-item label="请求方式：">
+              {{ form.requestMethod }}
+            </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="操作方法：">{{ form.method }}</el-form-item>
@@ -403,4 +397,3 @@ export default {
   },
 };
 </script>
-

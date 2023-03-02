@@ -75,7 +75,7 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="90"
+        width="140"
       />
       <el-table-column
         label="创建时间"
@@ -223,7 +223,7 @@ import {
   listRoleType,
   addType,
   editType,
-} from "@/api/third/type";
+} from "@/api/third/epc/type";
 import { getCodeImg } from "@/api/base/code";
 
 export default {
@@ -327,12 +327,9 @@ export default {
     },
     handleDel(status) {
       if (status === 1) {
+        this.getCode();
         if (this.auth.code) {
           authType(this.auth).then((res) => {
-            if (res.code === 500) {
-              this.getCode();
-              return;
-            }
             this.delDialogVisible = false;
             this.msgSuccess("删除成功");
             this.loading = false;
@@ -408,11 +405,12 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.form.id !== undefined) {
-            this.roleTypeCheckedList.forEach((r) => {
-              this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
-            });
+          this.form.typeRoleList = [];
+          this.roleTypeCheckedList.forEach((r) => {
+            this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
+          });
 
+          if (this.form.id !== undefined) {
             editType(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
@@ -421,10 +419,6 @@ export default {
               }
             });
           } else {
-            this.roleTypeCheckedList.forEach((r) => {
-              this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
-            });
-
             addType(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");

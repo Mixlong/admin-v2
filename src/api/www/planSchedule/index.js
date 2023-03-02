@@ -42,3 +42,42 @@ export function scheduleVersion() {
     method: 'get'
   })
 }
+
+// 生成生产资料
+export function createDataFile(id) {
+  return request({
+    url: `/production/scheduling/create/product/${id}`,
+    method: 'post'
+  })
+}
+
+// 下载生产资料
+export function downloadDataFile(id) {
+  return request({
+    url: `/production/scheduling/download/product/${id}`,
+    method: 'post'
+  })
+}
+
+// 下载资料清单
+export function createDataDetail(id) {
+  return request({
+    url: `/production/scheduling/create/detail/${id}`,
+    method: 'post'
+  })
+}
+
+// 外发生产文件
+export function sendProd(id) {
+  return request({
+    url: `/production/scheduling/send/product/${id}`,
+    method: 'post'
+  })
+}
+
+
+
+
+
+
+

@@ -5,30 +5,53 @@
         <el-card shadow="nerver" class="production-box">
           <h3 class="text-center">生产计划表</h3>
           <div class="text-right margin-top-lg" v-if="checkRole(['PMC'])">
-            <el-button type="primary" @click="$router.push('/www/planSchedule')">去排产</el-button>
+            <el-button
+              type="primary"
+              @click="$router.push('/www/planSchedule')"
+            >
+              去排产
+            </el-button>
           </div>
           <div v-loading="isLoading">
-            <div ref="productionRef" class="margin-top-lg production-list overflow-y">
+            <div
+              ref="productionRef"
+              class="margin-top-lg production-list overflow-y"
+            >
               <el-steps direction="vertical">
-                <el-step :class="{ todayItemRef: isToday(date) }" v-for="(listData, date) in productionList"
-                  :key="date">
+                <el-step
+                  :class="{ todayItemRef: isToday(date) }"
+                  v-for="(listData, date) in productionList"
+                  :key="date"
+                >
                   <template slot="icon">
                     <div></div>
                   </template>
                   <div slot="title" class="text-black date-title">
-                    {{  date  }}
+                    {{ date }}
                     <span v-show="isToday(date)">
                       (<span class="today-txt">今日</span>)
                     </span>
                   </div>
-                  <div slot="description" class="margin-top-xs margin-bottom-xs">
+                  <div
+                    slot="description"
+                    class="margin-top-xs margin-bottom-xs"
+                  >
                     <template v-if="isListDataLen(listData)">
-                      <div class="text-blue margin-bottom-xs plan-title pointer" v-for="(item, index) in listData"
-                        :key="index" @click="$router.push({ name: 'PlanSchedule', params: { listId: item.id } })">
-                        {{  item.computerName  }}
-                        在{{  item.address  }}
-                        {{  item.process  }}
-                        {{  item.num  }} pcs
+                      <div
+                        class="text-blue margin-bottom-xs plan-title pointer"
+                        v-for="(item, index) in listData"
+                        :key="index"
+                        @click="
+                          $router.push({
+                            name: 'PlanSchedule',
+                            params: { listId: item.id },
+                          })
+                        "
+                      >
+                        {{ item.computerName }}
+                        在{{ item.address }}
+                        {{ item.process }}
+                        {{ item.num }} pcs
                       </div>
                     </template>
                     <template v-else>
@@ -47,28 +70,54 @@
             <el-col :offset="8" :span="8" class="text-center">重点事项 </el-col>
             <el-col class="text-gray text-right font14" :span="8">
               <span class="margin-left">
-                共{{  homeEmphasisList.length  }}条</span>
+                共{{ homeEmphasisList.length }}条
+              </span>
             </el-col>
           </el-row>
-          <el-table class="sort-table" :data="homeEmphasisList" :height="tableHeightFull"
-            header-cell-class-name="bg-white" border @row-click="rowClick" cell-class-name="pointer">
-            <el-table-column prop="content" label="内容" align="left" header-align="center">
+          <el-table
+            class="sort-table"
+            :data="homeEmphasisList"
+            :height="tableHeightFull"
+            header-cell-class-name="bg-white"
+            border
+            @row-click="rowClick"
+            cell-class-name="pointer"
+          >
+            <el-table-column
+              prop="content"
+              label="内容"
+              align="left"
+              header-align="center"
+            >
               <template slot-scope="scope">
                 <div v-html="scope.row.content"></div>
               </template>
             </el-table-column>
-            <el-table-column label="日志" align="center" prop="problem" width="666px">
+            <el-table-column
+              label="日志"
+              align="center"
+              prop="problem"
+              width="666px"
+            >
               <template slot-scope="scope">
                 <div class="flex align-center progress-text">
                   <div class="add-icon">
-                    <i v-if="scope.row.createUser == userId" class="el-icon-circle-plus text-blue font18"
-                      style="cursor: pointer" @click.stop="handleLogAdd(scope.row)"></i>
+                    <i
+                      v-if="scope.row.createUser == userId"
+                      class="el-icon-circle-plus text-blue font18"
+                      style="cursor: pointer"
+                      @click.stop="handleLogAdd(scope.row)"
+                    ></i>
                   </div>
                   <div>
-                    <div v-for="(item, o) in scope.row.logList" :key="o" class="text-left margin-left-xs"
-                      :class="difference(item.logTime)">
+                    <div
+                      v-for="(item, o) in scope.row.logList"
+                      :key="o"
+                      class="text-left margin-left-xs"
+                      :class="difference(item.logTime)"
+                    >
                       <template v-if="o < 1">
-                        【{{  item.logTime.slice(0, 11)  }}】:
+                        【{{ item.logTime.slice(0, 11) }}】:
                         <span v-html="item.note"></span>
                       </template>
                     </div>
@@ -80,10 +129,20 @@
         </el-card>
       </el-col>
     </el-row>
-    <Log ref="log" :visible.sync="openLog" :logRow="logRow" @openUpdate="handleUpdateLog" @openAdd="handleAddLog"
-      :isEdit="userId == logRow.createUser" />
-    <Update :visible.sync="openUpdate" :pmDictListOptions="pmDictListOptions" :stateOptions="stateOptions"
-      :rowUpdate="rowUpdate" />
+    <Log
+      ref="log"
+      :visible.sync="openLog"
+      :logRow="logRow"
+      @openUpdate="handleUpdateLog"
+      @openAdd="handleAddLog"
+      :isEdit="userId == logRow.createUser"
+    />
+    <Update
+      :visible.sync="openUpdate"
+      :pmDictListOptions="pmDictListOptions"
+      :stateOptions="stateOptions"
+      :rowUpdate="rowUpdate"
+    />
     <AddLog :visible.sync="openAddLog" :logRow="logRow" />
   </div>
 </template>
@@ -187,25 +246,35 @@ export default {
   methods: {
     getHomeProductionAll() {
       this.isLoading = true;
-      const data = Promise.all([homeProduction({ type: 1 }), homeProduction({ type: 2 }), homeProduction({ type: 4 })])
-      data.then(res => {
-        this.productionList = { ...res[0].data, ...res[1].data, ...res[2].data }
-        this.isLoading = false;
-        const dateArr = Object.keys(this.productionList)
-        dateArr.forEach(date => {
-          if (this.isToday(date)) {
-            this.$nextTick(() => {
-              const todayItemOffsetTop =
-                document.getElementsByClassName("todayItemRef")[0].offsetTop;
-              this.$refs.productionRef.scrollTop = todayItemOffsetTop;
-            });
-          } else {
-            this.$refs.productionRef.scrollTop = 0
-          }
+      const data = Promise.all([
+        homeProduction({ type: 1 }),
+        homeProduction({ type: 2 }),
+        homeProduction({ type: 4 }),
+      ]);
+      data
+        .then((res) => {
+          this.productionList = {
+            ...res[0].data,
+            ...res[1].data,
+            ...res[2].data,
+          };
+          this.isLoading = false;
+          const dateArr = Object.keys(this.productionList);
+          dateArr.forEach((date) => {
+            if (this.isToday(date)) {
+              this.$nextTick(() => {
+                const todayItemOffsetTop =
+                  document.getElementsByClassName("todayItemRef")[0].offsetTop;
+                this.$refs.productionRef.scrollTop = todayItemOffsetTop;
+              });
+            } else {
+              this.$refs.productionRef.scrollTop = 0;
+            }
+          });
         })
-      }).catch(() => {
-        this.isLoading = false;
-      })
+        .catch(() => {
+          this.isLoading = false;
+        });
     },
     getList() {
       //重点事项

@@ -1,12 +1,11 @@
-
 <template>
   <el-dialog
     :title="title"
     :visible.sync="dialogVisible"
     center
     append-to-body
-    top="1vh"
-    width="500px"
+    top="0vh"
+    width="700px"
     :close-on-click-modal="false"
   >
     <el-form
@@ -14,12 +13,14 @@
       label-position="left"
       :model="form"
       :rules="rules"
-      label-width="90px"
+      label-width="100px"
+      class="overflow-y"
+      style="max-height: 500px"
     >
       <el-form-item label="产品品类:" prop="categoryId">
         <el-select
           v-model="form.categoryId"
-          style="width: 100%"
+          style="width: 65%"
           placeholder="请选择产品品类"
           clearable
           filterable
@@ -36,7 +37,7 @@
       <el-form-item label="产品型号:" prop="computerId">
         <el-select
           v-model="form.computerId"
-          style="width: 100%"
+          style="width: 65%"
           placeholder="请选择产品型号"
           clearable
           filterable
@@ -49,28 +50,21 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="生产日期:" prop="date">
-        <el-date-picker
-          v-model="form.date"
-          style="width: 100%"
-          type="date"
-          :default-time="defaultTime"
-          value-format="timestamp"
-          placeholder="请选择生产日期"
-          @change="selDate"
+      <el-form-item label="芯片版本:" prop="chipVersion">
+        <el-select
+          v-model="form.chipVersion"
+          style="width: 65%"
+          placeholder="请选择芯片版本"
+          clearable
+          filterable
         >
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="生产地点:" prop="address">
-        <el-radio-group v-model="form.address">
-          <el-radio
-            v-for="(item, index) in productAddressList"
-            :key="index"
-            :label="item.dictLabel"
-          >
-            {{ item.dictLabel }}
-          </el-radio>
-        </el-radio-group>
+          <el-option
+            v-for="dict in chipList"
+            :key="dict.id"
+            :label="dict.schemeVersion"
+            :value="dict.schemeVersion"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="生产流程:" prop="process">
         <el-radio-group v-model="form.process">
@@ -83,11 +77,54 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
+      <el-form-item label="生产日期:" prop="date">
+        <el-date-picker
+          v-model="form.date"
+          style="width: 65%"
+          type="date"
+          :default-time="defaultTime"
+          value-format="timestamp"
+          placeholder="请选择生产日期"
+          @change="selDate"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="出货日期:" prop="sellDate">
+        <el-date-picker
+          v-model="form.sellDate"
+          style="width: 65%"
+          type="date"
+          :default-time="defaultTime"
+          value-format="timestamp"
+          placeholder="请选择出货日期"
+          @change="selDate"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="客户订单号:" prop="orderNo">
+        <el-input
+          v-model.number="form.orderNo"
+          clearable
+          style="width: 65%"
+          placeholder="请输入客户订单号"
+        />
+      </el-form-item>
+      <el-form-item label="生产地点:" prop="address">
+        <el-radio-group v-model="form.address">
+          <el-radio
+            v-for="(item, index) in productAddressList"
+            :key="index"
+            :label="item.dictLabel"
+          >
+            {{ item.dictLabel }}
+          </el-radio>
+        </el-radio-group>
+      </el-form-item>
       <template v-if="form.process === 'SMT'">
         <el-form-item label="方案版本:" prop="schemeVersion">
           <el-select
             v-model="form.schemeVersion"
-            style="width: 100%"
+            style="width: 65%"
             placeholder="请选择产品型号"
             clearable
             filterable
@@ -102,7 +139,7 @@
         </el-form-item>
         <el-form-item label="有效期:" prop="dateRange">
           <el-date-picker
-            style="width: 100%"
+            style="width: 65%"
             v-model="form.dateRange"
             value-format="timestamp"
             type="datetimerange"
@@ -114,13 +151,55 @@
         </el-form-item>
       </template>
       <el-form-item label="数量:" prop="num">
-        <el-input v-model.number="form.num" clearable placeholder="请输入数量">
+        <el-input
+          v-model.number="form.num"
+          clearable
+          style="width: 65%"
+          placeholder="请输入数量"
+        >
           <template slot="append">pcs</template>
         </el-input>
       </el-form-item>
+      <el-form-item
+        label="配置信息："
+        prop="configInfo"
+        class="margin-right-xs"
+      >
+        <tinymce
+          v-if="dialogVisible"
+          v-model="form.configInfo"
+          placeholder="请输入配置信息"
+          width="100%"
+          height="200"
+        />
+      </el-form-item>
+      <el-form-item label="出货箱唛：" prop="sellInfo" class="margin-right-xs">
+        <tinymce
+          v-if="dialogVisible"
+          v-model="form.sellInfo"
+          placeholder="请输入出货箱唛"
+          width="100%"
+          height="200"
+        />
+      </el-form-item>
+      <el-form-item
+        label="附件要求："
+        prop="protocolInfo"
+        class="margin-right-xs"
+      >
+        <tinymce
+          v-if="dialogVisible"
+          v-model="form.protocolInfo"
+          placeholder="请输入附件要求"
+          width="100%"
+          height="200"
+        />
+      </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button type="primary" :loading="isBtnLoading" @click="submitForm">
+        确 定
+      </el-button>
       <el-button @click="dialogVisible = false">取 消</el-button>
     </div>
   </el-dialog>
@@ -133,9 +212,14 @@ import {
   scheduleVersion,
 } from "@/api/www/planSchedule";
 import { listComputer } from "@/api/third/computer";
+import { schemeTypeList } from "@/api/system/skipType";
+import tinymce from "@/views/components/Editor";
 
 export default {
   props: ["title", "dictList", "operationList"],
+  components: {
+    tinymce,
+  },
   data() {
     const checkScheduleNum = (rule, value, callback) => {
       if (value === "") {
@@ -149,12 +233,15 @@ export default {
       }
     };
     return {
+      isBtnLoading: false,
       dialogVisible: false,
       // 生产地点
       productAddressList: [],
       modelList: [],
       // 方案版本字典
       versionList: [],
+      // 芯片列表
+      chipList: [],
       // 表单参数
       form: {
         categoryId: "",
@@ -175,6 +262,9 @@ export default {
         computerId: [
           { required: true, message: "请选择产品型号", trigger: "change" },
         ],
+        chipVersion: [
+          { required: true, message: "请选择芯片版本", trigger: "change" },
+        ],
         date: [
           { required: true, message: "请选择生产日期", trigger: "change" },
         ],
@@ -190,6 +280,9 @@ export default {
         dateRange: [
           { required: true, message: "请选择时间", trigger: "change" },
         ],
+        orderNo: [
+          { required: true, message: "请输入客户订单号", trigger: "blur" },
+        ],
         num: [{ required: true, validator: checkScheduleNum, trigger: "blur" }],
       },
     };
@@ -198,7 +291,7 @@ export default {
     pickerOptions() {
       return {
         disabledDate(time) {
-          return time.getTime() < Date.now() - 24 * 3600 * 1000;
+          return time.getTime() < Date.now() - 24 * 3650 * 1000;
         },
         selectableRange: `${this.defaultTime} - 23:59:59`,
       };
@@ -215,12 +308,20 @@ export default {
   created() {
     this.getProductAddress();
     this.getScheduleVersion();
+    this.getChipTypeList();
   },
   methods: {
     getComputerId(id) {
       if (id) {
         this.form.computerId = "";
       }
+    },
+    // 芯片类型
+    getChipTypeList() {
+      schemeTypeList({ p: 1, l: 10 }).then((res) => {
+        const { list } = res.data;
+        this.chipList = list;
+      });
     },
     // 获取型号字典
     getlistComputer(key) {
@@ -265,25 +366,34 @@ export default {
           const data = this.addDateRange(this.form, this.form.dateRange, {
             begin: "startTime",
           });
+          this.isBtnLoading = true;
           if (this.form.process !== "SMT") {
             this.form.schemeVersion = "";
           }
           if (this.form.id) {
-            schedulingEdit(data).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("编辑成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
+            schedulingEdit(data)
+              .then((res) => {
+                if (res.code === 200) {
+                  this.msgSuccess("编辑成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .then(() => {
+                this.isBtnLoading = false;
+              });
           } else {
-            schedulingCreate(data).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("新增成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
+            schedulingCreate(data)
+              .then((res) => {
+                if (res.code === 200) {
+                  this.msgSuccess("新增成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .then(() => {
+                this.isBtnLoading = false;
+              });
           }
         }
       });
@@ -317,4 +427,3 @@ export default {
   }
 }
 </style>
-

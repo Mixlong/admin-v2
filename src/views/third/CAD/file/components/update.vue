@@ -70,23 +70,41 @@
           />
         </el-select>
       </el-form-item>
-
-      <el-form-item label="属性描述" prop="content">
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 1, maxRows: 8 }"
-          v-model="form.content"
-          placeholder="请输入文件描述"
-        />
+      <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+        <template v-if="form.type === 'hard_version'">
+          <select-loadMore
+            style="width: 100%"
+            v-model="form.content"
+            :data="hardData.data"
+            :page="hardData.page"
+            :hasMore="hardData.more"
+            dictLabel="name"
+            dictValue="name"
+            :request="getHardList"
+            placeholder="请选择硬件版本号"
+          />
+        </template>
+        <template v-else>
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 8 }"
+            v-model="form.content"
+            placeholder="请输入文件描述"
+          />
+        </template>
       </el-form-item>
-
       <el-form-item
         label="文件"
         prop="url"
         v-if="form.up == 1"
         style="width: 100%"
       >
-        <DrUpload :limit="1" v-model="form.url" :css="{ width: '100%' }" :isOnePic="1">
+        <DrUpload
+          :limit="1"
+          v-model="form.url"
+          :css="{ width: '100%' }"
+          :isOnePic="1"
+        >
           <div>
             <el-button size="small" type="primary">点击上传</el-button>
           </div>
@@ -215,14 +233,14 @@
           </el-radio-group>
         </el-form-item>
       </template>
-      <el-form-item label="批量同步"  >
+      <el-form-item label="批量同步">
         <el-select
           ref="select"
           v-model="form.idList"
           multiple
           placeholder=""
           class="similar-style"
-          style="width:100%"
+          style="width: 100%"
         >
           <el-option
             :disabled="disabledName == dict.computer"
@@ -248,6 +266,7 @@ import {
   editFileConfig,
   computerDictList,
 } from "@/api/third/fileConfig";
+import { listComputer } from "@/api/third/version";
 export default {
   props: ["dictList"],
   data() {
@@ -260,6 +279,13 @@ export default {
         } else {
           callback(new Error("请上传文件"));
         }
+      }
+    };
+    const validateContent = (rule, value, callback) => {
+      if (this.form.content === "" && this.isHaveTo) {
+        return callback(new Error("硬件版本号不能为空"));
+      } else {
+        callback();
       }
     };
     return {
@@ -281,6 +307,7 @@ export default {
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
         ],
+        content: [{ validator: validateContent, trigger: ["blur", "change"] }],
         url: [{ required: true, validator: validateUpload, trigger: "blur" }],
       },
       cidOptions: [],
@@ -289,7 +316,17 @@ export default {
       voltageOptions: [],
       midOptions: [],
       disabledName: "",
+      hardData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
     };
+  },
+  computed: {
+    isHaveTo() {
+      return this.form.type === "hard_version";
+    },
   },
   watch: {
     form(val) {
@@ -305,7 +342,7 @@ export default {
               this.disabledName = key.name;
             }
           }
-    
+
           this.similarList = res.data;
         });
       }
@@ -376,21 +413,40 @@ export default {
         resove(this.computerFormOptions);
       });
     },
+    /** 订单号列表 */
+    getHardList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        listComputer({
+          p: page,
+          key: this.form.categoryId,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.hardData.data = [...this.orderData.data, ...list];
+          } else {
+            this.hardData.data = list;
+          }
+          this.hardData.more = pageNum * pageSize < total;
+          this.hardData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getHardNo(info) {
+      if (!info) {
+        this.form.hardNo = "";
+        this.form.hardName = "";
+        return;
+      }
+      const { id, name } = JSON.parse(info);
+      this.form.hardNo = id;
+      this.form.hardName = name;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
-          // if (this.form.firmwareConf.mid) {
-          //   this.form.firmwareConf.mid = Number(this.form.firmwareConf.mid);
-          // }
-          // console.log(this.form);
-          // if (this.form.firmwareConf.cid) {
-          //   this.form.firmwareConf.cid = Number(this.form.firmwareConf.cid);
-          // }
-          // if (this.form.firmwareConf.type) {
-          //   this.form.firmwareConf.type = Number(this.form.firmwareConf.type);
-          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
