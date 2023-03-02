@@ -6,7 +6,36 @@ const state = {
     // 品类
     categoryList: [],
     // 型号
-    computerList: []
+    computerList: [],
+    // 数据管理审核状态
+    statusOptions: {
+        0: "待上传",
+        1: "待初审",
+        2: "已审核",
+        3: "未通过",
+        4: "待终审",
+    },
+}
+
+const getters = {
+    isCheckType() {
+        return ({ status }) => {
+            let type = null;
+            switch (status) {
+                case 0:
+                    type = "success";
+                    break;
+                case 1:
+                case 4:
+                    type = "danger";
+                    break;
+                default:
+                    type = "info";
+                    break;
+            }
+            return type;
+        };
+    },
 }
 
 const mutations = {
@@ -39,6 +68,7 @@ const actions = {
 export default {
     namespaced: true,
     state,
+    getters,
     mutations,
     actions
 }

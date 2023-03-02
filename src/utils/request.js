@@ -63,7 +63,6 @@ service.interceptors.response.use(res => {
       message: msg,
       type: 'error'
     })
-    // return res.data
     return Promise.reject(res.data.code)
   } else if (code !== 200) {
     Notification.error({

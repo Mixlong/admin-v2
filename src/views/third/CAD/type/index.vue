@@ -25,9 +25,9 @@
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
@@ -37,8 +37,9 @@
             size="mini"
             @click="handleAdd"
             v-hasPermi="['third:dev:add']"
-            >新增</el-button
           >
+            新增
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -75,7 +76,7 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="90"
+        width="140"
       />
       <el-table-column
         label="创建时间"
@@ -182,7 +183,9 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="isSubLoading" @click="submitForm">
+          确 定
+        </el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -225,9 +228,11 @@ import {
   editType,
 } from "@/api/third/type";
 import { getCodeImg } from "@/api/base/code";
+import { commonJs } from "@/mixins/common";
 
 export default {
   name: "BikeType",
+  mixins: [commonJs],
   data() {
     return {
       // 遮罩层
@@ -405,27 +410,38 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          this.isSubLoading = true;
           this.form.typeRoleList = [];
           this.roleTypeCheckedList.forEach((r) => {
             this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
           });
 
           if (this.form.id !== undefined) {
-            editType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            editType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.isSubLoading = false;
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .catch(() => {
+                this.isSubLoading = false;
+              });
           } else {
-            addType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            addType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("新增成功");
+                  this.isSubLoading = false;
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .catch(() => {
+                this.isSubLoading = false;
+              });
           }
         }
       });

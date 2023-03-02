@@ -75,7 +75,7 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="90"
+        width="140"
       />
       <el-table-column
         label="创建时间"

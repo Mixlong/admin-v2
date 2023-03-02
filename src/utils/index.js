@@ -390,30 +390,46 @@ export function isNumberStr(str) {
   return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str)
 }
 
+// export function urlDownload(url) {
+//   axios({
+//     method: 'get',
+//     url,
+//     responseType: 'arraybuffer'
+//   }).then(res => {
+//     let headers = res.headers;
+//     let blob = new Blob([res.data], {
+//       type: headers['content-type']
+//     });
+//     let link = document.createElement('a');
+//     link.href = window.URL.createObjectURL(blob);
+//     let i = url.lastIndexOf("/");
+//     let fileName = url.slice(i + 1);
+//     link.download = fileName;
+//     link.click();
+//   });
+// }
+
 export function urlDownload(url) {
   axios({
-    method: 'get',
     url,
-    responseType: 'arraybuffer'
+    method: "get",
+    responseType: "arraybuffer"
   }).then(res => {
-    let headers = res.headers;
-    let blob = new Blob([res.data], {
-      type: headers['content-type']
-    });
-    let link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    let i = url.lastIndexOf("/");
-    let fileName = url.slice(i + 1);
-
-    link.download = fileName;
-    link.click();
-  });
+    const { data, headers } = res;
+    const blob = new Blob([data], { type: headers['content-type'] });
+    const href = window.URL.createObjectURL(blob);
+    const fileName = url.slice(url.lastIndexOf('/') + 1);
+    let a = document.createElement('a');
+    a.href = href;
+    a.download = fileName
+    a.click();
+    window.URL.revokeObjectURL(href);
+  })
 }
-
 
 export function zipFile(value, fileName) {
   let data = value.split(",");
-  if (data.length == 1) {
+  if (data.length === 1) {
     urlDownload(data[0])
   } else {
     const zip = new JSZip();
@@ -437,20 +453,29 @@ export function zipFile(value, fileName) {
     });
   }
 }
+
 export function getFile(url) {
-  let that = this;
   return new Promise((resolve, reject) => {
     axios({
       method: "get",
       url,
-      responseType: "arraybuffer",
-      onDownloadProgress: function (progressEvent) { },
+      responseType: "arraybuffer"
     })
-      .then((data) => {
-        resolve(data.data);
+      .then((res) => {
+        resolve(res.data);
       })
       .catch((error) => {
         reject(error.toString());
       });
   });
+}
+
+// 预览word, excel， ppt
+export function readOfficeFile(url) {
+  if (url.lastIndexOf('xlsx') !== -1) {
+    url = url.replace(/xlsx$/ig, 'xls')
+  }
+  const fileUrl = encodeURIComponent(url);
+  const officeUrl = 'http://view.officeapps.live.com/op/view.aspx?src=' + fileUrl;
+  window.open(officeUrl, '_target');
 }

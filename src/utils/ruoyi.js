@@ -220,3 +220,21 @@ export function Enter_Fn(fn) {
     console.log(error)
   }
 }
+
+/**
+ * 
+ * @param {*} obj 
+ * @returns 
+ */
+export function is_Empty(obj) {
+  if (
+    typeof obj == "undefined" ||
+    obj == null ||
+    (typeof obj == "string" && obj.trim() == "") ||
+    (typeof obj == "object" && Object.keys(obj).length === 0)
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}
