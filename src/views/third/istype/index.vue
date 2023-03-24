@@ -7,7 +7,7 @@
       @submit.native.prevent
     >
       <el-form-item label="客户名称" prop="customerName">
-         <el-autocomplete
+        <el-autocomplete
           size="small"
           clearable
           v-model="queryParams.customerName"
@@ -79,12 +79,13 @@
         width="130"
         show-overflow-tooltip
       />
+      <el-table-column label="描述" prop="orderDesc" show-overflow-tooltip />
       <el-table-column
-        label="描述"
-        prop="orderDesc"
+        label="下载口令"
+        align="center"
+        width="140"
         show-overflow-tooltip
-      />
-      <el-table-column label="下载口令" align="center" width="140" show-overflow-tooltip>
+      >
         <template slot-scope="{ row }" v-if="row.downloadPassword">
           <el-tooltip effect="dark" content="点击复制下载口令" placement="top">
             <el-button type="text">{{ row.downloadPassword }}</el-button>
@@ -97,10 +98,15 @@
         align="center"
         width="160"
       >
-        <template slot-scope="{row}">
-          <div v-show="row.status && !timeOut(row.expiryDate)">{{ parseTime(row.expiryDate) }}</div>
-          <el-tag type="danger" size="mini" v-show="!row.status">已禁用</el-tag><br/>
-          <el-tag type="danger" size="mini" v-show="timeOut(row.expiryDate)">已过期</el-tag>
+        <template slot-scope="{ row }">
+          <div v-show="row.status && !timeOut(row.expiryDate)">
+            {{ parseTime(row.expiryDate) }}
+          </div>
+          <el-tag type="danger" size="mini" v-show="!row.status">已禁用</el-tag
+          ><br />
+          <el-tag type="danger" size="mini" v-show="timeOut(row.expiryDate)"
+            >已过期</el-tag
+          >
         </template>
       </el-table-column>
       <el-table-column
@@ -114,7 +120,7 @@
         align="center"
         prop="createTime"
         width="150"
-      > 
+      >
         <template slot-scope="{ row }">
           <div v-if="!row.testState">
             <p class="text-blue">{{ row.testUserName }}(测试)</p>
@@ -122,13 +128,17 @@
           </div>
           <div v-if="row.testState && !row.pmState">
             <p class="text-blue">{{ row.pmUserName }}(产品经理)</p>
-           待审核
+            待审核
           </div>
           <div v-if="row.testState && row.pmState && !row.dmState">
             <p class="text-blue">{{ row.dmUserName }}(部门经理)</p>
             待审核
           </div>
-          <span class="text-green" v-if="row.testState && row.pmState && row.dmState">已完成</span>
+          <span
+            class="text-green"
+            v-if="row.testState && row.pmState && row.dmState"
+            >已完成</span
+          >
         </template>
       </el-table-column>
       <el-table-column
@@ -145,7 +155,12 @@
             @click="onCheck(row)"
             >审核</el-button
           >
-          <el-button type="text" class="text-orange" @click="urlDownload(row.file)">下载</el-button>
+          <el-button
+            type="text"
+            class="text-orange"
+            @click="urlDownload(row.file)"
+            >下载</el-button
+          >
           <el-button
             v-if="row.isEditAndForbid"
             type="text"
@@ -192,7 +207,7 @@
       >
         <el-form-item label="客户名称:" prop="customerName">
           <el-autocomplete
-            style="width: 100%"  
+            style="width: 100%"
             size="small"
             clearable
             v-model="form.customerName"
@@ -222,7 +237,7 @@
             type="textarea"
             v-model="form.orderDesc"
             placeholder="请输入描述"
-            :autosize="{minRows: 3, maxRows: 5}"
+            :autosize="{ minRows: 3, maxRows: 5 }"
           />
         </el-form-item>
         <el-row>
@@ -337,11 +352,9 @@ import {
   authManagement,
   listEdit,
   listCreate,
-  dictUserList
+  dictUserList,
 } from "@/api/third/isType";
-import {
-  listCustomer
-} from "@/api/third/sample";
+import { listCustomer } from "@/api/third/sample";
 
 export default {
   mixins: [commonJs],
@@ -384,7 +397,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
       },
       // 表单参数
       form: {
@@ -392,7 +405,7 @@ export default {
       },
       // 表单校验
       rules: {
-        customerName : [
+        customerName: [
           { required: true, message: "客户名称不能为空", trigger: "change" },
         ],
         categoryId: [
@@ -457,15 +470,15 @@ export default {
     };
   },
   components: {
-     CompUpdate: () => import('./components/update')
+    CompUpdate: () => import("./components/update"),
   },
   computed: {
     timeOut() {
-      return time => {
-        const now = Date.now()
-        return time < now
-      }
-    }
+      return (time) => {
+        const now = Date.now();
+        return time < now;
+      };
+    },
   },
   created() {
     this.getCode();
@@ -478,18 +491,18 @@ export default {
   },
   methods: {
     handleStatus(row) {
-      this.formObj = row
+      this.formObj = row;
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.active = -1
+      this.$refs.compUpdate.active = -1;
     },
     cellClick(row, column) {
       // if(!row.isState) {
       //   return
       // }
-      if(column.label === '审核状态') {
-        this.handleStatus(row)
-      } else if(column.label === '下载口令') {
-        this.onCopy(row.downloadPassword)
+      if (column.label === "审核状态") {
+        this.handleStatus(row);
+      } else if (column.label === "下载口令") {
+        this.onCopy(row.downloadPassword);
       }
     },
     querySearchAsync(queryString, cb) {
@@ -511,9 +524,13 @@ export default {
     getDictUserList() {
       dictUserList().then((res) => {
         this.UserList = res.data;
-        this.testList = res.data.filter(item => item.roleKey === 'test')
-        this.productList = res.data.filter(item => item.roleKey === 'product')
-        this.managerList = res.data.filter(item => item.roleKey === 'project_manager')
+        this.testList = res.data.filter((item) => item.roleKey === "test");
+        this.productList = res.data.filter(
+          (item) => item.roleKey === "product"
+        );
+        this.managerList = res.data.filter(
+          (item) => item.roleKey === "project_manager"
+        );
       });
     },
     /** 查询客户列表 */
@@ -572,7 +589,7 @@ export default {
     handleUpdate(row) {
       this.reset();
       this.form = Object.assign({}, row);
-      console.log(this.form)
+      console.log(this.form);
       this.open = true;
       this.title = "编辑外发文件";
     },
@@ -608,21 +625,20 @@ export default {
         type: "warning",
       })
         .then(() => {
-          let reviewer = null
-          if(!row.testState) {
-            reviewer = 1
-          } else if(row.testState && !row.pmState) {
-            reviewer = 2
-          } else if(row.testState && row.pmState && !row.dmState) {
-            reviewer = 3
+          let reviewer = null;
+          if (!row.testState) {
+            reviewer = 1;
+          } else if (row.testState && !row.pmState) {
+            reviewer = 2;
+          } else if (row.testState && row.pmState && !row.dmState) {
+            reviewer = 3;
           }
           detailCategory({ id: row.id, state: 1, reviewer }).then((res) => {
             this.warningMessage("审核通过!", 1);
             this.getList();
           });
-        }).catch(() => {
-
         })
+        .catch(() => {});
     },
     // 禁用
     onDisable(row) {
@@ -632,13 +648,14 @@ export default {
         type: "warning",
       })
         .then(() => {
-          authManagement({id: row.id, status: row.status ? 0 : 1}).then(res => {
-            this.warningMessage(`${row.status ? '禁用' : '启用'}成功`, 1);
-            this.getList();
-          })
-        }).catch(() => {
-
+          authManagement({ id: row.id, status: row.status ? 0 : 1 }).then(
+            (res) => {
+              this.warningMessage(`${row.status ? "禁用" : "启用"}成功`, 1);
+              this.getList();
+            }
+          );
         })
+        .catch(() => {});
     },
     // 复制下载口令
     onCopy(val) {

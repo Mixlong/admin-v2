@@ -92,8 +92,6 @@
       :height="tableHeight()"
       border
       :row-class-name="tableRowClassName"
-      @cell-click="cellClick"
-      :cell-style="cellStyle"
       @selection-change="handleSelectionChange"
     >
       <el-table-column
@@ -151,11 +149,7 @@
           {{ row.createBy ? row.createBy : row.updateBy }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建时间"
-        align="center"
-        width="140"
-      >
+      <el-table-column label="创建时间" align="center" width="140">
         <template slot-scope="{ row }">
           {{ row.updateTime || "---" }}
         </template>
@@ -634,18 +628,6 @@ export default {
         });
       } else {
         this.computerOptions = [];
-      }
-    },
-    cellClick(row, column, cell, event) {
-      switch (column.label) {
-        case "属性描述":
-          this.handleUpdate(row, "content");
-          break;
-      }
-    },
-    cellStyle({ row, column, rowIndex, columnIndex }) {
-      if (column.label == "属性描述") {
-        return `cursor: pointer;`;
       }
     },
   },

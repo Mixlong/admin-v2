@@ -4,7 +4,7 @@
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
-    :width="boleConfig ? '980px' : '780px'"
+    :width="isDigWidth"
     append-to-body
     :top="boleConfig ? '5vh' : '15vh'"
   >
@@ -17,102 +17,102 @@
       :class="{ 'inline-form': boleConfig }"
       inline
     >
-      <el-form-item label="品类" prop="categoryId">
-        <el-select
-          :disabled="form.id ? true : false"
-          v-model="form.categoryId"
-          clearable
-          @change="changeCategory2"
-          size="small"
-          style="width: 185px"
+      <template v-if="!isBatchSync">
+        <el-form-item label="品类" prop="categoryId">
+          <el-select
+            :disabled="form.id ? true : false"
+            v-model="form.categoryId"
+            clearable
+            @change="changeCategory2"
+            size="small"
+            style="width: 185px"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="型号" prop="computerId">
+          <el-select
+            :disabled="form.id ? true : false"
+            v-model="form.computerId"
+            clearable
+            size="small"
+            style="width: 185px"
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in computerFormOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="属性" prop="type">
+          <el-select
+            v-model="form.type"
+            clearable
+            size="small"
+            style="width: 185px"
+            disabled
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in fileTypeList"
+              :key="dict.key"
+              :label="dict.value"
+              :value="dict.key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+          <template v-if="form.type === 'hard_version'">
+            <select-loadMore
+              style="width: 100%"
+              v-model="form.content"
+              :data="hardData.data"
+              :page="hardData.page"
+              :hasMore="hardData.more"
+              dictLabel="name"
+              dictValue="name"
+              :request="getHardList"
+              placeholder="请选择硬件版本号"
+            />
+          </template>
+          <template v-else>
+            <el-input
+              type="textarea"
+              :autosize="{ minRows: 1, maxRows: 8 }"
+              v-model="form.content"
+              placeholder="请输入文件描述"
+            />
+          </template>
+        </el-form-item>
+        <el-form-item
+          label="文件"
+          prop="url"
+          v-if="form.up == 1"
+          style="width: 100%"
         >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="型号" prop="computerId">
-        <el-select
-          :disabled="form.id ? true : false"
-          v-model="form.computerId"
-          clearable
-          size="small"
-          style="width: 185px"
-          @change="$forceUpdate()"
-        >
-          <el-option
-            v-for="dict in computerFormOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="属性" prop="type">
-        <el-select
-          v-model="form.type"
-          clearable
-          size="small"
-          style="width: 185px"
-          disabled
-          @change="$forceUpdate()"
-        >
-          <el-option
-            v-for="dict in fileTypeList"
-            :key="dict.key"
-            :label="dict.value"
-            :value="dict.key"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="属性描述" prop="content" :required="isHaveTo">
-        <template v-if="form.type === 'hard_version'">
-          <select-loadMore
-            style="width: 100%"
-            v-model="form.content"
-            :data="hardData.data"
-            :page="hardData.page"
-            :hasMore="hardData.more"
-            dictLabel="name"
-            dictValue="name"
-            :request="getHardList"
-            placeholder="请选择硬件版本号"
-          />
-        </template>
-        <template v-else>
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 1, maxRows: 8 }"
-            v-model="form.content"
-            placeholder="请输入文件描述"
-          />
-        </template>
-      </el-form-item>
-      <el-form-item
-        label="文件"
-        prop="url"
-        v-if="form.up == 1"
-        style="width: 100%"
-      >
-        <DrUpload
-          :limit="1"
-          v-model="form.url"
-          :css="{ width: '100%' }"
-          :isOnePic="1"
-        >
-          <div>
-            <el-button size="small" type="primary">点击上传</el-button>
-          </div>
-        </DrUpload>
-      </el-form-item>
+          <DrUpload
+            :limit="1"
+            v-model="form.url"
+            :css="{ width: '100%' }"
+            :isOnePic="1"
+          >
+            <div>
+              <el-button size="small" type="primary">点击上传</el-button>
+            </div>
+          </DrUpload>
+        </el-form-item>
+      </template>
 
       <!-- 新增字段 -->
-      <template v-if="boleConfig">
+      <template v-if="!isBatchSync && boleConfig">
         <el-form-item label="烧录的文件名">
           <el-input
             style="width: 100%"
@@ -233,7 +233,15 @@
           </el-radio-group>
         </el-form-item>
       </template>
-      <el-form-item label="批量同步">
+
+      <el-form-item
+        label="仪表型号"
+        v-if="isBatchSync"
+        style="width: 100%"
+        label-width="100px"
+        :required="isHaveBatchSync"
+        prop="idList"
+      >
         <el-select
           ref="select"
           v-model="form.idList"
@@ -265,25 +273,22 @@ import {
   addFileConfig,
   editFileConfig,
   computerDictList,
+  resetBatchSync,
 } from "@/api/third/fileConfig";
 import { listComputer } from "@/api/third/version";
 export default {
   props: ["dictList"],
   data() {
-    let validateUpload = (rule, value, callback) => {
-      if (this.form.up === 0) {
-        callback();
+    const validateContent = (rule, value, callback) => {
+      if (!value && this.isHaveTo) {
+        return callback(new Error("硬件版本号不能为空"));
       } else {
-        if (this.form.url) {
-          callback();
-        } else {
-          callback(new Error("请上传文件"));
-        }
+        callback();
       }
     };
-    const validateContent = (rule, value, callback) => {
-      if (this.form.content === "" && this.isHaveTo) {
-        return callback(new Error("硬件版本号不能为空"));
+    const validateIdList = (rule, value, callback) => {
+      if (!value.length && this.isHaveBatchSync) {
+        return callback(new Error("仪表型号不能为空"));
       } else {
         callback();
       }
@@ -291,6 +296,8 @@ export default {
     return {
       boleConfig: false,
       dialogVisible: false,
+      // 批量同步
+      isBatchSync: false,
       fileTypeList: [],
       computerFormOptions: [],
       similarList: [],
@@ -307,8 +314,11 @@ export default {
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
         ],
-        content: [{ validator: validateContent, trigger: ["blur", "change"] }],
-        url: [{ required: true, validator: validateUpload, trigger: "blur" }],
+        content: [{ validator: validateContent, trigger: "blur" }],
+        idList: [
+          { type: "array", validator: validateIdList, trigger: "change" },
+        ],
+        url: [{ required: true, message: "请上传文件", trigger: "change" }],
       },
       cidOptions: [],
       splitCidOptions: [],
@@ -326,6 +336,20 @@ export default {
   computed: {
     isHaveTo() {
       return this.form.type === "hard_version";
+    },
+    isHaveBatchSync() {
+      return this.isBatchSync;
+    },
+    isDigWidth() {
+      if (this.isBatchSync) {
+        return "450px";
+      } else {
+        if (this.boleConfig) {
+          return "980px";
+        } else {
+          return "780px";
+        }
+      }
     },
   },
   watch: {
@@ -345,6 +369,11 @@ export default {
 
           this.similarList = res.data;
         });
+      }
+    },
+    "form.url"(url) {
+      if (url) {
+        this.clearValidateItem("form", "url");
       }
     },
   },
@@ -452,9 +481,11 @@ export default {
             delete this.form.updateTime;
             delete this.form.updateBy;
             delete this.form.updateTime;
-            editFileConfig(this.form).then((response) => {
+            let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
+            fn(this.form).then((response) => {
               if (response.code === 200) {
-                this.msgSuccess("修改成功");
+                const title = this.isBatchSync ? "批量同步成功" : "修改成功";
+                this.msgSuccess(title);
                 this.dialogVisible = false;
                 this.$parent.getList();
               }
@@ -510,4 +541,3 @@ export default {
   }
 }
 </style>
-

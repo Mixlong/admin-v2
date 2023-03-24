@@ -291,7 +291,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         category: "",
         model: "",
         order: "",
@@ -334,6 +334,12 @@ export default {
       },
       timeVal: "",
     };
+  },
+  created() {
+    const { orderId } = this.$route.query;
+    if (orderId) {
+      this.queryParams.order = orderId;
+    }
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -525,7 +531,7 @@ export default {
       this.dateRange = [];
       this.queryParams = {
         p: 1,
-        l: 10,
+        l: 20,
       };
       this.resetForm("queryForm");
       this.handleQuery();

@@ -532,7 +532,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         key: undefined,
         baseModel: undefined,
         demand: "",
@@ -542,7 +542,7 @@ export default {
       },
       queryParamsApply: {
         p: 1,
-        l: 10,
+        l: 20,
       },
       applyTotal: 0,
       viewParams: {

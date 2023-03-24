@@ -4,11 +4,11 @@
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
-    width="700px"
     append-to-body
+    width="700px"
     top="15vh"
   >
-    <el-form ref="form" :model="form" :rules="rules" label-width="100px" inline>
+    <el-form ref="form" :model="form" :rules="rules" label-width="110px" inline>
       <template v-if="typeName !== 'content'">
         <el-form-item label="品类" prop="categoryId">
           <el-select
@@ -52,13 +52,41 @@
         </el-form-item>
       </template>
       <el-form-item label="属性描述" prop="content">
-        <tinymce
-          v-if="dialogVisible"
-          v-model="form.content"
-          placeholder="请输入属性描述"
-          height="350"
-        ></tinymce>
+        <div id="desc_box">
+          <tinymce
+            id="detail_box"
+            v-if="dialogVisible"
+            v-model="form.content"
+            placeholder="请输入属性描述"
+            height="350"
+          />
+          <a id="download" href="" style="display: none"></a>
+        </div>
       </el-form-item>
+      <template v-if="form.content">
+        <div class="flex justify-around">
+          <el-form-item label="属性描述图片" prop="fileUrl" style="width: 100%">
+            <DrUpload
+              :limit="1"
+              v-model="form.fileUrl"
+              :css="{ width: '100%' }"
+              :isOnePic="1"
+            >
+              <el-button size="mini" type="primary">上传</el-button>
+            </DrUpload>
+          </el-form-item>
+
+          <el-button
+            style="height: 30px"
+            type="primary"
+            size="mini"
+            @click="downloadImg"
+            :loading="isImgLoading"
+          >
+            {{ isImgLoading ? "图片生成中..." : "生成图片" }}
+          </el-button>
+        </div>
+      </template>
       <el-form-item
         label="文件"
         prop="url"
@@ -91,22 +119,14 @@ import {
   computerDictList,
 } from "@/api/third/epc/versionManage";
 import tinymce from "@/views/components/Editor";
+import html2canvas from "html2canvas";
+
 export default {
   props: ["dictList"],
   components: { tinymce },
   data() {
-    let validateUpload = (rule, value, callback) => {
-      if (this.form.up === 0) {
-        callback();
-      } else {
-        if (this.form.url) {
-          callback();
-        } else {
-          callback(new Error("请上传文件"));
-        }
-      }
-    };
     return {
+      isImgLoading: false,
       dialogVisible: false,
       fileTypeList: [],
       computerFormOptions: [],
@@ -126,7 +146,10 @@ export default {
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
         ],
-        url: [{ required: true, validator: validateUpload, trigger: "blur" }],
+        fileUrl: [
+          { required: true, message: "请上传属性描述图片", trigger: "change" },
+        ],
+        url: [{ required: true, message: "请上传文件", trigger: "change" }],
       },
       cidOptions: [],
       splitCidOptions: [],
@@ -153,6 +176,16 @@ export default {
 
           this.similarList = res.data;
         });
+      }
+    },
+    "form.url"(url) {
+      if (url) {
+        this.clearValidateItem("form", "url");
+      }
+    },
+    "form.fileUrl"(url) {
+      if (url) {
+        this.clearValidateItem("form", "fileUrl");
       }
     },
   },
@@ -183,6 +216,28 @@ export default {
     });
   },
   methods: {
+    downloadImg() {
+      this.isImgLoading = true;
+      // setTimeout(() => {
+      this.$nextTick(() => {
+        const _iframe = document.getElementById("detail_box_ifr").contentWindow;
+        const childHtml = _iframe.document.getElementById("tinymce");
+
+        html2canvas(childHtml, {
+          useCORS: true,
+        }).then((canvas) => {
+          const url = canvas.toDataURL();
+          // this.zipFile(url);
+          document.querySelector("#download").href = url;
+          document.querySelector(
+            "#download"
+          ).download = `属性描述图片-${Date.now()}`;
+          document.querySelector("#download").click();
+          this.isImgLoading = false;
+        });
+      });
+      // }, 2000);
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -290,4 +345,3 @@ export default {
   }
 }
 </style>
-

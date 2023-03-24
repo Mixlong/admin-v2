@@ -1,91 +1,230 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" @submit.native.prevent>
+    <el-form
+      :model="queryParams"
+      ref="queryForm"
+      :inline="true"
+      @submit.native.prevent
+    >
       <el-form-item label="类型" prop="type">
-        <el-select size="small" placeholder="请选择类型" clearable v-model="queryParams.type" @change="handleQuery">
-          <el-option v-for="(item, index) in cableTypeList" :key="index" :label="item.dictLabel"
-            :value="item.dictValue"></el-option>
+        <el-select
+          size="small"
+          placeholder="请选择类型"
+          clearable
+          v-model="queryParams.type"
+          @change="handleQuery"
+        >
+          <el-option
+            v-for="(item, index) in cableTypeList"
+            :key="index"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="ERP编码" prop="code">
-        <el-input size="small" placeholder="请输入ERP编码" clearable v-model.trim="queryParams.code" @change="handleQuery">
+        <el-input
+          size="small"
+          placeholder="请输入ERP编码"
+          clearable
+          v-model.trim="queryParams.code"
+          @change="handleQuery"
+        >
         </el-input>
       </el-form-item>
       <el-form-item label="厂家" prop="product">
-        <el-select v-model="queryParams.product" filterable clearable placeholder="请选择厂家" @change="handleQuery">
-          <el-option v-for="item in productList" :key="item.dictLabel" :disabled="item.disabled" :label="item.dictValue"
-            :value="item.dictValue">
+        <el-select
+          v-model="queryParams.product"
+          filterable
+          clearable
+          placeholder="请选择厂家"
+          @change="handleQuery"
+        >
+          <el-option
+            v-for="item in productList"
+            :key="item.dictLabel"
+            :disabled="item.disabled"
+            :label="item.dictValue"
+            :value="item.dictValue"
+          >
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+          >搜索</el-button
+        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
 
       <el-row :gutter="10" class="mt5 fr">
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" size="mini" v-if="checkRole(['sale', 'admin'])"
-            @click="handleAdd('compUpdate', '新增线缆')">新增</el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            size="mini"
+            v-if="checkRole(['sale', 'admin'])"
+            @click="handleAdd('compUpdate', '新增线缆')"
+            >新增</el-button
+          >
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border :cell-class-name="cellClassName"
-      @cell-click="cellClick" :cell-style="cellStyle">
+    <el-table
+      v-loading="loading"
+      :data="list"
+      :height="tableHeight()"
+      border
+      :cell-class-name="cellClassName"
+      @cell-click="cellClick"
+      :cell-style="cellStyle"
+    >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           <span>{{
-              (queryParams.p - 1) * queryParams.l + scope.$index + 1
+            (queryParams.p - 1) * queryParams.l + scope.$index + 1
           }}</span>
         </template>
       </el-table-column>
       <el-table-column label="通用常规物料信息" align="center">
         <el-table-column label="类型" prop="type" align="center" width="80" />
-        <el-table-column label="ERP编码" prop="erpCode" align="center" width="100" show-overflow-tooltip />
+        <el-table-column
+          label="ERP编码"
+          prop="erpCode"
+          align="center"
+          width="100"
+          show-overflow-tooltip
+        />
         <el-table-column label="规格" align="center" prop="standards">
           <template slot-scope="scope">
             <div class="text-left" v-html="scope.row.standards"></div>
           </template>
         </el-table-column>
-        <el-table-column label="厂家" prop="product" align="center" width="100" show-overflow-tooltip />
-        <el-table-column label="线缆" prop="lineCore" align="center" width="90" show-overflow-tooltip />
-        <el-table-column label="防水头型号" prop="headModel" align="center" width="90" show-overflow-tooltip />
-        <el-table-column label="线长MM(不含头)" prop="lineLength" align="center" width="80" show-overflow-tooltip />
+        <el-table-column
+          label="厂家"
+          prop="product"
+          align="center"
+          width="100"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="线缆"
+          prop="lineCore"
+          align="center"
+          width="90"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="防水头型号"
+          prop="headModel"
+          align="center"
+          width="90"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="线长MM(不含头)"
+          prop="lineLength"
+          align="center"
+          width="80"
+          show-overflow-tooltip
+        />
       </el-table-column>
       <el-table-column label="库存数据信息" align="center">
-        <el-table-column label="目标库存" align="center" prop="expectationInventory" width="80" />
-        <el-table-column label="当前库存" align="center" prop="realInventory" width="80" />
+        <el-table-column
+          label="目标库存"
+          align="center"
+          prop="expectationInventory"
+          width="80"
+        />
+        <el-table-column
+          label="当前库存"
+          align="center"
+          prop="realInventory"
+          width="80"
+        />
       </el-table-column>
       <el-table-column label="其它信息" align="center">
-        <el-table-column label="对应客户 " prop="customerName" align="center" width="80" show-overflow-tooltip />
-        <el-table-column label="存放位置" align="center" prop="address" width="80" />
-        <el-table-column label="备注" align="center" prop="remark" min-width="200">
+        <el-table-column
+          label="对应客户 "
+          prop="customerName"
+          align="center"
+          width="80"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="存放位置"
+          align="center"
+          prop="address"
+          width="80"
+        />
+        <el-table-column
+          label="备注"
+          align="center"
+          prop="remark"
+          min-width="200"
+        >
           <template slot-scope="scope">
             <div class="text-left" v-html="scope.row.remark"></div>
           </template>
         </el-table-column>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="100">
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+        width="100"
+      >
         <template slot-scope="scope">
           <div class="flex flex-direction">
-            <el-button type="text" v-if="checkRole(['sale', 'admin'])" @click="handleUpdate(scope.row)">编辑</el-button>
-            <el-button class="mlZero" type="text" v-if="checkRole(['sale', 'admin'])"
-              @click="handleAction('1', scope.row)">入库
+            <el-button
+              type="text"
+              v-if="checkRole(['sale', 'admin'])"
+              @click="handleUpdate(scope.row)"
+              >编辑</el-button
+            >
+            <el-button
+              class="mlZero"
+              type="text"
+              v-if="checkRole(['sale', 'admin'])"
+              @click="handleAction('1', scope.row)"
+              >入库
             </el-button>
-            <el-button class="mlZero" type="text" :class="{ 'text-gray': !scope.row.realInventory }"
-              v-if="checkRole(['sale', 'admin'])" :disabled="!scope.row.realInventory"
-              @click="handleAction('2', scope.row)">出库
+            <el-button
+              class="mlZero"
+              type="text"
+              :class="{ 'text-gray': !scope.row.realInventory }"
+              v-if="checkRole(['sale', 'admin'])"
+              :disabled="!scope.row.realInventory"
+              @click="handleAction('2', scope.row)"
+              >出库
             </el-button>
-            <el-button class="mlZero" type="text" @click="handleLog(scope.row)">日志</el-button>
+            <el-button class="mlZero" type="text" @click="handleLog(scope.row)"
+              >日志</el-button
+            >
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-      @pagination="getList" />
-    <CompUpdate ref="compUpdate" :cableTypeList="cableTypeList" :productList="productList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
+    <CompUpdate
+      ref="compUpdate"
+      :cableTypeList="cableTypeList"
+      :productList="productList"
+    />
 
     <Return ref="return" :sampleTypeOptions="sampleTypeOptions" />
     <Log ref="log" />
@@ -124,7 +263,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         code: "",
         type: "",
         product: "",
@@ -259,6 +398,4 @@ export default {
   },
 };
 </script>
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -256,6 +256,14 @@
             v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
             @click="handleRevocation(scope.row.id)"
           />
+
+          <!-- 批量同步 -->
+          <Tooltip
+            icon="el-icon-s-claim"
+            content="批量同步"
+            class="margin-left-xs"
+            @click="handleUpdate(scope.row, (isBatchSync = true))"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -603,10 +611,13 @@ export default {
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
-    handleUpdate(row) {
+    handleUpdate(row, isBatchSync) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
-      this.$refs.compUpdate.form = Object.assign({}, row);
+      this.$refs.compUpdate.form = Object.assign(
+        { idList: [], content: "" },
+        row
+      );
       this.$refs.compUpdate.form.firmwareConf = row.firmwareConf
         ? row.firmwareConf
         : {};
@@ -621,9 +632,9 @@ export default {
         row.type == "boot_file" ||
         row.type == "app_file" ||
         row.type == "ui_data";
+      this.$refs.compUpdate.isBatchSync = isBatchSync;
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.title = "修改";
-      this.title = "修改";
+      this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
     },
     handleRevocation(id) {
       fileCancel({ id }).then((res) => {

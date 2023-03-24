@@ -138,3 +138,11 @@ export function orderCancel(id) {
     method: 'get'
   })
 }
+
+// 审核
+export function orderAuth(id) {
+  return request({
+    url: '/order/management/auth/' + id,
+    method: 'get'
+  })
+}

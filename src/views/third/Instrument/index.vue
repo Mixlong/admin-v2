@@ -8,7 +8,6 @@
     >
       <el-form-item label="产品品类：">
         <el-select
-          size="small"
           v-model="queryParams.key"
           filterable
           @change="changeCategory"
@@ -27,20 +26,17 @@
           v-if="checkRole(['project_manager', 'admin', 'product'])"
           type="primary"
           icon="el-icon-plus"
-          size="small"
           @click="handleAdd"
         >
           新增
         </el-button>
-        <el-button type="primary" size="small" @click="getList">刷新</el-button>
+        <el-button type="primary" @click="getList">刷新</el-button>
       </el-form-item>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
-          <span>
-            {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
-          </span>
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column
@@ -49,7 +45,9 @@
         align="center"
         width="180"
       />
-      <el-table-column label="描述" prop="desc" align="center" />
+      <el-table-column label="描述" prop="desc" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.desc" />
+      </el-table-column>
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -74,15 +72,12 @@
       />
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="warning"
-            @click="handleUpdate(scope.row)"
-            >编辑</el-button
-          >
-          <el-button size="small" type="danger" @click="handleDelete(scope.row)"
-            >删除</el-button
-          >
+          <el-button type="warning" @click="handleUpdate(scope.row)">
+            编辑
+          </el-button>
+          <el-button type="danger" @click="handleDelete(scope.row)">
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -135,7 +130,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         key: "",
       },
     };
@@ -324,7 +319,7 @@ export default {
   },
 };
 </script>
-<style lang="scss"  >
+<style lang="scss">
 .auth {
   text-align: center;
   margin-bottom: 10px;

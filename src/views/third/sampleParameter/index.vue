@@ -1,74 +1,158 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" @submit.native.prevent>
+    <el-form
+      :model="queryParams"
+      ref="queryForm"
+      :inline="true"
+      @submit.native.prevent
+    >
       <el-form-item label="类型" prop="type">
-        <el-select size="small" placeholder="请选择类型" clearable v-model="queryParams.type" @change="handleQuery">
-          <el-option v-for="(item, index) in partsTypeList" :key="index" :label="item.dictLabel"
-            :value="item.dictValue"></el-option>
+        <el-select
+          size="small"
+          placeholder="请选择类型"
+          clearable
+          v-model="queryParams.type"
+          @change="handleQuery"
+        >
+          <el-option
+            v-for="(item, index) in partsTypeList"
+            :key="index"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="名称" prop="name">
-        <el-input size="small" placeholder="请输入名称" clearable v-model="queryParams.name" @change="handleQuery">
+        <el-input
+          size="small"
+          placeholder="请输入名称"
+          clearable
+          v-model="queryParams.name"
+          @change="handleQuery"
+        >
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+          >搜索</el-button
+        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
 
       <el-row :gutter="10" class="mt5 fr">
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" size="mini" v-if="checkRole(['sale', 'admin'])" @click="
-            handleAdd(
-              'compUpdate',
-              '新增配件'
-            )
-          ">新增</el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            size="mini"
+            v-if="checkRole(['sale', 'admin'])"
+            @click="handleAdd('compUpdate', '新增配件')"
+            >新增</el-button
+          >
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border :cell-class-name="cellClassName"
-      @cell-click="cellClick" :cell-style="cellStyle">
+    <el-table
+      v-loading="loading"
+      :data="list"
+      :height="tableHeight()"
+      border
+      :cell-class-name="cellClassName"
+      @cell-click="cellClick"
+      :cell-style="cellStyle"
+    >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           <span>{{
-              (queryParams.p - 1) * queryParams.l + scope.$index + 1
+            (queryParams.p - 1) * queryParams.l + scope.$index + 1
           }}</span>
         </template>
       </el-table-column>
       <el-table-column label="类型" prop="type" align="center" width="90" />
       <el-table-column label="名称" prop="name" align="center" width="80" />
-      <el-table-column label="规格型号" align="center" prop="standards" width="100">
+      <el-table-column
+        label="规格型号"
+        align="center"
+        prop="standards"
+        width="100"
+      >
         <template slot-scope="scope">
           <div class="text-left" v-html="scope.row.standards"></div>
         </template>
       </el-table-column>
-      <el-table-column label="目标库存" align="center" prop="expectationInventory" width="80" />
-      <el-table-column label="当前库存" align="center" prop="realInventory" width="80" />
-      <el-table-column label="存放位置" align="center" prop="address" width="80" />
+      <el-table-column
+        label="目标库存"
+        align="center"
+        prop="expectationInventory"
+        width="80"
+      />
+      <el-table-column
+        label="当前库存"
+        align="center"
+        prop="realInventory"
+        width="80"
+      />
+      <el-table-column
+        label="存放位置"
+        align="center"
+        prop="address"
+        width="80"
+      />
       <el-table-column label="备注" align="center" prop="remark">
         <template slot-scope="scope">
           <div class="text-left" v-html="scope.row.remark"></div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="100">
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+        width="100"
+      >
         <div class="flex flex-direction" slot-scope="scope">
-          <el-button type="text" v-if="checkRole(['sale', 'admin'])" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button class="mlZero" type="text" v-if="checkRole(['sale', 'admin'])"
-            @click="handleAction('1', scope.row)">入库
+          <el-button
+            type="text"
+            v-if="checkRole(['sale', 'admin'])"
+            @click="handleUpdate(scope.row)"
+            >编辑</el-button
+          >
+          <el-button
+            class="mlZero"
+            type="text"
+            v-if="checkRole(['sale', 'admin'])"
+            @click="handleAction('1', scope.row)"
+            >入库
           </el-button>
-          <el-button class="mlZero" type="text" :class="{ 'text-gray': !scope.row.realInventory }"
-            v-if="checkRole(['sale', 'admin'])" :disabled="!scope.row.realInventory"
-            @click="handleAction('2', scope.row)">出库
+          <el-button
+            class="mlZero"
+            type="text"
+            :class="{ 'text-gray': !scope.row.realInventory }"
+            v-if="checkRole(['sale', 'admin'])"
+            :disabled="!scope.row.realInventory"
+            @click="handleAction('2', scope.row)"
+            >出库
           </el-button>
-          <el-button class="mlZero" type="text" @click="handleLog(scope.row)">日志</el-button>
+          <el-button class="mlZero" type="text" @click="handleLog(scope.row)"
+            >日志</el-button
+          >
         </div>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-      @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
     <CompUpdate ref="compUpdate" :partsTypeList="partsTypeList" />
 
     <Return ref="return" :sampleTypeOptions="sampleTypeOptions" />
@@ -108,7 +192,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         name: "",
         type: "",
       },
@@ -134,9 +218,9 @@ export default {
       }
       this.getList();
     });
-    this.getDicts('partsType').then(res => {
-      this.partsTypeList = res.data
-    })
+    this.getDicts("partsType").then((res) => {
+      this.partsTypeList = res.data;
+    });
   },
   methods: {
     /** 查询客户列表 */
@@ -201,7 +285,7 @@ export default {
     },
     handleUpdate(row, name) {
       this.$refs["compUpdate"].dialogVisible = true;
-      this.$refs["compUpdate"].title = "修改配件"
+      this.$refs["compUpdate"].title = "修改配件";
       if (row) {
         this.$refs["compUpdate"].form = Object.assign({}, row);
         this.$refs["compUpdate"].showName = name;
@@ -236,6 +320,4 @@ export default {
   },
 };
 </script>
-<style scoped>
-
-</style>
+<style scoped></style>

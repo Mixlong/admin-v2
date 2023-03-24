@@ -327,7 +327,7 @@ export default {
       this.form = {
         id: undefined,
         p: 1,
-        l: 10,
+        l: 20,
         key: undefined,
       };
       this.resetForm("form");

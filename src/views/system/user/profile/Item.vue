@@ -1,26 +1,42 @@
- 
 <template>
-  <div class="navbar-wrap-gg" @mouseleave="mouseLeave" :class="[cellStyle(content)]">
+  <div
+    class="navbar-wrap-gg"
+    @mouseleave="mouseLeave"
+    :class="[cellStyle(content)]"
+  >
     <div>
       <div class="navbar">
         <div class="bg"></div>
-        <div class="cover" @click="changUpdate" style="position: relative; z-index: 101">
-          <img style="border-radius: 100%" :src="
-            content.avatar
-              ? 'http://config-api.riding-evolved.com' + content.avatar
-              : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-          " alt="" />
+        <div
+          class="cover"
+          @click="changUpdate"
+          style="position: relative; z-index: 101"
+        >
+          <img
+            style="border-radius: 100%"
+            :src="
+              content.avatar
+                ? 'http://config-api.riding-evolved.com' + content.avatar
+                : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+            "
+            alt=""
+          />
         </div>
         <div class="title-style">
-          {{ content.nickName }}<span class="text-gray">{{ content.status == 1 ? "(停用)" : "" }}</span>
+          {{ content.nickName
+          }}<span class="text-gray">{{
+            content.status == 1 ? "(停用)" : ""
+          }}</span>
           <br />
-          <span> {{ content.dept.deptName }}</span>
+          <span> {{ content.dept && content.dept.deptName }}</span>
           <div></div>
         </div>
         <ul class="menu">
-            <li v-for="(tag, i) in cRoles(content.roles)" :key="i">
-              <a class="fa fa-facebook" v-if="i == 6" @mouseover="mouseOver">
-                <div class="flex align-center justify-center" style="
+          <li v-for="(tag, i) in cRoles(content.roles)" :key="i">
+            <a class="fa fa-facebook" v-if="i == 6" @mouseover="mouseOver">
+              <div
+                class="flex align-center justify-center"
+                style="
                   min-width: 40px;
                   max-width: 40px;
                   min-height: 40px;
@@ -28,13 +44,15 @@
                   border-radius: 100%;
                   border: 1px solid #ccc;
                   vertical-align: middle;
-                ">
-                  ...
-                </div>
-              </a>
-              <div v-else class="item" effect="dark" :content="tag.name">
-                <a class="fa fa-facebook">
-                  <el-image style="
+                "
+              >
+                ...
+              </div>
+            </a>
+            <div v-else class="item" effect="dark" :content="tag.name">
+              <a class="fa fa-facebook">
+                <el-image
+                  style="
                     min-width: 40px;
                     max-width: 40px;
                     min-height: 40px;
@@ -42,17 +60,23 @@
                     border-radius: 100%;
                     border: 1px solid #ccc;
                     vertical-align: middle;
-                  " :src="tag.cover" fit="cover">
-                    <div slot="error" style="line-height: 47px">
-                      <i class="el-icon-key" style="font-size: 24px; color: #ddd"></i>
-                    </div>
-                  </el-image>
-                  <span style="white-space: nowrap">
-                    {{ tag.roleName }}
-                  </span>
-                </a>
-              </div>
-            </li>
+                  "
+                  :src="tag.cover"
+                  fit="cover"
+                >
+                  <div slot="error" style="line-height: 47px">
+                    <i
+                      class="el-icon-key"
+                      style="font-size: 24px; color: #ddd"
+                    ></i>
+                  </div>
+                </el-image>
+                <span style="white-space: nowrap">
+                  {{ tag.roleName }}
+                </span>
+              </a>
+            </div>
+          </li>
         </ul>
       </div>
 
@@ -62,18 +86,27 @@
         </div>
       </el-card>
       <div class="footer-content">
-        <el-button @click="handleDelete" type="text" class="text-red" icon="el-icon-close">
+        <el-button
+          @click="handleDelete"
+          type="text"
+          class="text-red"
+          icon="el-icon-close"
+        >
         </el-button>
         <el-button type="text" @click="reset" icon="el-icon-unlock"></el-button>
-        <el-button v-if="checkRole(['admin']) && content.nickName === 'admin'" type="text" @click="onClearSecurity"
-          icon="el-icon-delete"></el-button>
+        <el-button
+          v-if="checkRole(['admin']) && content.nickName === 'admin'"
+          type="text"
+          @click="onClearSecurity"
+          icon="el-icon-delete"
+        ></el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { clearSecurity } from '@/api/system/user'
+import { clearSecurity } from "@/api/system/user";
 export default {
   props: ["content"],
   data() {
@@ -83,10 +116,10 @@ export default {
   },
   computed: {
     cRoles() {
-      return list => {
+      return (list) => {
         return list.filter((item, index) => index < 7);
-      }
-    }
+      };
+    },
   },
   methods: {
     changUpdate() {
@@ -122,14 +155,22 @@ export default {
       });
     },
     onClearSecurity() {
-      clearSecurity(this.content.userName).then(res => {
+      clearSecurity(this.content.userName).then((res) => {
         if (res.data) {
-          this.$message({ showClose: true, message: '清除用户令牌成功', type: 'success' })
+          this.$message({
+            showClose: true,
+            message: "清除用户令牌成功",
+            type: "success",
+          });
         } else {
-          this.$message({ showClose: true, message: '清除用户令牌失败', type: 'error' })
+          this.$message({
+            showClose: true,
+            message: "清除用户令牌失败",
+            type: "error",
+          });
         }
-      })
-    }
+      });
+    },
   },
 };
 </script>
@@ -178,7 +219,7 @@ export default {
     transform: translate(-50%, 0);
     transition: all 0.5s 0.1s;
 
-    >.el-button {
+    > .el-button {
       flex: 1;
       height: 30px;
       display: inline-flex;

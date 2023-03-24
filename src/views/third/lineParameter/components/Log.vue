@@ -1,21 +1,45 @@
 <template>
   <div>
-    <el-dialog :close-on-click-modal="false" title="日志" :visible.sync="dialogVisible" width="70%" top="5vh"
-      append-to-body>
+    <el-dialog
+      :close-on-click-modal="false"
+      title="日志"
+      :visible.sync="dialogVisible"
+      width="70%"
+      top="5vh"
+      append-to-body
+    >
       <!-- <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick">
         <el-tab-pane :label="item.label" :name="item.name" v-for="(item, index) in tabsList" :key="index"> -->
       <el-table :data="list" border>
         <el-table-column prop="num" align="center" label="数量" />
         <el-table-column prop="action" align="center" label="类型" width="100">
-          <el-tag :type="row.action === 1 ? 'success' : 'danger'" slot-scope="{row}">{{ row.action === 1 ? '入库' : '出库'
-          }}</el-tag>
+          <el-tag
+            :type="row.action === 1 ? 'success' : 'danger'"
+            slot-scope="{ row }"
+            >{{ row.action === 1 ? "入库" : "出库" }}</el-tag
+          >
         </el-table-column>
         <el-table-column prop="remark" align="center" label="备注" />
-        <el-table-column prop="createBy" align="center" width="120" label="操作人"></el-table-column>
-        <el-table-column prop="createTime" align="center" width="170" label="操作时间"></el-table-column>
+        <el-table-column
+          prop="createBy"
+          align="center"
+          width="120"
+          label="操作人"
+        ></el-table-column>
+        <el-table-column
+          prop="createTime"
+          align="center"
+          width="170"
+          label="操作时间"
+        ></el-table-column>
       </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-        @pagination="getList" />
+      <pagination
+        v-show="total > 0"
+        :total="total"
+        :page.sync="queryParams.p"
+        :limit.sync="queryParams.l"
+        @pagination="getList"
+      />
       <!-- </el-tab-pane>
       </el-tabs> -->
     </el-dialog>
@@ -43,7 +67,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         // action: 1
       },
       list: [],
@@ -62,7 +86,7 @@ export default {
       }
     },
   },
-  mounted() { },
+  mounted() {},
   methods: {
     getList() {
       // if (typeof (action) === 'object') {
@@ -72,10 +96,7 @@ export default {
       // } else {
       //   this.queryParams.action = action
       // }
-      sampleCable_log(
-        this.form.id,
-        this.queryParams
-      ).then((res) => {
+      sampleCable_log(this.form.id, this.queryParams).then((res) => {
         this.list = res.data.list;
         this.total = res.data.total;
       });

@@ -95,18 +95,18 @@
       @cell-click="cellClick"
       :cell-style="cellStyle"
     >
-      <el-table-column label="序号" width="58" align="center" type="index" />
+      <el-table-column label="序号" width="58" type="index" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="PUCS名称"
         align="center"
         prop="name"
         width="150"
       />
-      <el-table-column
-        label="PUCS_ID"
-        align="center"
-        prop="cpuId"
-      />
+      <el-table-column label="PUCS_ID" align="center" prop="cpuId" />
       <el-table-column
         label="系列型号"
         align="center"
@@ -135,7 +135,11 @@
         prop="processName"
         width="90"
       />
-      <el-table-column label="局域网IP" align="center" prop="domainIp"></el-table-column>
+      <el-table-column
+        label="局域网IP"
+        align="center"
+        prop="domainIp"
+      ></el-table-column>
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
@@ -174,9 +178,11 @@
       </el-table-column>
       <el-table-column label="实时日志" align="center" width="80">
         <template slot-scope="scope">
-          <el-button type="text" @click="onSeeDetail(scope.row.id)">查看</el-button>
+          <el-button type="text" @click="onSeeDetail(scope.row.id)"
+            >查看</el-button
+          >
         </template>
-      </el-table-column>  
+      </el-table-column>
       <el-table-column
         label="操作"
         header-align="center"
@@ -307,7 +313,7 @@ import {
   pucsState,
   getFileName,
   pucsLoadInfo,
-  pucsVersion
+  pucsVersion,
 } from "@/api/pucs";
 import { typeDictList } from "@/api/pucs/soft";
 import { dictFactory } from "@/api/factory";
@@ -316,14 +322,14 @@ import { categoryComputerDict } from "@/api/third/fileConfig";
 import DetailList from "./components/detail";
 import CompUpdate from "./components/update";
 import FormUpload from "./components/formUpload";
-import { listModelDict } from '@/api/third/computer'
+import { listModelDict } from "@/api/third/computer";
 import axios from "axios";
 export default {
   components: {
     DetailList,
     CompUpdate,
     FormUpload,
-    dutDetail: () =>import('./components/dutDetail.vue')
+    dutDetail: () => import("./components/dutDetail.vue"),
   },
   data() {
     return {
@@ -363,45 +369,45 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         pucsName: "",
         factoryName: "",
         type: "",
       },
       // 表单参数
       form: {},
-      detailId: null
+      detailId: null,
     };
   },
   created() {
     this.getOptions();
-    this.getTypeDictList()
-    this.getListComputer()
-    this.getPucsVersion()
+    this.getTypeDictList();
+    this.getListComputer();
+    this.getPucsVersion();
   },
   methods: {
     onSeeDetail(id) {
-      this.detailId = id
-      this.$refs.dutDetail.clearTxt()
-      this.$refs.dutDetail.dialogVisible = true
+      this.detailId = id;
+      this.$refs.dutDetail.clearTxt();
+      this.$refs.dutDetail.dialogVisible = true;
     },
     // 系列型号
     getTypeDictList() {
-      typeDictList().then(res => {
-        this.typeDictList = res.data
-      })
+      typeDictList().then((res) => {
+        this.typeDictList = res.data;
+      });
     },
     // 产品型号
     getListComputer() {
-      listModelDict().then(res => {
-        this.listComputerData = res.data
-      })
+      listModelDict().then((res) => {
+        this.listComputerData = res.data;
+      });
     },
     // 方案版本
     getPucsVersion() {
-      pucsVersion().then(res => {
-        this.pucsVersionData = res.data
-      })
+      pucsVersion().then((res) => {
+        this.pucsVersionData = res.data;
+      });
     },
     /** 查询客户列表 */
     getList() {
@@ -633,8 +639,10 @@ export default {
     },
     // 系列
     fnFactoryType(row) {
-      const data = row.type && this.typeDictList.filter(item => item.dictValue === row.type)
-      return data && data[0].dictLabel  
+      const data =
+        row.type &&
+        this.typeDictList.filter((item) => item.dictValue === row.type);
+      return data && data[0].dictLabel;
     },
     fnFactoryName(row, c, val) {
       for (let key of this.factoryOptions) {

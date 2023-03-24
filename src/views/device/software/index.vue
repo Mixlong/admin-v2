@@ -47,7 +47,9 @@
           @click="handleQuery"
           >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
@@ -58,31 +60,6 @@
             @click="handleAdd"
             >新增</el-button
           >
-          <!-- <el-button
-            type="primary"
-            icon="el-icon-check"
-            size="mini"
-            :disabled="multiple"
-            @click="handleStatusChange(0)"
-            >启用</el-button
-          >
-          <el-button
-            type="danger"
-            icon="el-icon-close"
-            size="mini"
-            :disabled="multiple"
-            @click="handleStatusChange(1)"
-            >禁用</el-button
-          >
-
-          <el-button
-            type="danger"
-            icon="el-icon-delete"
-            size="mini"
-            :disabled="multiple"
-            @click="handleMultipleDelete"
-            >删除</el-button
-          > -->
         </el-col>
       </el-row>
     </el-form>
@@ -95,25 +72,41 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" width="58" align="center" type="index" />
-      <!-- <el-table-column label="系列型号" align="center" prop="explains" /> -->
+      <el-table-column label="序号" width="58" type="index" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column label="模块名称" align="center" prop="moduleName" />
-      <el-table-column label="覆盖范围" align="center" prop="updateCondition" :formatter="fnUpdateCondition" />
-      <el-table-column label="版本号" align="center" prop="versionName" width="100" />
-      <el-table-column label="版本序号" align="center" prop="versionCode" width="100" />
+      <el-table-column
+        label="覆盖范围"
+        align="center"
+        prop="updateCondition"
+        :formatter="fnUpdateCondition"
+      />
+      <el-table-column
+        label="版本号"
+        align="center"
+        prop="versionName"
+        width="100"
+      />
+      <el-table-column
+        label="版本序号"
+        align="center"
+        prop="versionCode"
+        width="100"
+      />
       <el-table-column label="版本描叙" align="center" prop="explains" />
-      <el-table-column label="强制升级" align="center" prop="forceUpdate" width="80">
+      <el-table-column
+        label="强制升级"
+        align="center"
+        prop="forceUpdate"
+        width="80"
+      >
         <template slot-scope="scope">
           {{ scope.row.forceUpdate == 1 ? "是" : "否" }}
         </template>
       </el-table-column>
-      <!-- <el-table-column
-        label="覆盖条件"
-        align="center"
-        prop="updateCondition"
-        width="100"
-        :formatter="fnUpdateCondition"
-      /> -->
       <el-table-column label="状态" align="center" width="80">
         <template slot-scope="scope">
           <el-switch
@@ -125,7 +118,9 @@
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime">
-        <template slot-scope="scope">{{ parseTime(scope.row.createTime) }}</template>
+        <template slot-scope="scope">{{
+          parseTime(scope.row.createTime)
+        }}</template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
       <el-table-column
@@ -173,7 +168,14 @@
 </template>
 
 <script>
-import { listSoft, authSoft, deleteSoft, detailSoft, typeDictList, moduleDictList } from "@/api/pucs/soft";
+import {
+  listSoft,
+  authSoft,
+  deleteSoft,
+  detailSoft,
+  typeDictList,
+  moduleDictList,
+} from "@/api/pucs/soft";
 import CompUpdate from "./components/update";
 export default {
   components: {
@@ -181,7 +183,7 @@ export default {
   },
   data() {
     return {
-      dictOptions: [],  // 类型字典
+      dictOptions: [], // 类型字典
       moduleOptions: [], // 模块字典
       // 遮罩层
       loading: true,
@@ -208,8 +210,8 @@ export default {
       queryParams: {
         p: 1,
         l: 50,
-        type: '',
-        module: ''
+        type: "",
+        module: "",
       },
       // 表单参数
       form: {},
@@ -222,14 +224,14 @@ export default {
     };
   },
   watch: {
-    'queryParams.type'(val) {
-      if(val) {
-        this.getModuleDictList()
+    "queryParams.type"(val) {
+      if (val) {
+        this.getModuleDictList();
       }
-    }
+    },
   },
   mounted() {
-    this.getTypeDictList()
+    this.getTypeDictList();
     this.getDicts("pucs_update_condition").then((res) => {
       this.conditionOptions = res.data;
       this.getList();
@@ -237,19 +239,19 @@ export default {
   },
   methods: {
     chooseType() {
-      this.queryParams.module = ''
+      this.queryParams.module = "";
     },
     // 类型字典
     getTypeDictList() {
-      typeDictList().then(res => {
-        this.dictOptions = res.data
-      })
+      typeDictList().then((res) => {
+        this.dictOptions = res.data;
+      });
     },
     // 模块字典
     getModuleDictList() {
-      moduleDictList({type: this.queryParams.type}).then(res => {
-        this.moduleOptions = res.data
-      })
+      moduleDictList({ type: this.queryParams.type }).then((res) => {
+        this.moduleOptions = res.data;
+      });
     },
     /** 查询客户列表 */
     getList() {
@@ -348,9 +350,9 @@ export default {
     resetQuery() {
       this.dateRange = [];
       this.queryParams = {
-        type: '',
-        module: ''
-      }
+        type: "",
+        module: "",
+      };
       this.resetForm("queryForm");
       this.handleQuery();
     },

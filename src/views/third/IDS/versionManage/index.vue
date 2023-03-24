@@ -80,9 +80,9 @@
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
         <el-button
           type="warning"
           size="mini"
@@ -182,22 +182,40 @@
             v-if="checkRole(['dev', 'admin'])"
             @click="handleUpdate(scope.row)"
           />
-          <el-tooltip
-            class="item"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['test', 'admin'])"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              type="text"
-              class="text-orange font16"
-              @click="handleAuthChange(scope.row, 1)"
-            ></el-button>
-          </el-tooltip>
 
-          <el-tooltip
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="审核"
+            v-if="scope.row.status == 1 && checkRole(['test', 'admin'])"
+            @click="handleAuthChange(scope.row, 1)"
+          />
+
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="审核"
+            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
+            @click="handleAuthChange(scope.row, 4)"
+          />
+
+          <Tooltip
+            icon="el-icon-circle-check"
+            class="text-orange"
+            content="重置审核"
+            v-if="isSResetCheck(scope.row)"
+            @click="handleResetCheck(scope.row)"
+          />
+
+          <Tooltip
+            icon="el-icon-download"
+            class="text-orange"
+            content="下载"
+            v-if="!scope.row.computerStatus && scope.row.url"
+            @click="zipFile(scope.row.url)"
+          />
+
+          <!-- <el-tooltip
             v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
             class="item font16"
             effect="dark"
@@ -210,9 +228,9 @@
               type="text"
               @click="handleAuthChange(scope.row, 4)"
             />
-          </el-tooltip>
+          </el-tooltip> -->
 
-          <el-tooltip
+          <!-- <el-tooltip
             v-if="isSResetCheck(scope.row)"
             class="item font16"
             effect="dark"
@@ -224,8 +242,9 @@
               type="text"
               @click="handleResetCheck(scope.row)"
             ></el-button>
-          </el-tooltip>
-          <el-tooltip
+          </el-tooltip> -->
+
+          <!-- <el-tooltip
             v-if="!scope.row.computerStatus && scope.row.url"
             class="item font16"
             effect="dark"
@@ -237,7 +256,8 @@
               class-name="card-panel-icon pointer margin-left-xs"
               @click="zipFile(scope.row.url)"
             />
-          </el-tooltip>
+          </el-tooltip> -->
+
           <Tooltip
             icon="el-icon-refresh-right"
             content="撤回"
@@ -251,6 +271,14 @@
             class="margin-left-xs"
             v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
             @click="handleRevocation(scope.row.id)"
+          />
+
+          <!-- 批量同步 -->
+          <Tooltip
+            icon="el-icon-s-claim"
+            content="批量同步"
+            class="margin-left-xs"
+            @click="handleUpdate(scope.row, (isBatchSync = true))"
           />
         </template>
       </el-table-column>
@@ -311,6 +339,7 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+
     <CompUpdate ref="compUpdate" :dictList="dictList" />
   </div>
 </template>
@@ -595,10 +624,15 @@ export default {
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
-    handleUpdate(row) {
+    handleUpdate(row, isBatchSync) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
-      this.$refs.compUpdate.form = Object.assign({}, row);
+      this.$refs.compUpdate.form = Object.assign(
+        {
+          idList: [],
+        },
+        row
+      );
       this.$refs.compUpdate.form.firmwareConf = row.firmwareConf
         ? row.firmwareConf
         : {};
@@ -608,10 +642,10 @@ export default {
           false
         );
       }
+      this.$refs.compUpdate.isBatchSync = isBatchSync;
       this.$refs.compUpdate.form.firmwareConf.fileConfId = row.id;
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.title = "修改";
-      this.title = "修改";
+      this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
     },
     handleRevocation(id) {
       fileCancel({ id }).then((res) => {

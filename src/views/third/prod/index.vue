@@ -62,7 +62,7 @@
       <el-table-column label="属性" prop="typeName" :show-overflow-tooltip="true" />
       <el-table-column label="属性描述" prop="content" :show-overflow-tooltip="true" />
       <el-table-column label="创建人" align="center">
-        <span v-noData slot-scope="{ row }">{{ row.createBy ? row.createBy : row.updateBy }}</span>
+        <template slot-scope="{ row }">{{ row.createBy || row.updateBy }}</template>
       </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="{ row }">{{ row.createTime ? row.createTime : row.updateTime }}</template>
