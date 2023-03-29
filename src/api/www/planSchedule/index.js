@@ -9,6 +9,15 @@ export function schedulingList(params) {
   });
 }
 
+// 日志
+export function schedulingLog(params) {
+  return request({
+    url: '/production/scheduling/log',
+    method: 'get',
+    params
+  });
+}
+
 // 创建
 export function schedulingCreate(data) {
   return request({

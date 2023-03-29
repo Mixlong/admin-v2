@@ -23,22 +23,19 @@
               </el-form-item>
             </el-col>
             <el-col>
-              <el-form-item label="客户名称" prop="customerId">
-                <el-select
-                  v-model="form.customerId"
-                  filterable
-                  clearable
-                  class="w100"
+              <el-form-item label="客户名称" prop="customerName">
+                <select-loadMore
+                  style="width: 100%"
+                  v-model="form.customerName"
+                  :data="customerData.data"
+                  :page="customerData.page"
+                  :hasMore="customerData.more"
+                  dictLabel="name"
+                  dictValue="id"
+                  :request="getCustomerList"
+                  @getChange="getCustomerId"
                   placeholder="请选择客户名称"
-                >
-                  <el-option
-                    v-for="item in orderCusList"
-                    :key="item.id"
-                    :label="`${item.no}-${item.name}`"
-                    :value="item.id"
-                  >
-                  </el-option>
-                </el-select>
+                />
               </el-form-item>
             </el-col>
             <el-col>
@@ -132,13 +129,12 @@
                   v-model="form.sellTime"
                   style="width: 100%"
                   align="right"
-                  type="datetime"
+                  type="date"
                   clearable
                   placeholder="请选择出货日期"
                   value-format="timestamp"
                   :picker-options="pickerOptions"
-                  format="yyyy-MM-dd HH:mm:ss"
-                  :default-time="defaultTime"
+                  format="yyyy-MM-dd"
                 />
               </el-form-item>
             </el-col>
@@ -148,13 +144,12 @@
                   v-model="form.arrivalTime"
                   style="width: 100%"
                   align="right"
-                  type="datetime"
+                  type="date"
                   clearable
                   placeholder="请选择客户要求到货日期"
                   value-format="timestamp"
                   :picker-options="pickerOptions"
-                  format="yyyy-MM-dd HH:mm:ss"
-                  :default-time="defaultTime"
+                  format="yyyy-MM-dd"
                 />
               </el-form-item>
             </el-col>
@@ -210,18 +205,18 @@
           <el-divider direction="vertical" class="el_divider_line" />
           <el-col :span="16">
             <el-col>
-              <el-form-item label="BOM选配信息" prop="boxInfo">
+              <el-form-item label="BOM选配信息" prop="bomInfo">
                 <tinymce
-                  v-model="form.boxInfo"
+                  v-model="form.bomInfo"
                   placeholder="请输入BOM选配信息"
                   height="300"
                 />
               </el-form-item>
             </el-col>
             <el-col>
-              <el-form-item label="备注">
+              <el-form-item label="备注" prop="remark">
                 <tinymce
-                  v-model="form.sellInfo"
+                  v-model="form.remark"
                   placeholder="请输入备注"
                   height="300"
                 />
@@ -242,13 +237,14 @@
 import {
   addOrder,
   updateOrder,
-  getOrderCusList,
   getOrderDetail,
   getOrderProcess,
 } from "@/api/order";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
+import commomFile from "../mixins";
 
 export default {
+  mixins: [commomFile],
   props: ["commonObj"],
   components: {
     tinymce: () => import("@/views/components/Editor"),
@@ -260,13 +256,11 @@ export default {
       dictList: [],
       // 型号
       computerOptions: [],
-      // 客户
-      orderCusList: [],
       // 芯片版本
       chipVersionList: [],
       form: {},
       cloneForm: {},
-      defaultTime: this.moment().format("HH:mm:ss"),
+      // defaultTime: this.moment().format("HH:mm:ss"),
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() <= Date.now() - 24 * 3600 * 1000;
@@ -303,7 +297,7 @@ export default {
         salesOrderNo: [
           { required: true, message: "请输入销售订单号", trigger: "blur" },
         ],
-        customerId: [
+        customerName: [
           { required: false, message: "请选择客户名称", trigger: "change" },
         ],
         customerOrderNo: [
@@ -340,17 +334,20 @@ export default {
         containerMarkInfo: [
           { required: false, message: "请选择指定内容 ", trigger: "change" },
         ],
-        boxInfo: [
+        bomInfo: [
           { required: false, message: "请输入BOM选配信息 ", trigger: "change" },
         ],
       },
     };
   },
   created() {
+    this.copyReplay();
     this.getCategoryComputerDict();
-    this.getOrderCusListData();
     this.getUpdateDetail();
     this.getOrderProcessData();
+  },
+  beforeDestroy() {
+    sessionStorage.removeItem("copyRowData");
   },
   methods: {
     // 详情
@@ -370,23 +367,17 @@ export default {
           this.dictList = res.data;
 
           // 编辑
-          if (this.form.id) {
-            this.computerOptions = this.dictList.filter(
-              (item) => item.id === this.form.categoryId
-            )[0].computerList;
-          }
+          // if (this.form.id) {
+          this.computerOptions = this.dictList.filter(
+            (item) => item.id === this.form.categoryId
+          )[0].computerList;
+          // }
 
           this.isCateLoading = false;
         })
         .catch(() => {
           this.isCateLoading = false;
         });
-    },
-    // 获取客户
-    getOrderCusListData() {
-      getOrderCusList().then((res) => {
-        this.orderCusList = res.data;
-      });
     },
     // 型号列表
     changeCategory(val) {
@@ -414,6 +405,9 @@ export default {
         this.chipVersionList = res.data;
       });
     },
+    getCustomerId(customerId) {
+      this.form.customerId = customerId;
+    },
     // 表单重置
     reset() {
       this.form = {};
@@ -431,6 +425,46 @@ export default {
         return false;
       }
     },
+    onAlertReason(params) {
+      const {
+        salesOrderNo,
+        customerName,
+        customerOrderNo,
+        categoryId,
+        computerId,
+        chipVersion,
+        bomCode,
+        orderQuantity,
+        sellTime,
+        arrivalTime,
+        consigneeAddress,
+        isMark,
+        containerMarkInfo,
+        bomInfo,
+        remark,
+      } = params;
+      if (
+        this.cloneForm.salesOrderNo !== salesOrderNo ||
+        this.cloneForm.customerName !== customerName ||
+        this.cloneForm.customerOrderNo !== customerOrderNo ||
+        this.cloneForm.categoryId !== categoryId ||
+        this.cloneForm.computerId !== computerId ||
+        this.cloneForm.chipVersion !== chipVersion ||
+        this.cloneForm.bomCode !== bomCode ||
+        this.cloneForm.orderQuantity !== orderQuantity ||
+        this.cloneForm.sellTime !== sellTime ||
+        this.cloneForm.arrivalTime !== arrivalTime ||
+        this.cloneForm.consigneeAddress !== consigneeAddress ||
+        this.cloneForm.isMark !== isMark ||
+        this.cloneForm.containerMarkInfo !== containerMarkInfo ||
+        this.cloneForm.bomInfo !== bomInfo ||
+        this.cloneForm.remark !== remark
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
     onUpdateOrder(params) {
       updateOrder(params).then((res) => {
         if (res.code === 200) {
@@ -439,32 +473,48 @@ export default {
         }
       });
     },
+    // 复制回显
+    copyReplay() {
+      const copyRowData =
+        JSON.parse(sessionStorage.getItem("copyRowData")) || {};
+      if (this.commonObj.pageName === "AddOrderPage" && copyRowData.id) {
+        this.form = { ...copyRowData, id: "" };
+      }
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          let params = null;
           if (this.form.id) {
-            params = Object.assign({}, this.form);
-            if (this.checkRule(params)) {
-              this.$confirm(
-                "若“品类”、“型号”、“芯片版本”改变，该排产将被取消?",
-                "警告",
+            if (this.onAlertReason(this.form)) {
+              this.$prompt(
+                "请输入修改原因",
+                `${
+                  this.checkRule(this.form)
+                    ? "若“品类”、“型号”、“芯片版本”改变，该排产将被取消?"
+                    : ""
+                }`,
                 {
                   confirmButtonText: "确定",
                   cancelButtonText: "取消",
                   type: "warning",
+                  inputValidator: (value) => {
+                    if (value === null || value === "") {
+                      return false;
+                    }
+                  },
+                  inputErrorMessage: "修改原因不能为空",
+                  customClass: "orderReason_style",
                 }
               )
-                .then(() => {
-                  this.onUpdateOrder(params);
+                .then(({ value }) => {
+                  this.onUpdateOrder({ msg: value, ...this.form });
                 })
                 .catch(() => {});
             } else {
-              this.onUpdateOrder(params);
+              this.onUpdateOrder(this.form);
             }
           } else {
-            params = Object.assign({}, this.form);
             addOrder(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
@@ -478,6 +528,15 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+.orderReason_style {
+  .el-message-box__title {
+    padding-right: 15px;
+    line-height: 20px;
+  }
+}
+</style>
 
 <style lang="scss" scoped>
 .el_divider_line {

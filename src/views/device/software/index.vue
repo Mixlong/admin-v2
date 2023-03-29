@@ -114,7 +114,7 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(scope.row)"
-          ></el-switch>
+          />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime">

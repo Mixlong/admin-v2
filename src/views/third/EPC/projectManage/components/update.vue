@@ -100,7 +100,7 @@
           :isOnePic="1"
         >
           <div>
-            <el-button size="small" type="primary">点击上传</el-button>
+            <el-button size="small" type="primary">上传</el-button>
           </div>
         </DrUpload>
       </el-form-item>
@@ -222,11 +222,12 @@ export default {
       this.$nextTick(() => {
         const _iframe = document.getElementById("detail_box_ifr").contentWindow;
         const childHtml = _iframe.document.getElementById("tinymce");
-
+        console.log(childHtml);
         html2canvas(childHtml, {
           useCORS: true,
         }).then((canvas) => {
           const url = canvas.toDataURL();
+          console.log(url);
           // this.zipFile(url);
           document.querySelector("#download").href = url;
           document.querySelector(

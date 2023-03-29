@@ -199,7 +199,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="排查人"
+        label="排产人"
         align="center"
         prop="createBy"
         width="100"
@@ -239,6 +239,9 @@
               @click="handleQrCode(row)"
             >
               任务令
+            </el-button>
+            <el-button type="text" class="mlZero" @click="onEditLog(row.id)">
+              日志
             </el-button>
           </div>
           <div class="flex flex-direction align-start" v-if="isDataAll(row)">
@@ -366,6 +369,7 @@
             </el-tag>
           </div>
         </el-descriptions-item>
+
         <el-descriptions-item
           label="工程资料"
           :labelStyle="isLabelStyle"
@@ -401,6 +405,8 @@
         <el-button>取 消</el-button>
       </div>
     </el-dialog>
+
+    <edit-log ref="editLogRef" />
   </div>
 </template>
 
@@ -419,7 +425,11 @@ import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
 
 export default {
-  components: { VueQr, CompUpdate },
+  components: {
+    VueQr,
+    CompUpdate,
+    EditLog: () => import("./components/log.vue"),
+  },
   data() {
     return {
       listId: "",
@@ -652,7 +662,9 @@ export default {
         {},
         { ...row, dateRange: [row.startTime, row.endTime] }
       );
+      this.$refs.compUpdate.cloneForm = Object.assign({}, row);
       this.$refs.compUpdate.dialogVisible = true;
+      this.$refs.compUpdate.getOrderDetail(row.salesOrderNo);
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -748,6 +760,11 @@ export default {
           this.msgError("外发失败");
         }
       });
+    },
+    /** 修改日志 */
+    onEditLog(id) {
+      this.$refs.editLogRef.dialogVisible = true;
+      this.$refs.editLogRef.getList(id);
     },
   },
 };

@@ -32,7 +32,7 @@
           placeholder="请选择迪太订单号"
         />
       </el-form-item>
-      <template v-if="form.salesOrderNo">
+      <template v-if="form.salesOrderNo && orderInfo.salesOrderNo">
         <transition name="fade">
           <el-descriptions
             class="margin-top margin-bottom"
@@ -195,6 +195,7 @@ export default {
       versionList: [],
       // 芯片列表
       chipList: [],
+      cloneForm: {},
       // 表单参数
       form: {
         categoryId: "",
@@ -253,7 +254,7 @@ export default {
         orderNo: [
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
-        num: [{ required: true, message: "请输入排查数量", trigger: "blur" }],
+        num: [{ required: true, message: "请输入排产数量", trigger: "blur" }],
       },
     };
   },
@@ -326,6 +327,16 @@ export default {
         this.form.computerId = "";
       }
     },
+    getOrderDetail(salesOrderNo) {
+      orderList({
+        status: 1,
+        salesOrderNo,
+      }).then((res) => {
+        if (res.data.list.length) {
+          this.orderInfo = res.data.list[0];
+        }
+      });
+    },
     // 芯片类型
     getChipTypeList() {
       schemeTypeList({ p: 1, l: 10 }).then((res) => {
@@ -369,6 +380,34 @@ export default {
       };
       this.resetForm("form");
     },
+    onAlertReason(params) {
+      const { salesOrderNo, date, process, address, num } = params;
+      if (
+        this.cloneForm.salesOrderNo !== salesOrderNo ||
+        this.cloneForm.date !== date ||
+        this.cloneForm.process !== process ||
+        this.cloneForm.address !== address ||
+        this.cloneForm.num !== num
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    onUpdateOrder(params) {
+      schedulingEdit(params)
+        .then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess("编辑成功");
+            this.isBtnLoading = false;
+            this.dialogVisible = false;
+            this.$emit("getData");
+          }
+        })
+        .catch(() => {
+          this.isBtnLoading = false;
+        });
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -381,17 +420,27 @@ export default {
             this.form.schemeVersion = "";
           }
           if (this.form.id) {
-            schedulingEdit(data)
-              .then((res) => {
-                if (res.code === 200) {
-                  this.msgSuccess("编辑成功");
-                  this.dialogVisible = false;
-                  this.$emit("getData");
-                }
+            if (this.onAlertReason(this.form)) {
+              this.$prompt("请输入修改原因", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+                inputValidator: (value) => {
+                  if (value === null || value === "") {
+                    return false;
+                  }
+                },
+                inputErrorMessage: "修改原因不能为空",
               })
-              .then(() => {
-                this.isBtnLoading = false;
-              });
+                .then(({ value }) => {
+                  this.onUpdateOrder({ msg: value, ...this.form });
+                })
+                .catch(() => {
+                  this.isBtnLoading = false;
+                });
+            } else {
+              this.onUpdateOrder(this.form);
+            }
           } else {
             schedulingCreate(data)
               .then((res) => {

@@ -7,21 +7,17 @@
       v-show="showSearch"
     >
       <el-form-item label="客户名称" prop="customerName">
-        <el-select
+        <select-loadMore
+          style="width: 100%"
           v-model="queryParams.customerName"
-          filterable
+          :data="customerData.data"
+          :page="customerData.page"
+          :hasMore="customerData.more"
+          dictLabel="name"
+          dictValue="name"
+          :request="getCustomerList"
           placeholder="请选择客户名称"
-          clearable
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="item in orderCusList"
-            :key="item.id"
-            :label="`${item.no}-${item.name}`"
-            :value="item.name"
-          >
-          </el-option>
-        </el-select>
+        />
       </el-form-item>
       <el-form-item label="迪太订单号" prop="salesOrderNo">
         <el-input
@@ -121,14 +117,24 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+          v-if="checkRole(['ms'])"
+        >
           新增
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :height="tableHeight()" :data="list">
+    <el-table
+      v-loading="loading"
+      :height="tableHeight()"
+      :data="list"
+      row-class-name="pointer"
+    >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -143,20 +149,35 @@
       />
       <el-table-column label="品类" align="center" prop="categoryName" />
       <el-table-column label="型号" align="center" prop="computerName" />
-      <el-table-column label="BOM编码" align="center" prop="bomCode" />
-      <el-table-column label="芯片版本" align="center" prop="chipVersion" />
-      <el-table-column label="订单数量" align="center" prop="orderQuantity" />
-      <el-table-column label="出货日期" align="center" width="170">
+      <el-table-column
+        label="BOM编码"
+        align="center"
+        prop="bomCode"
+        width="100"
+      />
+      <el-table-column
+        label="芯片版本"
+        align="center"
+        prop="chipVersion"
+        width="100"
+      />
+      <el-table-column
+        label="订单数量"
+        align="center"
+        prop="orderQuantity"
+        width="100"
+      />
+      <el-table-column label="出货日期" align="center" width="100">
         <template slot-scope="{ row }">
-          {{ parseTime(row.sellTime) }}
+          {{ parseTime(row.sellTime, "{y}-{m}-{d}") }}
         </template>
       </el-table-column>
-      <el-table-column label="客户要求到货日期" align="center" width="170">
+      <el-table-column label="客户要求到货日期" align="center" width="130">
         <template slot-scope="{ row }">
-          {{ parseTime(row.arrivalTime) }}
+          {{ parseTime(row.arrivalTime, "{y}-{m}-{d}") }}
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" align="center" width="100">
+      <el-table-column label="订单状态" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag size="mini" :type="tagType(row.status)">
             {{ statusList[row.status] }}
@@ -164,7 +185,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        width="100"
+        width="90"
         label="创建人"
         align="center"
         prop="createBy"
@@ -179,10 +200,11 @@
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="200">
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button
+              v-if="!checkRole(['ms'])"
               class="text-green"
               type="text"
               @click="$router.push(`/www/planSchedule?orderId=${row.id}`)"
@@ -190,6 +212,7 @@
               排产详情
             </el-button>
             <el-button
+              v-if="!checkRole(['ms'])"
               type="text"
               @click="
                 $router.push(
@@ -227,6 +250,8 @@
             >
               取消
             </el-button>
+            <el-button type="text" @click="onEditLog(row.id)"> 日志 </el-button>
+            <el-button type="text" @click="rowDbClick(row)">复制</el-button>
           </div>
         </template>
       </el-table-column>
@@ -241,23 +266,25 @@
     />
 
     <orderDetail ref="orderDetailRef" :statusList="statusList" />
+    <edit-log ref="editLogRef" />
   </div>
 </template>
 
 <script>
-import {
-  orderList,
-  getOrderCusList,
-  orderCancel,
-  orderAuth,
-} from "@/api/order";
+import { orderList, orderCancel, orderAuth } from "@/api/order";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
-import orderDetail from "./components/orderDetail";
+import commomFile from "./mixins";
+import { commonJs } from "@/mixins/common";
 
 export default {
-  components: { orderDetail },
+  mixins: [commomFile, commonJs],
+  components: {
+    orderDetail: () => import("./components/orderDetail"),
+    EditLog: () => import("./components/log.vue"),
+  },
   data() {
     return {
+      copyRowData: {},
       dateRange: [],
       // 品类
       dictList: [],
@@ -274,7 +301,6 @@ export default {
       list: [],
       title: "",
       typeCategoryList: [],
-      orderCusList: [],
       statusList: {
         0: "待审核",
         1: "正常",
@@ -311,7 +337,6 @@ export default {
   created() {
     this.getCategoryComputerDict();
     this.getList();
-    this.getOrderCusListData();
   },
   methods: {
     getList() {
@@ -361,11 +386,17 @@ export default {
         this.computerOptions = [];
       }
     },
-    // 获取客户
-    getOrderCusListData() {
-      getOrderCusList().then((res) => {
-        this.orderCusList = res.data;
-      });
+    // 复制
+    rowDbClick(row) {
+      this.$copyText(row).then(
+        () => {
+          this.copyRowData = Object.assign({}, row);
+          this.warningMessage("复制成功", 1);
+        },
+        () => {
+          this.warningMessage("复制失败", 3);
+        }
+      );
     },
     // 查看订单详情
     seeDetail(id) {
@@ -407,6 +438,9 @@ export default {
       });
     },
     handleAdd() {
+      if (this.copyRowData.id) {
+        sessionStorage.setItem("copyRowData", JSON.stringify(this.copyRowData));
+      }
       this.$router.push({
         path: "/addOrUpdate/CommonPage",
         query: {
@@ -424,6 +458,11 @@ export default {
           id,
         },
       });
+    },
+    /** 修改日志 */
+    onEditLog(id) {
+      this.$refs.editLogRef.dialogVisible = true;
+      this.$refs.editLogRef.getList(id);
     },
     /** 搜索按钮操作 */
     handleQuery() {

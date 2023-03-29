@@ -215,49 +215,6 @@
             @click="zipFile(scope.row.url)"
           />
 
-          <!-- <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip> -->
-
-          <!-- <el-tooltip
-            v-if="isSResetCheck(scope.row)"
-            class="item font16"
-            effect="dark"
-            content="重置审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-circle-check"
-              type="text"
-              @click="handleResetCheck(scope.row)"
-            ></el-button>
-          </el-tooltip> -->
-
-          <!-- <el-tooltip
-            v-if="!scope.row.computerStatus && scope.row.url"
-            class="item font16"
-            effect="dark"
-            content="下载"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
-            />
-          </el-tooltip> -->
-
           <Tooltip
             icon="el-icon-refresh-right"
             content="撤回"
@@ -274,12 +231,12 @@
           />
 
           <!-- 批量同步 -->
-          <Tooltip
+          <!-- <Tooltip
             icon="el-icon-s-claim"
             content="批量同步"
             class="margin-left-xs"
             @click="handleUpdate(scope.row, (isBatchSync = true))"
-          />
+          /> -->
         </template>
       </el-table-column>
     </el-table>
