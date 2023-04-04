@@ -424,6 +424,7 @@ export function urlDownload(url) {
     a.download = fileName
     a.click();
     window.URL.revokeObjectURL(href);
+    document.removeChild('a')
   })
 }
 

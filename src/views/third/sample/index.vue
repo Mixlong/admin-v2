@@ -73,11 +73,12 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
       <el-row
         :gutter="20"
@@ -93,18 +94,19 @@
             @change="handleQuery"
             false-label="0"
             true-label="1"
-            >查看我的
+          >
+            查看我的
           </el-checkbox>
         </el-col>
         <el-col>
-          <el-checkbox v-model="viewParams.state" @change="simpleView"
-            >简略信息</el-checkbox
-          >
+          <el-checkbox v-model="viewParams.state" @change="simpleView">
+            简略信息
+          </el-checkbox>
         </el-col>
         <el-col>
-          <el-checkbox v-model="queryParams.state" @change="handleQuery"
-            >显示已完成</el-checkbox
-          >
+          <el-checkbox v-model="queryParams.state" @change="handleQuery">
+            显示已完成
+          </el-checkbox>
         </el-col>
         <el-col v-if="checkRole(['sale', 'admin'])">
           <el-badge :value="applyTotal > 0 ? applyTotal : ''" class="item">
@@ -117,8 +119,9 @@
             icon="el-icon-download"
             size="mini"
             @click="handleExport"
-            >导出</el-button
           >
+            导出
+          </el-button>
         </el-col>
         <el-col>
           <el-button
@@ -127,8 +130,9 @@
             icon="el-icon-plus"
             size="mini"
             @click="handleAdd"
-            >新增</el-button
           >
+            新增
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -177,8 +181,9 @@
             v-show="row.demandObject"
             type="primary"
             @click="toGoodPage(row)"
-            >样品需求单</el-link
           >
+            样品需求单
+          </el-link>
           <div
             v-for="(item, index) in checkListArr(row.checklist)"
             :key="index"
@@ -532,7 +537,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         key: undefined,
         baseModel: undefined,
         demand: "",
@@ -542,7 +547,7 @@ export default {
       },
       queryParamsApply: {
         p: 1,
-        l: 10,
+        l: 20,
       },
       applyTotal: 0,
       viewParams: {

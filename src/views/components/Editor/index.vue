@@ -1,9 +1,19 @@
 <template>
-  <div :class="{ fullscreen: fullscreen }" class="tinymce-container" :style="{ width: containerWidth }"
-    v-loading="isLoading">
-    <textarea :id="tinymceId" class="tinymce-textarea" />
+  <div
+    :class="{ fullscreen: fullscreen }"
+    class="tinymce-container"
+    :style="{ width: containerWidth }"
+    v-loading="isLoading"
+  >
+    <div id="detail_box">
+      <textarea :id="tinymceId" class="tinymce-textarea" />
+    </div>
     <div class="editor-custom-btn-container">
-      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK" />
+      <editorImage
+        color="#1890ff"
+        class="editor-upload-btn"
+        @successCBK="imageSuccessCBK"
+      />
     </div>
   </div>
 </template>
@@ -19,8 +29,7 @@ import toolbar from "./toolbar";
 import load from "./dynamicLoadScript";
 
 // why use this cdn, detail see https://github.com/PanJiaChen/tinymce-all-in-one
-const tinymceCDN =
-  "https://unpkg.com/tinymce-all-in-one@4.9.3/tinymce.min.js";
+const tinymceCDN = "https://unpkg.com/tinymce-all-in-one@4.9.3/tinymce.min.js";
 
 export default {
   name: "Tinymce",
@@ -115,7 +124,7 @@ export default {
       // dynamic load tinymce from cdn
       load(tinymceCDN, (err) => {
         if (err) {
-          this.isLoading = false
+          this.isLoading = false;
           this.$message.error(err.message);
           return;
         }
@@ -153,7 +162,7 @@ export default {
             editor.setContent(_this.value);
           }
           _this.hasInit = true;
-          this.isLoading = false
+          this.isLoading = false;
           editor.on("NodeChange Change KeyUp SetContent", () => {
             this.hasChange = true;
             this.$emit("input", editor.getContent());

@@ -1,10 +1,17 @@
-import Vue from 'vue'
-import noDataDisplay from "./noDataDisplay";
+import { NoData } from './noDataDisplay';
+import PreInput from './perInput';
 
 const install = Vue => {
-  Vue.directive('noData', noDataDisplay)
+  Vue.prototype.$MyData = function (val) {
+    return val + '1233'
+  };
+  Vue.directive('NoData', NoData);
+  Vue.directive('PreInput', PreInput);
 }
 
-Vue.use(install)
+if (window.Vue) {
+  window['NoData'] = NoData;
+  Vue.use(install)
+}
 
 export default install

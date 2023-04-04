@@ -267,7 +267,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         categoryName: "",
         computerName: "",
         orderNo: "",

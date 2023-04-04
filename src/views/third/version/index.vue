@@ -122,7 +122,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         key: "",
       },
     };
@@ -218,7 +218,7 @@ export default {
   },
 };
 </script>
-<style lang="scss"  >
+<style lang="scss">
 .auth {
   text-align: center;
   margin-bottom: 10px;

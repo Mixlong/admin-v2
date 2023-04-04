@@ -103,13 +103,13 @@
       <el-table-column label="序号" width="58" type="index" align="center" />
       <el-table-column label="订单号" prop="no" align="center" />
       <el-table-column label="客户" prop="customer " align="center">
-        <span slot-scope="{ row }" v-noData>{{ row.customer || "---" }}</span>
+        <span slot-scope="{ row }">{{ row.customer || "---" }}</span>
       </el-table-column>
       <el-table-column label="产品品类" prop="category " align="center">
-        <span slot-scope="{ row }" v-noData>{{ row.category || "---" }}</span>
+        <span slot-scope="{ row }">{{ row.category || "---" }}</span>
       </el-table-column>
       <el-table-column label="产品型号" prop="model " align="center">
-        <span slot-scope="{ row }" v-noData>{{ row.model || "---" }}</span>
+        <span slot-scope="{ row }">{{ row.model || "---" }}</span>
       </el-table-column>
       <el-table-column label="订单数量" prop="num" align="center" />
       <el-table-column
@@ -118,9 +118,7 @@
         width="180"
         align="center"
       >
-        <span slot-scope="{ row }" v-noData>{{
-          row.deliverTime || "---"
-        }}</span>
+        <span slot-scope="{ row }">{{ row.deliverTime || "---" }}</span>
       </el-table-column>
       <el-table-column label="阶段进展" align="center" width="420px">
         <div class="progress-box" slot-scope="{ row }" v-if="row.stockEndTime">
@@ -166,7 +164,7 @@
         </div>
       </el-table-column>
       <el-table-column label="备注" prop="remark " align="center">
-        <span slot-scope="{ row }" v-noData>{{ row.remark || "---" }}</span>
+        <span slot-scope="{ row }">{{ row.remark || "---" }}</span>
       </el-table-column>
       <el-table-column label="操作" align="center" width="105">
         <template slot-scope="{ row }">
@@ -271,7 +269,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
       },
     };
   },
@@ -458,5 +456,3 @@ export default {
   }
 }
 </style>
-
-

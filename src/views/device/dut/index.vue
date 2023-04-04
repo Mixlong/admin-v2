@@ -66,9 +66,7 @@
     <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
-          <span>{{
-            (queryParams.p - 1) * queryParams.l + scope.$index + 1
-          }}</span>
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column

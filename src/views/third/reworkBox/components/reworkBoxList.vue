@@ -87,7 +87,7 @@ export default {
       dataList: [],
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         orderNo: "",
         boxSn: "",
       },

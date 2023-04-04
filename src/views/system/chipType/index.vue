@@ -23,12 +23,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="cyan"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="cyan" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
@@ -42,7 +37,6 @@
         <el-button
           type="primary"
           icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['system:role:add']"
         >
@@ -62,6 +56,7 @@
       border
     >
       <el-table-column label="芯片类型" align="center" prop="schemeVersion" />
+      <el-table-column label="生产流程" align="center" prop="process" />
       <el-table-column label="创建人" align="center" prop="createBy" />
       <el-table-column label="创建时间" align="center" prop="createTime">
         <template slot-scope="scope">
@@ -114,7 +109,7 @@
       :visible.sync="open"
       :close-on-click-modal="false"
     >
-      <el-form ref="form" :model="form" :rules="rules">
+      <el-form ref="form" inline :model="form" :rules="rules">
         <el-card :body-style="{ paddingBottom: '0px' }">
           <el-form-item label="芯片类型：" prop="type">
             <el-select
@@ -122,6 +117,7 @@
               placeholder="请选择芯片类型"
               clearable
               style="width: 200px"
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="dict in chipTypeList"
@@ -130,6 +126,18 @@
                 :value="dict.dictLabel"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="生产流程:" prop="process">
+            <el-radio-group v-model="form.process" :disabled="!!form.id">
+              <el-radio
+                v-for="(item, index) in operationList"
+                :key="index"
+                :label="item.dictLabel"
+                border
+              >
+                {{ item.dictLabel }}
+              </el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-card>
         <div
@@ -256,6 +264,7 @@ export default {
       isSubLoading: false,
       isAddOrUpLoading: false,
       isDetailLoading: false,
+      operationList: [],
       total: 0,
       chipList: [],
       title: "",
@@ -264,7 +273,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         label: undefined,
       },
       softwareType: [],
@@ -273,6 +282,7 @@ export default {
       // 表单参数
       form: {
         type: "",
+        process: "",
         softwareType: [],
         hardType: [],
         epcType: [],
@@ -290,11 +300,15 @@ export default {
         type: [
           { required: true, message: "芯片类型不能为空", trigger: "change" },
         ],
+        process: [
+          { required: true, message: "生产流程不能为空", trigger: "change" },
+        ],
       },
     };
   },
   created() {
     this.getList();
+    this.getOperationList();
     this.getTypePyList();
     // 芯片类型
     this.getDicts("scheme_version").then((res) => {
@@ -332,6 +346,7 @@ export default {
     reset() {
       this.form = {
         type: "",
+        process: "",
         softwareType: [],
         hardType: [],
         epcType: [],
@@ -360,21 +375,23 @@ export default {
       this.reset();
       this.open = true;
       this.title = "修改芯片属性";
-      const { schemeVersion, id } = row;
+      const { schemeVersion, id, process } = row;
       this.form.type = schemeVersion;
+      this.form.process = process;
       this.form.id = id;
       this.isAddOrUpLoading = true;
       const { softList, hardList, projectList } = await this.getChipType(
-        schemeVersion
+        schemeVersion,
+        process
       );
       this.form.softwareType = softList;
       this.form.hardType = hardList;
       this.form.epcType = projectList;
     },
     /** 已选属性 */
-    getChipType(scheme) {
+    getChipType(scheme, process) {
       return new Promise((resolve, reject) => {
-        schemeTypePtPick({ scheme }).then((res) => {
+        schemeTypePtPick({ scheme, process }).then((res) => {
           const { softList, hardList, projectList } = res.data;
           this.isAddOrUpLoading = false;
           this.isDetailLoading = false;
@@ -389,11 +406,12 @@ export default {
     /** 详情 */
     async handleDetail(row) {
       this.isDetail = true;
-      const { schemeVersion } = row;
+      const { schemeVersion, process } = row;
       this.isDetailTypeName = schemeVersion;
       this.isDetailLoading = true;
       const { softList, hardList, projectList } = await this.getChipType(
-        schemeVersion
+        schemeVersion,
+        process
       );
       // 软件
       this.detailData.softwareType = this.handleTransType(
@@ -404,6 +422,12 @@ export default {
       this.detailData.hardType = this.handleTransType(this.hardType, hardList);
       // 工程
       this.detailData.epcType = this.handleTransType(this.epcType, projectList);
+    },
+    // 生产流程
+    getOperationList() {
+      this.getDicts("process").then((res) => {
+        this.operationList = res.data;
+      });
     },
     /** 已选属性转化  */
     handleTransType(source, target) {

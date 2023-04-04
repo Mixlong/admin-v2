@@ -1,116 +1,83 @@
 <template>
   <div class="app-container">
     <el-form
-      :model="queryParams"
       ref="queryForm"
+      :model="queryParams"
       :inline="true"
+      v-show="showSearch"
       @submit.native.prevent
     >
-      <el-form-item label="客户" prop="key">
+      <el-form-item label="客户" prop="name">
         <el-input
-          v-model="queryParams.key"
+          v-model="queryParams.name"
           placeholder="请输入客户名称"
           clearable
-          size="small"
-          style="width: 185px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-          >搜索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
     </el-form>
+
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+          新增
+        </el-button>
+      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
+    </el-row>
 
     <el-table
       v-loading="loading"
       :data="customerList"
       :height="tableHeight(38)"
-      border
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
-      <el-table-column
-        label="品类"
-        prop="category"
-        align="center"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column label="型号" prop="name" align="center" width="120px" />
-      <el-table-column
-        label="型号编码"
-        prop="model"
-        align="center"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column
-        label="ERP编码"
-        prop="erp"
-        align="center"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column label="描述" prop="desc" align="center" width="500">
+      <el-table-column label="客户名称" prop="name" align="center" />
+      <el-table-column label="客户编号" prop="no" align="center" />
+      <el-table-column label="状态" prop="" align="center" width="120">
         <template slot-scope="scope">
-          <div class="text-left">{{ scope.row.desc }}</div>
+          <el-switch
+            v-model="scope.row.status"
+            :active-value="0"
+            :inactive-value="1"
+            @change="handleStatusChange(scope.row)"
+          />
         </template>
       </el-table-column>
-      <el-table-column
-        label="客户名称"
-        prop="customerName"
-        align="center"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column
-        label="客户编码"
-        prop="customerSn"
-        align="center"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column
-        label="客户端产品型号"
-        prop="clientProductModel"
-        align="center"
-        width="120"
-      />
-
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="70"
-      />
+      <el-table-column label="创建人" align="center" prop="createBy" />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         width="180"
-      />
+      >
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.createTime) }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="60"
+        width="80"
       >
         <template slot-scope="scope">
-          <el-button
+          <!-- <el-button
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasRole="['dev', 'sale']"
-          ></el-button>
-          <!-- <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-view"
-            @click="handleFile(scope.row)"
-          >查看文件</el-button> -->
+          /> -->
+          <Tooltip
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate(scope.row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -128,40 +95,32 @@
       :close-on-click-modal="false"
       :title="title"
       :visible.sync="open"
-      width="540px"
+      width="400px"
       append-to-body
+      center
     >
-      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
-        <el-form-item label="客户名称:" prop="customerName">
+      <el-form ref="form" :model="form" :rules="rules" label-width="90px">
+        <el-form-item label="客户名称:" prop="name">
           <el-input
-            v-model="form.customerName"
+            v-model.trim="form.name"
+            clearable
             placeholder="请输入客户名称"
-            style="width: 185px"
-            @keyup.enter.native.prevent="submitForm"
           />
         </el-form-item>
-        <el-form-item label="客户编码:" prop="customerSn">
+        <el-form-item label="客户编号:" prop="no">
           <el-input
-            v-model="form.customerSn"
-            placeholder="请输入客户编码"
-            maxlength="3"
-            style="width: 185px"
-            @keyup.enter.native.prevent="submitForm"
-          />
-        </el-form-item>
-        <el-form-item label="客户端产品型号:" prop="clientProductModel">
-          <el-input
-            v-model="form.clientProductModel"
-            placeholder="请输入客户端产品型号"
-            style="width: 185px"
-            @keyup.enter.native.prevent="submitForm"
+            v-model.trim="form.no"
+            clearable
+            placeholder="请输入客户编号"
           />
         </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" :loading="isSubLoading" @click="submitForm">
+          确 定
+        </el-button>
+        <el-button @click="open = false">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -169,25 +128,21 @@
 
 <script>
 import {
-  listCustomer,
-  authCustomer,
+  getOrderCusList,
   addCustomer,
   editCustomer,
-} from "@/api/third/customer";
-import { listCategory } from "@/api/third/category";
+  authCustomer,
+  getCustomerList,
+} from "@/api/order";
 
 export default {
   name: "BikeCustomer",
   data() {
     return {
+      showSearch: true,
+      isSubLoading: false,
       // 遮罩层
       loading: true,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
       // 总条数
       total: 0,
       // 用户表格数据
@@ -196,48 +151,36 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      // 是否显示弹出层（数据权限）
-      openDataScope: false,
-      // 日期范围
-      dateRange: [],
-      genderOptions: [],
-      categoryOptions: [],
       // 查询参数
       queryParams: {
         p: 1,
         l: 50,
-        key: undefined,
-      },
-      // 查询参数
-      categoryQueryParams: {
-        p: 1,
-        l: 1000,
+        name: undefined,
       },
       // 表单参数
       form: {},
       // 表单校验
-      rules: {},
+      rules: {
+        name: [
+          { required: true, message: "客户名称不能为空", trigger: "blur" },
+        ],
+        no: [{ required: true, message: "客户编号不能为空", trigger: "blur" }],
+      },
     };
   },
-  created() {},
-  mounted() {
-    listCategory(this.categoryQueryParams).then((response) => {
-      this.categoryOptions = response.data.list;
-    });
+  created() {
     this.getList();
   },
   methods: {
     /** 查询客户列表 */
     getList() {
       this.loading = true;
-      listCustomer(this.queryParams).then((response) => {
-        this.customerList = response.data.list;
-        this.total = response.data.total;
+      getCustomerList(this.queryParams).then((res) => {
+        const { list, total } = res.data;
+        this.customerList = list;
+        this.total = total;
         this.loading = false;
       });
-    },
-    handleFile(item) {
-      this.$router.push({ path: "/fileConfig", query: item });
     },
     // 用户状态修改
     handleStatusChange(row) {
@@ -260,22 +203,9 @@ export default {
           row.status = row.status === 0 ? 1 : 0;
         });
     },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
-    },
     // 表单重置
     reset() {
-      if (this.$refs.menu != undefined) {
-        this.$refs.menu.setCheckedKeys([]);
-      }
-      this.form = {
-        id: undefined,
-        p: 1,
-        l: 10,
-        key: undefined,
-      };
+      this.form = {};
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -285,18 +215,16 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.dateRange = [];
       this.resetForm("queryForm");
       this.handleQuery();
     },
-
     handleAdd() {
       this.reset();
       this.open = true;
       this.title = "添加客户";
     },
     handleUpdate(row) {
-      // this.reset();
+      this.reset();
       this.form = Object.assign({}, row);
       this.open = true;
       this.title = "修改客户";
@@ -305,13 +233,26 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          editCustomer(this.form).then((response) => {
-            if (response.code === 200) {
-              this.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            }
-          });
+          this.isSubLoading = true;
+          if (this.form.id) {
+            editCustomer(this.form).then((res) => {
+              if (res.code === 200) {
+                this.msgSuccess("修改成功");
+                this.isSubLoading = false;
+                this.open = false;
+                this.getList();
+              }
+            });
+          } else {
+            addCustomer(this.form).then((res) => {
+              if (res.code === 200) {
+                this.msgSuccess("新增成功");
+                this.isSubLoading = false;
+                this.open = false;
+                this.getList();
+              }
+            });
+          }
         }
       });
     },

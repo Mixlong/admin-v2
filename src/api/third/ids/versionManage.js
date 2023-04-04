@@ -68,7 +68,24 @@ export function editFileConfig(data) {
   return request({
     url: '/file/version/update',
     method: 'put',
-    data: data
+    data
+  })
+}
+
+// 文件字典
+export function fileVersionConfigDirt(params) {
+  return request({
+    url: '/file/version/config/dirt',
+    method: 'get',
+    params
+  })
+}
+
+export function editFileConfigConfig(data) {
+  return request({
+    url: '/file/version/sync/config',
+    method: 'put',
+    data
   })
 }
 

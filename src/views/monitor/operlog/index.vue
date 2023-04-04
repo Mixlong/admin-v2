@@ -5,29 +5,40 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
-      <el-form-item label="系统模块" prop="title">
-        <el-input
-          v-model="queryParams.title"
-          placeholder="请输入系统模块"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
       <el-form-item label="操作人员" prop="operName">
         <el-input
           v-model="queryParams.operName"
           placeholder="请输入操作人员"
           clearable
           @keyup.enter.native="handleQuery"
+          style="width: 140px"
         />
       </el-form-item>
-      <el-form-item label="类型" prop="businessType">
+      <el-form-item label="系统模块" prop="title">
+        <el-input
+          v-model="queryParams.title"
+          placeholder="请输入系统模块"
+          clearable
+          @keyup.enter.native="handleQuery"
+          style="width: 140px"
+        />
+      </el-form-item>
+      <el-form-item label="Id" prop="operParam">
+        <el-input
+          v-model="queryParams.operParam"
+          placeholder="请输入Id"
+          clearable
+          @keyup.enter.native="handleQuery"
+          style="width: 140px"
+        />
+      </el-form-item>
+      <el-form-item label="操作类型" prop="businessType">
         <el-select
           v-model="queryParams.businessType"
-          placeholder="操作类型"
+          placeholder="请选择操作类型"
           clearable
+          style="width: 140px"
         >
           <el-option
             v-for="dict in typeOptions"
@@ -37,13 +48,12 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="状态" prop="status">
+      <el-form-item label="操作状态" prop="status">
         <el-select
           v-model="queryParams.status"
-          placeholder="操作状态"
+          placeholder="请选择操作状态"
           clearable
-          size="small"
-          style="width: 185px"
+          style="width: 140px"
         >
           <el-option
             v-for="dict in statusOptions"
@@ -71,11 +81,12 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -123,22 +134,44 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="日志编号" align="center" prop="operId" />
-      <el-table-column label="系统模块" align="center" prop="title" />
       <el-table-column
-        label="操作类型"
+        label="日志编号"
         align="center"
-        prop="businessType"
-        :formatter="typeFormat"
+        prop="operId"
+        width="100"
       />
-      <el-table-column label="请求方式" align="center" prop="requestMethod" />
-      <el-table-column label="操作人员" align="center" prop="operName" />
       <el-table-column
-        label="主机"
+        label="操作人员"
         align="center"
-        prop="operIp"
-        width="130"
-        :show-overflow-tooltip="true"
+        prop="operName"
+        width="120"
+      />
+      <el-table-column
+        label="操作日期"
+        align="center"
+        prop="operTime"
+        width="140"
+      >
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.operTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="系统模块"
+        align="center"
+        prop="title"
+        width="140"
+      />
+      <el-table-column label="操作类型" align="center" width="140">
+        <span class="text-red" slot-scope="scope">
+          {{ typeFormat(scope.row) }}
+        </span>
+      </el-table-column>
+      <el-table-column
+        label="操作内容"
+        align="center"
+        prop="content"
+        width="160"
       />
       <el-table-column
         label="请求参数"
@@ -151,31 +184,30 @@
         align="center"
         prop="status"
         :formatter="statusFormat"
-      />
-      <el-table-column
-        label="操作日期"
-        align="center"
-        prop="operTime"
-        width="180"
+        width="140"
       >
-        <template slot-scope="scope">
-          {{ parseTime(scope.row.operTime) }}
-        </template>
+        <span
+          :class="[scope.row.status === 0 ? 'text-green' : 'text-red']"
+          slot-scope="scope"
+        >
+          {{ statusFormat(scope.row) }}
+        </span>
       </el-table-column>
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
+        width="100"
       >
         <template slot-scope="scope">
           <el-button
-            size="mini"
             type="text"
             icon="el-icon-view"
             @click="handleView(scope.row, scope.index)"
             v-hasPermi="['monitor:operlog:query']"
-            >详细</el-button
           >
+            详细
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -288,6 +320,7 @@ export default {
         p: 1,
         l: 50,
         title: undefined,
+        operParam: undefined,
         operName: undefined,
         businessType: undefined,
         status: undefined,

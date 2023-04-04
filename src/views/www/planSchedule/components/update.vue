@@ -17,55 +17,110 @@
       class="overflow-y"
       style="max-height: 500px"
     >
-      <el-form-item label="产品品类:" prop="categoryId">
-        <el-select
-          v-model="form.categoryId"
+      <el-form-item label="迪太订单号:" prop="salesOrderNo">
+        <select-loadMore
           style="width: 65%"
-          placeholder="请选择产品品类"
-          clearable
-          filterable
-          @change="getComputerId"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
-        </el-select>
+          v-model="form.salesOrderNo"
+          :data="orderData.data"
+          :page="orderData.page"
+          :hasMore="orderData.more"
+          dictLabel="salesOrderNo"
+          :moreParams="true"
+          :disabled="!!form.id"
+          :request="getOrderList"
+          @getChange="getOrderId"
+          placeholder="请选择迪太订单号"
+        />
       </el-form-item>
-      <el-form-item label="产品型号:" prop="computerId">
-        <el-select
-          v-model="form.computerId"
+      <template v-if="form.salesOrderNo && orderInfo.salesOrderNo">
+        <transition name="fade">
+          <el-descriptions
+            class="margin-top margin-bottom"
+            :column="3"
+            direction="vertical"
+            size="mini"
+            border
+          >
+            <el-descriptions-item label="迪太订单号">
+              {{ orderInfo.salesOrderNo }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="客户名称"
+              v-if="orderInfo.customerName"
+            >
+              {{ orderInfo.customerName }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="客户订单号"
+              v-if="orderInfo.customerOrderNo"
+            >
+              {{ orderInfo.customerOrderNo }}
+            </el-descriptions-item>
+            <el-descriptions-item label="品类" v-if="orderInfo.categoryName">
+              {{ orderInfo.categoryName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="型号" v-if="orderInfo.computerName">
+              {{ orderInfo.computerName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="BOM编码" v-if="orderInfo.bomCode">
+              {{ orderInfo.bomCode }}
+            </el-descriptions-item>
+            <el-descriptions-item label="芯片版本" v-if="orderInfo.chipVersion">
+              {{ orderInfo.chipVersion }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="订单数量"
+              v-if="orderInfo.orderQuantity"
+            >
+              {{ orderInfo.orderQuantity }}
+            </el-descriptions-item>
+            <el-descriptions-item label="出货日期" v-if="orderInfo.sellTime">
+              <span class="text-red">{{ parseTime(orderInfo.sellTime) }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="客户要求到货日期"
+              v-if="orderInfo.arrivalTime"
+            >
+              <span class="text-green">
+                {{ parseTime(orderInfo.arrivalTime) }}
+              </span>
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="出货地址"
+              v-if="orderInfo.consigneeAddress"
+            >
+              {{ orderInfo.consigneeAddress }}
+            </el-descriptions-item>
+            <el-descriptions-item label="状态">
+              {{ statusList[orderInfo.status] }}
+            </el-descriptions-item>
+            <el-descriptions-item label="箱唛" v-if="orderInfo.isMark">
+              {{ markList[orderInfo.isMark] }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="指定内容"
+              v-if="orderInfo.containerMarkInfo"
+            >
+              {{ orderInfo.containerMarkInfo }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </transition>
+      </template>
+      <el-form-item label="生产日期:" prop="date">
+        <el-date-picker
+          v-model="form.date"
           style="width: 65%"
-          placeholder="请选择产品型号"
-          clearable
-          filterable
+          :disabled="!form.salesOrderNo"
+          type="date"
+          :default-time="defaultTime"
+          :picker-options="pickerOptions"
+          value-format="timestamp"
+          placeholder="请选择生产日期"
+          @change="selDate"
         >
-          <el-option
-            v-for="dict in modelList"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
-        </el-select>
+        </el-date-picker>
       </el-form-item>
-      <el-form-item label="芯片版本:" prop="chipVersion">
-        <el-select
-          v-model="form.chipVersion"
-          style="width: 65%"
-          placeholder="请选择芯片版本"
-          clearable
-          filterable
-        >
-          <el-option
-            v-for="dict in chipList"
-            :key="dict.id"
-            :label="dict.schemeVersion"
-            :value="dict.schemeVersion"
-          />
-        </el-select>
-      </el-form-item>
+
       <el-form-item label="生产流程:" prop="process">
         <el-radio-group v-model="form.process">
           <el-radio
@@ -77,38 +132,7 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="生产日期:" prop="date">
-        <el-date-picker
-          v-model="form.date"
-          style="width: 65%"
-          type="date"
-          :default-time="defaultTime"
-          value-format="timestamp"
-          placeholder="请选择生产日期"
-          @change="selDate"
-        >
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="出货日期:" prop="sellDate">
-        <el-date-picker
-          v-model="form.sellDate"
-          style="width: 65%"
-          type="date"
-          :default-time="defaultTime"
-          value-format="timestamp"
-          placeholder="请选择出货日期"
-          @change="selDate"
-        >
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="客户订单号:" prop="orderNo">
-        <el-input
-          v-model.number="form.orderNo"
-          clearable
-          style="width: 65%"
-          placeholder="请输入客户订单号"
-        />
-      </el-form-item>
+
       <el-form-item label="生产地点:" prop="address">
         <el-radio-group v-model="form.address">
           <el-radio
@@ -120,80 +144,17 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
-      <template v-if="form.process === 'SMT'">
-        <el-form-item label="方案版本:" prop="schemeVersion">
-          <el-select
-            v-model="form.schemeVersion"
-            style="width: 65%"
-            placeholder="请选择产品型号"
-            clearable
-            filterable
-          >
-            <el-option
-              v-for="dict in versionList"
-              :key="dict.dictCode"
-              :label="dict.dictLabel"
-              :value="String(dict.dictCode)"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="有效期:" prop="dateRange">
-          <el-date-picker
-            style="width: 65%"
-            v-model="form.dateRange"
-            value-format="timestamp"
-            type="datetimerange"
-            range-separator="-"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          >
-          </el-date-picker>
-        </el-form-item>
-      </template>
-      <el-form-item label="数量:" prop="num">
+
+      <el-form-item label="排产数量:" prop="num">
         <el-input
-          v-model.number="form.num"
+          v-model="form.num"
           clearable
           style="width: 65%"
-          placeholder="请输入数量"
+          placeholder="请输入排产数量"
+          v-PreInput:price
         >
           <template slot="append">pcs</template>
         </el-input>
-      </el-form-item>
-      <el-form-item
-        label="配置信息："
-        prop="configInfo"
-        class="margin-right-xs"
-      >
-        <tinymce
-          v-if="dialogVisible"
-          v-model="form.configInfo"
-          placeholder="请输入配置信息"
-          width="100%"
-          height="200"
-        />
-      </el-form-item>
-      <el-form-item label="出货箱唛：" prop="sellInfo" class="margin-right-xs">
-        <tinymce
-          v-if="dialogVisible"
-          v-model="form.sellInfo"
-          placeholder="请输入出货箱唛"
-          width="100%"
-          height="200"
-        />
-      </el-form-item>
-      <el-form-item
-        label="附件要求："
-        prop="protocolInfo"
-        class="margin-right-xs"
-      >
-        <tinymce
-          v-if="dialogVisible"
-          v-model="form.protocolInfo"
-          placeholder="请输入附件要求"
-          width="100%"
-          height="200"
-        />
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -214,25 +175,17 @@ import {
 import { listComputer } from "@/api/third/computer";
 import { schemeTypeList } from "@/api/system/skipType";
 import tinymce from "@/views/components/Editor";
+import { orderList } from "@/api/order";
 
 export default {
+  name: "planScheduleUpdate",
   props: ["title", "dictList", "operationList"],
   components: {
     tinymce,
   },
   data() {
-    const checkScheduleNum = (rule, value, callback) => {
-      if (value === "") {
-        return callback("请输入数量");
-      } else if (!Number.isInteger(value) && /./g.test(value)) {
-        return callback("数量必须为数字值，且为整数");
-      } else if (value < 1) {
-        return callback("数量必须大于0");
-      } else {
-        callback();
-      }
-    };
     return {
+      disabledDate: null,
       isBtnLoading: false,
       dialogVisible: false,
       // 生产地点
@@ -242,6 +195,7 @@ export default {
       versionList: [],
       // 芯片列表
       chipList: [],
+      cloneForm: {},
       // 表单参数
       form: {
         categoryId: "",
@@ -253,11 +207,28 @@ export default {
         dateRange: [],
         num: "",
       },
+      // 订单数据
+      orderData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      orderInfo: {},
+      statusList: {
+        0: "待审核",
+        1: "正常",
+        2: "取消",
+      },
+      markList: {
+        0: "否",
+        1: "是",
+        2: "待确认",
+      },
       defaultTime: this.moment().format("HH:mm:ss"),
       // 表单校验
       rules: {
-        categoryId: [
-          { required: true, message: "请选择产品品类", trigger: "change" },
+        salesOrderNo: [
+          { required: true, message: "请选择迪太订单号", trigger: "change" },
         ],
         computerId: [
           { required: true, message: "请选择产品型号", trigger: "change" },
@@ -283,16 +254,14 @@ export default {
         orderNo: [
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
-        num: [{ required: true, validator: checkScheduleNum, trigger: "blur" }],
+        num: [{ required: true, message: "请输入排产数量", trigger: "blur" }],
       },
     };
   },
   computed: {
     pickerOptions() {
       return {
-        disabledDate(time) {
-          return time.getTime() < Date.now() - 24 * 3650 * 1000;
-        },
+        disabledDate: this.disabledDate,
         selectableRange: `${this.defaultTime} - 23:59:59`,
       };
     },
@@ -304,6 +273,20 @@ export default {
           (item) => item.id === id
         )[0].computerList;
     },
+    "orderInfo.sellTime"(sellTime) {
+      if (sellTime) {
+        this.disabledDate = (time) => {
+          return (
+            time.getTime() > sellTime ||
+            time.getTime() < Date.now() - 24 * 3650 * 1000
+          );
+        };
+      } else {
+        this.disabledDate = (time) => {
+          return time.getTime() < Date.now() - 24 * 3650 * 1000;
+        };
+      }
+    },
   },
   created() {
     this.getProductAddress();
@@ -311,10 +294,48 @@ export default {
     this.getChipTypeList();
   },
   methods: {
+    /** 订单号数据 */
+    getOrderList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        orderList({
+          p: page,
+          status: 1,
+          salesOrderNo: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.orderData.data = [...this.orderData.data, ...list];
+          } else {
+            this.orderData.data = list;
+          }
+          this.orderData.more = pageNum * pageSize < total;
+          this.orderData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getOrderId(info) {
+      if (!info) {
+        this.form.orderId = "";
+        return;
+      }
+      this.orderInfo = JSON.parse(info);
+      this.form.orderId = this.orderInfo.id;
+    },
     getComputerId(id) {
       if (id) {
         this.form.computerId = "";
       }
+    },
+    getOrderDetail(salesOrderNo) {
+      orderList({
+        status: 1,
+        salesOrderNo,
+      }).then((res) => {
+        if (res.data.list.length) {
+          this.orderInfo = res.data.list[0];
+        }
+      });
     },
     // 芯片类型
     getChipTypeList() {
@@ -359,6 +380,34 @@ export default {
       };
       this.resetForm("form");
     },
+    onAlertReason(params) {
+      const { salesOrderNo, date, process, address, num } = params;
+      if (
+        this.cloneForm.salesOrderNo !== salesOrderNo ||
+        this.cloneForm.date !== date ||
+        this.cloneForm.process !== process ||
+        this.cloneForm.address !== address ||
+        this.cloneForm.num !== num
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    onUpdateOrder(params) {
+      schedulingEdit(params)
+        .then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess("编辑成功");
+            this.isBtnLoading = false;
+            this.dialogVisible = false;
+            this.$emit("getData");
+          }
+        })
+        .catch(() => {
+          this.isBtnLoading = false;
+        });
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -371,24 +420,34 @@ export default {
             this.form.schemeVersion = "";
           }
           if (this.form.id) {
-            schedulingEdit(data)
-              .then((res) => {
-                if (res.code === 200) {
-                  this.msgSuccess("编辑成功");
-                  this.dialogVisible = false;
-                  this.$parent.getList();
-                }
+            if (this.onAlertReason(this.form)) {
+              this.$prompt("请输入修改原因", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+                inputValidator: (value) => {
+                  if (value === null || value === "") {
+                    return false;
+                  }
+                },
+                inputErrorMessage: "修改原因不能为空",
               })
-              .then(() => {
-                this.isBtnLoading = false;
-              });
+                .then(({ value }) => {
+                  this.onUpdateOrder({ msg: value, ...this.form });
+                })
+                .catch(() => {
+                  this.isBtnLoading = false;
+                });
+            } else {
+              this.onUpdateOrder(this.form);
+            }
           } else {
             schedulingCreate(data)
               .then((res) => {
                 if (res.code === 200) {
                   this.msgSuccess("新增成功");
                   this.dialogVisible = false;
-                  this.$parent.getList();
+                  this.$emit("getData");
                 }
               })
               .then(() => {

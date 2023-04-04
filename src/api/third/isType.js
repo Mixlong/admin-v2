@@ -55,7 +55,7 @@ export function listCustomers(params) {
 // 查询所有用户
 export function dictUserList() {
     return request({
-      url: '/system/user/list/user',
-      method: 'get'
+        url: '/system/user/list/user',
+        method: 'get'
     });
-  }
+}

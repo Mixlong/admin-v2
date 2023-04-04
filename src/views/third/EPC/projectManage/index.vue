@@ -92,8 +92,6 @@
       :height="tableHeight()"
       border
       :row-class-name="tableRowClassName"
-      @cell-click="cellClick"
-      :cell-style="cellStyle"
       @selection-change="handleSelectionChange"
     >
       <el-table-column
@@ -131,13 +129,13 @@
       </el-table-column>
       <el-table-column
         label="产品状态"
-        prop="computerStatus"
+        prop="categoryStatus"
         align="center"
         width="100"
       >
         <template slot-scope="{ row }">
-          <el-tag :type="isComputerStatus(row.computerStatus)">
-            {{ row.computerStatus ? "禁用" : "启用" }}
+          <el-tag :type="isComputerStatus(row.categoryStatus)">
+            {{ row.categoryStatus ? "禁用" : "启用" }}
           </el-tag>
         </template>
       </el-table-column>
@@ -151,11 +149,7 @@
           {{ row.createBy ? row.createBy : row.updateBy }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建时间"
-        align="center"
-        width="140"
-      >
+      <el-table-column label="创建时间" align="center" width="140">
         <template slot-scope="{ row }">
           {{ row.updateTime || "---" }}
         </template>
@@ -224,7 +218,7 @@
             ></el-button>
           </el-tooltip>
           <el-tooltip
-            v-if="!scope.row.computerStatus && scope.row.url"
+            v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
             content="下载"
@@ -402,6 +396,17 @@ export default {
           this.checkRole(["product"]) &&
           !computerStatus &&
           (status === 2 || status === 4)
+        );
+      };
+    },
+    isDownloadUrl() {
+      return ({ computerStatus, status, url }) => {
+        return (
+          !computerStatus &&
+          url &&
+          (((status !== 2 || status !== 4) &&
+            this.checkRole(["test", "dev"])) ||
+            status === 2)
         );
       };
     },
@@ -634,18 +639,6 @@ export default {
         });
       } else {
         this.computerOptions = [];
-      }
-    },
-    cellClick(row, column, cell, event) {
-      switch (column.label) {
-        case "属性描述":
-          this.handleUpdate(row, "content");
-          break;
-      }
-    },
-    cellStyle({ row, column, rowIndex, columnIndex }) {
-      if (column.label == "属性描述") {
-        return `cursor: pointer;`;
       }
     },
   },

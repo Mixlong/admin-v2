@@ -22,6 +22,16 @@ export function updateOrder(data) {
     data,
   });
 }
+
+// 修改日志
+export function orderEditLog(params) {
+  return request({
+    url: '/order/management/log',
+    method: 'get',
+    params,
+  });
+}
+
 // 列表
 export function deleteOrder(data) {
   return request({
@@ -72,6 +82,7 @@ export function addAddress(data) {
     data
   })
 }
+
 // 新增客户
 export function addCustomer(data) {
   return request({
@@ -80,6 +91,25 @@ export function addCustomer(data) {
     data
   });
 }
+// 修改客户
+export function editCustomer(data) {
+  return request({
+    url: '/so/customer',
+    method: 'put',
+    data
+  });
+}
+
+// 禁用、启用
+export function authCustomer(data) {
+  return request({
+    url: '/so/customer/auth',
+    method: 'put',
+    data
+  });
+}
+
+
 // 收货地址集合
 export function addressList(id) {
   return request({
@@ -123,6 +153,14 @@ export function getOrderCusList(params) {
   })
 }
 
+export function getCustomerList(params) {
+  return request({
+    url: '/so/customer/admin/list',
+    method: 'get',
+    params
+  })
+}
+
 // 订单详情
 export function getOrderDetail(id) {
   return request({
@@ -138,3 +176,12 @@ export function orderCancel(id) {
     method: 'get'
   })
 }
+
+// 审核
+export function orderAuth(id) {
+  return request({
+    url: '/order/management/auth/' + id,
+    method: 'get'
+  })
+}
+

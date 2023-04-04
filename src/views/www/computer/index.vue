@@ -106,7 +106,11 @@
         </template>
       </el-table-column>
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" width="58" align="center" type="index" />
+      <el-table-column label="序号" width="58" type="index" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column label="封面" align="center" prop="cover">
         <template slot-scope="scope">
           <el-image
@@ -130,7 +134,7 @@
           <el-image
             :src="getImgList(scope.row.detailCover, 1)"
             :preview-src-list="getImgList(scope.row.detailCover)"
-            style="width: 80px; height: 80px; border-radius: 3px;"
+            style="width: 80px; height: 80px; border-radius: 3px"
             fit="cover"
           ></el-image>
         </template>
@@ -144,7 +148,11 @@
       />
       <el-table-column label="排序" align="center" prop="sort" width="80" />
       <el-table-column label="是否首页" align="center" width="80">
-         <el-tag slot-scope="scope" :type="scope.row.isHome ? 'success' : 'danger'">{{ scope.row.isHome ? '是' : '否' }}</el-tag>
+        <el-tag
+          slot-scope="scope"
+          :type="scope.row.isHome ? 'success' : 'danger'"
+          >{{ scope.row.isHome ? "是" : "否" }}</el-tag
+        >
       </el-table-column>
       <el-table-column label="描述" align="center" prop="description" />
       <el-table-column label="英文描述" align="center" prop="enDescription" />
@@ -239,14 +247,14 @@ export default {
   computed: {
     getImgList() {
       return (imgList, single) => {
-        const imgListArr = imgList.split(',')
-        if(single === 1) {
-          return imgListArr[0]
+        const imgListArr = imgList.split(",");
+        if (single === 1) {
+          return imgListArr[0];
         } else {
-          return imgListArr
+          return imgListArr;
         }
-      }
-    }
+      };
+    },
   },
   mounted() {
     computerDir().then((response) => {

@@ -70,7 +70,11 @@
       :header-cell-style="{ background: '#909399', color: '#000000' }"
       border
     >
-      <el-table-column label="序号" width="58" align="center" type="index" />
+      <el-table-column label="序号" width="58" type="index" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column label="标题" prop="title" align="center" width="330" />
 
       <el-table-column label="内容" align="center">
@@ -337,5 +341,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

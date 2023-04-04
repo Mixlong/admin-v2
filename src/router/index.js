@@ -117,6 +117,19 @@ export const constantRoutes = [
             },
         ],
     },
+    {
+        path: "/addOrUpdate",
+        component: Layout,
+        hidden: true,
+        children: [
+            {
+                path: 'CommonPage',
+                component: resolve => require(['@/views/commonPage'], resolve),
+                name: 'CommonPage',
+                meta: { title: '' },
+            },
+        ]
+    }
 ];
 
 /**

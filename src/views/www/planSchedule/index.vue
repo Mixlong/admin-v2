@@ -1,100 +1,110 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="所属品类" prop="categoryId">
-        <el-select
-          size="small"
-          filterable
-          allow-create
-          clearable
-          v-model="queryParams.categoryId"
-          @change="changeCategory"
-          placeholder="请选择"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          size="small"
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          v-model="queryParams.computerId"
-          placeholder="请选择"
-          @change="changeComputer"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="生产日期">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 250px"
-          value-format="timestamp"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          @change="handleQuery"
-        ></el-date-picker>
-      </el-form-item>
-      <el-form-item label="生产流程" prop="operation">
-        <el-select
-          style="width: 150px"
-          v-model="queryParams.operation"
-          placeholder="请选择产线"
-          clearable
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="(item, index) in operationList"
-            :key="index"
-            :label="item.dictLabel"
-            :value="item.dictLabel"
+    <transition name="fade-transform-tb">
+      <el-form
+        :model="queryParams"
+        ref="queryForm"
+        :inline="true"
+        v-show="showSearch"
+      >
+        <el-form-item label="所属品类" prop="categoryId">
+          <el-select
+            v-model="queryParams.categoryId"
+            filterable
+            allow-create
+            clearable
+            @change="changeCategory"
+            placeholder="请选择所属品类"
           >
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
-          搜 索
-        </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-          重 置
-        </el-button>
-      </el-form-item>
-      <el-row :gutter="10" class="fr mt5">
-        <el-col :span="1.5">
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号" prop="computerId">
+          <el-select
+            v-model="queryParams.computerId"
+            :loading="isCLoading"
+            filterable
+            remote
+            clearable
+            placeholder="请选择仪表型号"
+            @change="changeComputer"
+            :remote-method="getComputerNameList"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="迪太订单号" prop="salesOrderNo">
+          <el-input
+            v-model.trim="queryParams.salesOrderNo"
+            placeholder="请输入迪太订单号"
+            clearable
+            @keyup.native.enter="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="排产状态" prop="productStatus">
+          <el-select
+            v-model="queryParams.productStatus"
+            clearable
+            placeholder="请选择排产状态"
+          >
+            <el-option
+              v-for="(value, key) in productStatusList"
+              :key="key"
+              :label="value"
+              :value="+key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="生产日期">
+          <el-date-picker
+            v-model="dateRange"
+            style="width: 250px"
+            value-format="timestamp"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="handleQuery"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item>
           <el-button
             type="primary"
-            icon="el-icon-plus"
+            icon="el-icon-search"
             size="mini"
-            @click="handleAdd"
+            @click="handleQuery"
           >
-            新 增
+            搜 索
           </el-button>
-        </el-col>
-      </el-row>
-    </el-form>
-
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+            重 置
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </transition>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleAdd"
+        >
+          新 增
+        </el-button>
+      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
+    </el-row>
     <el-table
       border
       v-loading="loading"
@@ -111,25 +121,7 @@
       </el-table-column>
       <el-table-column label="产品品类" align="center" prop="categoryName" />
       <el-table-column label="产品型号" align="center" prop="computerName" />
-      <el-table-column label="产品版本号" align="center" prop="versionName" />
-      <el-table-column
-        label="芯片版本"
-        align="center"
-        prop="chipVersion"
-        width="110"
-      />
-      <el-table-column
-        label="方案版本"
-        align="center"
-        prop="schemeVersionName"
-        width="110"
-      />
-      <el-table-column
-        label="生产流程"
-        align="center"
-        prop="process"
-        width="110"
-      />
+      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
       <el-table-column
         label="生产地点"
         align="center"
@@ -143,7 +135,41 @@
           <span class="text-red" v-show="isDisabled(row.date)">（已过期）</span>
         </template>
       </el-table-column>
-      <el-table-column label="数量" align="center" prop="num" width="100" />
+      <el-table-column
+        label="生产流程"
+        align="center"
+        prop="process"
+        width="110"
+      />
+      <el-table-column
+        label="方案版本"
+        align="center"
+        prop="soChipVersion"
+        width="110"
+      />
+      <el-table-column label="排产数量" align="center" prop="num" width="100" />
+      <el-table-column
+        label="排产状态"
+        align="center"
+        prop="productStatus"
+        width="100"
+      >
+        <template slot-scope="{ row }">
+          <el-tag
+            v-if="row.productStatus !== null"
+            size="mini"
+            :type="tagType(row.productStatus)"
+          >
+            {{ productStatusList[row.productStatus] }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="订单数量"
+        align="center"
+        prop="orderQuantity"
+        width="100"
+      />
       <el-table-column
         label="资料状态"
         align="center"
@@ -175,7 +201,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="创建人"
+        label="排产人"
         align="center"
         prop="createBy"
         width="100"
@@ -193,8 +219,8 @@
       <el-table-column label="操作" align="center" width="150">
         <div class="flex justify-around" slot-scope="{ row }">
           <div class="flex flex-direction align-start">
+            <!-- :disabled="isDisabled(row.date)" -->
             <el-button
-              :disabled="isDisabled(row.date)"
               :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
               type="text"
               @click="handleUpdate(row)"
@@ -215,6 +241,9 @@
               @click="handleQrCode(row)"
             >
               任务令
+            </el-button>
+            <el-button type="text" class="mlZero" @click="onEditLog(row.id)">
+              日志
             </el-button>
           </div>
           <div class="flex flex-direction align-start" v-if="isDataAll(row)">
@@ -256,6 +285,7 @@
         </div>
       </el-table-column>
     </el-table>
+
     <pagination
       v-show="total > 0"
       :total="total"
@@ -263,12 +293,14 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
+
     <CompUpdate
       ref="compUpdate"
       :title="title"
       :dictList="dictList"
       :modelList="modelList"
       :operationList="operationList"
+      @getData="getList"
     />
 
     <!-- 任务令 -->
@@ -339,6 +371,7 @@
             </el-tag>
           </div>
         </el-descriptions-item>
+
         <el-descriptions-item
           label="工程资料"
           :labelStyle="isLabelStyle"
@@ -374,6 +407,8 @@
         <el-button>取 消</el-button>
       </div>
     </el-dialog>
+
+    <edit-log ref="editLogRef" />
   </div>
 </template>
 
@@ -392,10 +427,16 @@ import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
 
 export default {
-  components: { VueQr, CompUpdate },
+  components: {
+    VueQr,
+    CompUpdate,
+    EditLog: () => import("./components/log.vue"),
+  },
   data() {
     return {
       listId: "",
+      // 显示搜索条件
+      showSearch: true,
       // 遮罩层
       loading: true,
       // 缺失资料状态弹窗
@@ -418,12 +459,17 @@ export default {
       operationList: [],
       // 日期范围
       dateRange: [],
+      productStatusList: {
+        0: "正常",
+        1: "已取消",
+      },
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         categoryId: "",
         computerId: "",
+        salesOrderNo: "",
         startDate: "",
         endDate: "",
         operation: "",
@@ -435,17 +481,15 @@ export default {
       return (status) => {
         switch (status) {
           case 0:
-            return "info";
-          case 1:
-            return "primary";
-          case 2:
             return "success";
+          case 1:
+            return "info";
         }
       };
     },
     isDisabled() {
       return (date) => {
-        return date < +new Date();
+        return date < +new Date() - 3600 * 1000 * 24;
       };
     },
     isDataLen() {
@@ -500,11 +544,12 @@ export default {
     },
   },
   created() {
-    const { id } = this.$route.query;
-    if (id) {
-      this.queryParams.salesOrderNo = id;
+    const { orderId } = this.$route.query;
+    if (orderId) {
+      this.queryParams.orderId = orderId;
     }
     const { listId } = this.$route.params;
+    console.log(listId);
     if (listId) {
       this.listId = listId;
     }
@@ -619,7 +664,9 @@ export default {
         {},
         { ...row, dateRange: [row.startTime, row.endTime] }
       );
+      this.$refs.compUpdate.cloneForm = Object.assign({}, row);
       this.$refs.compUpdate.dialogVisible = true;
+      this.$refs.compUpdate.getOrderDetail(row.salesOrderNo);
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -715,6 +762,11 @@ export default {
           this.msgError("外发失败");
         }
       });
+    },
+    /** 修改日志 */
+    onEditLog(id) {
+      this.$refs.editLogRef.dialogVisible = true;
+      this.$refs.editLogRef.getList(id);
     },
   },
 };

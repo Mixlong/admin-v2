@@ -93,7 +93,7 @@
               v-model="form.desc"
               placeholder="请输入项目说明"
               style="width: 750px"
-            ></tinymce>
+            />
             <div v-else v-html="form.desc"></div>
           </el-form-item>
         </el-row>
@@ -239,5 +239,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

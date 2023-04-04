@@ -4,7 +4,7 @@
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
-    width="680px"
+    :width="isDigWidth"
     append-to-body
     top="15vh"
   >
@@ -16,73 +16,103 @@
       class="form-data form-data-inline"
       inline
     >
-      <el-form-item label="品类" prop="categoryId">
-        <el-select
-          :disabled="!!form.id"
-          v-model="form.categoryId"
-          clearable
-          @change="changeCategory2"
-          size="small"
-          style="width: 185px"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
+      <template v-if="!isBatchSync">
+        <el-form-item label="品类" prop="categoryId">
+          <el-select
+            :disabled="!!form.id"
+            v-model="form.categoryId"
+            clearable
+            @change="changeCategory2"
+            size="small"
+            style="width: 185px"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="版本号">
+          <el-input
+            v-model.trim="form.versionName"
+            :disabled="!!form.id"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="属性" prop="type">
+          <el-select
+            v-model="form.type"
+            clearable
+            size="small"
+            style="width: 185px"
+            :disabled="!!form.id"
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in fileTypeList"
+              :key="dict.key"
+              :label="dict.value"
+              :value="dict.key"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="属性描述" prop="content">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 8 }"
+            v-model="form.content"
+            placeholder="请输入文件描述"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="版本号">
-        <el-input
-          v-model.trim="form.versionName"
-          :disabled="!!form.id"
-        ></el-input>
-      </el-form-item>
+        </el-form-item>
 
-      <el-form-item label="属性" prop="type">
-        <el-select
-          v-model="form.type"
-          clearable
-          size="small"
-          style="width: 185px"
-          :disabled="!!form.id"
-          @change="$forceUpdate()"
+        <el-form-item
+          label="文件"
+          prop="url"
+          v-if="form.up == 1"
+          style="width: 100%"
         >
-          <el-option
-            v-for="dict in fileTypeList"
-            :key="dict.key"
-            :label="dict.value"
-            :value="dict.key"
-          />
-        </el-select>
-      </el-form-item>
+          <DrUpload
+            :limit="1"
+            v-model="form.url"
+            :css="{ width: '100%' }"
+            :isOnePic="1"
+          >
+            <div>
+              <el-button size="small" type="primary">点击上传</el-button>
+            </div>
+          </DrUpload>
+        </el-form-item>
+      </template>
 
-      <el-form-item label="属性描述" prop="content">
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 1, maxRows: 8 }"
-          v-model="form.content"
-          placeholder="请输入文件描述"
-        />
-      </el-form-item>
-
+      <!-- 批量同步 -->
       <el-form-item
-        label="文件"
-        prop="url"
-        v-if="form.up == 1"
+        label="版本号"
+        v-if="isBatchSync"
         style="width: 100%"
+        label-width="100px"
+        :required="isHaveBatchSync"
+        prop="idList"
       >
-        <DrUpload
-          :limit="1"
-          v-model="form.url"
-          :css="{ width: '100%' }"
-          :isOnePic="1"
+        <el-select
+          ref="select"
+          v-model="form.idList"
+          multiple
+          placeholder=""
+          class="similar-style"
+          style="width: 100%"
         >
-          <div>
-            <el-button size="small" type="primary">点击上传</el-button>
-          </div>
-        </DrUpload>
+          <el-option
+            :disabled="form.versionName === dict.computer"
+            v-for="dict in computerOptions"
+            :key="dict.id"
+            :label="dict.computer"
+            :value="dict.id"
+          >
+          </el-option>
+        </el-select>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -97,26 +127,29 @@ import {
   addFileConfig,
   editFileConfig,
   computerDictList,
+  editFileConfigConfig,
+  fileVersionConfigDirt,
 } from "@/api/third/ids/versionManage";
+
 export default {
   props: ["dictList"],
   data() {
-    let validateUpload = (rule, value, callback) => {
-      if (this.form.up === 0) {
-        callback();
+    const validateIdList = (rule, value, callback) => {
+      if (!value.length && this.isHaveBatchSync) {
+        return callback(new Error("版本号不能为空"));
       } else {
-        if (this.form.url) {
-          callback();
-        } else {
-          callback(new Error("请上传文件"));
-        }
+        callback();
       }
     };
     return {
+      // 批量同步
+      isBatchSync: false,
       dialogVisible: false,
       fileTypeList: [],
       computerFormOptions: [],
       similarList: [],
+      // 版本号列表
+      computerOptions: [],
       // 表单参数
       form: {
         url: "",
@@ -130,7 +163,10 @@ export default {
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
         ],
-        url: [{ required: true, validator: validateUpload, trigger: "blur" }],
+        url: [{ required: true, message: "请上传文件", trigger: "change" }],
+        idList: [
+          { type: "array", validator: validateIdList, trigger: "change" },
+        ],
       },
       cidOptions: [],
       splitCidOptions: [],
@@ -139,6 +175,14 @@ export default {
       midOptions: [],
       disabledName: "",
     };
+  },
+  computed: {
+    isHaveBatchSync() {
+      return this.isBatchSync;
+    },
+    isDigWidth() {
+      return this.isBatchSync ? "450px" : "680px";
+    },
   },
   watch: {
     form(val) {
@@ -157,6 +201,14 @@ export default {
 
           this.similarList = res.data;
         });
+        if (this.isBatchSync) {
+          this.getComputerNameList(val.categoryId, val.type);
+        }
+      }
+    },
+    "form.url"(url) {
+      if (url) {
+        this.clearValidateItem("form", "url");
       }
     },
   },
@@ -187,6 +239,16 @@ export default {
     });
   },
   methods: {
+    // 版本号列表
+    getComputerNameList(categoryId, type) {
+      fileVersionConfigDirt({
+        categoryId,
+        type,
+      }).then((res) => {
+        console.log(res);
+        this.computerOptions = res.data;
+      });
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -230,31 +292,23 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
-          // if (this.form.firmwareConf.mid) {
-          //   this.form.firmwareConf.mid = Number(this.form.firmwareConf.mid);
-          // }
-          // console.log(this.form);
-          // if (this.form.firmwareConf.cid) {
-          //   this.form.firmwareConf.cid = Number(this.form.firmwareConf.cid);
-          // }
-          // if (this.form.firmwareConf.type) {
-          //   this.form.firmwareConf.type = Number(this.form.firmwareConf.type);
-          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
             delete this.form.updateBy;
             delete this.form.updateTime;
-            editFileConfig(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
+            let fn = this.isBatchSync ? editFileConfigConfig : editFileConfig;
+            fn(this.form).then((res) => {
+              if (res.code === 200) {
+                const title = this.isBatchSync ? "批量同步成功" : "修改成功";
+                this.msgSuccess(title);
                 this.dialogVisible = false;
                 this.$parent.getList();
               }
             });
           } else {
-            addFileConfig(this.form).then((response) => {
-              if (response.code === 200) {
+            addFileConfig(this.form).then((res) => {
+              if (res.code === 200) {
                 this.msgSuccess("修改成功");
                 this.dialogVisible = false;
                 this.$parent.getList();
@@ -303,4 +357,3 @@ export default {
   }
 }
 </style>
-

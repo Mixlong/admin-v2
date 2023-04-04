@@ -3,10 +3,10 @@
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
+      :close-on-click-modal="false"
+      :top="dialogTop()"
       width="1560px"
       append-to-body
-      :close-on-click-modal="true"
-      :top="dialogTop()"
     >
       <el-form
         ref="form"
@@ -904,4 +904,3 @@ export default {
   right: -253px;
 }
 </style>
-

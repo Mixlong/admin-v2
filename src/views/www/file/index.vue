@@ -93,7 +93,11 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" width="58" align="center" type="index" />
+      <el-table-column label="序号" width="58" type="index" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column label="中文名称" align="center" prop="name" />
       <el-table-column label="英文名称" align="center" prop="enName" />
       <el-table-column

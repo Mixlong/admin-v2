@@ -72,5 +72,8 @@ new Vue({
   el: '#app',
   router,
   store,
+  created() {
+    Window.Vue = Vue
+  },
   render: h => h(App)
 });
