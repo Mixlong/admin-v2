@@ -129,13 +129,13 @@
       </el-table-column>
       <el-table-column
         label="产品状态"
-        prop="computerStatus"
+        prop="categoryStatus"
         align="center"
         width="100"
       >
         <template slot-scope="{ row }">
-          <el-tag :type="isComputerStatus(row.computerStatus)">
-            {{ row.computerStatus ? "禁用" : "启用" }}
+          <el-tag :type="isComputerStatus(row.categoryStatus)">
+            {{ row.categoryStatus ? "禁用" : "启用" }}
           </el-tag>
         </template>
       </el-table-column>
@@ -218,7 +218,7 @@
             ></el-button>
           </el-tooltip>
           <el-tooltip
-            v-if="!scope.row.computerStatus && scope.row.url"
+            v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
             content="下载"
@@ -396,6 +396,17 @@ export default {
           this.checkRole(["product"]) &&
           !computerStatus &&
           (status === 2 || status === 4)
+        );
+      };
+    },
+    isDownloadUrl() {
+      return ({ computerStatus, status, url }) => {
+        return (
+          !computerStatus &&
+          url &&
+          (((status !== 2 || status !== 4) &&
+            this.checkRole(["test", "dev"])) ||
+            status === 2)
         );
       };
     },

@@ -127,22 +127,11 @@
 import { getOrderDetail } from "@/api/order";
 
 export default {
-  props: ["statusList"],
+  props: ["statusList", "productStatusList"],
   data() {
     return {
       dialogVisible: false,
       form: {},
-      productStatusList: {
-        0: "未排产",
-        1: "smt已排产、包装未排产",
-        2: "smt已排产、包装已排产",
-        3: "smt部分排产、包装部分排产",
-        4: "smt已排产、包装部分排产",
-        5: "smt部分排产、包装已排产",
-        6: "smt部分排产、包装未排产",
-        7: "smt未排产、包装部分排产",
-        8: "smt未排产、包装已排产",
-      },
     };
   },
   computed: {

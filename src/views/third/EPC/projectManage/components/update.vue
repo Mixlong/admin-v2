@@ -54,7 +54,6 @@
       <el-form-item label="属性描述" prop="content">
         <div id="desc_box">
           <tinymce
-            id="detail_box"
             v-if="dialogVisible"
             v-model="form.content"
             placeholder="请输入属性描述"

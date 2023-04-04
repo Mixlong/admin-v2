@@ -228,7 +228,7 @@
           </el-tooltip>
 
           <el-tooltip
-            v-if="!scope.row.computerStatus && scope.row.url"
+            v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
             content="下载"
@@ -262,6 +262,7 @@
             icon="el-icon-s-claim"
             content="批量同步"
             class="margin-left-xs"
+            v-if="checkRole(['dev'])"
             @click="handleUpdate(scope.row, (isBatchSync = true))"
           />
         </template>
@@ -415,6 +416,17 @@ export default {
           this.checkRole(["product"]) &&
           !computerStatus &&
           (status === 2 || status === 4)
+        );
+      };
+    },
+    isDownloadUrl() {
+      return ({ computerStatus, status, url }) => {
+        return (
+          !computerStatus &&
+          url &&
+          (((status !== 2 || status !== 4) &&
+            this.checkRole(["test", "dev"])) ||
+            status === 2)
         );
       };
     },

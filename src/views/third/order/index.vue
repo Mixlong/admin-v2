@@ -1,119 +1,123 @@
 <template>
   <div class="app-container">
-    <el-form
-      ref="queryForm"
-      :model="queryParams"
-      :inline="true"
-      v-show="showSearch"
-    >
-      <el-form-item label="客户名称" prop="customerName">
-        <select-loadMore
-          style="width: 100%"
-          v-model="queryParams.customerName"
-          :data="customerData.data"
-          :page="customerData.page"
-          :hasMore="customerData.more"
-          dictLabel="name"
-          dictValue="name"
-          :request="getCustomerList"
-          placeholder="请选择客户名称"
-        />
-      </el-form-item>
-      <el-form-item label="迪太订单号" prop="salesOrderNo">
-        <el-input
-          v-model="queryParams.salesOrderNo"
-          filterable
-          placeholder="请输入迪太订单号"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item label="客户订单号" prop="customerOrderNo">
-        <el-input
-          v-model="queryParams.customerOrderNo"
-          filterable
-          placeholder="请输入客户订单号"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item label="Bom编号" prop="bomCode">
-        <el-input
-          v-model="queryParams.bomCode"
-          filterable
-          placeholder="请输入Bom编号"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item label="所属品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          filterable
-          allow-create
-          clearable
-          :loading="isCateLoading"
-          loading-text
-          placeholder="请选择所属品类"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
+    <transition name="fade-transform-tb">
+      <el-form
+        ref="queryForm"
+        :model="queryParams"
+        :inline="true"
+        v-show="showSearch"
+      >
+        <el-form-item label="客户名称" prop="customerName">
+          <select-loadMore
+            style="width: 100%"
+            v-model="queryParams.customerName"
+            :data="customerData.data"
+            :page="customerData.page"
+            :hasMore="customerData.more"
+            dictLabel="name"
+            dictValue="name"
+            :request="getCustomerList"
+            placeholder="请选择客户名称"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="仪表型号" prop="computerName">
-        <el-select
-          filterable
-          remote
-          clearable
-          v-model="queryParams.computerName"
-          placeholder="请选择仪表型号"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
+        </el-form-item>
+        <el-form-item label="迪太订单号" prop="salesOrderNo">
+          <el-input
+            v-model="queryParams.salesOrderNo"
+            filterable
+            placeholder="请输入迪太订单号"
+            clearable
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="出货时间">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 250px"
-          value-format="timestamp"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          @change="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="订单状态" prop="status">
-        <el-select
-          v-model="queryParams.status"
-          placeholder="请选择订单状态"
-          clearable
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="(value, index) in statusList"
-            :key="index"
-            :label="value"
-            :value="index"
+        </el-form-item>
+        <el-form-item label="客户订单号" prop="customerOrderNo">
+          <el-input
+            v-model="queryParams.customerOrderNo"
+            filterable
+            placeholder="请输入客户订单号"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item label="Bom编号" prop="bomCode">
+          <el-input
+            v-model="queryParams.bomCode"
+            filterable
+            placeholder="请输入Bom编号"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item label="所属品类" prop="categoryName">
+          <el-select
+            v-model="queryParams.categoryName"
+            filterable
+            allow-create
+            clearable
+            :loading="isCateLoading"
+            loading-text
+            placeholder="请选择所属品类"
+            @change="changeCategory"
           >
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-      </el-form-item>
-    </el-form>
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号" prop="computerName">
+          <el-select
+            filterable
+            remote
+            clearable
+            v-model="queryParams.computerName"
+            placeholder="请选择仪表型号"
+            :remote-method="getComputerNameList"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="出货时间">
+          <el-date-picker
+            v-model="dateRange"
+            style="width: 250px"
+            value-format="timestamp"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="订单状态" prop="status">
+          <el-select
+            v-model="queryParams.status"
+            placeholder="请选择订单状态"
+            clearable
+            @change="handleQuery"
+          >
+            <el-option
+              v-for="(value, index) in statusList"
+              :key="index"
+              :label="value"
+              :value="index"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </transition>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
@@ -182,6 +186,11 @@
           <el-tag size="mini" :type="tagType(row.status)">
             {{ statusList[row.status] }}
           </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="排产状态" align="center" width="120">
+        <template slot-scope="{ row }">
+          {{ productStatusList[row.productStatus] }}
         </template>
       </el-table-column>
       <el-table-column
@@ -265,7 +274,11 @@
       @pagination="getList"
     />
 
-    <orderDetail ref="orderDetailRef" :statusList="statusList" />
+    <orderDetail
+      ref="orderDetailRef"
+      :statusList="statusList"
+      :productStatusList="productStatusList"
+    />
     <edit-log ref="editLogRef" />
   </div>
 </template>
@@ -305,6 +318,17 @@ export default {
         0: "待审核",
         1: "正常",
         2: "取消",
+      },
+      productStatusList: {
+        0: "未排产",
+        1: "smt已排产、包装未排产",
+        2: "smt已排产、包装已排产",
+        3: "smt部分排产、包装部分排产",
+        4: "smt已排产、包装部分排产",
+        5: "smt部分排产、包装已排产",
+        6: "smt部分排产、包装未排产",
+        7: "smt未排产、包装部分排产",
+        8: "smt未排产、包装已排产",
       },
       // 查询参数
       queryParams: {

@@ -132,13 +132,13 @@
       </el-table-column>
       <el-table-column
         label="产品状态"
-        prop="computerStatus"
+        prop="categoryStatus"
         align="center"
         width="100"
       >
         <template slot-scope="{ row }">
-          <el-tag :type="isComputerStatus(row.computerStatus)">
-            {{ row.computerStatus ? "禁用" : "启用" }}
+          <el-tag :type="isComputerStatus(row.categoryStatus)">
+            {{ row.categoryStatus ? "禁用" : "启用" }}
           </el-tag>
         </template>
       </el-table-column>
@@ -211,7 +211,7 @@
             icon="el-icon-download"
             class="text-orange"
             content="下载"
-            v-if="!scope.row.computerStatus && scope.row.url"
+            v-if="isDownloadUrl(scope.row)"
             @click="zipFile(scope.row.url)"
           />
 
@@ -384,11 +384,22 @@ export default {
       };
     },
     isSResetCheck() {
-      return ({ computerStatus, status }) => {
+      return ({ versionStatus, status }) => {
         return (
           this.checkRole(["product"]) &&
-          !computerStatus &&
+          !versionStatus &&
           (status === 2 || status === 4)
+        );
+      };
+    },
+    isDownloadUrl() {
+      return ({ versionStatus, status, url }) => {
+        return (
+          !versionStatus &&
+          url &&
+          (((status !== 2 || status !== 4) &&
+            this.checkRole(["test", "dev"])) ||
+            status === 2)
         );
       };
     },

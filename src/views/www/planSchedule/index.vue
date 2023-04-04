@@ -1,95 +1,97 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      v-show="showSearch"
-    >
-      <el-form-item label="所属品类" prop="categoryId">
-        <el-select
-          v-model="queryParams.categoryId"
-          filterable
-          allow-create
-          clearable
-          @change="changeCategory"
-          placeholder="请选择所属品类"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
+    <transition name="fade-transform-tb">
+      <el-form
+        :model="queryParams"
+        ref="queryForm"
+        :inline="true"
+        v-show="showSearch"
+      >
+        <el-form-item label="所属品类" prop="categoryId">
+          <el-select
+            v-model="queryParams.categoryId"
+            filterable
+            allow-create
+            clearable
+            @change="changeCategory"
+            placeholder="请选择所属品类"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号" prop="computerId">
+          <el-select
+            v-model="queryParams.computerId"
+            :loading="isCLoading"
+            filterable
+            remote
+            clearable
+            placeholder="请选择仪表型号"
+            @change="changeComputer"
+            :remote-method="getComputerNameList"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="迪太订单号" prop="salesOrderNo">
+          <el-input
+            v-model.trim="queryParams.salesOrderNo"
+            placeholder="请输入迪太订单号"
+            clearable
+            @keyup.native.enter="handleQuery"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          v-model="queryParams.computerId"
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          placeholder="请选择仪表型号"
-          @change="changeComputer"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="迪太订单号" prop="salesOrderNo">
-        <el-input
-          v-model.trim="queryParams.salesOrderNo"
-          placeholder="请输入迪太订单号"
-          clearable
-          @keyup.native.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="排产状态" prop="productStatus">
-        <el-select
-          v-model="queryParams.productStatus"
-          clearable
-          placeholder="请选择排产状态"
-        >
-          <el-option
-            v-for="(value, key) in productStatusList"
-            :key="key"
-            :label="value"
-            :value="+key"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="生产日期">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 250px"
-          value-format="timestamp"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          @change="handleQuery"
-        ></el-date-picker>
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
-          搜 索
-        </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-          重 置
-        </el-button>
-      </el-form-item>
-    </el-form>
+        </el-form-item>
+        <el-form-item label="排产状态" prop="productStatus">
+          <el-select
+            v-model="queryParams.productStatus"
+            clearable
+            placeholder="请选择排产状态"
+          >
+            <el-option
+              v-for="(value, key) in productStatusList"
+              :key="key"
+              :label="value"
+              :value="+key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="生产日期">
+          <el-date-picker
+            v-model="dateRange"
+            style="width: 250px"
+            value-format="timestamp"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="handleQuery"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="handleQuery"
+          >
+            搜 索
+          </el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+            重 置
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </transition>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -487,7 +489,7 @@ export default {
     },
     isDisabled() {
       return (date) => {
-        return date < +new Date();
+        return date < +new Date() - 3600 * 1000 * 24;
       };
     },
     isDataLen() {
