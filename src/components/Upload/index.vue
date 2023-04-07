@@ -39,6 +39,7 @@
 
 <script>
 import reqUrl from "@/utils/requestUrl";
+
 export default {
   props: {
     value: "",
@@ -51,8 +52,8 @@ export default {
     accept: "",
     disabled: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
     // accept: {
     //   default: "image/jpeg, image/gif, image/png,image/bmp",
     // },
@@ -77,7 +78,7 @@ export default {
       value = value ? value : "";
       let fileList = value.split(",").map((item) => {
         return {
-          name: item.slice(item.lastIndexOf('/')+1),
+          name: item.slice(item.lastIndexOf("/") + 1),
           url: item,
         };
       });
@@ -116,7 +117,7 @@ export default {
 };
 </script>
 
-<style lang='scss'>
+<style lang="scss">
 .my-upload-demo {
   display: flex;
   flex-wrap: wrap;
@@ -166,25 +167,25 @@ export default {
   //   line-height: 100px;
   // }
 }
-  // .el-upload--picture-card {
-  //   width: 100px;
-  //   height: 100px;
-  //   line-height: 112px;
-  // }
-  // .el-upload-list--picture-card .el-upload-list__item, .all-img, .el-image {
-  //   width: 100px;
-  //   height: 100px;
-  // }
-  // .el-image {
-  //   border-radius: 10px;
-  // }
-  // .all-img {
-  //   background-color: #fbfdff;
-  //   border: 1px dashed #c0ccda;
-  //   border-radius: 6px;
-  //   .avatar-uploader-icon {
-  //     font-size: 28px;
-  //     line-height: 100px;
-  //   }
-  // }
+// .el-upload--picture-card {
+//   width: 100px;
+//   height: 100px;
+//   line-height: 112px;
+// }
+// .el-upload-list--picture-card .el-upload-list__item, .all-img, .el-image {
+//   width: 100px;
+//   height: 100px;
+// }
+// .el-image {
+//   border-radius: 10px;
+// }
+// .all-img {
+//   background-color: #fbfdff;
+//   border: 1px dashed #c0ccda;
+//   border-radius: 6px;
+//   .avatar-uploader-icon {
+//     font-size: 28px;
+//     line-height: 100px;
+//   }
+// }
 </style>
