@@ -129,21 +129,21 @@
         </el-card>
       </el-col>
     </el-row>
-    <Log
+    <!-- <Log
       ref="log"
       :visible.sync="openLog"
       :logRow="logRow"
       @openUpdate="handleUpdateLog"
       @openAdd="handleAddLog"
       :isEdit="userId == logRow.createUser"
-    />
-    <Update
+    /> -->
+    <!-- <Update
       :visible.sync="openUpdate"
       :pmDictListOptions="pmDictListOptions"
       :stateOptions="stateOptions"
       :rowUpdate="rowUpdate"
-    />
-    <AddLog :visible.sync="openAddLog" :logRow="logRow" />
+    /> -->
+    <!-- <AddLog :visible.sync="openAddLog" :logRow="logRow" /> -->
   </div>
 </template>
 
@@ -277,26 +277,26 @@ export default {
         });
     },
     getList() {
+      // 暂时先去掉（接口已换）  2023/4/12
       //重点事项
-      let { checked } = this;
 
-      emphasisList().then((res) => {
-        let { data } = res;
-        if (checked) {
-          let list = [];
-          for (let key of data) {
-            if (
-              key.userList.findIndex((item) => item.userId == this.userId) > -1
-            ) {
-              list.push(key);
-            }
-          }
-          this.homeEmphasisList = list;
-        } else {
-          this.homeEmphasisList = data;
-        }
-        localStorage.setItem("home-checked", checked);
-      });
+      // emphasisList().then((res) => {
+      //   let { data } = res;
+      //   if (checked) {
+      //     let list = [];
+      //     for (let key of data) {
+      //       if (
+      //         key.userList.findIndex((item) => item.userId == this.userId) > -1
+      //       ) {
+      //         list.push(key);
+      //       }
+      //     }
+      //     this.homeEmphasisList = list;
+      //   } else {
+      //     this.homeEmphasisList = data;
+      //   }
+      //   localStorage.setItem("home-checked", checked);
+      // });
     },
 
     replaceHtml(str) {

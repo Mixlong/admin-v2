@@ -42,11 +42,11 @@ export function emphasisDetail(query) {
     })
 }
 
-export function emphasisList(query) {
+export function emphasisList(params) {
     return request({
         url: '/emphasis/list',
         method: 'get',
-        params: query
+        params
     })
 }
 
@@ -73,6 +73,7 @@ export function emphasislogAdd(data) {
         data
     })
 }
+
 export function emphasislogUpdate(data) {
     return request({
         url: '/emphasis/log',
@@ -81,6 +82,12 @@ export function emphasislogUpdate(data) {
     })
 }
 
+export function emphasislogComplete(id) {
+    return request({
+        url: '/emphasis/complete/' + id,
+        method: 'put'
+    })
+}
 
 export function emphasisDel(query) {
     return request({
@@ -89,6 +96,8 @@ export function emphasisDel(query) {
         params: query
     })
 }
+
+
 
 
 

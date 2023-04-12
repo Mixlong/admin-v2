@@ -1,12 +1,12 @@
 <template>
   <div>
     <el-dialog
-      :title="title"
-      :visible.sync="dialogVisible"
+      v-bind="$attrs"
       width="450px"
       append-to-body
       center
       :close-on-click-modal="false"
+      @close="$emit('update:visible', false)"
     >
       <el-form
         ref="form"
@@ -15,46 +15,45 @@
         label-width="100px"
         label-position="left"
       >
-        <el-form-item label="产品类型：" prop="categoryId">
+        <el-form-item label="模块名称：" prop="productType">
           <el-select
-            v-model="form.categoryId"
-            placeholder="请选择产品类型"
+            v-model="form.productType"
+            size="mini"
             filterable
+            placeholder="请选择模块名称"
             style="width: 100%"
           >
             <el-option
-              v-for="item in modelList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            >
-            </el-option>
+              v-for="dict in moduleList"
+              :key="dict.dictCode"
+              :label="dict.dictValue"
+              :value="String(dict.dictCode)"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="产品描述：" prop="desc">
+        <el-form-item label="描述：" prop="desc">
           <el-input
             v-model="form.desc"
             type="textarea"
-            placeholder="请输入产品描述"
+            placeholder="请输入描述"
             clearable
           />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button @click="$emit('update:visible', false)">取 消</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { addComputer, editComputer } from "@/api/third/version";
-import { typeCategory } from "@/api/third/category";
-import mixin from "./export";
+import { testCaseAdd, testCaseEdit } from "@/api/third/testApi";
 
 export default {
-  mixins: [mixin],
+  inheritAttrs: false,
+  props: ["moduleList"],
   data() {
     return {
       step: 1,
@@ -62,40 +61,25 @@ export default {
       dialogVisible: false,
       // 表单参数
       form: {
-        name: "",
+        productType: "",
         desc: "",
-        categoryId: "",
       },
-      title: "",
       // 表单校验
       rules: {
-        categoryId: [
-          { required: true, message: "产品品类不能为空", trigger: "change" },
+        productType: [
+          { required: true, message: "请选择模块名称", trigger: "change" },
         ],
-        name: [{ required: true, message: "版本号不能为空", trigger: "blur" }],
-        desc: [
-          { required: true, message: "版本描述不能为空", trigger: "blur" },
-        ],
+        desc: [{ required: true, message: "请输入描述", trigger: "blur" }],
       },
     };
   },
-  mounted() {
-    this.getList();
-    this.Enter_Fn(this.submitForm);
-  },
   methods: {
-    getList() {
-      typeCategory().then((res) => {
-        this.modelList = res.data;
-      });
-    },
     // 表单重置
     reset() {
       this.resetForm("form");
       this.form = {
-        name: "",
+        productType: "",
         desc: "",
-        categoryId: "",
       };
     },
     /** 提交按钮 */
@@ -103,20 +87,19 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.id) {
-            editComputer(this.form).then((response) => {
+            testCaseEdit(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
-                this.dialogVisible = false;
+                this.$emit("update:visible", false);
                 this.$parent.getList();
               }
             });
           } else {
-            addComputer(this.form).then((response) => {
+            testCaseAdd(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
-                this.dialogVisible = false;
+                this.$emit("update:visible", false);
                 this.$parent.getList();
-                this.open = false;
               }
             });
           }

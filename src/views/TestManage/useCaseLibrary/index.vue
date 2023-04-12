@@ -1,15 +1,30 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="模块名称：" prop="productType">
+      <el-form-item label="所属模块：" prop="productType">
         <el-select
           v-model="queryParams.productType"
           size="mini"
           filterable
-          placeholder="请选择模块名称"
+          placeholder="请选择所属模块"
         >
           <el-option
             v-for="dict in moduleList"
+            :key="dict.dictCode"
+            :label="dict.dictValue"
+            :value="dict.dictCode"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="用例类型：" prop="type">
+        <el-select
+          v-model="queryParams.type"
+          size="mini"
+          filterable
+          placeholder="请选择用例类型"
+        >
+          <el-option
+            v-for="dict in useCaseTypeList"
             :key="dict.dictCode"
             :label="dict.dictValue"
             :value="dict.dictCode"
@@ -53,13 +68,17 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="模块名称"
-        prop="productName"
-        align="center"
-        width="250"
-      />
-      <el-table-column label="描述" prop="desc" align="center" />
+      <el-table-column label="用例类型" prop="typeName" align="center" />
+      <el-table-column label="所属模块" prop="productName" align="center" />
+      <el-table-column label="测试项" prop="content" align="center" />
+      <el-table-column label="前置条件" prop="preconditions" align="center" />
+      <el-table-column label="输入与操作" prop="inter" align="center" />
+      <el-table-column label="预期结果" prop="result" align="center" />
+      <el-table-column label="审核状态" prop="state" align="center" width="120">
+        <template slot-scope="scope">
+          {{ stateList[scope.row.state] }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -101,6 +120,12 @@
             class="text-red"
             @click="handleDelete(scope.row)"
           /> -->
+          <Tooltip
+            v-if="checkRole(['test', 'admin'])"
+            icon="el-icon-circle-check"
+            content="审核"
+            @click="handleCheck(scope.row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -116,13 +141,13 @@
       ref="compUpdate"
       :visible.sync="dialogVisible"
       :title="title"
-      :moduleList="moduleList"
+      :useCaseTypeList="useCaseTypeList"
     />
   </div>
 </template>
 
 <script>
-import { testProductList, taskProductAuth } from "@/api/third/testApi";
+import { testCaseList, taskCaseAuth, testCaseState } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
@@ -133,6 +158,14 @@ export default {
     return {
       // 模块名称
       moduleList: [],
+      // 用例类型
+      useCaseTypeList: [],
+      // 审核状态
+      stateList: {
+        1: "待审核",
+        2: "已批准",
+        3: "已驳回",
+      },
       commonStatusList,
       // 遮罩层
       loading: false,
@@ -156,13 +189,16 @@ export default {
     this.getDicts("test_moduleName").then((res) => {
       this.moduleList = res.data;
     });
+    this.getDicts("useCaseType").then((res) => {
+      this.useCaseTypeList = res.data;
+    });
     this.getList();
   },
   methods: {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      testProductList(this.queryParams).then((response) => {
+      testCaseList(this.queryParams).then((response) => {
         this.list = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -171,13 +207,13 @@ export default {
     handleAdd() {
       this.dialogVisible = true;
       this.$refs.compUpdate.reset();
-      this.title = "新增测试模块";
+      this.title = "新增用例";
     },
     handleUpdate(row) {
       this.dialogVisible = true;
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.form = Object.assign({}, row);
-      this.title = "修改测试模块";
+      this.title = "修改用例";
     },
     handleStatus(row) {
       let text = row.status ? "禁用" : "启用";
@@ -187,7 +223,7 @@ export default {
         type: "warning",
       })
         .then(function () {
-          return taskProductAuth([{ id: row.id, status: row.status }]);
+          return taskCaseAuth([{ id: row.id, status: row.status }]);
         })
         .then(() => {
           this.msgSuccess(text + "成功");
@@ -207,7 +243,27 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-
+    /** 审核  */
+    handleCheck(row) {
+      this.$confirm("是否审核通过？", "警告", {
+        confirmButtonText: "通 过",
+        cancelButtonText: "驳 回",
+        type: "warning",
+      })
+        .then(function () {
+          return testCaseState([{ id: row.id, state: 1 }]);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("操作成功");
+        })
+        .catch(() => {
+          testCaseState([{ id: row.id, state: 2 }]).then(() => {
+            this.getList();
+            this.msgSuccess("操作成功");
+          });
+        });
+    },
     /** 删除按钮操作 */
     // handleDelete(row) {
     //   this.$confirm(

@@ -68,7 +68,7 @@ export default {
     width: {
       type: [Number, String],
       required: false,
-      default: "auto",
+      default: "100%",
     },
   },
   data() {
@@ -233,7 +233,7 @@ export default {
         window.tinymce
           .get(this.tinymceId)
           .insertContent(
-            `<img class="wscnph" src="${v.url}"  style="width:auto">`
+            `<img class="wscnph" src="${v.url}"  style="width:100%">`
           )
       );
     },
