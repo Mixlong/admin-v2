@@ -102,6 +102,14 @@
         >
           新 增
         </el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleOldAdd"
+        >
+          新 增（旧）
+        </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
@@ -110,7 +118,6 @@
       v-loading="loading"
       :height="tableHeight()"
       :data="list"
-      id="printMe"
       :cell-class-name="cellClassName"
       @cell-click="cellClick"
     >
@@ -217,15 +224,27 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="150">
-        <div class="flex justify-around" slot-scope="{ row }">
+        <div class="flex" slot-scope="{ row }">
           <div class="flex flex-direction align-start">
             <!-- :disabled="isDisabled(row.date)" -->
             <el-button
+              v-if="row.salesOrderNo"
               :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
               type="text"
               @click="handleUpdate(row)"
             >
               编辑
+            </el-button>
+            <el-button
+              v-if="!row.salesOrderNo"
+              :class="[
+                isDisabled(row.date) ? 'text-gray' : 'text-blue',
+                'mlZero',
+              ]"
+              type="text"
+              @click="handleOldUpdate(row)"
+            >
+              编辑(旧)
             </el-button>
             <el-button
               class="text-red mlZero"
@@ -246,7 +265,10 @@
               日志
             </el-button>
           </div>
-          <div class="flex flex-direction align-start" v-if="isDataAll(row)">
+          <div
+            class="flex flex-direction align-start margin-left-xs"
+            v-if="isDataAll(row)"
+          >
             <el-button
               class="mlZero"
               type="text"
@@ -262,29 +284,45 @@
               >
                 下载生产资料
               </el-button>
+
               <el-button
                 class="mlZero"
                 type="text"
-                @click="createPreDetail(row.id)"
+                @click="getProSecDetail(row.id)"
               >
                 生成预览资料
               </el-button>
-              <el-button
+              <!-- 
+              <el-button class="mlZero" type="text" @click="textExcel">
+                生成预览资料
+              </el-button> -->
+
+              <el-button class="mlZero" type="text" @click="uploadFile(row)">
+                上传资料清单
+              </el-button>
+              <!-- <el-button
                 v-if="row.excelUrl"
                 class="mlZero"
                 type="text"
                 @click="ReadOfficeFile(row.excelUrl)"
               >
                 预览资料清单
-              </el-button>
+              </el-button> -->
             </template>
-            <el-button class="mlZero" type="text" @click="handleProd(row.id)">
+            <el-button
+              v-if="row.excelUrl"
+              class="mlZero"
+              type="text"
+              @click="handleProd(row.id)"
+            >
               外发生产
             </el-button>
           </div>
         </div>
       </el-table-column>
     </el-table>
+
+    <input type="file" @change="Upload" />
 
     <pagination
       v-show="total > 0"
@@ -296,6 +334,16 @@
 
     <CompUpdate
       ref="compUpdate"
+      :title="title"
+      :dictList="dictList"
+      :modelList="modelList"
+      :operationList="operationList"
+      :isExcelFile.sync="isExcelFile"
+      @getData="getList"
+    />
+
+    <old-comUpdate
+      ref="oldCompUpdate"
       :title="title"
       :dictList="dictList"
       :modelList="modelList"
@@ -417,23 +465,33 @@ import {
   schedulingList,
   schedulingDel,
   createDataFile,
-  createDataDetail,
   sendProd,
+  proSecDetail,
+  schedulingEdit,
 } from "@/api/www/planSchedule";
 import { typeCategory } from "@/api/third/category";
 import { listComputer, computerName } from "@/api/third/computer";
-import CompUpdate from "./components/update";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
+import table2excel from "js-table2excel";
+import XLSX from "xlsx";
+import "./table2excel";
+import reqUrl from "@/utils/requestUrl";
+
+import FileSaver from "file-saver";
+import axios from "axios";
 
 export default {
   components: {
     VueQr,
-    CompUpdate,
+    CompUpdate: () => import("./components/update.vue"),
+    OldComUpdate: () => import("./components/oldUpdate.vue"),
     EditLog: () => import("./components/log.vue"),
   },
   data() {
     return {
+      actionUrl: reqUrl + "/oss/batch-upload",
+      isExcelFile: false,
       listId: "",
       // 显示搜索条件
       showSearch: true,
@@ -549,7 +607,6 @@ export default {
       this.queryParams.orderId = orderId;
     }
     const { listId } = this.$route.params;
-    console.log(listId);
     if (listId) {
       this.listId = listId;
     }
@@ -580,6 +637,174 @@ export default {
     });
   },
   methods: {
+    Upload(event) {
+      console.log(event);
+      const file = event.target.files[0];
+      console.log(file);
+      // 在这里进行一系列的校验
+      // const formData = new FormData();
+      // formData.append("file", file);
+      console.log(formData);
+      axios
+        .post(this.actionUrl, formData, {
+          "Content-type": "multipart/form-data",
+        })
+        .then(
+          (res) => {
+            // 上传成功后的处理
+            console.log(res);
+          },
+          (err) => {
+            // 出现错误时的处理
+          }
+        );
+    },
+    getProSecDetail(id) {
+      proSecDetail(id).then((res) => {
+        this.handleExcel(res.data);
+      });
+    },
+    handleExcel(data) {
+      const column = [
+        {
+          title: "属性",
+          key: "name",
+          type: "text",
+        },
+        {
+          title: "值",
+          key: "value",
+          type: "text",
+        },
+        {
+          title: "图片",
+          key: "url",
+          type: "image",
+        },
+      ];
+      const excelName = "生产资料确认表";
+      const datas = this.Format(data);
+      table2excel(column, datas, excelName);
+    },
+
+    textExcel(id) {
+      const table2excel = new Table2Excel();
+      table2excel.export(document.getElementById("table"));
+      const wb = XLSX.utils.table_to_book(document.getElementById("table"));
+      console.log(wb);
+      const wbout = XLSX.write(wb, {
+        bookType: "xlsx",
+        bookSST: true,
+        type: "binary",
+      });
+      console.log("wbout", wbout);
+
+      const blob = new Blob([this.s2ab(wbout)], {
+        type: "application/octet-stream",
+      });
+
+      this.uploadExcelFile(blob, id);
+
+      // const data = [
+      //   ["jose", "Done", 29],
+      //   ["jose", "Done", 29],
+      //   ["jose", "Done", 29],
+      // ];
+      // const worksheet = XLSX.utils.aoa_to_sheet(data);
+      // const workBook = XLSX.utils.book_new();
+      // XLSX.utils.book_append_sheet(workBook, worksheet, "Sheet1");
+
+      // const fileName = "测试";
+      // const wbout = XLSX.write(workBook, {
+      //   bookType: "xlsx",
+      //   bookSST: false,
+      //   type: "binary",
+      // });
+
+      // FileSaver.saveAs(
+      //   new Blob([s2ab(wbout)], { type: "application/octet-stream" }),
+      //   fileName
+      // );
+
+      // FileSaver.saveAs(
+      //   new Blob(["hello world"], { type: "text/plain;charset=utf-8" }),
+      //   "hello world.txt"
+      // );
+
+      // 上传到服务器
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new Blob([wbout], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }),
+        fileName
+      );
+
+      axios
+        .post(this.actionUrl, formData, {
+          "Content-type": "multipart/form-data",
+        })
+        .then(
+          (res) => {
+            // 上传成功后的处理
+            console.log(res);
+          },
+          (err) => {
+            // 出现错误时的处理
+          }
+        );
+    },
+
+    // uploadExcelFile(fileData) {
+    //   const formData = new FormData();
+    //   formData.append("file", fileData);
+    //   let reader = new FileReader();
+    //   reader.readAsBinaryString(fileData);
+    //   reader.onload = function (event) {
+    //     let data = event.target.result;
+    //     console.log(data);
+    //     axios
+    //       .post(this.actionUrl, data, {
+    //         "Content-type": "application/octet-stream",
+    //       })
+    //       .then(
+    //         (res) => {
+    //           // 上传成功后的处理
+    //           console.log(res, "success");
+    //         },
+    //         (err) => {
+    //           // 出现错误时的处理
+    //         }
+    //       );
+    //   };
+    // },
+    // s2ab(s) {
+    //   const buf = new ArrayBuffer(s.length);
+    //   const view = new Uint8Array(buf);
+    //   for (let i = 0; i < s.length; ++i) {
+    //     view[i] = s.charCodeAt(i) & 0xff;
+    //   }
+    //   return buf;
+    // },
+
+    Format(data) {
+      data.forEach((item) => {
+        if (item.value === null) {
+          item.value = "";
+        }
+      });
+      return data;
+    },
+    // 上传资料清单
+    uploadFile(row) {
+      this.title = "资料清单";
+      this.isExcelFile = true;
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.form = Object.assign({}, row);
+      this.$refs.compUpdate.dialogVisible = true;
+    },
     changeCategory(val) {
       if (!val) return;
       this.queryParams.computerId = "";
@@ -657,6 +882,11 @@ export default {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
     },
+    handleOldAdd() {
+      this.title = "新增计划";
+      this.$refs.oldCompUpdate.reset();
+      this.$refs.oldCompUpdate.oldDialogVisible = true;
+    },
     handleUpdate(row) {
       this.title = "编辑计划";
       this.$refs.compUpdate.reset();
@@ -668,6 +898,17 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.getOrderDetail(row.salesOrderNo);
     },
+    handleOldUpdate(row) {
+      this.title = "编辑计划";
+      this.$refs.oldCompUpdate.reset();
+      this.$refs.oldCompUpdate.form = Object.assign(
+        {},
+        { ...row, dateRange: [row.startTime, row.endTime] }
+      );
+      this.$refs.oldCompUpdate.cloneForm = Object.assign({}, row);
+      this.$refs.oldCompUpdate.oldDialogVisible = true;
+    },
+
     /** 搜索按钮操作 */
     handleQuery() {
       this.listId = this.listId && "";
@@ -741,17 +982,6 @@ export default {
     // 下载生产资料
     handleDownloadFile(url) {
       this.zipFile(url);
-    },
-    // 生成预览资料
-    createPreDetail(id) {
-      createDataDetail(id)
-        .then(() => {
-          this.msgSuccess("生成预览资料成功");
-          this.getList();
-        })
-        .catch(() => {
-          this.msgError("生成预览资料失败");
-        });
     },
     // 外发生产
     handleProd(id) {

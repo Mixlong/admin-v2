@@ -1,102 +1,59 @@
 <template>
-  <!--   -->
   <el-dialog
     :title="title"
     width="750px"
     append-to-body
-    :close-on-click-modal="false"
     top="2vh"
     v-bind="$attrs"
+    :close-on-click-modal="false"
     :modal-append-to-body="true"
-    v-on="$listeners"
-    @open="onOpen"
-    @close="onClose"
+    @close="$emit('update:visible', false)"
+    center
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="85px"
-      :class="{ 'row-label-style': showName }"
-    >
-      <el-row>
-        <el-col :span="24">
-          <el-form-item
-            label="项目名称"
-            prop="projectName"
-            label-width="85px"
-            v-if="!showName">
-            <el-input
-              v-model="form.projectName"
-              placeholder="请输入项目名称"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item
-            label="客户"
-            prop="customer"
-            label-width="85px"
-            v-if="!showName">
-            <el-input
-              v-model="form.customer"
-              placeholder="请输入客户"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item
-            label="类型"
-            prop="type"
-            v-if="!showName">
-            <el-select v-model="form.type" placeholder="请选择类型" style="width: 100%">
-              <el-option
-                v-for="(dict, index) in typeOptions"
-                :key="index"
-                :label="dict.dictLabel"
-                :value="dict.dictValue"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-form-item label="内容" prop="content" style="width: 100%">
+    <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form-item label="事项" prop="item">
         <el-input
-          :autosize="{ minRows: 10 }"
-          type="textarea"
-          v-model="form.content"
-          placeholder="请输入"
-        ></el-input>
+          v-model="form.item"
+          placeholder="请输入事项"
+          style="width: 65%"
+        />
       </el-form-item>
-      <el-form-item label="计划" prop="workPlan" style="width: 100%">
-        <el-input
-          :autosize="{ minRows: 10 }"
-          type="textarea"
-          v-model="form.workPlan"
-          placeholder="请输入"
-        ></el-input>
-      </el-form-item>
-
-      <el-form-item label="关联人员" prop="userList">
+      <el-form-item label="责任人" prop="createUser">
         <el-select
-          v-model="form.userList"
-          multiple
+          v-model="form.createUser"
           clearable
-          placeholder="请选择"
+          placeholder="请选择责任人"
           collapse-tags
-          style="width: 100%"
+          style="width: 65%"
         >
           <el-option
-            :label="item.dictLabel"
-            :value="item.dictValue"
             v-for="(item, index) in pmDictListOptions"
+            :label="item.userName"
+            :value="+item.userId"
             :key="index"
-          >
-          </el-option>
+          />
         </el-select>
       </el-form-item>
+      <el-form-item label="计划完成时间" prop="planTime">
+        <el-date-picker
+          v-model="form.planTime"
+          type="datetime"
+          value-format="timestamp"
+          :picker-options="pickerOptions"
+          placeholder="请选择计划完成时间"
+          style="width: 65%"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="内容及要求" prop="content">
+        <tinymce
+          v-if="$attrs.visible"
+          v-model="form.content"
+          height="250"
+          placeholder="请输入内容及要求"
+        />
+      </el-form-item>
     </el-form>
-
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="submitForm">确 定</el-button>
       <el-button @click="$emit('update:visible', false)">取 消</el-button>
@@ -106,62 +63,57 @@
 
 <script>
 import { emphasisAdd, emphasisUpdate } from "@/api/third/emphasis";
-import tinymce from "@/views/components/Editor";
 
 export default {
   inheritAttrs: false,
-  components: { tinymce },
-  props: ["pmDictListOptions", "stateOptions"],
+  components: { tinymce: () => import("@/views/components/Editor") },
+  props: ["pmDictListOptions"],
   data() {
     return {
-      showName: "",
-      typeOptions: [],
-      dialogVisible: false,
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now() - 24 * 3600 * 1000;
+        },
+      },
       // 表单参数
       form: {
-        isShow: 0,
-        workPlan: ""
+        item: "",
+        content: "",
+        planTime: "",
+        createUser: "",
       },
       title: "",
       // 表单校验
       rules: {
-        projectName: [{ required: true, message: "请输入项目名称", trigger: "blur" }],
-        userList: [
-          { required: true, message: "请选择关联人员", trigger: "blur" },
+        item: [{ required: true, message: "请输入事项", trigger: "blur" }],
+        content: [
+          { required: true, message: "请输入内容及要求", trigger: "blur" },
+        ],
+        planTime: [
+          { required: true, message: "请选择计划完成时间", trigger: "change" },
+        ],
+        createUser: [
+          { required: true, message: "请选择责任人", trigger: "change" },
         ],
       },
     };
   },
   watch: {
-    dialogVisible(val) {
-      // if (!val) {
-      //   this.form = {};
-      // }
-    },
-  },
-  mounted() {
-    this.getDicts("emphasis_type").then((res) => {
-      for (let key of res.data) {
-        key.dictValue = Number(key.dictValue);
+    "form.content"(val) {
+      if (val) {
+        this.clearValidateItem("form", "content");
       }
-      this.typeOptions = res.data;
-    });
+    },
   },
   methods: {
-    onOpen() {
-      let { rowUpdate } = this.$attrs;
-      if (rowUpdate) {
-        let fd = Object.assign({}, rowUpdate);
-        fd.userList = fd.userList.map((item) => item.userId);
-        this.form = Object.assign({}, fd);
-      } else {
-        this.reset();
-      }
-    },
-    onClose() {},
     // 表单重置
     reset() {
-      this.form = {};
+      this.form = {
+        item: "",
+        content: "",
+        planTime: "",
+        createUser: "",
+      };
       this.resetForm("form");
     },
 
@@ -170,9 +122,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           let params = Object.assign({}, this.form);
-          params.userList = params.userList.map((item) => {
-            return { userId: item };
-          });
           if (params.id) {
             emphasisUpdate(params).then((response) => {
               if (response.code === 200) {
@@ -196,7 +145,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scope>
-</style>
-

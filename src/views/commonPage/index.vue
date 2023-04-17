@@ -1,5 +1,5 @@
 <template>
-  <component :is="commonObj.pageName" :commonObj="commonObj"></component>
+  <component :is="commonObj.pageName" :commonObj="commonObj" />
 </template>
 
 <script>
@@ -12,6 +12,8 @@ export default {
   },
   components: {
     AddOrderPage: () => import("@/views/third/order/components/addOrUpdate"),
+    AddDemandPage: () =>
+      import("@/views/TestManage/productTest/components/addOrUpdate"),
   },
   created() {
     this.commonObj = this.$route.query;
