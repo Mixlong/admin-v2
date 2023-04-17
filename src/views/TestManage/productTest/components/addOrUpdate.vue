@@ -9,221 +9,74 @@
         label-position="left"
         :model="form"
         :rules="rules"
-        label-width="135px"
+        label-width="90px"
       >
-        <el-row type="flex" justify="space-between" :gutter="20">
-          <el-col :span="8">
-            <el-col>
-              <el-form-item label="迪太订单号" prop="salesOrderNo">
-                <el-input
-                  v-model.trim="form.salesOrderNo"
-                  clearable
-                  placeholder="请输入迪太订单号"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
+        <el-tabs type="border-card" v-model="form.type">
+          <el-tab-pane label="送样需求" name="0">
+            <el-col :span="8" style="min-height: calc(100vh - 400px)">
               <el-form-item label="客户名称" prop="customerName">
-                <select-loadMore
-                  style="width: 100%"
-                  v-model="form.customerName"
-                  :data="customerData.data"
-                  :page="customerData.page"
-                  :hasMore="customerData.more"
-                  dictLabel="name"
-                  dictValue="id"
-                  :request="getCustomerList"
-                  @getChange="getCustomerId"
-                  placeholder="请选择客户名称"
-                />
               </el-form-item>
             </el-col>
-            <el-col>
-              <el-form-item label="客户订单号" prop="customerOrderNo">
-                <el-input
-                  v-model.trim="form.customerOrderNo"
-                  clearable
-                  placeholder="请输入客户订单号"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="品类" prop="categoryId">
-                <el-select
-                  v-model="form.categoryId"
-                  class="w100"
-                  filterable
-                  allow-create
-                  clearable
-                  placeholder="请选择所属品类"
-                  @change="changeCategory"
-                >
-                  <el-option
-                    v-for="dict in dictList"
-                    :key="dict.id"
-                    :label="dict.name"
-                    :value="dict.id"
+          </el-tab-pane>
+          <el-tab-pane label="新增需求" name="1">
+            <el-row
+              type="flex"
+              justify="space-between"
+              :gutter="20"
+              style="min-height: calc(100vh - 400px)"
+            >
+              <el-col :span="8">
+                <el-form-item label="客户" prop="customerName">
+                  <el-input
+                    v-model.trim="form.customerName"
+                    clearable
+                    placeholder="请输入客户"
                   />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="型号" prop="computerId">
-                <el-select
-                  v-model="form.computerId"
-                  filterable
-                  remote
-                  clearable
-                  class="w100"
-                  placeholder="请选择仪表型号"
-                  :remote-method="getComputerNameList"
-                >
-                  <el-option
-                    v-for="dict in computerOptions"
-                    :key="dict.model"
-                    :label="dict.name"
-                    :value="dict.model"
+                </el-form-item>
+                <el-form-item label="产品品类" prop="categoryName">
+                  <el-input
+                    v-model.trim="form.categoryName"
+                    clearable
+                    placeholder="请输入产品品类"
                   />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="芯片版本" prop="chipVersion">
-                <el-select
-                  v-model="form.chipVersion"
-                  clearable
-                  class="w100"
-                  placeholder="请选择芯片版本"
-                >
-                  <el-option
-                    v-for="dict in chipVersionList"
-                    :key="dict.dictCode"
-                    :label="dict.dictLabel"
-                    :value="dict.dictLabel"
+                </el-form-item>
+                <el-form-item label="产品型号" prop="computerName">
+                  <el-input
+                    v-model.trim="form.computerName"
+                    clearable
+                    placeholder="请输入产品型号"
                   />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="BOM编码" prop="bomCode">
-                <el-input
-                  v-model.trim="form.bomCode"
-                  clearable
-                  placeholder="请选择BOM编码"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="订单数量" prop="orderQuantity">
-                <el-input
-                  v-model.trim="form.orderQuantity"
-                  clearable
-                  onkeyup="value=value.replace(/[^\d0]/g, '')"
-                  placeholder="请输入订单数量"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="出货日期" prop="sellTime">
-                <el-date-picker
-                  v-model="form.sellTime"
-                  style="width: 100%"
-                  align="right"
-                  type="date"
-                  clearable
-                  placeholder="请选择出货日期"
-                  value-format="timestamp"
-                  :picker-options="pickerOptions"
-                  format="yyyy-MM-dd"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客户要求到货日期" prop="arrivalTime">
-                <el-date-picker
-                  v-model="form.arrivalTime"
-                  style="width: 100%"
-                  align="right"
-                  type="date"
-                  clearable
-                  placeholder="请选择客户要求到货日期"
-                  value-format="timestamp"
-                  :picker-options="pickerOptions"
-                  format="yyyy-MM-dd"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="出货地址" prop="consigneeAddress">
-                <el-input
-                  v-model.trim="form.consigneeAddress"
-                  type="textarea"
-                  clearable
-                  placeholder="请输入出货地址"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="箱唛" prop="isMark">
-                <el-select
-                  v-model="form.isMark"
-                  class="w100"
-                  clearable
-                  placeholder="请选择箱唛"
-                >
-                  <el-option label="否" value="0" />
-                  <el-option label="是" value="1" />
-                  <el-option label="待确认" value="2" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col v-if="form.isMark === '1'">
-              <el-form-item label="指定内容" prop="containerMarkInfo">
-                <el-row>
-                  <el-col>
-                    <DrUpload
-                      v-model="form.containerMarkInfo"
-                      :limit="1"
-                      :isOnePic="1"
-                      :showFileList="false"
-                    >
-                      <div class="text-left">
-                        <el-button size="mini" type="primary">上传</el-button>
-                      </div>
-                    </DrUpload>
-                  </el-col>
-                  <el-col>
-                    <span style="word-break: break-all">
-                      {{ form.containerMarkInfo }}
-                    </span>
-                    <!-- <el-input type="text" v-model="form.containerMarkInfo"></el-input> -->
-                  </el-col>
-                </el-row>
-              </el-form-item>
-            </el-col>
-          </el-col>
-          <el-divider direction="vertical" class="el_divider_line" />
-          <el-col :span="16">
-            <el-col>
-              <el-form-item label="BOM选配信息" prop="bomInfo">
-                <tinymce
-                  v-model="form.bomInfo"
-                  placeholder="请输入BOM选配信息"
-                  height="300"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="备注" prop="remark">
-                <tinymce
-                  v-model="form.remark"
-                  placeholder="请输入备注"
-                  height="300"
-                />
-              </el-form-item>
-            </el-col>
-          </el-col>
-        </el-row>
+                </el-form-item>
+                <el-form-item label="软件版本" prop="softVersion">
+                  <el-input
+                    v-model.trim="form.softVersion"
+                    clearable
+                    placeholder="请输入软件版本"
+                  />
+                </el-form-item>
+                <el-form-item label="硬件版本" prop="hardVersion">
+                  <el-input
+                    v-model.trim="form.hardVersion"
+                    clearable
+                    placeholder="请输入硬件版本"
+                  />
+                </el-form-item>
+                <el-form-item label="需求总表" prop="needInfo">
+                  <DrUpload
+                    class="flex flex-direction"
+                    v-model="form.needInfo"
+                    :limit="1"
+                    :isOnePic="1"
+                  >
+                  <div class="text-left">
+                    <el-button size="mini" type="primary"> 附件上传 </el-button>
+                  </div> 
+                  </DrUpload>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-tab-pane>
+        </el-tabs>
       </el-form>
       <div class="text-center margin-top-lg">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -240,6 +93,7 @@ import {
   getOrderDetail,
   getOrderProcess,
 } from "@/api/order";
+import { sampleList } from "@/api/third/sample";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import commomFile from "../mixins";
 
@@ -294,60 +148,31 @@ export default {
       },
       // 表单校验
       rules: {
-        salesOrderNo: [
-          { required: true, message: "请输入销售订单号", trigger: "blur" },
-        ],
         customerName: [
-          { required: false, message: "请选择客户名称", trigger: "change" },
+          { required: false, message: "请选择客户名称", trigger: "blur" },
         ],
-        customerOrderNo: [
-          { required: false, message: "请输入客户订单号", trigger: "blur" },
+        categoryName: [
+          { required: false, message: "请输入产品品类", trigger: "blur" },
         ],
-        categoryId: [
-          { required: false, message: "请选择所属品类", trigger: "change" },
+        computerName: [
+          { required: false, message: "请输入产品型号", trigger: "blur" },
         ],
-        computerId: [
-          { required: false, message: "请选择所属型号", trigger: "change" },
+        softVersion: [
+          { required: false, message: "请输入软件版本", trigger: "blur" },
         ],
-        chipVersion: [
-          { required: false, message: "请选择芯片版本", trigger: "change" },
+        hardVersion: [
+          { required: false, message: "请输入硬件版本", trigger: "blur" },
         ],
-        bomCode: [
-          { required: false, message: "请选择BOM编码", trigger: "change" },
-        ],
-        orderQuantity: [
-          { required: false, message: "请输入订单数量", trigger: "change" },
-        ],
-        sellTime: [
-          { required: false, message: "请选择出货日期", trigger: "change" },
-        ],
-        arrivalTime: [
-          { required: false, message: "客户要求到货日期", trigger: "change" },
-        ],
-        consigneeAddress: [
-          { required: false, message: "请输入出货地址", trigger: "blur" },
-        ],
-        isMark: [{ required: false, message: "请选择箱唛", trigger: "change" }],
-        orderReviewForm: [
-          { required: false, message: "请选择箱唛", trigger: "change" },
-        ],
-        containerMarkInfo: [
-          { required: false, message: "请选择指定内容 ", trigger: "change" },
-        ],
-        bomInfo: [
-          { required: false, message: "请输入BOM选配信息 ", trigger: "change" },
-        ],
+        needInfo: [
+          { required: false, message: "请上传需求总表", trigger: "change" },
+        ]
       },
     };
   },
   created() {
-    this.copyReplay();
     this.getCategoryComputerDict();
     this.getUpdateDetail();
     this.getOrderProcessData();
-  },
-  beforeDestroy() {
-    sessionStorage.removeItem("copyRowData");
   },
   methods: {
     // 详情
@@ -472,14 +297,6 @@ export default {
           this.$router.push("/www/order");
         }
       });
-    },
-    // 复制回显
-    copyReplay() {
-      const copyRowData =
-        JSON.parse(sessionStorage.getItem("copyRowData")) || {};
-      if (this.commonObj.pageName === "AddOrderPage" && copyRowData.id) {
-        this.form = { ...copyRowData, id: "" };
-      }
     },
     /** 提交按钮 */
     submitForm: function () {

@@ -8,38 +8,7 @@
       center
       :close-on-click-modal="false"
     >
-      <el-form
-        ref="form"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-        label-position="left"
-      >
-        <el-form-item label="产品类型：" prop="categoryId">
-          <el-select
-            v-model="form.categoryId"
-            placeholder="请选择产品类型"
-            filterable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in modelList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            >
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="产品描述：" prop="desc">
-          <el-input
-            v-model="form.desc"
-            type="textarea"
-            placeholder="请输入产品描述"
-            clearable
-          />
-        </el-form-item>
-      </el-form>
+      
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="dialogVisible = false">取 消</el-button>
