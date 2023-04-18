@@ -7,6 +7,7 @@
           size="mini"
           filterable
           placeholder="请选择所属模块"
+          @change="getList"
         >
           <el-option
             v-for="dict in moduleList"
@@ -22,6 +23,8 @@
           size="mini"
           filterable
           placeholder="请选择用例类型"
+          @change="getList"
+          style="width: 150px"
         >
           <el-option
             v-for="dict in useCaseTypeList"
@@ -31,13 +34,29 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="审核状态：" prop="state">
+        <el-select
+          v-model="queryParams.state"
+          clearable
+          placeholder="请选择审核状态"
+          @change="getList"
+          style="width: 150px"
+        >
+          <el-option
+            v-for="(value, key) in stateList"
+            :key="key"
+            :label="value"
+            :value="key"
+          />
+        </el-select>
+      </el-form-item>      
       <el-form-item label="产品状态：" prop="status">
         <el-select
           v-model="queryParams.status"
           clearable
           placeholder="请选择产品状态"
           @change="getList"
-          style="width: 140px"
+          style="width: 150px"
         >
           <el-option
             v-for="(value, key) in commonStatusList"
@@ -138,6 +157,7 @@
         </template>
       </el-table-column>
     </el-table>
+
     <pagination
       v-show="total > 0"
       :total="total"
@@ -171,9 +191,9 @@ export default {
       useCaseTypeList: [],
       // 审核状态
       stateList: {
-        1: "待审核",
-        2: "已批准",
-        3: "已驳回",
+        0: "待审核",
+        1: "已批准",
+        2: "已驳回",
       },
       commonStatusList,
       // 遮罩层

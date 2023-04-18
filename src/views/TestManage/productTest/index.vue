@@ -72,23 +72,18 @@
       <el-table-column label="产品型号" prop="computerName" align="center" />
       <el-table-column label="客户" prop="customerName" align="center" />
       <el-table-column label="软件版本信息" align="center">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>软件版本: {{ row.softVersion }}</span>
-          <br>
+          <br />
           <span>硬件版本: {{ row.hardVersion }}</span>
         </template>
       </el-table-column>
       <el-table-column label="详细需求" prop="desc" align="center" />
       <el-table-column label="配置需求表" prop="desc" align="center" />
       <el-table-column label="状态" align="center" width="120">
-        <!-- <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatus(scope.row)"
-          ></el-switch>
-        </template> -->
+        <template slot-scope="{ row }">
+          {{ stateList[row.state] }}
+        </template>
       </el-table-column>
       <el-table-column
         label="当前负责人"
@@ -107,10 +102,19 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="120">
-        <template slot-scope="{row}">
-          <Tooltip icon="el-icon-edit" content="修复中" @click="handleUpdate(row)" />
-          <Tooltip icon="el-icon-check" content="复测中" />
-          <Tooltip v-if="row.isComplete === 1" icon="el-icon-s-check" content="测试完毕" />
+        <template slot-scope="{ row }">
+          <Tooltip
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate(row)"
+          />
+          <Tooltip icon="el-icon-check" content="待测试" />
+          <!--<Tooltip icon="el-icon-check" content="复测中" /> -->
+          <Tooltip
+            v-if="row.isComplete === 1"
+            icon="el-icon-s-check"
+            content="测试完毕"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -121,18 +125,16 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
-
-    <CompUpdate ref="compUpdate" />
   </div>
 </template>
 
 <script>
-import { taskList, authComputer, changeStatus } from "@/api/third/testApi"; 
+import { taskList, authComputer, changeStatus } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
   components: {
-    CompUpdate: () => import('./components/addOrUpdate'),
+    CompUpdate: () => import("./components/addOrUpdate"),
   },
   filters: {},
   data() {
@@ -153,6 +155,12 @@ export default {
       list: [],
       // 品类
       dictList: [],
+      // 测试状态
+      stateList: {
+        0: "待测试",
+        1: "通过",
+        2: "不通过",
+      },
       // 查询参数
       queryParams: {
         p: 1,
@@ -176,11 +184,6 @@ export default {
       });
     },
     handleAdd() {
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.form.categoryId = this.queryParams.key;
-      this.$refs.compUpdate.title = "新增版本";
-
       this.$router.push({
         path: "/addOrUpdate/CommonPage",
         query: {
@@ -190,10 +193,17 @@ export default {
       });
     },
     handleUpdate(row) {
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.form = Object.assign({}, row);
-      this.$refs.compUpdate.title = "修改版本";
+      // if (row.id) {
+      //   sessionStorage.setItem("testData", JSON.stringify(row));
+      // }
+      this.$router.push({
+        path: "/addOrUpdate/CommonPage",
+        query: {
+          pageName: "AddDemandPage",
+          title: "修改测试需求",
+          id: row.id
+        },
+      });
     },
     handleStatus(row) {
       let text = row.status ? "禁用" : "启用";

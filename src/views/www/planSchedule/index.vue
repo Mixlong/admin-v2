@@ -322,8 +322,6 @@
       </el-table-column>
     </el-table>
 
-    <input type="file" @change="Upload" />
-
     <pagination
       v-show="total > 0"
       :total="total"
@@ -637,28 +635,6 @@ export default {
     });
   },
   methods: {
-    Upload(event) {
-      console.log(event);
-      const file = event.target.files[0];
-      console.log(file);
-      // 在这里进行一系列的校验
-      // const formData = new FormData();
-      // formData.append("file", file);
-      console.log(formData);
-      axios
-        .post(this.actionUrl, formData, {
-          "Content-type": "multipart/form-data",
-        })
-        .then(
-          (res) => {
-            // 上传成功后的处理
-            console.log(res);
-          },
-          (err) => {
-            // 出现错误时的处理
-          }
-        );
-    },
     getProSecDetail(id) {
       proSecDetail(id).then((res) => {
         this.handleExcel(res.data);
