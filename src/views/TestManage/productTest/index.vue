@@ -68,19 +68,56 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品品类" prop="categoryName" align="center" />
-      <el-table-column label="产品型号" prop="computerName" align="center" />
-      <el-table-column label="客户" prop="customerName" align="center" />
-      <el-table-column label="软件版本信息" align="center">
+      <el-table-column
+        label="产品品类"
+        prop="categoryName"
+        align="center"
+        width="120px"
+      >
         <template slot-scope="{ row }">
-          <span>软件版本: {{ row.softVersion }}</span>
-          <br />
-          <span>硬件版本: {{ row.hardVersion }}</span>
+          {{ row.type === 1 ? row.categoryName : "---" }}
         </template>
       </el-table-column>
-      <el-table-column label="详细需求" prop="desc" align="center" />
-      <el-table-column label="配置需求表" prop="desc" align="center" />
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column
+        label="产品型号"
+        prop="computerName"
+        align="center"
+        width="120px"
+      >
+        <template slot-scope="{ row }">
+          <div class="flex flex-direction align-center">
+            <el-tag
+              class="margin-bottom-xs"
+              v-for="(item, index) in row.computerName.split(',')"
+              :key="index"
+            >
+              {{ item }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="客户"
+        prop="customerName"
+        align="center"
+        width="120px"
+      />
+      <el-table-column label="软件版本信息" align="center" width="150px">
+        <template slot-scope="{ row }">
+          <span>软件版本: {{ row.softVersion || "---" }}</span>
+          <br />
+          <span>硬件版本: {{ row.hardVersion || "---" }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="详细需求" prop="desc" header-align="center">
+        <div slot-scope="{ row }" v-html="row.demand"></div>
+      </el-table-column>
+      <el-table-column label="配置需求表" prop="desc" align="center">
+        <template slot-scope="{ row }">
+          {{ row.type === 1 ? row.desc : "---" }}
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" width="100px">
         <template slot-scope="{ row }">
           {{ stateList[row.state] }}
         </template>
@@ -89,7 +126,7 @@
         label="当前负责人"
         prop="createBy"
         align="center"
-        width="120"
+        width="120px"
       />
       <el-table-column
         label="创建时间"
@@ -101,19 +138,20 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" align="center" width="120px">
         <template slot-scope="{ row }">
           <Tooltip
+            v-if="row.state !== 1"
             icon="el-icon-edit"
             content="编辑"
             @click="handleUpdate(row)"
           />
-          <Tooltip icon="el-icon-check" content="待测试" />
-          <!--<Tooltip icon="el-icon-check" content="复测中" /> -->
+          <Tooltip v-if="row.state === 0" icon="el-icon-check" content="待测试" @click="onWatiTest(row.id)" />
           <Tooltip
             v-if="row.isComplete === 1"
             icon="el-icon-s-check"
             content="测试完毕"
+            @click="onComplete(row.id)"
           />
         </template>
       </el-table-column>
@@ -125,16 +163,19 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
+
+    <wait-test :visible.sync="isWaitTest" :detailId="detailId" />
   </div>
 </template>
 
 <script>
-import { taskList, authComputer, changeStatus } from "@/api/third/testApi";
+import { taskList, authComputer, changeStatus, taskComplete } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
   components: {
     CompUpdate: () => import("./components/addOrUpdate"),
+    WaitTest: () => import("./components/waitTest.vue"),
   },
   filters: {},
   data() {
@@ -150,6 +191,8 @@ export default {
       single: true,
       // 非多个禁用
       multiple: true,
+      isWaitTest: false,
+      detailId: "",
       // 总条数
       total: 0,
       list: [],
@@ -193,15 +236,12 @@ export default {
       });
     },
     handleUpdate(row) {
-      // if (row.id) {
-      //   sessionStorage.setItem("testData", JSON.stringify(row));
-      // }
       this.$router.push({
         path: "/addOrUpdate/CommonPage",
         query: {
           pageName: "AddDemandPage",
           title: "修改测试需求",
-          id: row.id
+          id: row.id,
         },
       });
     },
@@ -250,6 +290,29 @@ export default {
         .then(() => {
           this.getList();
           this.msgSuccess("删除成功");
+        })
+        .catch();
+    },
+    onWatiTest(id) {
+      this.detailId = id;
+      this.isWaitTest = true;
+    },
+    onComplete(id) {
+      this.$confirm(
+        '是否确认该任务测试完毕吗?',
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(function () {
+          return taskComplete(id);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("操作成功");
         })
         .catch();
     },

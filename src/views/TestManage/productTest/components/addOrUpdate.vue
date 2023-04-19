@@ -12,11 +12,11 @@
         label-width="90px"
         class="test_box"
       >
-        <el-tabs type="border-card" v-model="form.type">
+        <el-tabs type="border-card" v-model="form.type" @tab-click="handleClick">
           <el-tab-pane
             label="送样需求"
             name="0"
-            :disabled="testData.id && form.type === '1'"
+            v-if="this.testData.id && this.form.type === '0' || !this.testData.id"
           >
             <el-container class="test_left_box flex">
               <el-aside
@@ -36,6 +36,7 @@
                   </template>
                   <el-descriptions-item label="产品型号">
                     <el-tag
+                      class="margin-right-xs"
                       v-for="(item, index) in modelList(
                         sampleSingleData.baseModel
                       )"
@@ -56,22 +57,19 @@
                 </el-descriptions>
               </el-aside>
               <el-main class="flex-sub reset_pad_mar">
-                <CareList :multipleSelection.sync="form.list" />
+                <CareList ref="careListRef1" :multipleSelection.sync="form.list" :sammpleId="sammpleId" />
               </el-main>
             </el-container>
           </el-tab-pane>
           <el-tab-pane
             label="新增需求"
             name="1"
-            :disabled="testData.id && form.type === '0'"
+            v-if="this.testData.id && this.form.type === '1' || !this.testData.id"
           >
-            <el-row
-              type="flex"
-              justify="space-between"
-              :gutter="20"
-              style="min-height: calc(100vh - 400px)"
-            >
-              <el-col :span="8">
+            <el-container class="test_left_box flex">
+              <el-aside
+                class="test_aside_box flex-sub bg-white reset_pad_mar solid-right"
+              >
                 <el-form-item label="客户" prop="customerName">
                   <el-input
                     v-model.trim="form.customerName"
@@ -121,14 +119,17 @@
                     </div>
                   </DrUpload>
                 </el-form-item>
-              </el-col>
-            </el-row>
+              </el-aside>
+              <el-main class="flex-sub reset_pad_mar">
+                <CareList ref="careListRef2" :multipleSelection.sync="form.list" :sammpleId="sammpleId" />
+              </el-main>
+            </el-container>
           </el-tab-pane>
         </el-tabs>
       </el-form>
       <div class="text-center margin-top-lg">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="$router.push('/www/order')">取 消</el-button>
+        <el-button @click="$router.push('/TestManage/productTest')">取 消</el-button>
       </div>
     </el-card>
 
@@ -251,7 +252,7 @@ export default {
         list: [],
       },
       cloneForm: {},
-
+      sammpleId: "",
       isSampleLoading: false,
       sampleTotal: 0,
       // 送样列表
@@ -302,6 +303,22 @@ export default {
         return baseModel && baseModel.split(",");
       };
     },
+    isSampleTab() {
+      if(this.testData.id && this.form.type === '0') {
+        return true
+      } 
+      if(!this.testData.id) {
+        return true
+      }
+    },
+    isAddTab() {
+      if(this.testData.id && this.form.type === '1') {
+        return true
+      }
+      if(!this.testData.id) {
+        return true
+      }
+    }
   },
   watch: {
     "form.needInfo"(needInfo) {
@@ -318,38 +335,51 @@ export default {
         this.rules.softVersion[0].required = true;
         this.rules.hardVersion[0].required = true;
         this.rules.needInfo[0].required = true;
+      } else {
+        this.rules.customerName[0].required = false;
+        this.rules.categoryName[0].required = false;
+        this.rules.computerName[0].required = false;
+        this.rules.customerName[0].required = false;
+        this.rules.softVersion[0].required = false;
+        this.rules.hardVersion[0].required = false;
+        this.rules.needInfo[0].required = false;
       }
     },
   },
   async created() {
     const { id } = this.$route.query;
+    this.sammpleId = id;
     if (id) {
       this.testData = await this.getTaskInfo(id);
-
-      const {
-        demandId,
-        type,
-        computerName,
-        customerName,
-        softVersion,
-        hardVersion,
-        list
-      } = this.testData;
-      this.form.type = String(type);
-      this.form.list = list;
-      this.sampleSingleData = {
-        id: demandId,
-        baseModel: computerName,
-        customerName,
-        softVersion,
-        hardVersion,
-      };
-    }
+      if (this.testData.type === 0) {
+        const {
+          demandId,
+          computerName,
+          customerName,
+          softVersion,
+          hardVersion,
+        } = this.testData;
+        this.sampleSingleData = {
+          id: demandId,
+          baseModel: computerName,
+          customerName,
+          softVersion,
+          hardVersion,
+        };
+        this.$refs.careListRef1.getList()
+        this.form = Object.assign({}, this.testData);
+      } else {
+        this.$refs.careListRef2.getList()
+        this.form = Object.assign({}, this.testData);
+      }
+      this.form.type = String(this.testData.type);
+    } 
 
     this.getCategoryComputerDict();
     // this.getUpdateDetail();
     this.getOrderProcessData();
   },
+
   methods: {
     onSampleData() {
       this.isDrawer = true;
@@ -358,7 +388,7 @@ export default {
     getTaskInfo(id) {
       return new Promise((resolve, reject) => {
         taskInfo(id).then((res) => {
-          resolve(res.data)
+          resolve(res.data);
         });
       });
     },
@@ -410,8 +440,12 @@ export default {
         const del_row = selection.shift();
         this.$refs.sampleTableRef.toggleRowSelection(del_row, false);
       }
-      console.log(2, selection, row);
       this.multipleSelection = row;
+    },
+
+    // 切换清空
+    handleClick() {
+      this.form.list = []
     },
 
     // 详情
@@ -543,6 +577,9 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          if (!this.form.list.length) {
+            return this.msgError("请选择用例库");
+          }
           if (this.form.id) {
             // if (this.onAlertReason(this.form)) {
             //   this.$prompt(
@@ -572,27 +609,33 @@ export default {
             // } else {
             //   this.onUpdateOrder(this.form);
             // }
+           if(this.form.type === '0') {
+            const { baseModel, customerName, softVersion, hardVersion, id } =  this.sampleSingleData;
+            this.form = { ...this.form, baseModel, customerName, softVersion, hardVersion, demandId: id }
+           }
+            taskUpdate(this.form).then((res) => {
+              if (res.code === 200) {
+                this.msgSuccess("更新成功");
+                this.$router.push("/TestManage/productTest");
+              }
+            });
           } else {
-            console.log(this.form.type);
             if (this.form.type === "0") {
               if (!this.sampleSingleData.id) {
                 return this.msgError("请选择送样任务");
               }
+              const { baseModel, customerName, softVersion, hardVersion } =
+                this.sampleSingleData;
+              this.form = {
+                baseModel,
+                customerName,
+                softVersion,
+                hardVersion,
+                demandId: this.sampleSingleData.id,
+                type: 0,
+                list: this.form.list,
+              };
             }
-            if (!this.form.list.length) {
-              return this.msgError("请选择用例库");
-            }
-            const { baseModel, customerName, softVersion, hardVersion } =
-              this.sampleSingleData;
-            this.form = {
-              baseModel,
-              customerName,
-              softVersion,
-              hardVersion,
-              demandId: this.sampleSingleData.id,
-              type: 0,
-              list: this.form.list,
-            };
             taskSave(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");

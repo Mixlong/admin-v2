@@ -30,6 +30,7 @@
 <script>
 import { testCaseList } from "@/api/third/testApi";
 export default {
+  inheritAttrs: false,
   data() {
     return {
       loading: false,
@@ -44,12 +45,12 @@ export default {
     };
   },
   created() {
-    console.log(this.$attrs.multipleSelection);
-    this.getList();
+    if(!this.$attrs.sammpleId) {
+      this.getList();
+    }
   },
   methods: {
     handleSelectionChange(list) {
-      //   this.multipleSelection = list;
       this.$emit("update:multipleSelection", list);
     },
     getList() {
@@ -59,15 +60,15 @@ export default {
         this.testList = list;
         this.total = total;
         this.loading = false;
-
         const testList = this.$attrs.multipleSelection;
-        console.log(1111, testList);
+        console.log(666, testList, this.testList)
+
         if (testList.length) {
           this.$nextTick(() => {
             testList.forEach((item) => {
               this.testList.forEach((cItem) => {
-                if (item.id === cItem.id) {
-                  this.$refs.multipleTable.toggleRowSelection(cItem);
+                if (item.caseId === cItem.id) {
+                  this.$refs.multipleTable.toggleRowSelection(cItem, true);
                 }
               });
             });
