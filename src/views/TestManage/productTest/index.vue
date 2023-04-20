@@ -1,13 +1,6 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="客户：" prop="customerName">
-        <el-input
-          v-model.trim="queryParams.customerName"
-          clearable
-          placeholder="请输入客户"
-        />
-      </el-form-item>
       <el-form-item label="产品品类：" prop="categoryName">
         <el-input
           v-model.trim="queryParams.categoryName"
@@ -21,6 +14,23 @@
           clearable
           placeholder="请输入产品型号"
         />
+      </el-form-item>
+      <el-form-item label="客户：" prop="customerName">
+        <el-input
+          v-model.trim="queryParams.customerName"
+          clearable
+          placeholder="请输入客户"
+        />
+      </el-form-item>
+      <el-form-item label="完成状态：" prop="isComplete">
+        <el-select
+          v-model="queryParams.isComplete"
+          clearable
+          placeholder="请选择完成状态"
+        >
+          <el-option label="未完成" value="0"></el-option>
+          <el-option label="已完成" value="1"></el-option>
+        </el-select>
       </el-form-item>
       <!-- <el-form-item label="状态：" prop="computerStatus">
         <el-select
@@ -117,9 +127,15 @@
           {{ row.type === 1 ? row.desc : "---" }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="100px">
+      <el-table-column label="测试状态" align="center" width="100px">
         <template slot-scope="{ row }">
-          {{ stateList[row.state] }}
+          <el-tag :type="isTagType(row.state)">{{ stateList[row.state] }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="完成状态" align="center" width="100px">
+        <template slot-scope="{ row }">
+          <el-tag type="danger" v-if="row.isComplete === 0">未完成</el-tag>
+          <el-tag type="success" v-if="row.isComplete === 1">已完成</el-tag>
         </template>
       </el-table-column>
       <el-table-column
@@ -146,9 +162,14 @@
             content="编辑"
             @click="handleUpdate(row)"
           />
-          <Tooltip v-if="row.state === 0" icon="el-icon-check" content="待测试" @click="onWatiTest(row.id)" />
           <Tooltip
-            v-if="row.isComplete === 1"
+            v-if="row.state !== 1"
+            icon="el-icon-check"
+            content="待测试"
+            @click="onWatiTest(row.id)"
+          />
+          <Tooltip
+            v-if="isCompleteShow(row)"
             icon="el-icon-s-check"
             content="测试完毕"
             @click="onComplete(row.id)"
@@ -164,12 +185,17 @@
       @pagination="getList"
     />
 
-    <wait-test :visible.sync="isWaitTest" :detailId="detailId" />
+    <wait-test ref="waitTestRef" :visible.sync="isWaitTest" />
   </div>
 </template>
 
 <script>
-import { taskList, authComputer, changeStatus, taskComplete } from "@/api/third/testApi";
+import {
+  taskList,
+  authComputer,
+  changeStatus,
+  taskComplete,
+} from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
@@ -192,7 +218,6 @@ export default {
       // 非多个禁用
       multiple: true,
       isWaitTest: false,
-      detailId: "",
       // 总条数
       total: 0,
       list: [],
@@ -208,10 +233,28 @@ export default {
       queryParams: {
         p: 1,
         l: 10,
-        key: "",
-        computerStatus: "",
+        customerName: "",
+        categoryName: "",
+        computerName: "",
+        isComplete: "",
       },
     };
+  },
+  computed: {
+    isCompleteShow() {
+      return (row) => {
+        return row.isComplete === 0 && row.state !== 0;
+      };
+    },
+    isTagType() {
+      return state => {
+        switch(state) {
+          case 0: return 'warning'; 
+          case 1: return 'success'; 
+          case 2: return 'danger'; 
+        }
+      }
+    }
   },
   created() {
     this.getList();
@@ -294,19 +337,16 @@ export default {
         .catch();
     },
     onWatiTest(id) {
-      this.detailId = id;
       this.isWaitTest = true;
+      this.$refs.waitTestRef.getDetail(id);
+      this.$refs.waitTestRef.isPassFlag = true;
     },
     onComplete(id) {
-      this.$confirm(
-        '是否确认该任务测试完毕吗?',
-        "警告",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        }
-      )
+      this.$confirm("是否确认该任务测试完毕吗?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
         .then(function () {
           return taskComplete(id);
         })

@@ -152,3 +152,54 @@ export function testBugList(params) {
         params
     })
 }
+
+/**
+ * 报告管理
+ */
+
+export function reportList(params) {
+    return request({
+        url: '/report/list',
+        method: 'get',
+        params
+    })
+}
+
+export function resportGenerate(params) {
+    return request({
+        url: '/report/generate',
+        method: 'get',
+        params
+    })
+}
+
+export function reportAuth(data) {
+    return request({
+        url: '/report/auth',
+        method: 'put',
+        data,
+    })
+}
+
+export function reportSave(data) {
+    return request({
+        url: '/report/save',
+        method: 'post',
+        data,
+    })
+}
+
+export function reportUpdate(data) {
+    return request({
+        url: '/report/update',
+        method: 'put',
+        data,
+    })
+}
+
+export function reportExcel(id) {
+    return request({
+        url: '/report/excel/' + id,
+        method: 'post'
+    })
+}

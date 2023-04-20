@@ -2,13 +2,14 @@
   <div>
     <el-dialog
       title="测试数据"
-      width="1200px"
+      width="1300px"
       append-to-body
       center
       v-bind="$attrs"
       :close-on-click-modal="false"
       @close="$emit('update:visible', false)"
     >
+    {{ isPassFlag }}
       <el-table :data="detailData.list" style="width: 100%" height="350">
         <el-table-column
           prop="productName"
@@ -40,41 +41,52 @@
           width="110"
           align="center"
         />
-        <el-table-column prop="reality" label="实际测试情况" align="center">
+        <el-table-column
+          prop="reality"
+          label="实际测试情况"
+          align="center"
+          width=""
+        >
           <template slot-scope="{ row }">
-            <el-input placeholder="请输入实际测试情况" v-model="row.reality" />
+            <el-input
+              v-model="row.reality"
+              placeholder="请输入实际测试情况"
+              clearable
+            />
           </template>
         </el-table-column>
-        <el-table-column label="实际测试结果" align="center" width="380">
+        <el-table-column prop="reality" label="失败/忽略原因" align="center">
+          <template slot-scope="{ row }">
+            <el-input
+              v-if="row.isPass === 2 || row.isPass === 3"
+              v-model="row.msg"
+              :placeholder="isNoPassOrLossMsg(row.isPass)"
+              clearable
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="实际测试结果" align="center" width="280">
           <template slot-scope="{ row }">
             <el-radio-group v-model="row.isPass">
-              <el-radio :label="1" border size="small"> 通过 </el-radio>
-
-              <!-- <el-popover
-                placement="top"
-                width="160"
-                trigger="click"
-                v-model="isNoPass"
+              <el-radio
+                :label="1"
+                border
+                size="small"
+                style="margin-right: 5px"
               >
-                <el-input v-model="row.msg" clearable placeholder="请输入不通过原因" />    
-                <div style="text-align: right; margin: 0">
-                  <el-button size="mini" type="text" @click="isNoPass = false">
-                    取消
-                  </el-button>
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    @click="isNoPass = false"
-                  >
-                    确定
-                  </el-button>
-                </div>
-                <el-button slot="reference"> -->
-                  <el-radio :label="2" border size="small"> 不通过 </el-radio>
-                <!-- </el-button>
-              </el-popover> -->
-
-              <el-radio :label="3" border size="small"> 忽略 </el-radio>
+                通过
+              </el-radio>
+              <el-radio
+                :label="2"
+                border
+                size="small"
+                style="margin-right: 5px; margin-left: 0"
+              >
+                不通过
+              </el-radio>
+              <el-radio :label="3" border size="small" style="margin-left: 0">
+                忽略
+              </el-radio>
             </el-radio-group>
           </template>
         </el-table-column>
@@ -97,25 +109,22 @@ export default {
   data() {
     return {
       isNoPass: false,
+      isPassFlag: true,
       detailData: {
         list: [],
       },
     };
   },
-  watch: {
-    "$attrs.detailId": {
-      handler(detailId) {
-        if (detailId) {
-          this.getDetail(detailId);
-        }
-      },
-      immediate: true,
+  computed: {
+    isNoPassOrLossMsg() {
+      return (isPass) => {
+        return `请填写${isPass === 2 ? "不通过" : isPass === 3 ? "忽略" : ""}的原因`;
+      };
     },
   },
   methods: {
     getDetail(detailId) {
       taskInfo(detailId).then((res) => {
-        console.log(res);
         this.detailData = res.data;
       });
     },
@@ -124,47 +133,103 @@ export default {
         (item) => !item.reality || item.isPass === 0
       );
     },
+    // 测试结果为 不通过，忽略时原因必填
+    checkNoPassList() {
+      return this.detailData.list.some(
+        (item) => this.Is_Empty(item.msg) && item.isPass === 2
+      );
+    },
+    // 测试结果为 不通过，忽略时原因必填
+    checkLoss() {
+      return this.detailData.list.some(
+        (item) => this.Is_Empty(item.msg) && item.isPass === 3
+      );
+    },
+    // 所有测试用例通过
+    checkAllPass() {
+      return this.detailData.list.every((item) => item.isPass === 1);
+    },
+    // 测试不通过项
+    checkEachNoPass() {
+      return this.detailData.list.some((item) => item.isPass === 2);
+    },
+    // 不通过状态
+    checkNoPass() {
+      return this.detailData.list
+        .filter((item) => item.isPass === 2)
+        .map((item) => item.productName);
+    },
     /** 提交按钮 */
     submitForm(state) {
       if (this.checkListPass()) {
         return this.msgError("请填写或选择必须的内容");
       }
-      const { id, list } = this.detailData
-      const data = { id, state, list }
-      taskState(data).then(res => {
-        console.log(res)
-        this.msgSuccess("操作成功")
-        this.$emit('update:visible', false);
-        this.$parent.getList();
-      })
-      console.log(this.detailData.list);
-      //   taskState().then(res => {
+      if (this.checkNoPassList()) {
+        return this.msgError("请填写“不通过”原因");
+      }
+      if (this.checkLoss()) {
+        return this.msgError("请填写“忽略”原因");
+      }
+      // 通过
+      if (state === 1) {
+        console.log(this.checkAllPass());
+        // 全部测试通过
+        if (this.checkAllPass()) {
+          if (this.isPassFlag) {
+            this.isPassFlag = false;
+            return this.msgError("请再次检查一遍测试用例");
+          } else {
+            console.info("通过");
+            this.onTaskState(state);
+          }
+        }
 
-      //   })
-      //   this.$refs["form"].validate((valid) => {
-      //     if (valid) {
-      //       if (this.form.id) {
-      //         editComputer(this.form).then((response) => {
-      //           if (response.code === 200) {
-      //             this.msgSuccess("修改成功");
-      //             this.dialogVisible = false;
-      //             this.$parent.getList();
-      //           }
-      //         });
-      //       } else {
-      //         addComputer(this.form).then((response) => {
-      //           if (response.code === 200) {
-      //             this.msgSuccess("添加成功");
-      //             this.dialogVisible = false;
-      //             this.$parent.getList();
-      //             this.open = false;
-      //           }
-      //         });
-      //       }
-      //     }
-      //   });
+        // 不通过测试项
+        if (this.checkEachNoPass()) {
+          const noPassList = this.checkNoPass();
+          this.$confirm(
+            `当前有“ ${noPassList} ”不通过的用例，确认要测试通过吗？`,
+            "警告",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            }
+          )
+            .then(() => {
+              this.onTaskState(state);
+            })
+            .catch(() => {});
+        }
+      }
+      // 不通过
+      if (state === 2) {
+        const noPassList = this.checkNoPass();
+        if (noPassList.length) {
+          this.$confirm(`确认要“ ${noPassList} ”用例测试不通过吗？`, "警告", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+          })
+            .then(() => {
+              this.onTaskState(state);
+            })
+            .catch(() => {});
+        } else {
+          this.onTaskState(state);
+        }
+      }
     },
-  },
+    onTaskState(state) {
+      const { id, list } = this.detailData;
+      const data = { id, state, list };
+      taskState(data).then(() => {
+        this.msgSuccess("操作成功");
+        this.$emit("update:visible", false);
+        this.$parent.getList();
+      });
+    },
+  }
 };
 </script>
   

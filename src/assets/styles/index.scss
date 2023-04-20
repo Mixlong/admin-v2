@@ -1437,3 +1437,15 @@ fieldset {
 .mlZero {
   margin-left: 0 !important;
 }
+
+.margin-right-noLast {
+  &:not(:last-child) {
+    margin-right: 5px;
+  }
+}
+
+.margin-bottom-noLast {
+  &:not(:last-child) {
+    margin-bottom: 5px;
+  }
+}

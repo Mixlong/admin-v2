@@ -20,10 +20,9 @@
           v-model="queryParams.status"
           clearable
           placeholder="请选择是否已修复"
-          @change="getList"
         >
           <el-option label="已修复" value="1"></el-option>
-          <el-option label="未修复" value="0"></el-option>
+          <el-option label="未修复" value="2"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -47,35 +46,28 @@
         </template>
       </el-table-column>
       <el-table-column label="客户" prop="customerName" align="center" />
-      <el-table-column
-        label="产品型号"
-        prop="computerName"
-        align="center"
-      />
+      <el-table-column label="产品型号" prop="computerName" align="center">
+        <template slot-scope="{ row }">
+          <template v-if="row.computerName">
+            <el-tag
+              class="margin-right-noLast"
+              v-for="(item, key) in computerList(row.computerName)"
+              :key="key"
+            >
+              {{ item }}
+            </el-tag>
+          </template>
+          <template v-else>---</template>
+        </template>
+      </el-table-column>
       <el-table-column label="模块" prop="typeName" align="center" />
       <el-table-column label="测试项" prop="content" align="center" />
       <el-table-column label="预期结果" prop="result" align="center" />
       <el-table-column label="BUG内容（失败原因）" prop="msg" align="center" />
-      <el-table-column label="是否已修复" prop="status" align="center" >
-        <template slot-scope="{row}">
+      <el-table-column label="是否已修复" prop="status" align="center">
+        <template slot-scope="{ row }">
           <el-tag v-if="row.status === 1" type="success">已修复</el-tag>
-          <el-tag v-else type="danger">未修复</el-tag>
-        </template>
-      </el-table-column>  
-      <el-table-column
-        label="当前负责人"
-        prop="createBy"
-        align="center"
-        width="120"
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="150"
-      >
-        <template slot-scope="{row}">
-          {{ parseTime(row.createTime) }}
+          <el-tag v-if="row.status === 2" type="danger">未修复</el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -86,7 +78,6 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
-
   </div>
 </template>
 
@@ -110,12 +101,19 @@ export default {
         l: 10,
         customerName: "",
         computerName: "",
-        status: undefined
+        status: undefined,
       },
     };
   },
+  computed: {
+    computerList() {
+      return (computerName) => {
+        return computerName && computerName.split(",");
+      };
+    },
+  },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     /** 查询品牌列表 */
@@ -136,7 +134,7 @@ export default {
     resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
-    }
+    },
   },
 };
 </script>
