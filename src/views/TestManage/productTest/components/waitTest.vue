@@ -9,7 +9,6 @@
       :close-on-click-modal="false"
       @close="$emit('update:visible', false)"
     >
-    {{ isPassFlag }}
       <el-table :data="detailData.list" style="width: 100%" height="350">
         <el-table-column
           prop="productName"
@@ -153,10 +152,20 @@ export default {
     checkEachNoPass() {
       return this.detailData.list.some((item) => item.isPass === 2);
     },
+    // 测试忽略项
+    checkEachLoss() {
+      return this.detailData.list.some((item) => item.isPass === 3);
+    },
     // 不通过状态
     checkNoPass() {
       return this.detailData.list
         .filter((item) => item.isPass === 2)
+        .map((item) => item.productName);
+    },
+    // 忽略状态
+    checkLossData() {
+      return this.detailData.list
+        .filter((item) => item.isPass === 3)
         .map((item) => item.productName);
     },
     /** 提交按钮 */
@@ -201,9 +210,26 @@ export default {
             })
             .catch(() => {});
         }
-      }
-      // 不通过
-      if (state === 2) {
+
+        // 忽略测试项
+        if (this.checkEachLoss()) {
+          const lossList = this.checkLossData();
+          this.$confirm(
+            `当前有“ ${lossList} ”忽略的用例，确认要测试通过吗？`,
+            "警告",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            }
+          )
+            .then(() => {
+              this.onTaskState(state);
+            })
+            .catch(() => {});
+        }
+      } else if (state === 2) {
+        // 不通过
         const noPassList = this.checkNoPass();
         if (noPassList.length) {
           this.$confirm(`确认要“ ${noPassList} ”用例测试不通过吗？`, "警告", {
@@ -218,6 +244,9 @@ export default {
         } else {
           this.onTaskState(state);
         }
+      } else {
+        // 保存
+        this.onTaskState();
       }
     },
     onTaskState(state) {
