@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { testCaseAdd, testCaseEdit } from "@/api/third/testApi";
+import { testProductAdd, testProductEdit } from "@/api/third/testApi";
 
 export default {
   inheritAttrs: false,
@@ -87,7 +87,7 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.id) {
-            testCaseEdit(this.form).then((response) => {
+            testProductEdit(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
                 this.$emit("update:visible", false);
@@ -95,7 +95,7 @@ export default {
               }
             });
           } else {
-            testCaseAdd(this.form).then((response) => {
+            testProductAdd(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
                 this.$emit("update:visible", false);
