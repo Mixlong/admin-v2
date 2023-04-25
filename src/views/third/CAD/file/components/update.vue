@@ -12,7 +12,7 @@
       ref="form"
       :model="form"
       :rules="rules"
-      label-width="130px"
+      label-width="110px"
       class="form-data form-data-inline"
       :class="{ 'inline-form': boleConfig }"
       inline
@@ -24,8 +24,6 @@
             v-model="form.categoryId"
             clearable
             @change="changeCategory2"
-            size="small"
-            style="width: 185px"
           >
             <el-option
               v-for="dict in dictList"
@@ -41,7 +39,6 @@
             v-model="form.computerId"
             clearable
             size="small"
-            style="width: 185px"
             @change="$forceUpdate()"
           >
             <el-option
@@ -57,7 +54,6 @@
             v-model="form.type"
             clearable
             size="small"
-            style="width: 185px"
             disabled
             @change="$forceUpdate()"
           >
@@ -69,46 +65,106 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="属性描述" prop="content" :required="isHaveTo">
-          <template v-if="form.type === 'hard_version'">
-            <select-loadMore
-              style="width: 100%"
-              v-model="form.content"
-              :data="hardData.data"
-              :page="hardData.page"
-              :hasMore="hardData.more"
-              dictLabel="name"
-              dictValue="name"
-              :request="getHardList"
-              placeholder="请选择硬件版本号"
-            />
-          </template>
-          <template v-else>
+
+        <el-row :gutter="0">
+          <el-col>
+            <el-form-item label="数据类型" prop="dataType">
+              <el-radio-group v-model="form.dataType" size="small">
+                <el-radio :label="0" border>STS程序</el-radio>
+                <el-radio :label="1" border>PC上位机</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <template v-if="form.dataType === 0">
+          <el-form-item label="芯片类型" prop="configExtend.schemeVersion">
+            <el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
+              <el-option
+                v-for="(dict, index) in cidOptions"
+                :key="index"
+                :label="dict.dictLabel"
+                :value="dict.dictLabel"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="测试协议" prop="configExtend.agreementVersion">
+            <el-select v-model="form.configExtend.agreementVersion" clearable size="mini">
+              <el-option
+                v-for="(dict, index) in testAgreementList"
+                :key="index"
+                :label="dict.dictLabel"
+                :value="dict.dictLabel"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="PCBA SN格式" prop="configExtend.pcbaSn">
             <el-input
-              type="textarea"
-              :autosize="{ minRows: 1, maxRows: 8 }"
-              v-model="form.content"
-              placeholder="请输入文件描述"
+              v-model="form.configExtend.pcbaSn"
+              clearable
+              placeholder="请输入PCBA SN格式"
             />
-          </template>
-        </el-form-item>
-        <el-form-item
-          label="文件"
-          prop="url"
-          v-if="form.up == 1"
-          style="width: 100%"
-        >
-          <DrUpload
-            :limit="1"
-            v-model="form.url"
-            :css="{ width: '100%' }"
-            :isOnePic="1"
+          </el-form-item>
+          <el-row>
+            <el-col>
+              <el-form-item label="测试项目" prop="configExtend.testInfo" style="width: 100%;">
+                <el-card shadow="nerver">
+                  <el-checkbox-group v-model="form.configExtend.testInfo">
+                    <el-checkbox
+                      v-for="(dict, index) in testProjectList"
+                      :label="dict.dictLabel"
+                      :key="index"
+                    >
+                      {{ dict.dictLabel }}
+                    </el-checkbox>
+                  </el-checkbox-group>
+                </el-card>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-if="form.dataType === 1">
+          <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+            <template v-if="form.type === 'hard_version'">
+              <select-loadMore
+                style="width: 100%"
+                v-model="form.content"
+                :data="hardData.data"
+                :page="hardData.page"
+                :hasMore="hardData.more"
+                dictLabel="name"
+                dictValue="name"
+                :request="getHardList"
+                placeholder="请选择硬件版本号"
+              />
+            </template>
+            <template v-else>
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                v-model="form.content"
+                placeholder="请输入文件描述"
+              />
+            </template>
+          </el-form-item>
+          <el-form-item
+            label="文件"
+            prop="url"
+            v-if="form.up == 1"
+            style="width: 100%"
           >
-            <div>
-              <el-button size="small" type="primary">点击上传</el-button>
-            </div>
-          </DrUpload>
-        </el-form-item>
+            <DrUpload
+              :limit="1"
+              v-model="form.url"
+              :css="{ width: '100%' }"
+              :isOnePic="1"
+            >
+              <div>
+                <el-button size="small" type="primary">点击上传</el-button>
+              </div>
+            </DrUpload>
+          </el-form-item>
+        </template>
       </template>
 
       <!-- 新增字段 -->
@@ -301,9 +357,16 @@ export default {
       fileTypeList: [],
       computerFormOptions: [],
       similarList: [],
+      // 芯片版本
+      schemeVersionList: [],
+      // 测试协议
+      testAgreementList: [],
+      // 测试项目
+      testProjectList: [],
       // 表单参数
       form: {
         url: "",
+        testInfo: [],
       },
       title: "",
       // 表单校验
@@ -313,6 +376,21 @@ export default {
         ],
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
+        ],
+        dataType: [
+          { required: true, message: "数据类型不能为空", trigger: "change" },
+        ],
+        "configExtend.schemeVersion": [
+          { required: true, message: "芯片类型不能为空", trigger: "change" },
+        ],
+        "configExtend.agreementVersion": [
+          { required: true, message: "测试协议不能为空", trigger: "change" },
+        ],
+        "configExtend.pcbaSn": [
+          { required: true, message: "PCBA SN格式不能为空", trigger: "blur" },
+        ],
+        "configExtend.testInfo": [
+          { required: true, message: "测试项目不能为空", trigger: "change" },
         ],
         content: [{ validator: validateContent, trigger: "blur" }],
         idList: [
@@ -402,12 +480,20 @@ export default {
       }
       this.midOptions = res.data;
     });
+    this.getDicts("sys_test_agreement").then((res) => {
+      this.testAgreementList = res.data;
+    });
+    this.getDicts("sys_test_project").then((res) => {
+      this.testProjectList = res.data;
+      console.log(this.testProjectList);
+    });
   },
   methods: {
     // 表单重置
     reset() {
       this.form = {
         url: "",
+        testInfo: [],
       };
       this.resetForm("form");
     },
@@ -476,6 +562,10 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
+          debugger
+          if(this.form.dataType === 0) {
+              this.form.configExtend.testInfo = this.form.configExtend.testInfo.join()
+            }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;

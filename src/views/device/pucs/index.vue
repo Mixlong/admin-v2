@@ -101,19 +101,19 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="PUCS名称"
+        label="装备名称"
         align="center"
         prop="name"
         width="150"
       />
-      <el-table-column label="PUCS_ID" align="center" prop="cpuId" />
       <el-table-column
-        label="系列型号"
+        label="装备型号"
         align="center"
         prop="type"
         width="150"
         :formatter="fnFactoryType"
       />
+      <el-table-column label="装备ID" align="center" prop="cpuId" />
       <el-table-column
         label="部署工厂"
         align="center"
@@ -121,14 +121,7 @@
         width="120"
         :formatter="fnFactoryName"
       />
-
-      <el-table-column
-        label="在测DUT"
-        align="center"
-        prop="dutName"
-        :formatter="fnDutName"
-        width="100"
-      />
+      <el-table-column label="本地IP" align="center" prop="domainIp" />
       <el-table-column
         label="在测工序"
         align="center"
@@ -136,20 +129,22 @@
         width="90"
       />
       <el-table-column
-        label="局域网IP"
+        label="在测DUT"
         align="center"
-        prop="domainIp"
-      ></el-table-column>
+        prop="dutName"
+        :formatter="fnDutName"
+        width="100"
+      />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
-          <span :class="[scope.row.status == 0 ? 'text-green' : 'text-red']">{{
-            scope.row.status == 0 ? "启用" : "禁用"
-          }}</span
-          >/
-          <span :class="[scope.row.online == 1 ? 'text-green' : 'text-red']">{{
-            scope.row.online == 1 ? "在线" : "离线"
-          }}</span>
+          <span :class="[scope.row.status == 0 ? 'text-green' : 'text-red']">
+            {{ scope.row.status == 0 ? "启用" : "禁用" }}
+          </span>
+          /
+          <span :class="[scope.row.online == 1 ? 'text-green' : 'text-red']">
+            {{ scope.row.online == 1 ? "在线" : "离线" }}
+          </span>
         </template>
       </el-table-column>
       <el-table-column label="审核状态" align="center" width="90">
@@ -178,9 +173,9 @@
       </el-table-column>
       <el-table-column label="实时日志" align="center" width="80">
         <template slot-scope="scope">
-          <el-button type="text" @click="onSeeDetail(scope.row.id)"
-            >查看</el-button
-          >
+          <el-button type="text" @click="onSeeDetail(scope.row.id)">
+            查看
+          </el-button>
         </template>
       </el-table-column>
       <el-table-column

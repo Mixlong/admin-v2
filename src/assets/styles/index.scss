@@ -1449,3 +1449,10 @@ fieldset {
     margin-bottom: 5px;
   }
 }
+
+.upload-img-box {
+  .el-upload-list__item {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}

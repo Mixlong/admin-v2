@@ -626,10 +626,21 @@ export default {
     handleUpdate(row, isBatchSync) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
+      if(row.configExtend === null) {
+        row.configExtend = {
+          schemeVersion: "",
+          agreementVersion: "",
+          pcbaSn: "",
+          testInfo: []
+      }
+    } else {
+      row.configExtend.testInfo = row.configExtend.testInfo && row.configExtend.testInfo.split()
+    }
       this.$refs.compUpdate.form = Object.assign(
-        { idList: [], content: "" },
+        { idList: [], content: "", testInfo: [] },
         row
       );
+      console.log(this.$refs.compUpdate.form)
       this.$refs.compUpdate.form.firmwareConf = row.firmwareConf
         ? row.firmwareConf
         : {};

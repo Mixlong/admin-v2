@@ -56,20 +56,20 @@
     >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column
-        label="系列名称"
+        label="装备类型"
         align="center"
         prop="name"
         width="150"
         show-overflow-tooltip
       />
       <el-table-column
-        label="系列型号"
+        label="装备型号"
         align="center"
         prop="code"
         width="150"
         show-overflow-tooltip
       />
-      <el-table-column label="外观照片" align="center" prop="icon">
+      <el-table-column label="外观照片" align="center" prop="icon" width="150">
         <template slot-scope="scope">
           <preview-img :url="scope.row.icon" :srcList="[`${scope.row.icon}`]" />
         </template>
@@ -100,7 +100,8 @@
           </el-tag>
         </template>
       </el-table-column>
-
+      <el-table-column label="创建人" prop="createBy" align="center"  width="100" />
+      <el-table-column label="创建时间" prop="createTime" align="center"  width="140" />
       <el-table-column
         label="操作"
         align="center"
@@ -294,13 +295,13 @@ export default {
     handleAdd() {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.reset();
-      this.title = "添加类型";
+      this.title = "新增装备类型";
     },
     handleUpdate(row) {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.form = JSON.parse(JSON.stringify(row));
       this.$refs.compUpdate.form.targetId;
-      this.title = "修改类型";
+      this.title = "修改装备类型";
     },
     /** 提交按钮 */
     submitForm: function () {

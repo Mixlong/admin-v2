@@ -61,7 +61,6 @@ export default {
         this.total = total;
         this.loading = false;
         const testList = this.$attrs.multipleSelection;
-        console.log(666, testList, this.testList)
 
         if (testList.length) {
           this.$nextTick(() => {

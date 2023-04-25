@@ -12,17 +12,22 @@
         label-width="90px"
         class="test_box"
       >
-        <el-tabs type="border-card" v-model="form.type" @tab-click="handleClick">
+        <el-tabs
+          type="border-card"
+          v-model="form.type"
+          @tab-click="handleClick"
+        >
           <el-tab-pane
             label="送样需求"
             name="0"
-            v-if="this.testData.id && this.form.type === '0' || !this.testData.id"
+            v-if="
+              (this.testData.id && this.form.type === '0') || !this.testData.id
+            "
           >
             <el-container class="test_left_box flex">
               <el-aside
                 class="test_aside_box flex-sub bg-white reset_pad_mar solid-right"
               >
-                <!-- <div :class="btnClassObject"></div> -->
                 <el-descriptions
                   title="送样信息"
                   direction="vertical"
@@ -57,14 +62,20 @@
                 </el-descriptions>
               </el-aside>
               <el-main class="flex-sub reset_pad_mar">
-                <CareList ref="careListRef1" :multipleSelection.sync="form.list" :sammpleId="sammpleId" />
+                <CareList
+                  ref="careListRef1"
+                  :multipleSelection.sync="form.list"
+                  :sammpleId="sammpleId"
+                />
               </el-main>
             </el-container>
           </el-tab-pane>
           <el-tab-pane
             label="新增需求"
             name="1"
-            v-if="this.testData.id && this.form.type === '1' || !this.testData.id"
+            v-if="
+              (this.testData.id && this.form.type === '1') || !this.testData.id
+            "
           >
             <el-container class="test_left_box flex">
               <el-aside
@@ -121,7 +132,11 @@
                 </el-form-item>
               </el-aside>
               <el-main class="flex-sub reset_pad_mar">
-                <CareList ref="careListRef2" :multipleSelection.sync="form.list" :sammpleId="sammpleId" />
+                <CareList
+                  ref="careListRef2"
+                  :multipleSelection.sync="form.list"
+                  :sammpleId="sammpleId"
+                />
               </el-main>
             </el-container>
           </el-tab-pane>
@@ -129,7 +144,9 @@
       </el-form>
       <div class="text-center margin-top-lg">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="$router.push('/TestManage/productTest')">取 消</el-button>
+        <el-button @click="$router.push('/TestManage/productTest')">
+          取 消
+        </el-button>
       </div>
     </el-card>
 
@@ -219,15 +236,12 @@
 
 <script>
 import {
-  addOrder,
-  updateOrder,
-  getOrderDetail,
   getOrderProcess,
 } from "@/api/order";
 import { sampleList } from "@/api/third/sample";
 import { taskSave, taskUpdate, taskInfo } from "@/api/third/testApi";
 
-import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
+import { categoryComputerDict } from "@/api/third/fileConfig";
 import commomFile from "../mixins";
 
 export default {
@@ -304,21 +318,21 @@ export default {
       };
     },
     isSampleTab() {
-      if(this.testData.id && this.form.type === '0') {
-        return true
-      } 
-      if(!this.testData.id) {
-        return true
+      if (this.testData.id && this.form.type === "0") {
+        return true;
+      }
+      if (!this.testData.id) {
+        return true;
       }
     },
     isAddTab() {
-      if(this.testData.id && this.form.type === '1') {
-        return true
+      if (this.testData.id && this.form.type === "1") {
+        return true;
       }
-      if(!this.testData.id) {
-        return true
+      if (!this.testData.id) {
+        return true;
       }
-    }
+    },
   },
   watch: {
     "form.needInfo"(needInfo) {
@@ -366,17 +380,16 @@ export default {
           softVersion,
           hardVersion,
         };
-        this.$refs.careListRef1.getList()
+        this.$refs.careListRef1.getList();
         this.form = Object.assign({}, this.testData);
       } else {
-        this.$refs.careListRef2.getList()
+        this.$refs.careListRef2.getList();
         this.form = Object.assign({}, this.testData);
       }
       this.form.type = String(this.testData.type);
-    } 
+    }
 
     this.getCategoryComputerDict();
-    // this.getUpdateDetail();
     this.getOrderProcessData();
   },
 
@@ -422,7 +435,6 @@ export default {
           { softVersion: appVersion, hardVersion: harkVersion },
           this.multipleSelection
         );
-        console.log(this.sampleSingleData);
         this.isDrawer = false;
       }
     },
@@ -445,17 +457,7 @@ export default {
 
     // 切换清空
     handleClick() {
-      this.form.list = []
-    },
-
-    // 详情
-    getUpdateDetail() {
-      if (this.commonObj.id) {
-        getOrderDetail(this.commonObj.id).then((res) => {
-          this.form = res.data;
-          this.cloneForm = { ...res.data };
-        });
-      }
+      this.form.list = [];
     },
     // 品类
     getCategoryComputerDict() {
@@ -464,38 +466,15 @@ export default {
         .then((res) => {
           this.dictList = res.data;
 
-          // 编辑
-          // if (this.form.id) {
           this.computerOptions = this.dictList.filter(
             (item) => item.id === this.form.categoryId
           )[0].computerList;
-          // }
 
           this.isCateLoading = false;
         })
         .catch(() => {
           this.isCateLoading = false;
         });
-    },
-    // 型号列表
-    changeCategory(val) {
-      if (!val) return;
-      this.$set(this.form, "computerId", "");
-      this.computerOptions = this.dictList.filter(
-        (item) => item.id === val
-      )[0].computerList;
-    },
-    getComputerNameList(name) {
-      if (name) {
-        computerNameList({
-          name,
-          categoryId: this.form.categoryId,
-        }).then((res) => {
-          this.computerOptions = res.data;
-        });
-      } else {
-        this.computerOptions = [];
-      }
     },
     // 芯片版本
     getOrderProcessData() {
@@ -513,66 +492,6 @@ export default {
       };
       this.resetForm("form");
     },
-    checkRule(params) {
-      const { categoryId, computerId, chipVersion } = params;
-      if (
-        this.cloneForm.categoryId !== categoryId ||
-        this.cloneForm.computerId !== computerId ||
-        this.cloneForm.chipVersion !== chipVersion
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    onAlertReason(params) {
-      const {
-        salesOrderNo,
-        customerName,
-        customerOrderNo,
-        categoryId,
-        computerId,
-        chipVersion,
-        bomCode,
-        orderQuantity,
-        sellTime,
-        arrivalTime,
-        consigneeAddress,
-        isMark,
-        containerMarkInfo,
-        bomInfo,
-        remark,
-      } = params;
-      if (
-        this.cloneForm.salesOrderNo !== salesOrderNo ||
-        this.cloneForm.customerName !== customerName ||
-        this.cloneForm.customerOrderNo !== customerOrderNo ||
-        this.cloneForm.categoryId !== categoryId ||
-        this.cloneForm.computerId !== computerId ||
-        this.cloneForm.chipVersion !== chipVersion ||
-        this.cloneForm.bomCode !== bomCode ||
-        this.cloneForm.orderQuantity !== orderQuantity ||
-        this.cloneForm.sellTime !== sellTime ||
-        this.cloneForm.arrivalTime !== arrivalTime ||
-        this.cloneForm.consigneeAddress !== consigneeAddress ||
-        this.cloneForm.isMark !== isMark ||
-        this.cloneForm.containerMarkInfo !== containerMarkInfo ||
-        this.cloneForm.bomInfo !== bomInfo ||
-        this.cloneForm.remark !== remark
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    onUpdateOrder(params) {
-      updateOrder(params).then((res) => {
-        if (res.code === 200) {
-          this.msgSuccess("更新成功");
-          this.$router.push("/www/order");
-        }
-      });
-    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -581,38 +500,18 @@ export default {
             return this.msgError("请选择用例库");
           }
           if (this.form.id) {
-            // if (this.onAlertReason(this.form)) {
-            //   this.$prompt(
-            //     "请输入修改原因",
-            //     `${
-            //       this.checkRule(this.form)
-            //         ? "若“品类”、“型号”、“芯片版本”改变，该排产将被取消?"
-            //         : ""
-            //     }`,
-            //     {
-            //       confirmButtonText: "确定",
-            //       cancelButtonText: "取消",
-            //       type: "warning",
-            //       inputValidator: (value) => {
-            //         if (value === null || value === "") {
-            //           return false;
-            //         }
-            //       },
-            //       inputErrorMessage: "修改原因不能为空",
-            //       customClass: "orderReason_style",
-            //     }
-            //   )
-            //     .then(({ value }) => {
-            //       this.onUpdateOrder({ msg: value, ...this.form });
-            //     })
-            //     .catch(() => {});
-            // } else {
-            //   this.onUpdateOrder(this.form);
-            // }
-           if(this.form.type === '0') {
-            const { baseModel, customerName, softVersion, hardVersion, id } =  this.sampleSingleData;
-            this.form = { ...this.form, baseModel, customerName, softVersion, hardVersion, demandId: id }
-           }
+            if (this.form.type === "0") {
+              const { baseModel, customerName, softVersion, hardVersion, id } =
+                this.sampleSingleData;
+              this.form = {
+                ...this.form,
+                computerName: baseModel,
+                customerName,
+                softVersion,
+                hardVersion,
+                demandId: id,
+              };
+            }
             taskUpdate(this.form).then((res) => {
               if (res.code === 200) {
                 this.msgSuccess("更新成功");
@@ -627,7 +526,7 @@ export default {
               const { baseModel, customerName, softVersion, hardVersion } =
                 this.sampleSingleData;
               this.form = {
-                baseModel,
+                computerName: baseModel,
                 customerName,
                 softVersion,
                 hardVersion,
