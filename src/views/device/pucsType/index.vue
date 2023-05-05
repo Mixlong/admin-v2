@@ -20,11 +20,12 @@
           icon="el-icon-search"
           size="small"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="small" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
@@ -33,16 +34,18 @@
             icon="el-icon-plus"
             size="small"
             @click="handleAdd"
-            >新增</el-button
           >
+            新增
+          </el-button>
           <el-button
             type="danger"
             icon="el-icon-delete"
             size="small"
             :disabled="multiple"
             @click="handleMultipleDelete"
-            >删除</el-button
           >
+            删除
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -63,11 +66,11 @@
         show-overflow-tooltip
       />
       <el-table-column
-        label="装备型号"
+        label="装备型号" 
         align="center"
         prop="code"
         width="150"
-        show-overflow-tooltip
+        show-overflow-tooltip 
       />
       <el-table-column label="外观照片" align="center" prop="icon" width="150">
         <template slot-scope="scope">
@@ -100,8 +103,18 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" prop="createBy" align="center"  width="100" />
-      <el-table-column label="创建时间" prop="createTime" align="center"  width="140" />
+      <el-table-column
+        label="创建人"
+        prop="createBy"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="创建时间"
+        prop="createTime"
+        align="center"
+        width="140"
+      />
       <el-table-column
         label="操作"
         align="center"

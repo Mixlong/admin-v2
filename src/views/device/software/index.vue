@@ -77,6 +77,8 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
+      <el-table-column label="装备类型" align="center" prop="name" />
+      <el-table-column label="装备型号" align="center" prop="code" />
       <el-table-column label="模块名称" align="center" prop="moduleName" />
       <el-table-column
         label="覆盖范围"
@@ -117,12 +119,12 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime">
-        <template slot-scope="scope">{{
-          parseTime(scope.row.createTime)
-        }}</template>
-      </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
+      <el-table-column label="创建时间" align="center" prop="createTime">
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.createTime) }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="操作"
         align="center"

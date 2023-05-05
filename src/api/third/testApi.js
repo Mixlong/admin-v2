@@ -203,3 +203,40 @@ export function reportExcel(id) {
         method: 'post'
     })
 }
+
+
+/**
+ * STS 网页管理
+ */
+
+export function stsWebList(params) {
+    return request({
+        url: '/sts/web/list',
+        method: 'get',
+        params
+    })
+}
+
+export function stsWebAuth(data) {
+    return request({
+        url: '/sts/web/auth',
+        method: 'put',
+        data,
+    })
+}
+
+export function stsWebSave(data) {
+    return request({
+        url: '/sts/web',
+        method: 'post',
+        data,
+    })
+}
+
+export function stsWebUpdate(data) {
+    return request({
+        url: '/sts/web',
+        method: 'put',
+        data,
+    })
+}

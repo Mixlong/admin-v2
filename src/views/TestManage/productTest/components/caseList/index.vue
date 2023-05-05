@@ -1,5 +1,53 @@
 <template>
   <div>
+    <el-form ref="queryForm" :model="queryParams" :inline="true">
+      <el-form-item label="所属模块：" prop="productType">
+        <el-select
+          v-model="queryParams.productType"
+          size="mini"
+          filterable
+          placeholder="请选择所属模块"
+          @change="getList"
+        >
+          <el-option
+            v-for="dict in moduleList"
+            :key="dict.dictCode"
+            :label="dict.dictValue"
+            :value="dict.dictCode"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="用例类型：" prop="type">
+        <el-select
+          v-model="queryParams.type"
+          size="mini"
+          filterable
+          placeholder="请选择用例类型"
+          @change="getList"
+          style="width: 150px"
+        >
+          <el-option
+            v-for="dict in useCaseTypeList"
+            :key="dict.dictCode"
+            :label="dict.dictValue"
+            :value="dict.dictCode"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重 置
+        </el-button>
+      </el-form-item>
+    </el-form>
     <el-table
       v-loading="loading"
       ref="multipleTable"
@@ -36,20 +84,40 @@ export default {
       loading: false,
       total: 0,
       testList: [],
+      // 模块名称
+      moduleList: [],
+      // 用例类型
+      useCaseTypeList: [],
       queryParams: {
         p: 1,
         l: 10,
         state: 1,
         status: 0,
+        productType: "",
+        type: "",
       },
     };
   },
   created() {
-    if(!this.$attrs.sammpleId) {
+    if (!this.$attrs.sammpleId) {
+      this.getDicts("test_moduleName").then((res) => {
+        this.moduleList = res.data;
+      });
+      this.getDicts("useCaseType").then((res) => {
+        this.useCaseTypeList = res.data;
+      });
       this.getList();
     }
   },
   methods: {
+    handleQuery() {
+      this.queryParams.p = 1;
+      this.getList();
+    },
+    resetQuery() { 
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
     handleSelectionChange(list) {
       this.$emit("update:multipleSelection", list);
     },

@@ -78,7 +78,7 @@
         </el-row>
 
         <template v-if="form.dataType === 0">
-          <el-form-item label="芯片类型" prop="configExtend.schemeVersion">
+          <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
             <el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
               <el-option
                 v-for="(dict, index) in cidOptions"
@@ -381,7 +381,7 @@ export default {
           { required: true, message: "数据类型不能为空", trigger: "change" },
         ],
         "configExtend.schemeVersion": [
-          { required: true, message: "芯片类型不能为空", trigger: "change" },
+          { required: true, message: "芯片版本不能为空", trigger: "change" },
         ],
         "configExtend.agreementVersion": [
           { required: true, message: "测试协议不能为空", trigger: "change" },
@@ -562,7 +562,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.status = 0;
-          debugger
           if(this.form.dataType === 0) {
               this.form.configExtend.testInfo = this.form.configExtend.testInfo.join()
             }
