@@ -74,6 +74,9 @@ export function parseTime(time, pattern) {
 
 // 图片地址格式化
 export function transFileUrl(url) {
+  if(!url) {
+    throw new Error('转化的图片地址不能为空')
+  }
   return url.slice(url.lastIndexOf('/') + 1)
 }
 

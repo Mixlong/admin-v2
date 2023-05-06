@@ -64,7 +64,8 @@
               <el-main class="flex-sub reset_pad_mar">
                 <CareList
                   ref="careListRef1"
-                  :multipleSelection.sync="form.list"
+
+                  :mulList="form.list"
                   :sammpleId="sammpleId"
                 />
               </el-main>
@@ -132,9 +133,10 @@
                 </el-form-item>
               </el-aside>
               <el-main class="flex-sub reset_pad_mar">
+                <!--          :multipleSelection.sync="form.list" -->
                 <CareList
                   ref="careListRef2"
-                  :multipleSelection.sync="form.list"
+                  :mulList="form.list"
                   :sammpleId="sammpleId"
                 />
               </el-main>
@@ -382,9 +384,11 @@ export default {
         };
         this.$refs.careListRef1.getList();
         this.form = Object.assign({}, this.testData);
+        this.$refs.careListRef1.checkList = this.form.list
       } else {
         this.$refs.careListRef2.getList();
         this.form = Object.assign({}, this.testData);
+        this.$refs.careListRef2.checkList = this.form.list
       }
       this.form.type = String(this.testData.type);
     }
@@ -496,21 +500,28 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (!this.form.list.length) {
+          // if (!this.form.list.length) {
+          //   return this.msgError("请选择用例库");
+          // }
+          if ((this.form.type === "0" && !this.$refs.careListRef1.mulSelList.length) || (this.form.type !== "0" && !this.$refs.careListRef2.mulSelList.length)) {
             return this.msgError("请选择用例库");
           }
           if (this.form.id) {
             if (this.form.type === "0") {
+              console.log(666, this.$refs.careListRef1.mulSelList)
               const { baseModel, customerName, softVersion, hardVersion, id } =
                 this.sampleSingleData;
               this.form = {
                 ...this.form,
+                list: this.$refs.careListRef1.mulSelList,
                 computerName: baseModel,
                 customerName,
                 softVersion,
                 hardVersion,
                 demandId: id,
               };
+            } else {
+              this.form.list = this.$refs.careListRef2.mulSelList
             }
             taskUpdate(this.form).then((res) => {
               if (res.code === 200) {
@@ -532,8 +543,11 @@ export default {
                 hardVersion,
                 demandId: this.sampleSingleData.id,
                 type: 0,
-                list: this.form.list,
+                // list: this.form.list,
+                list: this.$refs.careListRef1.mulSelList,
               };
+            } else {
+              this.form.list = this.$refs.careListRef2.mulSelList
             }
             taskSave(this.form).then((response) => {
               if (response.code === 200) {

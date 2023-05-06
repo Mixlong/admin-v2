@@ -6,6 +6,7 @@
           v-model="queryParams.productType"
           size="mini"
           filterable
+          clearable
           placeholder="请选择所属模块"
           @change="getList"
         >
@@ -22,9 +23,10 @@
           v-model="queryParams.type"
           size="mini"
           filterable
+          clearable
+          style="width: 150px"
           placeholder="请选择用例类型"
           @change="getList"
-          style="width: 150px"
         >
           <el-option
             v-for="dict in useCaseTypeList"
@@ -53,10 +55,11 @@
       ref="multipleTable"
       :data="testList"
       tooltip-effect="dark"
+      row-key="id"
       style="width: 100%"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="50" />
+      <el-table-column type="selection" reserve-selection width="50" />
       <el-table-column label="用例类型" prop="typeName" align="center" />
       <el-table-column label="所属模块" prop="productName" align="center" />
       <el-table-column label="测试项" prop="content" align="center" />
@@ -88,6 +91,8 @@ export default {
       moduleList: [],
       // 用例类型
       useCaseTypeList: [],
+      mulSelList: [],
+      checkList: [],
       queryParams: {
         p: 1,
         l: 10,
@@ -99,27 +104,29 @@ export default {
     };
   },
   created() {
-    if (!this.$attrs.sammpleId) {
-      this.getDicts("test_moduleName").then((res) => {
-        this.moduleList = res.data;
-      });
-      this.getDicts("useCaseType").then((res) => {
-        this.useCaseTypeList = res.data;
-      });
-      this.getList();
-    }
+    this.getDicts("test_moduleName").then((res) => {
+      this.moduleList = res.data;
+    });
+    this.getDicts("useCaseType").then((res) => {
+      this.useCaseTypeList = res.data;
+    });
+    
+    this.getList();
   },
   methods: {
     handleQuery() {
       this.queryParams.p = 1;
       this.getList();
     },
-    resetQuery() { 
+    resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
     },
     handleSelectionChange(list) {
-      this.$emit("update:multipleSelection", list);
+      console.log("list", list)
+      // this.$emit("update:multipleSelection", list);
+      this.mulSelList = list
+      console.log(111,this.mulSelList)
     },
     getList() {
       this.loading = true;
@@ -128,11 +135,13 @@ export default {
         this.testList = list;
         this.total = total;
         this.loading = false;
-        const testList = this.$attrs.multipleSelection;
-
-        if (testList.length) {
+        // const testList = this.$attrs.multipleSelection;
+        // const testList = this.$attrs.mulList;
+        // const testList = this.$attrs.mulList;
+        // console.log(testList, this.testList)
+        if (this.checkList.length) {
           this.$nextTick(() => {
-            testList.forEach((item) => {
+            this.checkList.forEach((item) => {
               this.testList.forEach((cItem) => {
                 if (item.caseId === cItem.id) {
                   this.$refs.multipleTable.toggleRowSelection(cItem, true);

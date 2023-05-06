@@ -27,7 +27,7 @@
             v-for="(dict, index) in testAgreementList"
             :key="index"
             :label="dict.dictLabel"
-            :value="dict.dictLabel"
+            :value="String(dict.dictCode)"
           />
         </el-select>
       </el-form-item>
@@ -43,7 +43,7 @@
             v-for="(dict, index) in processesList"
             :key="index"
             :label="dict.dictLabel"
-            :value="dict.dictLabel"
+            :value="String(dict.dictCode)"
           />
         </el-select>
       </el-form-item>
@@ -80,7 +80,7 @@
       </el-table-column>
       <el-table-column
         label="芯片版本"
-        prop="schemeVersionName"
+        prop="schemeVersion"
         align="center"
       />
       <el-table-column
@@ -89,7 +89,11 @@
         align="center"
       />
       <el-table-column label="测试工序" prop="processesName" align="center" />
-      <el-table-column label="文件包" prop="file" align="center" />
+      <el-table-column label="文件包" prop="file" align="center">
+        <template slot-scope="scope">
+          <el-link @click="urlDownload(scope.row.file)">{{ transFileUrl(scope.row.file) }}</el-link> 
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -107,8 +111,8 @@
         width="140"
       />
       <el-table-column
-        label="更新时间"
-        prop="updateTime"
+        label="创建时间"
+        prop="createTime"
         align="center"
         width="150"
       >
@@ -116,7 +120,7 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"
@@ -124,13 +128,6 @@
             content="编辑"
             @click="handleUpdate(scope.row)"
           />
-          <!-- <Tooltip
-            v-if="checkRole(['test', 'admin'])"
-            icon="el-icon-delete"
-            content="删除"
-            class="text-red"
-            @click="handleDelete(scope.row)"
-          /> -->
         </template>
       </el-table-column>
     </el-table>

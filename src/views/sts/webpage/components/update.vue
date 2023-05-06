@@ -43,7 +43,7 @@
               v-for="(dict, index) in testAgreementList"
               :key="index"
               :label="dict.dictLabel"
-              :value="dict.dictLabel"
+              :value="String(dict.dictCode)"
             />
           </el-select>
         </el-form-item>
@@ -59,7 +59,7 @@
               v-for="(dict, index) in processesList"
               :key="index"
               :label="dict.dictLabel"
-              :value="dict.dictLabel"
+              :value="String(dict.dictCode)"
             />
           </el-select>
         </el-form-item>

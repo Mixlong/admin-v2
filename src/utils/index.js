@@ -1,7 +1,7 @@
-import { parseTime } from './ruoyi'
+import { parseTime, transFileUrl } from './ruoyi'
 import axios from 'axios'
 import JSZip from "jszip";
-import FileSaver from "file-saver";
+import FileSaver, { saveAs } from "file-saver";
 /**
  * 表格时间格式化
  */
@@ -390,25 +390,6 @@ export function isNumberStr(str) {
   return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str)
 }
 
-// export function urlDownload(url) {
-//   axios({
-//     method: 'get',
-//     url,
-//     responseType: 'arraybuffer'
-//   }).then(res => {
-//     let headers = res.headers;
-//     let blob = new Blob([res.data], {
-//       type: headers['content-type']
-//     });
-//     let link = document.createElement('a');
-//     link.href = window.URL.createObjectURL(blob);
-//     let i = url.lastIndexOf("/");
-//     let fileName = url.slice(i + 1);
-//     link.download = fileName;
-//     link.click();
-//   });
-// }
-
 export function urlDownload(url) {
   axios({
     url,
@@ -416,16 +397,23 @@ export function urlDownload(url) {
     responseType: "arraybuffer"
   }).then(res => {
     const { data, headers } = res;
-    const blob = new Blob([data], { type: headers['content-type'] });
-    const href = window.URL.createObjectURL(blob);
-    const fileName = url.slice(url.lastIndexOf('/') + 1);
-    let a = document.createElement('a');
-    a.href = href;
-    a.download = fileName
-    a.click();
-    window.URL.revokeObjectURL(href);
-    document.removeChild('a')
+    const fileName = transFileUrl(url);
+    saveImage(data, headers, fileName)
   })
+
+  const saveImage = (data, headers, fileName) => {
+    const blob = new Blob([data], { type: headers['content-type'] })
+    saveAs(blob, fileName)
+  }
+
+  const saveAs = (blob, fileName) => {
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.click()
+    window.URL.revokeObjectURL(url)
+  }
 }
 
 export function zipFile(value, fileName) {

@@ -301,14 +301,6 @@ export default {
     },
     handleDownload(row) {
       this.urlDownload(row.fileUrl);
-      // var name = row.fileUrl;
-      // var url = row.fileUrl;
-      // var suffix = url.substring(url.lastIndexOf("."), url.length);
-      // const a = document.createElement("a");
-      // a.setAttribute("download", name + suffix);
-      // a.setAttribute("target", "_blank");
-      // a.setAttribute("href", url);
-      // a.click();
     },
     // 用户状态修改
     handleStatusChange(row) {

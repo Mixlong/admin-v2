@@ -36,6 +36,22 @@
       <el-form-item label="装备型号:" prop="code">
         <el-input v-model="form.code" readonly />
       </el-form-item>
+      <el-form-item label="系列名称:" prop="type">
+        <el-select
+          v-model="form.type"
+          placeholder="请选择系列名称"
+          style="width: 100%"
+          clearable
+        >
+          <el-option
+            v-for="(item, index) in dictOptions"
+            :key="index"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="模块名称:" prop="module">
         <el-select
           v-model="form.module"
@@ -95,7 +111,7 @@
       </el-form-item>
 
       <el-form-item label="文件上传:" prop="fileUrl">
-        <DrUpload :limit="1" v-model="form.fileUrl" :isOnePic="1">
+        <DrUpload :limit="1" v-model="form.fileUrl" :isOnePic="1" class="flex-direction align-start">
           <div class="text-left">
             <el-button type="primary" size="small">
               上传
@@ -187,9 +203,9 @@ export default {
         code: [
           { required: true, message: "装备型号不能为空", trigger: "change" },
         ],
-        // type: [
-        //   { required: true, message: "请选择系列名称", trigger: "change" },
-        // ],
+        type: [
+          { required: true, message: "请选择系列名称", trigger: "change" },
+        ],
         module: [
           { required: true, message: "请选择模块名称", trigger: "change" },
         ],
@@ -211,12 +227,17 @@ export default {
     };
   },
   watch: {
-    "form.type"(newVal, oldVal) {
+    "form.code"(newVal, oldVal) {
       if (newVal) {
         if (oldVal && newVal !== oldVal) {
           this.form.module = "";
         }
         this.getModuleDictList();
+      }
+    },
+    "form.fileUrl"(fileUrl) {
+      if (fileUrl) {
+        this.clearValidateItem("form", "fileUrl");
       }
     },
   },
