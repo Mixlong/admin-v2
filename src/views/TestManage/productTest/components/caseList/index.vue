@@ -123,10 +123,7 @@ export default {
       this.handleQuery();
     },
     handleSelectionChange(list) {
-      console.log("list", list)
-      // this.$emit("update:multipleSelection", list);
       this.mulSelList = list
-      console.log(111,this.mulSelList)
     },
     getList() {
       this.loading = true;
@@ -135,10 +132,6 @@ export default {
         this.testList = list;
         this.total = total;
         this.loading = false;
-        // const testList = this.$attrs.multipleSelection;
-        // const testList = this.$attrs.mulList;
-        // const testList = this.$attrs.mulList;
-        // console.log(testList, this.testList)
         if (this.checkList.length) {
           this.$nextTick(() => {
             this.checkList.forEach((item) => {

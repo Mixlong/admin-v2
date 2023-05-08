@@ -31,8 +31,16 @@
             :disabled="!!form.id"
             :request="getProductTestList"
             @getChange="getProductTestId"
+            v-slot="{ proOption }"
             placeholder="请选择测试用例"
-          />
+          >
+            <template>
+              <span style="float: left">{{ proOption.customerName }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">
+                {{ proOption.computerName }}
+              </span>
+            </template>
+          </select-loadMore>
         </el-form-item>
         <el-form-item label="报告标题：" prop="title">
           <el-input
@@ -218,21 +226,21 @@ export default {
       return {
         disabledDate: this.disabledDate,
         selectableRange: `${this.defaultTime} - 23:59:59`,
-      }
-    }
+      };
+    },
   },
   watch: {
-    'form.startTime'(startTime) {
-      if(startTime) {
+    "form.startTime"(startTime) {
+      if (startTime) {
         this.disabledDate = (time) => {
-          return time.getTime() < startTime
-        }
+          return time.getTime() < startTime;
+        };
       } else {
         this.disabledDate = () => {
-          return false
-        }
+          return false;
+        };
       }
-    }
+    },
   },
   methods: {
     // 自动生成报告标题
@@ -258,7 +266,7 @@ export default {
         result: "",
         risk: "",
         startTime: "",
-        endTime: ""
+        endTime: "",
       };
     },
     /** 产品测试数据 */

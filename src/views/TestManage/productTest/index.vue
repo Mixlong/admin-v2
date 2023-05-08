@@ -122,9 +122,12 @@
       <el-table-column label="详细需求" prop="desc" header-align="center">
         <div slot-scope="{ row }" v-html="row.demand"></div>
       </el-table-column>
-      <el-table-column label="配置需求表" prop="desc" align="center">
+      <el-table-column label="配置需求表" prop="needInfo" align="center">
         <template slot-scope="{ row }">
-          {{ row.type === 1 ? row.desc : "---" }}
+          <template v-if="row.needInfo">
+            <preview-img :url="row.needInfo" :srcList="[row.needInfo]" />
+          </template>
+          <template v-else>---</template>
         </template>
       </el-table-column>
       <el-table-column label="测试状态" align="center" width="100px">

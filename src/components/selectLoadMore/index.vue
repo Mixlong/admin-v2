@@ -21,6 +21,7 @@
       :value="selValue(option)"
       :key="option.value"
     >
+      <slot v-bind:proOption="option"></slot>
     </el-option>
     <!-- 此处加载中的value可以随便设置，只要不与其他数据重复即可 -->
     <el-option v-if="hasMore" disabled label="加载中..." value="-1" />
