@@ -637,7 +637,7 @@ export default {
       }
     } else {
       // 测试项目数据
-      row.configExtend.testInfo = row.configExtend.testInfo && row.configExtend.testInfo.split()
+      row.configExtend.testInfo = row.configExtend.testInfo && row.configExtend.testInfo.split(',')
     }
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },

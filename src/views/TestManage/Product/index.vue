@@ -46,15 +46,15 @@
         </el-button>
       </el-form-item>
       <el-button
-          v-if="checkRole(['test', 'admin'])"
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          class="fr"
-        >
-          新增
-        </el-button>
+        v-if="checkRole(['test', 'admin'])"
+        type="primary"
+        icon="el-icon-plus"
+        size="mini"
+        @click="handleAdd"
+        class="fr"
+      >
+        新增
+      </el-button>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">

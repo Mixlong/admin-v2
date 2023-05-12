@@ -112,7 +112,7 @@
                   <el-checkbox-group v-model="form.configExtend.testInfo">
                     <el-checkbox
                       v-for="(dict, index) in testProjectList"
-                      :label="dict.dictLabel"
+                      :label="dict.dictValue"
                       :key="index"
                     >
                       {{ dict.dictLabel }}
@@ -485,7 +485,6 @@ export default {
     });
     this.getDicts("sys_test_project").then((res) => {
       this.testProjectList = res.data;
-      console.log(this.testProjectList);
     });
   },
   methods: {

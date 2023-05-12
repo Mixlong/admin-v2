@@ -37,6 +37,7 @@
             type="textarea"
             placeholder="请输入描述"
             clearable
+            maxlength="10"
           />
         </el-form-item>
       </el-form>
