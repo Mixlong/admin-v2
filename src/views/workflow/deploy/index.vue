@@ -179,7 +179,7 @@
 <script>
 import { listAllCategory } from '@/api/workflow/category'
 import { listDeploy, listPublish, getBpmnXml, changeState, delDeploy } from '@/api/workflow/deploy'
-// import ProcessViewer from '@/components/ProcessViewer'
+import ProcessViewer from '@/components/ProcessViewer'
 
 export default {
   name: 'Deploy',

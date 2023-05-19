@@ -1,6 +1,6 @@
 'use strict';
 const path = require('path');
-const defaultSettings = require('./src/settings.js');
+const defaultSettings = require('./src/settings');
 const webpack = require('webpack')
 
 function resolve(dir) {
@@ -29,12 +29,12 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     host: '0.0.0.0',
-    port: 8808,
+    port,
     open: true,
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
-        target: `http://192.168.2.22:8806/`,
+        target: `http://192.168.2.126:8808/`,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: '',
@@ -48,8 +48,7 @@ module.exports = {
     resolve: {
       alias: {
         '@': resolve('src'),
-      },
-
+      }
     },
     externals: {
       './cptable': 'var cptable',

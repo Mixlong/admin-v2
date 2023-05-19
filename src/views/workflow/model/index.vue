@@ -289,8 +289,8 @@
 <script>
 import { getBpmnXml, listModel, historyModel, latestModel, addModel, updateModel, saveModel, delModel, deployModel } from "@/api/workflow/model";
 import { listCategory } from '@/api/workflow/category'
-// import ProcessDesigner from '@/components/ProcessDesigner';
-// import ProcessViewer from '@/components/ProcessViewer'
+import ProcessDesigner from '@/components/ProcessDesigner';
+import ProcessViewer from '@/components/ProcessViewer'
 import { getToken } from "@/utils/auth";
 
 export default {
