@@ -306,19 +306,19 @@ export default {
         state: state
       }
       changeState(params).then(res => {
-        this.$modal.msgSuccess(res.msg)
+        this.msgSuccess(res.msg)
         this.getPublishList();
       });
     },
     handleDelete(row) {
       const deploymentIds = row.deploymentId || this.ids;
-      this.$modal.confirm('是否确认删除选中的数据项？').then(() => {
+      this.$confirm('是否确认删除选中的数据项？').then(() => {
         this.loading = true;
         return delDeploy(deploymentIds);
       }).then(() => {
         this.loading = false;
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.msgSuccess("删除成功");
       }).finally(() => {
         this.loading = false;
       });

@@ -3,7 +3,7 @@
     <div class="left-board">
       <div class="logo-wrapper">
         <div class="logo">
-          <!-- <img :src="logo" alt="logo">  -->
+          <!-- <img :src="logo" alt="logo" />  -->
           Form Generator
         </div>
       </div>
@@ -54,10 +54,20 @@
         <el-button icon="el-icon-download" type="text" @click="download">
           导出vue文件
         </el-button>
-        <el-button class="copy-btn-main" icon="el-icon-document-copy" type="text" @click="copy">
+        <el-button
+          class="copy-btn-main"
+          icon="el-icon-document-copy"
+          type="text"
+          @click="copy"
+        >
           复制代码
         </el-button>
-        <el-button class="delete-btn" icon="el-icon-delete" type="text" @click="empty">
+        <el-button
+          class="delete-btn"
+          icon="el-icon-delete"
+          type="text"
+          @click="empty"
+        >
           清空
         </el-button>
       </div>
@@ -69,7 +79,12 @@
             :disabled="formConf.disabled"
             :label-width="formConf.labelWidth + 'px'"
           >
-            <draggable class="drawing-board" :list="drawingList" :animation="340" group="componentsGroup">
+            <draggable
+              class="drawing-board"
+              :list="drawingList"
+              :animation="340"
+              group="componentsGroup"
+            >
               <draggable-item
                 v-for="(item, index) in drawingList"
                 :key="item.renderKey"
@@ -91,13 +106,13 @@
       </el-scrollbar>
     </div>
 
-    <!-- <right-panel
+    <right-panel
       :active-data="activeData"
       :form-conf="formConf"
       :show-field="!!drawingList.length"
       @tag-change="tagChange"
       @fetch-data="fetchData"
-    /> -->
+    />
 
     <form-drawer
       :visible.sync="drawerVisible"
@@ -117,9 +132,14 @@
       :show-file-name="showFileName"
       @confirm="generate"
     />
-    <input id="copyNode" type="hidden">
+    <input id="copyNode" type="hidden" />
     <!--表单配置详情-->
-    <el-dialog :title="formTitle" :visible.sync="formOpen" width="500px" append-to-body>
+    <el-dialog
+      :title="formTitle"
+      :visible.sync="formOpen"
+      width="500px"
+      append-to-body
+    >
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="表单名称" prop="formName">
           <el-input v-model="form.formName" placeholder="请输入表单名称" />
@@ -137,36 +157,52 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable'
-import { debounce } from 'throttle-debounce'
-import ClipboardJS from 'clipboard'
-import render from '@/utils/generator/render'
-import FormDrawer from './FormDrawer'
-import JsonDrawer from './JsonDrawer'
-import RightPanel from './RightPanel'
-import { inputComponents, selectComponents, layoutComponents, formConf } from '@/utils/generator/config'
-import { beautifierConf, titleCase, deepClone } from '@/utils/index'
-import { makeUpHtml, vueTemplate, vueScript, cssStyle } from '@/utils/generator/html'
-import { makeUpJs } from '@/utils/generator/js'
-import { makeUpCss } from '@/utils/generator/css'
-import drawingDefault from '@/utils/generator/drawingDefalut'
-import logo from '@/assets/logo/logo.png'
-import CodeTypeDialog from './CodeTypeDialog'
-import DraggableItem from './DraggableItem'
-import { getDrawingList, saveDrawingList, getIdGlobal, saveIdGlobal, getFormConf } from '@/utils/db'
-import loadBeautifier from '@/utils/loadBeautifier'
-import { getForm, addForm, updateForm } from '@/api/workflow/form'
-import axios from 'axios'
-import Vue from 'vue';
+import draggable from "vuedraggable";
+import { debounce } from "throttle-debounce";
+import ClipboardJS from "clipboard";
+import render from "@/utils/generator/render";
+import FormDrawer from "./FormDrawer";
+import JsonDrawer from "./JsonDrawer";
+import RightPanel from "./RightPanel";
+import {
+  inputComponents,
+  selectComponents,
+  layoutComponents,
+  formConf,
+} from "@/utils/generator/config";
+import { beautifierConf, titleCase, deepClone } from "@/utils/index";
+import {
+  makeUpHtml,
+  vueTemplate,
+  vueScript,
+  cssStyle,
+} from "@/utils/generator/html";
+import { makeUpJs } from "@/utils/generator/js";
+import { makeUpCss } from "@/utils/generator/css";
+import drawingDefault from "@/utils/generator/drawingDefaluts";
+import logo from "@/assets/logo/logo.png";
+import CodeTypeDialog from "./CodeTypeDialog";
+import DraggableItem from "./DraggableItem";
+import {
+  getDrawingList,
+  saveDrawingList,
+  getIdGlobal,
+  saveIdGlobal,
+  getFormConf,
+} from "@/utils/db";
+import loadBeautifier from "@/utils/loadBeautifier";
+import { getForm, addForm, updateForm } from "@/api/workflow/form";
+import axios from "axios";
+import Vue from "vue";
 
-let beautifier
-const emptyActiveData = { style: {}, autosize: {} }
-let oldActiveId
-let tempActiveData
-const drawingListInDB = getDrawingList()
-const formConfInDB = getFormConf()
-const idGlobal = getIdGlobal()
-Vue.prototype.$axios = axios
+let beautifier;
+const emptyActiveData = { style: {}, autosize: {} };
+let oldActiveId;
+let tempActiveData;
+const drawingListInDB = getDrawingList();
+const formConfInDB = getFormConf();
+const idGlobal = getIdGlobal();
+Vue.prototype.$axios = axios;
 
 export default {
   components: {
@@ -176,13 +212,16 @@ export default {
     JsonDrawer,
     RightPanel,
     CodeTypeDialog,
-    DraggableItem
+    DraggableItem,
   },
   data() {
     return {
       logo,
       idGlobal,
       formConf,
+      inputComponents,
+      selectComponents,
+      layoutComponents,
       labelWidth: 100,
       drawingList: [],
       drawingData: {},
@@ -196,6 +235,20 @@ export default {
       activeData: drawingDefault[0],
       saveDrawingListDebounce: debounce(340, saveDrawingList),
       saveIdGlobalDebounce: debounce(340, saveIdGlobal),
+      leftComponents: [
+        {
+          title: "输入型组件",
+          list: inputComponents,
+        },
+        {
+          title: "选择型组件",
+          list: selectComponents,
+        },
+        {
+          title: "布局型组件",
+          list: layoutComponents,
+        },
+      ],
       formOpen: false,
       formTitle: "",
       // 表单参数
@@ -203,319 +256,313 @@ export default {
         formId: null,
         formName: null,
         content: null,
-        remark: null
+        remark: null,
       },
       // 表单校验
-      rules: {}
-    }
+      rules: {},
+    };
   },
   created() {
     // 防止 firefox 下 拖拽 会新打卡一个选项卡
-    document.body.ondrop = event => {
-      event.preventDefault()
-      event.stopPropagation()
-    }
-
-    console.log(this.leftComponents)
-  },
-  computed: {
-    leftComponents() {
-      return [
-        {
-          title: '输入型组件',
-          list: inputComponents
-        },
-        {
-          title: '选择型组件',
-          list: selectComponents
-        },
-        {
-          title: '布局型组件',
-          list: layoutComponents
-        }
-      ]
-    }
+    document.body.ondrop = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
   },
   watch: {
     // eslint-disable-next-line func-names
-    'activeData.__config__.label': function (val, oldVal) {
+    "activeData.__config__.label": function (val, oldVal) {
       if (
-        this.activeData.placeholder === undefined
-        || !this.activeData.__config__.tag
-        || oldActiveId !== this.activeId
+        this.activeData.placeholder === undefined ||
+        !this.activeData.__config__.tag ||
+        oldActiveId !== this.activeId
       ) {
-        return
+        return;
       }
-      this.activeData.placeholder = this.activeData.placeholder.replace(oldVal, '') + val
+      this.activeData.placeholder =
+        this.activeData.placeholder.replace(oldVal, "") + val;
     },
     activeId: {
       handler(val) {
-        oldActiveId = val
+        oldActiveId = val;
       },
-      immediate: true
+      immediate: true,
     },
     drawingList: {
       handler(val) {
-        this.saveDrawingListDebounce(val)
-        if (val.length === 0) this.idGlobal = 100
+        this.saveDrawingListDebounce(val);
+        if (val.length === 0) this.idGlobal = 100;
       },
-      deep: true
+      deep: true,
     },
     idGlobal: {
       handler(val) {
-        this.saveIdGlobalDebounce(val)
+        this.saveIdGlobalDebounce(val);
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
+
   mounted() {
     const that = this;
     if (Array.isArray(drawingListInDB) && drawingListInDB.length > 0) {
-      that.drawingList = drawingListInDB
+      that.drawingList = drawingListInDB;
     } else {
-      that.drawingList = drawingDefault
+      that.drawingList = drawingDefault;
     }
-    this.activeFormItem(that.drawingList[0])
+    this.activeFormItem(that.drawingList[0]);
     // // if (formConfInDB) {
     // //   this.formConf = formConfInDB
     // // }
     that.drawingList = [];
-    const formId =  that.$route.query && that.$route.query.formId;
+    const formId = that.$route.query && that.$route.query.formId;
     if (formId) {
-      getForm(formId).then(res => {
+      getForm(formId).then((res) => {
         that.formConf = JSON.parse(res.data.content);
         that.drawingList = that.formConf.fields;
         that.form = res.data;
-      })
+      });
     } else {
       if (formConfInDB) {
-        that.formConf = formConfInDB
-        that.formConf.fields = null
+        that.formConf = formConfInDB;
+        that.formConf.fields = null;
       }
     }
-    loadBeautifier(btf => {
-      beautifier = btf
-    })
-    const clipboard = new ClipboardJS('#copyNode', {
-      text: trigger => {
-        const codeStr = this.generateCode()
+    loadBeautifier((btf) => {
+      beautifier = btf;
+    });
+    const clipboard = new ClipboardJS("#copyNode", {
+      text: (trigger) => {
+        const codeStr = this.generateCode();
         this.$notify({
-          title: '成功',
-          message: '代码已复制到剪切板，可粘贴。',
-          type: 'success'
-        })
-        return codeStr
-      }
-    })
-    clipboard.on('error', e => {
-      this.$message.error('代码复制失败')
-    })
+          title: "成功",
+          message: "代码已复制到剪切板，可粘贴。",
+          type: "success",
+        });
+        return codeStr;
+      },
+    });
+    clipboard.on("error", (e) => {
+      this.$message.error("代码复制失败");
+    });
   },
   methods: {
     setObjectValueReduce(obj, strKeys, data) {
-      const arr = strKeys.split('.')
+      const arr = strKeys.split(".");
       arr.reduce((pre, item, i) => {
         if (arr.length === i + 1) {
-          pre[item] = data
+          pre[item] = data;
         } else if (!(pre[item] instanceof Object)) {
-          pre[item] = {}
+          pre[item] = {};
         }
-        return pre[item]
-      }, obj)
+        return pre[item];
+      }, obj);
     },
     setRespData(component, resp) {
-      const { dataKey, renderKey, dataConsumer } = component.__config__
-      if (!dataKey || !dataConsumer) return
-      const respData = dataKey.split('.').reduce((pre, item) => pre[item], resp)
+      const { dataKey, renderKey, dataConsumer } = component.__config__;
+      if (!dataKey || !dataConsumer) return;
+      const respData = dataKey
+        .split(".")
+        .reduce((pre, item) => pre[item], resp);
       // 将请求回来的数据，赋值到指定属性。
       // 以el-tabel为例，根据Element文档，应该将数据赋值给el-tabel的data属性，所以dataConsumer的值应为'data';
       // 此时赋值代码可写成 component[dataConsumer] = respData；
       // 但为支持更深层级的赋值（如：dataConsumer的值为'options.data'）,使用setObjectValueReduce
-      this.setObjectValueReduce(component, dataConsumer, respData)
-      const i = this.drawingList.findIndex(item => item.__config__.renderKey === renderKey)
-      if (i > -1) this.$set(this.drawingList, i, component)
+      this.setObjectValueReduce(component, dataConsumer, respData);
+      const i = this.drawingList.findIndex(
+        (item) => item.__config__.renderKey === renderKey
+      );
+      if (i > -1) this.$set(this.drawingList, i, component);
     },
     fetchData(component) {
-      const { dataType, method, url } = component.__config__
-      if (dataType === 'dynamic' && method && url) {
-        this.setLoading(component, true)
+      const { dataType, method, url } = component.__config__;
+      if (dataType === "dynamic" && method && url) {
+        this.setLoading(component, true);
         this.$axios({
           method,
-          url
-        }).then(resp => {
-          this.setLoading(component, false)
-          this.setRespData(component, resp.data)
-        })
+          url,
+        }).then((resp) => {
+          this.setLoading(component, false);
+          this.setRespData(component, resp.data);
+        });
       }
     },
     setLoading(component, val) {
-      const { directives } = component
+      const { directives } = component;
       if (Array.isArray(directives)) {
-        const t = directives.find(d => d.name === 'loading')
-        if (t) t.value = val
+        const t = directives.find((d) => d.name === "loading");
+        if (t) t.value = val;
       }
     },
     activeFormItem(currentItem) {
-      this.activeData = currentItem
-      this.activeId = currentItem.__config__.formId
+      this.activeData = currentItem;
+      this.activeId = currentItem.__config__.formId;
     },
     onEnd(obj) {
       if (obj.from !== obj.to) {
-        this.fetchData(tempActiveData)
-        this.activeData = tempActiveData
-        this.activeId = this.idGlobal
+        this.fetchData(tempActiveData);
+        this.activeData = tempActiveData;
+        this.activeId = this.idGlobal;
       }
     },
     addComponent(item) {
-      const clone = this.cloneComponent(item)
-      this.fetchData(clone)
-      this.drawingList.push(clone)
-      this.activeFormItem(clone)
+      const clone = this.cloneComponent(item);
+      this.fetchData(clone);
+      this.drawingList.push(clone);
+      this.activeFormItem(clone);
     },
     cloneComponent(origin) {
-      const clone = deepClone(origin)
-      const config = clone.__config__
-      config.span = this.formConf.span // 生成代码时，会根据span做精简判断
-      this.createIdAndKey(clone)
-      clone.placeholder !== undefined && (clone.placeholder += config.label)
-      tempActiveData = clone
-      return tempActiveData
+      const clone = deepClone(origin);
+      const config = clone.__config__;
+      config.span = this.formConf.span; // 生成代码时，会根据span做精简判断
+      this.createIdAndKey(clone);
+      clone.placeholder !== undefined && (clone.placeholder += config.label);
+      tempActiveData = clone;
+      return tempActiveData;
     },
     createIdAndKey(item) {
-      const config = item.__config__
-      config.formId = ++this.idGlobal
-      config.renderKey = `${config.formId}${+new Date()}` // 改变renderKey后可以实现强制更新组件
-      if (config.layout === 'colFormItem') {
-        item.__vModel__ = `field${this.idGlobal}`
-      } else if (config.layout === 'rowFormItem') {
-        config.componentName = `row${this.idGlobal}`
-        !Array.isArray(config.children) && (config.children = [])
-        delete config.label // rowFormItem无需配置label属性
+      const config = item.__config__;
+      config.formId = ++this.idGlobal;
+      config.renderKey = `${config.formId}${+new Date()}`; // 改变renderKey后可以实现强制更新组件
+      if (config.layout === "colFormItem") {
+        item.__vModel__ = `field${this.idGlobal}`;
+      } else if (config.layout === "rowFormItem") {
+        config.componentName = `row${this.idGlobal}`;
+        !Array.isArray(config.children) && (config.children = []);
+        delete config.label; // rowFormItem无需配置label属性
       }
       if (Array.isArray(config.children)) {
-        config.children = config.children.map(childItem => this.createIdAndKey(childItem))
+        config.children = config.children.map((childItem) =>
+          this.createIdAndKey(childItem)
+        );
       }
-      return item
+      return item;
     },
     AssembleFormData() {
       this.formData = {
         ...this.formConf,
-        fields: deepClone(this.drawingList)
-      }
+        fields: deepClone(this.drawingList),
+      };
     },
     generate(data) {
-      const func = this[`exec${titleCase(this.operationType)}`]
-      this.generateConf = data
-      func && func(data)
+      const func = this[`exec${titleCase(this.operationType)}`];
+      this.generateConf = data;
+      func && func(data);
     },
     execRun(data) {
-      this.AssembleFormData()
-      this.drawerVisible = true
+      this.AssembleFormData();
+      this.drawerVisible = true;
     },
     execDownload(data) {
-      const codeStr = this.generateCode()
-      const blob = new Blob([codeStr], { type: 'text/plain;charset=utf-8' })
-      this.$download.saveAs(blob, data.fileName)
+      const codeStr = this.generateCode();
+      const blob = new Blob([codeStr], { type: "text/plain;charset=utf-8" });
+      this.$download.saveAs(blob, data.fileName);
     },
     execCopy(data) {
-      document.getElementById('copyNode').click()
+      document.getElementById("copyNode").click();
     },
     empty() {
-      this.$confirm('确定要清空所有组件吗？', '提示', { type: 'warning' }).then(
+      this.$confirm("确定要清空所有组件吗？", "提示", { type: "warning" }).then(
         () => {
-          this.drawingList = []
-          this.idGlobal = 100
+          this.drawingList = [];
+          this.idGlobal = 100;
         }
-      )
+      );
     },
     drawingItemCopy(item, list) {
-      let clone = deepClone(item)
-      clone = this.createIdAndKey(clone)
-      list.push(clone)
-      this.activeFormItem(clone)
+      let clone = deepClone(item);
+      clone = this.createIdAndKey(clone);
+      list.push(clone);
+      this.activeFormItem(clone);
     },
     drawingItemDelete(index, list) {
-      list.splice(index, 1)
+      list.splice(index, 1);
       this.$nextTick(() => {
-        const len = this.drawingList.length
+        const len = this.drawingList.length;
         if (len) {
-          this.activeFormItem(this.drawingList[len - 1])
+          this.activeFormItem(this.drawingList[len - 1]);
         }
-      })
+      });
     },
     generateCode() {
-      const { type } = this.generateConf
-      this.AssembleFormData()
-      const script = vueScript(makeUpJs(this.formData, type))
-      const html = vueTemplate(makeUpHtml(this.formData, type))
-      const css = cssStyle(makeUpCss(this.formData))
-      return beautifier.html(html + script + css, beautifierConf.html)
+      const { type } = this.generateConf;
+      this.AssembleFormData();
+      const script = vueScript(makeUpJs(this.formData, type));
+      const html = vueTemplate(makeUpHtml(this.formData, type));
+      const css = cssStyle(makeUpCss(this.formData));
+      return beautifier.html(html + script + css, beautifierConf.html);
     },
     showJson() {
-      this.AssembleFormData()
-      this.jsonDrawerVisible = true
+      this.AssembleFormData();
+      this.jsonDrawerVisible = true;
     },
     download() {
-      this.dialogVisible = true
-      this.showFileName = true
-      this.operationType = 'download'
+      this.dialogVisible = true;
+      this.showFileName = true;
+      this.operationType = "download";
     },
     run() {
       // TODO 弹窗类型异常
       // this.dialogVisible = true
       // this.showFileName = false
-      this.operationType = 'run'
+      this.operationType = "run";
       let data = {
         fileName: undefined,
-          type: 'file'
-      }
+        type: "file",
+      };
       this.generate(data);
     },
     copy() {
-      this.dialogVisible = true
-      this.showFileName = false
-      this.operationType = 'copy'
+      this.dialogVisible = true;
+      this.showFileName = false;
+      this.operationType = "copy";
     },
     tagChange(newTag) {
-      newTag = this.cloneComponent(newTag)
-      const config = newTag.__config__
-      newTag.__vModel__ = this.activeData.__vModel__
-      config.formId = this.activeId
-      config.span = this.activeData.__config__.span
-      this.activeData.__config__.tag = config.tag
-      this.activeData.__config__.tagIcon = config.tagIcon
-      this.activeData.__config__.document = config.document
-      if (typeof this.activeData.__config__.defaultValue === typeof config.defaultValue) {
-        config.defaultValue = this.activeData.__config__.defaultValue
+      newTag = this.cloneComponent(newTag);
+      const config = newTag.__config__;
+      newTag.__vModel__ = this.activeData.__vModel__;
+      config.formId = this.activeId;
+      config.span = this.activeData.__config__.span;
+      this.activeData.__config__.tag = config.tag;
+      this.activeData.__config__.tagIcon = config.tagIcon;
+      this.activeData.__config__.document = config.document;
+      if (
+        typeof this.activeData.__config__.defaultValue ===
+        typeof config.defaultValue
+      ) {
+        config.defaultValue = this.activeData.__config__.defaultValue;
       }
-      Object.keys(newTag).forEach(key => {
+      Object.keys(newTag).forEach((key) => {
         if (this.activeData[key] !== undefined) {
-          newTag[key] = this.activeData[key]
+          newTag[key] = this.activeData[key];
         }
-      })
-      this.activeData = newTag
-      this.updateDrawingList(newTag, this.drawingList)
+      });
+      this.activeData = newTag;
+      this.updateDrawingList(newTag, this.drawingList);
     },
     updateDrawingList(newTag, list) {
-      const index = list.findIndex(item => item.__config__.formId === this.activeId)
+      const index = list.findIndex(
+        (item) => item.__config__.formId === this.activeId
+      );
       if (index > -1) {
-        list.splice(index, 1, newTag)
+        list.splice(index, 1, newTag);
       } else {
-        list.forEach(item => {
-          if (Array.isArray(item.__config__.children)) this.updateDrawingList(newTag, item.__config__.children)
-        })
+        list.forEach((item) => {
+          if (Array.isArray(item.__config__.children))
+            this.updateDrawingList(newTag, item.__config__.children);
+        });
       }
     },
     refreshJson(data) {
-      this.drawingList = deepClone(data.fields)
-      delete data.fields
-      this.formConf = data
+      this.drawingList = deepClone(data.fields);
+      delete data.fields;
+      this.formConf = data;
     },
     /** 表单基本信息 */
     handleForm() {
       this.formData = {
         ...this.formConf,
-        fields: deepClone(this.drawingList)
+        fields: deepClone(this.drawingList),
       };
       this.form.content = JSON.stringify(this.formData);
       this.formOpen = true;
@@ -527,7 +574,7 @@ export default {
         formId: null,
         formName: null,
         content: null,
-        remark: null
+        remark: null,
       };
       this.resetForm("form");
     },
@@ -537,56 +584,60 @@ export default {
       this.reset();
     },
     /** 保存表单信息 */
-    submitForm(){
-      this.$refs["form"].validate(valid => {
+    submitForm() {
+      this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.formId != null) {
-            updateForm(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+            updateForm(this.form).then((response) => {
+              this.msgSuccess("修改成功");
             });
           } else {
-            addForm(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+            addForm(this.form).then((response) => {
+              this.msgSuccess("新增成功");
             });
           }
-          this.drawingList = []
-          this.idGlobal = 100
+          this.drawingList = [];
+          this.idGlobal = 100;
           this.open = false;
           // 关闭当前标签页并返回上个页面
           this.$store.dispatch("tagsView/delView", this.$route);
-          this.$router.go(-1)
+          this.$router.go(-1);
         }
       });
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang='scss'>
-body, html{
+body,
+html {
   margin: 0;
   padding: 0;
   background: #fff;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
 
-input, textarea{
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+input,
+textarea {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
 
-.editor-tabs{
+.editor-tabs {
   background: #121315;
-  .el-tabs__header{
+  .el-tabs__header {
     margin: 0;
     border-bottom-color: #121315;
-    .el-tabs__nav{
+    .el-tabs__nav {
       border-color: #121315;
     }
   }
-  .el-tabs__item{
+  .el-tabs__item {
     height: 32px;
     line-height: 32px;
     color: #888a8e;
@@ -595,15 +646,15 @@ input, textarea{
     margin-right: 5px;
     user-select: none;
   }
-  .el-tabs__item.is-active{
+  .el-tabs__item.is-active {
     background: #1e1e1e;
-    border-bottom-color: #1e1e1e!important;
+    border-bottom-color: #1e1e1e !important;
     color: #fff;
   }
-  .el-icon-edit{
+  .el-icon-edit {
     color: #f1fa8c;
   }
-  .el-icon-document{
+  .el-icon-document {
     color: #a95812;
   }
 }
@@ -619,24 +670,24 @@ input, textarea{
   overflow-x: hidden !important;
   margin-bottom: 0 !important;
 }
-.center-tabs{
-  .el-tabs__header{
-    margin-bottom: 0!important;
+.center-tabs {
+  .el-tabs__header {
+    margin-bottom: 0 !important;
   }
-  .el-tabs__item{
+  .el-tabs__item {
     width: 50%;
     text-align: center;
   }
-  .el-tabs__nav{
+  .el-tabs__nav {
     width: 100%;
   }
 }
-.reg-item{
+.reg-item {
   padding: 12px 6px;
   background: #f8f8f8;
   position: relative;
   border-radius: 4px;
-  .close-btn{
+  .close-btn {
     position: absolute;
     right: -6px;
     top: -6px;
@@ -651,16 +702,16 @@ input, textarea{
     z-index: 1;
     cursor: pointer;
     font-size: 12px;
-    &:hover{
-      background: rgba(210, 23, 23, 0.5)
+    &:hover {
+      background: rgba(210, 23, 23, 0.5);
     }
   }
-  & + .reg-item{
+  & + .reg-item {
     margin-top: 18px;
   }
 }
-.action-bar{
-  & .el-button+.el-button {
+.action-bar {
+  & .el-button + .el-button {
     margin-left: 15px;
   }
   & i {
@@ -671,37 +722,37 @@ input, textarea{
   }
 }
 
-.custom-tree-node{
+.custom-tree-node {
   width: 100%;
   font-size: 14px;
-  .node-operation{
+  .node-operation {
     float: right;
   }
-  i[class*="el-icon"] + i[class*="el-icon"]{
+  i[class*="el-icon"] + i[class*="el-icon"] {
     margin-left: 6px;
   }
-  .el-icon-plus{
-    color: #409EFF;
+  .el-icon-plus {
+    color: #409eff;
   }
-  .el-icon-delete{
+  .el-icon-delete {
     color: #157a0c;
   }
 }
 
-.left-scrollbar .el-scrollbar__view{
+.left-scrollbar .el-scrollbar__view {
   overflow-x: hidden;
 }
 
-.el-rate{
+.el-rate {
   display: inline-block;
   vertical-align: text-top;
 }
-.el-upload__tip{
+.el-upload__tip {
   line-height: 1.2;
 }
 
 $selectedColor: #f6f7ff;
-$lighterBlue: #409EFF;
+$lighterBlue: #409eff;
 
 .container {
   position: relative;
@@ -720,14 +771,14 @@ $lighterBlue: #409EFF;
     transition: transform 0ms !important;
   }
 }
-.components-draggable{
+.components-draggable {
   padding-bottom: 20px;
 }
-.components-title{
+.components-title {
   font-size: 14px;
   color: #222;
   margin: 6px 2px;
-  .svg-icon{
+  .svg-icon {
     color: #666;
     font-size: 18px;
   }
@@ -740,7 +791,7 @@ $lighterBlue: #409EFF;
   cursor: move;
   border: 1px dashed $selectedColor;
   border-radius: 3px;
-  .svg-icon{
+  .svg-icon {
     color: #777;
     font-size: 15px;
   }
@@ -760,7 +811,7 @@ $lighterBlue: #409EFF;
   top: 0;
   height: 100vh;
 }
-.left-scrollbar{
+.left-scrollbar {
   height: calc(100vh - 42px);
   overflow: hidden;
 }
@@ -777,7 +828,7 @@ $lighterBlue: #409EFF;
   margin: 0 350px 0 260px;
   box-sizing: border-box;
 }
-.empty-info{
+.empty-info {
   position: absolute;
   top: 46%;
   left: 0;
@@ -787,27 +838,27 @@ $lighterBlue: #409EFF;
   color: #ccb1ea;
   letter-spacing: 4px;
 }
-.action-bar{
+.action-bar {
   position: relative;
   height: 42px;
   text-align: right;
   padding: 0 15px;
-  box-sizing: border-box;;
+  box-sizing: border-box;
   border: 1px solid #f1e8e8;
   border-top: none;
   border-left: none;
-  .delete-btn{
-    color: #F56C6C;
+  .delete-btn {
+    color: #f56c6c;
   }
 }
-.logo-wrapper{
+.logo-wrapper {
   position: relative;
   height: 42px;
   background: #fff;
   border-bottom: 1px solid #f1e8e8;
   box-sizing: border-box;
 }
-.logo{
+.logo {
   position: absolute;
   left: 12px;
   top: 6px;
@@ -816,16 +867,16 @@ $lighterBlue: #409EFF;
   font-weight: 600;
   font-size: 17px;
   white-space: nowrap;
-  > img{
+  > img {
     width: 30px;
     height: 30px;
     vertical-align: top;
   }
-  .github{
+  .github {
     display: inline-block;
     vertical-align: sub;
     margin-left: 15px;
-    > img{
+    > img {
       height: 22px;
     }
   }
@@ -868,32 +919,33 @@ $lighterBlue: #409EFF;
     background-color: $selectedColor;
   }
   .active-from-item {
-    & > .el-form-item{
+    & > .el-form-item {
       background: $selectedColor;
       border-radius: 6px;
     }
-    & > .drawing-item-copy, & > .drawing-item-delete{
+    & > .drawing-item-copy,
+    & > .drawing-item-delete {
       display: initial;
     }
-    & > .component-name{
+    & > .component-name {
       color: $lighterBlue;
     }
   }
-  .el-form-item{
+  .el-form-item {
     margin-bottom: 15px;
   }
 }
-.drawing-item{
+.drawing-item {
   position: relative;
   cursor: move;
-  &.unfocus-bordered:not(.activeFromItem) > div:first-child  {
+  &.unfocus-bordered:not(.activeFromItem) > div:first-child {
     border: 1px dashed #ccc;
   }
-  .el-form-item{
+  .el-form-item {
     padding: 12px 10px;
   }
 }
-.drawing-row-item{
+.drawing-row-item {
   position: relative;
   cursor: move;
   box-sizing: border-box;
@@ -904,19 +956,19 @@ $lighterBlue: #409EFF;
   .drawing-row-item {
     margin-bottom: 2px;
   }
-  .el-col{
+  .el-col {
     margin-top: 22px;
   }
-  .el-form-item{
+  .el-form-item {
     margin-bottom: 0;
   }
-  .drag-wrapper{
+  .drag-wrapper {
     min-height: 80px;
   }
-  &.active-from-item{
+  &.active-from-item {
     border: 1px dashed $lighterBlue;
   }
-  .component-name{
+  .component-name {
     position: absolute;
     top: 0;
     left: 0;
@@ -926,17 +978,20 @@ $lighterBlue: #409EFF;
     padding: 0 6px;
   }
 }
-.drawing-item, .drawing-row-item{
+.drawing-item,
+.drawing-row-item {
   &:hover {
-    & > .el-form-item{
+    & > .el-form-item {
       background: $selectedColor;
       border-radius: 6px;
     }
-    & > .drawing-item-copy, & > .drawing-item-delete{
+    & > .drawing-item-copy,
+    & > .drawing-item-delete {
       display: initial;
     }
   }
-  & > .drawing-item-copy, & > .drawing-item-delete{
+  & > .drawing-item-copy,
+  & > .drawing-item-delete {
     display: none;
     position: absolute;
     top: -10px;
@@ -950,26 +1005,25 @@ $lighterBlue: #409EFF;
     cursor: pointer;
     z-index: 1;
   }
-  & > .drawing-item-copy{
+  & > .drawing-item-copy {
     right: 56px;
     border-color: $lighterBlue;
     color: $lighterBlue;
     background: #fff;
-    &:hover{
+    &:hover {
       background: $lighterBlue;
       color: #fff;
     }
   }
-  & > .drawing-item-delete{
+  & > .drawing-item-delete {
     right: 24px;
-    border-color: #F56C6C;
-    color: #F56C6C;
+    border-color: #f56c6c;
+    color: #f56c6c;
     background: #fff;
-    &:hover{
-      background: #F56C6C;
+    &:hover {
+      background: #f56c6c;
       color: #fff;
     }
   }
 }
-
 </style>

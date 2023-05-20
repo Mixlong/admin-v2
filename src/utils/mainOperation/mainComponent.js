@@ -7,6 +7,10 @@ import Tooltip from '@/components/Tooltip'
 import ModalStyle from '@/components/ModalStyle'
 import PreviewImg from '@/components/PreviewImg'
 import SelectLoadMore from '@/components/selectLoadMore'
+// 字典标签组件
+import DictTag from '@/components/DictTag'
+// 字典数据组件
+import DictData from '@/components/DictData'
 
 // 全局组件挂载
 Vue.component('Pagination', Pagination)
@@ -16,3 +20,5 @@ Vue.component('Tooltip', Tooltip)
 Vue.component('ModalStyle', ModalStyle)
 Vue.component('preview-img', PreviewImg)
 Vue.component('select-loadMore', SelectLoadMore)
+Vue.component('DictTag', DictTag)
+DictData.install()

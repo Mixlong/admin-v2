@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import App from './App';
 import store from '@/store';
 import router from '@/router';
+import plugins from './plugins' // plugins
 
 // import './assets/styles/element-variables.scss';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -33,6 +34,8 @@ Vue.prototype.msgInfo = function (msg) {
 };
 Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'mini', zIndex: 3000 };
 Vue.config.productionTip = false;
+
+Vue.use(plugins)
 
 // Vue.use(VueNativeSock, WS, {
 //   // 启用Vuex集成,store的值为你的vuex

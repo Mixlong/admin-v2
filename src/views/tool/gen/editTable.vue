@@ -194,13 +194,13 @@ export default {
             parentMenuId: genTable.parentMenuId
           };
           updateGenTable(genTable).then(res => {
-            this.$modal.msgSuccess(res.msg);
+            this.msgSuccess(res.msg);
             if (res.code === 200) {
               this.close();
             }
           });
         } else {
-          this.$modal.msgError("表单校验未通过，请重新检查提交内容");
+          this.msgError("表单校验未通过，请重新检查提交内容");
         }
       });
     },

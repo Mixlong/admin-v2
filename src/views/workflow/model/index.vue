@@ -440,7 +440,7 @@ export default {
       deployModel({
         modelId: row.modelId
       }).then(response => {
-        this.$modal.msgSuccess(response.msg);
+        this.msgSuccess(response.msg);
         let obj = { name: 'Deploy', path: '/workflow/deploy' }
         return this.$store.dispatch('tagsView/delCachedView', obj).then(() => {
           this.$router.push(obj);
@@ -475,14 +475,14 @@ export default {
     },
     /** 设为最新版 */
     handleLatest(row) {
-      this.$modal.confirm('是否确认将此版本设为最新？').then(() => {
+      this.$confirm('是否确认将此版本设为最新？').then(() => {
         this.history.loading = true;
         latestModel({
           modelId: row.modelId
         }).then(response => {
           this.history.open = false;
           this.getList();
-          this.$modal.msgSuccess(response.msg);
+          this.msgSuccess(response.msg);
         }).finally(() => {
           this.history.loading = false;
         })
@@ -519,13 +519,13 @@ export default {
         if (valid) {
           if (this.form.modelId !== undefined) {
             updateModel(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
             addModel(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.msgSuccess("新增成功");
               this.open = false;
               this.getList();
             });
@@ -582,13 +582,13 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const modelIds = row.modelId || this.ids;
-      this.$modal.confirm('是否确认删除模型编号为"' + modelIds + '"的数据项？').then(() => {
+      this.$confirm('是否确认删除模型编号为"' + modelIds + '"的数据项？').then(() => {
         this.loading = true;
         return delModel(modelIds);
       }).then(() => {
         this.loading = false;
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.msgSuccess("删除成功");
       }).finally(() => {
         this.loading = false;
       });

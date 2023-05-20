@@ -104,11 +104,11 @@ export default {
     handleImportTable() {
       const tableNames = this.tables.join(",");
       if (tableNames == "") {
-        this.$modal.msgError("请选择要导入的表");
+        this.msgError("请选择要导入的表");
         return;
       }
       importTable({ tables: tableNames }).then(res => {
-        this.$modal.msgSuccess(res.msg);
+        this.msgSuccess(res.msg);
         if (res.code === 200) {
           this.visible = false;
           this.$emit("ok");

@@ -143,6 +143,42 @@ export const constantRoutes = [
       },
     ],
   },
+
+  // 
+  {
+    path: '/tool/gen-edit',
+    component: Layout,
+    hidden: true,
+    permissions: ['tool:gen:edit'],
+    children: [
+      {
+        path: 'index/:tableId(\\d+)',
+        component: () => import('@/views/tool/gen/editTable'),
+        name: 'GenEdit',
+        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
+      }
+    ]
+  },
+  {
+    path: '/workflow/process',
+    component: Layout,
+    hidden: true,
+    permissions: ['workflow:process:query'],
+    children: [
+      {
+        path: 'start/:deployId([\\w|\\-]+)',
+        component: () => import('@/views/workflow/work/start'),
+        name: 'WorkStart',
+        meta: { title: '发起流程', icon: '' }
+      },
+      {
+        path: 'detail/:procInsId([\\w|\\-]+)',
+        component: () => import('@/views/workflow/work/detail'),
+        name: 'WorkDetail',
+        meta: { title: '流程详情', activeMenu: '/work/own' }
+      }
+    ]
+  },
 ];
 
 /**

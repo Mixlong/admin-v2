@@ -329,7 +329,7 @@ export default {
     },
     handleTaskUserComplete() {
       if (!this.selectedUserDate || this.selectedUserDate.length <= 0) {
-        this.$modal.msgError('请选择用户');
+        this.msgError('请选择用户');
         return;
       }
       userTaskForm.dataType = 'USERS';

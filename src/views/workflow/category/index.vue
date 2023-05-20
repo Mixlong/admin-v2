@@ -295,7 +295,7 @@ export default {
           if (this.form.categoryId != null) {
             updateCategory(this.form)
               .then(() => {
-                this.$modal.msgSuccess("修改成功");
+                this.msgSuccess("修改成功");
                 this.open = false;
                 this.getList();
               })
@@ -305,7 +305,7 @@ export default {
           } else {
             addCategory(this.form)
               .then(() => {
-                this.$modal.msgSuccess("新增成功");
+                this.msgSuccess("新增成功");
                 this.open = false;
                 this.getList();
               })
@@ -319,7 +319,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const categoryIds = row.categoryId || this.ids;
-      this.$modal
+      this
         .confirm(
           '是否确认删除【请填写功能名称】编号为"' + categoryIds + '"的数据项？'
         )
@@ -330,7 +330,7 @@ export default {
         .then(() => {
           this.loading = false;
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.msgSuccess("删除成功");
         })
         .finally(() => {
           this.loading = false;
