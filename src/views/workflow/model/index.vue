@@ -595,7 +595,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/model/export', {
+      this.fileDownload('workflow/model/export', {
         ...this.queryParams
       }, `wf_model_${new Date().getTime()}.xlsx`)
     },

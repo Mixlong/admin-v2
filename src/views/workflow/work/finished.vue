@@ -234,7 +234,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/process/finishedExport', {
+      this.fileDownload('workflow/process/finishedExport', {
         ...this.queryParams
       }, `wf_finished_process_${new Date().getTime()}.xlsx`)
     }

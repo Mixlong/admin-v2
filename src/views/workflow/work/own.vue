@@ -1,6 +1,12 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form
+      :model="queryParams"
+      ref="queryForm"
+      :inline="true"
+      v-show="showSearch"
+      label-width="68px"
+    >
       <el-form-item label="流程标识" prop="processKey">
         <el-input
           v-model="queryParams.processKey"
@@ -20,12 +26,18 @@
         />
       </el-form-item>
       <el-form-item label="流程分类" prop="category">
-        <el-select v-model="queryParams.category" clearable placeholder="请选择" size="small">
+        <el-select
+          v-model="queryParams.category"
+          clearable
+          placeholder="请选择"
+          size="small"
+        >
           <el-option
             v-for="item in categoryOptions"
             :key="item.categoryId"
             :label="item.categoryName"
-            :value="item.code">
+            :value="item.code"
+          >
           </el-option>
         </el-select>
       </el-form-item>
@@ -42,8 +54,16 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+          >搜索</el-button
+        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
     </el-form>
 
@@ -56,7 +76,8 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-        >删除</el-button>
+          >删除</el-button
+        >
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -66,30 +87,70 @@
           size="mini"
           v-hasPermi="['workflow:process:ownExport']"
           @click="handleExport"
-        >导出</el-button>
+          >导出</el-button
+        >
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar
+        :showSearch.sync="showSearch"
+        @queryTable="getList"
+      ></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="ownProcessList" @selection-change="handleSelectionChange">
+    <el-table
+      v-loading="loading"
+      :data="ownProcessList"
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="流程编号" align="center" prop="procInsId" :show-overflow-tooltip="true"/>
-      <el-table-column label="流程名称" align="center" prop="procDefName" :show-overflow-tooltip="true"/>
-      <el-table-column label="流程类别" align="center" prop="category" :formatter="categoryFormat" />
+      <el-table-column
+        label="流程编号"
+        align="center"
+        prop="procInsId"
+        :show-overflow-tooltip="true"
+      />
+      <el-table-column
+        label="流程名称"
+        align="center"
+        prop="procDefName"
+        :show-overflow-tooltip="true"
+      />
+      <el-table-column
+        label="流程类别"
+        align="center"
+        prop="category"
+        :formatter="categoryFormat"
+      />
       <el-table-column label="流程版本" align="center" width="80px">
         <template slot-scope="scope">
-          <el-tag size="medium" >v{{ scope.row.procDefVersion }}</el-tag>
+          <el-tag size="medium">v{{ scope.row.procDefVersion }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="当前节点" align="center" prop="taskName"/>
-      <el-table-column label="提交时间" align="center" prop="createTime" width="180"/>
+      <el-table-column label="当前节点" align="center" prop="taskName" />
+      <el-table-column
+        label="提交时间"
+        align="center"
+        prop="createTime"
+        width="180"
+      />
       <el-table-column label="流程状态" align="center" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.wf_process_status" :value="scope.row.processStatus"/>
+          <dict-tag
+            :options="dict.type.wf_process_status"
+            :value="scope.row.processStatus"
+          />
         </template>
       </el-table-column>
-      <el-table-column label="耗时" align="center" prop="duration" width="180"/>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column
+        label="耗时"
+        align="center"
+        prop="duration"
+        width="180"
+      />
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
         <template slot-scope="scope">
           <el-button
             type="text"
@@ -97,7 +158,9 @@
             icon="el-icon-tickets"
             @click="handleFlowRecord(scope.row)"
             v-hasPermi="['workflow:process:query']"
-          >详情</el-button>
+          >
+            详情
+          </el-button>
           <el-button
             type="text"
             size="mini"
@@ -105,44 +168,48 @@
             @click="handleDelete(scope.row)"
             v-if="scope.row.finishTime"
             v-hasPermi="['workflow:process:remove']"
-          >删除</el-button>
+            >删除</el-button
+          >
           <el-button
             type="text"
             size="mini"
             icon="el-icon-circle-close"
             @click="handleStop(scope.row)"
             v-hasPermi="['workflow:process:cancel']"
-          >取消</el-button>
+            >取消</el-button
+          >
           <el-button
             type="text"
             size="mini"
             icon="el-icon-refresh-right"
             v-hasPermi="['workflow:process:start']"
             @click="handleAgain(scope.row)"
-          >重新发起</el-button>
+            >重新发起</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
 
     <pagination
-      v-show="total>0"
+      v-show="total > 0"
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-
   </div>
 </template>
 
 <script>
-import { listOwnProcess, stopProcess, delProcess } from '@/api/workflow/process';
-import { listAllCategory } from '@/api/workflow/category';
+import {
+  listOwnProcess,
+  stopProcess,
+  delProcess,
+} from "@/api/workflow/process";
+import { listAllCategory } from "@/api/workflow/category";
 export default {
   name: "Own",
-  dicts: ['wf_process_status'],
-  components: {
-  },
+  dicts: ["wf_process_status"],
   data() {
     return {
       // 遮罩层
@@ -159,7 +226,7 @@ export default {
       // 总条数
       total: 0,
       categoryOptions: [],
-      processTotal:0,
+      processTotal: 0,
       // 我发起的流程列表数据
       ownProcessList: [],
       // 弹出层标题
@@ -167,7 +234,7 @@ export default {
       // 是否显示弹出层
       open: false,
       src: "",
-      definitionList:[],
+      definitionList: [],
       // 日期范围
       dateRange: [],
       // 查询参数
@@ -176,36 +243,41 @@ export default {
         pageSize: 10,
         processKey: undefined,
         processName: undefined,
-        category: undefined
+        category: undefined,
       },
       // 表单参数
       form: {},
       // 表单校验
-      rules: {
-      },
+      rules: {},
     };
   },
   created() {
     this.getCategoryList();
   },
   beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.getList()
-    })
+    next((vm) => {
+      vm.getList();
+    });
   },
   methods: {
     /** 查询流程分类列表 */
     getCategoryList() {
-      listAllCategory().then(response => this.categoryOptions = response.data)
+      listAllCategory().then(
+        (response) => (this.categoryOptions = response.data)
+      );
     },
     /** 查询流程定义列表 */
     getList() {
       this.loading = true;
-      listOwnProcess(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
-        this.ownProcessList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-      });
+      listOwnProcess(this.addDateRange(this.queryParams, this.dateRange))
+        .then((response) => {
+          this.ownProcessList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     // 取消按钮
     cancel() {
@@ -224,7 +296,7 @@ export default {
         derivedFrom: null,
         derivedFromRoot: null,
         parentDeploymentId: null,
-        engineVersion: null
+        engineVersion: null,
       };
       this.resetForm("form");
     },
@@ -241,26 +313,25 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.procInsId);
+      this.ids = selection.map((item) => item.procInsId);
       this.single = selection.length !== 1;
       this.multiple = !selection.length;
     },
     handleAgain(row) {
       this.$router.push({
-        path: '/workflow/process/start/' + row.deployId,
+        path: "/workflow/process/start/" + row.deployId,
         query: {
           definitionId: row.procDefId,
-          procInsId: row.procInsId
-        }
-      })
-      console.log(row);
+          procInsId: row.procInsId,
+        },
+      });
     },
     /**  取消流程申请 */
-    handleStop(row){
+    handleStop(row) {
       const params = {
-        procInsId: row.procInsId
-      }
-      stopProcess(params).then( res => {
+        procInsId: row.procInsId,
+      };
+      stopProcess(params).then((res) => {
         this.msgSuccess(res.msg);
         this.getList();
       });
@@ -268,35 +339,48 @@ export default {
     /** 流程流转记录 */
     handleFlowRecord(row) {
       this.$router.push({
-        path: '/workflow/process/detail/' + row.procInsId,
+        path: "/workflow/process/detail/" + row.procInsId,
         query: {
-          processed: false
-        }
-      })
+          processed: false,
+        },
+      });
     },
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.procInsId || this.ids;
-      this.$confirm('是否确认删除流程定义编号为"' + ids + '"的数据项?', "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      }).then(function() {
-        return delProcess(ids);
-      }).then(() => {
-        this.getList();
-        this.msgSuccess("删除成功");
-      })
+      this.$confirm(
+        '是否确认删除流程定义编号为"' + ids + '"的数据项?',
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(function () {
+          return delProcess(ids);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
+        });
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/process/ownExport', {
-        ...this.queryParams
-      }, `wf_own_process_${new Date().getTime()}.xlsx`)
+      this.fileDownload(
+        "workflow/process/ownExport",
+        {
+          ...this.queryParams,
+        },
+        `wf_own_process_${new Date().getTime()}.xlsx`
+      );
     },
     categoryFormat(row, column) {
-      return this.categoryOptions.find(k => k.code === row.category)?.categoryName ?? '';
-    }
-  }
+      return (
+        this.categoryOptions.find((k) => k.code === row.category)
+          ?.categoryName ?? ""
+      );
+    },
+  },
 };
 </script>

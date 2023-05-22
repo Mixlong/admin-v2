@@ -194,7 +194,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/process/todoExport', {
+      this.fileDownload('workflow/process/todoExport', {
         ...this.queryParams
       }, `wf_todo_process_${new Date().getTime()}.xlsx`)
     }

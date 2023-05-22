@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { Notification, MessageBox, Message } from 'element-ui'
+import { Notification, MessageBox, Message, Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
+import { tansParams, blobValidate } from "@/utils/ruoyi";
 // import reqUrl from '@/utils/requestUrl'
 import Cookies from "js-cookie";
 
@@ -93,5 +94,32 @@ service.interceptors.response.use(res => {
     return Promise.reject(error)
   }
 )
+
+// 通用下载方法
+export function download(url, data, filename, config) {
+  let downloadLoadingInstance = Loading.service({ text: "正在下载数据，请稍候", spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
+  return service.post(url, data, {
+    transformRequest: [(data) => { return tansParams(data) }],
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    responseType: 'blob',
+    ...config
+  }).then(async (data) => {
+    const isBlob = blobValidate(data);
+    if (isBlob) {
+      const blob = new Blob([data])
+      saveAs(blob, filename)
+    } else {
+      const resText = await data.text();
+      const rspObj = JSON.parse(resText);
+      const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
+      Message.error(errMsg);
+    }
+    downloadLoadingInstance.close();
+  }).catch((r) => {
+    console.error(r)
+    Message.error('下载文件出现错误，请联系管理员！')
+    downloadLoadingInstance.close();
+  })
+}
 
 export default service

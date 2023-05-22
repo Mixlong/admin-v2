@@ -7,8 +7,9 @@
           :key="item.value"
           :index="index"
           :class="item.raw.cssClass"
-          >{{ item.label }}</span
         >
+          {{ item.label }}
+        </span>
         <el-tag
           v-else
           :disable-transitions="true"
@@ -36,13 +37,13 @@ export default {
   },
   computed: {
     values() {
-      if (this.value !== null && typeof this.value !== 'undefined') {
+      if (this.value !== null && typeof this.value !== "undefined") {
         return Array.isArray(this.value) ? this.value : [String(this.value)];
       } else {
         return [];
       }
-    },
-  },
+    }
+  }
 };
 </script>
 <style scoped>

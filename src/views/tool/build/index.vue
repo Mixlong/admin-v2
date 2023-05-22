@@ -614,7 +614,7 @@ body,
 html {
   margin: 0;
   padding: 0;
-  background: #fff;
+  // background: #fff;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -758,6 +758,7 @@ $lighterBlue: #409eff;
   position: relative;
   width: 100%;
   height: 100%;
+  background: #fff;
 }
 
 .components-list {

@@ -162,7 +162,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/process/claimExport', {
+      this.fileDownload('workflow/process/claimExport', {
         ...this.queryParams
       }, `wf_claim_process_${new Date().getTime()}.xlsx`)
     }

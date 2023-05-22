@@ -293,7 +293,7 @@ export default {
         cancelButtonText: "取消",
         type: "warning"
       }).then(function() {
-        _this.download('/workflow/form/export', {
+        _this.fileDownload('/workflow/form/export', {
         ..._this.queryParams
       }, `form_${new Date().getTime()}.xlsx`)
       })

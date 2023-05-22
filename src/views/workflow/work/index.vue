@@ -78,7 +78,9 @@
             icon="el-icon-video-play"
             @click="handleStart(scope.row)"
             v-hasPermi="['workflow:process:start']"
-          >发起</el-button>
+          >
+          发起
+        </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -188,7 +190,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/process/startExport', {
+      this.fileDownload('workflow/process/startExport', {
         ...this.queryParams
       }, `wf_start_process_${new Date().getTime()}.xlsx`)
     },

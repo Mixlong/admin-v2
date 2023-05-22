@@ -338,7 +338,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download(
+      this.fileDownload(
         "workflow/category/export",
         {
           ...this.queryParams,
