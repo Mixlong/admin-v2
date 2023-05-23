@@ -154,9 +154,10 @@ export default {
           }
         }
         if (cur.action) {
-          cur['headers'] = {
-            Authorization: "Bearer " + getToken(),
-          }
+          /** 不需要token */
+          // cur['headers'] = {
+          //   Authorization: "Bearer " + getToken(),
+          // }
           cur['on-success'] = (res, file, fileList) => {
             formData[cur.__vModel__] = fileList;
             if (res.code === 200 && fileList) {
@@ -169,7 +170,9 @@ export default {
           };
           // 点击文件列表中已上传的文件时的钩子
           cur['on-preview'] = (file) => {
-            this.$download.oss(file.ossId)
+            const { url } = file.response.data[0]
+            // this.$download.oss(url)
+            this.urlDownload(url)
           }
         }
         if (config.children) {

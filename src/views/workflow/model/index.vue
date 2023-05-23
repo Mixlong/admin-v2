@@ -359,7 +359,7 @@ export default {
         name: null,
         category: null,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken() },
+        // headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/workflow/definition/import"
       },

@@ -70,7 +70,7 @@
           <el-col>
             <el-form-item label="数据类型" prop="dataType">
               <el-radio-group v-model="form.dataType" size="small">
-                <el-radio :label="0" border>STS程序</el-radio>
+                <!-- <el-radio :label="0" border>STS程序</el-radio> -->
                 <el-radio :label="1" border>PC上位机</el-radio>
               </el-radio-group>
             </el-form-item>
@@ -316,6 +316,7 @@
           </el-option>
         </el-select>
       </el-form-item>
+      
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="submitForm">确 定</el-button>

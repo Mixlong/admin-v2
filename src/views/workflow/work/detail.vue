@@ -19,7 +19,7 @@
             <el-col :span="20" :offset="2">
               <el-form ref="taskForm" :model="taskForm" :rules="rules" label-width="120px">
                 <el-form-item label="审批意见" prop="comment">
-                  <el-input type="textarea" :rows="5" v-model="taskForm.comment" placeholder="请输入 审批意见" />
+                  <el-input type="textarea" :rows="5" v-model="taskForm.comment" placeholder="请输入审批意见" />
                 </el-form-item>
                 <el-form-item label="抄送人" prop="copyUserIds">
                   <el-tag
@@ -46,7 +46,7 @@
               </el-form>
             </el-col>
           </el-row>
-          <el-row :gutter="10" type="flex" justify="center" >
+          <el-row :gutter="10" type="flex" justify="center">
             <el-col :span="1.5">
               <el-button icon="el-icon-circle-check" type="success" @click="handleComplete">通过</el-button>
             </el-col>
@@ -505,7 +505,7 @@ export default {
       this.$refs["taskForm"].validate(valid => {
         if (valid) {
           const _this = this;
-          this.confirm('拒绝审批单流程会终止，是否继续？').then(function() {
+          this.$confirm('拒绝审批单流程会终止，是否继续？').then(function() {
             return rejectTask(_this.taskForm);
           }).then(res => {
             this.msgSuccess(res.msg);

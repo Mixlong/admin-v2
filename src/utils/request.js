@@ -4,7 +4,7 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from "@/utils/ruoyi";
-// import reqUrl from '@/utils/requestUrl'
+import reqUrl from '@/utils/requestUrl'
 import Cookies from "js-cookie";
 
 // axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
@@ -12,8 +12,8 @@ import Cookies from "js-cookie";
 const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
   // baseURL: 'http://config-api.riding-evolved.com',
-  // baseURL: reqUrl,
-  baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: reqUrl,
+  // baseURL: process.env.VUE_APP_BASE_API,
   // 超时
   timeout: 100000,
   headers: { 'Content-Type': 'application/json;charset=utf-8' }

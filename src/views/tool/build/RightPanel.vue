@@ -244,9 +244,10 @@
               </el-select>
             </el-input>
           </el-form-item>
-          <el-form-item v-if="activeData.action !== undefined" label="上传地址">
+          <!-- 默认上传地址 -->
+          <!-- <el-form-item v-if="activeData.action !== undefined" label="上传地址">
             <el-input v-model="activeData.action" placeholder="请输入上传地址" clearable />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item v-if="activeData['list-type'] !== undefined" label="列表类型">
             <el-radio-group v-model="activeData['list-type']" size="small">
               <el-radio-button label="text">

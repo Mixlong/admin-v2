@@ -241,7 +241,7 @@ export default {
         // 是否禁用上传
         isUploading: false,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken() },
+        // headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/demo/demo/importData"
       },
@@ -389,7 +389,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.confirm('是否确认删除测试单表编号为"' + ids + '"的数据项？').then(() => {
+      this.$confirm('是否确认删除测试单表编号为"' + ids + '"的数据项？').then(() => {
         this.loading = true;
         return delDemo(ids);
       }).then(() => {
