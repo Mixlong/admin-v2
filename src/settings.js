@@ -1,5 +1,5 @@
 module.exports = {
-  title: '迪太云测试',
+  title: '迪太云',
 
   /**
    * 是否系统布局配置

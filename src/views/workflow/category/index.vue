@@ -320,7 +320,7 @@ export default {
     handleDelete(row) {
       const categoryIds = row.categoryId || this.ids;
       this
-        .confirm(
+        .$confirm(
           '是否确认删除【请填写功能名称】编号为"' + categoryIds + '"的数据项？'
         )
         .then(() => {
