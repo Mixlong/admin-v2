@@ -15,7 +15,7 @@ const service = axios.create({
   baseURL: reqUrl,
   // baseURL: process.env.VUE_APP_BASE_API,
   // 超时
-  timeout: 100000,
+  timeout: 1000 * 600,
   headers: { 'Content-Type': 'application/json;charset=utf-8' }
 })
 // request拦截器

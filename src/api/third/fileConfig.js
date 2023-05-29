@@ -1,4 +1,3 @@
-
 import request from '@/utils/request'
 
 export function listFileConfig(query) {
@@ -163,15 +162,6 @@ export function resetFileConfig(data) {
   })
 }
 
-// 批量同步
-export function resetBatchSync(data) {
-  return request({
-    url: '/file/sync/config',
-    method: 'put',
-    data
-  })
-}
-
 // 仪表型号
 export function computerNameList({ name, categoryId }) {
   return request({
@@ -191,32 +181,5 @@ export function categoryNameList({ name, categoryName }) {
     params: {
       categoryName
     }
-  })
-}
-
-// 产品记录
-export function recordList(params) {
-  return request({
-    url: '/record/list',
-    method: 'get',
-    params
-  })
-}
-
-// 配件信息
-export function partList(params) {
-  return request({
-    url: '/info/part/list',
-    method: 'get',
-    params
-  })
-}
-
-// 测试记录
-export function testList(params) {
-  return request({
-    url: '/test/list',
-    method: 'get',
-    params
   })
 }
