@@ -78,36 +78,43 @@
           <div class="content_style" v-html="scope.row.content"></div>
         </template>
       </el-table-column>
-      <el-table-column prop="result" label="完成结果" align="center" />
+      <el-table-column prop="result" label="完成结果" header-align="center">
+        <span slot-scope="scope" v-html="scope.row.result"></span>
+      </el-table-column>  
       <el-table-column
         prop="planTime"
         label="计划完成时间"
         align="center"
-        width="140"
+        width="90"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.planTime) }}
+          {{ parseTime(scope.row.planTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.planTime, "{h}:{i}:{s}") }}
         </template>
       </el-table-column>
       <el-table-column
         prop="completeTime"
         label="实际完成时间"
         align="center"
-        width="140"
+        width="90"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.completeTime) }}
+          {{ parseTime(scope.row.completeTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.completeTime, "{h}:{i}:{s}") }}
         </template>
       </el-table-column>
-      <el-table-column prop="state" label="完成状态" align="center" width="90">
+      <el-table-column prop="state" label="完成状态" align="center" width="80">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
             <el-tag
               class="margin-bottom-xs"
               type="danger"
-              v-if="scope.row.state === 0"
-              >未完成</el-tag
+              v-if="!isPostpone(scope.row.planTime) && scope.row.state === 0"
             >
+              未完成
+            </el-tag>
             <el-tag
               class="margin-bottom-xs"
               type="success"
@@ -123,19 +130,14 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="nickName"
-        label="责任人"
-        align="center"
-        width="100"
-      >
+      <el-table-column prop="nickName" label="责任人" align="center" width="80">
         <template slot-scope="scope">
           <el-tag>
             {{ scope.row.nickName }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="配合责任人" align="center" width="120">
+      <el-table-column label="配合责任人" align="center" width="100">
         <template slot-scope="scope">
           <div :style="tagStyle">
             <el-tag v-for="item in scope.row.list" :key="item.id">
@@ -144,7 +146,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="抄送人员" align="center" width="120">
+      <el-table-column label="抄送人员" align="center" width="100">
         <template slot-scope="scope">
           <div :style="tagStyle">
             <el-tag v-for="item in scope.row.copyList" :key="item.id">
@@ -157,41 +159,46 @@
         prop="createBy"
         label="创建人"
         align="center"
-        width="100"
+        width="70"
       />
       <el-table-column
         prop="createTime"
         label="创建时间"
         align="center"
-        width="140"
+        width="90"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.createTime) }}
+          {{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.createTime, "{h}:{i}:{s}") }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="100">
+      <el-table-column label="操作" align="center" width="60">
         <template slot-scope="scope">
-          <template v-if="scope.row.state === 0">
+          <div class="flex flex-direction align-center">
+            <template v-if="scope.row.state === 0">
+              <Tooltip
+                v-if="scope.row.createBy === nickName"
+                icon="el-icon-edit"
+                content="编辑"
+                @click="handleUpdate(scope.row)"
+              />
+              <Tooltip
+                class="mlZero"
+                v-if="+scope.row.createUser === userId"
+                icon="el-icon-check"
+                content="完成任务"
+                @click="handleComplete(scope.row)"
+              />
+            </template>
             <Tooltip
               v-if="scope.row.createBy === nickName"
-              icon="el-icon-edit"
-              content="编辑"
-              @click="handleUpdate(scope.row)"
+              icon="el-icon-delete"
+              :class="['text-red', 'mlZero']"
+              content="删除"
+              @click="handleDelete(scope.row)"
             />
-            <Tooltip
-              v-if="+scope.row.createUser === userId"
-              icon="el-icon-news"
-              content="完成任务"
-              @click="handleComplete(scope.row)"
-            />
-          </template>
-          <Tooltip
-            v-if="scope.row.createBy === nickName"
-            icon="el-icon-delete"
-            :class="['text-red']"
-            content="删除"
-            @click="handleDelete(scope.row)"
-          />
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -212,7 +219,7 @@
 
     <el-dialog
       title="确定该任务完成吗？"
-      width="500px"
+      width="600px"
       :visible.sync="isResultVisible"
       center
     >
@@ -223,9 +230,10 @@
         label-position="top"
       >
         <el-form-item label="完成结果" prop="result">
-          <el-input
+          <tinymce
+            v-if="isResultVisible"
             v-model="resForm.result"
-            type="textarea"
+            height="250"
             placeholder="请输入完成结果"
           />
         </el-form-item>
@@ -263,6 +271,7 @@ export default {
   components: {
     Update,
     Sortable,
+    tinymce: () => import("@/views/components/Editor"),
   },
   data() {
     return {
@@ -302,10 +311,16 @@ export default {
     tagStyle() {
       return {
         display: "grid",
-        "grid-template-columns": "1fr 1fr",
+        "grid-template-columns": "1fr",
         "grid-row-gap": "5px",
-        "grid-column-gap": "5px",
       };
+    },
+  },
+  watch: {
+    "resForm.result"(val) {
+      if (val) {
+        this.clearValidateItem("resForm", "result");
+      }
     },
   },
   mounted() {
@@ -338,7 +353,6 @@ export default {
     handleComplete(row) {
       this.isResultVisible = true;
       this.resForm.result = "";
-      this.clearValidateItem("resForm", "result");
       this.resForm = { ...row, ...this.resForm };
     },
     onSubmit() {
