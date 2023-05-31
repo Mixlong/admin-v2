@@ -82,10 +82,11 @@ export function emphasislogUpdate(data) {
     })
 }
 
-export function emphasislogComplete(id) {
+export function emphasislogComplete(data) {
     return request({
-        url: '/emphasis/complete/' + id,
-        method: 'put'
+        url: '/emphasis/complete',
+        method: 'put',
+        data
     })
 }
 

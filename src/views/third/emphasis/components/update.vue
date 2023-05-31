@@ -23,6 +23,39 @@
           v-model="form.createUser"
           clearable
           placeholder="请选择责任人"
+          style="width: 65%"
+        >
+          <el-option
+            v-for="(item, index) in pmDictListOptions"
+            :label="item.userName"
+            :value="+item.userId"
+            :key="index"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="配合责任人" prop="list">
+        <el-select
+          v-model="form.list"
+          clearable
+          placeholder="请选择配合责任人"
+          multiple
+          collapse-tags
+          style="width: 65%"
+        >
+          <el-option
+            v-for="(item, index) in pmDictListOptions"
+            :label="item.userName"
+            :value="+item.userId"
+            :key="index"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="抄送人员" prop="copyList">
+        <el-select
+          v-model="form.copyList"
+          clearable
+          placeholder="请选择抄送人员"
+          multiple
           collapse-tags
           style="width: 65%"
         >
@@ -55,7 +88,9 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button :loading="isBtnLoading" type="primary" @click="submitForm">
+        确 定
+      </el-button>
       <el-button @click="$emit('update:visible', false)">取 消</el-button>
     </div>
   </el-dialog>
@@ -82,6 +117,7 @@ export default {
         planTime: "",
         createUser: "",
       },
+      isBtnLoading: false,
       title: "",
       // 表单校验
       rules: {
@@ -122,22 +158,42 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           let params = Object.assign({}, this.form);
+          const { list, copyList } = params;
+          if (list && list.length) {
+            params.list = list.map((userId) => {
+              return { userId, type: 1 };
+            });
+          }
+          if (copyList && copyList.length) {
+            params.copyList = copyList.map((userId) => {
+              return { userId, type: 2 };
+            });
+          }
+          this.isBtnLoading = true;
           if (params.id) {
-            emphasisUpdate(params).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.$parent.getList();
-                this.$emit("update:visible", false);
-              }
-            });
+            emphasisUpdate(params)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.$parent.getList();
+                  this.$emit("update:visible", false);
+                }
+              })
+              .finally(() => {
+                this.isBtnLoading = false;
+              });
           } else {
-            emphasisAdd(params).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("添加成功");
-                this.$emit("update:visible", false);
-                this.$parent.getList();
-              }
-            });
+            emphasisAdd(params)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("添加成功");
+                  this.$emit("update:visible", false);
+                  this.$parent.getList();
+                }
+              })
+              .finally(() => {
+                this.isBtnLoading = false;
+              });
           }
         }
       });
