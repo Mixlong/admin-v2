@@ -162,6 +162,16 @@ export function resetFileConfig(data) {
   })
 }
 
+// 批量同步
+export function resetBatchSync(data) {
+  return request({
+    url: '/file/sync/config',
+    method: 'put',
+    data
+  })
+}
+
+
 // 仪表型号
 export function computerNameList({ name, categoryId }) {
   return request({

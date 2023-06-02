@@ -3,7 +3,6 @@
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="客户" prop="key">
         <el-autocomplete
-          style="width: 120px"
           size="small"
           clearable
           v-model="queryParams.key"
@@ -14,7 +13,6 @@
       </el-form-item>
       <el-form-item label="产品型号" prop="baseModel">
         <el-input
-          style="width: 130px"
           size="small"
           clearable
           v-model="queryParams.baseModel"
@@ -25,7 +23,6 @@
       </el-form-item>
       <el-form-item label="需求" prop="demand">
         <el-input
-          style="width: 130px"
           size="small"
           clearable
           v-model="queryParams.demand"
@@ -36,7 +33,6 @@
       </el-form-item>
       <el-form-item label="送样时间" prop="sendTime">
         <el-date-picker
-          style="width: 130px"
           ref="datePicker"
           size="small"
           clearable
@@ -55,7 +51,7 @@
           size="small"
           clearable
           v-model="queryParams.searchState"
-          placeholder="请选择"
+          placeholder="请选择状态"
           @change="handleQuery"
         >
           <el-option
