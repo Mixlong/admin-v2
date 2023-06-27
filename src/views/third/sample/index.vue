@@ -151,7 +151,7 @@
         <template slot-scope="{ row }">
           <p>客户：{{ row.customerName }}</p>
           <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
-            产品型号：
+            产品品类：
             <el-tag style="margin: 5px 0 0 0" size="small">{{ tag }}</el-tag>
           </div>
           <p>数量：{{ row.sendNum }}</p>
@@ -291,7 +291,7 @@
                 scope.row.state == 5 ? 'text-green' : 'text-red text-bold',
               ]"
             >
-              {{ scope.row.sendTime }}
+              {{ scope.row.actualTime }}
             </div>
             <!-- <span v-if="scope.row.state != 5" class="text-red text-shadow">已逾期</span> -->
             <!-- <span v-else class="text-green text-shadow">已完成</span> -->
@@ -426,7 +426,13 @@
               v-if="checkRole(['sale', 'admin'])"
               icon="el-icon-edit"
               content="编辑"
-              @click="handleUpdate(scope.row)"
+              @click="handleSampleUpdate(scope.row)"
+            />
+            <Tooltip
+              v-if="checkRole(['sale', 'admin'])"
+              icon="el-icon-copy-document"
+              content="复制"
+              @click="handleCopy(scope.row)"
             />
             <Tooltip
               v-if="checkRole(['sale', 'admin'])"
@@ -813,6 +819,7 @@ export default {
       this.applyTotal = data;
     },
     handleAdd() {
+      this.$refs.compUpdate.isCopyFlag = false;
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.isActural = true;
       this.$refs.compUpdate.reset();
@@ -865,6 +872,14 @@ export default {
       this.dateRange = [];
       this.resetForm("queryForm");
       this.handleQuery();
+    },
+    handleCopy(row) {
+      this.$refs.compUpdate.isCopyFlag = true;
+      this.handleUpdate(row)
+    },
+    handleSampleUpdate(row) {
+      this.$refs.compUpdate.isCopyFlag = false;
+      this.handleUpdate(row)
     },
     handleUpdate(row, name) {
       let title = "";
