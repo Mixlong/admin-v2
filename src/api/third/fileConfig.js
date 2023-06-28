@@ -193,3 +193,48 @@ export function categoryNameList({ name, categoryName }) {
     }
   })
 }
+
+
+// 送样软件数据管理
+
+export function sampleSoftList(params) {
+  return request({
+    url: "/sample/soft/config/list",
+    method: "get",
+    params
+  })
+}
+
+// 撤回
+export function sampleFileCancel(data) {
+  return request({
+    url: '/sample/soft/config/cancel',
+    method: 'put',
+    data
+  })
+}
+
+// 批量重审
+export function sampleResetFileConfig(data) {
+  return request({
+    url: '/sample/soft/config/reset',
+    method: 'put',
+    data
+  })
+}
+
+export function sampleAuthFileConfig(data) {
+  return request({
+    url: '/sample/soft/config/auth',
+    method: 'put',
+    data
+  })
+}
+
+export function sampleSofteConfig(data) {
+  return request({
+    url: '/sample/soft/config',
+    method: 'put',
+    data
+  })
+}

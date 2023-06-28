@@ -66,6 +66,23 @@ export function sampleNumber() {
 }
 
 
+export function sampleConvertProd(data) {
+  return request({
+    url: '/sample/convert/product',
+    method: 'post',
+    data
+  });
+}
+
+
+
+// 根据品类名称获取型号
+export function sampleCategoryName(name) {
+  return request({
+    url: '/sample/category/name/' + name,
+    method: 'get'
+  });
+}
 
 // 线缆台账
 export function sampleCable_list(params) {

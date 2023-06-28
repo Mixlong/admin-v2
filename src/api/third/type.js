@@ -47,3 +47,35 @@ export function editType(data) {
   })
 }
 
+
+
+/**
+ * 送样软件属性
+ */
+
+export function sampleTypeList(params) {
+  return request({
+    url: "/type/sample/list",
+    method: "get",
+    params
+  })
+}
+
+export function sampleTypeSave(data) {
+  return request({
+    url: '/type/sample/save',
+    method: 'post',
+    data
+  })
+}
+
+export function sampleTypeEdit(data) {
+  return request({
+    url: '/type/sample/save',
+    method: 'put',
+    data
+  })
+}
+
+
+
