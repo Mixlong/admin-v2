@@ -35,7 +35,7 @@
 					</el-col>
 				</el-row>
 
-				<template v-if="form.dataType === 0">
+				<!-- <template v-if="form.dataType === 0">
 					<el-form-item label="芯片版本" prop="configExtend.schemeVersion">
 						<el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
 							<el-option v-for="(dict, index) in cidOptions" :key="index" :label="dict.dictLabel"
@@ -66,6 +66,7 @@
 						</el-col>
 					</el-row>
 				</template>
+				 -->
 				<template v-if="form.dataType === 1">
 					<el-form-item label="属性描述" prop="content" :required="isHaveTo">
 						<template v-if="form.type === 'hard_version'">
@@ -500,11 +501,11 @@ export default {
 				if (valid) {
 					this.isLoading = true;
 					this.form.status = 0;
-					if (this.form.dataType === 0) {
-						this.form.configExtend.testInfo = this.form.configExtend.testInfo.join()
-					} else {
-						this.form.configExtend.testInfo = ''
-					}
+					// if (this.form.dataType === 0) {
+					// 	this.form.configExtend.testInfo = this.form.configExtend.testInfo.join()
+					// } else {
+					// 	this.form.configExtend.testInfo = ''
+					// }
 					if (this.form.id) {
 						delete this.form.createTime;
 						delete this.form.updateTime;

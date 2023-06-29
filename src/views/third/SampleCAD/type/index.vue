@@ -193,7 +193,7 @@
 <script>
 import {
   sampleTypeList,
-  authType,
+  sampleTypeDel,
   sampleTypeSave,
   sampleTypeEdit,
 } from "@/api/third/type";
@@ -234,7 +234,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 50,
+        l: 10,
         key: undefined,
       },
       // 表单参数
@@ -282,7 +282,7 @@ export default {
       if (status === 1) {
         this.getCode();
         if (this.auth.code) {
-          authType(this.auth).then((res) => {
+          sampleTypeDel(this.auth).then((res) => {
             this.delDialogVisible = false;
             this.msgSuccess("删除成功");
             this.loading = false;

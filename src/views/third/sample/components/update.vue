@@ -11,7 +11,8 @@
         </el-col>
         <el-col :span="showName ? 24 : 6">
           <el-form-item label="产品品类" prop="baseModel" v-if="!showName || showName == 'baseModel'">
-            <el-select v-model="form.baseModel" :disabled="isDisabled" multiple collapse-tags placeholder="请选择产品品类" style="width: 100%">
+            <el-select v-model="form.baseModel" :disabled="isDisabled" multiple collapse-tags placeholder="请选择产品品类"
+              style="width: 100%">
               <el-option v-for="item in modelList" :key="item.name" :label="item.name" :value="item.name">
               </el-option>
             </el-select>
@@ -26,24 +27,13 @@
         </el-col>
         <el-col :span="showName ? 24 : 8">
           <el-form-item label="送样单号" prop="number" v-if="!showName || showName == 'number'">
-            <select-loadMore 
-              v-model="form.number" 
-              :disabled="isDisabled" 
-              :data="sampleNumberData.data" 
-              :page="sampleNumberData.page"
-              :hasMore="sampleNumberData.more" 
-              :request="getSampleNumberList" 
-              placeholder="请选择送样单号" 
-            />
-            <el-button 
-              style="margin-left: 8px;" 
-              type="primary" 
-              :disabled="isDisabled" 
-              :loading="isCreateNumber"
-              @click="onCreateSampleNumber"
-            >
+            <select-loadMore style="width: 262px;" v-model="form.number" :disabled="isDisabled" :data="sampleNumberData.data"
+              :page="sampleNumberData.page" :hasMore="sampleNumberData.more" :request="getSampleNumberList"
+              placeholder="请选择送样单号" />
+            <!-- <el-button style="margin-left: 8px;" type="primary" :disabled="isDisabled" :loading="isCreateNumber"
+              @click="onCreateSampleNumber">
               生成
-          </el-button>
+            </el-button> -->
           </el-form-item>
         </el-col>
       </el-row>
@@ -309,25 +299,23 @@
         :style="{ width: '100%', maxHeight: !showName ? '326px' : 'auto' }" v-if="showName == 'progress'"
         :class="{ 'style-reset': !showName }">
         <tinymce v-if="dialogVisible" v-model="form.progress" placeholder="请输入"
-          :height="showName === 'progress' ? 650 : 150"></tinymce>
+          :height="showName === 'progress' ? 650 : 150" />
       </el-form-item>
       <el-form-item prop="detailCover" label="需求表：" v-if="!showName">
-        <div class="flex">
-          <DrUpload class="upload-img-box" listType="picture-card" pclass="flex" v-model="form.checklist">
-            <div class="text-center">
-              <i class="el-icon-plus"></i>
-            </div>
-          </DrUpload>
-        </div>
+        <el-upload-sortable 
+          v-model="form.checklist" 
+          :action="actionUrl" 
+          :imgW="98" 
+          :imgH="98"
+        />      
       </el-form-item>
       <el-form-item label="评审表：" v-if="!showName">
-        <div class="flex">
-          <DrUpload class="upload-img-box" listType="picture-card" pclass="flex" v-model="form.reviewer">
-            <div class="text-center">
-              <i class="el-icon-plus"></i>
-            </div>
-          </DrUpload>
-        </div>
+        <el-upload-sortable 
+          v-model="form.reviewer" 
+          :action="actionUrl" 
+          :imgW="98" 
+          :imgH="98"
+        />        
       </el-form-item>
       <el-form-item label="详细需求" label-width="0" prop="demand"
         :style="{ width: '100%', maxHeight: !showName ? '526px' : 'auto' }" v-if="!showName || showName == 'demand'"
@@ -357,12 +345,18 @@ import { sampleAdd, sampleUpdate, sampleNumberList, sampleNumber } from "@/api/t
 import tinymce from "@/views/components/Editor";
 import { typeCategory } from "@/api/third/category";
 import { dictUserList } from "@/api/third/isType";
+import ElUploadSortable from "@/components/el-upload-sortable";
+import reqUrl from "@/utils/requestUrl";
 
 export default {
   props: ["pmDictListOptions"],
-  components: { tinymce },
+  components: {
+    tinymce,
+    ElUploadSortable
+  },
   data() {
     return {
+      actionUrl: reqUrl + "/oss/batch-upload",
       isCreateNumber: false,
       isLoading: false,
       isCopyFlag: false,
@@ -392,9 +386,9 @@ export default {
         sendTime: [
           { required: true, message: "请选择送样时间", trigger: "change" },
         ],
-        number: [
-          { required: true, message: "请选择送样单号", trigger: "change" },
-        ],
+        // number: [
+        //   { required: true, message: "请选择送样单号", trigger: "change" },
+        // ],
         actualTime: [
           { required: false, message: "请选择实际送样时间", trigger: "change" },
         ],
@@ -430,7 +424,6 @@ export default {
   },
   computed: {
     isDisabled() {
-      console.log(this.form.id, this.isCopyFlag)
       return !!this.form.id && !this.isCopyFlag;
     },
     dialogWidth() {
@@ -455,7 +448,7 @@ export default {
         };
       } else {
         return {
-          width: "220px",
+          width: "237px",
         };
       }
     },
@@ -552,7 +545,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        url: "",
+        url: ""
       };
       this.resetForm("form");
     },

@@ -77,5 +77,11 @@ export function sampleTypeEdit(data) {
   })
 }
 
-
+export function sampleTypeDel(data) {
+  return request({
+    url: '/type/sample/delete',
+    method: 'delete',
+    data
+  })
+}
 

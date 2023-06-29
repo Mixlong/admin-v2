@@ -530,7 +530,7 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      const queryParams = this.addDateRange(this.queryParams, this.dateRange);
+      // const queryParams = this.addDateRange(this.queryParams, this.dateRange);
       let _this = this;
       this.$confirm("是否确认导出所有数据项?", "警告", {
         confirmButtonText: "确定",
@@ -728,6 +728,25 @@ export default {
       this.handleUpdate(row)
     },
     handleUpdate(row, name) {
+      if(name === 'progress' && row.progress === null) {
+        row.progress =  `
+          <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>
+          <p>1、PCBA：已有--（V3.2）+（AT芯片）+（RC6621P）&nbsp;&nbsp;&nbsp;</p>
+          <p>2、屏幕：&nbsp; 已有--</p>
+          <p>3、上壳+下壳+盖板：已有--（丝印定制盖板）&nbsp;&nbsp;</p>
+          <p>4、线缆： 已有--客供中控线</p>
+          <p>5、按键：已有</p>
+          <p>6、其它特殊物料：无</p>
+          <p><strong>二、软件程序烧录：</strong><strong><span style="color: #008000;">【6/30 饶祖锋</span></strong><span style="color: #008000;">】 已完成软件开发；</span></p>
+          <p><strong>三、组装阶段：</strong><strong>&nbsp;</strong></p>
+          <p>1、半成品 ：<span style="color: #008000;"><strong>【6/29 李博</strong>】&nbsp;已完成半成品组装；</span></p>
+          <p>2、成品： <strong><span style="color: #008000;">【6/31周荣幸</span></strong><span style="color: #008000;">】&nbsp;&nbsp;已完成成品组装；</span></p>
+          <p><strong>四、测试阶段 ：<span style="color: #008000;">【6/30 陈明彬】</span></strong><span style="color: #008000;">&nbsp;已完成测试；</span></p>
+          <p><strong>五、超声阶段：<span style="color: #008000;">【 6/31周荣幸】已完成超声；</span></strong></p>
+          <p><strong>六</strong><strong>、验收送样阶段： </strong>&nbsp;</p>
+        `
+      }
+
       let title = "";
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
