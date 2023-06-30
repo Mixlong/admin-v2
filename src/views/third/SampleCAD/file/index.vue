@@ -42,6 +42,13 @@
           @change="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="属性" prop="typeName">
+        <el-input 
+          v-model="queryParams.typeName" 
+          clearable 
+          placeholder="请输入属性" 
+        />
+      </el-form-item>
       <el-form-item label="送样单号" prop="number">
         <select-loadMore 
           v-model="queryParams.number" 
@@ -170,7 +177,7 @@
             ></el-button>
           </el-tooltip>
 
-          <el-tooltip
+          <!-- <el-tooltip
             v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
             class="item font16"
             effect="dark"
@@ -183,7 +190,7 @@
               type="text"
               @click="handleAuthChange(scope.row, 4)"
             />
-          </el-tooltip>
+          </el-tooltip> -->
 
           <el-tooltip
             v-if="isSResetCheck(scope.row)"
@@ -309,7 +316,7 @@ import {
   sampleFileCancel
 } from "@/api/third/fileConfig";
 import { sampleNumberList, listCustomer } from "@/api/third/sample";
-import { mapGetters, mapState } from "vuex";
+import { mapGetters } from "vuex";
 import CompUpdate from "./components/update";
 
 export default {
@@ -345,6 +352,13 @@ export default {
       fileTypeList: [],
       fileListCover: [],
       auth: { id: undefined, why: "", idList: [] },
+      statusOptions: {
+        0: "待上传",
+        1: "待初审",
+        2: "已审核",
+        3: "未通过",
+        4: "审核通过"
+    },
       sampleNumberData: {
         data: [],
         page: 1,
@@ -364,9 +378,6 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      statusOptions: (state) => state.commonData.statusOptions,
-    }),
     ...mapGetters("commonData", ["isCheckType"]),
     batchCheck() {
       if (this.checkRole(["DATA_MANAGER"])) {
@@ -402,7 +413,6 @@ export default {
     },
   },
   created() {
-    console.log(this.$route)
     const { number } = this.$route.query;
     this.queryParams.number = number;
   },

@@ -77,10 +77,11 @@ export function sampleConvertProd(data) {
 
 
 // 根据品类名称获取型号
-export function sampleCategoryName(name) {
+export function sampleCategoryName(params) {
   return request({
-    url: '/sample/category/name/' + name,
-    method: 'get'
+    url: '/sample/category/name',
+    method: 'get',
+    params
   });
 }
 

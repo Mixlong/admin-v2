@@ -15,6 +15,13 @@
         <select-loadMore v-model="queryParams.number" :data="sampleNumberData.data" :page="sampleNumberData.page"
           :hasMore="sampleNumberData.more" :request="getSampleNumberList" placeholder="请选择送样单号" />
       </el-form-item>
+      <el-form-item label="属性" prop="typeName">
+        <el-input 
+          v-model="queryParams.typeName" 
+          clearable 
+          placeholder="请输入属性" 
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -32,6 +39,7 @@
       <el-table-column label="外发客户" prop="customerName" align="center" width="120" />
       <el-table-column label="产品品类" prop="categoryName" align="center" width="130" />
       <el-table-column label="送样单号" prop="number" align="center" width="160" />
+      <el-table-column label="属性" prop="typeName" align="center" width="160" />
       <el-table-column label="描述" prop="orderDesc" show-overflow-tooltip />
       <el-table-column label="下载口令" align="center" width="140" show-overflow-tooltip>
         <template slot-scope="{ row }" v-if="row.downloadPassword">

@@ -145,10 +145,16 @@
             @keyup.enter.native.prevent="submitForm"
           />
         </el-form-item>
-        <el-form-item label="需要上传文件:">
+        <el-form-item label="上传文件:">
           <el-radio-group v-model="form.up">
-            <el-radio :label="1">是</el-radio>
-            <el-radio :label="0">否</el-radio>
+            <el-radio border :label="1">是</el-radio>
+            <el-radio border :label="0">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="支持外发:">
+          <el-radio-group v-model="form.type">
+            <el-radio border :label="1">是</el-radio>
+            <el-radio border :label="0">否</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -239,7 +245,8 @@ export default {
       },
       // 表单参数
       form: {
-        up: "",
+        up: 1,
+        type: 1
       },
       // 表单校验
       rules: {
@@ -282,7 +289,7 @@ export default {
       if (status === 1) {
         this.getCode();
         if (this.auth.code) {
-          sampleTypeDel(this.auth).then((res) => {
+          sampleTypeDel(this.auth).then(() => {
             this.delDialogVisible = false;
             this.msgSuccess("删除成功");
             this.loading = false;
@@ -314,7 +321,8 @@ export default {
       }
       this.form = {
         id: undefined,
-        up: "",
+        up: 1,
+        type: 1,
         key: undefined
       };
       this.resetForm("form");
@@ -333,7 +341,6 @@ export default {
 
     handleAdd() {
       this.reset();
-      this.form.up = 0;
       this.open = true;
       this.title = "添加文件属性";
     },

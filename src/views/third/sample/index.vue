@@ -240,7 +240,7 @@
                 @click="handleDownload(scope.row)"></el-button>
             </el-tooltip>
             <Tooltip icon="el-icon-position" content="软件发布"
-              @click="$router.push(`/device/fileConfig?number=${scope.row.number}&`)" />
+              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}&`)" />
             <Tooltip v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
               @click="handleProd(scope.row)" />
           </div>
@@ -339,7 +339,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 10,
         key: undefined,
         baseModel: undefined,
         demand: "",
@@ -416,10 +416,10 @@ export default {
       this.computerNameList = [];
       this.isSampleProd = true;
     },
-    getSampleCategoryName(name) {
+    getSampleCategoryName(categoryName) {
       this.computerNameList = [];
       this.formProd.computerName = "";
-      sampleCategoryName(name).then(res => {  
+      sampleCategoryName({categoryName}).then(res => {  
         this.computerNameList = res.data;   
       })
     },
@@ -427,7 +427,6 @@ export default {
       this.$refs["formProd"].validate((valid) => {
         if(valid) {
           this.isProdLoading = true;
-          console.log(this.sampleProdData)
           sampleConvertProd({ number: this.sampleProdData.number, ...this.formProd }).then(res => {
             this.msgSuccess("操作成功");
             this.isSampleProd = false;
@@ -721,15 +720,17 @@ export default {
     },
     handleCopy(row) {
       this.$refs.compUpdate.isCopyFlag = true;
-      this.handleUpdate(row)
+      const { number, ...rowData } = row;
+      this.handleUpdate(rowData)
     },
     handleSampleUpdate(row) {
       this.$refs.compUpdate.isCopyFlag = false;
       this.handleUpdate(row)
     },
     handleUpdate(row, name) {
-      if(name === 'progress' && row.progress === null) {
-        row.progress =  `
+      let currentData = Object.assign({}, row);
+      if(name === 'progress' && currentData.progress === null) {
+        currentData.progress =  `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>
           <p>1、PCBA：已有--（V3.2）+（AT芯片）+（RC6621P）&nbsp;&nbsp;&nbsp;</p>
           <p>2、屏幕：&nbsp; 已有--</p>
@@ -750,7 +751,7 @@ export default {
       let title = "";
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.form = Object.assign({}, row);
+      this.$refs.compUpdate.form = Object.assign({}, currentData);
       this.$refs.compUpdate.showName = name;
       this.$refs.compUpdate.isType = -1;
       if (!name) {
@@ -794,7 +795,6 @@ export default {
     //下载文件并压缩zip下载
 
     getFile(url) {
-      let that = this;
       return new Promise((resolve, reject) => {
         axios({
           method: "get",
@@ -810,7 +810,7 @@ export default {
           });
       });
     },
-    rowName({ row, rowIndex }) {
+    rowName({ row }) {
       let styleJson = " ";
       if (row.state == 6) {
         return "finish-row";

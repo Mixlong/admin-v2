@@ -24,16 +24,16 @@
 					<el-autocomplete style="width: 100%;" v-model="form.customerName" disabled clearable :fetch-suggestions="querySearchAsync"
 						placeholder="请选择客户" />
 				</el-form-item>
-				<el-row :gutter="0">
+				<!-- <el-row :gutter="0">
 					<el-col>
 						<el-form-item label="数据类型" prop="dataType">
 							<el-radio-group v-model="form.dataType" size="small">
-								<!-- <el-radio :label="0" border>STS程序</el-radio> -->
+								<el-radio :label="0" border>STS程序</el-radio>
 								<el-radio :label="1" border>PC上位机</el-radio>
 							</el-radio-group>
 						</el-form-item>
 					</el-col>
-				</el-row>
+				</el-row> -->
 
 				<!-- <template v-if="form.dataType === 0">
 					<el-form-item label="芯片版本" prop="configExtend.schemeVersion">
@@ -67,7 +67,7 @@
 					</el-row>
 				</template>
 				 -->
-				<template v-if="form.dataType === 1">
+				<!-- <template v-if="form.dataType === 1"> -->
 					<el-form-item label="属性描述" prop="content" :required="isHaveTo">
 						<template v-if="form.type === 'hard_version'">
 							<select-loadMore style="width: 100%" v-model="form.content" :data="hardData.data"
@@ -86,7 +86,7 @@
 							</div>
 						</DrUpload>
 					</el-form-item>
-				</template>
+				<!-- </template> -->
 			</template>
 
 			<!-- 新增字段 -->

@@ -71,7 +71,7 @@ export function sampleTypeSave(data) {
 
 export function sampleTypeEdit(data) {
   return request({
-    url: '/type/sample/save',
+    url: '/type/sample/update',
     method: 'put',
     data
   })
