@@ -2,7 +2,7 @@
   <el-dialog class="update_sample" :top="showName ? '5vh' : '35vh'" :close-on-click-modal="true" :title="title"
     :visible.sync="dialogVisible" append-to-body :width="dialogWidth">
     <el-form :class="{ 'row-label-style': showName && showName !== 'isVersion' }" ref="form" :model="form" :rules="rules"
-      label-width="95px">
+      label-width="110px">
       <el-row>
         <el-col :span="showName ? 24 : 5">
           <el-form-item label="客户" prop="customerName" label-width="82px" v-if="!showName || showName == 'customerName'">
@@ -19,7 +19,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="showName ? 24 : 5">
-          <el-form-item :label="showName ? '' : '送样时间'" prop="sendTime" v-if="!showName || showName == 'sendTime'">
+          <el-form-item :label="showName ? '' : '计划送样时间'" prop="sendTime" v-if="!showName || showName == 'sendTime'">
             <el-date-picker ref="datePicker" v-model="form.sendTime" type="date" placeholder="选择日期时间" format="yyyy-MM-dd"
               value-format="yyyy-MM-dd" style="width: 100%">
             </el-date-picker>

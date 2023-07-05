@@ -143,39 +143,38 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="时间管理" align="center" prop="sendTime" width="160">
+      <el-table-column label="时间管理" align="center" prop="sendTime" width="170">
         <template slot-scope="scope">
-          <span>送样时间</span>
-          <div v-if="new Date(scope.row.sendTime + ' 20:00:00').getTime() >
-            new Date().getTime() && scope.row.state != 5
-            ">
-            <div class="text-shadow mb5" :class="[
-              difference(
-                scope.row.state === 6
-                  ? scope.row.actualTime
-                  : scope.row.sendTime
-              ),
-            ]">
-              {{
-                scope.row.state === 6
-                ? scope.row.actualTime
-                : scope.row.sendTime
-              }}
+          <!-- <template v-if="new Date(scope.row.sendTime + ' 20:00:00').getTime() > new Date().getTime()"> -->
+            <template v-if="scope.row.state !== 6">
+              <div class="text-shadow mb5 text-left">下单时间: {{ scope.row.orderTime }}</div> 
+              <div class="text-shadow mb5 text-left" :class="[difference(scope.row.sendTime)]">计划送样时间: {{ scope.row.sendTime }}</div>
+              <div class="flex justify-center align-center" style="transform: scale(0.8)">
+                <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
+                  :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
+              </div>
+            </template>
+            <template v-else>
+              <div class="text-shadow mb5 text-left">下单时间: {{ scope.row.orderTime }}</div>
+              <div class="text-shadow mb5 text-left" :class="[difference(scope.row.actualTime)]">实际送样时间: {{ scope.row.actualTime }}</div>
+              <div class="text-left">用时天数: {{ scope.row.dateDiff }}</div>
+            </template>
+          <!-- </template> -->
+          <!-- <div v-if="new Date(scope.row.sendTime + ' 20:00:00').getTime() > new Date().getTime() && scope.row.state != 5">
+            <div class="text-shadow mb5"
+              :class="[difference(scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime)]">
+              {{ scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime }}
             </div>
             <div class="flex justify-center align-center" style="transform: scale(0.8)">
               <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
                 :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
             </div>
-          </div>
-          <div v-else>
-            <div class="text-shadow" :class="[
-              scope.row.state == 5 ? 'text-green' : 'text-red text-bold',
-            ]">
-              {{ scope.row.actualTime }}
+          </div> -->
+          <!-- <div v-else>
+            <div class="text-shadow" :class="[scope.row.state == 5 ? 'text-green' : 'text-red text-bold']">
+              {{ scope.row.sendTime }}
             </div>
-            <!-- <span v-if="scope.row.state != 5" class="text-red text-shadow">已逾期</span> -->
-            <!-- <span v-else class="text-green text-shadow">已完成</span> -->
-          </div>
+          </div> -->
         </template>
       </el-table-column>
       <el-table-column label="评审表" width="160" align="center">
@@ -260,7 +259,8 @@
     <el-dialog :close-on-click-modal="false" title="样品转生产" :visible.sync="isSampleProd" width="400px">
       <el-form ref="formProd" :model="formProd" :rules="prodRules" label-width="80px">
         <el-form-item label="转产品类" prop="categoryName">
-          <el-select v-model="formProd.categoryName" clearable placeholder="请选择转产品类" style="width: 100%" @change="getSampleCategoryName">
+          <el-select v-model="formProd.categoryName" clearable placeholder="请选择转产品类" style="width: 100%"
+            @change="getSampleCategoryName">
             <el-option v-for="item in sampleProdData.baseModel" :key="item" :label="item" :value="item"></el-option>
           </el-select>
         </el-form-item>
@@ -269,8 +269,10 @@
             <el-radio :label="0" border>已有型号</el-radio>
             <el-radio :label="1" border>新增型号</el-radio>
           </el-radio-group>
-          <el-select v-if="formProd.type === 0" v-model="formProd.computerName" filterable clearable placeholder="请选择转产型号" style="width: 100%">
-            <el-option v-for="item in computerNameList" :key="item.name" :label="item.name" :value="item.name"></el-option>
+          <el-select v-if="formProd.type === 0" v-model="formProd.computerName" filterable clearable placeholder="请选择转产型号"
+            style="width: 100%">
+            <el-option v-for="item in computerNameList" :key="item.name" :label="item.name"
+              :value="item.name"></el-option>
           </el-select>
           <el-input v-else v-model="formProd.computerName" clearable placeholder="请输入转产型号"></el-input>
         </el-form-item>
@@ -361,13 +363,13 @@ export default {
       formProd: {
         categoryName: "",
         computerName: "",
-        type: 0  
+        type: 0
       },
       prodRules: {
         categoryName: [
           { required: true, message: "请选择转产品类", trigger: "change" }
         ],
-        computerName : [
+        computerName: [
           { required: true, message: "请选择转产型号", trigger: "change" }
         ],
       }
@@ -419,13 +421,13 @@ export default {
     getSampleCategoryName(categoryName) {
       this.computerNameList = [];
       this.formProd.computerName = "";
-      sampleCategoryName({categoryName}).then(res => {  
-        this.computerNameList = res.data;   
+      sampleCategoryName({ categoryName }).then(res => {
+        this.computerNameList = res.data;
       })
     },
     submitProdForm() {
       this.$refs["formProd"].validate((valid) => {
-        if(valid) {
+        if (valid) {
           this.isProdLoading = true;
           sampleConvertProd({ number: this.sampleProdData.number, ...this.formProd }).then(res => {
             this.msgSuccess("操作成功");
@@ -729,8 +731,8 @@ export default {
     },
     handleUpdate(row, name) {
       let currentData = Object.assign({}, row);
-      if(name === 'progress' && currentData.progress === null) {
-        currentData.progress =  `
+      if (name === 'progress' && currentData.progress === null) {
+        currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>
           <p>1、PCBA：已有--（V3.2）+（AT芯片）+（RC6621P）&nbsp;&nbsp;&nbsp;</p>
           <p>2、屏幕：&nbsp; 已有--</p>
@@ -1012,5 +1014,4 @@ export default {
 .contentOverflow {
   max-height: 450px;
   overflow: auto;
-}
-</style>
+}</style>
