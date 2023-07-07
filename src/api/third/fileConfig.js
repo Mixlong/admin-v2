@@ -238,3 +238,31 @@ export function sampleSofteConfig(data) {
     data
   })
 }
+
+
+// 产品记录
+export function recordList(params) {
+  return request({
+    url: '/record/list',
+    method: 'get',
+    params
+  })
+}
+
+// 配件信息
+export function partList(params) {
+  return request({
+    url: '/info/part/list',
+    method: 'get',
+    params
+  })
+}
+
+// 测试记录
+export function testList(params) {
+  return request({
+    url: '/test/list',
+    method: 'get',
+    params
+  })
+}

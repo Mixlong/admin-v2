@@ -171,7 +171,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin'])"
+            v-if="checkRole(['factory'])"
             @click="handleUpdate(scope.row)"
           />
           <el-tooltip
@@ -179,7 +179,7 @@
             effect="dark"
             content="审核"
             placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['test', 'admin'])"
+            v-if="scope.row.status == 1 && checkRole(['f_test'])"
           >
             <el-button
               icon="el-icon-coordinate"
@@ -190,7 +190,7 @@
           </el-tooltip>
 
           <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
+            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
             class="item font16"
             effect="dark"
             content="审核"
@@ -234,14 +234,14 @@
             icon="el-icon-refresh-right"
             content="撤回"
             class="margin-left-xs"
-            v-if="scope.row.status == 4 && checkRole(['test', 'admin'])"
+            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
             @click="handleRevocation(scope.row.id)"
           />
           <Tooltip
             icon="el-icon-refresh-right"
             content="撤回"
             class="margin-left-xs"
-            v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
+            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
             @click="handleRevocation(scope.row.id)"
           />
         </template>
@@ -393,7 +393,7 @@ export default {
     isSResetCheck() {
       return ({ computerStatus, status }) => {
         return (
-          this.checkRole(["product"]) &&
+          this.checkRole(["fo_test"]) &&
           !computerStatus &&
           (status === 2 || status === 4)
         );
