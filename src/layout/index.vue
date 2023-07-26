@@ -12,7 +12,7 @@
         <div>
           <navbar />
         </div>
-        <!-- <tags-view v-if="needTagsView" /> -->
+        <tags-view v-if="needTagsView" />
       </div>
       <app-main />
       <right-panel v-if="showSettings">
@@ -45,7 +45,7 @@ export default {
       device: (state) => state.app.device,
       showSettings: (state) => state.settings.showSettings,
       needTagsView: (state) => state.settings.tagsView,
-      fixedHeader: (state) => state.settings.fixedHeader,
+      fixedHeader: (state) => state.settings.fixedHeader
     }),
     classObj() {
       return {

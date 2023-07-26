@@ -139,7 +139,6 @@ export default {
           p: page,
           productType: keyword,
         }).then((res) => {
-          console.log(res, 111);
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
             this.moduleData.data = [...this.moduleData.data, ...list];
@@ -158,7 +157,6 @@ export default {
         return;
       }
       const data = JSON.parse(info);
-      console.log(data);
       this.form.productId = data.id;
     },
     /** 提交按钮 */

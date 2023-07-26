@@ -464,8 +464,7 @@ import {
   schedulingDel,
   createDataFile,
   sendProd,
-  proSecDetail,
-  schedulingEdit,
+  proSecDetail
 } from "@/api/www/planSchedule";
 import { typeCategory } from "@/api/third/category";
 import { listComputer, computerName } from "@/api/third/computer";

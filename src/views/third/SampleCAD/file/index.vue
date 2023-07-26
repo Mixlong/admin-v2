@@ -406,7 +406,7 @@ export default {
           !computerStatus &&
           url &&
           (((status !== 2 || status !== 4) &&
-            this.checkRole(["test", "dev"])) ||
+            this.checkRole(["test", "dev", "factory"])) ||
             status === 2)
         );
       };

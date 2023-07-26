@@ -1,37 +1,22 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="芯片版本" prop="schemeVersion">
+      <el-form-item label="所属品类" prop="categoryName">
         <el-select
-          v-model="queryParams.schemeVersion"
+          v-model="queryParams.categoryName"
+          filterable
           clearable
-          size="mini"
-          placeholder="请选择芯片版本"
+          placeholder="请选择品类"
         >
           <el-option
-            v-for="(dict, index) in cidOptions"
-            :key="index"
-            :label="dict.dictLabel"
-            :value="dict.dictLabel"
+            v-for="dict in dictList"
+            :key="dict.id"
+            :label="dict.name"
+            :value="dict.name"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="协议版本" prop="agreementVersion">
-        <el-select
-          v-model="queryParams.agreementVersion"
-          clearable
-          size="mini"
-          placeholder="请选择协议版本"
-        >
-          <el-option
-            v-for="(dict, index) in testAgreementList"
-            :key="index"
-            :label="dict.dictLabel"
-            :value="String(dict.dictCode)"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="测试工序:" prop="processesId">
+      <el-form-item label="测试工序" prop="processesId">
         <el-select
           v-model="queryParams.processesId"
           clearable
@@ -46,6 +31,14 @@
             :value="String(dict.dictCode)"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="版本号" prop="version">
+        <el-input
+          v-model="queryParams.version"
+          clearable
+          size="mini"
+          placeholder="请输入版本号"
+        ></el-input>
       </el-form-item>
       <el-form-item>
         <el-button
@@ -78,22 +71,17 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="芯片版本"
-        prop="schemeVersion"
-        align="center"
-      />
-      <el-table-column
-        label="协议版本"
-        prop="agreementVersionName"
-        align="center"
-      />
+      <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="测试工序" prop="processesName" align="center" />
+      <el-table-column label="版本号" prop="version" align="center" />
       <el-table-column label="文件包" prop="file" align="center">
         <template slot-scope="scope">
-          <el-link @click="urlDownload(scope.row.file)">{{ transFileUrl(scope.row.file) }}</el-link> 
+          <el-link @click="urlDownload(scope.row.file)">{{
+            transFileUrl(scope.row.file)
+          }}</el-link>
         </template>
       </el-table-column>
+      <el-table-column label="备注" prop="remark" align="center" />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -131,7 +119,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total > 0"
       :total="total"
@@ -145,7 +133,7 @@
       :visible.sync="dialogVisible"
       :title="title"
       :cidOptions="cidOptions"
-      :testAgreementList="testAgreementList"
+      :dictList="dictList"
       :processesList="processesList"
     />
   </div>
@@ -154,6 +142,7 @@
 <script>
 import { stsWebList, stsWebAuth } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
+import { categoryComputerDict } from "@/api/third/fileConfig";
 
 export default {
   components: {
@@ -161,6 +150,7 @@ export default {
   },
   data() {
     return {
+      lovingVue: true,
       commonStatusList,
       // 遮罩层
       loading: false,
@@ -168,6 +158,7 @@ export default {
       title: "",
       // 总条数
       total: 0,
+      dictList: [],
       list: [],
       // 芯片版本
       cidOptions: [],
@@ -179,19 +170,17 @@ export default {
       queryParams: {
         p: 1,
         l: 10,
-        schemeVersion: "",
-        agreementVersion: "",
+        categoryName: "",
         processesId: "",
+        version: "",
       },
     };
   },
   created() {
-    this.getDicts("sys_file_cid").then((res) => {
-      this.cidOptions = res.data;
+    categoryComputerDict().then((res) => {
+      this.dictList = res.data;
     });
-    this.getDicts("sys_test_agreement").then((res) => {
-      this.testAgreementList = res.data;
-    });
+
     this.getDicts("pucs_process_label").then((res) => {
       this.processesList = res.data;
     });
@@ -201,11 +190,14 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      stsWebList(this.queryParams).then((response) => {
-        this.list = response.data.list;
-        this.total = response.data.total;
-        this.loading = false;
-      });
+      stsWebList(this.queryParams)
+        .then((response) => {
+          this.list = response.data.list;
+          this.total = response.data.total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     handleAdd() {
       this.dialogVisible = true;

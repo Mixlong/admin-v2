@@ -240,3 +240,33 @@ export function stsWebUpdate(data) {
         data,
     })
 }
+
+
+/**
+ * 设备管理
+ */
+export function stsDeviceList(params) {
+    return request({
+        url: '/sts/list',
+        method: 'get',
+        params
+    })
+}
+
+// 设备换线
+export function stsEquipUpdate(data) {
+    return request({
+        url: '/sts/edit/equip',
+        method: 'put',
+        data,
+    })
+}
+
+// 任务变更
+export function stsTaskUpdate(data) {
+    return request({
+        url: '/sts/task/update',
+        method: 'put',
+        data,
+    })
+}

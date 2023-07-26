@@ -171,7 +171,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['factory'])"
+            v-if="checkRole(['factory', 'admin'])"
             @click="handleUpdate(scope.row)"
           />
           <el-tooltip
@@ -179,7 +179,7 @@
             effect="dark"
             content="审核"
             placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['f_test'])"
+            v-if="scope.row.status == 1 && checkRole(['f_test', 'admin'])"
           >
             <el-button
               icon="el-icon-coordinate"
@@ -190,7 +190,7 @@
           </el-tooltip>
 
           <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
+            v-if="scope.row.status == 4 && checkRole(['fo_test','admin'])"
             class="item font16"
             effect="dark"
             content="审核"
@@ -296,7 +296,7 @@
           <el-button @click="handleStatusChange(3)">不通过</el-button>
           <el-button
             type="primary"
-            @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
+            @click="handleStatusChange(checkRole(['fo_test','admin']) ? 2 : 4)"
           >
             通过
           </el-button>
