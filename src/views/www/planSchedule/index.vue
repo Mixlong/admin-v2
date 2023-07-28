@@ -15,6 +15,7 @@
             clearable
             @change="changeCategory"
             placeholder="请选择所属品类"
+            style="width: 160px;"
           >
             <el-option
               v-for="dict in dictList"
@@ -34,6 +35,7 @@
             placeholder="请选择仪表型号"
             @change="changeComputer"
             :remote-method="getComputerNameList"
+            style="width: 160px;"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -49,6 +51,16 @@
             placeholder="请输入迪太订单号"
             clearable
             @keyup.native.enter="handleQuery"
+            style="width: 160px;"
+          />
+        </el-form-item>
+        <el-form-item label="排产单号" prop="no">
+          <el-input
+            v-model.trim="queryParams.no"
+            placeholder="请输入排产单号"
+            clearable
+            @keyup.native.enter="handleQuery"
+            style="width: 160px;"
           />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
@@ -56,6 +68,7 @@
             v-model="queryParams.productStatus"
             clearable
             placeholder="请选择排产状态"
+            style="width: 160px;"
           >
             <el-option
               v-for="(value, key) in productStatusList"
@@ -129,6 +142,7 @@
       <el-table-column label="产品品类" align="center" prop="categoryName" />
       <el-table-column label="产品型号" align="center" prop="computerName" />
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
+      <el-table-column label="排产单号" align="center" prop="no" />
       <el-table-column
         label="生产地点"
         align="center"
@@ -525,6 +539,7 @@ export default {
         categoryId: "",
         computerId: "",
         salesOrderNo: "",
+        no: "",
         startDate: "",
         endDate: "",
         operation: "",

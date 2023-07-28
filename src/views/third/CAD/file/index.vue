@@ -628,21 +628,22 @@ export default {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
 
-      if (row.configExtend === null) {
-        row.configExtend = {
-          schemeVersion: "",
-          agreementVersion: "",
-          pcbaSn: "",
-          testInfo: [],
-        };
-      } else {
-        // 测试项目数据
-        if (row.configExtend.testInfo) {
-          if (!Array.isArray(row.configExtend.testInfo)) {
-            row.configExtend.testInfo = row.configExtend.testInfo.split(",");
-          }
-        }
-      }
+      // if (row.configExtend === null) {
+      //   row.configExtend = {
+      //     schemeVersion: "",
+      //     agreementVersion: "",
+      //     pcbaSn: "",
+      //     testInfo: [],
+      //   };
+      // } else {
+      //   // 测试项目数据
+      //   if (row.configExtend.testInfo) {
+      //     if (!Array.isArray(row.configExtend.testInfo)) {
+      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
+      //     }
+      //   }
+      // }
+      
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row

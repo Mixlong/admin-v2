@@ -253,10 +253,10 @@ export function stsDeviceList(params) {
     })
 }
 
-// 设备换线
+// 设备迁移
 export function stsEquipUpdate(data) {
     return request({
-        url: '/sts/edit/equip',
+        url: '/sts/equip/update',
         method: 'put',
         data,
     })
@@ -270,3 +270,13 @@ export function stsTaskUpdate(data) {
         data,
     })
 }
+
+// 测试结果
+export function stsTestList(params) {
+    return request({
+        url: '/test/list',
+        method: 'get',
+        params
+    })
+}
+

@@ -70,27 +70,30 @@
           <el-col>
             <el-form-item label="数据类型" prop="dataType">
               <el-radio-group v-model="form.dataType" size="small">
-                <el-radio :label="0" border>STS程序</el-radio>
+                <el-radio :label="2" border>STS程序</el-radio>
                 <el-radio :label="1" border>PC上位机</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <template v-if="form.dataType === 0">
-          <el-form-item label="sts工序网页" prop="webId">
+        <template v-if="form.dataType === 2">
+          <el-form-item label="sts工序网页" prop="webVersion">
             <select-loadMore
-              v-model="form.webId"
+              v-model="form.webVersion"
               :data="stsData.data"
               :page="stsData.page"
               :hasMore="stsData.more"
+              :moreParams="true"
               dictLabel="version"
               dictValue="id"
               :request="getStsDataList"
+              @getChange="getStsWebId"
               placeholder="请选择sts工序网页"
               style="width: 100%"
             />
           </el-form-item>
+          <!-- 需求改改改，先留着吧 -->
           <!-- <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
 						<el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
 							<el-option v-for="(dict, index) in cidOptions" :key="index" :label="dict.dictLabel"
@@ -394,7 +397,7 @@ export default {
             trigger: "change",
           },
         ],
-        webId: [
+        webVersion: [
           {
             required: true,
             message: "请选择sts工序网页",
@@ -549,6 +552,7 @@ export default {
     reset() {
       this.form = {
         url: "",
+        webVersion: "",
         testInfo: [],
       };
       this.resetForm("form");
@@ -632,18 +636,28 @@ export default {
       this.form.hardNo = id;
       this.form.hardName = name;
     },
+    getStsWebId(info) {
+      if (!info) {
+        this.form.webId = "";
+        this.form.webVersion = "";
+        return;
+      }
+      const { id, version } = JSON.parse(info);
+      this.form.webId = id;
+      this.form.webVersion = version;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isLoading = true;
           this.form.status = 0;
-          if (this.form.dataType === 0) {
-            this.form.configExtend.testInfo =
-              this.form.configExtend.testInfo.join();
-          } else {
-            this.form.configExtend.testInfo = "";
-          }
+          // if (this.form.dataType === 0) {
+          //   this.form.configExtend.testInfo =
+          //     this.form.configExtend.testInfo.join();
+          // } else {
+          //   this.form.configExtend.testInfo = "";
+          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;

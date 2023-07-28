@@ -132,9 +132,10 @@ export default {
     };
   },
   created() {
-    const { recordId } = this.$route.query;
+    const { recordId,sn } = this.$route.query;
     if (recordId) {
       this.queryParams.recordId = recordId;
+      this.queryParams.sn = sn;
     }
     this.getDicts('sys_parts_name').then(res => {
       this.partsList = res.data
@@ -186,7 +187,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.recordId = ""
+      this.queryParams.recordId = "";
+      this.queryParams.sn = "";
       this.resetForm("queryForm");
       this.handleQuery();
     }

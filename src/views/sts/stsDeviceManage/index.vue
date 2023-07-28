@@ -69,11 +69,18 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
+    <el-table
+      v-loading="loading"
+      :data="list"
+      :height="tableHeight()"
+      @cell-click="cellClick"
+      :cell-style="cellStyle"
+      border
+    >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
-        </template>
+        </template> 
       </el-table-column>
       <el-table-column label="装备ID" prop="cpuId" align="center" />
       <el-table-column label="系统版本" prop="sysVersion" align="center" />
@@ -139,26 +146,13 @@
             :data="orderData.data"
             :page="orderData.page"
             :hasMore="orderData.more"
-            dictLabel="salesOrderNo"
-            dictValue="salesOrderNo"
-            :request="getOrderList"
-            placeholder="请选择订单号"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="排产单号" prop="productNo">
-          <select-loadMore
-            v-model="taskForm.productNo"
-            :data="scheduleOrderData.data"
-            :page="scheduleOrderData.page"
-            :hasMore="scheduleOrderData.more"
             :moreParams="true"
             dictLabel="salesOrderNo"
             dictValue="id"
             v-slot="{ proOption }"
-            :request="getScheduleOrderList"
-            @getChange="getProductId"
-            placeholder="请选择排产单号"
+            :request="getOrderList"
+            @getChange="getOrderId"
+            placeholder="请选择订单号"
             style="width: 100%"
           >
             <template>
@@ -169,19 +163,43 @@
             </template>
           </select-loadMore>
         </el-form-item>
-        <el-form-item label="测试工序" prop="processName">
+        <el-form-item label="排产单号" prop="productNo">
+          <select-loadMore
+            v-model="taskForm.productNo"
+            :data="scheduleOrderData.data"
+            :page="scheduleOrderData.page"
+            :hasMore="scheduleOrderData.more"
+            :moreParams="true"
+            :disabled="taskForm.orderNo === ''"
+            dictLabel="no"
+            dictValue="id"
+            v-slot="{ proOption }"
+            :request="getScheduleOrderList"
+            @getChange="getProductId"
+            placeholder="请选择排产单号"
+            style="width: 100%"
+          >
+            <template>
+              <span style="float: left">{{ proOption.no }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">
+                {{ proOption.categoryName }}
+              </span>
+            </template>
+          </select-loadMore>
+        </el-form-item>
+        <el-form-item label="测试工序" prop="processId">
           <el-select
-            v-model="taskForm.processName"
+            v-model="taskForm.processId"
             clearable
             size="mini"
             placeholder="请选择测试工序"
             style="width: 100%"
           >
             <el-option
-              v-for="(dict, index) in processesList"
+              v-for="(dict, index) in stsTestList"
               :key="index"
               :label="dict.dictLabel"
-              :value="dict.dictLabel"
+              :value="dict.dictCode"
             />
           </el-select>
         </el-form-item>
@@ -217,6 +235,7 @@
             clearable
             size="mini"
             placeholder="请选择部署工厂"
+            style="width: 100%"
           >
             <el-option
               v-for="(dict, index) in factoryList"
@@ -232,6 +251,7 @@
             clearable
             size="mini"
             placeholder="请选择线号"
+            style="width: 100%"
           >
             <el-option
               v-for="(dict, index) in testLineList"
@@ -254,6 +274,90 @@
         </el-button>
       </span>
     </el-dialog>
+
+    <!-- 在测DUT -->
+    <el-dialog title="在测DUT" width="450px" :visible.sync="isDutForm">
+      <el-form
+        ref="dutForm"
+        :model="dutForm"
+        :rules="rules"
+        label-width="90px"
+        label-position="left"
+      >
+        <el-form-item label="产品品类:" prop="dutCode">
+          <el-select
+            v-model="dutForm.dutCode"
+            clearable
+            placeholder="请选择产品品类"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- <el-form-item label="产品型号:" prop="computerId">
+          <el-select
+            v-model="dutForm.computerId"
+            clearable
+            placeholder="请选择产品型号"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="方案版本:" prop="schemeVersion">
+          <el-select
+            v-model="dutForm.schemeVersion"
+            clearable
+            placeholder="请输入方案版本"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in pucsVersionData"
+              :key="item.dictCode"
+              :label="item.dictLabel"
+              :value="item.dictCode + ''"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="生产工序:" prop="processId">
+          <el-select
+            v-model="dutForm.processId"
+            clearable
+            placeholder="请选择生产工序"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="(dict, index) in processesList"
+              :key="index"
+              :label="dict.dictLabel"
+              :value="dict.dictCode"
+            />
+          </el-select>
+        </el-form-item> -->
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="isDutForm = false">取 消</el-button>
+        <el-button
+          size="small"
+          type="primary"
+          :loading="isDutLoading"
+          @click="submitDutForm()"
+        >
+          确 定
+        </el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -266,11 +370,10 @@ import {
 } from "@/api/third/testApi";
 import { orderList } from "@/api/order";
 import { schedulingList } from "@/api/www/planSchedule";
+import { categoryComputerDict } from "@/api/third/fileConfig";
+import { pucsVersion, updatePucs } from "@/api/pucs";
 
 export default {
-  components: {
-    CompUpdate: () => import("./components/update"),
-  },
   data() {
     return {
       // 遮罩层
@@ -320,6 +423,18 @@ export default {
       factoryList: [],
       // 线号
       testLineList: [],
+      // sts测试工序
+      stsTestList: [],
+
+      isDutForm: false,
+      isDutLoading: false,
+      // 品类
+      dictList: [],
+      // 型号
+      computerOptions: [],
+      // 方案版本
+      pucsVersionData: [],
+      dutForm: {},
       // 查询参数
       queryParams: {
         p: 1,
@@ -330,7 +445,16 @@ export default {
       },
     };
   },
+  watch: {
+    isDutForm(bool) {
+      bool && this.getPucsVersion();
+    },
+  },
   created() {
+    categoryComputerDict().then((response) => {
+      this.dictList = response.data;
+    });
+
     this.getDicts("pucs_process_label").then((res) => {
       this.processesList = res.data;
     });
@@ -342,6 +466,10 @@ export default {
     // 线号
     this.getDicts("sts_test_line").then((res) => {
       this.testLineList = res.data;
+    });
+    // sts测试工序
+    this.getDicts("sys_test_session").then((res) => {
+      this.stsTestList = res.data;
     });
     this.getList();
   },
@@ -385,6 +513,49 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    // changeCategory(cateId) {
+    //   this.dutForm.computerId = "";
+    //   this.computerOptions = [];
+    //   const data = this.dictList.filter((item) => item.id === cateId);
+    //   this.computerOptions = data[0].computerList;
+    // },
+    // 方案版本
+    getPucsVersion() {
+      pucsVersion().then((res) => {
+        this.pucsVersionData = res.data;
+      });
+    },
+    submitDutForm() {
+      this.$refs["dutForm"].validate((valid) => {
+        if (valid) {
+          if (this.dutForm.id) {
+            this.isDutLoading = true;
+            updatePucs(this.dutForm)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("操作成功");
+                  this.isDutForm = false;
+                  this.getList();
+                }
+              })
+              .finally(() => (this.isDutLoading = false));
+          }
+        }
+      });
+    },
+    cellClick(row, column) {
+      switch (column.label) {
+        case "在测DUT":
+          this.isDutForm = true;
+          this.dutForm = { ...row };
+          break;
+      }
+    },
+    cellStyle({ row, column, rowIndex, columnIndex }) {
+      if (column.label == "在测DUT") {
+        return `cursor: pointer;`;
+      }
+    },
     /** 迪太订单号 */
     getOrderList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
@@ -412,6 +583,7 @@ export default {
           p: page,
           productStatus: 0,
           salesOrderNo: keyword,
+          orderId: this.taskForm.orderId,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
@@ -428,14 +600,26 @@ export default {
         });
       });
     },
+    // 订单ID
+    getOrderId(info) {
+      if (!info) {
+        this.taskForm.orderId = "";
+        return;
+      }
+      const { id, salesOrderNo } = JSON.parse(info);
+      this.taskForm.orderId = id;
+      this.taskForm.orderNo = salesOrderNo;
+      console.log(this.taskForm);
+    },
+    // 排产ID
     getProductId(info) {
       if (!info) {
         this.taskForm.schedulingId = "";
         return;
       }
-      const { id, salesOrderNo } = JSON.parse(info);
+      const { id, no } = JSON.parse(info);
       this.taskForm.schedulingId = id;
-      this.taskForm.productNo = salesOrderNo;
+      this.taskForm.productNo = no;
     },
     // 任务变更
     handleTask(row) {
