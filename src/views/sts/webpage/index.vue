@@ -181,12 +181,13 @@ export default {
       this.dictList = res.data;
     });
 
-    this.getDicts("pucs_process_label").then((res) => {
+    this.getDicts("sys_test_session").then((res) => {
       this.processesList = res.data;
     });
     this.getList();
   },
   methods: {
+
     /** 查询品牌列表 */
     getList() {
       this.loading = true;

@@ -92,7 +92,11 @@
       <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
       <el-table-column label="整机SN" prop="sn" align="center" />
       <el-table-column label="测试环节" prop="processName" align="center" />
-      <el-table-column label="判断结果" prop="result" align="center" />
+      <el-table-column label="判断结果" prop="result" align="center">
+        <span slot-scope="{row}" :class="stsResultStyle(row.result)">
+          {{ row.result }}
+        </span>
+      </el-table-column>
       <el-table-column label="测试设备SN" prop="equipSn" align="center" />
       <el-table-column label="测试时间" prop="testTime" align="center">
         <template slot-scope="{ row }">
@@ -129,7 +133,9 @@
           content-class-name="text-center font20"
           :contentStyle="contentStyle"
         >
-          {{ stsDetail.processName || "--" }}
+          <span class="text-success">
+            {{ stsDetail.processName || "--" }}
+          </span>
         </el-descriptions-item>
         <el-descriptions-item
           label="测试结果"

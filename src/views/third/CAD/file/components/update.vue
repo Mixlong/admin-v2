@@ -651,19 +651,15 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isLoading = true;
-          this.form.status = 0;
-          // if (this.form.dataType === 0) {
-          //   this.form.configExtend.testInfo =
-          //     this.form.configExtend.testInfo.join();
-          // } else {
-          //   this.form.configExtend.testInfo = "";
-          // }
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
             delete this.form.updateBy;
             delete this.form.updateTime;
             let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
+            if(this.form.dataType === 2) {
+              this.form.content = this.form.webVersion;
+            }
             fn(this.form)
               .then((response) => {
                 if (response.code === 200) {
