@@ -319,6 +319,7 @@ import CompUpdate from "./components/update";
 import FormUpload from "./components/formUpload";
 import { listModelDict } from "@/api/third/computer";
 import axios from "axios";
+
 export default {
   components: {
     DetailList,

@@ -44,7 +44,7 @@ export default {
   background-size: cover;
 }
 .app-container {
-  height: calc(100vh - 104px);
+  height: calc(100vh - 70px);
   overflow-y: scroll;
 }
 .theme-style {

@@ -436,17 +436,17 @@ export default {
 }
 
 .dashboard-editor-container {
-  padding: 10px 0;
+  padding: 10px;
   position: relative;
 
   .production-box {
-    height: 89vh;
-    max-height: calc(100vh - 104px);
+    height: 100vh;
+    max-height: calc(100vh - 70px);
     padding-bottom: 20px;
     box-sizing: border-box;
 
     .production-list {
-      max-height: calc(100vh - 270px);
+      max-height: calc(100vh - 200px);
 
       /* 
         修改步骤条圆圈样式

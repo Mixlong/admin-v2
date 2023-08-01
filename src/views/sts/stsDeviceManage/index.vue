@@ -80,7 +80,7 @@
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
-        </template> 
+        </template>
       </el-table-column>
       <el-table-column label="装备ID" prop="cpuId" align="center" />
       <el-table-column label="系统版本" prop="sysVersion" align="center" />
@@ -229,9 +229,9 @@
         <el-form-item label="装备ID" prop="categoryId">
           {{ deviceForm.cpuId }}
         </el-form-item>
-        <el-form-item label="部署工厂" prop="factoryName">
+        <el-form-item label="部署工厂" prop="factoryId">
           <el-select
-            v-model="deviceForm.factoryName"
+            v-model="deviceForm.factoryId"
             clearable
             size="mini"
             placeholder="请选择部署工厂"
@@ -240,8 +240,8 @@
             <el-option
               v-for="(dict, index) in factoryList"
               :key="index"
-              :label="dict.dictLabel"
-              :value="dict.dictLabel"
+              :label="dict.name"
+              :value="dict.id"
             />
           </el-select>
         </el-form-item>
@@ -372,6 +372,7 @@ import { orderList } from "@/api/order";
 import { schedulingList } from "@/api/www/planSchedule";
 import { categoryComputerDict } from "@/api/third/fileConfig";
 import { pucsVersion, updatePucs } from "@/api/pucs";
+import { dictFactory } from "@/api/factory";
 
 export default {
   data() {
@@ -460,9 +461,10 @@ export default {
     });
 
     // 部署工厂
-    this.getDicts("product_address").then((res) => {
+    dictFactory().then((res) => {
       this.factoryList = res.data;
     });
+
     // 线号
     this.getDicts("sts_test_line").then((res) => {
       this.testLineList = res.data;
