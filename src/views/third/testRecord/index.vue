@@ -52,8 +52,8 @@
           <el-option
             v-for="dict in testList"
             :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictLabel"
           />
         </el-select>
       </el-form-item>

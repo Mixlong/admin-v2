@@ -611,7 +611,6 @@ export default {
       const { id, salesOrderNo } = JSON.parse(info);
       this.taskForm.orderId = id;
       this.taskForm.orderNo = salesOrderNo;
-      console.log(this.taskForm);
     },
     // 排产ID
     getProductId(info) {

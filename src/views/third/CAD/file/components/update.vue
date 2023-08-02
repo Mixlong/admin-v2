@@ -1,6 +1,8 @@
 <template>
   <!--   -->
   <el-dialog
+    v-bind="$attrs"
+    v-on="$listeners"
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
@@ -17,6 +19,15 @@
       :class="{ 'inline-form': boleConfig }"
       inline
     >
+      <!-- <ul>
+        <li v-for="(value, name) in $attrs" :key="name">
+          {{ name }}: {{ value }}
+        </li>
+      </ul>
+
+      {{ $attrs }}
+      {{ $listeners }} -->
+
       <template v-if="!isBatchSync">
         <el-form-item label="品类" prop="categoryId">
           <el-select
@@ -65,12 +76,13 @@
             />
           </el-select>
         </el-form-item>
-
         <el-row :gutter="0">
           <el-col>
             <el-form-item label="数据类型" prop="dataType">
               <el-radio-group v-model="form.dataType" size="small">
-                <el-radio :label="2" border>STS程序</el-radio>
+                <el-radio v-if="isStsType(form.type)" :label="2" border
+                  >STS程序</el-radio
+                >
                 <el-radio :label="1" border>PC上位机</el-radio>
               </el-radio-group>
             </el-form-item>
@@ -78,21 +90,35 @@
         </el-row>
 
         <template v-if="form.dataType === 2">
-          <el-form-item label="sts工序网页" prop="webVersion">
-            <select-loadMore
-              v-model="form.webVersion"
-              :data="stsData.data"
-              :page="stsData.page"
-              :hasMore="stsData.more"
-              :moreParams="true"
-              dictLabel="version"
-              dictValue="id"
-              :request="getStsDataList"
-              @getChange="getStsWebId"
-              placeholder="请选择sts工序网页"
-              style="width: 100%"
-            />
-          </el-form-item>
+          <el-row>
+            <el-col>
+              <el-form-item label="sts工序网页" prop="webVersion">
+                <select-loadMore
+                  v-model="form.webVersion"
+                  :data="stsData.data"
+                  :page="stsData.page"
+                  :hasMore="stsData.more"
+                  :moreParams="true"
+                  dictLabel="version"
+                  dictValue="id"
+                  :request="getStsDataList"
+                  @getChange="getStsWebId"
+                  placeholder="请选择sts工序网页"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col>
+              <el-form-item label="属性描述" prop="stsContent">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 1, maxRows: 8 }"
+                  v-model="form.stsContent"
+                  placeholder="请输入文件描述"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
           <!-- 需求改改改，先留着吧 -->
           <!-- <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
 						<el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
@@ -337,7 +363,8 @@ import {
 import { listComputer } from "@/api/third/version";
 import { stsWebList } from "@/api/third/testApi";
 export default {
-  props: ["dictList"],
+  inheritAttrs: false,
+  props: ["dictList", "isStsType"],
   data() {
     const validateContent = (rule, value, callback) => {
       if (!value && this.isHaveTo) {
@@ -612,7 +639,7 @@ export default {
       return new Promise((resolve) => {
         stsWebList({
           p: page,
-		  version: keyword
+          version: keyword,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
@@ -642,6 +669,7 @@ export default {
         this.form.webVersion = "";
         return;
       }
+      console.log(JSON.parse(info));
       const { id, version } = JSON.parse(info);
       this.form.webId = id;
       this.form.webVersion = version;
@@ -657,9 +685,6 @@ export default {
             delete this.form.updateBy;
             delete this.form.updateTime;
             let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
-            if(this.form.dataType === 2) {
-              this.form.content = this.form.webVersion;
-            }
             fn(this.form)
               .then((response) => {
                 if (response.code === 200) {

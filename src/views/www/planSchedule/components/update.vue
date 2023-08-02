@@ -254,9 +254,6 @@ export default {
         date: [
           { required: true, message: "请选择生产日期", trigger: "change" },
         ],
-        address: [
-          { required: true, message: "请选择生产地点", trigger: "change" },
-        ],
         process: [
           { required: true, message: "请选择生产流程", trigger: "change" },
         ],
@@ -269,7 +266,6 @@ export default {
         orderNo: [
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
-        num: [{ required: true, message: "请输入排产数量", trigger: "blur" }],
         excelUrl: [
           { required: true, message: "请上传资料清单", trigger: "change" },
         ],

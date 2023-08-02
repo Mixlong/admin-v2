@@ -133,7 +133,10 @@
       </el-table-column>
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }">{{ row.content || "---" }}</span>
+        <template slot-scope="{ row }">
+          <span v-if="isStsType(row.type) && row.stsContent">{{ row.stsContent }}</span>
+          <span>{{ row.content || "---" }}</span>  
+        </template>
       </el-table-column>
       <el-table-column
         label="产品状态"
@@ -241,6 +244,20 @@
             />
           </el-tooltip>
 
+          <el-tooltip
+            v-if="isDownloadUrl(scope.row)"
+            class="item font16"
+            effect="dark"
+            content="STS工序网页"
+            placement="top-end"
+          >
+            <svg-icon
+              icon-class="xiazai"
+              class-name="card-panel-icon pointer margin-left-xs"
+              @click="zipFile(scope.row.file)"
+            />
+          </el-tooltip>
+
           <Tooltip
             icon="el-icon-refresh-right"
             content="撤回"
@@ -318,12 +335,13 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >通过</el-button
-          >
+            >
+            通过
+          </el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" :dictList="dictList" />
+    <CompUpdate ref="compUpdate" name key jack  :dictList="dictList" :isStsType="isStsType"  />
   </div>
 </template>
 
@@ -430,6 +448,16 @@ export default {
         );
       };
     },
+    isStsType() {
+      return type => {
+        return type === "iqc_tool" || 
+                type === "fqc_tool_soft" || 
+                type === "oqc_tool_soft" ||
+                type === "config_tools" ||
+                type === "pack_file" ||
+                type === "update_file"
+      }
+    }
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -643,7 +671,7 @@ export default {
       //     }
       //   }
       // }
-      
+      console.log(row)
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row
