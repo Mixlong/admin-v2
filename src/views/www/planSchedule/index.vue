@@ -268,7 +268,7 @@
               删除
             </el-button>
             <el-button
-              v-show="row.qrCode && row.process === 'SMT'"
+              v-show="row.qrCode"
               class="mlZero"
               type="text"
               @click="handleQrCode(row)"

@@ -134,7 +134,8 @@
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
-          <span v-if="isStsType(row.type) && row.stsContent">{{ row.stsContent }}</span>
+          <span v-if="isStsType(row.type) && row.stsContent">STS: {{ row.stsContent }}</span>
+          <br />  
           <span>{{ row.content || "---" }}</span>  
         </template>
       </el-table-column>
@@ -241,20 +242,6 @@
               icon-class="xiazai"
               class-name="card-panel-icon pointer margin-left-xs"
               @click="zipFile(scope.row.url)"
-            />
-          </el-tooltip>
-
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
-            content="STS工序网页"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.file)"
             />
           </el-tooltip>
 

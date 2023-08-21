@@ -64,6 +64,12 @@ export const constantRoutes = [
     hidden: true,
   },
   {
+    path: "/stsDeploy",
+    name: "stsDeploy",
+    component: (resolve) => require(["@/views/stsDeploy"], resolve),
+    hidden: true
+  },
+  {
     path: "",
     component: Layout,
     redirect: "index",

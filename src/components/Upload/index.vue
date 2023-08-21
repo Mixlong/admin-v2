@@ -119,10 +119,8 @@ export default {
 
 <style lang="scss">
 .my-upload-demo {
-  display: flex;
-  flex-wrap: wrap;
-  // width: 100px;
-  // height: 100px;
+  // display: flex;
+  // flex-wrap: wrap;
   .el-upload {
     // border: 1px solid #ccc;
     height: inherit;

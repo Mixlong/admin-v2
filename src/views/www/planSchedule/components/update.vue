@@ -128,7 +128,7 @@
         </el-form-item>
 
         <el-form-item label="生产流程:" prop="process">
-          <el-radio-group v-model="form.process">
+          <el-radio-group v-model="form.process" :disabled="form.id">
             <el-radio
               v-for="(item, index) in operationList"
               :key="index"

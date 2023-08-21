@@ -53,6 +53,7 @@
           重 置
         </el-button>
       </el-form-item>
+
       <el-button
         v-if="checkRole(['test', 'admin'])"
         type="primary"
@@ -76,9 +77,9 @@
       <el-table-column label="版本号" prop="version" align="center" />
       <el-table-column label="文件包" prop="file" align="center">
         <template slot-scope="scope">
-          <el-link @click="urlDownload(scope.row.file)">{{
-            transFileUrl(scope.row.file)
-          }}</el-link>
+          <el-link @click="urlDownload(scope.row.file)">
+          {{transFileUrl(scope.row.file)}}
+          </el-link>
         </template>
       </el-table-column>
       <el-table-column label="备注" prop="remark" align="center" />
@@ -136,6 +137,7 @@
       :dictList="dictList"
       :processesList="processesList"
     />
+
   </div>
 </template>
 
@@ -146,10 +148,12 @@ import { categoryComputerDict } from "@/api/third/fileConfig";
 
 export default {
   components: {
-    CompUpdate: () => import("./components/update"),
+    CompUpdate: () => import("./components/update")
   },
   data() {
     return {
+      isMyDialog: false,
+
       lovingVue: true,
       commonStatusList,
       // 遮罩层
@@ -187,7 +191,6 @@ export default {
     this.getList();
   },
   methods: {
-
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
