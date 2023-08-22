@@ -90,7 +90,6 @@
     />
 
     <CompUpdate ref="compUpdate" />
-    <el-button @click="load">load</el-button>
   </div>
 </template>
 
@@ -140,9 +139,6 @@ export default {
     this.getTypeCategory();
   },
   methods: {
-    load() {
-      window.open("http://192.168.2.132:8808/productData/customer")
-    },
     // 获取品类
     getTypeCategory() {
       typeCategory().then((res) => {
