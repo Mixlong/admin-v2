@@ -3,16 +3,15 @@
     <el-header>配置文件生成器(STS)</el-header>
     <el-main>
       <el-card class="box-card" shadow="never">
-        <div slot="header">
+        <div slot="header" v-if="!isShow">
           <el-form :inline="true" :model="queryParams">
             <el-form-item label="所属品类" prop="categoryId">
               <el-select
                 v-model="queryParams.categoryId"
                 @change="changeCategory"
                 filterable
-                allow-create
                 clearable
-                placeholder="请选择品类"
+                placeholder="请选择所属品类"
               >
                 <el-option
                   v-for="dict in dictList"
@@ -24,10 +23,9 @@
             </el-form-item>
             <el-form-item label="仪表型号" prop="computerId">
               <el-select
-                filterable
-                remote
-                clearable
                 v-model="queryParams.computerId"
+                filterable
+                clearable
                 placeholder="请选择仪表型号"
               >
                 <el-option
@@ -51,11 +49,13 @@
         </div>
         <el-form ref="form" :model="formData" label-width="124px">
           <el-row :gutter="10">
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="背光亮度">
                 <el-select
                   v-model="formData.instrumentModel.backlightBrightness"
                   placeholder="请选择背光亮度"
+                  clearable
+                  class="w100"
                 >
                   <el-option
                     v-for="item in backlightBrightnessList"
@@ -66,10 +66,12 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="休眠时间">
+              <el-form-item label="休眠时间(min)">
                 <el-select
                   v-model="formData.instrumentModel.sleepTime"
                   placeholder="请选择休眠时间"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="item in sleepTimeList"
@@ -78,24 +80,23 @@
                     :value="item"
                   />
                 </el-select>
-                <!-- <b class="margin-left-xs">min</b> -->
               </el-form-item>
 
-              <el-form-item label="系统电压">
+              <el-form-item label="系统电压(V)">
                 <el-select
                   v-model="formData.instrumentModel.voltage"
                   placeholder="请选择系统电压"
                   @change="changeVoltage"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="item in dicts_voltage"
                     :key="item"
                     :label="item"
                     :value="item"
-                  >
-                  </el-option>
+                  />
                 </el-select>
-                <!-- <b class="margin-left-xs">V</b> -->
               </el-form-item>
 
               <el-form-item label="欠压门限">
@@ -111,27 +112,14 @@
                 <el-select
                   v-model="formData.instrumentModel.voltage"
                   placeholder="请选择助力档位数"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="item in powerGearData"
                     :key="item"
                     :label="item"
                     :value="item"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-
-              <el-form-item label="助力正反">
-                <el-select
-                  v-model="formData.instrumentModel.assist"
-                  placeholder="请选择助力正反"
-                >
-                  <el-option
-                    v-for="item in assistData"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
                   >
                   </el-option>
                 </el-select>
@@ -175,13 +163,22 @@
                   clearable
                 />
               </el-form-item>
+              <el-form-item label="显示轮径" prop="showWheelsize">
+                <el-input
+                  type="number"
+                  v-minMaxValue="{ min: 0, max: 999 }"
+                  v-model="formData.instrumentModel.showWheelsize"
+                  placeholder="显示轮径"
+                />
+              </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="缓启动" prop="instrumentModel.slowStart">
                 <el-select
                   v-model="formData.instrumentModel.slowStart"
                   placeholder="请选择缓启动"
                   filterable
+                  class="w100"
                   clearable
                 >
                   <el-option
@@ -199,6 +196,7 @@
                   placeholder="请选择轮径"
                   filterable
                   allow-create
+                  class="w100"
                   clearable
                 >
                   <el-option
@@ -223,6 +221,8 @@
                 <el-select
                   v-model="formData.instrumentModel.unit"
                   placeholder="请选择单位"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in dicts_unit"
@@ -237,6 +237,8 @@
                 <el-select
                   v-model="formData.instrumentModel.agreement"
                   placeholder="请选择协议"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in dicts_agreement"
@@ -251,6 +253,8 @@
                 <el-select
                   v-model="formData.instrumentModel.power"
                   placeholder="请选择电量计算"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in dicts_power"
@@ -269,6 +273,7 @@
                   v-model="formData.instrumentModel.speedSteel"
                   placeholder="请选择测速磁钢数"
                   filterable
+                  class="w100"
                   clearable
                 >
                   <el-option
@@ -308,11 +313,13 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="车名" prop="ebikeName">
                 <el-select
                   v-model="formData.instrumentModel.ebikeName"
                   placeholder="请选择车名"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in dicts_ebike"
@@ -341,6 +348,8 @@
                 <el-select
                   v-model="formData.instrumentModel.logo"
                   placeholder="请选择Logo界面"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in dicts_logo"
@@ -386,6 +395,8 @@
                 <el-select
                   v-model="formData.instrumentModel.serialLevel"
                   placeholder="请选择串口通讯电平"
+                  class="w100"
+                  clearable
                 >
                   <el-option
                     v-for="(value, key) in serialLevelData"
@@ -419,15 +430,7 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="4">
-              <el-form-item label="显示轮径" prop="showWheelsize">
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0, max: 999 }"
-                  v-model="formData.instrumentModel.showWheelsize"
-                  placeholder="显示轮径"
-                />
-              </el-form-item>
+            <el-col :span="6">
               <el-form-item label="车轮宽度" prop="tiresSize">
                 <el-input
                   type="number"
@@ -542,34 +545,50 @@
                   </div>
                 </el-radio-group>
               </el-form-item>
+              <el-form-item label="助力正反">
+                <el-radio-group v-model="formData.instrumentModel.assist">
+                  <div class="flex">
+                    <el-radio :label="0">助力正</el-radio>
+                    <el-radio :label="1">助力反</el-radio>
+                  </div>
+                </el-radio-group>
+              </el-form-item>
             </el-col>
           </el-row>
         </el-form>
       </el-card>
     </el-main>
     <el-footer class="flex align-center justify-center">
-      <el-upload
-        class="margin-right-xs"
-        action=""
-        accept=".json"
-        :on-change="handleChange"
-        :auto-upload="false"
-        :show-file-list="false"
-      >
-        <el-button size="mini" type="primary">导入配置</el-button>
-      </el-upload>
-      <el-button size="mini" type="primary">读取配置(STS)</el-button>
-      <el-button size="mini" type="primary" @click="visible = true"
-        >上传配置</el-button
-      >
-      <el-button size="mini" type="primary" @click="exportForm"
-        >导出配置</el-button
-      >
+      <el-button size="mini" type="primary" v-if="isShow">
+        读取配置(STS)
+      </el-button>
+      <template v-else>
+        <el-upload
+          class="margin-right-xs"
+          action=""
+          accept=".json"
+          :on-change="handleChange"
+          :auto-upload="false"
+          :show-file-list="false"
+        >
+          <el-button size="mini" type="primary">导入配置</el-button>
+        </el-upload>
+        <el-button size="mini" type="primary" @click="visible = true">
+          上传配置
+        </el-button>
+        <el-button size="mini" type="primary" @click="exportForm">
+          导出配置
+        </el-button>
+      </template>
     </el-footer>
 
-
     <el-dialog title="上传配置" width="400px" :visible.sync="visible">
-      <el-form ref="form" :model="deployForm" :rules="rules" label-width="80px">
+      <el-form
+        ref="deployForm"
+        :model="deployForm"
+        :rules="deployRules"
+        label-width="80px"
+      >
         <el-form-item label="所属品类" prop="categoryId">
           <el-select
             v-model="deployForm.categoryId"
@@ -578,7 +597,7 @@
             allow-create
             clearable
             placeholder="请选择品类"
-            style="width: 100%;"
+            style="width: 100%"
           >
             <el-option
               v-for="dict in dictList"
@@ -594,7 +613,7 @@
             filterable
             clearable
             placeholder="请选择仪表型号"
-            style="width: 100%;"
+            style="width: 100%"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -630,16 +649,23 @@
         <el-button
           size="small"
           type="primary"
-          @click="handleOk"
+          @click="handleOk('deployForm')"
           :loading="confirmLoading"
-          >确 定</el-button
         >
+          确 定
+        </el-button>
       </span>
     </el-dialog>
   </el-container>
 </template>
 <script>
-import { listFileConfig, categoryComputerDict } from "@/api/third/fileConfig";
+import {
+  listFileConfig,
+  categoryComputerDict,
+  stsEditFileConfig,
+} from "@/api/third/fileConfig";
+import { getToken } from "@/utils/auth";
+
 import Axios from "axios";
 export default {
   data() {
@@ -701,32 +727,27 @@ export default {
         url: "",
       },
       rules: {
-        categoryId: [{ required: true,  message: "所属品类不能为空", trigger: "change" }],
-        computerId: [{ required: true,  message: "仪表型号不能为空", trigger: "change" }],
-        content: [{ required: true,  message: "属性描述不能为空", trigger: "blur" }],
-        url: [{ required: true,  message: "文件不能为空", trigger: "change" }],
+        categoryId: [
+          { required: true, message: "所属品类不能为空", trigger: "change" },
+        ],
+        computerId: [
+          { required: true, message: "仪表型号不能为空", trigger: "change" },
+        ],
+        content: [
+          { required: true, message: "属性描述不能为空", trigger: "blur" },
+        ],
+        url: [{ required: true, message: "文件不能为空", trigger: "change" }],
       },
       dictList: [],
       computerOptions: [],
       //   背光亮度
       backlightBrightnessList: [1, 2, 3, 4, 5],
       //   休眠时间
-      sleepTimeList: [...Array(11)].map((v, i) => i),
+      sleepTimeList: [0, 3, 5, 10],
       //   系统电压
       dicts_voltage: [24, 36, 48, 52, 60, 72],
       //   助力档位数
       powerGearData: [3, 4, 5, 6, 7, 8, 9],
-      // 助力正反
-      assistData: [
-        {
-          label: "助力正",
-          value: 0,
-        },
-        {
-          label: "助力反",
-          value: 1,
-        },
-      ],
       // 缓启动参数
       slowStartData: [0, 1, 2, 3],
       // 测速磁钢数
@@ -765,7 +786,24 @@ export default {
         4: "Aventure",
         5: "Pace",
       },
+      deployRules: {
+        categoryId: [
+          { required: true, message: "所属品类不能为空", trigger: "change" },
+        ],
+        computerId: [
+          { required: true, message: "仪表型号不能为空", trigger: "change" },
+        ],
+        content: [
+          { required: true, message: "属性描述不能为空", trigger: "blur" },
+        ],
+        url: [{ required: true, message: "文件不能为空", trigger: "change" }],
+      },
     };
+  },
+  computed: {
+    isShow() {
+      return !!!getToken();
+    },
   },
   watch: {
     "formData.instrumentModel.wheelDiameter"(wheelDiameter) {
@@ -776,7 +814,9 @@ export default {
           parseFloat(wheelDiameter) * 0.5;
       }
       if (wheelDiameter === "700C") wheelDiameter = 27.5;
-      this.formData.instrumentModel.perimeter = wheelDiameter * 24.4 * 3.14;
+      this.formData.instrumentModel.perimeter = parseInt(
+        wheelDiameter * 24.4 * 3.14
+      );
     },
     "deployForm.url"(url) {
       if (url) {
@@ -874,6 +914,26 @@ export default {
       link.click();
 
       URL.revokeObjectURL(url);
+    },
+    // 上传配置
+    handleOk(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.confirmLoading = true;
+          stsEditFileConfig({ ...this.deployForm, type: "config_file" })
+            .then(() => {
+              this.msgSuccess("配置上传成功");
+              this.visible = false;
+            })
+            .finally(() => {
+              this.confirmLoading = false;
+            });
+        }
+      });
+    },
+    handleCancel() {
+      this.visible = false;
+      this.$refs.deployForm.resetFields();
     },
   },
 };

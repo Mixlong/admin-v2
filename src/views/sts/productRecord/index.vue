@@ -6,6 +6,7 @@
           v-model="queryParams.categoryName"
           placeholder="请选择品类"
           clearable
+          filterable
           style="width: 160px"
           @change="changeCategory"
         >
@@ -21,6 +22,7 @@
         <el-select
           v-model="queryParams.computerName"
           clearable
+          filterable
           placeholder="请选择型号"
           @change="getList"
           style="width: 160px"

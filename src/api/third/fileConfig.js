@@ -63,6 +63,13 @@ export function editFileConfig(data) {
   })
 }
 
+export function stsEditFileConfig(data) {
+  return request({
+    url: '/file/sts/config',
+    method: 'put',
+    data
+  })
+}
 
 export function computerDictList(data) {
   return request({
