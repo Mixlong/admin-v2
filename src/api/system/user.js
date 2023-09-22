@@ -36,8 +36,6 @@ export function deptTreeSelect() {
 export function memberDictUser() {
   return new Promise((resolve) => {
     request({
-      // url: '/system/user/member/dict',
-      // url: '/system/user/list/dict',
       url: '/system/user/list/user',
       method: 'get',
     }).then(res => {

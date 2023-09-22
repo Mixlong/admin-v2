@@ -353,7 +353,7 @@ export default {
     handleComplete(row) {
       this.isResultVisible = true;
       this.resForm.result = "";
-      this.resForm = { ...row, ...this.resForm };
+      this.resForm = { ...this.resForm, ...row };
     },
     onSubmit() {
       this.$refs["resForm"].validate((valid) => {

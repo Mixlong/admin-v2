@@ -18,7 +18,7 @@
           label="时间"
         ></el-table-column>
         <el-table-column prop="note" align="center" label="操作内容">
-          <template slot="header" slot-scope="scope">
+          <template slot="header">
             <div class="flex align-center justify-center">
               <span>操作内容</span>
               <i

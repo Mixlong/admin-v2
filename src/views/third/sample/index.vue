@@ -731,6 +731,7 @@ export default {
     },
     handleUpdate(row, name) {
       let currentData = Object.assign({}, row);
+      console.log(currentData)
       if (name === 'progress' && currentData.progress === null) {
         currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>
@@ -748,12 +749,14 @@ export default {
           <p><strong>五、超声阶段：<span style="color: #008000;">【 6/31周荣幸】已完成超声；</span></strong></p>
           <p><strong>六</strong><strong>、验收送样阶段： </strong>&nbsp;</p>
         `
+      } else if(name === "demand") {
+        this.$refs.compUpdate.isCopyFlag = false;
       }
 
       let title = "";
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.form = Object.assign({}, currentData);
+      this.$refs.compUpdate.form = currentData;
       this.$refs.compUpdate.showName = name;
       this.$refs.compUpdate.isType = -1;
       if (!name) {

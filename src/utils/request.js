@@ -4,12 +4,12 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from "@/utils/ruoyi";
-import reqUrl from '@/utils/requestUrl'
+import baseURL from '@/utils/requestUrl'
 import Cookies from "js-cookie";
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: reqUrl,
+  baseURL,
   // baseURL: process.env.VUE_APP_BASE_API,
   // 超时
   timeout: 1000 * 600,

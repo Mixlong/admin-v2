@@ -24,13 +24,13 @@ export function saleAuth(query) {
     });
 }
 
-export function saleUpdate(query) {
-    return request({
-        url: '/sale',
-        method: 'put',
-        data: query,
-    });
-}
+// export function saleUpdate(query) {
+//     return request({
+//         url: '/sale',
+//         method: 'put',
+//         data: query,
+//     });
+// }
 
 export function saleAdd(query) {
     return request({
@@ -45,5 +45,50 @@ export function saleState(query) {
         url: '/sale/state',
         method: 'put',
         data: query,
+    });
+}
+
+
+// 售后支持
+export function afterList(params) {
+    return request({
+        url: '/after/list',
+        method: 'get',
+        params
+    });
+}
+
+// 新增
+export function saleSave(data) {
+    return request({
+        url: '/after/save',
+        method: 'post',
+        data
+    });
+}
+
+// 修改
+export function saleUpdate(data) {
+    return request({
+        url: '/after/update',
+        method: 'put',
+        data
+    });
+}
+
+// 删除
+export function saleDelete(data) {
+    return request({
+        url: '/after/delete',
+        method: 'delete',
+        data
+    })
+}
+
+// 详情
+export function afterInfo(detailId) {
+    return request({
+        url: `/after/info/${detailId}`,
+        method: 'get'
     });
 }

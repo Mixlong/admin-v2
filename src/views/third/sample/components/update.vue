@@ -564,6 +564,7 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         let params = Object.assign({}, this.form);
+        console.log("params", params)
         params.baseModel = this.form.baseModel.toString();
         if (valid) {
           this.isLoading = true;
