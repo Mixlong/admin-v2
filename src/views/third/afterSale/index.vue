@@ -1,3 +1,11 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:04
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-09-26 15:22:00
+ * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
@@ -5,6 +13,7 @@
         <el-date-picker
           v-model="queryParams.returnDate"
           type="date"
+          clearable
           placeholder="请选择客诉日期"
           style="width: 140px"
         />
@@ -61,6 +70,7 @@
         <el-select
           v-model="queryParams.status"
           style="width: 120px"
+          clearable
           placeholder="请选择问题状态"
         >
           <el-option label="OPEN" value="0" />
@@ -72,6 +82,7 @@
           v-model="queryParams.state"
           filterable
           style="width: 120px"
+          clearable
           placeholder="请选择处理进展"
         >
           <el-option
@@ -96,10 +107,14 @@
         class="fr mt5"
       >
         <el-col :span="1.5">
-          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">{{ isWaitOrAllTxt }}</el-button>
+          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">{{
+            isWaitOrAllTxt
+          }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
+          <el-button type="primary" icon="el-icon-plus" @click="handleAdd"
+            >新增</el-button
+          >
         </el-col>
       </el-row>
     </el-form>
@@ -118,14 +133,9 @@
         label="客诉日期"
         prop="returnDate"
         align="center"
-        width="120"
+        width="100"
       />
-      <el-table-column
-        label="问题状态"
-        prop="status"
-        align="center"
-        width="90"
-      >
+      <el-table-column label="问题状态" prop="status" align="center" width="80">
         <template scope="{ row }">
           <el-tag v-if="row.status === 0" type="success">OPEN</el-tag>
           <el-tag v-else type="danger">CLOSE</el-tag>
@@ -142,20 +152,30 @@
       <el-table-column label="客户名称" prop="customerName" align="center" />
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="客诉现象" prop="result" align="center" show-overflow-tooltip />
+      <el-table-column
+        label="客诉现象"
+        prop="result"
+        align="center"
+        show-overflow-tooltip
+      />
       <el-table-column label="客退清单" prop="inventory" align="center" />
       <el-table-column label="客退方" prop="returnParty" align="center" />
-      <el-table-column label="处理进展" prop="model" align="center">
-        <template slot-scope="scope">
-          <span v-if="scope.row.state == 1" class="text-red">现象复测</span>
-          <span v-if="scope.row.state == 2" class="text-blue">分类处理</span>
-          <span v-if="scope.row.state == 3" class="text-cyan">问题处理</span>
-          <span v-if="scope.row.state == 4" class="text-orange">处理类型</span>
-          <span v-if="scope.row.state == 5" class="text-yellow">维修处理</span>
-          <span v-if="scope.row.state == 6" class="text-green">处理完成</span>
+      <el-table-column label="处理进展" prop="model" align="center" width="80">
+        <template slot-scope="{ row }">
+          <span v-if="row.state === 1" class="text-red">现象复测</span>
+          <span v-if="row.state === 2" class="text-blue">分类处理</span>
+          <span v-if="row.state === 3" class="text-cyan">问题处理</span>
+          <span v-if="row.state === 4" class="text-orange">处理类型</span>
+          <span v-if="row.state === 5" class="text-yellow">维修处理</span>
+          <span v-if="row.state === 6" class="text-green">处理完成</span>
         </template>
       </el-table-column>
-      <el-table-column label="处理人" prop="handleName" align="center" />
+      <el-table-column label="处理人" prop="handleName" align="center">
+        <template slot-scope="{ row }">
+          <span v-if="row.state === 6" class="text-green">已完成</span>
+          <span v-else>{{ row.handleName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="是否问题"
         prop="isProblem"
@@ -169,134 +189,107 @@
       </el-table-column>
       <el-table-column label="问题根因" prop="rootMatter" align="center" />
       <el-table-column label="根因分类" prop="rootMatterType" align="center">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           {{ directionLabel(rootClassify, row.rootMatterType) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="200">
+      <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
           <div class="flex justify-center">
-            <el-button class="text-green" type="text" @click="handleDetail(row)">详情</el-button>
-            <el-button class="text-blue" type="text" @click="handleUpdate(row)">编辑</el-button>
-            <el-button class="text-orange" type="text">处理</el-button>
-            <el-button v-if="!Is_Empty(row.rootMatter)" class="text-yellow" type="text" @click="handleClose(row)">
+            <el-button
+              class="text-green"
+              type="text"
+              @click="handleDetail(row)"
+            >
+              详情
+            </el-button>
+            <el-button class="text-blue" type="text" @click="handleUpdate(row)">
+              编辑
+            </el-button>
+            <el-tooltip
+              v-if="isRetester(row)"
+              effect="dark"
+              content="现象复测人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
+            <el-tooltip
+              v-if="isClassifiedBy(row)"
+              effect="dark"
+              content="分类处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
+            <el-tooltip
+              v-if="isHandlerBy(row)"
+              effect="dark"
+              content="问题处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
+            <el-tooltip
+              v-if="isHandlerType(row)"
+              effect="dark"
+              content="处理类型人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
+            <el-tooltip
+              v-if="isServiceBy(row)"
+              effect="dark"
+              content="维修处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
+            <el-button
+              v-if="!Is_Empty(row.rootMatter)"
+              :disabled="row.state === 6"
+              class="text-yellow"
+              type="text"
+              @click="handleClose(row)"
+            >
               {{ isStatusTxt(row.status) }}
             </el-button>
-            <el-button class="text-red" type="text" @click="handleDelete(row)">删除</el-button>
+            <el-button class="text-red" type="text" @click="handleDelete(row)">
+              删除
+            </el-button>
           </div>
         </template>
-        <!-- <template slot-scope="scope"> -->
-        <!-- <div style="padding-left: 8px" class="text-left">
-            <Tooltip
-              v-if="
-                scope.row.principal == userId ||
-                scope.row.feedbackBy == userId ||
-                checkRole(['afterSale'])
-              "
-              icon="el-icon-edit"
-              content="编辑"
-              @click="handleUpdate(scope.row)"
-            />
-
-            <el-tooltip
-              class="item font16"
-              effect="dark"
-              content="同意"
-              placement="top-end"
-              v-if="
-                scope.row.state == 0 &&
-                (scope.row.principal == userId || checkRole(['admin']))
-              "
-            >
-              <el-button
-                size="small"
-                icon="el-icon-check"
-                type="text"
-                class="text-green"
-                @click="handleAuthChange(scope.row, 1)"
-              ></el-button>
-            </el-tooltip>
-            <el-tooltip
-              class="item font16"
-              effect="dark"
-              content="驳回"
-              placement="top-end"
-              v-if="
-                scope.row.state == 0 &&
-                (scope.row.principal == userId || checkRole(['admin']))
-              "
-            >
-              <el-button
-                size="small"
-                icon="el-icon-circle-close"
-                type="text"
-                class="text-green font16"
-                @click="handleAuthChange(scope.row, 3)"
-              ></el-button>
-            </el-tooltip>
-            <el-tooltip
-              class="item font16"
-              effect="dark"
-              content="已处理"
-              placement="top-end"
-              v-if="
-                scope.row.state == 1 &&
-                (scope.row.principal == userId || checkRole(['admin']))
-              "
-            >
-              <el-button
-                size="small"
-                icon="el-icon-check"
-                type="text"
-                class="text-green"
-                @click="handleAuthChange(scope.row, 2)"
-              ></el-button>
-            </el-tooltip>
-            <Tooltip
-              v-if="
-                scope.row.principal == userId ||
-                scope.row.feedbackBy == userId ||
-                checkRole(['admin'])
-              "
-              icon="el-icon-delete"
-              :className="['text-red']"
-              content="删除"
-              @click="handleDelete(scope.row)"
-            />
-            <el-tooltip
-              v-if="scope.row.attachment"
-              effect="dark"
-              content="附件"
-              placement="top-end"
-            >
-              <el-button
-                size="small"
-                icon="el-icon-download"
-                type="text"
-                class="text-green font16"
-                @click.stop="
-                  handleDownload(scope.row.attachment, scope.row.product)
-                "
-              ></el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="scope.row.fileUrl"
-              effect="dark"
-              content="记录文件"
-              placement="top-end"
-            >
-              <el-button
-                size="small"
-                icon="el-icon-download"
-                type="text"
-                class="text-green font16"
-                @click.stop="
-                  handleDownload(scope.row.fileUrl, scope.row.product)
-                "
-              ></el-button>
-            </el-tooltip>
-          </div> -->
-        <!-- </template> -->
       </el-table-column>
     </el-table>
 
@@ -308,6 +301,7 @@
       @pagination="getList"
     />
 
+    <!-- 新增、修改 -->
     <AddSale
       ref="isAddSaleRef"
       :visible.sync="isSaleAddDia"
@@ -318,18 +312,26 @@
     />
 
     <!-- 详情 -->
-    <after-detail 
+    <after-detail
       ref="isAfterDetailRef"
       :visible.sync="isAfterDetailDia"
       :rootClassify="rootClassify"
       :directionLabel="directionLabel"
-    >
-    </after-detail>   
+    />
+
+    <!-- 处理 -->
+    <handle-problem
+      :visible.sync="isHandleProblemDia"
+      :handleProblemData="handleProblemData"
+    />
+
+    <!-- 当前处理进展 -->
+    <deal-progress ref="isDealProgressRef" :visible.sync="isDealProgressDia" />
   </div>
 </template>
 
 <script>
-import { afterList, saleAuth, saleState, saleDelete, saleUpdate } from "@/api/third/sale";
+import { afterList, saleDelete, saleUpdate } from "@/api/third/sale";
 import { listCustomer } from "@/api/third/sample";
 import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";
@@ -341,7 +343,9 @@ export default {
   components: {
     FlipDown,
     AddSale: () => import("./components/addSale"),
-    AfterDetail: () => import("./components/afterDetail")
+    AfterDetail: () => import("./components/afterDetail"),
+    HandleProblem: () => import("./components/handleProblem"),
+    DealProgress: () => import("./components/dealProgress"),
   },
   data() {
     return {
@@ -353,7 +357,12 @@ export default {
       // 新增、修改弹窗
       isSaleAddDia: false,
       // 详情弹窗
-      isAfterDetailDia: false, 
+      isAfterDetailDia: false,
+      // 处理
+      isHandleProblemDia: false,
+      handleProblemData: {},
+      // 当前处理进展
+      isDealProgressDia: false,
       // 待处理 、 全部
       isWaitDispose: true,
       // 选中数组
@@ -430,7 +439,10 @@ export default {
     },
     directionDir() {
       return (dataList, direction) => {
-        return dataList.length && dataList.filter((item) => +item.dictValue === +direction);
+        return (
+          dataList.length &&
+          dataList.filter((item) => +item.dictValue === +direction)
+        );
       };
     },
     directionLabel() {
@@ -449,13 +461,43 @@ export default {
     isStatusTxt() {
       return (status) => {
         return status === 0 ? "关闭" : "打开";
-      }
+      };
     },
     isWaitOrAllTxt() {
-      return this.isWaitDispose ? "待处理" : "全部"
+      return this.isWaitDispose ? "待处理" : "全部";
     },
     isWaitOrAllType() {
       return this.isWaitDispose ? "danger" : "success";
+    },
+    // 现象复测人员确认中
+    isRetester() {
+      return ({ retester, state }) => {
+        return +retester === this.userId && state === 1;
+      }
+    },
+    // 分类处理人员确认中
+    isClassifiedBy() {
+      return ({ classifiedBy, state }) => {
+        return +classifiedBy === this.userId && state === 2;
+      }
+    },
+    // 问题处理人员确认中
+    isHandlerBy() {
+      return ({ handlerBy, state }) => {
+        return +handlerBy === this.userId && state === 3;
+      }
+    },
+    // 处理类型人员确认中
+    isHandlerType() {
+      return ({ handlerType, state }) => {
+        return +handlerType === this.userId && state === 4;
+      }
+    },
+    // 维修处理人员确认中
+    isServiceBy() {
+      return ({ serviceBy, state }) => {
+        return +serviceBy === this.userId && state === 5;
+      }
     }
   },
   created() {
@@ -508,9 +550,11 @@ export default {
     },
     /** 查询品牌列表 */
     getList() {
-      console.log(this.name)
       this.loading = true;
-      const dataInfo = { ...this.queryParams, my: this.isWaitDispose ? "" : this.name }; 
+      const dataInfo = {
+        ...this.queryParams,
+        my: this.isWaitDispose ? "" : this.name,
+      };
       afterList(dataInfo).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
@@ -542,16 +586,6 @@ export default {
       }
       return className;
     },
-    principalName(row) {
-      let { pmDictListOptions } = this;
-      let name = "";
-      pmDictListOptions.forEach((item) => {
-        if (item.dictValue == row.principal) {
-          name = item.dictLabel;
-        }
-      });
-      return name;
-    },
     handleDownload(file, name) {
       this.zipFile(file, name);
     },
@@ -567,17 +601,19 @@ export default {
       this.isSaleAddDia = true;
       let { logisticsEntity } = row;
       let dataCopy;
-      if(this.Is_Empty(logisticsEntity)) {
+      if (this.Is_Empty(logisticsEntity)) {
         dataCopy = { ...row, logisticsEntity: {} };
       } else {
         dataCopy = { ...row };
       }
       this.$refs.isAddSaleRef.form = dataCopy;
+      this.$refs.isAddSaleRef.active =
+        dataCopy.state === 6 ? 6 : dataCopy.state - 1;
     },
     // 详情
     handleDetail(row) {
-      this.isAfterDetailDia = true;  
-      this.$refs.isAfterDetailRef.getAfterInfo(row.id)
+      this.isAfterDetailDia = true;
+      this.$refs.isAfterDetailRef.getAfterInfo(row.id);
     },
     /** 删除按钮操作 */
     handleDelete(row) {
@@ -615,18 +651,29 @@ export default {
       this.isWaitDispose = !this.isWaitDispose;
       this.getList();
     },
-    handleAuthChange(row, type) {
-      let params = {};
-      params.state = type;
-      params.id = row.id;
-      saleState(params).then((res) => {
-        if (res.code == 200) {
-          this.msgSuccess("操作成功！");
-          this.getList();
-        }
-      });
+    // 处理问题
+    handleProblem(row) {
+      this.isHandleProblemDia = true;
+      if (row.state === 5) {
+        this.handleProblemData = {
+          ...row,
+          materialLossList: [
+            {
+              materialName: "",
+              materialCode: "",
+              materialNum: "",
+            },
+          ],
+        };
+      } else {
+        this.handleProblemData = { ...row };
+      }
     },
-
+    // 查看处理进展
+    seeDealProgress({ id, state }) {
+      this.isDealProgressDia = true;
+      this.$refs.isDealProgressRef.getAfterHandleDetail(id, state);
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -639,31 +686,26 @@ export default {
       this.handleQuery();
     },
     cellClick(row, column, cell, event) {
-      switch (column.label) {
-        case "定位进展":
-          if (row.principal == this.userId || this.checkRole(["admin"]))
-            this.handleUpdate(row, "progress", "");
+      const { sn } = row;
+      const { label } = column;
+      switch (label) {
+        case "产品SN":
+          this.$router.push(`/www/PartInfoView/production?sn=${sn}`);
           break;
-        case "对策及导入计划":
-          if (row.principal == this.userId || this.checkRole(["admin"]))
-            this.handleUpdate(row, "report", "对策及导入计划");
-          break;
-        default:
+        case "处理进展":
+          this.seeDealProgress(row);
           break;
       }
     },
     cellStyle({ row, column, rowIndex, columnIndex }) {
-      if (
-        (columnIndex == 12 || columnIndex == 13) &&
-        (row.principal == this.userId || this.checkRole(["admin"]))
-      ) {
+      const { label } = column;
+      if (label === "产品SN" || label === "处理进展") {
         return `cursor: pointer;`;
       }
     },
     rowName({ row, rowIndex }) {
       let styleJson = " ";
-
-      if (row.state == 4) {
+      if (row.state === 6) {
         return "finish-row";
       }
       return styleJson;
@@ -672,25 +714,8 @@ export default {
 };
 </script>
 <style lang="scss">
-.auth {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
 .finish-row td,
 .finish-row:hover td {
   background-color: rgba(155, 216, 148, 0.3) !important;
-}
-
-.afterSaleBox {
-  .cell {
-    padding: 0 5px;
-  }
-
-  .demand-box {
-    img {
-      width: 100% !important;
-    }
-  }
 }
 </style>

@@ -48,7 +48,7 @@
           @keyup.enter.native="handleQuery"
         ></el-input>
       </el-form-item>
-      <el-form-item label="SN" prop="status">
+      <el-form-item label="SN" prop="sn">
         <el-input
           style="max-width: 130px"
           v-model="queryParams.sn"
@@ -334,6 +334,10 @@ export default {
       },
       timeVal: "",
     };
+  },
+  created(){
+    const { sn } = this.$route.query;
+    this.queryParams.sn = sn;
   },
   mounted() {
     categoryComputerDict().then((response) => {

@@ -92,3 +92,20 @@ export function afterInfo(detailId) {
         method: 'get'
     });
 }
+
+// 处理
+export function afterHandle(data) {
+    return request({
+        url: '/after/handle',
+        method: 'put',
+        data
+    });
+}
+
+// 处理进展
+export function afterHandleDetail(afterSaleId) {
+    return request({
+        url: `/after/handle/detail/${afterSaleId}`,
+        method: 'get'
+    });
+}

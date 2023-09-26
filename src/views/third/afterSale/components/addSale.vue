@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-09-22 18:30:36
+ * @LastEditTime: 2023-09-26 16:07:57
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -31,6 +31,7 @@
                   clearable
                   type="date"
                   style="width: 100%"
+                  :picker-options="returnDatePickerOptions"
                   placeholder="请选择客诉日期"
                 />
               </el-form-item>
@@ -119,7 +120,7 @@
                 <el-input
                   v-model="form.rootMatter"
                   clearable
-                  :disabled="form.status === 0"
+                  :disabled="form.status === 1"
                   placeholder="请输入问题根因"
                 />
               </el-form-item>
@@ -261,7 +262,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(1)"></div>
+                <div class="wrap-click"></div>
               </div>
               <el-form-item label="" prop="retester" label-width="0">
                 <el-select
@@ -287,7 +288,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(2)"></div>
+                <div class="wrap-click"></div>
               </div>
               <el-form-item label="" prop="classifiedBy" label-width="0">
                 <el-select
@@ -313,16 +314,9 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(3)"></div>
+                <div class="wrap-click"></div>
               </div>
-              <el-form-item
-                label=""
-                prop="handlerBy"
-                label-width="0"
-                v-if="
-                  !showName || showName == 'afterSale' || showName == 'step'
-                "
-              >
+              <el-form-item label="" prop="handlerBy" label-width="0">
                 <el-select
                   v-model="form.handlerBy"
                   placeholder="请选择"
@@ -346,14 +340,9 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(4)"></div>
+                <div class="wrap-click"></div>
               </div>
-              <el-form-item
-                label=""
-                prop="handlerType"
-                label-width="0"
-                v-if="!showName || showName == 'test' || showName == 'step'"
-              >
+              <el-form-item label="" prop="handlerType" label-width="0">
                 <el-select
                   v-model="form.handlerType"
                   placeholder="请选择"
@@ -377,14 +366,9 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(5)"></div>
+                <div class="wrap-click"></div>
               </div>
-              <el-form-item
-                label=""
-                prop="serviceBy"
-                label-width="0"
-                v-if="!showName || showName == 'sell' || showName == 'step'"
-              >
+              <el-form-item label="" prop="serviceBy" label-width="0">
                 <el-select
                   v-model="form.serviceBy"
                   placeholder="请选择"
@@ -408,7 +392,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click" @click="stateChange(6)"></div>
+                <div class="wrap-click"></div>
               </div>
             </template>
           </el-step>
@@ -427,7 +411,9 @@
         <el-upload-sortable
           v-model="form.video"
           :action="actionUrl"
-          :imgW="98"
+          :isVideo="true"
+          accept="video/mp4"
+          :imgW="150"
           :imgH="98"
         />
       </el-form-item>
@@ -532,15 +518,16 @@
       </template>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" :loading="isSubLoading" @click="submitForm"
-        >确 定</el-button
-      >
+      <el-button type="primary" :loading="isSubLoading" @click="submitForm">
+        确 定
+      </el-button>
       <el-button @click="close">取 消</el-button>
     </div>
   </el-dialog>
 </template>
   
-  <script>
+
+<script>
 import { saleSave, saleUpdate } from "@/api/third/sale";
 import { getCustomerList } from "@/api/order";
 import { computerNameList } from "@/api/third/fileConfig";
@@ -576,16 +563,7 @@ export default {
       isSubLoading: false,
       // 表单参数
       form: {
-        logisticsEntity: {
-          // returnDate: undefined,
-          // recipient: undefined,
-          // mailingNumber: undefined,
-          // mailingDepartment: undefined,
-          // phone: undefined,
-          // isPay: undefined,
-          // sender: undefined,
-          // address: undefined,
-        },
+        logisticsEntity: {},
       },
       // 客户数据
       customerNameData: {
@@ -597,6 +575,11 @@ export default {
       isCLoading: false,
       // 仪表型号
       computerOptions: [],
+      returnDatePickerOptions: {
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+      },
       // 表单校验
       rules: {
         returnDate: [
@@ -670,7 +653,7 @@ export default {
       return !!this.form.id;
     },
     isStatus() {
-      return this.isUpdateId && this.form.rootMatter !== "";
+      return this.isUpdateId && !this.Is_Empty(this.form.rootMatter);
     },
     isTitle() {
       return this.form.id ? "编辑售后" : "添加售后";
@@ -759,7 +742,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        logisticsEntity: {}
+        logisticsEntity: {},
       };
       this.resetForm("form");
     },
@@ -826,7 +809,7 @@ export default {
       width: 100%;
       height: 24px;
       z-index: 10;
-      cursor: pointer;
+      // cursor: pointer;
     }
 
     .el-step__description {

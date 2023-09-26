@@ -1,19 +1,41 @@
 <style lang="scss">
-@import './index.scss';
+@import "./index.scss";
 </style>
 
 <template>
   <div class="upload-queue">
-    <draggable v-model="imgList" @start="drag=true" @end="drag=false" @update="updateList(imgList)"
-      class="el-upload-list el-upload-list--picture-card">
+    <draggable
+      v-model="imgList"
+      @start="drag = true"
+      @end="drag = false"
+      @update="updateList(imgList)"
+      class="el-upload-list el-upload-list--picture-card"
+    >
       <transition-group>
-        <div class="el-upload-list__item" :style="imgListStyle" v-for="(item, index) in imgList" :key="index">
-          <el-image :src="item" fit="cover" class="el-upload-list__item-thumbnail" />
+        <div
+          class="el-upload-list__item"
+          :style="imgListStyle"
+          v-for="(item, index) in imgList"
+          :key="index"
+        >
+          <video class="video-box" v-if="isVideo" :src="item"></video>
+          <el-image
+            v-else
+            :src="item"
+            fit="cover"
+            class="el-upload-list__item-thumbnail"
+          />
           <span class="el-upload-list__item-actions">
-            <span class="el-upload-list__item-preview" @click="handlePreview(item)">
+            <span
+              class="el-upload-list__item-preview"
+              @click="handlePreview(item)"
+            >
               <i class="el-icon-zoom-in"></i>
             </span>
-            <span class="el-upload-list__item-delete" @click="handleRemove(item, index)">
+            <span
+              class="el-upload-list__item-delete"
+              @click="handleRemove(item, index)"
+            >
               <i class="el-icon-delete"></i>
             </span>
           </span>
@@ -27,16 +49,18 @@
       :multiple="multiple"
       v-if="imgList.length < max"
       :action="action"
+      :accept="accept"
       :show-file-list="false"
       :on-success="handleSuccess"
       :on-error="handleError"
       :before-upload="beforeUpload"
-      >
+    >
       <i class="el-icon-plus"></i>
     </el-upload>
 
-    <el-dialog :visible.sync="dialogVisible" append-to-body>
-      <img width="100%" :src="dialogImageUrl">
+    <el-dialog :visible.sync="dialogVisible" append-to-body top="2vh">
+      <video controls class="w100" v-if="isVideo" :src="dialogImageUrl" />
+      <img v-else width="100%" :src="dialogImageUrl" />
     </el-dialog>
   </div>
 </template>
@@ -45,39 +69,47 @@
 import draggable from "vuedraggable";
 
 export default {
-  name: 'ElUploadSortable',
+  name: "ElUploadSortable",
   components: { draggable },
   props: {
     imgW: {
       type: Number,
-      default: 148
+      default: 148,
     },
     imgH: {
       type: Number,
-      default: 148
+      default: 148,
     },
     max: {
       type: Number,
-      default: 15
+      default: 15,
     },
     action: {
       type: String,
-      default: 'https://jsonplaceholder.typicode.com/posts/'
+      default: "https://jsonplaceholder.typicode.com/posts/",
     },
     value: {
       type: String,
-      default: ""
+      default: "",
     },
     multiple: {
       type: Boolean,
-      default: false
+      default: false,
     },
     param: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
+    isVideo: {
+      type: Boolean,
+      default: false,
+    },
+    accept: {
+      type: String,
+      default: "image/jpeg, image/gif, image/png,image/bmp",
+    },
   },
-  data () {
+  data() {
     return {
       imgList: [],
       drag: false,
@@ -85,36 +117,39 @@ export default {
         animation: 200,
         group: "description",
         disabled: false,
-        ghostClass: "ghost"
+        ghostClass: "ghost",
       },
       dialogImageUrl: "",
-      dialogVisible: false
-    }
+      dialogVisible: false,
+    };
   },
   computed: {
     imgListStyle() {
       return {
-        width: this.imgW + 'px',
-        height: this.imgH + 'px'
-      }
+        width: this.imgW + "px",
+        height: this.imgH + "px",
+      };
     },
   },
   watch: {
     value(value) {
       this.transImgVal(value);
-    }
+    },
   },
   mounted() {
     this.transImgVal(this.value);
   },
   methods: {
     transImgVal(value) {
-      this.imgList = value ? value.split(',') : [];
+      this.imgList = value ? value.split(",") : [];
     },
-    updateList(list){
-      this.$emit('input', list.toString())
+    updateList(list) {
+      this.$emit("input", list.toString());
     },
     beforeUpload(file) {
+      if (this.isVideo) {
+        return true;
+      }
       const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
       const isLt2M = file.size / 1024 / 1024 < 2; // 2M
 
@@ -125,15 +160,16 @@ export default {
       }
 
       const maxLt = this.max === 1 && this.imgList.length > 0;
-      if(maxLt){
+      if (maxLt) {
         this.$message.error("只能上传一张图片，请删除后再上传!");
       }
+
       return isValidFormat && isLt2M && !maxLt;
     },
 
     handleSuccess(res) {
       this.imgList.push(res.data[0].url);
-      this.$emit('input', this.imgList.toString())
+      this.$emit("input", this.imgList.toString());
     },
 
     handleError() {
@@ -142,13 +178,13 @@ export default {
 
     handleRemove(file, index) {
       this.imgList.splice(index, 1);
-      this.$emit('input', this.imgList.toString())
+      this.$emit("input", this.imgList.toString());
     },
 
     handlePreview(url) {
       this.dialogImageUrl = url;
       this.dialogVisible = true;
-    }
-  }
-}
+    },
+  },
+};
 </script>

@@ -60,6 +60,7 @@
     </el-descriptions>
 
     <el-descriptions
+      v-if="isCustomerShow"    
       class="margin-top-sm"
       title="返回客户信息"
       direction="vertical"
@@ -181,8 +182,11 @@ export default {
       const { file, video, report } = this.detailInfo;
       return !(!file && !video && !report);
     },
+    isCustomerShow() {
+      return !this.Is_Empty(this.detailInfo.logisticsEntity)
+    },
     isReturnDate() {
-      const returnDate = this.detailInfo.logisticsEntity.returnDate;
+      const { returnDate } = this.detailInfo.logisticsEntity;
       return this.moment(returnDate).format("YYYY-MM-DD");
     },
     isTreat() {
