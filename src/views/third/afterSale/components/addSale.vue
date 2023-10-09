@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-09-26 16:07:57
+ * @LastEditTime: 2023-09-26 19:46:37
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -235,7 +235,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col v-if="isStatus">
+            <!-- <el-col v-if="isStatus">
               <el-form-item label="关闭问题" prop="status">
                 <el-switch
                   v-model="form.status"
@@ -246,7 +246,7 @@
                 >
                 </el-switch>
               </el-form-item>
-            </el-col>
+            </el-col> -->
           </el-row>
         </el-col>
       </el-row>
@@ -434,6 +434,7 @@
                 clearable
                 type="date"
                 style="width: 100%"
+                :picker-options="backDatePickerOptions"
                 placeholder="请选择返回日期"
               />
             </el-form-item>
@@ -579,6 +580,12 @@ export default {
         disabledDate(time) {
           return time.getTime() > Date.now();
         },
+      },
+      // 返回日期
+      backDatePickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now();
+        }
       },
       // 表单校验
       rules: {

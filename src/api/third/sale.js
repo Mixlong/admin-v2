@@ -109,3 +109,25 @@ export function afterHandleDetail(afterSaleId) {
         method: 'get'
     });
 }
+
+// 统计表 --- 当前状态
+export function afterStatusList() {
+    return request({
+        url: "/after/status/list",
+        method: "get"
+    })
+}
+// 统计表 --- 不良分布
+export function afterBadList() {
+    return request({
+        url: "/after/bad/list",
+        method: "get"
+    })
+}
+// 统计表 --- TOP问题排行
+export function afterTopList() {
+    return request({
+        url: "/after/top/list",
+        method: "get"
+    })
+}
