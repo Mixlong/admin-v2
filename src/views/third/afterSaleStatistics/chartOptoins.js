@@ -144,10 +144,15 @@ export default {
       allCustomerRankOption: {
         title: {
           text: "所有客户排行",
-          left: "center",
+          left: "left",
           textStyle: {
             color: "#fff",
+            fontSize: 14
           },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
         },
         tooltip: {
           trigger: "axis",
@@ -178,13 +183,21 @@ export default {
         ],
         yAxis: [
           {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
               formatter: "{value}",
-            },
+            }
           },
           {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
@@ -212,9 +225,7 @@ export default {
               show: true,
               position: "inside",
               color: "#fff",
-            },
-            tooltip: {
-              valueFormatter: (value) => `${value} %`
+              formatter: "{c}%",
             },
             data: [],
           },
@@ -224,10 +235,15 @@ export default {
       allProductRankOption: {
         title: {
           text: "所有产品排行",
-          left: "center",
+          left: "left",
           textStyle: {
             color: "#fff",
+            fontSize: 14
           },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
         },
         tooltip: {
           trigger: "axis",
@@ -258,6 +274,10 @@ export default {
         ],
         yAxis: [
           {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
@@ -265,6 +285,10 @@ export default {
             },
           },
           {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
@@ -292,9 +316,7 @@ export default {
               show: true,
               position: "inside",
               color: "#fff",
-            },
-            tooltip: {
-              valueFormatter: (value) => `${value} %`
+              formatter: "{c}%",
             },
             data: [],
           },
@@ -304,10 +326,15 @@ export default {
       allProblemRankOption: {
         title: {
           text: "所有问题排行",
-          left: "center",
+          left: "left",
           textStyle: {
             color: "#fff",
+            fontSize: 14
           },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
         },
         tooltip: {
           trigger: "axis",
@@ -338,6 +365,10 @@ export default {
         ],
         yAxis: [
           {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
@@ -345,6 +376,10 @@ export default {
             },
           },
           {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
             type: "value",
             axisLabel: {
               color: "#fff",
@@ -372,17 +407,834 @@ export default {
               show: true,
               position: "inside",
               color: "#fff",
+              formatter: "{c}%",
             },
-            tooltip: {
-              valueFormatter: (value) => `${value} %`
+            data: [],
+          },
+        ],
+      },
+
+      // top1问题 -- 产品排行
+      productRankTop1Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 问题排行
+      problemRankTop1Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 机型问题排行
+      modelProblemRankTop1Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+
+      // top2问题 -- 产品排行
+      productRankTop2Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 问题排行
+      problemRankTop2Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 机型问题排行
+      modelProblemRankTop2Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+
+      // top3问题 -- 产品排行
+      productRankTop3Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 问题排行
+      problemRankTop3Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 机型问题排行
+      modelProblemRankTop3Option: {
+        title: {
+          text: "",
+          left: "left",
+          textStyle: {
+            color: "#F56C6C",
+            fontSize: 14
+          },
+        },
+        grid: {
+          left: "9%",
+          right: "9%"
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          {
+            type: "category",
+            data: [],
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
             },
             data: [],
           },
         ],
       },
     };
-  },
-  created() {
-    console.log("我是echart 公共数据");
-  },
+  }
 };

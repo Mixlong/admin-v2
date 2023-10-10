@@ -1,6 +1,6 @@
 <template>
   <div class="app-container chart-box">
-    <el-form :model="queryParams" ref="queryForm" inline>
+    <!-- <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="客户名称" prop="customerName">
         <el-autocomplete
           v-model="queryParams.customerName"
@@ -49,13 +49,13 @@
           />
         </el-select>
       </el-form-item>
-      <!-- <el-form-item>
+      <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-      </el-form-item> -->
-    </el-form>
+      </el-form-item>
+    </el-form> -->
     <h2 class="text-white margin-bottom-lg">当前状态</h2>
     <el-row type="flex" :gutter="20">
       <el-col :span="6">
@@ -93,6 +93,54 @@
         <all-problem-rank :chartOption="allProblemRankOption" />
       </el-col>
     </el-row>
+
+    <h2 class="text-white margin-bottom-lg" style="margin-top: 150px">
+      TOP问题排行
+    </h2>
+    <el-row type="flex" :gutter="20">
+      <el-col :span="8">
+        <!-- 产品排行 -->
+        <product-rank-top1 :chartOption="productRankTop1Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 问题排行 -->
+        <problem-rank-top1 :chartOption="problemRankTop1Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 机型问题排行 -->
+        <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
+      </el-col>
+    </el-row>
+
+    <el-row class="margin-top" type="flex" :gutter="20">
+      <el-col :span="8">
+        <!-- 产品排行 -->
+        <product-rank-top2 :chartOption="productRankTop2Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 问题排行 -->
+        <problem-rank-top2 :chartOption="problemRankTop2Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 机型问题排行 -->
+        <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
+      </el-col>
+    </el-row>
+
+    <el-row class="margin-top" type="flex" :gutter="20">
+      <el-col :span="8">
+        <!-- 产品排行 -->
+        <product-rank-top3 :chartOption="productRankTop3Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 问题排行 -->
+        <problem-rank-top3 :chartOption="problemRankTop3Option" />
+      </el-col>
+      <el-col :span="8">
+        <!-- 机型问题排行 -->
+        <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -108,6 +156,18 @@ import allCustomerRank from "@/views/dashboard/commonChart";
 import allProductRank from "@/views/dashboard/commonChart";
 import allProblemRank from "@/views/dashboard/commonChart";
 
+import productRankTop1 from "@/views/dashboard/commonChart";
+import problemRankTop1 from "@/views/dashboard/commonChart";
+import modelRankTop1 from "@/views/dashboard/commonChart";
+
+import productRankTop2 from "@/views/dashboard/commonChart";
+import problemRankTop2 from "@/views/dashboard/commonChart";
+import modelRankTop2 from "@/views/dashboard/commonChart";
+
+import productRankTop3 from "@/views/dashboard/commonChart";
+import problemRankTop3 from "@/views/dashboard/commonChart";
+import modelRankTop3 from "@/views/dashboard/commonChart";
+
 export default {
   mixins: [commonData, chartOptions],
   components: {
@@ -118,6 +178,15 @@ export default {
     allCustomerRank,
     allProductRank,
     allProblemRank,
+    productRankTop1,
+    problemRankTop1,
+    modelRankTop1,
+    productRankTop2,
+    problemRankTop2,
+    modelRankTop2,
+    productRankTop3,
+    problemRankTop3,
+    modelRankTop3,
   },
   data() {
     return {
@@ -133,10 +202,10 @@ export default {
       },
     };
   },
-  computed: {},
   created() {
     this.getAfterStatusList();
     this.getAfterBadList();
+    this.getAfterTopList();
   },
   methods: {
     handleQuery() {},
@@ -191,7 +260,6 @@ export default {
       this.weekNewBadComplaintOption.xAxis.data = weekNewXData;
 
       this.weekNewBadComplaintOption.series[0].data = weekNewBadData;
-      console.log("我是父组件");
     },
     async getAfterBadList() {
       try {
@@ -243,6 +311,65 @@ export default {
         console.log(error);
       }
     },
+    async getAfterTopList() {
+      try {
+        const { data } = await afterTopList();
+
+        const top1CustomerName = data[0].customerName;
+        const top2CustomerName = data[1].customerName;
+        const top3CustomerName = data[2].customerName;
+
+        // top1
+        this.productRankTop1Option.title.text = `TOP1: ${top1CustomerName}产品排行`;
+        this.problemRankTop1Option.title.text = `${top1CustomerName}问题排行`;
+        this.modelProblemRankTop1Option.title.text = `${top1CustomerName}机型问题排行`;
+
+        const top1CategoryList = data[0].categoryList;
+        const top1QuestionList = data[0].questionList;
+        const top1ComputerList = data[0].computerList;
+
+        this.setTopChartData(top1CategoryList, this.productRankTop1Option);
+        this.setTopChartData(top1QuestionList, this.problemRankTop1Option);
+        this.setTopChartData(top1ComputerList, this.modelProblemRankTop1Option);
+
+
+        // top2
+        this.productRankTop2Option.title.text = `TOP2: ${top2CustomerName}产品排行`;
+        this.problemRankTop2Option.title.text = `${top2CustomerName}问题排行`;
+        this.modelProblemRankTop2Option.title.text = `${top2CustomerName}机型问题排行`;
+
+        const top2CategoryList = data[1].categoryList;
+        const top2QuestionList = data[1].questionList;
+        const top2ComputerList = data[1].computerList;
+
+        this.setTopChartData(top2CategoryList, this.productRankTop2Option);
+        this.setTopChartData(top2QuestionList, this.problemRankTop2Option);
+        this.setTopChartData(top2ComputerList, this.modelProblemRankTop2Option);
+
+
+        // top3
+        this.productRankTop3Option.title.text = `TOP3: ${top3CustomerName}产品排行`;
+        this.problemRankTop3Option.title.text = `${top3CustomerName}问题排行`;
+        this.modelProblemRankTop3Option.title.text = `${top3CustomerName}机型问题排行`;
+
+        const top3CategoryList = data[1].categoryList;
+        const top3QuestionList = data[1].questionList;
+        const top3ComputerList = data[1].computerList;
+
+        this.setTopChartData(top3CategoryList, this.productRankTop3Option);
+        this.setTopChartData(top3QuestionList, this.problemRankTop3Option);
+        this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option);
+      } catch (error) {
+        console.log(error);  
+      }
+    },
+    setTopChartData(dataList, options) {
+      dataList.forEach(({ name, num, percent }) => {
+        options.xAxis[0].data.push(name);
+        options.series[0].data.push(num);
+        options.series[1].data.push(percent.toFixed(2) * 100);
+      });      
+    }
   },
 };
 </script>
