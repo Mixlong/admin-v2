@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-14 13:47:31
- * @LastEditTime: 2021-06-16 10:56:24
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-08-08 14:42:02
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Description: In User Settings Edit
  * @FilePath: /fileConf-ui/src/api/pucs/index.js
  */
@@ -87,8 +87,7 @@ export function pucsState(data) {
 export function getFileName(data) {
   return request({
     url: '/file/' + data,
-    method: 'get',
-
+    method: 'get'
   });
 }
 

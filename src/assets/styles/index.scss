@@ -208,7 +208,7 @@ aside {
 }
 
 .text-center {
-  text-align: center;
+  text-align: center !important;
 }
 
 .text-right {
@@ -1181,6 +1181,7 @@ aside {
 
 .app-table-content,
 .app-container {
+  margin-left: 10px;
   margin-top: 10px;
   border-radius: 6px;
   overflow: hidden;
@@ -1436,4 +1437,23 @@ fieldset {
 
 .mlZero {
   margin-left: 0 !important;
+}
+
+.margin-right-noLast {
+  &:not(:last-child) {
+    margin-right: 5px;
+  }
+}
+
+.margin-bottom-noLast {
+  &:not(:last-child) {
+    margin-bottom: 5px;
+  }
+}
+
+.upload-img-box {
+  .el-upload-list__item {
+    width: 100px !important;
+    height: 100px !important;
+  }
 }

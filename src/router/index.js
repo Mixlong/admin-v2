@@ -1,10 +1,10 @@
-import Vue from 'vue';
-import Router from 'vue-router';
+import Vue from "vue";
+import Router from "vue-router";
 
 Vue.use(Router);
 
 /* Layout */
-import Layout from '@/layout';
+import Layout from "@/layout";
 
 /**
  * Note: 路由配置项
@@ -26,110 +26,165 @@ import Layout from '@/layout';
 
 // 公共路由
 export const constantRoutes = [
-    {
-        path: '/redirect',
-        component: Layout,
-        hidden: true,
-        children: [
-            {
-                path: '/redirect/:path(.*)',
-                component: resolve => require(['@/views/redirect'], resolve),
-            },
-        ],
-    },
-    {
-        path: '/login',
-        component: resolve => require(['@/views/login'], resolve),
-        hidden: true,
-    },
-    {
-        path: '/404',
-        component: resolve => require(['@/views/error/404'], resolve),
-        hidden: true,
-    },
-    {
-        path: '/401',
-        component: resolve => require(['@/views/error/401'], resolve),
-        hidden: true,
-    },
-    {
-        path: '/document',
-        component: resolve => require(['@/views/document/index'], resolve),
-        hidden: true,
-    },
-    {
-        path: '/survey',
-        name: 'survey',
-        component: resolve => require(['@/views/survey'], resolve),
-        hidden: true,
-    },
-    {
-        path: '',
-        component: Layout,
-        redirect: 'index',
-        children: [
-            {
-                path: 'index',
-                component: resolve => require(['@/views/index'], resolve),
-                name: '首页',
-                meta: { title: '首页', icon: 'dashboard', noCache: true, affix: true },
-            },
-        ],
-    },
-    {
-        path: '/user',
-        component: Layout,
-        hidden: true,
-        redirect: 'noredirect',
-        children: [
-            {
-                path: 'profile',
-                component: resolve =>
-                    require(['@/views/system/user/profile/index'], resolve),
-                name: 'Profile',
-                meta: { title: '个人中心', icon: 'user' },
-            },
-        ],
-    },
-    {
-        path: '/dict',
-        component: Layout,
-        hidden: true,
-        children: [
-            {
-                path: 'type/data/:dictId(\\d+)',
-                component: resolve => require(['@/views/system/dict/data'], resolve),
-                name: 'Data',
-                meta: { title: '字典数据', icon: '' },
-            },
-        ],
-    },
-    {
-        path: '/job',
-        component: Layout,
-        hidden: true,
-        children: [
-            {
-                path: 'log',
-                component: resolve => require(['@/views/monitor/job/log'], resolve),
-                name: 'JobLog',
-                meta: { title: '调度日志' },
-            },
-        ],
-    },
-    {
-        path: "/addOrUpdate",
-        component: Layout,
-        hidden: true,
-        children: [
-            {
-                path: 'CommonPage',
-                component: resolve => require(['@/views/commonPage'], resolve),
-                name: 'CommonPage',
-                meta: { title: '' },
-            },
-        ]
-    }
+  {
+    path: "/redirect",
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: "/redirect/:path(.*)",
+        component: (resolve) => require(["@/views/redirect"], resolve),
+      },
+    ],
+  },
+  {
+    path: "/login",
+    component: (resolve) => require(["@/views/login"], resolve),
+    hidden: true,
+  },
+  {
+    path: "/404",
+    component: (resolve) => require(["@/views/error/404"], resolve),
+    hidden: true,
+  },
+  {
+    path: "/401",
+    component: (resolve) => require(["@/views/error/401"], resolve),
+    hidden: true,
+  },
+  {
+    path: "/document",
+    component: (resolve) => require(["@/views/document/index"], resolve),
+    hidden: true,
+  },
+  {
+    path: "/survey",
+    name: "survey",
+    component: (resolve) => require(["@/views/survey"], resolve),
+    hidden: true,
+  },
+  {
+    path: "/stsDeploy",
+    name: "stsDeploy",
+    component: (resolve) => require(["@/views/stsDeploy"], resolve),
+    hidden: true
+  },
+  {
+    path: "",
+    component: Layout,
+    redirect: "index",
+    children: [
+      {
+        path: "index",
+        component: (resolve) => require(["@/views/index"], resolve),
+        name: "首页",
+        meta: { title: "首页", icon: "dashboard", noCache: true, affix: true },
+      },
+    ],
+  },
+  {
+    path: "/tool",
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: "build/index",
+        component: () => import("@/views/tool/build/index"),
+        name: "FormBuild",
+        meta: { title: "表单设计", icon: "" },
+      },
+    ],
+  },
+  {
+    path: "/user",
+    component: Layout,
+    hidden: true,
+    redirect: "noredirect",
+    children: [
+      {
+        path: "profile",
+        component: (resolve) =>
+          require(["@/views/system/user/profile/index"], resolve),
+        name: "Profile",
+        meta: { title: "个人中心", icon: "user" },
+      },
+    ],
+  },
+  {
+    path: "/dict",
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: "type/data/:dictId(\\d+)",
+        component: (resolve) => require(["@/views/system/dict/data"], resolve),
+        name: "Data",
+        meta: { title: "字典数据", icon: "" },
+      },
+    ],
+  },
+  {
+    path: "/job",
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: "log",
+        component: (resolve) => require(["@/views/monitor/job/log"], resolve),
+        name: "JobLog",
+        meta: { title: "调度日志" },
+      },
+    ],
+  },
+  {
+    path: "/addOrUpdate",
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: "CommonPage",
+        component: (resolve) => require(["@/views/commonPage"], resolve),
+        name: "CommonPage",
+        meta: { title: "" },
+      },
+    ],
+  },
+
+  // 
+  {
+    path: '/tool/gen-edit',
+    component: Layout,
+    hidden: true,
+    permissions: ['tool:gen:edit'],
+    children: [
+      {
+        path: 'index/:tableId(\\d+)',
+        component: () => import('@/views/tool/gen/editTable'),
+        name: 'GenEdit',
+        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
+      }
+    ]
+  },
+  {
+    path: '/workflow/process',
+    component: Layout,
+    hidden: true,
+    permissions: ['workflow:process:query'],
+    children: [
+      {
+        path: 'start/:deployId([\\w|\\-]+)',
+        component: () => import('@/views/workflow/work/start'),
+        name: 'WorkStart',
+        meta: { title: '发起流程', icon: '' }
+      },
+      {
+        path: 'detail/:procInsId([\\w|\\-]+)',
+        component: () => import('@/views/workflow/work/detail'),
+        name: 'WorkDetail',
+        meta: { title: '流程详情', activeMenu: '/work/own' }
+      }
+    ]
+  },
 ];
 
 /**
@@ -158,7 +213,7 @@ export const constantRoutes = [
 // ]
 
 export default new Router({
-    mode: 'history', // 去掉url中的#
-    scrollBehavior: () => ({ y: 0 }),
-    routes: constantRoutes,
+  mode: "history", // 去掉url中的#
+  scrollBehavior: () => ({ y: 0 }),
+  routes: constantRoutes,
 });

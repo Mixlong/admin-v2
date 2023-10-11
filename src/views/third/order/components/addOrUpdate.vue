@@ -227,7 +227,7 @@
       </el-form>
       <div class="text-center margin-top-lg">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="$router.push('/www/order')">取 消</el-button>
+        <el-button @click="$router.go(-1)">取 消</el-button>
       </div>
     </el-card>
   </div>

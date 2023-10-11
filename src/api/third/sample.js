@@ -48,6 +48,43 @@ export function sampleState(query) {
   });
 }
 
+// 获取送样单号列表
+export function sampleNumberList(params) {
+  return request({
+    url: '/sample/number/list',
+    method: 'get',
+    params
+  });
+}
+
+// 获取送样单号列表
+export function sampleNumber() {
+  return request({
+    url: '/sample/number',
+    method: 'get'
+  });
+}
+
+
+export function sampleConvertProd(data) {
+  return request({
+    url: '/sample/convert/product',
+    method: 'post',
+    data
+  });
+}
+
+
+
+// 根据品类名称获取型号
+export function sampleCategoryName(params) {
+  return request({
+    url: '/sample/category/name',
+    method: 'get',
+    params
+  });
+}
+
 // 线缆台账
 export function sampleCable_list(params) {
   return request({

@@ -33,7 +33,7 @@
         </div>
         <ul class="menu">
           <li v-for="(tag, i) in cRoles(content.roles)" :key="i">
-            <a class="fa fa-facebook" v-if="i == 6" @mouseover="mouseOver">
+            <a v-if="i == 6" @mouseover="mouseOver">
               <div
                 class="flex align-center justify-center"
                 style="
@@ -50,7 +50,7 @@
               </div>
             </a>
             <div v-else class="item" effect="dark" :content="tag.name">
-              <a class="fa fa-facebook">
+              <a>
                 <el-image
                   style="
                     min-width: 40px;

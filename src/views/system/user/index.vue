@@ -164,6 +164,10 @@
           <el-input v-model="form.nickName" placeholder="请输入用户名称" />
         </el-form-item>
 
+        <el-form-item label="用户手机号" prop="phonenumber">
+          <el-input v-model="form.phonenumber" type="number" placeholder="请输入用户手机号" />
+        </el-form-item>
+
         <el-form-item
           v-if="form.userId == undefined"
           label="用户密码"
@@ -334,7 +338,7 @@ export default {
         // 是否更新已经存在的用户数据
         updateSupport: 0,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken() },
+        // headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/system/user/importData",
       },

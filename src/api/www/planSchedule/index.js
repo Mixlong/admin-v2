@@ -84,7 +84,13 @@ export function sendProd(id) {
   })
 }
 
-
+// 获取资料清单
+export function proSecDetail(id) {
+  return request({
+    url: "/production/scheduling/create/detail/product/" + id,
+    method: 'get'
+  })
+}
 
 
 

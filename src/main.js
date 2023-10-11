@@ -1,9 +1,18 @@
+/*
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:03
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-07-26 09:58:09
+ * @FilePath: \FILECONF-UI\src\main.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import Vue from 'vue';
 
 import Cookies from 'js-cookie';
 import App from './App';
 import store from '@/store';
 import router from '@/router';
+import plugins from './plugins' // plugins
 
 // import './assets/styles/element-variables.scss';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -33,6 +42,8 @@ Vue.prototype.msgInfo = function (msg) {
 };
 Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'mini', zIndex: 3000 };
 Vue.config.productionTip = false;
+
+Vue.use(plugins)
 
 // Vue.use(VueNativeSock, WS, {
 //   // 启用Vuex集成,store的值为你的vuex
@@ -69,11 +80,11 @@ Vue.config.productionTip = false;
 // });
 
 new Vue({
-  el: '#app',
+  el: "#app",
   router,
   store,
   created() {
-    Window.Vue = Vue
+    window.Vue = Vue
   },
   render: h => h(App)
-});
+})

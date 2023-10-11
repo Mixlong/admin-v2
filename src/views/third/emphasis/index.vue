@@ -1,147 +1,269 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :inline="true">
-      <el-row>
-        <el-col :span="24" class="margin-bottom-xs">
-          <div class="fr">
-<!--            <el-checkbox v-model="checked" @change="getList" >-->
-<!--              关联我的-->
-<!--            </el-checkbox>-->
-            <el-button
-              type="primary"
-              icon="el-icon-plus"
-              size="mini"
-              @click="handleAdd"
-              class="margin-left"
-              >
-              新增
-            </el-button>
-          </div>
-        </el-col>
-      </el-row>
+    <el-form ref="queryForm" :model="queryParams" :inline="true">
+      <el-form-item label="责任人" prop="createUser">
+        <el-select
+          v-model="queryParams.createUser"
+          clearable
+          placeholder="请选择责任人"
+        >
+          <el-option
+            v-for="(item, index) in pmDictListOptions"
+            :label="item.userName"
+            :value="+item.userId"
+            :key="index"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="完成状态：" prop="state">
+        <el-select
+          v-model="queryParams.state"
+          size="mini"
+          clearable
+          placeholder="请选择完成状态"
+        >
+          <el-option label="未完成" value="0" />
+          <el-option label="已完成" value="1" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重 置
+        </el-button>
+        <el-form-item prop="isMy">
+          <el-checkbox
+            class="margin-left-sm"
+            v-model="queryParams.isMy"
+            true-label="1"
+            false-label="0"
+            @change="handleQuery"
+          >
+            只看我的
+          </el-checkbox>
+        </el-form-item>
+      </el-form-item>
+      <el-button
+        class="fr"
+        type="primary"
+        icon="el-icon-plus"
+        size="mini"
+        @click="handleAdd"
+      >
+        新增
+      </el-button>
     </el-form>
 
     <el-table
+      v-loading="loading"
       ref="elTable"
-      class="sort-table emphasis-sort-table"
+      class="sort-table"
       :data="homeEmphasisLists"
-      :height="tableHeight(+80)"
-      :row-class-name="tableRowClassName"
-      @cell-click="cellClick"
       border
     >
-      <el-table-column
-        prop="projectName"
-        label="项目名称"
-        align="center"
-        width="250"
-        header-align="center"
-      >
-        <template slot-scope="scope">
-          <div v-html="scope.row.projectName"></div>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="customer"
-        label="客户"
-        align="left"
-        width="200"
-        header-align="center"
-      >
-        <template slot-scope="scope">
-          <div v-html="scope.row.customer"></div>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="type"
-        label="类型"
-        align="left"
-        width="200"
-        header-align="center"
-      >
-        <template slot-scope="scope">
-          <div v-html="scope.row.type"></div>
-        </template>
-      </el-table-column>
+      <el-table-column prop="item" label="事项" align="center" width="160" />
       <el-table-column
         prop="content"
-        label="工作内容"
-        align="left"
+        label="具体工作内容及要求"
         header-align="center"
       >
         <template slot-scope="scope">
-          <div v-html="scope.row.content"></div>
+          <div class="content_style" v-html="scope.row.content"></div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="result" label="完成结果" header-align="center">
+        <span slot-scope="scope" v-html="scope.row.result"></span>
+      </el-table-column>  
+      <el-table-column
+        prop="planTime"
+        label="计划完成时间"
+        align="center"
+        width="90"
+      >
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.planTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.planTime, "{h}:{i}:{s}") }}
         </template>
       </el-table-column>
       <el-table-column
-        prop="workPlan"
-        label="计划"
-        align="left"
-        header-align="center"
+        prop="completeTime"
+        label="实际完成时间"
+        align="center"
+        width="90"
       >
         <template slot-scope="scope">
-          <div v-html="scope.row.workPlan"></div>
+          {{ parseTime(scope.row.completeTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.completeTime, "{h}:{i}:{s}") }}
         </template>
       </el-table-column>
-
+      <el-table-column prop="state" label="完成状态" align="center" width="80">
+        <template slot-scope="scope">
+          <div class="flex flex-direction align-center">
+            <el-tag
+              class="margin-bottom-xs"
+              type="danger"
+              v-if="!isPostpone(scope.row.planTime) && scope.row.state === 0"
+            >
+              未完成
+            </el-tag>
+            <el-tag
+              class="margin-bottom-xs"
+              type="success"
+              v-if="scope.row.state === 1"
+              >已完成</el-tag
+            >
+            <el-tag
+              type="danger"
+              v-if="isPostpone(scope.row.planTime) && scope.row.state === 0"
+            >
+              已延期
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="nickName" label="责任人" align="center" width="80">
+        <template slot-scope="scope">
+          <el-tag>
+            {{ scope.row.nickName }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="配合责任人" align="center" width="100">
+        <template slot-scope="scope">
+          <div :style="tagStyle">
+            <el-tag v-for="item in scope.row.list" :key="item.id">
+              {{ item.nickName }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="抄送人员" align="center" width="100">
+        <template slot-scope="scope">
+          <div :style="tagStyle">
+            <el-tag v-for="item in scope.row.copyList" :key="item.id">
+              {{ item.nickName }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="createBy"
         label="创建人"
         align="center"
-        width="80"
+        width="70"
       />
       <el-table-column
-        prop="content"
-        label="关联人员"
+        prop="createTime"
+        label="创建时间"
         align="center"
-        width="100"
+        width="90"
       >
-        <!-- <template slot-scope="scope">
-          <el-tooltip
-            class="item"
-            effect="dark"
-            :content="fnUserName(scope.row.userList)"
-            placement="top-start"
-          >
-            <el-tag class="tag-style-index" >
-              {{ fnUserName(scope.row.userList) }}
-            </el-tag>
-          </el-tooltip>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="80">
         <template slot-scope="scope">
-          <Tooltip
-            v-if="checkRole(['sys_admin', 'admin']) || scope.row.createUser == userId"
-            icon="el-icon-edit"
-            content="编辑"
-            @click="handleUpdate(scope.row)"
-          />
-          <Tooltip
-            v-if="checkRole(['sys_admin', 'admin']) || scope.row.createUser == userId"
-            icon="el-icon-delete"
-            :class="['text-red']"
-            content="删除"
-            @click="handleDelete(scope.row)"
-          />
+          {{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}
+          <br />
+          {{ parseTime(scope.row.createTime, "{h}:{i}:{s}") }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="60">
+        <template slot-scope="scope">
+          <div class="flex flex-direction align-center">
+            <template v-if="scope.row.state === 0">
+              <Tooltip
+                v-if="scope.row.createBy === nickName"
+                icon="el-icon-edit"
+                content="编辑"
+                @click="handleUpdate(scope.row)"
+              />
+              <Tooltip
+                class="mlZero"
+                v-if="+scope.row.createUser === userId"
+                icon="el-icon-check"
+                content="完成任务"
+                @click="handleComplete(scope.row)"
+              />
+            </template>
+            <Tooltip
+              v-if="scope.row.createBy === nickName"
+              icon="el-icon-delete"
+              :class="['text-red', 'mlZero']"
+              content="删除"
+              @click="handleDelete(scope.row)"
+            />
+          </div>
         </template>
       </el-table-column>
     </el-table>
 
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
+
     <Update
+      ref="Update"
       :visible.sync="openUpdate"
       :pmDictListOptions="pmDictListOptions"
-      :stateOptions="stateOptions"
-      :rowUpdate="rowUpdate"
     />
+
+    <el-dialog
+      title="确定该任务完成吗？"
+      width="600px"
+      :visible.sync="isResultVisible"
+      center
+    >
+      <el-form
+        ref="resForm"
+        :model="resForm"
+        :rules="rules"
+        label-position="top"
+      >
+        <el-form-item label="完成结果" prop="result">
+          <tinymce
+            v-if="isResultVisible"
+            v-model="resForm.result"
+            height="250"
+            placeholder="请输入完成结果"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="isResultVisible = false">
+          取 消
+        </el-button>
+        <el-button
+          size="small"
+          type="primary"
+          :loading="isResLoading"
+          @click="onSubmit"
+        >
+          确 定
+        </el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { emphasisList, emphasisDel, emphasisSort } from "@/api/third/emphasis";
+import {
+  emphasisList,
+  emphasisDel,
+  emphasislogComplete,
+} from "@/api/third/emphasis";
 import Sortable from "sortablejs";
 import { mapGetters } from "vuex";
-import { memberDictUser } from "@/api/system/user";
+import { dutyUserList } from "@/api/system/user";
 
 import Update from "@/views/third/emphasis/components/update";
 
@@ -149,312 +271,122 @@ export default {
   components: {
     Update,
     Sortable,
+    tinymce: () => import("@/views/components/Editor"),
   },
-
-  filters: {},
   data() {
     return {
-      form: {},
-      urls: [],
       // 遮罩层
-      loading: true,
-      authDialogVisible: false,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
+      loading: false,
+      isResultVisible: false,
       // 总条数
       total: 0,
       homeEmphasisLists: [],
-      homeEmphasisList: [],
       pmDictListOptions: [],
-      stateOptions: [
-        {
-          key: "进行中",
-          value: 1,
-        },
-        {
-          key: "已完成",
-          value: 2,
-        },
-
-        {
-          key: "暂停",
-          value: 3,
-        },
-        {
-          key: "已取消",
-          value: 4,
-        },
-      ],
       openUpdate: false,
-      logRow: {},
-      rowUpdate: {},
-      checked: false,
+      isResLoading: false,
+      resForm: {
+        result: "",
+      },
+      rules: {
+        result: [
+          { required: true, message: "请输入完成结果", trigger: "blur" },
+        ],
+      },
+      // 查询参数
+      queryParams: {
+        p: 1,
+        l: 10,
+        state: "",
+        isMy: 0,
+      },
     };
   },
   computed: {
-    ...mapGetters(["userId"]),
+    ...mapGetters(["userId", "nickName"]),
+    isPostpone() {
+      return (planTime) => {
+        return planTime < +new Date();
+      };
+    },
+    tagStyle() {
+      return {
+        display: "grid",
+        "grid-template-columns": "1fr",
+        "grid-row-gap": "5px",
+      };
+    },
+  },
+  watch: {
+    "resForm.result"(val) {
+      if (val) {
+        this.clearValidateItem("resForm", "result");
+      }
+    },
   },
   mounted() {
-    this.checked =
-    localStorage.getItem("home-checked") == "true" ? true : false || false;
-    memberDictUser().then((response) => {
-      if (response.code === 200) {
-        this.pmDictListOptions = response.data;
-      }
-      this.getList();
+    dutyUserList().then((res) => {
+      this.pmDictListOptions = res.data;
     });
+    this.getList();
   },
   methods: {
-    getData() {
-      //审批任务
-      taskConfig().then((res) => {
-        this.configList = res.data;
-      });
-      //售后任务
-      taskSale().then((res) => {
-        let { data } = res;
-        this.saleList = data;
-      });
-      //送样任务
-      taskSample().then((res) => {
-        this.sampleList = res.data;
-      });
-      //项目任务
-      taskProject().then((res) => {
-        let { data } = res;
-        this.projectList = data;
-      });
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.p = 1;
+      this.getList();
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.handleQuery();
     },
     getList() {
-      //重点事项
-      let { checked } = this;
-
-      emphasisList().then((res) => {
-        let { data } = res;
-
-        if (checked) {
-          let list = [];
-          for (let key of data) {
-            if (
-              key.userList.findIndex((item) => item.userId == this.userId) > -1
-            ) {
-              list.push(key);
-            }
-          }
-          this.homeEmphasisList = list;
-        } else {
-          this.homeEmphasisLists = data
-          this.homeEmphasisList = data;
-        }
-
-        let { idx } = this.$route.query;
-        if (idx) {
-          setTimeout(
-            function () {
-              this.$refs.elTable.bodyWrapper.scrollTop = $(
-                ".emphasis-sort-table table tbody tr:nth-child(" + idx + ")"
-              ).position().top;
-            }.bind(this),
-            50
-          );
-        }
-        this.initSort();
-        localStorage.setItem("home-checked", checked);
+      this.loading = true;
+      emphasisList(this.queryParams).then((res) => {
+        const { list, total } = res.data;
+        this.homeEmphasisLists = list;
+        this.total = total;
+        this.loading = false;
       });
     },
-    initSort() {
-      if (this.checkRole(["sys_admin", "admin"])) {
-        const tbody = document.querySelector(
-          ".sort-table .el-table__body-wrapper tbody"
-        );
-        let _this = this;
-        new Sortable(tbody, {
-          onEnd: function (e) {
-            let list = Object.assign([], _this.homeEmphasisList);
-            list.splice(e.newIndex, 0, list.splice(e.oldIndex, 1)[0]);
-            emphasisSort({
-              idList: list.map((item) => item.id),
-              sort: 2,
-            }).then((res) => {});
-          },
-        });
-      }
+    // 完成任务
+    handleComplete(row) {
+      this.isResultVisible = true;
+      this.resForm.result = "";
+      this.resForm = { ...this.resForm, ...row };
     },
-
-    replaceHtml(str) {
-      if (str) {
-        return str.replace(/<[^<>]+>/g, "").replace(/&nbsp;/gi, "");
-      }
-      return "";
-    },
-    jumpMyTask() {
-      this.$router.push({
-        path: "/prodData/myTask",
-      });
-    },
-    jump() {
-      this.$router.push({
-        path: "/productData/fileConfig",
-        query: {
-          status: 1,
-        },
-      });
-    },
-    fnUserName(list, id) {
-      let value = "";
-      for (let key of list) {
-        let findData = this.pmDictListOptions.filter(
-          (item) => item.dictValue == key.userId
-        );
-        if (findData.length) {
-          value += "、" + findData[0].dictLabel;
+    onSubmit() {
+      this.$refs["resForm"].validate((valid) => {
+        if (valid) {
+          this.isResLoading = true;
+          emphasislogComplete(this.resForm)
+            .then(() => {
+              this.getList();
+              this.msgSuccess("操作成功");
+            })
+            .finally(() => {
+              this.isResultVisible = false;
+              this.isResLoading = false;
+            });
         }
-      }
-      return value ? value.slice(1) : "";
-    },
-    userName(id) {
-      let findData = this.pmDictListOptions.filter(
-        (item) => item.dictValue == id
-      );
-      if (findData.length) {
-        return findData[0].dictLabel;
-      }
-      return "admin";
-    },
-    fnStateName(row) {
-      let findData = this.stateOptions.filter(
-        (item) => item.value == row.state
-      );
-      if (findData.length) {
-        return findData[0].key;
-      }
-      return "";
-    },
-    /**跳转过里添加高亮 */
-    tableRowClassName({ row, rowIndex }) {
-      let { idx } = this.$route.query;
-      if (rowIndex == idx) {
-        return "warning-row";
-      }
-    },
-    progressHasHoverClass({ row, column, rowIndex, columnIndex }) {
-      let className = "";
-      if (this.checkRole(["task_director", "admin"])) {
-        if (column.label == "日志") {
-          className = "showIcon";
-        }
-      }
-      if (column.label == "状态") {
-        var arr = ["text-blue", "text-green", "text-gray", "text-gray"];
-        className = arr[row.state - 1];
-      }
-      let curAr = ["项目名称", "客户", "类型", "工作内容", "计划", "创建人", "关联人员"];
-
-      let isAuth =
-        this.checkRole(["sys_admin", "admin"]) || row.createUser == this.userId;
-      if (isAuth) {
-        if (curAr.indexOf(column.label) > -1) {
-          className += "  pointer";
-        }
-      }
-      return className;
-    },
-    cellClick(row, column, cell, event) {
-      let isAuth =
-        this.checkRole(["sys_admin", "admin"]) || row.createUser == this.userId;
-      switch (column.label) {
-        case "事项":
-          if (isAuth) {
-            this.openUpdate = true;
-            this.rowUpdate = row;
-          }
-          break;
-        case "目标":
-          if (isAuth) {
-            this.openUpdate = true;
-            this.rowUpdate = row;
-          }
-          break;
-        case "内容":
-          if (isAuth) {
-            this.openUpdate = true;
-            this.rowUpdate = row;
-          }
-          break;
-        case "状态":
-          if (isAuth) {
-            this.openUpdate = true;
-            this.rowUpdate = row;
-          }
-          break;
-        case "关联人员":
-          if (isAuth) {
-            this.openUpdate = true;
-            this.rowUpdate = row;
-          }
-          break;
-        case "日志":
-          this.logRow = row;
-          this.openLog = true;
-          break;
-        default:
-          break;
-      }
-    },
-    saleRowClick(row) {
-      this.$router.push({
-        path: "/prodData/afterSale",
-        query: {
-          name: row.product,
-        },
       });
-    },
-    rowStyle() {
-      return { cursor: "pointer" };
-    },
-    jumpProject(row) {
-      this.$router.push({
-        path: "/prodData/govern",
-        query: {
-          id: row.id,
-        },
-      });
-    },
-    /**判断履历进展为当日显示高亮红色 */
-    difference(endTime) {
-      let dateBegin = new Date(endTime);
-      let dateEnd = new Date();
-      let dateDiff = dateEnd.getTime() - dateBegin.getTime(); //时间差的毫秒数
-      let dayDiff = Math.floor(dateDiff / (24 * 3600 * 1000)); //计算出相差天数
-      let leave1 = dateDiff % (24 * 3600 * 1000); //计算天数后剩余的毫秒数
-      let hours = Math.floor(leave1 / (3600 * 1000)); //计算出小时数
-      //计算相差分钟数
-      let leave2 = leave1 % (3600 * 1000); //计算小时数后剩余的毫秒数
-      let minutes = Math.floor(leave2 / (60 * 1000)); //计算相差分钟数
-      //计算相差秒数
-      let leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
-      let seconds = Math.round(leave3 / 1000);
-      let className = "";
-      if (dayDiff <= 3) {
-        className = "text-red";
-      }
-      return className;
     },
     handleAdd() {
       this.openUpdate = true;
-      this.rowUpdate = null;
+      this.$refs.Update.reset();
+      this.$refs.Update.title = "新增重点事项";
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$confirm("是否删除" + '"' + +row.projectName + '"的数据项?', "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
+      this.$confirm(
+        "是否删除" + '"' + +row.projectName + '"的数据项?',
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
         .then(function () {
           return emphasisDel(row.id);
         })
@@ -463,81 +395,28 @@ export default {
           this.msgSuccess("删除成功");
         });
     },
-    handleUpdate(row, showName, title) {
+    handleUpdate(row) {
+      this.openUpdate = true;
       this.$refs.Update.reset();
-      this.$refs.Update.dialogVisible = true;
-      this.$refs.Update.form = Object.assign({}, row);
-      this.$refs.Update.showName = showName;
-      this.$refs.Update.title = title == undefined ? "售后修改" : title;
+      const copyRow = Object.assign({}, row);
+      const { list, copyList } = row;
+      if (list && list.length) {
+        copyRow.list = list.map((item) => item.userId);
+      }
+      if (copyList && copyList.length) {
+        copyRow.copyList = copyList.map((item) => item.userId);
+      }
+      this.$refs.Update.form = copyRow;
+      this.$refs.Update.title = "修改重点事项";
     },
   },
 };
 </script>
-<style lang="scss"  scope >
-.tag-style-index {
-  // line-height: normal;
-  // height: auto;
-  // min-height: 28px !important;
-  // white-space: normal !important;
-  // display: flex;
-  // align-items: center;
-  // justify-content: center;
-  max-width: 80px;
-  white-space: normal !important;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.emphasis-sort-table {
-  .el-table__body tr:hover > td {
-    background-color: transparent;
-  }
-  .warning-row {
-    animation: twinkling 5s ease-in-out;
-  }
-}
-.auth {
-  text-align: center;
-  margin-bottom: 10px;
-}
-.finish-row td,
-.finish-row:hover td {
-  background-color: rgba(155, 216, 148, 0.3) !important;
-}
-@keyframes twinkling {
-  0% {
-    // background: #fbbd08;
-    // box-shadow: 0 0 0px 0px #fbbd08;
-    box-shadow: inset 0px 15px 30px -15px #fbbd08,
-      inset 0px -15px 30px -15px #fbbd08;
-  }
-  15% {
-    box-shadow: none;
-  }
-  30% {
-    box-shadow: inset 0px 15px 30px -15px #fbbd08,
-      inset 0px -15px 30px -15px #fbbd08;
-  }
-  45% {
-    box-shadow: none;
-  }
-  60% {
-    box-shadow: inset 0px 15px 30px -15px #fbbd08,
-      inset 0px -15px 30px -15px #fbbd08;
-  }
-
-  75% {
-    box-shadow: none;
-  }
-  // 80% {
-  //   box-shadow: inset 0px 15px 30px -15px #fbbd08,
-  //     inset 0px -15px 30px -15px #fbbd08;
-  // }
-  100% {
-    box-shadow: none;
+<style lang="scss" scoped>
+.sort-table {
+  .content_style {
+    max-height: 350px;
+    overflow-y: auto;
   }
 }
 </style>

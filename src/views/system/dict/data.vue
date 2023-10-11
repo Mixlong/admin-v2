@@ -111,7 +111,21 @@
     >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="字典编码" align="center" prop="dictCode" />
-      <el-table-column label="字典标签" align="center" prop="dictLabel" />
+      <el-table-column label="字典标签" align="center" prop="dictLabel">
+        <template slot-scope="scope">
+          <span
+            v-if="scope.row.listClass == '' || scope.row.listClass == 'default'"
+          >
+            {{ scope.row.dictLabel }}
+          </span>
+          <el-tag
+            v-else
+            :type="scope.row.listClass == 'primary' ? '' : scope.row.listClass"
+          >
+            {{ scope.row.dictLabel }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="字典键值" align="center" prop="dictValue" />
       <el-table-column label="字典排序" align="center" prop="dictSort" />
       <el-table-column
@@ -195,6 +209,16 @@
             :min="0"
           />
         </el-form-item>
+        <el-form-item label="回显样式" prop="listClass">
+          <el-select v-model="form.listClass">
+            <el-option
+              v-for="item in listClassOptions"
+              :key="item.value"
+              :label="item.label + '(' + item.value + ')'"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio
@@ -256,6 +280,33 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 数据标签回显样式
+      listClassOptions: [
+        {
+          value: "default",
+          label: "默认",
+        },
+        {
+          value: "primary",
+          label: "主要",
+        },
+        {
+          value: "success",
+          label: "成功",
+        },
+        {
+          value: "info",
+          label: "信息",
+        },
+        {
+          value: "warning",
+          label: "警告",
+        },
+        {
+          value: "danger",
+          label: "危险",
+        },
+      ],
       // 状态数据字典
       statusOptions: [],
       // 类型数据字典

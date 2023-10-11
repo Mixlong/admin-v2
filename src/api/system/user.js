@@ -9,6 +9,26 @@ export function listUser(query) {
     params: query,
   });
 }
+
+// 查询用户列表，用于流程里的用户选择
+export function selectUser(query) {
+  return request({
+    // url: '/system/user/selectUser',
+    url: '/system/user/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询部门下拉树结构
+export function deptTreeSelect() {
+  return request({
+    // url: '/system/user/deptTree',
+    url: '/system/dept/treeselect',
+    method: 'get'
+  })
+}
+
 /**
  * 2021-06-10
  * 原来接口查询是项目经理，现在换成查询所有用户，返回前端字段不同，避免批量处理，直接重写字段名称 
@@ -16,8 +36,6 @@ export function listUser(query) {
 export function memberDictUser() {
   return new Promise((resolve) => {
     request({
-      // url: '/system/user/member/dict',
-      // url: '/system/user/list/dict',
       url: '/system/user/list/user',
       method: 'get',
     }).then(res => {
@@ -31,6 +49,13 @@ export function memberDictUser() {
       }
       resolve(res)
     });
+  })
+}
+
+export function dutyUserList() {
+  return request({
+    url: "/system/user/list/dict",
+    method: "get"
   })
 }
 

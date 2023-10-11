@@ -48,7 +48,7 @@
           @keyup.enter.native="handleQuery"
         ></el-input>
       </el-form-item>
-      <el-form-item label="SN" prop="status">
+      <el-form-item label="SN" prop="sn">
         <el-input
           style="max-width: 130px"
           v-model="queryParams.sn"
@@ -291,7 +291,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 10,
         category: "",
         model: "",
         order: "",
@@ -335,11 +335,9 @@ export default {
       timeVal: "",
     };
   },
-  created() {
-    const { orderId } = this.$route.query;
-    if (orderId) {
-      this.queryParams.order = orderId;
-    }
+  created(){
+    const { sn } = this.$route.query;
+    this.queryParams.sn = sn;
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -531,7 +529,7 @@ export default {
       this.dateRange = [];
       this.queryParams = {
         p: 1,
-        l: 20,
+        l: 10,
       };
       this.resetForm("queryForm");
       this.handleQuery();

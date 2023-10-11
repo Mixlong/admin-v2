@@ -14,50 +14,54 @@
       :rules="rules"
       label-width="95px"
       @submit.native.prevent
-      class="form-data-inline"
+      class="form-data-inline"  
       inline
     >
-      <el-form-item label="系列名称:" prop="name">
-        <el-input v-model="form.name" placeholder="请输入pucs类型"></el-input>
+      <el-form-item label="装备类型:" prop="name">
+        <el-input v-model="form.name" placeholder="请输入装备类型"></el-input>
       </el-form-item>
-      <el-form-item label="pucs型号:" prop="code">
-        <el-input v-model="form.code" placeholder="请输入pucs型号"></el-input>
+      <el-form-item label="装备型号:" prop="code">
+        <el-input v-model="form.code" placeholder="请输入装备型号"></el-input>
       </el-form-item>
 
       <el-form-item label="外观照片:" prop="icon">
         <DrUpload
-          listType="picture-card"
-          pclass="flex"
-          :limit="1"
-          v-model="form.icon"
-        >
-        </DrUpload>
+            class="upload-img-box"
+            listType="picture-card"
+            :limit="1"
+            pclass="flex"
+            v-model="form.icon"
+          >
+            <div class="text-center">
+              <i class="el-icon-plus"></i>
+            </div>
+          </DrUpload>
       </el-form-item>
       <el-row>
-        <el-form-item label="系列配置:">
+        <el-form-item label="配置明细:">
           <el-button v-if="!form.moduleList.length" icon="el-icon-plus" @click="addDomain">新增系列配置</el-button>
         </el-form-item>
       </el-row>
       <template v-if="form.moduleList.length">
         <el-row v-for="(item, index) in form.moduleList" :key="index">
           <template>
-            <el-col :span="7" :offset="2">
-              <el-form-item label="模块编码:" style="width: 100%">
-                <el-input v-model="item.code" clearable placeholder="请输入模块编码"></el-input>
-              </el-form-item>
-            </el-col>
             <el-col :span="7">
               <el-form-item label="模块名称:" style="width: 100%">
                 <el-input v-model="item.name" clearable placeholder="请输入模块名称"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="7">
+              <el-form-item label="模块编码:" style="width: 100%">
+                <el-input v-model="item.code" clearable placeholder="请输入模块编码"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="7">
               <el-form-item label="数量:" style="width: 100%">
-                <el-input v-model="item.num" clearable placeholder="请输入数量"></el-input>
+                <el-input v-model="item.num" clearable placeholder="请输入数量"></el-input> 
               </el-form-item>
             </el-col>
             <el-col :span="1">
-              <el-button
+              <el-button 
                 @click="removeDomain(item)"
                 class="margin-left-xs"
                 icon="el-icon-minus"
@@ -69,7 +73,7 @@
                   index + 1 != form.moduleList.length
                 "
                 type="primary"
-              ></el-button>
+              />
               <el-button
                 @click="addDomain"
                 class="margin-left-xs"
@@ -78,7 +82,7 @@
                 plain
                 v-if="index + 1 == form.moduleList.length"
                 type="primary"
-              ></el-button>
+              />
             </el-col>
           </template>
         </el-row>

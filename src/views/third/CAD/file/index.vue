@@ -133,7 +133,11 @@
       </el-table-column>
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }">{{ row.content || "---" }}</span>
+        <template slot-scope="{ row }">
+          <span v-if="isStsType(row.type) && row.stsContent">STS: {{ row.stsContent }}</span>
+          <br />  
+          <span>{{ row.content || "---" }}</span>  
+        </template>
       </el-table-column>
       <el-table-column
         label="产品状态"
@@ -318,12 +322,13 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >通过</el-button
-          >
+            >
+            通过
+          </el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" :dictList="dictList" />
+    <CompUpdate ref="compUpdate" name key jack  :dictList="dictList" :isStsType="isStsType"  />
   </div>
 </template>
 
@@ -430,6 +435,16 @@ export default {
         );
       };
     },
+    isStsType() {
+      return type => {
+        return type === "iqc_tool" || 
+                type === "fqc_tool_soft" || 
+                type === "oqc_tool_soft" ||
+                type === "config_tools" ||
+                type === "pack_file" ||
+                type === "update_file"
+      }
+    }
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -624,10 +639,28 @@ export default {
       this.multiple = !selection.length;
     },
     handleUpdate(row, isBatchSync) {
+      // shit 改不动了
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
+
+      // if (row.configExtend === null) {
+      //   row.configExtend = {
+      //     schemeVersion: "",
+      //     agreementVersion: "",
+      //     pcbaSn: "",
+      //     testInfo: [],
+      //   };
+      // } else {
+      //   // 测试项目数据
+      //   if (row.configExtend.testInfo) {
+      //     if (!Array.isArray(row.configExtend.testInfo)) {
+      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
+      //     }
+      //   }
+      // }
+      console.log(row)
       this.$refs.compUpdate.form = Object.assign(
-        { idList: [], content: "" },
+        { idList: [], content: "", testInfo: [] },
         row
       );
       this.$refs.compUpdate.form.firmwareConf = row.firmwareConf

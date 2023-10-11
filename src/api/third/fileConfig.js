@@ -1,4 +1,3 @@
-
 import request from '@/utils/request'
 
 export function listFileConfig(query) {
@@ -64,6 +63,13 @@ export function editFileConfig(data) {
   })
 }
 
+export function stsEditFileConfig(data) {
+  return request({
+    url: '/file/sts/config',
+    method: 'put',
+    data
+  })
+}
 
 export function computerDictList(data) {
   return request({
@@ -172,6 +178,7 @@ export function resetBatchSync(data) {
   })
 }
 
+
 // 仪表型号
 export function computerNameList({ name, categoryId }) {
   return request({
@@ -195,3 +202,74 @@ export function categoryNameList({ name, categoryName }) {
 }
 
 
+// 送样软件数据管理
+
+export function sampleSoftList(params) {
+  return request({
+    url: "/sample/soft/config/list",
+    method: "get",
+    params
+  })
+}
+
+// 撤回
+export function sampleFileCancel(data) {
+  return request({
+    url: '/sample/soft/config/cancel',
+    method: 'put',
+    data
+  })
+}
+
+// 批量重审
+export function sampleResetFileConfig(data) {
+  return request({
+    url: '/sample/soft/config/reset',
+    method: 'put',
+    data
+  })
+}
+
+export function sampleAuthFileConfig(data) {
+  return request({
+    url: '/sample/soft/config/auth',
+    method: 'put',
+    data
+  })
+}
+
+export function sampleSofteConfig(data) {
+  return request({
+    url: '/sample/soft/config',
+    method: 'put',
+    data
+  })
+}
+
+
+// 产品记录
+export function recordList(params) {
+  return request({
+    url: '/record/list',
+    method: 'get',
+    params
+  })
+}
+
+// 配件信息
+export function partList(params) {
+  return request({
+    url: '/info/part/list',
+    method: 'get',
+    params
+  })
+}
+
+// 测试记录
+export function testList(params) {
+  return request({
+    url: '/test/list',
+    method: 'get',
+    params
+  })
+}

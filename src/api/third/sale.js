@@ -24,13 +24,13 @@ export function saleAuth(query) {
     });
 }
 
-export function saleUpdate(query) {
-    return request({
-        url: '/sale',
-        method: 'put',
-        data: query,
-    });
-}
+// export function saleUpdate(query) {
+//     return request({
+//         url: '/sale',
+//         method: 'put',
+//         data: query,
+//     });
+// }
 
 export function saleAdd(query) {
     return request({
@@ -46,4 +46,88 @@ export function saleState(query) {
         method: 'put',
         data: query,
     });
+}
+
+
+// 售后支持
+export function afterList(params) {
+    return request({
+        url: '/after/list',
+        method: 'get',
+        params
+    });
+}
+
+// 新增
+export function saleSave(data) {
+    return request({
+        url: '/after/save',
+        method: 'post',
+        data
+    });
+}
+
+// 修改
+export function saleUpdate(data) {
+    return request({
+        url: '/after/update',
+        method: 'put',
+        data
+    });
+}
+
+// 删除
+export function saleDelete(data) {
+    return request({
+        url: '/after/delete',
+        method: 'delete',
+        data
+    })
+}
+
+// 详情
+export function afterInfo(detailId) {
+    return request({
+        url: `/after/info/${detailId}`,
+        method: 'get'
+    });
+}
+
+// 处理
+export function afterHandle(data) {
+    return request({
+        url: '/after/handle',
+        method: 'put',
+        data
+    });
+}
+
+// 处理进展
+export function afterHandleDetail(afterSaleId) {
+    return request({
+        url: `/after/handle/detail/${afterSaleId}`,
+        method: 'get'
+    });
+}
+
+// 统计表 --- 当前状态
+export function afterStatusList() {
+    return request({
+        url: "/after/status/list",
+        method: "get"
+    })
+}
+// 统计表 --- 不良分布
+export function afterBadList() {
+    return request({
+        url: "/after/bad/list",
+        method: "get"
+    })
+}
+// 统计表 --- TOP问题排行
+export function afterTopList() {
+    return request({
+        url: "/after/top/list",
+        method: "get"
+    })
 }

@@ -17,144 +17,159 @@
       class="overflow-y"
       style="max-height: 500px"
     >
-      <el-form-item label="迪太订单号:" prop="salesOrderNo">
-        <select-loadMore
-          style="width: 65%"
-          v-model="form.salesOrderNo"
-          :data="orderData.data"
-          :page="orderData.page"
-          :hasMore="orderData.more"
-          dictLabel="salesOrderNo"
-          :moreParams="true"
-          :disabled="!!form.id"
-          :request="getOrderList"
-          @getChange="getOrderId"
-          placeholder="请选择迪太订单号"
-        />
-      </el-form-item>
-      <template v-if="form.salesOrderNo && orderInfo.salesOrderNo">
-        <transition name="fade">
-          <el-descriptions
-            class="margin-top margin-bottom"
-            :column="3"
-            direction="vertical"
-            size="mini"
-            border
+      <template v-if="!isExcelFile">
+        <el-form-item label="迪太订单号:" prop="salesOrderNo">
+          <select-loadMore
+            style="width: 65%"
+            v-model="form.salesOrderNo"
+            :data="orderData.data"
+            :page="orderData.page"
+            :hasMore="orderData.more"
+            dictLabel="salesOrderNo"
+            :moreParams="true"
+            :disabled="!!form.id"
+            :request="getOrderList"
+            @getChange="getOrderId"
+            placeholder="请选择迪太订单号"
+          />
+        </el-form-item>
+        <template v-if="form.salesOrderNo && orderInfo.salesOrderNo">
+          <transition name="fade">
+            <el-descriptions
+              class="margin-top margin-bottom"
+              :column="3"
+              direction="vertical"
+              size="mini"
+              border
+            >
+              <el-descriptions-item label="迪太订单号">
+                {{ orderInfo.salesOrderNo }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="客户名称"
+                v-if="orderInfo.customerName"
+              >
+                {{ orderInfo.customerName }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="客户订单号"
+                v-if="orderInfo.customerOrderNo"
+              >
+                {{ orderInfo.customerOrderNo }}
+              </el-descriptions-item>
+              <el-descriptions-item label="品类" v-if="orderInfo.categoryName">
+                {{ orderInfo.categoryName }}
+              </el-descriptions-item>
+              <el-descriptions-item label="型号" v-if="orderInfo.computerName">
+                {{ orderInfo.computerName }}
+              </el-descriptions-item>
+              <el-descriptions-item label="BOM编码" v-if="orderInfo.bomCode">
+                {{ orderInfo.bomCode }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="芯片版本"
+                v-if="orderInfo.chipVersion"
+              >
+                {{ orderInfo.chipVersion }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="订单数量"
+                v-if="orderInfo.orderQuantity"
+              >
+                {{ orderInfo.orderQuantity }}
+              </el-descriptions-item>
+              <el-descriptions-item label="出货日期" v-if="orderInfo.sellTime">
+                <span class="text-red">{{
+                  parseTime(orderInfo.sellTime)
+                }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="客户要求到货日期"
+                v-if="orderInfo.arrivalTime"
+              >
+                <span class="text-green">
+                  {{ parseTime(orderInfo.arrivalTime) }}
+                </span>
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="出货地址"
+                v-if="orderInfo.consigneeAddress"
+              >
+                {{ orderInfo.consigneeAddress }}
+              </el-descriptions-item>
+              <el-descriptions-item label="状态">
+                {{ statusList[orderInfo.status] }}
+              </el-descriptions-item>
+              <el-descriptions-item label="箱唛" v-if="orderInfo.isMark">
+                {{ markList[orderInfo.isMark] }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                label="指定内容"
+                v-if="orderInfo.containerMarkInfo"
+              >
+                {{ orderInfo.containerMarkInfo }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </transition>
+        </template>
+        <el-form-item label="生产日期:" prop="date">
+          <el-date-picker
+            v-model="form.date"
+            style="width: 65%"
+            :disabled="!form.salesOrderNo"
+            type="date"
+            :default-time="defaultTime"
+            :picker-options="pickerOptions"
+            value-format="timestamp"
+            placeholder="请选择生产日期"
+            @change="selDate"
           >
-            <el-descriptions-item label="迪太订单号">
-              {{ orderInfo.salesOrderNo }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="客户名称"
-              v-if="orderInfo.customerName"
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item label="生产流程:" prop="process">
+          <el-radio-group v-model="form.process" :disabled="form.id">
+            <el-radio
+              v-for="(item, index) in operationList"
+              :key="index"
+              :label="item.dictLabel"
             >
-              {{ orderInfo.customerName }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="客户订单号"
-              v-if="orderInfo.customerOrderNo"
+              {{ item.dictLabel }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="生产地点:" prop="address">
+          <el-radio-group v-model="form.address">
+            <el-radio
+              v-for="(item, index) in productAddressList"
+              :key="index"
+              :label="item.dictLabel"
             >
-              {{ orderInfo.customerOrderNo }}
-            </el-descriptions-item>
-            <el-descriptions-item label="品类" v-if="orderInfo.categoryName">
-              {{ orderInfo.categoryName }}
-            </el-descriptions-item>
-            <el-descriptions-item label="型号" v-if="orderInfo.computerName">
-              {{ orderInfo.computerName }}
-            </el-descriptions-item>
-            <el-descriptions-item label="BOM编码" v-if="orderInfo.bomCode">
-              {{ orderInfo.bomCode }}
-            </el-descriptions-item>
-            <el-descriptions-item label="芯片版本" v-if="orderInfo.chipVersion">
-              {{ orderInfo.chipVersion }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="订单数量"
-              v-if="orderInfo.orderQuantity"
-            >
-              {{ orderInfo.orderQuantity }}
-            </el-descriptions-item>
-            <el-descriptions-item label="出货日期" v-if="orderInfo.sellTime">
-              <span class="text-red">{{ parseTime(orderInfo.sellTime) }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="客户要求到货日期"
-              v-if="orderInfo.arrivalTime"
-            >
-              <span class="text-green">
-                {{ parseTime(orderInfo.arrivalTime) }}
-              </span>
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="出货地址"
-              v-if="orderInfo.consigneeAddress"
-            >
-              {{ orderInfo.consigneeAddress }}
-            </el-descriptions-item>
-            <el-descriptions-item label="状态">
-              {{ statusList[orderInfo.status] }}
-            </el-descriptions-item>
-            <el-descriptions-item label="箱唛" v-if="orderInfo.isMark">
-              {{ markList[orderInfo.isMark] }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label="指定内容"
-              v-if="orderInfo.containerMarkInfo"
-            >
-              {{ orderInfo.containerMarkInfo }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </transition>
+              {{ item.dictLabel }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="排产数量:" prop="num">
+          <el-input
+            v-model="form.num"
+            clearable
+            style="width: 65%"
+            placeholder="请输入排产数量"
+            v-PreInput:price
+          >
+            <template slot="append">pcs</template>
+          </el-input>
+        </el-form-item>
       </template>
-      <el-form-item label="生产日期:" prop="date">
-        <el-date-picker
-          v-model="form.date"
-          style="width: 65%"
-          :disabled="!form.salesOrderNo"
-          type="date"
-          :default-time="defaultTime"
-          :picker-options="pickerOptions"
-          value-format="timestamp"
-          placeholder="请选择生产日期"
-          @change="selDate"
-        >
-        </el-date-picker>
-      </el-form-item>
 
-      <el-form-item label="生产流程:" prop="process">
-        <el-radio-group v-model="form.process">
-          <el-radio
-            v-for="(item, index) in operationList"
-            :key="index"
-            :label="item.dictLabel"
-          >
-            {{ item.dictLabel }}
-          </el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <el-form-item label="生产地点:" prop="address">
-        <el-radio-group v-model="form.address">
-          <el-radio
-            v-for="(item, index) in productAddressList"
-            :key="index"
-            :label="item.dictLabel"
-          >
-            {{ item.dictLabel }}
-          </el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <el-form-item label="排产数量:" prop="num">
-        <el-input
-          v-model="form.num"
-          clearable
-          style="width: 65%"
-          placeholder="请输入排产数量"
-          v-PreInput:price
-        >
-          <template slot="append">pcs</template>
-        </el-input>
+      <el-form-item label="资料清单:" prop="excelUrl" v-else>
+        <DrUpload class="flex-direction" v-model="form.excelUrl" :isOnePic="1">
+          <div class="text-left">
+            <el-button size="mini" type="primary">上传</el-button>
+          </div>
+        </DrUpload>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -179,7 +194,7 @@ import { orderList } from "@/api/order";
 
 export default {
   name: "planScheduleUpdate",
-  props: ["title", "dictList", "operationList"],
+  props: ["title", "dictList", "operationList", "isExcelFile"],
   components: {
     tinymce,
   },
@@ -239,9 +254,6 @@ export default {
         date: [
           { required: true, message: "请选择生产日期", trigger: "change" },
         ],
-        address: [
-          { required: true, message: "请选择生产地点", trigger: "change" },
-        ],
         process: [
           { required: true, message: "请选择生产流程", trigger: "change" },
         ],
@@ -254,7 +266,9 @@ export default {
         orderNo: [
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
-        num: [{ required: true, message: "请输入排产数量", trigger: "blur" }],
+        excelUrl: [
+          { required: true, message: "请上传资料清单", trigger: "change" },
+        ],
       },
     };
   },
@@ -285,6 +299,16 @@ export default {
         this.disabledDate = (time) => {
           return time.getTime() < Date.now() - 24 * 3650 * 1000;
         };
+      }
+    },
+    "form.excelUrl"(excelUrl) {
+      if (excelUrl) {
+        this.clearValidateItem("form", "excelUrl");
+      }
+    },
+    dialogVisible(bool) {
+      if (!bool) {
+        this.$emit("update:isExcelFile", false);
       }
     },
   },
@@ -420,7 +444,7 @@ export default {
             this.form.schemeVersion = "";
           }
           if (this.form.id) {
-            if (this.onAlertReason(this.form)) {
+            if (!this.isExcelFile && this.onAlertReason(this.form)) {
               this.$prompt("请输入修改原因", "提示", {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",

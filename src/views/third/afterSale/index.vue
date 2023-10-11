@@ -1,185 +1,349 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:04
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-10-08 20:36:14
+ * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
-      <el-form-item label="所属品类" prop="product">
-        <el-select filterable allow-create clearable v-model="queryParams.product" style="width: 150px"
-          @change="changeCategory" placeholder="请选择">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+      <el-form-item label="客诉日期" prop="returnDate">
+        <el-date-picker
+          v-model="queryParams.returnDate"
+          type="date"
+          clearable
+          placeholder="请选择客诉日期"
+          style="width: 140px"
+        />
+      </el-form-item>
+      <el-form-item label="客户名称" prop="customerName">
+        <el-autocomplete
+          v-model="queryParams.customerName"
+          clearable
+          style="width: 140px"
+          :fetch-suggestions="querySearchAsync"
+          placeholder="请选择客户名称"
+          @change="handleQuery"
+        ></el-autocomplete>
+      </el-form-item>
+      <el-form-item label="品类" prop="categoryName">
+        <el-select
+          filterable
+          allow-create
+          clearable
+          v-model="queryParams.categoryName"
+          style="width: 140px"
+          @change="changeCategory"
+          placeholder="请选择品类"
+        >
+          <el-option
+            v-for="dict in dictList"
+            :key="dict.id"
+            :label="dict.name"
+            :value="dict.name"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="仪表型号" prop="model">
-        <el-select :loading="isCLoading" filterable remote clearable style="width: 150px" v-model="queryParams.model"
-          placeholder="请选择" @change="handleQuery" :remote-method="getComputerNameList">
-          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+      <el-form-item label="型号" prop="computerName">
+        <el-select
+          :loading="isCLoading"
+          filterable
+          remote
+          clearable
+          style="width: 140px"
+          v-model="queryParams.computerName"
+          placeholder="请选择型号"
+          @change="handleQuery"
+          :remote-method="getComputerNameList"
+        >
+          <el-option
+            v-for="dict in computerOptions"
+            :key="dict.model"
+            :label="dict.name"
+            :value="dict.name"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="客户" prop="customer">
-        <el-autocomplete clearable v-model="queryParams.customer" style="width: 150px"
-          :fetch-suggestions="querySearchAsync" placeholder="请选择客户" @change="handleQuery"></el-autocomplete>
+      <el-form-item label="问题状态" prop="status">
+        <el-select
+          v-model="queryParams.status"
+          style="width: 120px"
+          clearable
+          placeholder="请选择问题状态"
+        >
+          <el-option label="OPEN" value="0" />
+          <el-option label="CLOSE" value="1" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="售后单号" prop="saleNum">
-        <el-input clearable v-model="queryParams.saleNum" style="width: 150px" placeholder="请输入售后单号"
-          @change="handleQuery"></el-input>
-      </el-form-item>
-      <el-form-item label="状态" prop="state">
-        <el-select @change="handleQuery" v-model="queryParams.state" style="width: 100px" placeholder="请选择">
-          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
+      <el-form-item label="处理进展" prop="state">
+        <el-select
+          v-model="queryParams.state"
+          filterable
+          style="width: 120px"
+          clearable
+          placeholder="请选择处理进展"
+        >
+          <el-option
+            v-for="(label, value) in stateList"
+            :key="value"
+            :label="label"
+            :value="value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
-      <el-row :gutter="10" class="fr mt5">
+      <el-row
+        :gutter="20"
+        type="flex"
+        align="middle"
+        justify="start"
+        class="fr mt5"
+      >
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
+          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">{{
+            isWaitOrAllTxt
+          }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="primary" icon="el-icon-plus" @click="handleAdd"
+            >新增</el-button
+          >
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table class="afterSaleBox" :row-class-name="rowName" v-loading="loading" :data="brandList"
-      :height="tableHeight()" border @cell-click="cellClick" :cell-style="cellStyle">
-      <el-table-column label="售后单号" prop="saleNum" align="center" width="135" />
-      <el-table-column label="产品SN" prop="sn" align="center" width="135">
+    <el-table
+      class="afterSaleBox"
+      :row-class-name="rowName"
+      v-loading="loading"
+      :data="brandList"
+      :height="tableHeight()"
+      border
+      @cell-click="cellClick"
+      :cell-style="cellStyle"
+    >
+      <el-table-column
+        label="客诉日期"
+        prop="returnDate"
+        align="center"
+        width="100"
+      />
+      <el-table-column label="问题状态" prop="status" align="center" width="80">
+        <template scope="{ row }">
+          <el-tag v-if="row.status === 0" type="success">OPEN</el-tag>
+          <el-tag v-else type="danger">CLOSE</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="不良仪表去向" prop="direction" align="center">
         <template slot-scope="{ row }">
-          <div v-html="transSn(row.sn)"></div>
+          <el-tag :type="directionListClass(modelDirList, row.direction)">
+            {{ directionLabel(modelDirList, row.direction) }}
+          </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="product" align="center" width="70" />
-      <el-table-column label="型号" prop="model" align="center" width="80" />
-      <el-table-column label="客户" prop="customer" align="center" width="85" />
-      <el-table-column label="不良类型" prop="errorType" align="center" width="80">
-        <el-tag v-if="row.errorType" type="danger" slot-scope="{ row }">{{ row.errorType }}</el-tag>
-      </el-table-column>
-      <el-table-column label="数量" prop="num" align="center" width="55" />
-      <el-table-column label="现象&影响" prop="description" align="center">
-        <template slot-scope="scope">
-          <div class="text-left">
-            {{ scope.row.description }}
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="反馈人" prop="createBy" align="center" width="55" />
-      <el-table-column label="反馈时间" prop="createTime" align="center" width="80">
-        <template slot-scope="scope">
-          {{ scope.row.createTime.slice(0, 11) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="期望解决时间" prop="expectTime" align="center" width="80">
+      <el-table-column label="产品SN" prop="sn" align="center" />
+      <el-table-column label="客户名称" prop="customerName" align="center" />
+      <el-table-column label="品类" prop="categoryName" align="center" />
+      <el-table-column label="型号" prop="computerName" align="center" />
+      <el-table-column
+        label="客诉现象"
+        prop="result"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="客退清单" prop="inventory" align="center" />
+      <el-table-column label="客退方" prop="returnParty" align="center" />
+      <el-table-column label="处理进展" prop="model" align="center" width="80">
         <template slot-scope="{ row }">
-          {{ parseTime(row.expectTime, "{y}-{m}-{d}") }}
+          <span v-if="row.state === 1" class="text-red">现象复测</span>
+          <span v-if="row.state === 2" class="text-blue">分类处理</span>
+          <span v-if="row.state === 3" class="text-cyan">问题处理</span>
+          <span v-if="row.state === 4" class="text-orange">处理类型</span>
+          <span v-if="row.state === 5" class="text-yellow">维修处理</span>
+          <span v-if="row.state === 6" class="text-green">处理完成</span>
         </template>
       </el-table-column>
-      <el-table-column label="实际解决时间" align="center" prop="performTime" width="80">
+      <el-table-column label="处理人" prop="handleName" align="center">
         <template slot-scope="{ row }">
-          {{ parseTime(row.actualTime, "{y}-{m}-{d}") }}
+          <span v-if="row.state === 6" class="text-green">已完成</span>
+          <span v-else>{{ row.handleName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="55">
-        <template slot-scope="scope">
-          <span v-if="scope.row.state == 0" class="text-red">待处理</span>
-          <span v-if="scope.row.state == 1" class="text-blue">处理中</span>
-          <span v-if="scope.row.state == 2" class="text-green">已处理</span>
-          <span v-if="scope.row.state == 3" class="text-orange">已驳回</span>
+      <el-table-column
+        label="是否问题"
+        prop="isProblem"
+        align="center"
+        width="80"
+      >
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.isProblem === 0" type="primary">是</el-tag>
+          <el-tag v-else type="danger">否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="定位进展" prop="demand" align="center">
-        <template slot-scope="scope">
-          <div class="text-left demand-box" v-html="scope.row.progress"></div>
+      <el-table-column label="问题根因" prop="rootMatter" align="center" />
+      <el-table-column label="根因分类" prop="rootMatterType" align="center">
+        <template slot-scope="{ row }">
+          {{ directionLabel(rootClassify, row.rootMatterType) }}
         </template>
       </el-table-column>
-      <el-table-column label="对策及导入计划" prop="report" align="center">
-        <template slot-scope="scope">
-          <el-row class="flex">
-            <el-col :span="18">
-              <div class="text-left demand-box" v-html="scope.row.report"></div>
-            </el-col>
-            <el-col :span="6" class="flex align-center justify-center">
-              <img v-if="scope.row.reportAttachment" class="margin-left-xs"
-                style="width: 17px; height: 17px; cursor: pointer" :src="require('@/assets/image/xiazai.png')" alt=""
-                @click.stop="handleDownloadProgress(scope.row)" />
-            </el-col>
-          </el-row>
-        </template>
-      </el-table-column>
-      <el-table-column label="责任人" prop="principal" align="center" width="65" :formatter="principalName" />
-      <el-table-column label="操作" align="center" width="140" class-name="small-padding fixed-width  ">
-        <template slot-scope="scope">
-          <!-- urlDownload -->
-          <div style="padding-left: 8px" class="text-left">
-            <Tooltip v-if="
-              scope.row.principal == userId ||
-              scope.row.feedbackBy == userId ||
-              checkRole(['afterSale'])
-            " icon="el-icon-edit" content="编辑" @click="handleUpdate(scope.row)" />
-
-            <el-tooltip class="item font16" effect="dark" content="同意" placement="top-end" v-if="
-              scope.row.state == 0 &&
-              (scope.row.principal == userId || checkRole(['admin']))
-            ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 1)"></el-button>
+      <el-table-column label="操作" align="center" width="180">
+        <template slot-scope="{ row }">
+          <div class="flex justify-center">
+            <el-button
+              class="text-green"
+              type="text"
+              @click="handleDetail(row)"
+            >
+              详情
+            </el-button>
+            <el-button class="text-blue" type="text" @click="handleUpdate(row)">
+              编辑
+            </el-button>
+            <el-tooltip
+              v-if="isRetester(row)"
+              effect="dark"
+              content="现象复测人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
             </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="驳回" placement="top-end" v-if="
-              scope.row.state == 0 &&
-              (scope.row.principal == userId || checkRole(['admin']))
-            ">
-              <el-button size="small" icon="el-icon-circle-close" type="text" class="text-green font16"
-                @click="handleAuthChange(scope.row, 3)"></el-button>
-              <!-- <img class="margin-lr-xs" style="
-                  width: 14px;
-                  cursor: pointer;
-                  vertical-align: middle;
-                  position: relative;
-                  top: -3px;
-                " :src="require('@/assets/image/reject.png')" alt="" @click="handleAuthChange(scope.row, 3)" /> -->
+            <el-tooltip
+              v-if="isClassifiedBy(row)"
+              effect="dark"
+              content="分类处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
             </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="已处理" placement="top-end" v-if="
-              scope.row.state == 1 &&
-              (scope.row.principal == userId || checkRole(['admin']))
-            ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 2)"></el-button>
+            <el-tooltip
+              v-if="isHandlerBy(row)"
+              effect="dark"
+              content="问题处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
             </el-tooltip>
-            <Tooltip v-if="
-              scope.row.principal == userId ||
-              scope.row.feedbackBy == userId ||
-              checkRole(['admin'])
-            " icon="el-icon-delete" :className="['text-red']" content="删除" @click="handleDelete(scope.row)" />
-            <el-tooltip v-if="scope.row.attachment" effect="dark" content="附件" placement="top-end">
-              <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
-                @click.stop="handleDownload(scope.row.attachment, scope.row.product)"></el-button>
+            <el-tooltip
+              v-if="isHandlerType(row)"
+              effect="dark"
+              content="处理类型人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
             </el-tooltip>
-            <el-tooltip v-if="scope.row.fileUrl" effect="dark" content="记录文件" placement="top-end">
-              <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
-                @click.stop="handleDownload(scope.row.fileUrl, scope.row.product)"></el-button>
+            <el-tooltip
+              v-if="isServiceBy(row)"
+              effect="dark"
+              content="维修处理人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
             </el-tooltip>
+            <el-button
+              v-if="!Is_Empty(row.rootMatter)"
+              class="text-yellow"
+              type="text"
+              @click="handleClose(row)"
+            >
+              {{ isStatusTxt(row.status) }}
+            </el-button>
+            <el-button class="text-red" type="text" @click="handleDelete(row)">
+              删除
+            </el-button>
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-      @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
 
-    <CompUpdate ref="compUpdate" :pmDictListOptions="pmDictListOptions" :dictList="dictList" />
+    <!-- 新增、修改 -->
+    <AddSale
+      ref="isAddSaleRef"
+      :visible.sync="isSaleAddDia"
+      :dictList="dictList"
+      :modelDirList="modelDirList"
+      :pmDictListOptions="pmDictListOptions"
+      :rootClassify="rootClassify"
+    />
+
+    <!-- 详情 -->
+    <after-detail
+      ref="isAfterDetailRef"
+      :visible.sync="isAfterDetailDia"
+      :rootClassify="rootClassify"
+      :directionLabel="directionLabel"
+    />
+
+    <!-- 处理 -->
+    <handle-problem
+      :visible.sync="isHandleProblemDia"
+      :handleProblemData="handleProblemData"
+    />
+
+    <!-- 当前处理进展 -->
+    <deal-progress ref="isDealProgressRef" :visible.sync="isDealProgressDia" />
   </div>
 </template>
 
 <script>
-import { saleList, saleAuth, saleState } from "@/api/third/sale";
-import CompUpdate from "./components/update";
-import { listCustomer } from "@/api/third/sample";
+import { afterList, saleDelete, saleUpdate } from "@/api/third/sale";
 import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
-import commonData from './mixins'
+import commonData from "@/mixins/commonData";
+
 export default {
   mixins: [commonData],
   components: {
-    CompUpdate,
     FlipDown,
+    AddSale: () => import("./components/addSale"),
+    AfterDetail: () => import("./components/afterDetail"),
+    HandleProblem: () => import("./components/handleProblem"),
+    DealProgress: () => import("./components/dealProgress"),
   },
   data() {
     return {
@@ -188,6 +352,17 @@ export default {
       // 遮罩层
       loading: true,
       authDialogVisible: false,
+      // 新增、修改弹窗
+      isSaleAddDia: false,
+      // 详情弹窗
+      isAfterDetailDia: false,
+      // 处理
+      isHandleProblemDia: false,
+      handleProblemData: {},
+      // 当前处理进展
+      isDealProgressDia: false,
+      // 待处理 、 全部
+      isWaitDispose: true,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -199,6 +374,19 @@ export default {
       brandList: [],
       // 品类
       dictList: [],
+      // 仪表去向
+      modelDirList: [],
+      // 根因分类
+      rootClassify: [],
+      // 处理进展
+      stateList: {
+        1: "现象复测",
+        2: "分类处理",
+        3: "问题处理",
+        4: "处理类型",
+        5: "维修处理",
+        6: "处理完成",
+      },
       options: [
         {
           label: "待处理",
@@ -221,61 +409,140 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 50,
-        product: undefined,
-        model: null,
-        customer: undefined,
-        saleNum: null,
+        l: 10,
+        returnDate: undefined,
+        customerName: null,
+        computerName: undefined,
+        status: null,
         state: undefined,
       },
     };
   },
   computed: {
-    ...mapGetters(["userId"]),
+    ...mapGetters(["userId", "name"]),
     transSn() {
-      return sn => {
-        if(/(,|，)/g.test(sn)) {
-          sn = sn.replace(/，/g, ',')
-          const snArr = sn.split(',')
-          let htmlStr = ''
-          snArr.forEach(item => {
-            htmlStr += `<p>${item}</p>`
-          })
-          return htmlStr
+      return (sn) => {
+        if (/(,|，)/g.test(sn)) {
+          sn = sn.replace(/，/g, ",");
+          const snArr = sn.split(",");
+          let htmlStr = "";
+          snArr.forEach((item) => {
+            htmlStr += `<p>${item}</p>`;
+          });
+          return htmlStr;
         } else {
-          return sn
+          return sn;
         }
+      };
+    },
+    directionDir() {
+      return (dataList, direction) => {
+        return (
+          dataList.length &&
+          dataList.filter((item) => +item.dictValue === +direction)
+        );
+      };
+    },
+    directionLabel() {
+      return (dataList, direction) => {
+        const directionData = this.directionDir(dataList, direction);
+        return directionData[0] && directionData[0].dictLabel;
+      };
+    },
+    directionListClass() {
+      return (dataList, direction) => {
+        const directionData = this.directionDir(dataList, direction);
+        const tagType = directionData[0] && directionData[0].listClass;
+        return tagType === "primary" ? "" : tagType;
+      };
+    },
+    isStatusTxt() {
+      return (status) => {
+        return status === 0 ? "关闭" : "打开";
+      };
+    },
+    isWaitOrAllTxt() {
+      return this.isWaitDispose ? "待处理" : "全部";
+    },
+    isWaitOrAllType() {
+      return this.isWaitDispose ? "danger" : "success";
+    },
+    // 现象复测人员确认中
+    isRetester() {
+      return ({ retester, state }) => {
+        return +retester === this.userId && state === 1;
+      }
+    },
+    // 分类处理人员确认中
+    isClassifiedBy() {
+      return ({ classifiedBy, state }) => {
+        return +classifiedBy === this.userId && state === 2;
+      }
+    },
+    // 问题处理人员确认中
+    isHandlerBy() {
+      return ({ handlerBy, state }) => {
+        return +handlerBy === this.userId && state === 3;
+      }
+    },
+    // 处理类型人员确认中
+    isHandlerType() {
+      return ({ handlerType, state }) => {
+        return +handlerType === this.userId && state === 4;
+      }
+    },
+    // 维修处理人员确认中
+    isServiceBy() {
+      return ({ serviceBy, state }) => {
+        return +serviceBy === this.userId && state === 5;
       }
     }
   },
-  mounted() {
+  created() {
     let { name } = this.$route.query;
     if (name) {
       this.queryParams.product = name;
     }
-    memberDictUser().then((response) => {
-      if (response.code === 200) {
-        this.pmDictListOptions = response.data;
-      }
-      this.getList();
-    });
+    this.getMemberDictUser();
+    this.getModelDirData();
+    this.getRootClassifyData();
+    this.getList();
   },
   methods: {
-    querySearchAsync(queryString, cb) {
-      listCustomer({ key: queryString || "" }).then((res) => {
-        cb(
-          res.data.map((item) => {
-            return {
-              value: item.name,
-            };
-          })
-        );
-      });
+    async getMemberDictUser() {
+      try {
+        const { data } = await memberDictUser();
+        this.pmDictListOptions = data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    // 不良仪表去向
+    async getModelDirData() {
+      try {
+        const { data } = await this.getDicts("sys_model_direction");
+        this.modelDirList = data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    // 根因分类
+    async getRootClassifyData() {
+      try {
+        const { data } = await this.getDicts("sys_root_classify");
+        this.rootClassify = data;
+      } catch (error) {
+        console.error(error);
+      }
     },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      saleList(this.queryParams).then((response) => {
+      const dataInfo = {
+        ...this.queryParams,
+        my: this.isWaitDispose ? "" : this.name,
+      };
+      afterList(dataInfo).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -306,42 +573,94 @@ export default {
       }
       return className;
     },
-    principalName(row) {
-      let { pmDictListOptions } = this;
-      let name = "";
-      pmDictListOptions.forEach((item) => {
-        if (item.dictValue == row.principal) {
-          name = item.dictLabel;
-        }
-      });
-      return name;
-    },
     handleDownload(file, name) {
       this.zipFile(file, name);
     },
     handleDownloadProgress(row) {
       this.zipFile(row.reportAttachment, row.product);
     },
-
+    // 新增
     handleAdd() {
-      this.$refs.compUpdate.dialogVisible = true;
-      this.computerOptions = []
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.showName = "";
-      this.$refs.compUpdate.title = "添加售后";
+      this.isSaleAddDia = true;
     },
-    handleAuthChange(row, type) {
-      let params = {};
-      params.state = type;
-      params.id = row.id;
-      saleState(params).then((res) => {
-        if (res.code == 200) {
-          this.msgSuccess("操作成功！");
+    // 修改
+    handleUpdate(row) {
+      this.isSaleAddDia = true;
+      let { logisticsEntity } = row;
+      let dataCopy;
+      if (this.Is_Empty(logisticsEntity)) {
+        dataCopy = { ...row, logisticsEntity: {} };
+      } else {
+        dataCopy = { ...row };
+      }
+      this.$refs.isAddSaleRef.form = dataCopy;
+      this.$refs.isAddSaleRef.active =
+        dataCopy.state === 6 ? 6 : dataCopy.state - 1;
+    },
+    // 详情
+    handleDetail(row) {
+      this.isAfterDetailDia = true;
+      this.$refs.isAfterDetailRef.getAfterInfo(row.id);
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      this.$confirm('是否确认删产品SN为"' + row.sn + '"的数据项?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          return saleDelete([row.id]);
+        })
+        .then(() => {
           this.getList();
-        }
-      });
+          this.msgSuccess("删除成功");
+        });
     },
-
+    // 关闭问题
+    handleClose(row) {
+      const { status } = row;
+      this.$confirm(`是否${this.isStatusTxt(status)}该问题?`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          return saleUpdate({ ...row, status: status === 0 ? 1 : 0 });
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess(`问题${this.isStatusTxt(status)}成功`);
+        });
+    },
+    // 待处理、全部
+    handleSeeWaitOrAllData() {
+      this.isWaitDispose = !this.isWaitDispose;
+      this.getList();
+    },
+    // 处理问题
+    handleProblem(row) {
+      this.isHandleProblemDia = true;
+      if (row.state === 5) {
+        this.handleProblemData = {
+          ...row,
+          materialLossList: [
+            {
+              materialName: "",
+              materialCode: "",
+              materialNum: "",
+            },
+          ],
+        };
+      } else {
+        this.handleProblemData = { ...row };
+      }
+    },
+    // 查看处理进展
+    seeDealProgress({ id, state }) {
+      this.isDealProgressDia = true;
+      this.$refs.isDealProgressRef.getAfterHandleDetail(id, state);
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -353,88 +672,35 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-
-    handleUpdate(row, showName, title) {
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.form = Object.assign({}, row);
-      this.$refs.compUpdate.showName = showName;
-      this.$refs.compUpdate.title = title == undefined ? "售后修改" : title;
-      // this.$refs.compUpdate.changeCategory(row.product)
-    },
     cellClick(row, column, cell, event) {
-      switch (column.label) {
-        case "定位进展":
-          if (row.principal == this.userId || this.checkRole(["admin"]))
-            this.handleUpdate(row, "progress", "");
+      const { sn } = row;
+      const { label } = column;
+      switch (label) {
+        case "产品SN":
+          this.$router.push(`/www/PartInfoView/production?sn=${sn}`);
           break;
-        case "对策及导入计划":
-          if (row.principal == this.userId || this.checkRole(["admin"]))
-            this.handleUpdate(row, "report", "对策及导入计划");
-          break;
-        default:
+        case "处理进展":
+          this.seeDealProgress(row);
           break;
       }
     },
     cellStyle({ row, column, rowIndex, columnIndex }) {
-      if (
-        (columnIndex == 12 || columnIndex == 13) &&
-        (row.principal == this.userId || this.checkRole(["admin"]))
-      ) {
+      const { label } = column;
+      if (label === "产品SN" || label === "处理进展") {
         return `cursor: pointer;`;
       }
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      this.$confirm(
-        '是否确认删产品名称为"' + row.product + '"的数据项?',
-        "警告",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        }
-      )
-        .then(function () {
-          return saleAuth([{ id: row.id, status: 1 }]);
-        })
-        .then(() => {
-          this.getList();
-          this.msgSuccess("删除成功");
-        });
-    },
-
     rowName({ row, rowIndex }) {
-      let styleJson = " ";
-
-      if (row.state == 4) {
+      if (row.status === 1) {
         return "finish-row";
       }
-      return styleJson;
     },
   },
 };
 </script>
 <style lang="scss">
-.auth {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
 .finish-row td,
 .finish-row:hover td {
   background-color: rgba(155, 216, 148, 0.3) !important;
-}
-
-.afterSaleBox {
-  .cell {
-    padding: 0 5px;
-  }
-
-  .demand-box {
-    img {
-      width: 100% !important;
-    }
-  }
 }
 </style>

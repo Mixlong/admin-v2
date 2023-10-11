@@ -2,6 +2,7 @@ import Vue from 'vue'
 import { getDicts } from '@/api/system/dict/data'
 import { checkRole, checkPermi } from "@/utils/permission"
 import { urlDownload, zipFile, readOfficeFile } from '@/utils';
+import { download as fileDownload } from '@/utils/request';
 import moment from 'moment'
 import axios from 'axios'
 
@@ -36,7 +37,7 @@ Vue.prototype.download = download
 Vue.prototype.handleTree = handleTree
 Vue.prototype.tableHeight = tableHeight
 Vue.prototype.dialogTop = dialogTop
-Vue.prototype.$transFileUrl = transFileUrl
+Vue.prototype.transFileUrl = transFileUrl
 Vue.prototype.urlDownload = urlDownload
 Vue.prototype.clearValidateItem = clearValidateItem
 Vue.prototype.zipFile = zipFile
@@ -45,3 +46,4 @@ Vue.prototype.moment = moment
 Vue.prototype.axios = axios
 Vue.prototype.Enter_Fn = Enter_Fn
 Vue.prototype.Is_Empty = is_Empty
+Vue.prototype.fileDownload = fileDownload

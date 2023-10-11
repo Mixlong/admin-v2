@@ -1,126 +1,66 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      @submit.native.prevent
-    >
+    <el-form :model="queryParams" ref="queryForm" :inline="true" @submit.native.prevent>
       <el-form-item label="客户名称" prop="customerName">
-        <el-autocomplete
-          size="small"
-          clearable
-          v-model="queryParams.customerName"
-          :fetch-suggestions="querySearchAsync"
-          placeholder="请输入客户名称"
-          @select="handleQuery"
-        ></el-autocomplete>
+        <el-autocomplete size="small" clearable v-model="queryParams.customerName" :fetch-suggestions="querySearchAsync"
+          placeholder="请输入客户名称" @select="handleQuery"></el-autocomplete>
       </el-form-item>
       <el-form-item label="产品品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          filterable
-          placeholder="请选择产品品类"
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="item in typeCategoryList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          >
+        <el-select v-model="queryParams.categoryName" filterable placeholder="请选择产品品类" @change="handleQuery">
+          <el-option v-for="item in typeCategoryList" :key="item.id" :label="item.name" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="送样单号" prop="number">
+        <select-loadMore v-model="queryParams.number" :data="sampleNumberData.data" :page="sampleNumberData.page"
+          :hasMore="sampleNumberData.more" :request="getSampleNumberList" placeholder="请选择送样单号" />
+      </el-form-item>
+      <el-form-item label="属性" prop="typeName">
+        <el-input 
+          v-model="queryParams.typeName" 
+          clearable 
+          placeholder="请输入属性" 
+        />
+      </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-          >搜索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
-          <el-button
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            @click="handleAdd"
-            v-hasPermi="['third:dev:add']"
-            >新增</el-button
-          >
+          <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAdd"
+            v-hasPermi="['third:dev:add']">新增</el-button>
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="typeList"
-      :height="tableHeight()"
-      border
-      @cell-click="cellClick"
-    >
+    <el-table v-loading="loading" :data="typeList" :height="tableHeight()" border @cell-click="cellClick">
       <el-table-column label="序号" width="50" type="index" align="center" />
-      <el-table-column
-        label="外发客户"
-        prop="customerName"
-        align="center"
-        width="120"
-      />
-      <el-table-column
-        label="产品品类"
-        prop="categoryName"
-        align="center"
-        width="130"
-        show-overflow-tooltip
-      />
+      <el-table-column label="外发客户" prop="customerName" align="center" width="120" />
+      <el-table-column label="产品品类" prop="categoryName" align="center" width="130" />
+      <el-table-column label="送样单号" prop="number" align="center" width="160" />
+      <el-table-column label="属性" prop="typeName" align="center" width="160" />
       <el-table-column label="描述" prop="orderDesc" show-overflow-tooltip />
-      <el-table-column
-        label="下载口令"
-        align="center"
-        width="140"
-        show-overflow-tooltip
-      >
+      <el-table-column label="下载口令" align="center" width="140" show-overflow-tooltip>
         <template slot-scope="{ row }" v-if="row.downloadPassword">
           <el-tooltip effect="dark" content="点击复制下载口令" placement="top">
             <el-button type="text">{{ row.downloadPassword }}</el-button>
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column
-        label="有效期至"
-        prop="expiryDate"
-        align="center"
-        width="160"
-      >
+      <el-table-column label="有效期至" prop="expiryDate" align="center" width="160">
         <template slot-scope="{ row }">
-          <div v-show="row.status && !timeOut(row.expiryDate)">
+          <div v-if="row.status && !timeOut(row.expiryDate)">
             {{ parseTime(row.expiryDate) }}
           </div>
-          <el-tag type="danger" size="mini" v-show="!row.status">已禁用</el-tag
-          ><br />
-          <el-tag type="danger" size="mini" v-show="timeOut(row.expiryDate)"
-            >已过期</el-tag
-          >
+          <template v-if="!row.status">
+            <el-tag type="danger" size="mini" >已禁用</el-tag><br />
+          </template>
+          <el-tag type="danger" size="mini" v-if="timeOut(row.expiryDate)">已过期</el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createName"
-        width="120"
-      />
-      <el-table-column
-        label="审核状态"
-        align="center"
-        prop="createTime"
-        width="150"
-      >
+      <el-table-column label="创建人" align="center" prop="createName" width="120" />
+      <el-table-column label="审核状态" align="center" prop="createTime" width="150">
         <template slot-scope="{ row }">
           <div v-if="!row.testState">
             <p class="text-blue">{{ row.testUserName }}(测试)</p>
@@ -134,142 +74,62 @@
             <p class="text-blue">{{ row.dmUserName }}(部门经理)</p>
             待审核
           </div>
-          <span
-            class="text-green"
-            v-if="row.testState && row.pmState && row.dmState"
-            >已完成</span
-          >
+          <span class="text-green" v-if="row.testState && row.pmState && row.dmState">已完成</span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-        width="200"
-      >
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="160">
         <template slot-scope="{ row }">
-          <el-button
-            v-if="row.isState"
-            type="text"
-            class="text-green"
-            @click="onCheck(row)"
-            >审核</el-button
-          >
-          <el-button
-            type="text"
-            class="text-orange"
-            @click="urlDownload(row.file)"
-            >下载</el-button
-          >
-          <el-button
-            v-if="row.isEditAndForbid"
-            type="text"
-            :class="[row.status ? 'text-red' : 'text-blue']"
-            @click="onDisable(row)"
-            >{{ row.status ? "禁用" : "启用" }}</el-button
-          >
-          <el-button
-            v-if="row.isEditAndForbid"
-            type="text"
-            @click="handleUpdate(row)"
-            >编辑</el-button
-          >
+          <el-button v-if="row.isState" type="text" class="text-green" @click="onCheck(row)">审核</el-button>
+          <el-button type="text" class="text-orange" @click="urlDownload(row.file)">下载</el-button>
+          <el-button v-if="row.isEditAndForbid" type="text" :class="[row.status ? 'text-red' : 'text-blue']"
+            @click="onDisable(row)">{{ row.status ? "禁用" : "启用" }}</el-button>
+          <el-button v-if="row.isEditAndForbid" type="text" @click="handleUpdate(row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog
-      :close-on-click-modal="false"
-      :title="title"
-      :visible.sync="open"
-      width="800px"
-      top="5vh"
-      append-to-body
-    >
-      <el-form
-        ref="form"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-        @submit.native.prevent
-        class="form-data-inline"
-        inline
-        label-position="left"
-      >
+    <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="open" width="800px" top="5vh" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px" @submit.native.prevent class="form-data-inline"
+        inline label-position="left">
         <el-form-item label="客户名称:" prop="customerName">
-          <el-autocomplete
-            style="width: 100%"
-            size="small"
-            clearable
-            v-model="form.customerName"
-            :fetch-suggestions="querySearchAsync"
-            placeholder="请输入客户名称"
-            @select="handleQuery"
-          ></el-autocomplete>
+          <el-autocomplete style="width: 100%" size="small" clearable v-model="form.customerName"
+            :fetch-suggestions="querySearchAsync" placeholder="请输入客户名称" @select="handleQuery"></el-autocomplete>
         </el-form-item>
         <el-form-item label="产品品类:" prop="categoryId">
-          <el-select
-            v-model="form.categoryId"
-            filterable
-            placeholder="请选择产品品类"
-            clearable
-          >
-            <el-option
-              v-for="item in typeCategoryList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            >
+          <el-select v-model="form.categoryId" filterable placeholder="请选择产品品类" clearable>
+            <el-option v-for="item in typeCategoryList" :key="item.id" :label="item.name" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="送样单号" prop="number">
+          <select-loadMore v-model="form.number" :data="sampleNumberData.data" :page="sampleNumberData.page"
+            :hasMore="sampleNumberData.more" :request="getSampleNumberList" placeholder="请选择送样单号" />
+        </el-form-item>
         <el-form-item label="描述:" prop="orderDesc" style="width: 97%">
-          <el-input
-            type="textarea"
-            v-model="form.orderDesc"
-            placeholder="请输入描述"
-            :autosize="{ minRows: 3, maxRows: 5 }"
-          />
+          <el-input type="textarea" v-model="form.orderDesc" placeholder="请输入描述" :autosize="{ minRows: 3, maxRows: 5 }" />
         </el-form-item>
         <el-row>
           <el-form-item label="有效期至:" prop="expiryDate">
-            <el-date-picker
-              v-model="form.expiryDate"
-              type="datetime"
-              placeholder="选择日期时间"
-              align="right"
-              :picker-options="pickerOptions"
-              format="yyyy-MM-dd HH:mm:ss"
-              :default-time="defaultTime"
-              value-format="timestamp"
-            >
+            <el-date-picker v-model="form.expiryDate" type="datetime" placeholder="选择日期时间" align="right"
+              :picker-options="pickerOptions" format="yyyy-MM-dd HH:mm:ss" :default-time="defaultTime"
+              value-format="timestamp">
             </el-date-picker>
           </el-form-item>
         </el-row>
         <el-row>
           <el-form-item label="外发文件:" prop="file" style="width: 100%">
-            <el-row type="flex" justify="space-between">
-              <el-col :span="18">
+            <el-row type="flex">
+              <el-col :span="20">
                 <el-input v-model="form.file" readonly></el-input>
               </el-col>
-              <el-col :span="4">
-                <DrUpload
-                  :limit="1"
-                  v-model="form.file"
-                  :isOnePic="1"
-                  :showFileList="false"
-                >
+              <el-col :span="3">
+                <DrUpload style="margin-left: 10px;" :limit="1" v-model="form.file" :isOnePic="1" :showFileList="false">
                   <div class="text-left">
-                    <el-button type="primary" size="small">点击上传</el-button>
+                    <el-button type="primary" size="mini">点击上传</el-button>
                   </div>
                 </DrUpload>
               </el-col>
@@ -282,51 +142,24 @@
         <el-row>
           <el-col>
             <el-form-item label="测试" prop="testUserId">
-              <el-select
-                v-model="form.testUserId"
-                clearable
-                placeholder="请选择测试人员"
-              >
-                <el-option
-                  v-for="item in testList"
-                  :key="item.userId"
-                  :label="item.userName"
-                  :value="+item.userId"
-                >
+              <el-select v-model="form.testUserId" clearable placeholder="请选择测试人员">
+                <el-option v-for="item in testList" :key="item.userId" :label="item.userName" :value="+item.userId">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col>
             <el-form-item label="产品经理" prop="pmUserId">
-              <el-select
-                v-model="form.pmUserId"
-                clearable
-                placeholder="请选择产品经理"
-              >
-                <el-option
-                  v-for="item in productList"
-                  :key="item.userId"
-                  :label="item.userName"
-                  :value="+item.userId"
-                >
+              <el-select v-model="form.pmUserId" clearable placeholder="请选择产品经理">
+                <el-option v-for="item in productList" :key="item.userId" :label="item.userName" :value="+item.userId">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col>
             <el-form-item label="部门审核" prop="dmUserId">
-              <el-select
-                v-model="form.dmUserId"
-                clearable
-                placeholder="请选择部门审核"
-              >
-                <el-option
-                  v-for="item in managerList"
-                  :key="item.userId"
-                  :label="item.userName"
-                  :value="+item.userId"
-                >
+              <el-select v-model="form.dmUserId" clearable placeholder="请选择部门审核">
+                <el-option v-for="item in managerList" :key="item.userId" :label="item.userName" :value="+item.userId">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -334,7 +167,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="isLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -354,13 +187,14 @@ import {
   listCreate,
   dictUserList,
 } from "@/api/third/isType";
-import { listCustomer } from "@/api/third/sample";
+import { listCustomer, sampleNumberList } from "@/api/third/sample";
 
 export default {
   mixins: [commonJs],
   name: "BikeType",
   data() {
     return {
+      isLoading: false,
       typeCategoryList: [],
       UserList: [],
       testList: [],
@@ -394,10 +228,18 @@ export default {
       // 日期范围
       dateRange: [],
       genderOptions: [],
+      sampleNumberData: {
+        data: [],
+        page: 1,
+        more: true
+      },
       // 查询参数
       queryParams: {
         p: 1,
         l: 20,
+        customerName: "",
+        categoryName: "",
+        number: ""
       },
       // 表单参数
       form: {
@@ -410,6 +252,9 @@ export default {
         ],
         categoryId: [
           { required: true, message: "产品品类不能为空", trigger: "change" },
+        ],
+        number: [
+          { required: true, message: "送样单号不能为空", trigger: "change" },
         ],
         expiryDate: [
           { required: true, message: "有效期不能为空", trigger: "change" },
@@ -490,6 +335,32 @@ export default {
     this.getList();
   },
   methods: {
+    getSampleNumberList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        sampleNumberList({
+          p: page,
+          num: keyword,
+        }).then((res) => {
+          let { list, total, pageNum, pageSize } = res.data;
+          if (list.length) {
+            list = list.map(item => {
+              return {
+                label: item,
+                value: item
+              }
+            })
+          }
+          if (more) {
+            this.sampleNumberData.data = [...this.sampleNumberData.data, ...list];
+          } else {
+            this.sampleNumberData.data = list;
+          }
+          this.sampleNumberData.more = pageNum * pageSize < total;
+          this.sampleNumberData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     handleStatus(row) {
       this.formObj = row;
       this.$refs.compUpdate.dialogVisible = true;
@@ -597,6 +468,7 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          this.isLoading = true;
           if (this.form.id !== undefined) {
             listEdit(this.form.id, this.form).then((response) => {
               if (response.code === 200) {
@@ -604,7 +476,9 @@ export default {
                 this.open = false;
                 this.getList();
               }
-            });
+            }).finally(() => {
+              this.isLoading = false;
+            })
           } else {
             listCreate(this.form).then((response) => {
               if (response.code === 200) {
@@ -612,7 +486,9 @@ export default {
                 this.open = false;
                 this.getList();
               }
-            });
+            }).finally(() => {
+              this.isLoading = false;
+            })
           }
         }
       });
@@ -638,7 +514,7 @@ export default {
             this.getList();
           });
         })
-        .catch(() => {});
+        .catch(() => { });
     },
     // 禁用
     onDisable(row) {
@@ -655,7 +531,7 @@ export default {
             }
           );
         })
-        .catch(() => {});
+        .catch(() => { });
     },
     // 复制下载口令
     onCopy(val) {

@@ -129,21 +129,21 @@
         </el-card>
       </el-col>
     </el-row>
-    <Log
+    <!-- <Log
       ref="log"
       :visible.sync="openLog"
       :logRow="logRow"
       @openUpdate="handleUpdateLog"
       @openAdd="handleAddLog"
       :isEdit="userId == logRow.createUser"
-    />
-    <Update
+    /> -->
+    <!-- <Update
       :visible.sync="openUpdate"
       :pmDictListOptions="pmDictListOptions"
       :stateOptions="stateOptions"
       :rowUpdate="rowUpdate"
-    />
-    <AddLog :visible.sync="openAddLog" :logRow="logRow" />
+    /> -->
+    <!-- <AddLog :visible.sync="openAddLog" :logRow="logRow" /> -->
   </div>
 </template>
 
@@ -277,26 +277,26 @@ export default {
         });
     },
     getList() {
+      // 暂时先去掉（接口已换）  2023/4/12
       //重点事项
-      let { checked } = this;
 
-      emphasisList().then((res) => {
-        let { data } = res;
-        if (checked) {
-          let list = [];
-          for (let key of data) {
-            if (
-              key.userList.findIndex((item) => item.userId == this.userId) > -1
-            ) {
-              list.push(key);
-            }
-          }
-          this.homeEmphasisList = list;
-        } else {
-          this.homeEmphasisList = data;
-        }
-        localStorage.setItem("home-checked", checked);
-      });
+      // emphasisList().then((res) => {
+      //   let { data } = res;
+      //   if (checked) {
+      //     let list = [];
+      //     for (let key of data) {
+      //       if (
+      //         key.userList.findIndex((item) => item.userId == this.userId) > -1
+      //       ) {
+      //         list.push(key);
+      //       }
+      //     }
+      //     this.homeEmphasisList = list;
+      //   } else {
+      //     this.homeEmphasisList = data;
+      //   }
+      //   localStorage.setItem("home-checked", checked);
+      // });
     },
 
     replaceHtml(str) {
@@ -436,17 +436,17 @@ export default {
 }
 
 .dashboard-editor-container {
-  padding: 10px 0;
+  padding: 10px;
   position: relative;
 
   .production-box {
-    height: 89vh;
-    max-height: calc(100vh - 104px);
+    height: 100vh;
+    max-height: calc(100vh - 70px);
     padding-bottom: 20px;
     box-sizing: border-box;
 
     .production-list {
-      max-height: calc(100vh - 270px);
+      max-height: calc(100vh - 200px);
 
       /* 
         修改步骤条圆圈样式

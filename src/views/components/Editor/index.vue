@@ -29,7 +29,9 @@ import toolbar from "./toolbar";
 import load from "./dynamicLoadScript";
 
 // why use this cdn, detail see https://github.com/PanJiaChen/tinymce-all-in-one
-const tinymceCDN = "https://unpkg.com/tinymce-all-in-one@4.9.3/tinymce.min.js";
+// const tinymceCDN = "https://unpkg.com/tinymce-all-in-one@4.9.3/tinymce.min.js";  // 弃用， 有时候会失效
+const tinymceCDN = "http://file.riding-evolved.com/dty/tinymce-all-in-one-master/tinymce.min.js"
+
 
 export default {
   name: "Tinymce",
@@ -68,7 +70,7 @@ export default {
     width: {
       type: [Number, String],
       required: false,
-      default: "auto",
+      default: "100%",
     },
   },
   data() {
@@ -233,7 +235,7 @@ export default {
         window.tinymce
           .get(this.tinymceId)
           .insertContent(
-            `<img class="wscnph" src="${v.url}"  style="width:auto">`
+            `<img class="wscnph" src="${v.url}"  style="width:100%">`
           )
       );
     },

@@ -74,6 +74,9 @@ export function parseTime(time, pattern) {
 
 // 图片地址格式化
 export function transFileUrl(url) {
+  if(!url) {
+    throw new Error('转化的图片地址不能为空')
+  }
   return url.slice(url.lastIndexOf('/') + 1)
 }
 
@@ -157,6 +160,24 @@ export function praseStrEmpty(str) {
   return str;
 }
 
+
+// 数据合并
+export function mergeRecursive(source, target) {
+  for (var p in target) {
+    try {
+      if (target[p].constructor == Object) {
+        source[p] = mergeRecursive(source[p], target[p]);
+      } else {
+        source[p] = target[p];
+      }
+    } catch (e) {
+      source[p] = target[p];
+    }
+  }
+  return source;
+};
+
+
 /**
  * 构造树型结构数据
  * @param {*} data 数据源
@@ -237,4 +258,36 @@ export function is_Empty(obj) {
   } else {
     return false;
   }
+}
+
+
+/**
+* 参数处理
+* @param {*} params  参数
+*/
+export function tansParams(params) {
+  let result = ''
+  for (const propName of Object.keys(params)) {
+    const value = params[propName];
+    var part = encodeURIComponent(propName) + "=";
+    if (value !== null && value !== "" && typeof (value) !== "undefined") {
+      if (typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+          if (value[key] !== null && value[key] !== "" && typeof (value[key]) !== 'undefined') {
+            let params = propName + '[' + key + ']';
+            var subPart = encodeURIComponent(params) + "=";
+            result += subPart + encodeURIComponent(value[key]) + "&";
+          }
+        }
+      } else {
+        result += part + encodeURIComponent(value) + "&";
+      }
+    }
+  }
+  return result
+}
+
+// 验证是否为blob格式
+export function blobValidate(data) {
+  return data.type !== 'application/json'
 }

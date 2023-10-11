@@ -27,24 +27,25 @@
           size="small"
         ></el-input>
       </el-form-item>
-	<el-form-item label="出货项" prop="deliveryOption">
-	  <el-input
-	    v-model="queryParams.deliveryOption"
-	    placeholder="请输入出货项"
-	    size="small"
-	  ></el-input>
-	</el-form-item>	
+      <el-form-item label="出货项" prop="deliveryOption">
+        <el-input
+          v-model="queryParams.deliveryOption"
+          placeholder="请输入出货项"
+          size="small"
+        ></el-input>
+      </el-form-item>
       <el-form-item>
         <el-button
           type="primary"
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
       <el-button
         part="warning"
@@ -52,8 +53,9 @@
         size="mini"
         @click="handleExport"
         class="fr margin-bottom-xs"
-        >导出</el-button
       >
+        导出
+      </el-button>
     </el-form>
     <el-table
       v-loading="loading"
@@ -63,9 +65,9 @@
     >
       <el-table-column label="序号" type="index" width="50" align="center">
         <template slot-scope="scope">
-          <span>{{
-            (queryParams.p - 1) * queryParams.l + scope.$index + 1
-          }}</span>
+          <span>
+            {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+          </span>
         </template>
       </el-table-column>
 
@@ -242,7 +244,7 @@ export default {
   },
 };
 </script>
-<style lang="scss"  scope >
+<style lang="scss" scope>
 .auth {
   text-align: center;
   margin-bottom: 10px;

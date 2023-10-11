@@ -21,9 +21,10 @@
       :value="selValue(option)"
       :key="option.value"
     >
+      <slot v-bind:proOption="option"></slot>
     </el-option>
     <!-- 此处加载中的value可以随便设置，只要不与其他数据重复即可 -->
-    <el-option v-if="hasMore" disabled label="加载中..." value="-1"></el-option>
+    <el-option v-if="hasMore" disabled label="加载中..." value="-1" />
   </el-select>
 </template>
 
@@ -52,6 +53,10 @@ export default {
     },
     // 调用页数的接口
     request: {
+      type: Function,
+      default: () => {},
+    },
+    clearFn: {
       type: Function,
       default: () => {},
     },
@@ -151,7 +156,7 @@ export default {
     handleSearch(keyword) {
       this.keyword = keyword;
       this.loading = true;
-      this.request({ page: 1, keyword: keyword }).then(() => {
+      this.request({ page: 1, keyword }).then(() => {
         this.loading = false;
       });
     },
@@ -161,6 +166,7 @@ export default {
         this.keyword = "";
         this.request({ page: 1 });
       }
+      this.clearFn();
     },
     getChange(e) {
       this.$emit("getChange", e);

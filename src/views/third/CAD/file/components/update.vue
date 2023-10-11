@@ -1,6 +1,8 @@
 <template>
   <!--   -->
   <el-dialog
+    v-bind="$attrs"
+    v-on="$listeners"
     :close-on-click-modal="false"
     :title="title"
     :visible.sync="dialogVisible"
@@ -12,11 +14,20 @@
       ref="form"
       :model="form"
       :rules="rules"
-      label-width="130px"
+      label-width="110px"
       class="form-data form-data-inline"
       :class="{ 'inline-form': boleConfig }"
       inline
     >
+      <!-- <ul>
+        <li v-for="(value, name) in $attrs" :key="name">
+          {{ name }}: {{ value }}
+        </li>
+      </ul>
+
+      {{ $attrs }}
+      {{ $listeners }} -->
+
       <template v-if="!isBatchSync">
         <el-form-item label="品类" prop="categoryId">
           <el-select
@@ -24,8 +35,6 @@
             v-model="form.categoryId"
             clearable
             @change="changeCategory2"
-            size="small"
-            style="width: 185px"
           >
             <el-option
               v-for="dict in dictList"
@@ -41,7 +50,6 @@
             v-model="form.computerId"
             clearable
             size="small"
-            style="width: 185px"
             @change="$forceUpdate()"
           >
             <el-option
@@ -57,7 +65,6 @@
             v-model="form.type"
             clearable
             size="small"
-            style="width: 185px"
             disabled
             @change="$forceUpdate()"
           >
@@ -69,46 +76,122 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="属性描述" prop="content" :required="isHaveTo">
-          <template v-if="form.type === 'hard_version'">
-            <select-loadMore
-              style="width: 100%"
-              v-model="form.content"
-              :data="hardData.data"
-              :page="hardData.page"
-              :hasMore="hardData.more"
-              dictLabel="name"
-              dictValue="name"
-              :request="getHardList"
-              placeholder="请选择硬件版本号"
-            />
-          </template>
-          <template v-else>
-            <el-input
-              type="textarea"
-              :autosize="{ minRows: 1, maxRows: 8 }"
-              v-model="form.content"
-              placeholder="请输入文件描述"
-            />
-          </template>
-        </el-form-item>
-        <el-form-item
-          label="文件"
-          prop="url"
-          v-if="form.up == 1"
-          style="width: 100%"
-        >
-          <DrUpload
-            :limit="1"
-            v-model="form.url"
-            :css="{ width: '100%' }"
-            :isOnePic="1"
+        <el-row :gutter="0">
+          <el-col>
+            <el-form-item label="数据类型" prop="dataType">
+              <el-radio-group v-model="form.dataType" size="small">
+                <el-radio v-if="isStsType(form.type)" :label="2" border
+                  >STS程序</el-radio
+                >
+                <el-radio :label="1" border>PC上位机</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <template v-if="form.dataType === 2">
+          <el-row>
+            <el-col>
+              <el-form-item label="sts工序网页" prop="webVersion">
+                <select-loadMore
+                  v-model="form.webVersion"
+                  :data="stsData.data"
+                  :page="stsData.page"
+                  :hasMore="stsData.more"
+                  :moreParams="true"
+                  dictLabel="version"
+                  dictValue="id"
+                  :request="getStsDataList"
+                  @getChange="getStsWebId"
+                  placeholder="请选择sts工序网页"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col>
+              <el-form-item label="属性描述" prop="stsContent">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 1, maxRows: 8 }"
+                  v-model="form.stsContent"
+                  placeholder="请输入文件描述"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <!-- 需求改改改，先留着吧 -->
+          <!-- <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
+						<el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
+							<el-option v-for="(dict, index) in cidOptions" :key="index" :label="dict.dictLabel"
+								:value="dict.dictLabel" />
+						</el-select>
+					</el-form-item>
+					<el-form-item label="测试协议" prop="configExtend.agreementVersion">
+						<el-select v-model="form.configExtend.agreementVersion" clearable size="mini">
+							<el-option v-for="(dict, index) in testAgreementList" :key="index" :label="dict.dictLabel"
+								:value="dict.dictLabel" />
+						</el-select>
+					</el-form-item>
+					<el-form-item label="PCBA SN格式" prop="configExtend.pcbaSn">
+						<el-input v-model="form.configExtend.pcbaSn" clearable placeholder="请输入PCBA SN格式" />
+					</el-form-item>
+					<el-row>
+						<el-col>
+							<el-form-item label="测试项目" prop="configExtend.testInfo" style="width: 100%;">
+								<el-card shadow="nerver">
+									<el-checkbox-group v-model="form.configExtend.testInfo">
+										<el-checkbox v-for="(dict, index) in testProjectList" :label="dict.dictValue"
+											:key="index">
+											{{ dict.dictLabel }}
+										</el-checkbox>
+									</el-checkbox-group>
+								</el-card>
+							</el-form-item>
+						</el-col>
+					</el-row> -->
+        </template>
+        <template v-if="form.dataType === 1">
+          <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+            <template v-if="form.type === 'hard_version'">
+              <select-loadMore
+                style="width: 100%"
+                v-model="form.content"
+                :data="hardData.data"
+                :page="hardData.page"
+                :hasMore="hardData.more"
+                dictLabel="name"
+                dictValue="name"
+                :request="getHardList"
+                placeholder="请选择硬件版本号"
+              />
+            </template>
+            <template v-else>
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                v-model="form.content"
+                placeholder="请输入文件描述"
+              />
+            </template>
+          </el-form-item>
+          <el-form-item
+            label="文件"
+            prop="url"
+            v-if="form.up == 1"
+            style="width: 100%"
           >
-            <div>
-              <el-button size="small" type="primary">点击上传</el-button>
-            </div>
-          </DrUpload>
-        </el-form-item>
+            <DrUpload
+              :limit="1"
+              v-model="form.url"
+              :css="{ width: '100%' }"
+              :isOnePic="1"
+            >
+              <div>
+                <el-button size="small" type="primary">点击上传</el-button>
+              </div>
+            </DrUpload>
+          </el-form-item>
+        </template>
       </template>
 
       <!-- 新增字段 -->
@@ -262,7 +345,9 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button :loading="isLoading" type="primary" @click="submitForm">
+        确 定
+      </el-button>
       <el-button @click="dialogVisible = false">取 消</el-button>
     </div>
   </el-dialog>
@@ -276,8 +361,10 @@ import {
   resetBatchSync,
 } from "@/api/third/fileConfig";
 import { listComputer } from "@/api/third/version";
+import { stsWebList } from "@/api/third/testApi";
 export default {
-  props: ["dictList"],
+  inheritAttrs: false,
+  props: ["dictList", "isStsType"],
   data() {
     const validateContent = (rule, value, callback) => {
       if (!value && this.isHaveTo) {
@@ -296,29 +383,102 @@ export default {
     return {
       boleConfig: false,
       dialogVisible: false,
+      isLoading: false,
       // 批量同步
       isBatchSync: false,
       fileTypeList: [],
       computerFormOptions: [],
       similarList: [],
+      // 芯片版本
+      schemeVersionList: [],
+      // 测试协议
+      testAgreementList: [],
+      // 测试项目
+      testProjectList: [],
       // 表单参数
       form: {
         url: "",
+        testInfo: [],
       },
       title: "",
       // 表单校验
       rules: {
         computerModel: [
-          { required: true, message: "所属仪表不能为空", trigger: "blur" },
+          {
+            required: true,
+            message: "所属仪表不能为空",
+            trigger: "blur",
+          },
         ],
         type: [
-          { required: true, message: "文件类型不能为空", trigger: "blur" },
+          {
+            required: true,
+            message: "文件类型不能为空",
+            trigger: "blur",
+          },
         ],
-        content: [{ validator: validateContent, trigger: "blur" }],
+        dataType: [
+          {
+            required: true,
+            message: "数据类型不能为空",
+            trigger: "change",
+          },
+        ],
+        webVersion: [
+          {
+            required: true,
+            message: "请选择sts工序网页",
+            trigger: "change",
+          },
+        ],
+        "configExtend.schemeVersion": [
+          {
+            required: true,
+            message: "芯片版本不能为空",
+            trigger: "change",
+          },
+        ],
+        "configExtend.agreementVersion": [
+          {
+            required: true,
+            message: "测试协议不能为空",
+            trigger: "change",
+          },
+        ],
+        "configExtend.pcbaSn": [
+          {
+            required: true,
+            message: "PCBA SN格式不能为空",
+            trigger: "blur",
+          },
+        ],
+        "configExtend.testInfo": [
+          {
+            required: true,
+            message: "测试项目不能为空",
+            trigger: "change",
+          },
+        ],
+        content: [
+          {
+            validator: validateContent,
+            trigger: "blur",
+          },
+        ],
         idList: [
-          { type: "array", validator: validateIdList, trigger: "change" },
+          {
+            type: "array",
+            validator: validateIdList,
+            trigger: "change",
+          },
         ],
-        url: [{ required: true, message: "请上传文件", trigger: "change" }],
+        url: [
+          {
+            required: true,
+            message: "请上传文件",
+            trigger: "change",
+          },
+        ],
       },
       cidOptions: [],
       splitCidOptions: [],
@@ -327,6 +487,11 @@ export default {
       midOptions: [],
       disabledName: "",
       hardData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      stsData: {
         data: [],
         page: 1,
         more: true,
@@ -402,12 +567,20 @@ export default {
       }
       this.midOptions = res.data;
     });
+    this.getDicts("sys_test_agreement").then((res) => {
+      this.testAgreementList = res.data;
+    });
+    this.getDicts("sys_test_project").then((res) => {
+      this.testProjectList = res.data;
+    });
   },
   methods: {
     // 表单重置
     reset() {
       this.form = {
         url: "",
+        webVersion: "",
+        testInfo: [],
       };
       this.resetForm("form");
     },
@@ -461,6 +634,25 @@ export default {
         });
       });
     },
+    /** 网页列表 */
+    getStsDataList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        stsWebList({
+          p: page,
+          version: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.stsData.data = [...this.stsData.data, ...list];
+          } else {
+            this.stsData.data = list;
+          }
+          this.stsData.more = pageNum * pageSize < total;
+          this.stsData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     getHardNo(info) {
       if (!info) {
         this.form.hardNo = "";
@@ -471,33 +663,52 @@ export default {
       this.form.hardNo = id;
       this.form.hardName = name;
     },
+    getStsWebId(info) {
+      if (!info) {
+        this.form.webId = "";
+        this.form.webVersion = "";
+        return;
+      }
+      console.log(JSON.parse(info));
+      const { id, version } = JSON.parse(info);
+      this.form.webId = id;
+      this.form.webVersion = version;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.form.status = 0;
+          this.isLoading = true;
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
             delete this.form.updateBy;
             delete this.form.updateTime;
             let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
-            fn(this.form).then((response) => {
-              if (response.code === 200) {
-                const title = this.isBatchSync ? "批量同步成功" : "修改成功";
-                this.msgSuccess(title);
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
+            fn(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  const title = this.isBatchSync ? "批量同步成功" : "修改成功";
+                  this.msgSuccess(title);
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
           } else {
-            addFileConfig(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
+            addFileConfig(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
           }
         }
       });
@@ -512,9 +723,11 @@ export default {
     width: 100%;
   }
 }
+
 .similar-style {
   .el-select__tags {
     cursor: pointer;
+
     &::after {
       font-family: "element-icons" !important;
       speak: none;
@@ -536,6 +749,7 @@ export default {
       border-radius: 4px;
     }
   }
+
   .el-input__suffix {
     display: none;
   }
