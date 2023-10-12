@@ -147,12 +147,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#fff",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -191,7 +191,7 @@ export default {
             axisLabel: {
               color: "#fff",
               formatter: "{value}",
-            }
+            },
           },
           {
             name: "占比",
@@ -238,12 +238,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#fff",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -329,12 +329,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#fff",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -421,12 +421,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -512,12 +512,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -603,12 +603,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -695,12 +695,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -786,12 +786,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -877,12 +877,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -969,12 +969,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -1060,12 +1060,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -1151,12 +1151,12 @@ export default {
           left: "left",
           textStyle: {
             color: "#F56C6C",
-            fontSize: 14
+            fontSize: 14,
           },
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -1176,13 +1176,36 @@ export default {
         xAxis: [
           {
             type: "category",
-            data: [],
+            data: ["1月", "2月"],
             axisPointer: {
               type: "shadow",
             },
             axisLabel: {
               color: "#fff",
             },
+            position: "bottom",
+            offset: 20,
+            axisTick: {
+              show: true,
+              length: 40,
+              lineStyle: {
+                type: "dotted",
+              },
+            },
+          },
+          {
+            type: "category",
+            data: [],
+            position:'bottom',
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+            axisTick:{
+              show:true
+           }
           },
         ],
         yAxis: [
@@ -1236,5 +1259,5 @@ export default {
         ],
       },
     };
-  }
+  },
 };

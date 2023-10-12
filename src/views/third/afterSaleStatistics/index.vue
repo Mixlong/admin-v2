@@ -358,14 +358,14 @@ export default {
 
         this.setTopChartData(top3CategoryList, this.productRankTop3Option);
         this.setTopChartData(top3QuestionList, this.problemRankTop3Option);
-        this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option);
+        this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option, 1);
       } catch (error) {
         console.log(error);  
       }
     },
-    setTopChartData(dataList, options) {
+    setTopChartData(dataList, options, xAxisIndex = 0) {
       dataList.forEach(({ name, num, percent }) => {
-        options.xAxis[0].data.push(name);
+        options.xAxis[xAxisIndex].data.push(name);
         options.series[0].data.push(num);
         options.series[1].data.push(percent.toFixed(2) * 100);
       });      
