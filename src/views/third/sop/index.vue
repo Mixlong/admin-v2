@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-12 17:55:55
+ * @LastEditTime: 2023-10-12 21:19:56
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -38,6 +38,13 @@
           <el-option label="审核拒绝" value="2" />
         </el-select>
       </el-form-item>
+      <el-form-item label="版本号" prop="versionCode">
+        <el-input
+          v-model="queryParams.versionCode"
+          clearable
+          placeholder="请选择版本号"
+        ></el-input>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -67,8 +74,18 @@
       :height="tableHeight()"
       border
     >
-      <el-table-column label="品类" prop="categoryName" align="center" width="150" />
-      <el-table-column label="版本号" prop="versionCode" align="center" width="150" />
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="150"
+      />
+      <el-table-column
+        label="版本号"
+        prop="versionCode"
+        align="center"
+        width="150"
+      />
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="审核状态" prop="model" align="center" width="150">
         <template slot-scope="{ row }">
@@ -77,8 +94,18 @@
           <span v-if="row.state === 2" class="text-red">审核拒绝</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" prop="createBy" align="center" width="150" />
-      <el-table-column label="更新时间" prop="updateTime" align="center" width="150">
+      <el-table-column
+        label="创建人"
+        prop="createBy"
+        align="center"
+        width="150"
+      />
+      <el-table-column
+        label="更新时间"
+        prop="updateTime"
+        align="center"
+        width="150"
+      >
         <template slot-scope="{ row }">
           {{ parseTime(row.updateTime || row.createTime) }}
         </template>
@@ -128,10 +155,7 @@
     />
 
     <!-- 详情 -->
-    <sop-detail
-      ref="isSopDetailRef"
-      :visible.sync="isSopDetailDia"
-    />
+    <sop-detail ref="isSopDetailRef" :visible.sync="isSopDetailDia" />
   </div>
 </template>
 
@@ -168,8 +192,9 @@ export default {
       queryParams: {
         p: 1,
         l: 10,
-        categoryId: null,
+        categoryId: undefined,
         state: undefined,
+        versionCode: undefined,
       },
     };
   },
@@ -274,10 +299,10 @@ export default {
     rowName({ row, rowIndex }) {
       if (row.state === 1) {
         return "finish-row";
-      } 
+      }
       if (row.state === 2) {
         return "reject-row";
-      } 
+      }
     },
   },
 };

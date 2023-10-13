@@ -1,6 +1,6 @@
 <template>
   <div class="app-container chart-box">
-    <!-- <el-form :model="queryParams" ref="queryForm" inline>
+    <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="客户名称" prop="customerName">
         <el-autocomplete
           v-model="queryParams.customerName"
@@ -29,7 +29,23 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="型号" prop="computerName">
+
+      <el-form-item label="不良类型" prop="result">
+        <select-loadMore
+          v-model="queryParams.result"
+          style="width: 100%"
+          :data="afterSaleData.data"
+          :page="afterSaleData.page"
+          :hasMore="afterSaleData.more"
+          dictLabel="result"
+          :moreParams="true"
+          :request="getAfterSaleList"
+          @getChange="getAfterSaleId"
+          placeholder="请选择不良类型"
+        >
+        </select-loadMore>
+      </el-form-item>
+      <!-- <el-form-item label="型号" prop="computerName">
         <el-select
           :loading="isCLoading"
           filterable
@@ -48,14 +64,15 @@
             :value="dict.name"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
+
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
-    </el-form> -->
+    </el-form>
     <h2 class="text-white margin-bottom-lg">当前状态</h2>
     <el-row type="flex" :gutter="20">
       <el-col :span="6">
@@ -145,7 +162,12 @@
 </template>
 
 <script>
-import { afterStatusList, afterBadList, afterTopList } from "@/api/third/sale";
+import {
+  afterStatusList,
+  afterBadList,
+  afterTopList,
+  afterList,
+} from "@/api/third/sale";
 import commonData from "@/mixins/commonData";
 import chartOptions from "./chartOptoins";
 import problemRootStatus from "@/views/dashboard/commonChart";
@@ -192,6 +214,11 @@ export default {
     return {
       // 品类
       dictList: [],
+      afterSaleData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 查询参数
       queryParams: {
         returnDate: undefined,
@@ -209,6 +236,11 @@ export default {
   },
   methods: {
     handleQuery() {},
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
     async getAfterStatusList() {
       const { data } = await afterStatusList();
       const {
@@ -266,42 +298,39 @@ export default {
         const { data } = await afterBadList();
         const { customerList, categoryList, questionList } = data;
 
-        customerList.sort((a, b) => a.num - b.num);
         let xCustomerData = [],
           yLeftCustomerData = [],
           yRightCustomerData = [];
         customerList.forEach(({ name, num, percent }) => {
           xCustomerData.push(name);
           yLeftCustomerData.push(num);
-          yRightCustomerData.push(percent.toFixed(2) * 100);
+          yRightCustomerData.push(Math.ceil(percent * 100));
         });
 
         this.allCustomerRankOption.xAxis[0].data = xCustomerData;
         this.allCustomerRankOption.series[0].data = yLeftCustomerData;
         this.allCustomerRankOption.series[1].data = yRightCustomerData;
 
-        categoryList.sort((a, b) => a.num - b.num);
         let xProductData = [],
           yLeftProductData = [],
           yRightProductData = [];
         categoryList.forEach(({ name, num, percent }) => {
           xProductData.push(name);
           yLeftProductData.push(num);
-          yRightProductData.push(percent.toFixed(2) * 100);
+          yRightProductData.push(Math.ceil(percent * 100));
         });
 
         this.allProductRankOption.xAxis[0].data = xProductData;
         this.allProductRankOption.series[0].data = yLeftProductData;
         this.allProductRankOption.series[1].data = yRightProductData;
 
-        questionList.sort((a, b) => a.num - b.num);
         let xProblemData = [],
           yLeftProblemData = [],
           yRightProblemData = [];
         questionList.forEach(({ name, num, percent }) => {
           xProblemData.push(name);
           yLeftProblemData.push(num);
-          yRightProblemData.push(percent.toFixed(2) * 100);
+          yRightProblemData.push(Math.ceil(percent * 100));
         });
 
         this.allProblemRankOption.xAxis[0].data = xProblemData;
@@ -332,7 +361,6 @@ export default {
         this.setTopChartData(top1QuestionList, this.problemRankTop1Option);
         this.setTopChartData(top1ComputerList, this.modelProblemRankTop1Option);
 
-
         // top2
         this.productRankTop2Option.title.text = `TOP2: ${top2CustomerName}产品排行`;
         this.problemRankTop2Option.title.text = `${top2CustomerName}问题排行`;
@@ -346,7 +374,6 @@ export default {
         this.setTopChartData(top2QuestionList, this.problemRankTop2Option);
         this.setTopChartData(top2ComputerList, this.modelProblemRankTop2Option);
 
-
         // top3
         this.productRankTop3Option.title.text = `TOP3: ${top3CustomerName}产品排行`;
         this.problemRankTop3Option.title.text = `${top3CustomerName}问题排行`;
@@ -358,18 +385,44 @@ export default {
 
         this.setTopChartData(top3CategoryList, this.productRankTop3Option);
         this.setTopChartData(top3QuestionList, this.problemRankTop3Option);
-        this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option, 1);
+        this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option);
       } catch (error) {
-        console.log(error);  
+        console.log(error);
       }
     },
     setTopChartData(dataList, options, xAxisIndex = 0) {
       dataList.forEach(({ name, num, percent }) => {
         options.xAxis[xAxisIndex].data.push(name);
         options.series[0].data.push(num);
-        options.series[1].data.push(percent.toFixed(2) * 100);
-      });      
-    }
+        options.series[1].data.push(Math.ceil(percent * 100));
+      });
+    },
+    getAfterSaleList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        sopList({
+          p: page,
+          versionCode: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.afterSaleData.data = [...this.afterSaleData.data, ...list];
+          } else {
+            this.afterSaleData.data = list;
+          }
+          this.afterSaleData.more = pageNum * pageSize < total;
+          this.afterSaleData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getAfterSaleId(info) {
+      if (!info) {
+        this.form.sopId = "";
+        return;
+      }
+      const { id } = JSON.parse(info);
+      this.form.sopId = id;
+    },
   },
 };
 </script>

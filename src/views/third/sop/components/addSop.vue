@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-12 17:47:34
+ * @LastEditTime: 2023-10-13 12:10:31
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -86,13 +86,17 @@
         </el-form-item>
         <draggable
           v-model="form.list"
-          chosen-class="chosen"
           animation="1000"
           handle=".mover"
           @start="drag = true"
           @end="drag = false"
         >
-          <transition-group name="fade-transform-sop">
+          <transition-group
+            name="fade-transform-sop"
+            tag="div"
+            ref="stationBoxRef"
+            class="station_box"
+          >
             <el-row
               type="flex"
               justify="space-between"
@@ -264,6 +268,13 @@ export default {
         file: "",
         remark: "",
       });
+
+      const scrollRef = this.$refs.stationBoxRef.$el;
+      const scrollHeight = scrollRef.scrollHeight;
+      
+      this.$nextTick(() => {
+        scrollRef.scrollTop = scrollHeight;
+      });
     },
     // 删除物料损耗项
     removeSopData(item) {
@@ -360,20 +371,34 @@ export default {
     font-size: 18px;
   }
 
-  .add-file-sticky {
-    position: sticky;
-    top: -24px;
-    z-index: 666;
-    background: #fff;
-  }
+  // .add-file-sticky {
+  //   position: sticky;
+  //   top: -24px;
+  //   z-index: 666;
+  //   background: #fff;
+  // }
 
   .fade-transform-sop-leave-to {
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateX(60px);
   }
 
   .fade-transform-sop-leave-active {
-    transition: all 0.2s ease-in-out;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .station_box {
+    max-height: 500px;
+    overflow: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    padding-right: 10px;
+    box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.5);
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      background-color: transparent;
+    }
   }
 }
 </style>

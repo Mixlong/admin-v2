@@ -152,7 +152,7 @@ export default {
         },
         grid: {
           left: "9%",
-          right: "9%",
+          right: "9%"
         },
         tooltip: {
           trigger: "axis",
@@ -199,6 +199,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -209,6 +210,7 @@ export default {
           {
             name: "累计数量",
             type: "bar",
+            barGap: 10,
             barMaxWidth: 80,
             label: {
               show: true,
@@ -290,6 +292,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -381,6 +384,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -473,6 +477,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -564,6 +569,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -644,6 +650,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value}",
@@ -655,6 +662,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -747,6 +755,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -838,6 +847,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -918,6 +928,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value}",
@@ -1021,6 +1032,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -1112,6 +1124,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
@@ -1174,25 +1187,25 @@ export default {
           },
         },
         xAxis: [
-          {
-            type: "category",
-            data: ["1月", "2月"],
-            axisPointer: {
-              type: "shadow",
-            },
-            axisLabel: {
-              color: "#fff",
-            },
-            position: "bottom",
-            offset: 20,
-            axisTick: {
-              show: true,
-              length: 40,
-              lineStyle: {
-                type: "dotted",
-              },
-            },
-          },
+          // {
+          //   type: "category",
+          //   data: ["1月", "2月"],
+          //   axisPointer: {
+          //     type: "shadow",
+          //   },
+          //   axisLabel: {
+          //     color: "#fff",
+          //   },
+          //   position: "bottom",
+          //   offset: 20,
+          //   axisTick: {
+          //     show: true,
+          //     length: 40,
+          //     lineStyle: {
+          //       type: "dotted",
+          //     },
+          //   },
+          // },
           {
             type: "category",
             data: [],
@@ -1226,6 +1239,7 @@ export default {
               color: "#fff",
             },
             type: "value",
+            splitLine: false,
             axisLabel: {
               color: "#fff",
               formatter: "{value} %",
