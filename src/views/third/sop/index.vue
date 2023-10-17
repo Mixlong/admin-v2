@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-12 21:19:56
+ * @LastEditTime: 2023-10-16 11:59:47
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -226,11 +226,22 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      sopList(this.queryParams).then((response) => {
-        this.brandList = response.data.list;
-        this.total = response.data.total;
-        this.loading = false;
-      });
+      // sopList(this.queryParams).then((response) => {
+      //   this.brandList = response.data.list;
+      //   this.total = response.data.total;
+      //   this.loading = false;
+      // });
+      sopList(this.queryParams)
+        .then((res) => res.data)
+        .then((data) => {
+          const { list, total } = data;
+          
+          this.brandList = list;
+          this.total = total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     // 审核
     handleCheck(row) {

@@ -303,10 +303,13 @@ export default {
       });
     },
     getSopList({ page = 1, more = false, keyword = "" } = {}) {
+      const { categoryId } = this.form;
       return new Promise((resolve) => {
         sopList({
           p: page,
           versionCode: keyword,
+          state: 1,
+          categoryId
         }).then((res) => {
 
           const { list, total, pageNum, pageSize } = res.data;

@@ -131,3 +131,14 @@ export function afterTopList() {
         method: "get"
     })
 }
+
+export function afterSearch(params) {
+    return request({
+        url: "/after/search",
+        method: "get",
+        params
+    })
+}
+
+
+

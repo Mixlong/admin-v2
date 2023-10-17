@@ -152,7 +152,7 @@ export default {
         },
         grid: {
           left: "9%",
-          right: "9%"
+          right: "9%",
         },
         tooltip: {
           trigger: "axis",
@@ -1209,16 +1209,133 @@ export default {
           {
             type: "category",
             data: [],
-            position:'bottom',
+            position: "bottom",
             axisPointer: {
               type: "shadow",
             },
             axisLabel: {
               color: "#fff",
             },
-            axisTick:{
-              show:true
-           }
+            axisTick: {
+              show: true,
+            },
+          },
+        ],
+        yAxis: [
+          {
+            name: "数量",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value}",
+            },
+          },
+          {
+            name: "占比",
+            nameTextStyle: {
+              color: "#fff",
+            },
+            type: "value",
+            splitLine: false,
+            axisLabel: {
+              color: "#fff",
+              formatter: "{value} %",
+            },
+          },
+        ],
+        series: [
+          {
+            name: "累计数量",
+            type: "bar",
+            barMaxWidth: 80,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#f00",
+            },
+            data: [],
+          },
+          {
+            name: "累计百分比",
+            type: "line",
+            yAxisIndex: 1,
+            label: {
+              show: true,
+              position: "inside",
+              color: "#fff",
+              formatter: "{c}%",
+            },
+            data: [],
+          },
+        ],
+      },
+      // 筛选
+      searchChartOption: {
+        title: {
+          text: "",
+          x: "center",
+          y: "center",
+          textStyle: {
+            fontSize: 14,
+            fontWeight: "normal",
+            color: "#fff"
+          },
+        },
+        // grid: {
+        //   left: "9%",
+        //   right: "9%",
+        // },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+            crossStyle: {
+              color: "#999",
+            },
+          },
+        },
+        legend: {
+          top: "bottom",
+          textStyle: {
+            color: "#fff",
+          },
+        },
+        xAxis: [
+          // {
+          //   type: "category",
+          //   data: ["1月", "2月"],
+          //   axisPointer: {
+          //     type: "shadow",
+          //   },
+          //   axisLabel: {
+          //     color: "#fff",
+          //   },
+          //   position: "bottom",
+          //   offset: 20,
+          //   axisTick: {
+          //     show: true,
+          //     length: 40,
+          //     lineStyle: {
+          //       type: "dotted",
+          //     },
+          //   },
+          // },
+          {
+            type: "category",
+            data: [],
+            position: "bottom",
+            axisPointer: {
+              type: "shadow",
+            },
+            axisLabel: {
+              color: "#fff",
+            },
+            axisTick: {
+              show: true,
+            },
           },
         ],
         yAxis: [
