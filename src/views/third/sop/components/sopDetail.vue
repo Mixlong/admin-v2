@@ -72,6 +72,10 @@ export default {
   .el-carousel {
     .el-carousel__container {
       height: 500px;
+      .el-carousel__arrow {
+        background-color: rgb(32,48,65);
+        font-size: 16px;
+      }
       .el-carousel__item {
         text-align: center;
         padding-bottom: 35px;

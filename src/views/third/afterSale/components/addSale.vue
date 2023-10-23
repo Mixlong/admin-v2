@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-09-26 19:46:37
+ * @LastEditTime: 2023-10-23 20:17:33
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -12,7 +12,7 @@
     class="after-sale-box"
     :title="isTitle"
     :visible="visible"
-    width="1200px"
+    width="1250px"
     append-to-body
     center
     top="2vh"
@@ -101,6 +101,7 @@
                 <el-select
                   v-model="form.inventory"
                   filterable
+                  multiple
                   allow-create
                   clearable
                   style="width: 100%"
@@ -564,6 +565,7 @@ export default {
       isSubLoading: false,
       // 表单参数
       form: {
+        inventory: [],
         logisticsEntity: {},
       },
       // 客户数据
@@ -608,7 +610,7 @@ export default {
           { required: true, message: "请选择是否到付件", trigger: "change" },
         ],
         inventory: [
-          { required: true, message: "请选择客退清单", trigger: "change" },
+          { type: "array", required: true, message: "请选择客退清单", trigger: ["change", "blur"] },
         ],
         categoryId: [
           { required: true, message: "请选择品类", trigger: "change" },
@@ -749,6 +751,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
+        // inventory: [], 
         logisticsEntity: {},
       };
       this.resetForm("form");
@@ -759,9 +762,13 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
-          if (this.form.id) {
-            const { logisticsEntity, ...dataInfo } = this.form;
-            let currentData = this.form;
+          
+          let params = JSON.parse(JSON.stringify(this.form));
+          params.inventory = JSON.stringify(params.inventory);
+
+          if (params.id) {
+            const { logisticsEntity, ...dataInfo } = params;
+            let currentData = params;
             if (!Object.keys(logisticsEntity).length) {
               currentData = dataInfo;
             }
@@ -775,7 +782,7 @@ export default {
                 this.close();
               });
           } else {
-            saleSave(this.form)
+            saleSave(params)
               .then(() => {
                 this.msgSuccess("创建成功");
                 this.$parent.getList();

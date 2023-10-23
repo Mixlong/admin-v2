@@ -141,4 +141,22 @@ export function afterSearch(params) {
 }
 
 
+// 品类 （可根据客户id查询）
+export function afterCategoryList(params) {
+    return request({
+        url: "/after/category/list",
+        method: "get",
+        params
+    })
+}
+
+// 售后图表查询 
+export function afterResultList(params) {
+    return request({
+        url: '/after/result/list',
+        method: 'get',
+        params
+    });
+}
+
 

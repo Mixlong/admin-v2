@@ -55,25 +55,25 @@
     <template v-if="isShow">
       <h2 class="text-white margin-bottom-lg">当前状态</h2>
       <el-row type="flex" :gutter="20">
-        <el-col :span="6">
+        <el-col :span="8">
           <!-- 问题根因状态 -->
           <problem-root-status :chartOption="problemRootStatusOption" />
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <!-- 不良仪表状态 -->
           <bad-meter-status :chartOption="badMeterStatusOption" />
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <!-- 新增不良投诉 -->
           <new-bad-complaint :chartOption="newBadComplaintOption" />
         </el-col>
-        <el-col :span="6">
-          <!-- 每周新增不良投诉数 -->
-          <week-new-bad-complaint :chartOption="weekNewBadComplaintOption" />
-        </el-col>
       </el-row>
-
-      <h2 class="text-white margin-bottom-lg" style="margin-top: 150px">
+      <!-- 每周新增不良投诉数 -->
+      <week-new-bad-complaint
+        class="margin-top-lg"
+        :chartOption="weekNewBadComplaintOption"
+      />
+      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
         不良分布（OPEN汇总）
       </h2>
       <el-row type="flex" :gutter="20">
@@ -91,56 +91,65 @@
         </el-col>
       </el-row>
 
-      <h2 class="text-white margin-bottom-lg" style="margin-top: 150px">
+      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
         TOP问题排行
       </h2>
       <el-row type="flex" :gutter="20">
-        <el-col :span="8">
-          <!-- 产品排行 -->
-          <product-rank-top1 :chartOption="productRankTop1Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 问题排行 -->
-          <problem-rank-top1 :chartOption="problemRankTop1Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 机型问题排行 -->
-          <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
-        </el-col>
+        <template v-if="!isTop1CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top1 :chartOption="productRankTop1Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top1 :chartOption="problemRankTop1Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
+          </el-col>
+        </template>
       </el-row>
 
       <el-row class="margin-top" type="flex" :gutter="20">
-        <el-col :span="8">
-          <!-- 产品排行 -->
-          <product-rank-top2 :chartOption="productRankTop2Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 问题排行 -->
-          <problem-rank-top2 :chartOption="problemRankTop2Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 机型问题排行 -->
-          <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
-        </el-col>
+        <template v-if="!isTop2CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top2 :chartOption="productRankTop2Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top2 :chartOption="problemRankTop2Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
+          </el-col>
+        </template>
       </el-row>
 
       <el-row class="margin-top" type="flex" :gutter="20">
-        <el-col :span="8">
-          <!-- 产品排行 -->
-          <product-rank-top3 :chartOption="productRankTop3Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 问题排行 -->
-          <problem-rank-top3 :chartOption="problemRankTop3Option" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 机型问题排行 -->
-          <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
-        </el-col>
+        <template v-if="!isTop3CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top3 :chartOption="productRankTop3Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top3 :chartOption="problemRankTop3Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
+          </el-col>
+        </template> 
       </el-row>
     </template>
     <template v-else>
-      <search-chart :chartOption="searchChartOption" height="450px"></search-chart>
+      <search-chart
+        :chartOption="searchChartOption"
+        height="450px"
+      ></search-chart>
     </template>
   </div>
 </template>
@@ -150,11 +159,11 @@ import {
   afterStatusList,
   afterBadList,
   afterTopList,
-  afterList,
+  afterResultList,
   afterSearch,
+  afterCategoryList,
 } from "@/api/third/sale";
 import { getCustomerList } from "@/api/order";
-import { listCategory } from "@/api/third/category";
 
 import commonData from "@/mixins/commonData";
 import chartOptions from "./chartOptoins";
@@ -199,11 +208,14 @@ export default {
     productRankTop3,
     problemRankTop3,
     modelRankTop3,
-    searchChart
+    searchChart,
   },
   data() {
     return {
       isShow: true,
+      isTop1CustomerNameShow: false,
+      isTop2CustomerNameShow: false,
+      isTop3CustomerNameShow: false,
       customerData: {
         data: [],
         page: 1,
@@ -227,6 +239,14 @@ export default {
       },
     };
   },
+  watch: {
+    "queryParams.customerId"(customerId) {
+      if (customerId) {
+        this.queryParams.categoryId = "";
+        this.categoryData.data = [];
+      }
+    },
+  },
   created() {
     this.getAfterStatusList();
     this.getAfterBadList();
@@ -246,12 +266,13 @@ export default {
 
       afterSearch(this.queryParams).then((res) => {
         this.isShow = false;
-        if(res.data.length) {
+        if (res.data.length) {
+          this.searchChartOption.title.text = "";
           this.setTopChartData(res.data, this.searchChartOption);
         } else {
           this.searchChartOption.title.text = "暂无数据";
         }
-      })
+      });
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -361,18 +382,22 @@ export default {
       try {
         const { data } = await afterTopList();
 
-        const top1CustomerName = data[0].customerName;
-        const top2CustomerName = data[1].customerName;
-        const top3CustomerName = data[2].customerName;
+        const top1CustomerName = data[0] && data[0].customerName;
+        const top2CustomerName = data[1] && data[1].customerName;
+        const top3CustomerName = data[2] && data[2].customerName;
+
+        this.isTop1CustomerNameShow = this.Is_Empty(top1CustomerName);
+        this.isTop2CustomerNameShow = this.Is_Empty(top2CustomerName);
+        this.isTop3CustomerNameShow = this.Is_Empty(top3CustomerName);
 
         // top1
         this.productRankTop1Option.title.text = `TOP1: ${top1CustomerName}产品排行`;
         this.problemRankTop1Option.title.text = `${top1CustomerName}问题排行`;
         this.modelProblemRankTop1Option.title.text = `${top1CustomerName}机型问题排行`;
 
-        const top1CategoryList = data[0].categoryList;
-        const top1QuestionList = data[0].questionList;
-        const top1ComputerList = data[0].computerList;
+        const top1CategoryList = data[0] && data[0].categoryList;
+        const top1QuestionList = data[0] && data[0].questionList;
+        const top1ComputerList = data[0] && data[0].computerList;
 
         this.setTopChartData(top1CategoryList, this.productRankTop1Option);
         this.setTopChartData(top1QuestionList, this.problemRankTop1Option);
@@ -383,9 +408,9 @@ export default {
         this.problemRankTop2Option.title.text = `${top2CustomerName}问题排行`;
         this.modelProblemRankTop2Option.title.text = `${top2CustomerName}机型问题排行`;
 
-        const top2CategoryList = data[1].categoryList;
-        const top2QuestionList = data[1].questionList;
-        const top2ComputerList = data[1].computerList;
+        const top2CategoryList = data[1] && data[1].categoryList;
+        const top2QuestionList = data[1] && data[1].questionList;
+        const top2ComputerList = data[1] && data[1].computerList;
 
         this.setTopChartData(top2CategoryList, this.productRankTop2Option);
         this.setTopChartData(top2QuestionList, this.problemRankTop2Option);
@@ -396,9 +421,9 @@ export default {
         this.problemRankTop3Option.title.text = `${top3CustomerName}问题排行`;
         this.modelProblemRankTop3Option.title.text = `${top3CustomerName}机型问题排行`;
 
-        const top3CategoryList = data[1].categoryList;
-        const top3QuestionList = data[1].questionList;
-        const top3ComputerList = data[1].computerList;
+        const top3CategoryList = data[2] && data[2].categoryList;
+        const top3QuestionList = data[2] && data[2].questionList;
+        const top3ComputerList = data[2] && data[2].computerList;
 
         this.setTopChartData(top3CategoryList, this.productRankTop3Option);
         this.setTopChartData(top3QuestionList, this.problemRankTop3Option);
@@ -413,7 +438,7 @@ export default {
       options.series[1].data = [];
     },
     setTopChartData(dataList, options, xAxisIndex = 0) {
-      dataList.forEach(({ name, num, percent }) => {
+      dataList && dataList.forEach(({ name, num, percent }) => {
         options.xAxis[xAxisIndex].data.push(name);
         options.series[0].data.push(num);
         options.series[1].data.push(Math.ceil(percent * 100));
@@ -438,10 +463,12 @@ export default {
       });
     },
     getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
+      const { customerId } = this.queryParams;
       return new Promise((resolve) => {
-        listCategory({
+        afterCategoryList({
           p: page,
           key: keyword,
+          customerId,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
@@ -457,7 +484,7 @@ export default {
     },
     getAfterSaleList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
-        afterList({
+        afterResultList({
           p: page,
           result: keyword,
         }).then((res) => {
@@ -473,14 +500,6 @@ export default {
         });
       });
     },
-    // getAfterSaleId(info) {
-    //   if (!info) {
-    //     this.form.sopId = "";
-    //     return;
-    //   }
-    //   const { id } = JSON.parse(info);
-    //   this.form.sopId = id;
-    // },
   },
 };
 </script>
