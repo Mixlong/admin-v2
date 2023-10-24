@@ -72,7 +72,12 @@
         新增
       </el-button>
     </el-form>
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
+    <el-table
+      v-loading="loading"
+      :data="list"
+      :height="tableHeight()"
+      border
+    >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -82,7 +87,7 @@
         label="产品品类"
         prop="categoryName"
         align="center"
-        width="120px"
+        width="110"
       >
         <template slot-scope="{ row }">
           {{ row.type === 1 ? row.categoryName : "---" }}
@@ -92,7 +97,7 @@
         label="产品型号"
         prop="computerName"
         align="center"
-        width="120px"
+        width="110"
       >
         <template slot-scope="{ row }">
           <div class="flex flex-direction align-center">
@@ -110,9 +115,9 @@
         label="客户"
         prop="customerName"
         align="center"
-        width="120px"
+        width="110"
       />
-      <el-table-column label="软件版本信息" align="center" width="150px">
+      <el-table-column label="软件版本信息" align="center" width="130px">
         <template slot-scope="{ row }">
           <span>软件版本: {{ row.softVersion || "---" }}</span>
           <br />
@@ -130,12 +135,14 @@
           <template v-else>---</template>
         </template>
       </el-table-column>
-      <el-table-column label="测试状态" align="center" width="100px">
+      <el-table-column label="测试状态" align="center" width="90">
         <template slot-scope="{ row }">
-          <el-tag :type="isTagType(row.state)">{{ stateList[row.state] }}</el-tag>
+          <el-tag :type="isTagType(row.state)">{{
+            stateList[row.state]
+          }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="完成状态" align="center" width="100px">
+      <el-table-column label="完成状态" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag type="danger" v-if="row.isComplete === 0">未完成</el-tag>
           <el-tag type="success" v-if="row.isComplete === 1">已完成</el-tag>
@@ -145,38 +152,48 @@
         label="当前负责人"
         prop="createBy"
         align="center"
-        width="120px"
+        width="110"
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120px">
+      <el-table-column label="操作" align="center" width="90px">
         <template slot-scope="{ row }">
-          <Tooltip
-            v-if="row.state !== 1"
-            icon="el-icon-edit"
-            content="编辑"
-            @click="handleUpdate(row)"
-          />
-          <Tooltip
-            v-if="row.state !== 1"
-            icon="el-icon-check"
-            content="待测试"
-            @click="onWatiTest(row.id)"
-          />
-          <Tooltip
-            v-if="isCompleteShow(row)"
-            icon="el-icon-s-check"
-            content="测试完毕"
-            @click="onComplete(row.id)"
-          />
+          <div class="flex flex-direction align-center">
+            <Tooltip
+              v-if="row.state !== 1"
+              icon="el-icon-edit"
+              content="编辑"
+              @click="handleUpdate(row)"
+            />
+            <Tooltip
+              class="margin-left-0"
+              v-if="row.state !== 1"
+              icon="el-icon-check"
+              content="待测试"
+              @click="onWatiTest(row.id)"
+            />
+            <Tooltip
+              class="margin-left-0"
+              v-if="isCompleteShow(row)"
+              icon="el-icon-s-check"
+              content="测试完毕"
+              @click="onComplete(row.id)"
+            />
+            <Tooltip 
+              class="margin-left-0"
+              icon="el-icon-position" 
+              content="软件发布"
+              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}`)" 
+            />
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -250,14 +267,17 @@ export default {
       };
     },
     isTagType() {
-      return state => {
-        switch(state) {
-          case 0: return 'warning'; 
-          case 1: return 'success'; 
-          case 2: return 'danger'; 
+      return (state) => {
+        switch (state) {
+          case 0:
+            return "warning";
+          case 1:
+            return "success";
+          case 2:
+            return "danger";
         }
-      }
-    }
+      };
+    },
   },
   created() {
     this.getList();
@@ -308,7 +328,6 @@ export default {
           row.status = row.status ? 0 : 1;
         });
     },
-
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -359,6 +378,11 @@ export default {
         })
         .catch();
     },
+    // rowClassName({ row }) {
+    //   if (row.isComplete === 1) {
+    //     return "fininshed";
+    //   }
+    // },
   },
 };
 </script>

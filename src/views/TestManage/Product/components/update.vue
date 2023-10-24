@@ -37,7 +37,10 @@
             type="textarea"
             placeholder="请输入描述"
             clearable
-            maxlength="10"
+            :autosize="{
+              minRows: 3,
+              maxRows: 6
+            }"
           />
         </el-form-item>
       </el-form>
@@ -70,7 +73,7 @@ export default {
         productType: [
           { required: true, message: "请选择模块名称", trigger: "change" },
         ],
-        desc: [{ required: true, message: "请输入描述", trigger: "blur" }],
+        desc: [{ required: false, message: "请输入描述", trigger: "blur" }],
       },
     };
   },

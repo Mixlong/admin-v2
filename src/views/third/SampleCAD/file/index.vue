@@ -129,13 +129,9 @@
       <el-table-column
         label="创建人"
         align="center"
-        prop="createBy"
+        prop="updateBy"
         width="120"
-      >
-        <template slot-scope="{ row }">
-          {{ row.createBy ? row.createBy : row.updateBy }}
-        </template>
-      </el-table-column>
+      />
       <el-table-column label="创建时间" align="center" width="140">
         <template slot-scope="{ row }">
           {{ row.updateTime || "---" }}

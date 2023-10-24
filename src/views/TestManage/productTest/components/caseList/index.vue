@@ -51,21 +51,32 @@
       </el-form-item>
     </el-form>
     <el-table
-      v-loading="loading"
       ref="multipleTable"
+      v-loading="loading"
+      border
       :data="testList"
       tooltip-effect="dark"
       row-key="id"
       style="width: 100%"
+      :height="tabHeight"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" reserve-selection width="50" />
-      <el-table-column label="用例类型" prop="typeName" align="center" />
+      <el-table-column
+        label="用例类型"
+        prop="typeName"
+        align="center"
+        width="120"
+      />
       <el-table-column label="所属模块" prop="productName" align="center" />
-      <el-table-column label="测试项" prop="content" align="center" />
+      <el-table-column
+        label="测试项"
+        prop="content"
+        align="center"
+      />
       <el-table-column label="前置条件" prop="preconditions" align="center" />
       <el-table-column label="输入与操作" prop="inter" align="center" />
-      <el-table-column label="预期结果" prop="result" align="center" />
+      <el-table-column label="预期结果" prop="result" align="center" min-width="200" />
     </el-table>
 
     <pagination
@@ -82,6 +93,12 @@
 import { testCaseList } from "@/api/third/testApi";
 export default {
   inheritAttrs: false,
+  props: {
+    tabHeight: {
+      type: Number,
+      default: 400,
+    },
+  },
   data() {
     return {
       loading: false,
@@ -110,7 +127,7 @@ export default {
     this.getDicts("useCaseType").then((res) => {
       this.useCaseTypeList = res.data;
     });
-    
+
     this.getList();
   },
   methods: {
@@ -123,7 +140,7 @@ export default {
       this.handleQuery();
     },
     handleSelectionChange(list) {
-      this.mulSelList = list
+      this.mulSelList = list;
     },
     getList() {
       this.loading = true;

@@ -1,14 +1,15 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:03
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-10-24 16:50:49
+ * @FilePath: \FILECONF-UI\src\App.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div
     id="app"
-    :style="{
-      backgroundImage:
-        customImage > 0
-          ? 'url(' +
-            require('@/assets/theme/smallDemo' + customImage + '.png') +
-            ')'
-          : '',
-    }"
+    :style="{ backgroundImage: bgImage }"
     :class="{ 'theme-style': customImage > 0}"
   >
     <router-view />
@@ -21,19 +22,16 @@ export default {
   name: "App",
   computed: {
     ...mapState({
-      customImage: (state) => state.settings.customImage,
+      customImage: (state) => state.settings.customImage
     }),
-  },
-  data() {
-    return {
-      image: "",
-    };
-  },
-  mounted() {
-    // this.image = require("@/assets/theme/smallDemo" +
-    //   this.customImage +
-    //   ".png");
-  },
+    bgImage() {
+      const customImage = this.customImage;
+      if(customImage > 0) {
+        const imageSrc = require(`@/assets/theme/smallDemo${customImage}.png`)
+        return   `url(${imageSrc})`;
+      }
+    }
+  }
 };
 </script>
 <style lang='scss'>
@@ -45,7 +43,7 @@ export default {
 }
 .app-container {
   height: calc(100vh - 70px);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .theme-style {
   .tags-view-container {

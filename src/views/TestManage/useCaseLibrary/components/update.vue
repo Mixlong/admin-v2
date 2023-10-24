@@ -164,13 +164,20 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.id) {
-            testCaseEdit(this.form).then((response) => {
-              if (response.code === 200) {
+            this.$confirm(`修改后，审核状态会变为“待审核”，确认修改吗？`, "警告", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            }).then(() => {
+              return testCaseEdit(this.form);
+            }).then((res) => {
+              console.log(res);
+              if (res.code === 200) {
                 this.msgSuccess("修改成功");
                 this.$emit("update:visible", false);
                 this.$parent.getList();
               }
-            });
+            }).catch(() => {});
           } else {
             testCaseAdd(this.form).then((response) => {
               if (response.code === 200) {

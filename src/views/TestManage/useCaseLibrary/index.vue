@@ -96,18 +96,18 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="用例类型" prop="typeName" align="center" />
+      <el-table-column label="用例类型" prop="typeName" align="center" width="100" />
       <el-table-column label="所属模块" prop="productName" align="center" />
       <el-table-column label="测试项" prop="content" align="center" />
       <el-table-column label="前置条件" prop="preconditions" align="center" />
       <el-table-column label="输入与操作" prop="inter" align="center" />
       <el-table-column label="预期结果" prop="result" align="center" />
-      <el-table-column label="审核状态" prop="state" align="center" width="120">
-        <template slot-scope="scope">
-          {{ stateList[scope.row.state] }}
+      <el-table-column label="审核状态" prop="state" align="center" width="90">
+        <template slot-scope="{ row }">
+          <el-tag :type="isStateType(row.state)" hit>{{ stateList[row.state] }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -121,7 +121,7 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="140"
+        width="100"
       />
       <el-table-column
         label="创建时间"
@@ -133,13 +133,13 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="140">
-        <template slot-scope="scope">
+      <el-table-column label="操作" align="center" width="120">
+        <template slot-scope="{ row }">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"
             icon="el-icon-edit"
             content="编辑"
-            @click="handleUpdate(scope.row)"
+            @click="handleUpdate(row)"
           />
           <!-- <Tooltip
             v-if="checkRole(['test', 'admin'])"
@@ -149,10 +149,10 @@
             @click="handleDelete(scope.row)"
           /> -->
           <Tooltip
-            v-if="checkRole(['test', 'admin'])"
+            v-if="checkRole(['test', 'admin']) && row.state !== 1"
             icon="el-icon-circle-check"
             content="审核"
-            @click="handleCheck(scope.row)"
+            @click="handleCheck(row)"
           />
         </template>
       </el-table-column>
@@ -214,6 +214,14 @@ export default {
       },
     };
   },
+  computed: {
+    isStateType() {
+      return state => {
+        const stateTypeList = ["warning", "success", "danger"];
+        return stateTypeList[state];
+      }
+    }
+  },
   created() {
     this.getDicts("test_moduleName").then((res) => {
       this.moduleList = res.data;
@@ -246,18 +254,18 @@ export default {
     },
     handleStatus(row) {
       let text = row.status ? "禁用" : "启用";
-      this.$confirm("确认要" + text, "警告", {
+      this.$confirm(`确认要${text}吗？`, "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       })
-        .then(function () {
+        .then(() => {
           return taskCaseAuth([{ id: row.id, status: row.status }]);
         })
         .then(() => {
           this.msgSuccess(text + "成功");
         })
-        .catch(function () {
+        .catch(() => {
           row.status = row.status ? 0 : 1;
         });
     },
@@ -275,22 +283,26 @@ export default {
     /** 审核  */
     handleCheck(row) {
       this.$confirm("是否审核通过？", "警告", {
+        distinguishCancelAndClose: true,
         confirmButtonText: "通 过",
         cancelButtonText: "驳 回",
         type: "warning",
       })
-        .then(function () {
+        .then(() => {
           return testCaseState([{ id: row.id, state: 1 }]);
         })
         .then(() => {
           this.getList();
           this.msgSuccess("操作成功");
         })
-        .catch(() => {
-          testCaseState([{ id: row.id, state: 2 }]).then(() => {
-            this.getList();
-            this.msgSuccess("操作成功");
-          });
+        .catch((action) => {
+          console.log(action)
+          if(action === 'cancel') {
+            testCaseState([{ id: row.id, state: 2 }]).then(() => {
+              this.getList();
+              this.msgSuccess("操作成功");
+            });
+          }
         });
     },
     /** 删除按钮操作 */
