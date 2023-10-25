@@ -2,20 +2,17 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属模块：" prop="productType">
-        <el-select
+        <select-loadMore
           v-model="queryParams.productType"
-          size="mini"
-          filterable
-          placeholder="请选择所属模块"
-          @change="getList"
-        >
-          <el-option
-            v-for="dict in moduleList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictCode"
-          />
-        </el-select>
+          :data="moduleData.data"
+          :page="moduleData.page"
+          :hasMore="moduleData.more"
+          dictLabel="productType"
+          dictValue="productType"
+          :request="getModuleList"
+          placeholder="请选择模块"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="用例类型：" prop="type">
         <el-select
@@ -49,7 +46,7 @@
             :value="key"
           />
         </el-select>
-      </el-form-item>      
+      </el-form-item>
       <el-form-item label="产品状态：" prop="status">
         <el-select
           v-model="queryParams.status"
@@ -80,15 +77,15 @@
         </el-button>
       </el-form-item>
       <el-button
-          v-if="checkRole(['test', 'admin'])"
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          class="fr"
-        >
-          新增
-        </el-button>
+        v-if="checkRole(['test', 'admin'])"
+        type="primary"
+        icon="el-icon-plus"
+        size="mini"
+        @click="handleAdd"
+        class="fr"
+      >
+        新增
+      </el-button>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
@@ -96,7 +93,12 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="用例类型" prop="typeName" align="center" width="100" />
+      <el-table-column
+        label="用例类型"
+        prop="typeName"
+        align="center"
+        width="100"
+      />
       <el-table-column label="所属模块" prop="productName" align="center" />
       <el-table-column label="测试项" prop="content" align="center" />
       <el-table-column label="前置条件" prop="preconditions" align="center" />
@@ -104,7 +106,9 @@
       <el-table-column label="预期结果" prop="result" align="center" />
       <el-table-column label="审核状态" prop="state" align="center" width="90">
         <template slot-scope="{ row }">
-          <el-tag :type="isStateType(row.state)" hit>{{ stateList[row.state] }}</el-tag>
+          <el-tag :type="isStateType(row.state)" hit>{{
+            stateList[row.state]
+          }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" width="100">
@@ -176,17 +180,21 @@
 </template>
 
 <script>
-import { testCaseList, taskCaseAuth, testCaseState } from "@/api/third/testApi";
+import {
+  testCaseList,
+  taskCaseAuth,
+  testCaseState
+} from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
+import CommonMinins from "@/views/TestManage/mixins";
 
 export default {
+  mixins: [CommonMinins],
   components: {
     CompUpdate: () => import("./components/update"),
   },
   data() {
     return {
-      // 模块名称
-      moduleList: [],
       // 用例类型
       useCaseTypeList: [],
       // 审核状态
@@ -196,6 +204,11 @@ export default {
         2: "已驳回",
       },
       commonStatusList,
+      moduleData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 遮罩层
       loading: false,
       dialogVisible: false,
@@ -216,16 +229,13 @@ export default {
   },
   computed: {
     isStateType() {
-      return state => {
+      return (state) => {
         const stateTypeList = ["warning", "success", "danger"];
         return stateTypeList[state];
-      }
-    }
+      };
+    },
   },
   created() {
-    this.getDicts("test_moduleName").then((res) => {
-      this.moduleList = res.data;
-    });
     this.getDicts("useCaseType").then((res) => {
       this.useCaseTypeList = res.data;
     });
@@ -249,7 +259,16 @@ export default {
     handleUpdate(row) {
       this.dialogVisible = true;
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign({}, row);
+      const { content, inter, preconditions, result } = row;
+      const list = [
+        {
+          content,
+          inter,
+          preconditions,
+          result,
+        },
+      ];
+      this.$refs.compUpdate.form = Object.assign({ list }, row);
       this.title = "修改用例";
     },
     handleStatus(row) {
@@ -296,8 +315,8 @@ export default {
           this.msgSuccess("操作成功");
         })
         .catch((action) => {
-          console.log(action)
-          if(action === 'cancel') {
+          console.log(action);
+          if (action === "cancel") {
             testCaseState([{ id: row.id, state: 2 }]).then(() => {
               this.getList();
               this.msgSuccess("操作成功");

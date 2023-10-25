@@ -2,21 +2,17 @@
   <div>
     <el-form ref="queryForm" :model="queryParams" :inline="true">
       <el-form-item label="所属模块：" prop="productType">
-        <el-select
+        <select-loadMore
           v-model="queryParams.productType"
-          size="mini"
-          filterable
-          clearable
-          placeholder="请选择所属模块"
-          @change="getList"
-        >
-          <el-option
-            v-for="dict in moduleList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictCode"
-          />
-        </el-select>
+          :data="moduleData.data"
+          :page="moduleData.page"
+          :hasMore="moduleData.more"
+          dictLabel="productType"
+          dictValue="productType"
+          :request="getModuleList"
+          placeholder="请选择模块"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="用例类型：" prop="type">
         <el-select
@@ -62,13 +58,13 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" reserve-selection width="50" />
+      <el-table-column label="所属模块" prop="productName" align="center" />
       <el-table-column
         label="用例类型"
         prop="typeName"
         align="center"
         width="120"
       />
-      <el-table-column label="所属模块" prop="productName" align="center" />
       <el-table-column
         label="测试项"
         prop="content"
@@ -91,8 +87,11 @@
 
 <script>
 import { testCaseList } from "@/api/third/testApi";
+import CommonMinins from "@/views/TestManage/mixins";
+
 export default {
   inheritAttrs: false,
+  mixins: [CommonMinins],
   props: {
     tabHeight: {
       type: Number,
@@ -104,8 +103,6 @@ export default {
       loading: false,
       total: 0,
       testList: [],
-      // 模块名称
-      moduleList: [],
       // 用例类型
       useCaseTypeList: [],
       mulSelList: [],
@@ -121,9 +118,6 @@ export default {
     };
   },
   created() {
-    this.getDicts("test_moduleName").then((res) => {
-      this.moduleList = res.data;
-    });
     this.getDicts("useCaseType").then((res) => {
       this.useCaseTypeList = res.data;
     });

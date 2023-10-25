@@ -454,11 +454,7 @@ export default {
     },
 
     handleCloseDrawer() {
-      this.$confirm("确认关闭？")
-        .then((_) => {
-          this.isDrawer = false;
-        })
-        .catch((_) => {});
+      this.isDrawer = false;
     },
 
     handleSelection(selection, row) {

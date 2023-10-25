@@ -2,19 +2,11 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="模块名称：" prop="productType">
-        <el-select
-          v-model="queryParams.productType"
-          size="mini"
-          filterable
-          placeholder="请选择模块名称"
-        >
-          <el-option
-            v-for="dict in moduleList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictCode"
+        <el-input
+            v-model.trim="queryParams.productType"
+            placeholder="请输入模块名称"
+            clearable
           />
-        </el-select>
       </el-form-item>
       <el-form-item label="产品状态：" prop="status">
         <el-select
@@ -64,7 +56,7 @@
       </el-table-column>
       <el-table-column
         label="模块名称"
-        prop="productName"
+        prop="productType"
         align="center"
         width="250"
       />
@@ -127,6 +119,7 @@
       :title="title"
       :moduleList="moduleList"
     />
+
   </div>
 </template>
 

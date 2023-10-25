@@ -16,20 +16,11 @@
         label-position="left"
       >
         <el-form-item label="模块名称：" prop="productType">
-          <el-select
-            v-model="form.productType"
-            size="mini"
-            filterable
-            placeholder="请选择模块名称"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="dict in moduleList"
-              :key="dict.dictCode"
-              :label="dict.dictValue"
-              :value="String(dict.dictCode)"
-            />
-          </el-select>
+          <el-input
+            v-model.trim="form.productType"
+            placeholder="请输入模块名称"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="描述：" prop="desc">
           <el-input
@@ -57,7 +48,6 @@ import { testProductAdd, testProductEdit } from "@/api/third/testApi";
 
 export default {
   inheritAttrs: false,
-  props: ["moduleList"],
   data() {
     return {
       step: 1,

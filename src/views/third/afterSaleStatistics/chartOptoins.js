@@ -140,7 +140,7 @@ export default {
       weekNewBadComplaintOption: {
         backgroundColor: setBackgroundColor(),
         title: {
-          text: "新增不良投诉",
+          text: "年度每周新增不良",
           left: "center",
           top: 10,
           textStyle: {
@@ -529,7 +529,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#D9001B",
             fontSize: 14,
           },
         },
@@ -629,7 +629,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#D9001B",
             fontSize: 14,
           },
         },
@@ -729,7 +729,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#D9001B",
             fontSize: 14,
           },
         },
@@ -831,7 +831,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#F59A23",
             fontSize: 14,
           },
         },
@@ -931,7 +931,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#F59A23",
             fontSize: 14,
           },
         },
@@ -1031,7 +1031,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#F59A23",
             fontSize: 14,
           },
         },
@@ -1132,7 +1132,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#5C9EDB",
             fontSize: 14,
           },
         },
@@ -1232,7 +1232,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#5C9EDB",
             fontSize: 14,
           },
         },
@@ -1332,7 +1332,7 @@ export default {
           left: "left",
           top: 5,
           textStyle: {
-            color: "#F56C6C",
+            color: "#5C9EDB",
             fontSize: 14,
           },
         },
