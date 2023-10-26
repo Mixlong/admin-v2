@@ -338,3 +338,12 @@ export function sopAuth(data) {
     data,
   });
 }
+
+// 用例导入
+export function caseUpload(data) {
+  return request({
+    url: "/test/case/input",
+    method: "put",
+    data
+  });
+}

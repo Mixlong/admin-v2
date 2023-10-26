@@ -32,22 +32,6 @@
           <el-option label="已完成" value="1"></el-option>
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="状态：" prop="computerStatus">
-        <el-select
-          v-model="queryParams.computerStatus"
-          clearable
-          placeholder="请选择状态"
-          @change="getList"
-          style="width: 140px"
-        >
-          <el-option
-            v-for="(value, key) in commonStatusList"
-            :key="key"
-            :label="value"
-            :value="key"
-          />
-        </el-select>
-      </el-form-item> -->
       <el-form-item>
         <el-button
           type="primary"
@@ -111,12 +95,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        label="客户"
-        prop="customerName"
-        align="center"
-        width="110"
-      />
+      <el-table-column label="客户" prop="customerName" align="center"  width="150" />
       <el-table-column label="软件版本信息" align="center" width="130px">
         <template slot-scope="{ row }">
           <span>软件版本: {{ row.softVersion || "---" }}</span>
@@ -127,10 +106,10 @@
       <el-table-column label="详细需求" prop="desc" header-align="center">
         <div slot-scope="{ row }" v-html="row.demand"></div>
       </el-table-column>
-      <el-table-column label="配置需求表" prop="needInfo" align="center">
+      <el-table-column label="配置需求表" prop="needInfo" align="center" width="100">
         <template slot-scope="{ row }">
           <template v-if="row.needInfo">
-            <preview-img :url="row.needInfo" :srcList="[row.needInfo]" />
+            <preview-img :url="row.needInfo" :srcList="[row.needInfo]" width="80px" height="80px" />
           </template>
           <template v-else>---</template>
         </template>

@@ -187,9 +187,12 @@ export default {
     },
     isListClass() {
       const { list, id } = this.form;
-      return {
+      return [
+        {
         'station_box': (list.length > 1) && !id 
-      }
+        },
+        'overflow-y'
+      ]
     }
   },
   methods: {
@@ -297,8 +300,8 @@ export default {
 
 .station_box {
   max-height: 500px;
-  overflow: hidden;
-  overflow-y: auto;
+  // overflow-x: hidden;
+  // overflow-y: auto;
   scroll-behavior: smooth;
   padding-right: 25px;
   box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.5);

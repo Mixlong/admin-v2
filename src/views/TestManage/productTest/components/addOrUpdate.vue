@@ -23,7 +23,8 @@
             <el-descriptions
               title="送样信息"
               direction="vertical"
-              :column="5"
+              :column="6"
+              size="mini"
               border
             >
               <template slot="extra">
@@ -33,7 +34,7 @@
               </template>
 
               <template v-if="sampleSingleData.id">
-                <el-descriptions-item label="产品型号">
+                <el-descriptions-item label="产品型号" :labelStyle="labelStyle({width: 250})" contentClassName="text-center">
                   <el-tag
                     class="margin-right-xs"
                     v-for="(item, index) in modelList(
@@ -44,16 +45,21 @@
                     {{ item }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="客户名称">
+                <el-descriptions-item label="客户名称" :labelStyle="labelStyle()" contentClassName="text-center">
                   {{ sampleSingleData.customerName }}
                 </el-descriptions-item>
-                <el-descriptions-item label="软件版本">
+                <el-descriptions-item label="软件版本" :labelStyle="labelStyle()" contentClassName="text-center">
                   {{ sampleSingleData.softVersion }}
                 </el-descriptions-item>
-                <el-descriptions-item label="硬件版本">
+                <el-descriptions-item label="硬件版本" :labelStyle="labelStyle()" contentClassName="text-center">
                   {{ sampleSingleData.hardVersion }}
                 </el-descriptions-item>
-                <el-descriptions-item label="详细需求">
+                <el-descriptions-item label="配置需求表" labelClassName="text-center">
+                  <span v-for="(url, index) in $setCheckListArr(sampleSingleData.checklist)" :key="index" :class="{ 'margin-right-xs': isSetImgMargin(index) }">
+                    <preview-img :url="url" :srcList="[url]" width="60px" height="60px" />
+                  </span>
+                </el-descriptions-item>
+                <el-descriptions-item label="详细需求" width="80" :labelStyle="labelStyle({width: 120})" contentClassName="text-center">
                   <el-button type="primary" @click="isDemandDetail = true">查看</el-button>
                 </el-descriptions-item>
               </template>
@@ -343,6 +349,21 @@ export default {
         return true;
       }
     },
+    labelStyle() {
+      return ({width=200, textAlign='center'}={}) => {
+        return {
+          width: `${width}px`,
+          textAlign
+        }
+      }
+    },
+    isSetImgMargin() {
+      return (index) => {
+        const {checklist} = this.sampleSingleData;
+        const imgCount = this.$setCheckListArr(checklist).length;
+        return imgCount > 1 && index < imgCount - 1;
+      }
+    }
   },
   watch: {
     "form.needInfo"(needInfo) {

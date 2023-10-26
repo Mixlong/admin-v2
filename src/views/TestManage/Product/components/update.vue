@@ -61,7 +61,7 @@ export default {
       // 表单校验
       rules: {
         productType: [
-          { required: true, message: "请选择模块名称", trigger: "change" },
+          { required: true, message: "请输入模块名称", trigger: "change" },
         ],
         desc: [{ required: false, message: "请输入描述", trigger: "blur" }],
       },
