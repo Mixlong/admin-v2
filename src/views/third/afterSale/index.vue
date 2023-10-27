@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-08 20:36:14
+ * @LastEditTime: 2023-10-23 20:14:56
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -107,27 +107,26 @@
         class="fr mt5"
       >
         <el-col :span="1.5">
-          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">{{
-            isWaitOrAllTxt
-          }}</el-button>
+          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
+            {{ isWaitOrAllTxt }}
+          </el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" @click="handleAdd"
-            >新增</el-button
-          >
+          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+            新增
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
 
     <el-table
       class="afterSaleBox"
-      :row-class-name="rowName"
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
-      border
       @cell-click="cellClick"
       :cell-style="cellStyle"
+      border
     >
       <el-table-column
         label="客诉日期"
@@ -137,8 +136,8 @@
       />
       <el-table-column label="问题状态" prop="status" align="center" width="80">
         <template scope="{ row }">
-          <el-tag v-if="row.status === 0" type="success">OPEN</el-tag>
-          <el-tag v-else type="danger">CLOSE</el-tag>
+          <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
+          <el-tag v-else type="success">CLOSE</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="不良仪表去向" prop="direction" align="center">
@@ -148,7 +147,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="产品SN" prop="sn" align="center" />
+      <el-table-column label="产品SN" prop="sn" align="center">
+        <template slot-scope="{ row }">
+          <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column label="客户名称" prop="customerName" align="center" />
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
@@ -158,7 +161,15 @@
         align="center"
         show-overflow-tooltip
       />
-      <el-table-column label="客退清单" prop="inventory" align="center" />
+      <el-table-column label="客退清单" prop="inventory" align="center">
+        <template slot-scope="{ row }">
+          <el-tag
+            v-for="(item, index) in setInventory(row.inventory)"
+            :key="index"
+            >{{ item }}</el-tag
+          >
+        </template>
+      </el-table-column>
       <el-table-column label="客退方" prop="returnParty" align="center" />
       <el-table-column label="处理进展" prop="model" align="center" width="80">
         <template slot-scope="{ row }">
@@ -193,7 +204,7 @@
           {{ directionLabel(rootClassify, row.rootMatterType) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="160">
         <template slot-scope="{ row }">
           <div class="flex justify-center">
             <el-button
@@ -411,27 +422,19 @@ export default {
         p: 1,
         l: 10,
         returnDate: undefined,
-        customerName: null,
+        customerName: undefined,
         computerName: undefined,
-        status: null,
+        status: undefined,
         state: undefined,
       },
     };
   },
   computed: {
     ...mapGetters(["userId", "name"]),
-    transSn() {
-      return (sn) => {
-        if (/(,|，)/g.test(sn)) {
-          sn = sn.replace(/，/g, ",");
-          const snArr = sn.split(",");
-          let htmlStr = "";
-          snArr.forEach((item) => {
-            htmlStr += `<p>${item}</p>`;
-          });
-          return htmlStr;
-        } else {
-          return sn;
+    setInventory() {
+      return (inventory) => {
+        if (inventory) {
+          return JSON.parse(inventory);
         }
       };
     },
@@ -471,32 +474,32 @@ export default {
     isRetester() {
       return ({ retester, state }) => {
         return +retester === this.userId && state === 1;
-      }
+      };
     },
     // 分类处理人员确认中
     isClassifiedBy() {
       return ({ classifiedBy, state }) => {
         return +classifiedBy === this.userId && state === 2;
-      }
+      };
     },
     // 问题处理人员确认中
     isHandlerBy() {
       return ({ handlerBy, state }) => {
         return +handlerBy === this.userId && state === 3;
-      }
+      };
     },
     // 处理类型人员确认中
     isHandlerType() {
       return ({ handlerType, state }) => {
         return +handlerType === this.userId && state === 4;
-      }
+      };
     },
     // 维修处理人员确认中
     isServiceBy() {
       return ({ serviceBy, state }) => {
         return +serviceBy === this.userId && state === 5;
-      }
-    }
+      };
+    },
   },
   created() {
     let { name } = this.$route.query;
@@ -548,37 +551,6 @@ export default {
         this.loading = false;
       });
     },
-    difference(endTime) {
-      let dateBegin = new Date();
-      let dateEnd = new Date(endTime);
-      let dateDiff = dateEnd.getTime() - dateBegin.getTime(); //时间差的毫秒数
-      let dayDiff = Math.floor(dateDiff / (24 * 3600 * 1000)); //计算出相差天数
-      let leave1 = dateDiff % (24 * 3600 * 1000); //计算天数后剩余的毫秒数
-      let hours = Math.floor(leave1 / (3600 * 1000)); //计算出小时数
-      //计算相差分钟数
-      let leave2 = leave1 % (3600 * 1000); //计算小时数后剩余的毫秒数
-      let minutes = Math.floor(leave2 / (60 * 1000)); //计算相差分钟数
-      //计算相差秒数
-      let leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
-      let seconds = Math.round(leave3 / 1000);
-      let className = "";
-      if (dayDiff >= 2) {
-        className = "text-black";
-      } else if (dayDiff == 1) {
-        className = "text-orange";
-      } else if (hours >= 12) {
-        className = "text-red";
-      } else {
-        className = "text-red text-bold";
-      }
-      return className;
-    },
-    handleDownload(file, name) {
-      this.zipFile(file, name);
-    },
-    handleDownloadProgress(row) {
-      this.zipFile(row.reportAttachment, row.product);
-    },
     // 新增
     handleAdd() {
       this.isSaleAddDia = true;
@@ -586,12 +558,16 @@ export default {
     // 修改
     handleUpdate(row) {
       this.isSaleAddDia = true;
-      let { logisticsEntity } = row;
+      let { logisticsEntity, inventory } = row;
       let dataCopy;
       if (this.Is_Empty(logisticsEntity)) {
-        dataCopy = { ...row, logisticsEntity: {} };
+        dataCopy = {
+          ...row,
+          logisticsEntity: {},
+          inventory: JSON.parse(inventory),
+        };
       } else {
-        dataCopy = { ...row };
+        dataCopy = { ...row, inventory: JSON.parse(inventory) };
       }
       this.$refs.isAddSaleRef.form = dataCopy;
       this.$refs.isAddSaleRef.active =
@@ -672,13 +648,12 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    toPage(sn) {
+      this.$router.push(`/www/PartInfoView/production?sn=${sn}`);
+    },
     cellClick(row, column, cell, event) {
-      const { sn } = row;
       const { label } = column;
       switch (label) {
-        case "产品SN":
-          this.$router.push(`/www/PartInfoView/production?sn=${sn}`);
-          break;
         case "处理进展":
           this.seeDealProgress(row);
           break;
@@ -690,17 +665,6 @@ export default {
         return `cursor: pointer;`;
       }
     },
-    rowName({ row, rowIndex }) {
-      if (row.status === 1) {
-        return "finish-row";
-      }
-    },
   },
 };
 </script>
-<style lang="scss">
-.finish-row td,
-.finish-row:hover td {
-  background-color: rgba(155, 216, 148, 0.3) !important;
-}
-</style>

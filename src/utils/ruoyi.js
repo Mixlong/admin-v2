@@ -291,3 +291,15 @@ export function tansParams(params) {
 export function blobValidate(data) {
   return data.type !== 'application/json'
 }
+
+/**
+ * 字符串的图片链接转数组
+ * @param {*} imgStr 
+ * @returns 
+ */
+export function setCheckListArr(imgStr, count) {
+  if(!is_Empty(imgStr)) {
+    const imgList = imgStr.split(',');
+    return count === 1 ? imgList[0] : imgList;
+  }
+}

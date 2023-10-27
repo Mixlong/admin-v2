@@ -1,151 +1,170 @@
 <template>
   <div class="app-container chart-box">
-    <!-- <el-form :model="queryParams" ref="queryForm" inline>
-      <el-form-item label="客户名称" prop="customerName">
-        <el-autocomplete
-          v-model="queryParams.customerName"
-          clearable
-          style="width: 140px"
-          :fetch-suggestions="querySearchAsync"
+    <el-form :model="queryParams" ref="queryForm" inline>
+      <el-form-item label="客户名称" prop="customerId">
+        <select-loadMore
+          v-model="queryParams.customerId"
+          style="width: 100%"
+          :data="customerData.data"
+          :page="customerData.page"
+          :hasMore="customerData.more"
+          dictLabel="name"
+          dictValue="id"
+          :request="getCustomerList"
           placeholder="请选择客户名称"
-          @change="handleQuery"
-        ></el-autocomplete>
-      </el-form-item>
-      <el-form-item label="品类" prop="categoryName">
-        <el-select
-          filterable
-          allow-create
-          clearable
-          v-model="queryParams.categoryName"
-          style="width: 140px"
-          @change="changeCategory"
-          placeholder="请选择品类"
         >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
+        </select-loadMore>
       </el-form-item>
-      <el-form-item label="型号" prop="computerName">
-        <el-select
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          style="width: 140px"
-          v-model="queryParams.computerName"
-          placeholder="请选择型号"
-          @change="handleQuery"
-          :remote-method="getComputerNameList"
+      <el-form-item label="品类" prop="categoryId">
+        <select-loadMore
+          v-model="queryParams.categoryId"
+          style="width: 100%"
+          :data="categoryData.data"
+          :page="categoryData.page"
+          :hasMore="categoryData.more"
+          dictLabel="name"
+          dictValue="id"
+          :request="getCategoryList"
+          placeholder="请选择产品品类"
         >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
+        </select-loadMore>
       </el-form-item>
+
+      <el-form-item label="不良类型" prop="result">
+        <select-loadMore
+          v-model="queryParams.result"
+          style="width: 100%"
+          :data="afterSaleData.data"
+          :page="afterSaleData.page"
+          :hasMore="afterSaleData.more"
+          dictLabel="result"
+          dictValue="result"
+          :request="getAfterSaleList"
+          placeholder="请选择不良类型"
+        >
+        </select-loadMore>
+      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
-    </el-form> -->
-    <h2 class="text-white margin-bottom-lg">当前状态</h2>
-    <el-row type="flex" :gutter="20">
-      <el-col :span="6">
-        <!-- 问题根因状态 -->
-        <problem-root-status :chartOption="problemRootStatusOption" />
-      </el-col>
-      <el-col :span="6">
-        <!-- 不良仪表状态 -->
-        <bad-meter-status :chartOption="badMeterStatusOption" />
-      </el-col>
-      <el-col :span="6">
-        <!-- 新增不良投诉 -->
-        <new-bad-complaint :chartOption="newBadComplaintOption" />
-      </el-col>
-      <el-col :span="6">
-        <!-- 每周新增不良投诉数 -->
-        <week-new-bad-complaint :chartOption="weekNewBadComplaintOption" />
-      </el-col>
-    </el-row>
+    </el-form>
+    <template v-if="isShow">
+      <h2 class="text-white margin-bottom-lg">当前状态</h2>
+      <el-row type="flex" :gutter="20">
+        <el-col :span="8">
+          <!-- 问题根因状态 -->
+          <problem-root-status :chartOption="problemRootStatusOption" />
+        </el-col>
+        <el-col :span="8">
+          <!-- 不良仪表状态 -->
+          <bad-meter-status :chartOption="badMeterStatusOption" />
+        </el-col>
+        <el-col :span="8">
+          <!-- 新增不良投诉 -->
+          <new-bad-complaint :chartOption="newBadComplaintOption" />
+        </el-col>
+      </el-row>
+      <!-- 每周新增不良投诉数 -->
+      <week-new-bad-complaint
+        class="margin-top-lg"
+        :chartOption="weekNewBadComplaintOption"
+      />
+      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
+        不良分布（OPEN汇总）
+      </h2>
+      <el-row type="flex" :gutter="20">
+        <el-col :span="8">
+          <!-- 所有客户排行 -->
+          <all-customer-rank :chartOption="allCustomerRankOption" />
+        </el-col>
+        <el-col :span="8">
+          <!-- 所有产品排行 -->
+          <all-product-rank :chartOption="allProductRankOption" />
+        </el-col>
+        <el-col :span="8">
+          <!-- 所有问题排行 -->
+          <all-problem-rank :chartOption="allProblemRankOption" />
+        </el-col>
+      </el-row>
 
-    <h2 class="text-white margin-bottom-lg" style="margin-top: 150px">
-      不良分布（OPEN汇总）
-    </h2>
-    <el-row type="flex" :gutter="20">
-      <el-col :span="8">
-        <!-- 所有客户排行 -->
-        <all-customer-rank :chartOption="allCustomerRankOption" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 所有产品排行 -->
-        <all-product-rank :chartOption="allProductRankOption" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 所有问题排行 -->
-        <all-problem-rank :chartOption="allProblemRankOption" />
-      </el-col>
-    </el-row>
+      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
+        TOP问题排行
+      </h2>
+      <el-row type="flex" :gutter="20">
+        <template v-if="!isTop1CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top1 :chartOption="productRankTop1Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top1 :chartOption="problemRankTop1Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
+          </el-col>
+        </template>
+      </el-row>
 
-    <h2 class="text-white margin-bottom-lg" style="margin-top: 150px">
-      TOP问题排行
-    </h2>
-    <el-row type="flex" :gutter="20">
-      <el-col :span="8">
-        <!-- 产品排行 -->
-        <product-rank-top1 :chartOption="productRankTop1Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 问题排行 -->
-        <problem-rank-top1 :chartOption="problemRankTop1Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 机型问题排行 -->
-        <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
-      </el-col>
-    </el-row>
+      <el-row class="margin-top" type="flex" :gutter="20">
+        <template v-if="!isTop2CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top2 :chartOption="productRankTop2Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top2 :chartOption="problemRankTop2Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
+          </el-col>
+        </template>
+      </el-row>
 
-    <el-row class="margin-top" type="flex" :gutter="20">
-      <el-col :span="8">
-        <!-- 产品排行 -->
-        <product-rank-top2 :chartOption="productRankTop2Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 问题排行 -->
-        <problem-rank-top2 :chartOption="problemRankTop2Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 机型问题排行 -->
-        <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
-      </el-col>
-    </el-row>
-
-    <el-row class="margin-top" type="flex" :gutter="20">
-      <el-col :span="8">
-        <!-- 产品排行 -->
-        <product-rank-top3 :chartOption="productRankTop3Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 问题排行 -->
-        <problem-rank-top3 :chartOption="problemRankTop3Option" />
-      </el-col>
-      <el-col :span="8">
-        <!-- 机型问题排行 -->
-        <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
-      </el-col>
-    </el-row>
+      <el-row class="margin-top" type="flex" :gutter="20">
+        <template v-if="!isTop3CustomerNameShow">
+          <el-col :span="8">
+            <!-- 产品排行 -->
+            <product-rank-top3 :chartOption="productRankTop3Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 问题排行 -->
+            <problem-rank-top3 :chartOption="problemRankTop3Option" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 机型问题排行 -->
+            <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
+          </el-col>
+        </template> 
+      </el-row>
+    </template>
+    <template v-else>
+      <search-chart
+        :chartOption="searchChartOption"
+        height="450px"
+      ></search-chart>
+    </template>
   </div>
 </template>
 
 <script>
-import { afterStatusList, afterBadList, afterTopList } from "@/api/third/sale";
+import {
+  afterStatusList,
+  afterBadList,
+  afterTopList,
+  afterResultList,
+  afterSearch,
+  afterCategoryList,
+} from "@/api/third/sale";
+import { getCustomerList } from "@/api/order";
+
 import commonData from "@/mixins/commonData";
 import chartOptions from "./chartOptoins";
 import problemRootStatus from "@/views/dashboard/commonChart";
@@ -168,6 +187,8 @@ import productRankTop3 from "@/views/dashboard/commonChart";
 import problemRankTop3 from "@/views/dashboard/commonChart";
 import modelRankTop3 from "@/views/dashboard/commonChart";
 
+import searchChart from "@/views/dashboard/commonChart";
+
 export default {
   mixins: [commonData, chartOptions],
   components: {
@@ -187,20 +208,44 @@ export default {
     productRankTop3,
     problemRankTop3,
     modelRankTop3,
+    searchChart,
   },
   data() {
     return {
-      // 品类
-      dictList: [],
+      isShow: true,
+      isTop1CustomerNameShow: false,
+      isTop2CustomerNameShow: false,
+      isTop3CustomerNameShow: false,
+      customerData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      categoryData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      afterSaleData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 查询参数
       queryParams: {
-        returnDate: undefined,
-        customerName: null,
-        computerName: undefined,
-        status: null,
-        state: undefined,
+        customerId: undefined,
+        categoryId: undefined,
+        result: undefined,
       },
     };
+  },
+  watch: {
+    "queryParams.customerId"(customerId) {
+      if (customerId) {
+        this.queryParams.categoryId = "";
+        this.categoryData.data = [];
+      }
+    },
   },
   created() {
     this.getAfterStatusList();
@@ -208,7 +253,32 @@ export default {
     this.getAfterTopList();
   },
   methods: {
-    handleQuery() {},
+    handleQuery() {
+      const paramsLen = Object.values(this.queryParams).filter(
+        (item) => item !== undefined && item !== ""
+      ).length;
+
+      if (paramsLen < 2) {
+        return this.msgError("至少选择两个过滤条件");
+      }
+
+      this.resetChartData(this.searchChartOption);
+
+      afterSearch(this.queryParams).then((res) => {
+        this.isShow = false;
+        if (res.data.length) {
+          this.searchChartOption.title.text = "";
+          this.setTopChartData(res.data, this.searchChartOption);
+        } else {
+          this.searchChartOption.title.text = "暂无数据";
+        }
+      });
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.isShow = true;
+      this.resetForm("queryForm");
+    },
     async getAfterStatusList() {
       const { data } = await afterStatusList();
       const {
@@ -266,42 +336,39 @@ export default {
         const { data } = await afterBadList();
         const { customerList, categoryList, questionList } = data;
 
-        customerList.sort((a, b) => a.num - b.num);
         let xCustomerData = [],
           yLeftCustomerData = [],
           yRightCustomerData = [];
         customerList.forEach(({ name, num, percent }) => {
           xCustomerData.push(name);
           yLeftCustomerData.push(num);
-          yRightCustomerData.push(percent.toFixed(2) * 100);
+          yRightCustomerData.push(Math.ceil(percent * 100));
         });
 
         this.allCustomerRankOption.xAxis[0].data = xCustomerData;
         this.allCustomerRankOption.series[0].data = yLeftCustomerData;
         this.allCustomerRankOption.series[1].data = yRightCustomerData;
 
-        categoryList.sort((a, b) => a.num - b.num);
         let xProductData = [],
           yLeftProductData = [],
           yRightProductData = [];
         categoryList.forEach(({ name, num, percent }) => {
           xProductData.push(name);
           yLeftProductData.push(num);
-          yRightProductData.push(percent.toFixed(2) * 100);
+          yRightProductData.push(Math.ceil(percent * 100));
         });
 
         this.allProductRankOption.xAxis[0].data = xProductData;
         this.allProductRankOption.series[0].data = yLeftProductData;
         this.allProductRankOption.series[1].data = yRightProductData;
 
-        questionList.sort((a, b) => a.num - b.num);
         let xProblemData = [],
           yLeftProblemData = [],
           yRightProblemData = [];
         questionList.forEach(({ name, num, percent }) => {
           xProblemData.push(name);
           yLeftProblemData.push(num);
-          yRightProblemData.push(percent.toFixed(2) * 100);
+          yRightProblemData.push(Math.ceil(percent * 100));
         });
 
         this.allProblemRankOption.xAxis[0].data = xProblemData;
@@ -315,61 +382,124 @@ export default {
       try {
         const { data } = await afterTopList();
 
-        const top1CustomerName = data[0].customerName;
-        const top2CustomerName = data[1].customerName;
-        const top3CustomerName = data[2].customerName;
+        const top1CustomerName = data[0] && data[0].customerName;
+        const top2CustomerName = data[1] && data[1].customerName;
+        const top3CustomerName = data[2] && data[2].customerName;
+
+        this.isTop1CustomerNameShow = this.Is_Empty(top1CustomerName);
+        this.isTop2CustomerNameShow = this.Is_Empty(top2CustomerName);
+        this.isTop3CustomerNameShow = this.Is_Empty(top3CustomerName);
 
         // top1
         this.productRankTop1Option.title.text = `TOP1: ${top1CustomerName}产品排行`;
         this.problemRankTop1Option.title.text = `${top1CustomerName}问题排行`;
         this.modelProblemRankTop1Option.title.text = `${top1CustomerName}机型问题排行`;
 
-        const top1CategoryList = data[0].categoryList;
-        const top1QuestionList = data[0].questionList;
-        const top1ComputerList = data[0].computerList;
+        const top1CategoryList = data[0] && data[0].categoryList;
+        const top1QuestionList = data[0] && data[0].questionList;
+        const top1ComputerList = data[0] && data[0].computerList;
 
         this.setTopChartData(top1CategoryList, this.productRankTop1Option);
         this.setTopChartData(top1QuestionList, this.problemRankTop1Option);
         this.setTopChartData(top1ComputerList, this.modelProblemRankTop1Option);
-
 
         // top2
         this.productRankTop2Option.title.text = `TOP2: ${top2CustomerName}产品排行`;
         this.problemRankTop2Option.title.text = `${top2CustomerName}问题排行`;
         this.modelProblemRankTop2Option.title.text = `${top2CustomerName}机型问题排行`;
 
-        const top2CategoryList = data[1].categoryList;
-        const top2QuestionList = data[1].questionList;
-        const top2ComputerList = data[1].computerList;
+        const top2CategoryList = data[1] && data[1].categoryList;
+        const top2QuestionList = data[1] && data[1].questionList;
+        const top2ComputerList = data[1] && data[1].computerList;
 
         this.setTopChartData(top2CategoryList, this.productRankTop2Option);
         this.setTopChartData(top2QuestionList, this.problemRankTop2Option);
         this.setTopChartData(top2ComputerList, this.modelProblemRankTop2Option);
-
 
         // top3
         this.productRankTop3Option.title.text = `TOP3: ${top3CustomerName}产品排行`;
         this.problemRankTop3Option.title.text = `${top3CustomerName}问题排行`;
         this.modelProblemRankTop3Option.title.text = `${top3CustomerName}机型问题排行`;
 
-        const top3CategoryList = data[1].categoryList;
-        const top3QuestionList = data[1].questionList;
-        const top3ComputerList = data[1].computerList;
+        const top3CategoryList = data[2] && data[2].categoryList;
+        const top3QuestionList = data[2] && data[2].questionList;
+        const top3ComputerList = data[2] && data[2].computerList;
 
         this.setTopChartData(top3CategoryList, this.productRankTop3Option);
         this.setTopChartData(top3QuestionList, this.problemRankTop3Option);
         this.setTopChartData(top3ComputerList, this.modelProblemRankTop3Option);
       } catch (error) {
-        console.log(error);  
+        console.log(error);
       }
     },
-    setTopChartData(dataList, options) {
-      dataList.forEach(({ name, num, percent }) => {
-        options.xAxis[0].data.push(name);
+    resetChartData(options, xAxisIndex = 0) {
+      options.xAxis[xAxisIndex].data = [];
+      options.series[0].data = [];
+      options.series[1].data = [];
+    },
+    setTopChartData(dataList, options, xAxisIndex = 0) {
+      dataList && dataList.forEach(({ name, num, percent }) => {
+        options.xAxis[xAxisIndex].data.push(name);
         options.series[0].data.push(num);
-        options.series[1].data.push(percent.toFixed(2) * 100);
-      });      
-    }
+        options.series[1].data.push(Math.ceil(percent * 100));
+      });
+    },
+    getCustomerList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.customerData.data = [...this.customerData.data, ...list];
+          } else {
+            this.customerData.data = list;
+          }
+          this.customerData.more = pageNum * pageSize < total;
+          this.customerData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
+      const { customerId } = this.queryParams;
+      return new Promise((resolve) => {
+        afterCategoryList({
+          p: page,
+          key: keyword,
+          customerId,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.categoryData.data = [...this.categoryData.data, ...list];
+          } else {
+            this.categoryData.data = list;
+          }
+          this.categoryData.more = pageNum * pageSize < total;
+          this.categoryData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getAfterSaleList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        afterResultList({
+          p: page,
+          result: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.afterSaleData.data = [...this.afterSaleData.data, ...list];
+          } else {
+            this.afterSaleData.data = list;
+          }
+          this.afterSaleData.more = pageNum * pageSize < total;
+          this.afterSaleData.page = pageNum;
+          resolve();
+        });
+      });
+    },
   },
 };
 </script>

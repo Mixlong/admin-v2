@@ -239,7 +239,7 @@
                 @click="handleDownload(scope.row)"></el-button>
             </el-tooltip>
             <Tooltip icon="el-icon-position" content="软件发布"
-              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}&`)" />
+              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}`)" />
             <Tooltip v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
               @click="handleProd(scope.row)" />
           </div>

@@ -4,12 +4,13 @@
       title="测试数据"
       width="1300px"
       append-to-body
+      fullscreen
       center
       v-bind="$attrs"
       :close-on-click-modal="false"
       @close="$emit('update:visible', false)"
     >
-      <el-table :data="detailData.list" style="width: 100%" height="350">
+      <el-table :data="detailData.list" style="width: 100%" :height="isTestTabHeight">
         <el-table-column
           prop="productName"
           label="模块"
@@ -19,48 +20,40 @@
         <el-table-column
           prop="content"
           label="测试项"
-          width="110"
+          width="120"
           align="center"
         />
         <el-table-column
           prop="preconditions"
           label="前置条件"
-          width="110"
           align="center"
         />
         <el-table-column
           prop="inter"
           label="输入与操作"
           align="center"
-          width="110"
         />
         <el-table-column
           prop="result"
           label="预期结果"
-          width="110"
           align="center"
         />
         <el-table-column
           prop="reality"
           label="实际测试情况"
           align="center"
-          width=""
+          min-width="150"
         >
           <template slot-scope="{ row }">
             <el-input
+              type="textarea"
               v-model="row.reality"
               placeholder="请输入实际测试情况"
               clearable
-            />
-          </template>
-        </el-table-column>
-        <el-table-column prop="reality" label="失败/忽略原因" align="center">
-          <template slot-scope="{ row }">
-            <el-input
-              v-if="row.isPass === 2 || row.isPass === 3"
-              v-model="row.msg"
-              :placeholder="isNoPassOrLossMsg(row.isPass)"
-              clearable
+              resize="none"
+              :autosize="{
+                maxRows: 4
+              }"
             />
           </template>
         </el-table-column>
@@ -87,6 +80,16 @@
                 忽略
               </el-radio>
             </el-radio-group>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reality" label="失败/忽略原因" align="center" min-width="150">
+          <template slot-scope="{ row }">
+            <el-input
+              v-if="row.isPass === 2 || row.isPass === 3"
+              v-model="row.msg"
+              :placeholder="isNoPassOrLossMsg(row.isPass)"
+              clearable
+            />
           </template>
         </el-table-column>
       </el-table>
@@ -120,6 +123,9 @@ export default {
         return `请填写${isPass === 2 ? "不通过" : isPass === 3 ? "忽略" : ""}的原因`;
       };
     },
+    isTestTabHeight() {
+      return 'calc(100vh - 200px)';
+    }
   },
   methods: {
     getDetail(detailId) {

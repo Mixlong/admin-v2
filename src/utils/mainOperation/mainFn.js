@@ -20,7 +20,8 @@ import {
     transFileUrl,
     clearValidateItem,
     Enter_Fn,
-    is_Empty
+    is_Empty,
+    setCheckListArr
 } from '@/utils/ruoyi'
 
 // 全局方法挂载
@@ -47,3 +48,4 @@ Vue.prototype.axios = axios
 Vue.prototype.Enter_Fn = Enter_Fn
 Vue.prototype.Is_Empty = is_Empty
 Vue.prototype.fileDownload = fileDownload
+Vue.prototype.$setCheckListArr = setCheckListArr;

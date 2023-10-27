@@ -6,6 +6,7 @@
   <div class="upload-queue">
     <draggable
       v-model="imgList"
+      :disabled="isDisabled"
       @start="drag = true"
       @end="drag = false"
       @update="updateList(imgList)"
@@ -33,6 +34,7 @@
               <i class="el-icon-zoom-in"></i>
             </span>
             <span
+              v-if="!isDisabled"
               class="el-upload-list__item-delete"
               @click="handleRemove(item, index)"
             >
@@ -50,6 +52,8 @@
       v-if="imgList.length < max"
       :action="action"
       :accept="accept"
+      :disabled="isDisabled"
+      :limit="isLimit"
       :show-file-list="false"
       :on-success="handleSuccess"
       :on-error="handleError"
@@ -57,9 +61,8 @@
     >
       <i class="el-icon-plus"></i>
     </el-upload>
-
     <el-dialog :visible.sync="dialogVisible" append-to-body top="2vh">
-      <video controls class="w100" v-if="isVideo" :src="dialogImageUrl" />
+      <video style="object-fit: fill;" controls  class="w100" v-if="isVideo" :src="dialogImageUrl" />
       <img v-else width="100%" :src="dialogImageUrl" />
     </el-dialog>
   </div>
@@ -103,6 +106,14 @@ export default {
     isVideo: {
       type: Boolean,
       default: false,
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    isLimit: {
+      type: Number,
+      required: false
     },
     accept: {
       type: String,

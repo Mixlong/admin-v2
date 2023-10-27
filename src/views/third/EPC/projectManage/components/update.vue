@@ -50,6 +50,21 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item v-if="form.type === 'sop'" label="关联SOP" prop="versionCode">
+          <select-loadMore
+            v-model="form.versionCode"
+            style="width: 100%"
+            :data="sopData.data"
+            :page="sopData.page"
+            :hasMore="sopData.more"
+            dictLabel="versionCode"
+            :moreParams="true"
+            :request="getSopList"
+            @getChange="getSopId"
+            placeholder="请选择SOP"
+          >
+          </select-loadMore>
+        </el-form-item>
       </template>
       <el-form-item label="属性描述" prop="content">
         <div id="desc_box">
@@ -86,10 +101,11 @@
           </el-button>
         </div>
       </template>
+
       <el-form-item
         label="文件"
         prop="url"
-        v-if="form.up == 1 && typeName !== 'content'"
+        v-if="form.up == 1 && typeName !== 'content' && form.type !== 'sop'"
         style="width: 100%"
       >
         <DrUpload
@@ -117,6 +133,7 @@ import {
   editFileConfig,
   computerDictList,
 } from "@/api/third/epc/versionManage";
+import { sopList } from "@/api/third/testApi";
 import tinymce from "@/views/components/Editor";
 import html2canvas from "html2canvas";
 
@@ -136,6 +153,11 @@ export default {
         url: "",
         content: "",
       },
+      sopData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       title: "",
       // 表单校验
       rules: {
@@ -144,6 +166,9 @@ export default {
         ],
         type: [
           { required: true, message: "文件类型不能为空", trigger: "blur" },
+        ],
+        versionCode: [
+          { required: true, message: "请选择SOP", trigger: "change" },
         ],
         fileUrl: [
           { required: true, message: "请上传属性描述图片", trigger: "change" },
@@ -266,7 +291,7 @@ export default {
       }
     },
     changeCidValue(val) {
-      this.$forceUpdate();
+      this.$forceUpdate();C
     },
     changeCategory2(val) {
       this.form.computerId = "";
@@ -276,6 +301,39 @@ export default {
         )[0].computerList;
         resove(this.computerFormOptions);
       });
+    },
+    getSopList({ page = 1, more = false, keyword = "" } = {}) {
+      const { categoryId } = this.form;
+      return new Promise((resolve) => {
+        sopList({
+          p: page,
+          versionCode: keyword,
+          state: 1,
+          categoryId
+        }).then((res) => {
+
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.sopData.data = [
+              ...this.sopData.data,
+              ...list,
+            ];
+          } else {
+            this.sopData.data = list;
+          }
+          this.sopData.more = pageNum * pageSize < total;
+          this.sopData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getSopId(info) {
+      if (!info) {
+        this.form.sopId = "";
+        return;
+      }
+      const { id } = JSON.parse(info);
+      this.form.sopId = id;
     },
     /** 提交按钮 */
     submitForm: function () {

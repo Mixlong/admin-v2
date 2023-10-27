@@ -60,7 +60,7 @@
     </el-descriptions>
 
     <el-descriptions
-      v-if="isCustomerShow"    
+      v-if="isCustomerShow"
       class="margin-top-sm"
       title="返回客户信息"
       direction="vertical"
@@ -117,14 +117,14 @@
         />
       </el-descriptions-item>
       <el-descriptions-item label="不良视频">
-        <preview-img
-          width="80px"
-          height="80px"
-          class="margin-right-sm"
-          v-for="(item, index) in checkListArr(detailInfo.video)"
-          :key="index"
-          :url="item"
-          :srcList="[item]"
+        <el-upload-sortable
+          v-model="detailInfo.video"
+          :isVideo="true"
+          isDisabled
+          :max="checkListArr(detailInfo.video).length"
+          accept="video/mp4"
+          :imgW="150"
+          :imgH="98"
         />
       </el-descriptions-item>
       <el-descriptions-item label="8D报告文件">
@@ -134,8 +134,9 @@
           class="text-blue"
           type="text"
           @click="urlDownload(detailInfo.report)"
-          >下载</el-button
         >
+          下载
+        </el-button>
       </el-descriptions-item>
     </el-descriptions>
   </el-dialog>
@@ -143,7 +144,12 @@
 
 <script>
 import { afterInfo } from "@/api/third/sale";
+import ElUploadSortable from "@/components/el-upload-sortable";
+
 export default {
+  components: {
+    ElUploadSortable,
+  },
   props: {
     visible: {
       type: Boolean,
@@ -183,7 +189,7 @@ export default {
       return !(!file && !video && !report);
     },
     isCustomerShow() {
-      return !this.Is_Empty(this.detailInfo.logisticsEntity)
+      return !this.Is_Empty(this.detailInfo.logisticsEntity);
     },
     isReturnDate() {
       const { returnDate } = this.detailInfo.logisticsEntity;
