@@ -503,7 +503,6 @@ export default {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
       isExcelFile: false,
-      listId: "",
       // 显示搜索条件
       showSearch: true,
       // 遮罩层
@@ -620,7 +619,7 @@ export default {
     }
     const { listId } = this.$route.params;
     if (listId) {
-      this.listId = listId;
+      this.queryParams.id = listId;
     }
     this.getList();
     this.getOperationList();
@@ -862,9 +861,6 @@ export default {
         this.list = response.data.list;
         this.total = response.data.total;
         this.loading = false;
-        if (this.listId) {
-          this.list = this.list.filter((item) => item.id === this.listId);
-        }
       });
     },
     handleAdd() {
@@ -901,13 +897,15 @@ export default {
 
     /** 搜索按钮操作 */
     handleQuery() {
-      this.listId = this.listId && "";
+      this.queryParams.orderId = "";
+      this.queryParams.id = "";
       this.queryParams.p = 1;
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.listId = this.listId && "";
+      this.queryParams.orderId = "";
+      this.queryParams.id = "";
       this.dateRange = [];
       this.modelList = [];
       this.resetForm("queryForm");

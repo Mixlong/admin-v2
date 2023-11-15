@@ -183,7 +183,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin'])"
+            v-if="checkRole(['dev', 'admin', 'factory'])"
             @click="handleUpdate(scope.row)"
           />
 

@@ -19,15 +19,6 @@
       :class="{ 'inline-form': boleConfig }"
       inline
     >
-      <!-- <ul>
-        <li v-for="(value, name) in $attrs" :key="name">
-          {{ name }}: {{ value }}
-        </li>
-      </ul>
-
-      {{ $attrs }}
-      {{ $listeners }} -->
-
       <template v-if="!isBatchSync">
         <el-form-item label="品类" prop="categoryId">
           <el-select
@@ -640,6 +631,7 @@ export default {
         stsWebList({
           p: page,
           version: keyword,
+          categoryName: this.form.category
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {

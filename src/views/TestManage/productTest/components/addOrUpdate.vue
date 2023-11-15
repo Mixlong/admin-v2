@@ -293,6 +293,7 @@ export default {
       sampleQueryParams: {
         p: 1,
         l: 10,
+        
       },
 
       testData: {},

@@ -121,7 +121,7 @@
           v-model="detailInfo.video"
           :isVideo="true"
           isDisabled
-          :max="checkListArr(detailInfo.video).length"
+          :max="videoListLen"
           accept="video/mp4"
           :imgW="150"
           :imgH="98"
@@ -178,11 +178,16 @@ export default {
     },
     checkListArr() {
       return (list, type) => {
-        if (list) {
+        if (!this.Is_Empty(list)) {
           let listArr = list.split(",");
           return type === 1 ? listArr[0] : listArr;
         }
       };
+    },
+    videoListLen() {
+      const { video } = this.detailInfo;
+      if(!this.Is_Empty(video))
+      return this.checkListArr(this.detailInfo.video).length
     },
     isAttachmentInfo() {
       const { file, video, report } = this.detailInfo;

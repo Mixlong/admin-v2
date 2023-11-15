@@ -1,3 +1,11 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:03
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-10-31 18:29:50
+ * @FilePath: \FILECONF-UI\src\components\SizeSelect\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <el-dropdown trigger="click" @command="handleSetSize">
     <div>
@@ -5,8 +13,7 @@
     </div>
     <el-dropdown-menu slot="dropdown">
       <el-dropdown-item v-for="item of sizeOptions" :key="item.value" :disabled="size===item.value" :command="item.value">
-        {{
-          item.label }}
+        {{ item.label }}
       </el-dropdown-item>
     </el-dropdown-menu>
   </el-dropdown>

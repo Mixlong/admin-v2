@@ -67,7 +67,6 @@
           ref="stationBoxRef"
           :class="isListClass"
         >
-        {{ form.list.length }}
           <el-row
             :gutter="20"
             type="flex"
@@ -300,8 +299,6 @@ export default {
 
 .station_box {
   max-height: 500px;
-  // overflow-x: hidden;
-  // overflow-y: auto;
   scroll-behavior: smooth;
   padding-right: 25px;
   box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.5);

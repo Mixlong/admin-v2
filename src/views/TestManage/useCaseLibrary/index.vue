@@ -1,3 +1,11 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-17 15:09:51
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-10-27 17:25:50
+ * @FilePath: \FILECONF-UI\src\views\TestManage\useCaseLibrary\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
@@ -184,21 +192,21 @@
       center
       :close-on-click-modal="false"
     >
-    <el-upload
-      class="upload-demo"
-      ref="uploadExcel"
-      action="#"
-      :on-change="onChange"
-      :http-request="handleFileUpload"
-      :auto-upload="false"
-      accept=".xlsx"
-      :file-list="fileList"
-      drag
-    >
-      <i class="el-icon-upload"></i>
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      <div class="el-upload__tip" slot="tip">只能上传<em>xlsx</em>文件</div>
-    </el-upload>
+      <el-upload
+        class="upload-demo"
+        ref="uploadExcel"
+        action="#"
+        :on-change="onChange"
+        :http-request="handleFileUpload"
+        :auto-upload="false"
+        accept=".xlsx"
+        :file-list="fileList"
+        drag
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传<em>xlsx</em>文件</div>
+      </el-upload>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" :loading="isUploadLoading" @click="submitUpload">确 定</el-button>
         <el-button @click="isUploadShow = false">取 消</el-button>
@@ -351,7 +359,6 @@ export default {
           this.msgSuccess("操作成功");
         })
         .catch((action) => {
-          console.log(action);
           if (action === "cancel") {
             testCaseState([{ id: row.id, state: 2 }]).then(() => {
               this.getList();
