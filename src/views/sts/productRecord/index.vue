@@ -105,7 +105,7 @@
       </el-table-column>
       <el-table-column label="测试信息" align="center" width=100>
         <template slot-scope="{ row }">
-          <el-button type="text" @click="$router.push(`/STS/stsTestResult?sn=${row.sn}`)">查看</el-button>
+          <el-button type="text" @click="$router.push(`/STS/stsTestResult?sn=${row.sn}&recordId=${row.id}`)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -129,7 +129,7 @@
       <el-table :data="stsDetail" bordered height="450">
         <el-table-column
           label="环节"
-          prop="process"
+          prop="processName"
           width="120"
           align="center"
         />

@@ -223,10 +223,12 @@ export default {
     }
   },
   created() {
-    const { sn } = this.$route.query;
-    if (sn) {
+    const { sn, recordId } = this.$route.query;
+    console.log(this.$route.query)
+    if (sn !== "" && sn !== "null") {
       this.queryParams.sn = sn;
     }
+    this.queryParams.recordId = recordId;
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });

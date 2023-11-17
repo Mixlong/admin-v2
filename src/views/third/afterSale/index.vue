@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-09 10:01:39
+ * @LastEditTime: 2023-11-17 18:18:39
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -15,6 +15,7 @@
           type="date"
           clearable
           placeholder="请选择客诉日期"
+          value-format="yyyy-MM-dd"
           style="width: 140px"
         />
       </el-form-item>
@@ -204,7 +205,7 @@
           {{ directionLabel(rootClassify, row.rootMatterType) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="160">
+      <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
           <div class="flex justify-center">
             <el-button

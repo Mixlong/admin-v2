@@ -1072,6 +1072,8 @@ export default {
         serialLevel: "uart_level",
         factoryReset: "res_factory_set",
         buzzerSwitch: "beep_switch",
+        turnOnPasswd: "power_password_switch",
+        menuPassword: "menu_password_switch"
       },
       deployRules: {
         categoryId: [
@@ -1214,18 +1216,12 @@ export default {
       let ints = new Uint8Array(content);
       const snippets = new TextDecoder("gb2312").decode(ints);
       const objVal = this.parseINI(snippets);
-      console.log("objVal", objVal);
       const { parallelism } = this;
 
       for (let parentKey in objVal) {
         for (let childKey in parallelism) {
           if (parallelism[childKey] === parentKey) {
             let parVal = objVal[parallelism[childKey]];
-            let childKeyList = ["cruise", "turnOnPasswd", "menuPassword"];
-            if (childKeyList.includes(childKey) && parVal !== "") {
-              // 定速巡航功能
-              objVal[parallelism[childKey]] = parVal === "1" ? "0" : "1";
-            }
             if (childKey === "undervoltage" && parVal !== "") {
               objVal[parallelism[childKey]] = (+parVal + 20000) / 1000;
             }

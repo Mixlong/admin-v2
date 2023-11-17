@@ -34,7 +34,11 @@
               </template>
 
               <template v-if="sampleSingleData.id">
-                <el-descriptions-item label="产品型号" :labelStyle="labelStyle({width: 250})" contentClassName="text-center">
+                <el-descriptions-item
+                  label="产品型号"
+                  :labelStyle="labelStyle({ width: 250 })"
+                  contentClassName="text-center"
+                >
                   <el-tag
                     class="margin-right-xs"
                     v-for="(item, index) in modelList(
@@ -45,28 +49,61 @@
                     {{ item }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="客户名称" :labelStyle="labelStyle()" contentClassName="text-center">
+                <el-descriptions-item
+                  label="客户名称"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
                   {{ sampleSingleData.customerName }}
                 </el-descriptions-item>
-                <el-descriptions-item label="软件版本" :labelStyle="labelStyle()" contentClassName="text-center">
+                <el-descriptions-item
+                  label="软件版本"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
                   {{ sampleSingleData.softVersion }}
                 </el-descriptions-item>
-                <el-descriptions-item label="硬件版本" :labelStyle="labelStyle()" contentClassName="text-center">
+                <el-descriptions-item
+                  label="硬件版本"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
                   {{ sampleSingleData.hardVersion }}
                 </el-descriptions-item>
-                <el-descriptions-item label="配置需求表" labelClassName="text-center">
-                  <span v-for="(url, index) in $setCheckListArr(sampleSingleData.checklist)" :key="index" :class="{ 'margin-right-xs': isSetImgMargin(index) }">
-                    <preview-img :url="url" :srcList="[url]" width="60px" height="60px" />
+                <el-descriptions-item
+                  label="配置需求表"
+                  labelClassName="text-center"
+                >
+                  <span
+                    v-for="(url, index) in $setCheckListArr(
+                      sampleSingleData.checklist
+                    )"
+                    :key="index"
+                    :class="{ 'margin-right-xs': isSetImgMargin(index) }"
+                  >
+                    <preview-img
+                      :url="url"
+                      :srcList="[url]"
+                      width="60px"
+                      height="60px"
+                    />
                   </span>
                 </el-descriptions-item>
-                <el-descriptions-item label="详细需求" width="80" :labelStyle="labelStyle({width: 120})" contentClassName="text-center">
-                  <el-button type="primary" @click="isDemandDetail = true">查看</el-button>
+                <el-descriptions-item
+                  label="详细需求"
+                  width="80"
+                  :labelStyle="labelStyle({ width: 120 })"
+                  contentClassName="text-center"
+                >
+                  <el-button type="primary" @click="isDemandDetail = true"
+                    >查看</el-button
+                  >
                 </el-descriptions-item>
               </template>
             </el-descriptions>
 
             <el-empty
-              style="padding: 0;"
+              style="padding: 0"
               v-if="!sampleSingleData.id"
               :image-size="60"
               description="~送样需求为空~"
@@ -152,9 +189,7 @@
     </el-form>
     <div class="text-center margin-top-sm">
       <el-button type="primary" @click="submitForm">确 定</el-button>
-      <el-button @click="$router.push('/TestManage/productTest')">
-        取 消
-      </el-button>
+      <el-button @click="$router.go(-1)"> 取 消 </el-button>
     </div>
 
     <!-- 送样 -->
@@ -167,6 +202,51 @@
       :visible.sync="isDrawer"
       :close-on-press-escape="false"
     >
+      <el-form :model="queryParams" ref="queryForm" :inline="true">
+        <el-form-item label="客户" prop="key">
+          <el-autocomplete
+            size="small"
+            clearable
+            v-model="queryParams.key"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="请输入客户"
+            @select="handleQuery"
+          ></el-autocomplete>
+        </el-form-item>
+        <el-form-item label="产品型号" prop="baseModel">
+          <el-input
+            size="small"
+            clearable
+            v-model="queryParams.baseModel"
+            placeholder="请输入产品型号"
+            @keyup.enter.native="handleQuery"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="需求" prop="demand">
+          <el-input
+            size="small"
+            clearable
+            v-model="queryParams.demand"
+            placeholder="请输入需求"
+            @keyup.enter.native="handleQuery"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="handleQuery"
+          >
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
       <el-table
         ref="sampleTableRef"
         v-loading="isSampleLoading"
@@ -228,8 +308,8 @@
       <pagination
         v-show="sampleTotal > 0"
         :total="sampleTotal"
-        :page.sync="sampleQueryParams.p"
-        :limit.sync="sampleQueryParams.l"
+        :page.sync="queryParams.p"
+        :limit.sync="queryParams.l"
         @pagination="getSampleList"
       />
 
@@ -240,19 +320,21 @@
     </el-drawer>
 
     <!-- 详细需求 -->
-    <el-drawer
-      size="40%"
-      :visible.sync="isDemandDetail"
-    >
-      <span slot="title" class="text-blue font20">型号：{{ sampleSingleData.baseModel }} 的详细需求</span>
-      <div class="text-left app-container" v-html="sampleSingleData.demand"></div>
+    <el-drawer size="40%" :visible.sync="isDemandDetail">
+      <span slot="title" class="text-blue font20"
+        >型号：{{ sampleSingleData.baseModel }} 的详细需求</span
+      >
+      <div
+        class="text-left app-container"
+        v-html="sampleSingleData.demand"
+      ></div>
     </el-drawer>
   </div>
 </template>
 
 <script>
 import { getOrderProcess } from "@/api/order";
-import { sampleList } from "@/api/third/sample";
+import { sampleList, listCustomer } from "@/api/third/sample";
 import { taskSave, taskUpdate, taskInfo } from "@/api/third/testApi";
 
 import { categoryComputerDict } from "@/api/third/fileConfig";
@@ -290,10 +372,12 @@ export default {
       sampleSingleData: {},
       // 选中项
       multipleSelection: {},
-      sampleQueryParams: {
+      queryParams: {
         p: 1,
         l: 10,
-        
+        key: "",
+        baseModel: "",
+        demand: "",
       },
 
       testData: {},
@@ -351,20 +435,20 @@ export default {
       }
     },
     labelStyle() {
-      return ({width=200, textAlign='center'}={}) => {
+      return ({ width = 200, textAlign = "center" } = {}) => {
         return {
           width: `${width}px`,
-          textAlign
-        }
-      }
+          textAlign,
+        };
+      };
     },
     isSetImgMargin() {
       return (index) => {
-        const {checklist} = this.sampleSingleData;
+        const { checklist } = this.sampleSingleData;
         const imgCount = this.$setCheckListArr(checklist).length;
         return imgCount > 1 && index < imgCount - 1;
-      }
-    }
+      };
+    },
   },
   watch: {
     "form.needInfo"(needInfo) {
@@ -404,7 +488,7 @@ export default {
           customerName,
           softVersion,
           hardVersion,
-          demand
+          demand,
         } = this.testData;
         this.sampleSingleData = {
           id: demandId,
@@ -412,7 +496,7 @@ export default {
           customerName,
           softVersion,
           hardVersion,
-          demand
+          demand,
         };
         this.$refs.careListRef1.getList();
         this.form = Object.assign({}, this.testData);
@@ -441,10 +525,30 @@ export default {
         });
       });
     },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.p = 1;
+      this.getSampleList();
+    },
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.getSampleList();
+    },
+    querySearchAsync(queryString, cb) {
+      listCustomer({ key: queryString || "" }).then((res) => {
+        cb(
+          res.data.map((item) => {
+            return {
+              value: item.name,
+            };
+          })
+        );
+      });
+    },
     // 送样列表
     getSampleList() {
       this.isSampleLoading = true;
-      sampleList(this.sampleQueryParams).then((res) => {
+      sampleList(this.queryParams).then((res) => {
         const { list, total } = res.data;
         this.sampleDataList = list.filter((item) => item.state !== 6);
         this.sampleTotal = total;
@@ -555,7 +659,7 @@ export default {
             taskUpdate(this.form).then((res) => {
               if (res.code === 200) {
                 this.msgSuccess("更新成功");
-                this.$router.push("/TestManage/productTest");
+                this.$router.go(-1);
               }
             });
           } else {
@@ -580,7 +684,7 @@ export default {
             taskSave(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
-                this.$router.push("/TestManage/productTest");
+                this.$router.go(-1);
               }
             });
           }

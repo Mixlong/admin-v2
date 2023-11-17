@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-14 09:21:24
+ * @LastEditTime: 2023-11-17 13:47:34
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -263,7 +263,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(1)" @click.stop="stateChange(1)"></div>
               </div>
               <el-form-item label="" prop="retester" label-width="0">
                 <el-select
@@ -289,7 +289,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(2)" @click.stop="stateChange(2)"></div>
               </div>
               <el-form-item label="" prop="classifiedBy" label-width="0">
                 <el-select
@@ -315,7 +315,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(3)" @click.stop="stateChange(3)"></div>
               </div>
               <el-form-item label="" prop="handlerBy" label-width="0">
                 <el-select
@@ -341,7 +341,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
               </div>
               <el-form-item label="" prop="handlerType" label-width="0">
                 <el-select
@@ -367,7 +367,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(5)" @click.stop="stateChange(5)"></div>
               </div>
               <el-form-item label="" prop="serviceBy" label-width="0">
                 <el-select
@@ -393,7 +393,7 @@
             </template>
             <template slot="description">
               <div>
-                <div class="wrap-click"></div>
+                <div :class="isActiveClass(6)" @click.stop="stateChange(6)"></div>
               </div>
             </template>
           </el-step>
@@ -435,7 +435,6 @@
                 clearable
                 type="date"
                 style="width: 100%"
-                :picker-options="backDatePickerOptions"
                 placeholder="请选择返回日期"
               />
             </el-form-item>
@@ -559,6 +558,7 @@ export default {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
       active: -1,
+      isState: -1,
       showName: "",
       isReset: false,
       // 提交loading
@@ -582,12 +582,6 @@ export default {
         disabledDate(time) {
           return time.getTime() > Date.now();
         },
-      },
-      // 返回日期
-      backDatePickerOptions: {
-        disabledDate(time) {
-          return time.getTime() < Date.now();
-        }
       },
       // 表单校验
       rules: {
@@ -667,6 +661,17 @@ export default {
     isTitle() {
       return this.form.id ? "编辑售后" : "添加售后";
     },
+    isActiveClass() {
+      return (active) => {
+        return ["wrap-click", { pointer: this.isPointer(active) }]
+      }
+    },
+    isPointer() {
+      const { state, id } = this.form;
+      return (active) => {
+        return !!id && active < state && this.checkRole(['sale']);
+      }
+    }
   },
   watch: {
     visible(isShow) {
@@ -755,9 +760,22 @@ export default {
         logisticsEntity: {},
       };
       this.active = -1;
+      this.isState = -1;
       this.resetForm("form");
     },
+    stateChange(data) {
+      const { state, id } = this.form;
+      if(!this.checkRole(['sale']) || data >= state) {
+        return
+      } 
 
+      this.isState = data > this.active ? data + 1 : data;
+
+      data = data <= this.active ? data - 1 : 6
+      if(id) {
+        this.active = data;
+      }
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -772,6 +790,10 @@ export default {
             let currentData = params;
             if (!Object.keys(logisticsEntity).length) {
               currentData = dataInfo;
+            }
+
+            if(this.isState !== -1) {
+              currentData.state = this.isState;
             }
             saleUpdate(currentData)
               .then(() => {
@@ -824,7 +846,6 @@ export default {
       width: 100%;
       height: 24px;
       z-index: 10;
-      // cursor: pointer;
     }
 
     .el-step__description {

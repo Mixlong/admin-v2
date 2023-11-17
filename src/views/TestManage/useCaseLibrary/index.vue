@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-17 15:09:51
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-27 17:25:50
+ * @LastEditTime: 2023-11-17 16:24:57
  * @FilePath: \FILECONF-UI\src\views\TestManage\useCaseLibrary\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -86,6 +86,15 @@
       </el-form-item>
       <div class="fr">
         <el-button
+          v-if="checkRole(['test', 'admin']) && selectionList.length"
+          type="danger"
+          size="mini"
+          @click="handleMulityCheck"
+          class="margin-right-xs"
+        >
+          审核
+        </el-button>
+        <el-button
           v-if="checkRole(['test', 'admin'])"
           type="success"
           icon="el-icon-upload"
@@ -101,13 +110,27 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          
         >
           新增
         </el-button>
       </div>
     </el-form>
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
+    <el-table
+      ref="multipleTable"
+      v-loading="loading"
+      :data="list"
+      row-key="id"
+      :height="tableHeight()"
+      @selection-change="handleSelectionChange"
+      border
+    >
+      <el-table-column
+        type="selection"
+        width="55"
+        align="center"
+        :reserve-selection="true"
+        :selectable="checkSelectable"
+      />
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -118,10 +141,17 @@
       <el-table-column label="测试项" prop="content" align="center" />
       <el-table-column label="前置条件" prop="preconditions" align="center" />
       <el-table-column label="输入与操作" prop="inter" align="center" />
-      <el-table-column label="预期结果" prop="result" align="center" min-width="180" />
+      <el-table-column
+        label="预期结果"
+        prop="result"
+        align="center"
+        min-width="180"
+      />
       <el-table-column label="审核状态" prop="state" align="center" width="90">
         <template slot-scope="{ row }">
-          <el-tag :type="isStateType(row.state)" hit>{{ stateList[row.state] }}</el-tag>
+          <el-tag :type="isStateType(row.state)" hit>{{
+            stateList[row.state]
+          }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" width="100">
@@ -162,7 +192,7 @@
             v-if="checkRole(['test', 'admin']) && row.state !== 1"
             icon="el-icon-circle-check"
             content="审核"
-            @click="handleCheck(row)"
+            @click="handleCheck(row, false)"
           />
         </template>
       </el-table-column>
@@ -208,7 +238,12 @@
         <div class="el-upload__tip" slot="tip">只能上传<em>xlsx</em>文件</div>
       </el-upload>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="isUploadLoading" @click="submitUpload">确 定</el-button>
+        <el-button
+          type="primary"
+          :loading="isUploadLoading"
+          @click="submitUpload"
+          >确 定</el-button
+        >
         <el-button @click="isUploadShow = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -220,7 +255,7 @@ import {
   testCaseList,
   taskCaseAuth,
   testCaseState,
-  caseUpload
+  caseUpload,
 } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 import CommonMinins from "@/views/TestManage/mixins";
@@ -256,10 +291,12 @@ export default {
       // 遮罩层
       loading: false,
       dialogVisible: false,
+      isCheckDis: true,
       title: "",
       // 总条数
       total: 0,
       list: [],
+      selectionList: [],
       // 品类
       dictList: [],
       // 查询参数
@@ -343,8 +380,20 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    checkSelectable(row) {
+      return this.checkRole(["test", "admin"]) && row.state !== 1;
+    },
+    /** 批量审核  */
+    handleMulityCheck() {
+      this.handleCheck(this.selectionList, true);
+    },
+    handleSelectionChange(selection) {
+      this.selectionList = selection.map(({ id, state }) => {
+        return { id, state };
+      });
+    },
     /** 审核  */
-    handleCheck(row) {
+    handleCheck(row, isMultityCheck) {
       this.$confirm("是否审核通过？", "警告", {
         distinguishCancelAndClose: true,
         confirmButtonText: "通 过",
@@ -352,20 +401,38 @@ export default {
         type: "warning",
       })
         .then(() => {
-          return testCaseState([{ id: row.id, state: 1 }]);
+          let caseStateData = [];
+          if (isMultityCheck) {
+            caseStateData = row.map(({ id }) => {
+              return { id, state: 1 };
+            });
+          } else {
+            caseStateData = [{ id: row.id, state: 1 }];
+          }
+          return testCaseState(caseStateData);
         })
         .then(() => {
+          this.selectionList = [];
+          this.$refs.multipleTable.clearSelection();
           this.getList();
           this.msgSuccess("操作成功");
         })
         .catch((action) => {
           if (action === "cancel") {
-            testCaseState([{ id: row.id, state: 2 }]).then(() => {
+            let caseStateData = [];
+            if (isMultityCheck) {
+              caseStateData = row.map(({ id }) => {
+                return { id, state: 2 };
+              });
+            } else {
+              caseStateData = [{ id: row.id, state: 2 }];
+            }
+            testCaseState(caseStateData).then(() => {
               this.getList();
               this.msgSuccess("操作成功");
             });
           }
-        });
+        })
     },
     handleUpload() {
       this.isUploadShow = true;
@@ -382,7 +449,7 @@ export default {
         const formData = new FormData();
         formData.append("file", file.file);
         const { data } = await caseUpload(formData);
-        if(data) {
+        if (data) {
           this.isUploadShow = false;
           this.isUploadLoading = false;
           this.msgSuccess("文件上传成功");
@@ -391,16 +458,16 @@ export default {
         }
       } catch (error) {
         this.isUploadLoading = false;
-        console.error(error)
+        console.error(error);
       }
     },
     submitUpload() {
-      if(this.fileList.length === 0) {
+      if (this.fileList.length === 0) {
         return this.msgError("请上传文件");
       } else {
         this.$refs.uploadExcel.submit();
       }
-    }
+    },
   },
 };
 </script>
