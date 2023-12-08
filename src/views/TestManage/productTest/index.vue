@@ -170,7 +170,7 @@
               class="margin-left-0"
               icon="el-icon-position" 
               content="软件发布"
-              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}`)" 
+              @click="$router.push(`/notice/sampleManage/fileConfig?number=${row.number}`)" 
             />
           </div>
         </template>

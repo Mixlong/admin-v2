@@ -142,7 +142,7 @@
 					</el-row> -->
         </template>
         <template v-if="form.dataType === 1">
-          <el-form-item label="属性描述" prop="content" :required="isHaveTo">
+          <el-form-item label="属性描述" prop="content">
             <template v-if="form.type === 'hard_version'">
               <select-loadMore
                 style="width: 100%"
@@ -358,8 +358,10 @@ export default {
   props: ["dictList", "isStsType"],
   data() {
     const validateContent = (rule, value, callback) => {
-      if (!value && this.isHaveTo) {
-        return callback(new Error("硬件版本号不能为空"));
+      if(value === "") {
+        return callback(new Error("属性描述值不能为空")); 
+      } else if(/\s/g.test(value)) {
+        return callback(new Error("属性描述值不能包含空格"));
       } else {
         callback();
       }
@@ -452,8 +454,9 @@ export default {
         ],
         content: [
           {
+            required: true,
             validator: validateContent,
-            trigger: "blur",
+            trigger: ["blur", "change"],
           },
         ],
         idList: [
@@ -573,6 +576,7 @@ export default {
         webVersion: "",
         testInfo: [],
       };
+      this.stsData.data = [];
       this.resetForm("form");
     },
     changeMidValue(val, isChange) {
@@ -709,7 +713,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .style-upload {
   .el-upload-dragger {
     width: 100%;

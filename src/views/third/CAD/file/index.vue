@@ -95,6 +95,7 @@
         >
           {{ batchCheck }}
         </el-button>
+        <el-button v-if="checkRole(['test', 'admin'])" type="warning" @click="onCreateTaskCode">任务令</el-button>
         <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
           @click="handleResetCheck">重置审核</el-button> -->
       </el-form-item>
@@ -329,6 +330,9 @@
       </el-form>
     </el-dialog>
     <CompUpdate ref="compUpdate" name key jack  :dictList="dictList" :isStsType="isStsType"  />
+
+    <!-- 任务令 -->
+    <task-code :visible.sync="isTaskCodeFlag"></task-code>
   </div>
 </template>
 
@@ -349,6 +353,7 @@ import CompUpdate from "./components/update";
 export default {
   components: {
     CompUpdate,
+    TaskCode: () => import("./components/taskCode")
   },
   name: "BikeFileConfig",
   filters: {},
@@ -362,6 +367,7 @@ export default {
       // 遮罩层
       loading: true,
       authDialogVisible: false,
+      isTaskCodeFlag: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -470,6 +476,9 @@ export default {
     });
   },
   methods: {
+    onCreateTaskCode() {
+      this.isTaskCodeFlag = true;
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;

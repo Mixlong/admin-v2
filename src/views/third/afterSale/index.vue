@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-17 18:18:39
+ * @LastEditTime: 2023-12-06 13:51:59
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -26,7 +26,6 @@
           style="width: 140px"
           :fetch-suggestions="querySearchAsync"
           placeholder="请选择客户名称"
-          @change="handleQuery"
         ></el-autocomplete>
       </el-form-item>
       <el-form-item label="品类" prop="categoryName">
@@ -56,7 +55,6 @@
           style="width: 140px"
           v-model="queryParams.computerName"
           placeholder="请选择型号"
-          @change="handleQuery"
           :remote-method="getComputerNameList"
         >
           <el-option
@@ -66,6 +64,13 @@
             :value="dict.name"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="产品SN" prop="sn">
+        <el-input
+          v-model.trim="queryParams.sn"
+          placeholder="请输入产品SN"
+          clearable
+        />
       </el-form-item>
       <el-form-item label="问题状态" prop="status">
         <el-select
@@ -105,8 +110,20 @@
         type="flex"
         align="middle"
         justify="start"
-        class="fr mt5"
+        class="fr mt5 mb5"
       >
+        <el-col :span="1.5">
+          <el-button
+            type="success"
+            icon="el-icon-download"
+            @click="handleExport"
+          >
+            导出
+          </el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="warning" @click="handleTypeIn"> 批量录入 </el-button>
+        </el-col>
         <el-col :span="1.5">
           <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
             {{ isWaitOrAllTxt }}
@@ -121,19 +138,28 @@
     </el-form>
 
     <el-table
+      ref="afterSaleRef"
       class="afterSaleBox"
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
       @cell-click="cellClick"
       :cell-style="cellStyle"
+      row-key="id"
+      @selection-change="handleSelectionChange"
       border
     >
+      <el-table-column
+        type="selection"
+        width="55"
+        :reserve-selection="true"
+        align="center"
+      />
       <el-table-column
         label="客诉日期"
         prop="returnDate"
         align="center"
-        width="100"
+        width="90"
       />
       <el-table-column label="问题状态" prop="status" align="center" width="80">
         <template scope="{ row }">
@@ -162,13 +188,19 @@
         align="center"
         show-overflow-tooltip
       />
-      <el-table-column label="客退清单" prop="inventory" align="center" min-width="110">
+      <el-table-column
+        label="客退清单"
+        prop="inventory"
+        align="center"
+        min-width="110"
+      >
         <template slot-scope="{ row }">
           <el-tag
             v-for="(item, index) in setInventory(row.inventory)"
             :key="index"
-            >{{ item }}</el-tag
           >
+            {{ item }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="客退方" prop="returnParty" align="center" />
@@ -182,7 +214,12 @@
           <span v-if="row.state === 6" class="text-green">处理完成</span>
         </template>
       </el-table-column>
-      <el-table-column label="处理人" prop="handleName" align="center">
+      <el-table-column
+        label="处理人"
+        prop="handleName"
+        align="center"
+        width="80"
+      >
         <template slot-scope="{ row }">
           <span v-if="row.state === 6" class="text-green">已完成</span>
           <span v-else>{{ row.handleName }}</span>
@@ -307,6 +344,7 @@
     <pagination
       v-show="total > 0"
       :total="total"
+      :ls="[50, 100, 200]"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
       @pagination="getList"
@@ -336,13 +374,25 @@
       :handleProblemData="handleProblemData"
     />
 
+    <!-- 批量物流录入 -->
+    <sale-info
+      :visible.sync="isSaleInfoFlag"
+      :saleIdList="saleIdList"
+      :modelDirList="modelDirList"
+      @clearSaleSelection="clearSaleSelection"
+    />
     <!-- 当前处理进展 -->
     <deal-progress ref="isDealProgressRef" :visible.sync="isDealProgressDia" />
   </div>
 </template>
 
 <script>
-import { afterList, saleDelete, saleUpdate } from "@/api/third/sale";
+import {
+  afterList,
+  saleDelete,
+  saleUpdate,
+  saleExport,
+} from "@/api/third/sale";
 import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
@@ -356,6 +406,7 @@ export default {
     AfterDetail: () => import("./components/afterDetail"),
     HandleProblem: () => import("./components/handleProblem"),
     DealProgress: () => import("./components/dealProgress"),
+    SaleInfo: () => import("./components/saleInfo"),
   },
   data() {
     return {
@@ -375,6 +426,8 @@ export default {
       isDealProgressDia: false,
       // 待处理 、 全部
       isWaitDispose: true,
+      //
+      isSaleInfoFlag: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -390,6 +443,8 @@ export default {
       modelDirList: [],
       // 根因分类
       rootClassify: [],
+      // 售后ID
+      saleIdList: [],
       // 处理进展
       stateList: {
         1: "现象复测",
@@ -421,17 +476,19 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 50,
         returnDate: undefined,
         customerName: undefined,
+        categoryName: undefined,
         computerName: undefined,
+        sn: undefined,
         status: undefined,
         state: undefined,
       },
     };
   },
   computed: {
-    ...mapGetters(["userId", "name"]),
+    ...mapGetters(["userId", "nickName"]),
     setInventory() {
       return (inventory) => {
         if (inventory) {
@@ -449,7 +506,7 @@ export default {
     },
     directionLabel() {
       return (dataList, direction) => {
-        if(!this.Is_Empty(direction)) {
+        if (!this.Is_Empty(direction)) {
           const directionData = this.directionDir(dataList, direction);
           return directionData[0] && directionData[0].dictLabel;
         }
@@ -541,12 +598,25 @@ export default {
         console.error(error);
       }
     },
+    handleSelectionChange(selection) {
+      this.saleIdList = selection.map((item) => item.id);
+    },
+    // 批量录入
+    handleTypeIn() {
+      if (!this.saleIdList.length) {
+        return this.msgError("请选择批量录入项");
+      }
+      this.isSaleInfoFlag = true;
+    },
+    clearSaleSelection() {
+      this.$refs.afterSaleRef.clearSelection();
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
       const dataInfo = {
         ...this.queryParams,
-        my: this.isWaitDispose ? "" : this.name,
+        my: this.isWaitDispose ? "" : this.nickName,
       };
       afterList(dataInfo).then((response) => {
         this.brandList = response.data.list;
@@ -561,7 +631,7 @@ export default {
     // 修改
     handleUpdate(row) {
       this.isSaleAddDia = true;
-      let { logisticsEntity, inventory } = row;
+      let { logisticsEntity, inventory, categoryId, computerId, sn } = row;
       let dataCopy;
       if (this.Is_Empty(logisticsEntity)) {
         dataCopy = {
@@ -572,7 +642,14 @@ export default {
       } else {
         dataCopy = { ...row, inventory: JSON.parse(inventory) };
       }
-      this.$refs.isAddSaleRef.form = dataCopy;
+      const list = [
+        {
+          categoryId,
+          computerId,
+          sn,
+        },
+      ];
+      this.$refs.isAddSaleRef.form = { ...dataCopy, list };
       this.$refs.isAddSaleRef.active =
         dataCopy.state === 6 ? 6 : dataCopy.state - 1;
     },
@@ -667,6 +744,24 @@ export default {
       if (label === "产品SN" || label === "处理进展") {
         return `cursor: pointer;`;
       }
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = {
+        ...this.queryParams,
+        my: this.isWaitDispose ? "" : this.nickName,
+      };
+      this.$confirm("是否确认导出所有售后支持数据项?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(function () {
+          return saleExport(queryParams);
+        })
+        .then((response) => {
+          this.download(response.msg);
+        });
     },
   },
 };

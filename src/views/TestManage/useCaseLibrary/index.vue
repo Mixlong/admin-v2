@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-17 15:09:51
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-17 16:24:57
+ * @LastEditTime: 2023-11-28 14:35:03
  * @FilePath: \FILECONF-UI\src\views\TestManage\useCaseLibrary\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -86,13 +86,22 @@
       </el-form-item>
       <div class="fr">
         <el-button
-          v-if="checkRole(['test', 'admin']) && selectionList.length"
-          type="danger"
+          v-if="checkRole(['test', 'admin'])"
+          type="warning"
           size="mini"
           @click="handleMulityCheck"
           class="margin-right-xs"
         >
-          审核
+          批量审核
+        </el-button>
+        <el-button
+          v-if="checkRole(['test', 'admin'])"
+          type="danger"
+          size="mini"
+          @click="handleMulityDelete"
+          class="margin-right-xs"
+        >
+          批量删除
         </el-button>
         <el-button
           v-if="checkRole(['test', 'admin'])"
@@ -194,6 +203,12 @@
             content="审核"
             @click="handleCheck(row, false)"
           />
+          <Tooltip
+            v-if="checkRole(['test', 'admin'])"
+            icon="el-icon-delete"
+            content="删除"
+            @click="handleDelete(row, false)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -256,6 +271,7 @@ import {
   taskCaseAuth,
   testCaseState,
   caseUpload,
+  testCaseDelete
 } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 import CommonMinins from "@/views/TestManage/mixins";
@@ -380,12 +396,28 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    checkSelectable(row) {
-      return this.checkRole(["test", "admin"]) && row.state !== 1;
+    checkSelectable() {
+        return this.checkRole(["test", "admin"]);
     },
     /** 批量审核  */
     handleMulityCheck() {
+      if(!this.selectionList.length) {
+        return this.msgError("请选择批量审核项");
+      }
+
+      const isState = this.selectionList.some(item => item.state === 1);
+      if(isState) {
+        return this.msgError("所选项中包含‘已批准’项");
+      } 
+      
       this.handleCheck(this.selectionList, true);
+    },
+    /** 批量删除  */
+    handleMulityDelete() {
+      if(!this.selectionList.length) {
+        return this.msgError("请选择批量删除项")
+      }
+      this.handleDelete(this.selectionList, true);
     },
     handleSelectionChange(selection) {
       this.selectionList = selection.map(({ id, state }) => {
@@ -432,6 +464,30 @@ export default {
               this.msgSuccess("操作成功");
             });
           }
+        })
+    },
+    /** 删除  */
+    handleDelete(row, isMultityCheck) {
+      this.$confirm("是否确认删除？", "警告", {
+        distinguishCancelAndClose: true,
+        confirmButtonText: "确  定",
+        cancelButtonText: "取 消",
+        type: "warning",
+      })
+        .then(() => {
+          let caseStateData = [];
+          if (isMultityCheck) {
+            caseStateData = row.map(({ id }) => id);
+          } else {
+            caseStateData = [row.id];
+          }
+          return testCaseDelete(caseStateData);
+        })
+        .then(() => {
+          this.selectionList = [];
+          this.$refs.multipleTable.clearSelection();
+          this.getList();
+          this.msgSuccess("操作成功");
         })
     },
     handleUpload() {

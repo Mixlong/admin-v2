@@ -15,7 +15,7 @@
             clearable
             @change="changeCategory"
             placeholder="请选择所属品类"
-            style="width: 160px;"
+            style="width: 140px;"
           >
             <el-option
               v-for="dict in dictList"
@@ -35,7 +35,7 @@
             placeholder="请选择仪表型号"
             @change="changeComputer"
             :remote-method="getComputerNameList"
-            style="width: 160px;"
+            style="width: 140px;"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -51,7 +51,7 @@
             placeholder="请输入迪太订单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 160px;"
+            style="width: 140px;"
           />
         </el-form-item>
         <el-form-item label="排产单号" prop="no">
@@ -60,7 +60,7 @@
             placeholder="请输入排产单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 160px;"
+            style="width: 140px;"
           />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
@@ -68,7 +68,7 @@
             v-model="queryParams.productStatus"
             clearable
             placeholder="请选择排产状态"
-            style="width: 160px;"
+            style="width: 100px;"
           >
             <el-option
               v-for="(value, key) in productStatusList"
@@ -139,7 +139,7 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品品类" align="center" prop="categoryName" />
+      <el-table-column label="产品品类" align="center" prop="categoryName" width="100" />
       <el-table-column label="产品型号" align="center" prop="computerName" />
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
       <el-table-column label="排产单号" align="center" prop="no" />
@@ -147,9 +147,9 @@
         label="生产地点"
         align="center"
         prop="address"
-        width="110"
+        width="90"
       />
-      <el-table-column label="生产日期" align="center" prop="date" width="110">
+      <el-table-column label="生产日期" align="center" prop="date" width="90">
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
           <br />
@@ -160,20 +160,20 @@
         label="生产流程"
         align="center"
         prop="process"
-        width="110"
+        width="80"
       />
       <el-table-column
         label="方案版本"
         align="center"
         prop="soChipVersion"
-        width="110"
+        width="80"
       />
-      <el-table-column label="排产数量" align="center" prop="num" width="100" />
+      <el-table-column label="排产数量" align="center" prop="num" width="90" />
       <el-table-column
         label="排产状态"
         align="center"
         prop="productStatus"
-        width="100"
+        width="80"
       >
         <template slot-scope="{ row }">
           <el-tag
@@ -189,13 +189,13 @@
         label="订单数量"
         align="center"
         prop="orderQuantity"
-        width="100"
+        width="90"
       />
       <el-table-column
         label="资料状态"
         align="center"
         prop="dataState"
-        width="100"
+        width="90"
       >
         <template slot-scope="scope">
           <p v-if="isDataAll(scope.row)" class="text-green">全部已配齐</p>
@@ -204,19 +204,22 @@
               v-if="scope.row.softList !== null"
               :class="dataStateColor(isDataLen(scope.row.softList))"
             >
-              软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }}
+              <!-- 软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }} -->
+              软件
             </p>
             <p
               v-if="scope.row.hardList !== null"
               :class="dataStateColor(isDataLen(scope.row.hardList))"
             >
-              硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }}
+              <!-- 硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }} -->
+              硬件
             </p>
             <p
               v-if="scope.row.projectList !== null"
               :class="dataStateColor(isDataLen(scope.row.projectList))"
             >
-              工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }}
+              <!-- 工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }} -->
+              工程
             </p>
           </template>
         </template>
@@ -225,16 +228,16 @@
         label="排产人"
         align="center"
         prop="createBy"
-        width="100"
+        width="90"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
-        width="140"
+        width="120"
       >
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime) }}
+          {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="150">
@@ -369,7 +372,6 @@
       :visible.sync="isQrCode"
       width="350px"
       center
-      :close-on-click-modal="false"
     >
       <el-card shadow="hover">
         <div class="flex flex-direction">
@@ -644,7 +646,7 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList();
+      this.getList(); 
     });
   },
   methods: {

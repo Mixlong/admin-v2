@@ -50,107 +50,123 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        <el-button type="success" icon="el-icon-crop" @click="throttle(screenshot)">
+          截图
+        </el-button>
+        <!-- <el-button
+          type="success"
+          icon="el-icon-crop"
+          @click="onCopy"
+        >
+          截图1
+        </el-button> -->
       </el-form-item>
     </el-form>
-    <template v-if="isShow">
-      <h2 class="text-white margin-bottom-lg">当前状态</h2>
-      <el-row type="flex" :gutter="20">
-        <el-col :span="8">
-          <!-- 问题根因状态 -->
-          <problem-root-status :chartOption="problemRootStatusOption" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 不良仪表状态 -->
-          <bad-meter-status :chartOption="badMeterStatusOption" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 新增不良投诉 -->
-          <new-bad-complaint :chartOption="newBadComplaintOption" />
-        </el-col>
-      </el-row>
-      <!-- 每周新增不良投诉数 -->
-      <week-new-bad-complaint
-        class="margin-top-lg"
-        :chartOption="weekNewBadComplaintOption"
-      />
-      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
-        不良分布（OPEN汇总）
+
+    <div ref="snaphootBoxRef" class="padding-xs">
+      <h2 class="text-white margin-bottom" v-if="isCopyDate">
+        日期：{{ currentCopyDate }}
       </h2>
-      <el-row type="flex" :gutter="20">
-        <el-col :span="8">
-          <!-- 所有客户排行 -->
-          <all-customer-rank :chartOption="allCustomerRankOption" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 所有产品排行 -->
-          <all-product-rank :chartOption="allProductRankOption" />
-        </el-col>
-        <el-col :span="8">
-          <!-- 所有问题排行 -->
-          <all-problem-rank :chartOption="allProblemRankOption" />
-        </el-col>
-      </el-row>
+      <template v-if="isShow">
+        <h2 class="text-white margin-bottom">当前状态</h2>
+        <el-row type="flex" :gutter="20">
+          <el-col :span="8">
+            <!-- 问题根因状态 -->
+            <problem-root-status :chartOption="problemRootStatusOption" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 不良仪表状态 -->
+            <bad-meter-status :chartOption="badMeterStatusOption" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 新增不良投诉 -->
+            <new-bad-complaint :chartOption="newBadComplaintOption" />
+          </el-col>
+        </el-row>
+        <!-- 每周新增不良投诉数 -->
+        <week-new-bad-complaint
+          class="margin-top-lg"
+          :chartOption="weekNewBadComplaintOption"
+        />
+        <h2 class="text-white margin-bottom" style="margin-top: 80px">
+          不良分布（OPEN汇总）
+        </h2>
+        <el-row type="flex" :gutter="20">
+          <el-col :span="8">
+            <!-- 所有客户排行 -->
+            <all-customer-rank :chartOption="allCustomerRankOption" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 所有产品排行 -->
+            <all-product-rank :chartOption="allProductRankOption" />
+          </el-col>
+          <el-col :span="8">
+            <!-- 所有问题排行 -->
+            <all-problem-rank :chartOption="allProblemRankOption" />
+          </el-col>
+        </el-row>
 
-      <h2 class="text-white margin-bottom-lg" style="margin-top: 100px">
-        TOP问题排行
-      </h2>
-      <el-row type="flex" :gutter="20">
-        <template v-if="!isTop1CustomerNameShow">
-          <el-col :span="8">
-            <!-- 产品排行 -->
-            <product-rank-top1 :chartOption="productRankTop1Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 问题排行 -->
-            <problem-rank-top1 :chartOption="problemRankTop1Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 机型问题排行 -->
-            <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
-          </el-col>
-        </template>
-      </el-row>
+        <h2 class="text-white margin-bottom" style="margin-top: 80px">
+          TOP问题排行
+        </h2>
+        <el-row type="flex" :gutter="20">
+          <template v-if="!isTop1CustomerNameShow">
+            <el-col :span="8">
+              <!-- 产品排行 -->
+              <product-rank-top1 :chartOption="productRankTop1Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 问题排行 -->
+              <problem-rank-top1 :chartOption="problemRankTop1Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 机型问题排行 -->
+              <model-rank-top1 :chartOption="modelProblemRankTop1Option" />
+            </el-col>
+          </template>
+        </el-row>
 
-      <el-row class="margin-top" type="flex" :gutter="20">
-        <template v-if="!isTop2CustomerNameShow">
-          <el-col :span="8">
-            <!-- 产品排行 -->
-            <product-rank-top2 :chartOption="productRankTop2Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 问题排行 -->
-            <problem-rank-top2 :chartOption="problemRankTop2Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 机型问题排行 -->
-            <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
-          </el-col>
-        </template>
-      </el-row>
+        <el-row class="margin-top" type="flex" :gutter="20">
+          <template v-if="!isTop2CustomerNameShow">
+            <el-col :span="8">
+              <!-- 产品排行 -->
+              <product-rank-top2 :chartOption="productRankTop2Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 问题排行 -->
+              <problem-rank-top2 :chartOption="problemRankTop2Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 机型问题排行 -->
+              <model-rank-top2 :chartOption="modelProblemRankTop2Option" />
+            </el-col>
+          </template>
+        </el-row>
 
-      <el-row class="margin-top" type="flex" :gutter="20">
-        <template v-if="!isTop3CustomerNameShow">
-          <el-col :span="8">
-            <!-- 产品排行 -->
-            <product-rank-top3 :chartOption="productRankTop3Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 问题排行 -->
-            <problem-rank-top3 :chartOption="problemRankTop3Option" />
-          </el-col>
-          <el-col :span="8">
-            <!-- 机型问题排行 -->
-            <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
-          </el-col>
-        </template> 
-      </el-row>
-    </template>
-    <template v-else>
-      <search-chart
-        :chartOption="searchChartOption"
-        height="450px"
-      ></search-chart>
-    </template>
+        <el-row class="margin-top" type="flex" :gutter="20">
+          <template v-if="!isTop3CustomerNameShow">
+            <el-col :span="8">
+              <!-- 产品排行 -->
+              <product-rank-top3 :chartOption="productRankTop3Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 问题排行 -->
+              <problem-rank-top3 :chartOption="problemRankTop3Option" />
+            </el-col>
+            <el-col :span="8">
+              <!-- 机型问题排行 -->
+              <model-rank-top3 :chartOption="modelProblemRankTop3Option" />
+            </el-col>
+          </template>
+        </el-row>
+      </template>
+      <template v-else>
+        <search-chart
+          :chartOption="searchChartOption"
+          height="450px"
+        ></search-chart>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -189,6 +205,9 @@ import modelRankTop3 from "@/views/dashboard/commonChart";
 
 import searchChart from "@/views/dashboard/commonChart";
 
+import html2canvas from "html2canvas";
+import request from "@/utils/request";
+
 export default {
   mixins: [commonData, chartOptions],
   components: {
@@ -212,6 +231,7 @@ export default {
   },
   data() {
     return {
+      isCopyDate: false,
       isShow: true,
       isTop1CustomerNameShow: false,
       isTop2CustomerNameShow: false,
@@ -237,7 +257,13 @@ export default {
         categoryId: undefined,
         result: undefined,
       },
+      timer: null
     };
+  },
+  computed: {
+    currentCopyDate() {
+      return this.moment().format("YYYY-MM-DD");
+    },
   },
   watch: {
     "queryParams.customerId"(customerId) {
@@ -438,11 +464,12 @@ export default {
       options.series[1].data = [];
     },
     setTopChartData(dataList, options, xAxisIndex = 0) {
-      dataList && dataList.forEach(({ name, num, percent }) => {
-        options.xAxis[xAxisIndex].data.push(name);
-        options.series[0].data.push(num);
-        options.series[1].data.push(Math.ceil(percent * 100));
-      });
+      dataList &&
+        dataList.forEach(({ name, num, percent }) => {
+          options.xAxis[xAxisIndex].data.push(name);
+          options.series[0].data.push(num);
+          options.series[1].data.push(Math.ceil(percent * 100));
+        });
     },
     getCustomerList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
@@ -498,6 +525,101 @@ export default {
           this.afterSaleData.page = pageNum;
           resolve();
         });
+      });
+    },
+    screenshot() {
+      this.isCopyDate = true;
+      const loading = this.$loading({
+        lock: true,
+        text: "页面生成中...",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+      this.$nextTick(() => {
+        html2canvas(this.$refs.snaphootBoxRef, {
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#333",
+        })
+          .then((canvas) => {
+            const url = canvas.toDataURL("image/png");
+            this.downloadImg(url, `售后统计表-${this.currentCopyDate}`);
+          })
+          .finally(() => {
+            this.isCopyDate = false;
+            loading.close();
+          });
+      });
+    },
+    downloadImg(url, fileName = +new Date()) {
+      let link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+    },
+    throttle(fn, delay = 500) {
+      if (this.timer) return;
+
+      this.timer = setTimeout(() => {
+        fn();
+        this.timer = null;
+      }, delay);
+    },
+    onCopy() {
+      const chunks = [];
+      for(let i = 1; i < 5; i++) {
+        chunks.push(this.captureChunks(i));
+      }
+
+      Promise.all(chunks).then(res => {
+        console.log(res)
+      })
+    },
+    captureChunks(count) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(count * 9);
+        }, 1000 * count);
+      })
+    },
+    // 快照
+    screenshot1() {
+      const w = window.innerWidth;
+      const h = document.documentElement.scrollHeight;
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.createImageData(w, h);
+      const numChunks = Math.ceil(h / window.innerHeight);
+      const chunks = Array.from({ length: numChunks }, (_, i) => {
+        this.captureChunk(
+          i * window.innerHeight,
+          i === numChunks - 1 ? h % window.innerHeight : window.innerHeight
+        );
+      });
+      Promise.all(chunks).then((results) => {
+        results.forEach((result) => {
+          imageData.data.set(result.data, result.offset * w * 4);
+        });
+        ctx.putImageData(imageData, 0, 0);
+        const img = canvas.toDataURL("image/png");
+        console.log(img);
+      });
+    },
+    captureChunk(offset, height) {
+      return new Promise((resolve) => {
+        const w = window.innerWidth;
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        const image = new Image();
+        image.onload = () => {
+          ctx.drawImage(image, 0, -offset);
+          resolve({ data: ctx.getImageData(0, 0, w, height).data, offset });
+        };
+        image.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${window.innerWidth}" height="${window.innerHeight}" style="position:absolute;top:-${offset}px">${document.documentElement.outerHTML}</svg>`;
       });
     },
   },

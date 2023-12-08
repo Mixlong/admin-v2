@@ -60,7 +60,8 @@
         align="center"
         width="250"
       />
-      <el-table-column label="描述" prop="desc" align="center" />
+      <el-table-column label="描述" prop="desc" align="center"  />
+      <el-table-column label="排序序号" prop="sort" align="center" width="120" />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -75,7 +76,7 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="140"
+        width="120"
       />
       <el-table-column
         label="创建时间"
@@ -87,7 +88,7 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"

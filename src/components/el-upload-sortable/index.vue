@@ -61,7 +61,7 @@
     >
       <i class="el-icon-plus"></i>
     </el-upload>
-    <el-dialog :visible.sync="dialogVisible" append-to-body top="2vh">
+    <el-dialog class="el-upload-video-img-box" :visible.sync="dialogVisible" append-to-body top="2vh">
       <video style="object-fit: fill;" controls  class="w100" v-if="isVideo" :src="dialogImageUrl" />
       <img v-else width="100%" :src="dialogImageUrl" />
     </el-dialog>
@@ -162,11 +162,11 @@ export default {
         return true;
       }
       const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
-      const isLt2M = file.size / 1024 / 1024 < 2; // 2M
+      const isLt50M = file.size / 1024 / 1024 < 50; // 50M
 
       if (!isValidFormat) {
         this.$message.error("图片只能是 JPG或PNG 格式!");
-      } else if (!isLt2M) {
+      } else if (!isLt50M) {
         this.$message.error("图片大小不能超过 2MB!");
       }
 
@@ -175,7 +175,7 @@ export default {
         this.$message.error("只能上传一张图片，请删除后再上传!");
       }
 
-      return isValidFormat && isLt2M && !maxLt;
+      return isValidFormat && isLt50M && !maxLt;
     },
 
     handleSuccess(res) {

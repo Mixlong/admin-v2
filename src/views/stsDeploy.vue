@@ -47,18 +47,26 @@
             </el-form-item>
           </el-form>
         </div>
-        <el-form ref="form" :model="formData" label-width="150px">
+        <el-form
+          ref="ruleForm"
+          :rules="formRules"
+          :model="formData"
+          label-width="150px"
+        >
           <el-row :gutter="10">
             <el-col :span="6">
               <el-form-item
                 label="背光亮度"
-                :class="{ noData: isNoData('backlightBrightness') }"
+                class="noData"
+                prop="instrumentModel.backlightBrightness"
               >
                 <el-select
                   v-model="formData.instrumentModel.backlightBrightness"
                   placeholder="请选择背光亮度"
                   clearable
                   class="w100"
+                  filterable
+                  allow-create
                 >
                   <el-option
                     v-for="item in backlightBrightnessList"
@@ -72,6 +80,7 @@
               <el-form-item
                 label="休眠时间(min)"
                 :class="{ noData: isNoData('sleepTime') }"
+                prop="instrumentModel.sleepTime"
               >
                 <el-select
                   v-model="formData.instrumentModel.sleepTime"
@@ -91,6 +100,7 @@
               <el-form-item
                 label="系统电压(V)"
                 :class="{ noData: isNoData('voltage') }"
+                prop="instrumentModel.voltage"
               >
                 <el-select
                   v-model="formData.instrumentModel.voltage"
@@ -107,23 +117,19 @@
                   />
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="欠压门限(V)"
-                :class="{ noData: isNoData('undervoltage') }"
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0, max: 99.9 }"
+
+              <el-form-item label="欠压门限(V)" class="noData" prop="instrumentModel.undervoltage">
+                <el-input-number
+                  class="el-input-number-box"
                   v-model.number="formData.instrumentModel.undervoltage"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="请输入欠压门限"
+                  :precision="1"
+                  :min="0"
+                  :max="99.9"
+                  :controls="false"
                 />
               </el-form-item>
 
-              <el-form-item
-                label="助力档位数"
-                :class="{ noData: isNoData('powerGear') }"
-              >
+              <el-form-item label="助力档位数" class="noData">
                 <el-select
                   v-model="formData.instrumentModel.powerGear"
                   placeholder="请选择助力档位数"
@@ -145,15 +151,6 @@
                 prop="assistStartMagnetNumber"
                 :class="{ noData: isNoData('assistStartMagnetNumber') }"
               >
-                <!-- <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 2, max: 64 }"
-                  v-model.number="
-                    formData.instrumentModel.assistStartMagnetNumber
-                  "
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="请输入助力开始磁钢数"
-                /> -->
                 <el-select
                   v-model="formData.instrumentModel.assistStartMagnetNumber"
                   placeholder="请选择助力开始磁钢数"
@@ -200,7 +197,7 @@
               <el-form-item
                 label="助力限速门限(km/h)"
                 prop="assistLimit"
-                :class="{ noData: isNoData('assistLimit') }"
+                class="noData"
               >
                 <!-- <el-input
                   type="number"
@@ -214,6 +211,7 @@
                   v-model="formData.instrumentModel.assistLimit"
                   placeholder="请选择助力限速门限"
                   class="w100"
+                  filterable
                   clearable
                 >
                   <el-option
@@ -264,7 +262,7 @@
               <el-form-item
                 label="轮径(inch)"
                 prop="instrumentModel.wheelDiameter"
-                :class="{ noData: isNoData('wheelDiameter') }"
+                class="noData"
               >
                 <el-select
                   v-model="formData.instrumentModel.wheelDiameter"
@@ -286,12 +284,10 @@
               <el-form-item
                 label="周长(mm)"
                 prop="instrumentModel.perimeter"
-                :class="{ noData: isNoData('perimeter') }"
+                class="noData"
               >
                 <el-input
-                  type="number"
-                  v-model.number="formData.instrumentModel.perimeter"
-                  v-minMaxValue="{ min: 0, max: 9999 }"
+                  v-model="formData.instrumentModel.perimeter"
                   oninput="value=value.replace(/[^\d]/, '')"
                   placeholder="请输入周长"
                   clearable
@@ -761,9 +757,6 @@
         <el-button size="mini" type="primary" @click="exportForm">
           导出配置
         </el-button>
-        <!-- <el-button size="mini" type="primary" @click="exportFormTest">
-          导出配置(test)
-        </el-button> -->
       </template>
     </el-footer>
 
@@ -854,6 +847,75 @@ import { getToken } from "@/utils/auth";
 import Axios from "axios";
 export default {
   data() {
+    // 背光亮度
+    const validateBacklightBrightness = (rule, value, callback) => {
+      if (!Number.isInteger(+value)) {
+        callback(new Error("请输入数字值"));
+      } else if (+value < 0) {
+        callback("背光亮度不能小于0");
+      } else if (+value > 5) {
+        callback("背光亮度不能大于5");
+      } else {
+        callback();
+      }
+    };
+
+    // 背光亮度
+    const validateSleepTime = (rule, value, callback) => {
+      if (!Number.isInteger(+value)) {
+        callback(new Error("请输入数字值"));
+      } else if (+value < 0) {
+        callback("休眠时间不能小于0");
+      } else if (+value > 10) {
+        callback("休眠时间不能大于10");
+      } else {
+        callback();
+      }
+    };
+
+    // 系统电压
+    const validateVoltage = (rule, value, callback) => {
+      console.log(value)
+      if (!this.dicts_voltage.includes(value)) {
+        callback(new Error("系统电压不在可选值范围内"));
+      } else {
+        callback();
+      }
+    };
+
+    // 欠压门限
+    const validateUnderVoltage = (rule, value, callback) => {
+      if (+value < 0) {
+        callback("欠压门限不能小于0");
+      } else if (+value > 99.9) {
+        callback("欠压门限不能大于99.9");
+      } else {
+        callback();
+      }
+    };
+
+    // 轮径
+    const validateWheelDiameter = (rule, value, callback) => {
+      const wheelDiameterKeys = Object.keys(this.wheelDiameterData);
+      if (!wheelDiameterKeys.includes(value)) {
+        callback(new Error("请重新选择轮径值"));
+      } else {
+        callback();
+      }
+    };
+
+    // 周长
+    const validatePerimeter = (rule, value, callback) => {
+      if (!Number.isInteger(+value)) {
+        callback(new Error("请输入数字值"));
+      } else if (+value < 0) {
+        callback("周长不能小于0");
+      } else if (+value > 9999) {
+        callback("周长不能大于9999");
+      } else {
+        callback();
+      }
+    };
     return {
       isUploadFlag: false,
       visible: false,
@@ -925,6 +987,29 @@ export default {
         ],
         url: [{ required: true, message: "文件不能为空", trigger: "change" }],
       },
+      formRules: {
+        "instrumentModel.backlightBrightness": [
+          {
+            validator: validateBacklightBrightness,
+            trigger: ["blur", "change"],
+          },
+        ],
+        "instrumentModel.sleepTime": [
+          { validator: validateSleepTime, trigger: ["blur", "change"] },
+        ],
+        "instrumentModel.voltage": [
+          { validator: validateVoltage, trigger: ["blur", "change"] },
+        ],
+        "instrumentModel.undervoltage": [
+          { validator: validateUnderVoltage, trigger: ["blur", "change"] },
+        ],
+        "instrumentModel.wheelDiameter": [
+          { validator: validateWheelDiameter, trigger: ["blur", "change"] },
+        ],
+        "instrumentModel.perimeter": [
+          { validator: validatePerimeter, trigger: ["blur", "change"] },
+        ],
+      },
       dictList: [],
       computerOptions: [],
       //   背光亮度
@@ -942,7 +1027,7 @@ export default {
       // 助力开始磁钢数
       assistStartMagnetNumberData: [...Array(63)].map((v, i) => i + 2),
       // 助力限速门限
-      assistLimitData: [...Array(42)].map((v, i) => i + 10),
+      assistLimitData: [...Array(90)].map((v, i) => i + 10),
       // 电量变化时间
       batteryVoltageChangeTimeData: [...Array(60)].map((v, i) => i + 1),
       // 速度平滑等级
@@ -1073,7 +1158,7 @@ export default {
         factoryReset: "res_factory_set",
         buzzerSwitch: "beep_switch",
         turnOnPasswd: "power_password_switch",
-        menuPassword: "menu_password_switch"
+        menuPassword: "menu_password_switch",
       },
       deployRules: {
         categoryId: [
@@ -1114,21 +1199,22 @@ export default {
   },
   methods: {
     changeCountPerimeter(wheelDiameter) {
+      console.log(wheelDiameter);
       let wheelDiameterVal = null;
-      if (wheelDiameter === 6) {
+      if (wheelDiameter === "6") {
         wheelDiameterVal = 27.5;
       } else {
         wheelDiameterVal = this.wheelDiameterData[wheelDiameter];
       }
       this.formData.instrumentModel.perimeter = parseInt(
-        wheelDiameterVal * 24.4 * 3.14
+        wheelDiameterVal * 25.4 * 3.14
       );
     },
     echoWheelDiameter() {
       const wheelDiameter = this.formData.instrumentModel.wheelDiameter;
       if (wheelDiameter) {
         this.formData.instrumentModel.perimeter = parseInt(
-          wheelDiameter * 24.4 * 3.14
+          wheelDiameter * 25.4 * 3.14
         );
       }
     },
@@ -1227,7 +1313,7 @@ export default {
             }
             // 系统电压
             if (childKey === "voltage" && parVal !== "") {
-              objVal[parallelism[childKey]] = this.dicts_voltage[parVal];
+              objVal[parallelism[childKey]] = this.dicts_voltage[parVal] || parVal;
             }
             // 背光亮度
             if (childKey === "backlightBrightness" && parVal !== "") {
@@ -1266,7 +1352,6 @@ export default {
           }
         }
       }
-      console.log(this.formData);
     },
     parseINI(data) {
       const regex = {
@@ -1356,16 +1441,12 @@ export default {
     },
     // 导出
     exportForm() {
-      this.exportToJsonFile(this.formData, "配置文件.json");
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.exportToJsonFile(this.formData, "配置文件.json");
+        }
+      });
     },
-    // exportFormTest() {
-    //   const txt = "这是一段文字内容/r/n 那日看雪 /r/n 323 /r/n";
-
-    //   const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
-    //   const url = URL.createObjectURL(blob);
-
-    //   const link = document.createElement("a");
-    // },
     exportToJsonFile(data, fileName) {
       const jsonData = JSON.stringify(data);
       const blob = new Blob([jsonData], { type: "application/json" });
@@ -1420,6 +1501,13 @@ export default {
   .noData {
     /deep/ .el-form-item__label {
       color: #e50e4b;
+    }
+  }
+
+  .el-input-number-box {
+    width: 100%;
+    /deep/ .el-input__inner {
+      text-align: left;
     }
   }
 }

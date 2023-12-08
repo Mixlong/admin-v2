@@ -87,14 +87,14 @@
         detailInfo.logisticsEntity.phone
       }}</el-descriptions-item>
       <el-descriptions-item label="物流付款方式">{{
-        detailInfo.isPay === 0 ? "月付" : "到付"
+        detailInfo.logisticsEntity.isPay === 0 ? "月付" : "到付"
       }}</el-descriptions-item>
       <el-descriptions-item label="物流单号">{{
-        detailInfo.mailingNumber
+        detailInfo.logisticsEntity.mailingNumber
       }}</el-descriptions-item>
-      <el-descriptions-item label="收件地址" :span="3">{{
-        detailInfo.address
-      }}</el-descriptions-item>
+      <el-descriptions-item label="收件地址" :span="3">
+        {{ detailInfo.logisticsEntity.address }}
+      </el-descriptions-item>
     </el-descriptions>
     <el-descriptions
       v-if="isAttachmentInfo"
@@ -121,7 +121,7 @@
           v-model="detailInfo.video"
           :isVideo="true"
           isDisabled
-          :max="videoListLen"
+          :max="videoListLen(detailInfo.video)"
           accept="video/mp4"
           :imgW="150"
           :imgH="98"
@@ -137,6 +137,41 @@
         >
           下载
         </el-button>
+      </el-descriptions-item>
+    </el-descriptions>
+    <el-descriptions
+      v-if="isAgainCheckInfo"
+      class="margin-top-sm"
+      title="复测信息"
+      direction="vertical"
+      :colon="false"
+      :column="1"
+      border
+    >
+    <el-descriptions-item v-if="detailInfo.retestDesc !== ''" label="问题描述">
+      {{ detailInfo.retestDesc }}
+    </el-descriptions-item>
+      <el-descriptions-item label="复测图片">
+        <preview-img
+          width="80px"
+          height="80px"
+          class="margin-right-sm"
+          v-for="(item, index) in checkListArr(detailInfo.retestFile)"
+          :key="index"
+          :url="item"
+          :srcList="[item]"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="复测视频">
+        <el-upload-sortable
+          v-model="detailInfo.retestVideo"
+          :isVideo="true"
+          isDisabled
+          :max="videoListLen(detailInfo.retestVideo)"
+          accept="video/mp4"
+          :imgW="150"
+          :imgH="98"
+        />
       </el-descriptions-item>
     </el-descriptions>
   </el-dialog>
@@ -185,13 +220,17 @@ export default {
       };
     },
     videoListLen() {
-      const { video } = this.detailInfo;
-      if(!this.Is_Empty(video))
-      return this.checkListArr(this.detailInfo.video).length
+      return (video) => {
+        if (!this.Is_Empty(video)) return this.checkListArr(video).length;
+      };
     },
     isAttachmentInfo() {
       const { file, video, report } = this.detailInfo;
       return !(!file && !video && !report);
+    },
+    isAgainCheckInfo() {
+      const { retestDesc, retestFile, retestVideo } = this.detailInfo;
+      return !(!retestDesc && !retestFile && !retestVideo);
     },
     isCustomerShow() {
       return !this.Is_Empty(this.detailInfo.logisticsEntity);
@@ -228,7 +267,8 @@ export default {
 
 <style lang="scss" scoped>
 .after-detail-box {
-  .el-dialog__body {
+
+  /deep/ .el-dialog__body {
     max-height: 90vh;
     overflow: hidden;
     overflow-y: auto;

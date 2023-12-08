@@ -102,6 +102,14 @@ export function afterHandle(data) {
     });
 }
 
+export function saleExport(params) {
+    return request({
+        url: '/after/export',
+        method: 'get',
+        params
+    });
+}
+
 // 处理进展
 export function afterHandleDetail(afterSaleId) {
     return request({
@@ -159,4 +167,11 @@ export function afterResultList(params) {
     });
 }
 
-
+// 批量物流信息输入
+export function afterLogistics(data) {
+    return request({
+        url: '/after/logistics',
+        method: 'put',
+        data
+    });
+}

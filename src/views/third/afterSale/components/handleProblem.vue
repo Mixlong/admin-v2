@@ -24,7 +24,7 @@
             v-model="form.retestResult"
             filterable
             clearable
-            style="width: 70%"
+            style="width: 80%"
             placeholder="请选择复测结果"
           >
             <el-option
@@ -44,6 +44,17 @@
             :inactive-value="1"
           >
           </el-switch>
+        </el-form-item>
+        <el-form-item label="问题描述：" prop="retestDesc">
+          <el-input
+            v-model="form.retestDesc"
+            type="textarea"
+            rows="5"
+            placeholder="请输入问题描述"
+            clearable
+            style="width: 80%"
+          >
+          </el-input>
         </el-form-item>
         <el-form-item label="复测图片：" prop="retestFile" style="width: 100%">
           <el-upload-sortable
@@ -340,7 +351,6 @@ export default {
             },
           ];
         }
-        console.log(this.form);
       } else {
         this.reset();
       }

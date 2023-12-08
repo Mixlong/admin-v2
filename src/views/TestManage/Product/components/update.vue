@@ -22,6 +22,16 @@
             clearable
           />
         </el-form-item>
+        <el-form-item label="排序序号：" prop="sort">
+          <el-input-number
+            v-model="form.sort"
+            :min="0"
+            :precision="0"
+            controls-position="right"
+            placeholder="请输入排序序号"
+            class="w100 ipt-number"
+          />
+        </el-form-item>
         <el-form-item label="描述：" prop="desc">
           <el-input
             v-model="form.desc"
@@ -56,12 +66,16 @@ export default {
       // 表单参数
       form: {
         productType: "",
+        sort: "",
         desc: "",
       },
       // 表单校验
       rules: {
         productType: [
           { required: true, message: "请输入模块名称", trigger: "change" },
+        ],
+        sort: [
+          { required: true, message: "请输入排序序号", trigger: "change" },
         ],
         desc: [{ required: false, message: "请输入描述", trigger: "blur" }],
       },
@@ -103,3 +117,10 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+  .ipt-number {
+    /deep/.el-input__inner {
+      text-align: left;
+    }
+  }
+</style>

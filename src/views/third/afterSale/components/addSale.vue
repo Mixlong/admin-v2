@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-17 13:47:34
+ * @LastEditTime: 2023-11-27 14:31:44
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -74,29 +74,6 @@
               </el-form-item>
             </el-col>
             <el-col>
-              <el-form-item label="客退物流单号" prop="logisticsNo">
-                <el-input
-                  v-model="form.logisticsNo"
-                  clearable
-                  style="width: 100%"
-                  placeholder="请输入客退物流单号"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="是否到付件" prop="isFreight">
-                <el-select
-                  v-model="form.isFreight"
-                  placeholder="请选择是否到付件"
-                  clearable
-                  style="width: 100%"
-                >
-                  <el-option label="是" :value="0" />
-                  <el-option label="否" :value="1" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
               <el-form-item label="客退清单" prop="inventory">
                 <el-select
                   v-model="form.inventory"
@@ -130,56 +107,6 @@
         </el-col>
         <el-col :span="11">
           <el-row>
-            <el-col>
-              <el-form-item label="品类" prop="categoryId">
-                <el-select
-                  v-model="form.categoryId"
-                  filterable
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择品类"
-                >
-                  <el-option
-                    v-for="dict in dictList"
-                    :key="dict.id"
-                    :label="dict.name"
-                    :value="dict.id"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="仪表型号" prop="computerId">
-                <el-select
-                  v-model="form.computerId"
-                  :loading="isCLoading"
-                  @focus="changeCategory"
-                  filterable
-                  remote
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择仪表型号"
-                  :remote-method="getComputerNameList"
-                >
-                  <el-option
-                    v-for="dict in computerOptions"
-                    :key="dict.model"
-                    :label="dict.name"
-                    :value="dict.model"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="产品SN" prop="sn">
-                <el-input
-                  v-model="form.sn"
-                  clearable
-                  placeholder="请输入产品SN"
-                ></el-input>
-              </el-form-item>
-            </el-col>
             <el-col>
               <el-form-item label="迪太接收人" prop="receiveName">
                 <el-input
@@ -217,6 +144,29 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="客退物流单号" prop="logisticsNo">
+                <el-input
+                  v-model="form.logisticsNo"
+                  clearable
+                  style="width: 100%"
+                  placeholder="请输入客退物流单号"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col>
+              <el-form-item label="是否到付件" prop="isFreight">
+                <el-select
+                  v-model="form.isFreight"
+                  placeholder="请选择是否到付件"
+                  clearable
+                  style="width: 100%"
+                >
+                  <el-option label="是" :value="0" />
+                  <el-option label="否" :value="1" />
+                </el-select>
+              </el-form-item>
+            </el-col>
             <el-col v-if="isUpdateId">
               <el-form-item label="根因分类" prop="rootMatterType">
                 <el-select
@@ -251,6 +201,106 @@
           </el-row>
         </el-col>
       </el-row>
+      <div class="flex align-center justify-between">
+        <h3>{{ form.id ? "修改" : "添加"  }}仪表</h3>
+        <el-button
+          style="margin-right: 25px"
+          v-if="form.list && form.list.length < 300 && !form.id"
+          type="primary"
+          icon="el-icon-plus"
+          circle
+          @click="onAddSaleItem"
+        />
+      </div>
+
+      <div class="sale-list-box">
+        <el-row
+          type="flex"
+          justify="space-between"
+          :gutter="10"
+          v-for="(item, index) in form.list"
+          :key="index"
+        >
+          <el-col :span="22">
+            <el-row type="flex">
+              <el-col :span="8">
+                <el-form-item
+                  label="品类"
+                  :prop="`list[${index}].categoryId`"
+                  :rules="rules.categoryId"
+                >
+                  <el-select
+                    v-model="item.categoryId"
+                    filterable
+                    allow-create
+                    clearable
+                    style="width: 100%"
+                    placeholder="请选择品类"
+                    @change="onChangeCategory(index)"
+                  >
+                    <el-option
+                      v-for="dict in dictList"
+                      :key="dict.id"
+                      :label="dict.name"
+                      :value="dict.id"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item
+                  label="仪表型号"
+                  :prop="`list[${index}].computerId`"
+                  :rules="rules.computerId"
+                >
+                  <el-select
+                    v-model="item.computerId"
+                    :loading="isCLoading"
+                    @focus="changeCategory(index)"
+                    filterable
+                    remote
+                    clearable
+                    style="width: 100%"
+                    placeholder="请选择仪表型号"
+                    :remote-method="getComputerNameList"
+                  >
+                    <el-option
+                      v-for="dict in computerOptions"
+                      :key="dict.model"
+                      :label="dict.name"
+                      :value="dict.model"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item
+                  label="产品SN"
+                  :prop="`list[${index}].sn`"
+                  :rules="rules.sn"
+                >
+                  <el-input
+                    v-model="item.sn"
+                    clearable
+                    placeholder="请输入产品SN"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :span="2">
+            <el-button
+              v-if="index !== 0"
+              type="danger"
+              icon="el-icon-minus"
+              circle
+              style="height: 28px"
+              @click="removeSaleItem(item)"
+            />
+          </el-col>
+        </el-row>
+      </div>
+
       <el-card
         style="padding-top: 30px; margin: 0 30px 10px"
         class="step-wrap"
@@ -262,9 +312,7 @@
               <div class="title-top">现象复测</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(1)" @click.stop="stateChange(1)"></div>
-              </div>
+              <div :class="isActiveClass(1)" @click.stop="stateChange(1)"></div>
               <el-form-item label="" prop="retester" label-width="0">
                 <el-select
                   v-model="form.retester"
@@ -288,9 +336,7 @@
               <div class="title-top">分类处理</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(2)" @click.stop="stateChange(2)"></div>
-              </div>
+              <div :class="isActiveClass(2)" @click.stop="stateChange(2)" />
               <el-form-item label="" prop="classifiedBy" label-width="0">
                 <el-select
                   v-model="form.classifiedBy"
@@ -314,9 +360,7 @@
               <div class="title-top">问题处理</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(3)" @click.stop="stateChange(3)"></div>
-              </div>
+              <div :class="isActiveClass(3)" @click.stop="stateChange(3)"></div>
               <el-form-item label="" prop="handlerBy" label-width="0">
                 <el-select
                   v-model="form.handlerBy"
@@ -340,9 +384,7 @@
               <div class="title-top">处理类型</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
-              </div>
+              <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
               <el-form-item label="" prop="handlerType" label-width="0">
                 <el-select
                   v-model="form.handlerType"
@@ -366,9 +408,7 @@
               <div class="title-top">维修处理</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(5)" @click.stop="stateChange(5)"></div>
-              </div>
+              <div :class="isActiveClass(5)" @click.stop="stateChange(5)"></div>
               <el-form-item label="" prop="serviceBy" label-width="0">
                 <el-select
                   v-model="form.serviceBy"
@@ -392,9 +432,7 @@
               <div class="title-top">完成</div>
             </template>
             <template slot="description">
-              <div>
-                <div :class="isActiveClass(6)" @click.stop="stateChange(6)"></div>
-              </div>
+              <div :class="isActiveClass(6)" @click.stop="stateChange(6)"></div>
             </template>
           </el-step>
         </el-steps>
@@ -563,10 +601,18 @@ export default {
       isReset: false,
       // 提交loading
       isSubLoading: false,
+      computerIdIndex: "",
       // 表单参数
       form: {
         inventory: [],
         logisticsEntity: {},
+        list: [
+          {
+            categoryId: "",
+            computerId: "",
+            sn: "",
+          },
+        ],
       },
       // 客户数据
       customerNameData: {
@@ -604,7 +650,12 @@ export default {
           { required: true, message: "请选择是否到付件", trigger: "change" },
         ],
         inventory: [
-          { type: "array", required: true, message: "请选择客退清单", trigger: ["change", "blur"] },
+          {
+            type: "array",
+            required: true,
+            message: "请选择客退清单",
+            trigger: ["change", "blur"],
+          },
         ],
         categoryId: [
           { required: true, message: "请选择品类", trigger: "change" },
@@ -663,22 +714,22 @@ export default {
     },
     isActiveClass() {
       return (active) => {
-        return ["wrap-click", { pointer: this.isPointer(active) }]
-      }
+        return ["wrap-click", { pointer: this.isPointer(active) }];
+      };
     },
     isPointer() {
       const { state, id } = this.form;
       return (active) => {
-        return !!id && active < state && this.checkRole(['sale']);
-      }
-    }
+        return !!id && active < state && this.checkRole(["sale"]);
+      };
+    },
   },
   watch: {
     visible(isShow) {
       if (isShow) {
         this.getReturnList();
         // 回显仪表型号
-        this.changeCategory();
+        this.changeCategory(0);
       } else {
         this.reset();
       }
@@ -718,8 +769,12 @@ export default {
       const { id } = JSON.parse(info);
       this.form.customerId = id;
     },
-    changeCategory() {
-      const categoryId = this.form.categoryId;
+    onChangeCategory(index) {
+      this.form.list[index].computerId = "";
+    },
+    changeCategory(index) {
+      const categoryId = this.form.list[index].categoryId;
+      this.computerIdIndex = index;
       if (categoryId) {
         const data = this.categoryList.filter((item) => item.id === categoryId);
         this.computerOptions = data[0].computerList;
@@ -730,7 +785,10 @@ export default {
     getComputerNameList(name) {
       if (name) {
         this.isCLoading = true;
-        computerNameList({ name, categoryId: this.form.categoryId })
+        computerNameList({
+          name,
+          categoryId: this.form.list[this.computerIdIndex].categoryId,
+        })
           .then((res) => {
             this.computerOptions = res.data;
             this.isCLoading = false;
@@ -756,23 +814,43 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        // inventory: [], 
+        // inventory: [],
+        list: [
+          {
+            categoryId: "",
+            computerId: "",
+            sn: "",
+          },
+        ],
         logisticsEntity: {},
       };
       this.active = -1;
       this.isState = -1;
       this.resetForm("form");
     },
+    onAddSaleItem() {
+      this.form.list.push({
+        categoryId: "",
+        computerId: "",
+        sn: "",
+      });
+    },
+    removeSaleItem(item) {
+      const index = this.form.list.indexOf(item);
+      if (index !== -1) {
+        this.form.list.splice(index, 1);
+      }
+    },
     stateChange(data) {
       const { state, id } = this.form;
-      if(!this.checkRole(['sale']) || data >= state) {
-        return
-      } 
+      if (!this.checkRole(["sale"]) || data >= state) {
+        return;
+      }
 
       this.isState = data > this.active ? data + 1 : data;
 
-      data = data <= this.active ? data - 1 : 6
-      if(id) {
+      data = data <= this.active ? data - 1 : 6;
+      if (id) {
         this.active = data;
       }
     },
@@ -781,7 +859,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
-          
           let params = JSON.parse(JSON.stringify(this.form));
           params.inventory = JSON.stringify(params.inventory);
 
@@ -792,7 +869,7 @@ export default {
               currentData = dataInfo;
             }
 
-            if(this.isState !== -1) {
+            if (this.isState !== -1) {
               currentData.state = this.isState;
             }
             saleUpdate(currentData)
@@ -855,6 +932,13 @@ export default {
     .el-form-item__error {
       min-width: auto;
     }
+  }
+
+  .sale-list-box {
+    max-height: 500px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    overflow-y: auto;
   }
 }
 </style>

@@ -80,6 +80,16 @@ export function testCaseState(data) {
   });
 }
 
+// 删除
+export function testCaseDelete(data) {
+  return request({
+    url: "/test/case/delete",
+    method: "delete",
+    data,
+  });
+}
+
+
 /**
  * 测试任务
  */
