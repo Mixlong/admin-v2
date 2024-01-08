@@ -50,23 +50,16 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        <el-button type="success" icon="el-icon-crop" @click="throttle(screenshot)">
+        <el-button type="success" icon="el-icon-crop" v-mThrottle="screenshot">
           截图
         </el-button>
-        <!-- <el-button
-          type="success"
-          icon="el-icon-crop"
-          @click="onCopy"
-        >
-          截图1
-        </el-button> -->
       </el-form-item>
     </el-form>
 
     <div ref="snaphootBoxRef" class="padding-xs">
-      <h2 class="text-white margin-bottom" v-if="isCopyDate">
-        日期：{{ currentCopyDate }}
-      </h2>
+      <h1 class="text-white margin-bottom text-center font45" v-if="isCopyDate">
+        {{ currentCopyDate }}
+      </h1>
       <template v-if="isShow">
         <h2 class="text-white margin-bottom">当前状态</h2>
         <el-row type="flex" :gutter="20">
@@ -257,7 +250,6 @@ export default {
         categoryId: undefined,
         result: undefined,
       },
-      timer: null
     };
   },
   computed: {
@@ -271,6 +263,24 @@ export default {
         this.queryParams.categoryId = "";
         this.categoryData.data = [];
       }
+    },
+  },
+  directives: {
+    mThrottle: {
+      bind(el, binding) {
+        const throttle = (fn, delay = 500) => {
+          let timer = null;
+          return (...args) => {
+            if (timer) return;
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = null;
+            }, delay);
+          };
+        };
+
+        el.addEventListener("click", throttle(binding.value));
+      },
     },
   },
   created() {
@@ -556,31 +566,6 @@ export default {
       link.href = url;
       link.download = fileName;
       link.click();
-    },
-    throttle(fn, delay = 500) {
-      if (this.timer) return;
-
-      this.timer = setTimeout(() => {
-        fn();
-        this.timer = null;
-      }, delay);
-    },
-    onCopy() {
-      const chunks = [];
-      for(let i = 1; i < 5; i++) {
-        chunks.push(this.captureChunks(i));
-      }
-
-      Promise.all(chunks).then(res => {
-        console.log(res)
-      })
-    },
-    captureChunks(count) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject(count * 9);
-        }, 1000 * count);
-      })
     },
     // 快照
     screenshot1() {

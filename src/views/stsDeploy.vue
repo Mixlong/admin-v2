@@ -118,7 +118,11 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="欠压门限(V)" class="noData" prop="instrumentModel.undervoltage">
+              <el-form-item
+                label="欠压门限(V)"
+                class="noData"
+                prop="instrumentModel.undervoltage"
+              >
                 <el-input-number
                   class="el-input-number-box"
                   v-model.number="formData.instrumentModel.undervoltage"
@@ -328,7 +332,7 @@
                     v-for="(value, key) in dicts_agreement"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="+key"
                   >
                   </el-option>
                 </el-select>
@@ -631,8 +635,8 @@
                 :class="{ noData: isNoData('bluetooth') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.bluetooth">
-                  <el-radio label="1"> YES </el-radio>
-                  <el-radio label="0"> NO </el-radio>
+                  <el-radio :label="1"> YES </el-radio>
+                  <el-radio :label="0"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -641,8 +645,8 @@
                 :class="{ noData: isNoData('driveAssist') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.driveAssist">
-                  <el-radio label="1">YES</el-radio>
-                  <el-radio label="0">NO</el-radio>
+                  <el-radio :label="1">YES</el-radio>
+                  <el-radio :label="0">NO</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -651,18 +655,18 @@
                 :class="{ noData: isNoData('factoryReset') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.factoryReset">
-                  <el-radio label="0"> YES </el-radio>
-                  <el-radio label="1"> NO </el-radio>
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
                 label="转把分档"
-                prop="rotateHandle"
+                prop="instrumentModel.rotateHandle"
                 :class="{ noData: isNoData('rotateHandle') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.rotateHandle">
-                  <el-radio label="1"> YES </el-radio>
-                  <el-radio label="0"> NO </el-radio>
+                  <el-radio :label="1"> YES </el-radio>
+                  <el-radio :label="0"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -671,8 +675,8 @@
                 :class="{ noData: isNoData('buzzerSwitch') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.buzzerSwitch">
-                  <el-radio label="0"> YES </el-radio>
-                  <el-radio label="1"> NO </el-radio>
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -681,8 +685,8 @@
                 :class="{ noData: isNoData('cruise') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.cruise">
-                  <el-radio label="0"> YES </el-radio>
-                  <el-radio label="1"> NO </el-radio>
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -691,8 +695,8 @@
                 :class="{ noData: isNoData('turnOnPasswd') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.turnOnPasswd">
-                  <el-radio label="0"> YES </el-radio>
-                  <el-radio label="1"> NO </el-radio>
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -701,8 +705,8 @@
                 :class="{ noData: isNoData('menuPassword') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.menuPassword">
-                  <el-radio label="0"> YES </el-radio>
-                  <el-radio label="1"> NO </el-radio>
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
 
@@ -715,24 +719,35 @@
                   v-model="formData.instrumentModel.rotateHandleSpeedLimit"
                 >
                   <div class="flex">
-                    <el-radio label="0">正常</el-radio>
-                    <el-radio label="1">限速6Km</el-radio>
+                    <el-radio :label="0">正常</el-radio>
+                    <el-radio :label="1">限速6Km</el-radio>
                   </div>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
                 label="助力正反"
+                prop="instrumentModel.assist"
                 :class="{ noData: isNoData('assist') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.assist">
                   <div class="flex">
-                    <el-radio label="0">助力正</el-radio>
-                    <el-radio label="1">助力反</el-radio>
+                    <el-radio :label="0">助力正</el-radio>
+                    <el-radio :label="1">助力反</el-radio>
                   </div>
                 </el-radio-group>
               </el-form-item>
             </el-col>
           </el-row>
+
+          <!-- 其他配置 -->
+          <el-divider></el-divider>
+          <h3>其他配置项</h3>
+          <el-form-item label="关机测试" prop="otherOptions.shutdownTest">
+            <el-radio-group v-model="formData.otherOptions.shutdownTest">
+              <el-radio :label="1"> YES </el-radio>
+              <el-radio :label="0"> NO </el-radio>
+            </el-radio-group>
+          </el-form-item>
         </el-form>
       </el-card>
     </el-main>
@@ -792,6 +807,7 @@
             clearable
             placeholder="请选择仪表型号"
             style="width: 100%"
+            @change="setContentName"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -875,7 +891,7 @@ export default {
 
     // 系统电压
     const validateVoltage = (rule, value, callback) => {
-      console.log(value)
+      console.log(value);
       if (!this.dicts_voltage.includes(value)) {
         callback(new Error("系统电压不在可选值范围内"));
       } else {
@@ -968,6 +984,9 @@ export default {
           cruise: "",
           serialLevel: "",
         },
+        otherOptions: {
+          shutdownTest: 1,
+        },
       },
       deployForm: {
         categoryId: "",
@@ -1035,12 +1054,23 @@ export default {
       // 总线故障超时时间
       allLineErrTimeOutData: [...Array(251)].map((v, i) => i + 5),
       // 轮径
+      // wheelDiameterData: {
+      //   18: 9,
+      //   20: 10,
+      //   22: 11,
+      //   24: 12,
+      //   28: 14,
+      //   0: 16,
+      //   1: 18,
+      //   2: 20,
+      //   3: 22,
+      //   4: 24,
+      //   5: 26,
+      //   6: "700C",
+      //   7: 28,
+      //   58: 29,
+      // },
       wheelDiameterData: {
-        18: 9,
-        20: 10,
-        22: 11,
-        24: 12,
-        28: 14,
         0: 16,
         1: 18,
         2: 20,
@@ -1049,7 +1079,6 @@ export default {
         5: 26,
         6: "700C",
         7: 28,
-        58: 29,
       },
       dicts_unit: {
         0: "公制",
@@ -1196,6 +1225,11 @@ export default {
     categoryComputerDict().then((res) => {
       this.dictList = res.data;
     });
+
+    // 轮径
+    for (let i = 8; i < 100; i++) {
+      this.wheelDiameterData[i] = i * 0.5;
+    }
   },
   methods: {
     changeCountPerimeter(wheelDiameter) {
@@ -1240,7 +1274,12 @@ export default {
             this.convertIniToJson(content);
           } else {
             jsonData = JSON.parse(content);
-            this.formData = jsonData;
+            this.formData = {
+              ...jsonData,
+              otherOptions: {
+                shutdownTest: 1,
+              },
+            };
           }
         };
 
@@ -1313,7 +1352,8 @@ export default {
             }
             // 系统电压
             if (childKey === "voltage" && parVal !== "") {
-              objVal[parallelism[childKey]] = this.dicts_voltage[parVal] || parVal;
+              objVal[parallelism[childKey]] =
+                this.dicts_voltage[parVal] || parVal;
             }
             // 背光亮度
             if (childKey === "backlightBrightness" && parVal !== "") {
@@ -1347,6 +1387,24 @@ export default {
               objVal[parallelism[childKey]] =
                 this.allLineErrTimeOutData[parVal];
             }
+            const childKeyList = [
+              "agreement",
+              "bluetooth",
+              "driveAssist",
+              "factoryReset",
+              "rotateHandle",
+              "buzzerSwitch",
+              "cruise",
+              "turnOnPasswd",
+              "menuPassword",
+              "rotateHandleSpeedLimit",
+              "assist",
+            ];
+            // 蓝牙
+            if (childKeyList.includes(childKey) && parVal !== "") {
+              objVal[parallelism[childKey]] = +parVal;
+            }
+
             this.formData.instrumentModel[childKey] =
               objVal[parallelism[childKey]];
           }
@@ -1413,6 +1471,11 @@ export default {
     handleFetchData(stsDeployFile) {
       Axios.get(stsDeployFile).then((res) => {
         this.formData = res.data;
+        if (!this.formData.otherOptions) {
+          this.formData.otherOptions = {
+            shutdownTest: 1,
+          };
+        }
       });
     },
     changeVoltage(voltageVal) {
@@ -1478,6 +1541,14 @@ export default {
     handleCancel() {
       this.visible = false;
       this.$refs.deployForm.resetFields();
+    },
+    setContentName(computerId) {
+      if (computerId) {
+        const contentName = this.computerOptions.filter(
+          ({ model }) => model === computerId
+        );
+        this.deployForm.content = contentName[0].name;
+      }
     },
   },
 };

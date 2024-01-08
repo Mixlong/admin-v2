@@ -41,10 +41,10 @@
         detailInfo.result
       }}</el-descriptions-item>
       <el-descriptions-item label="处理进展">
-        <span v-if="detailInfo.state == 1" class="text-red">现象复测</span>
-        <span v-if="detailInfo.state == 2" class="text-blue">分类处理</span>
-        <span v-if="detailInfo.state == 3" class="text-cyan">问题处理</span>
-        <span v-if="detailInfo.state == 4" class="text-orange">处理类型</span>
+        <span v-if="detailInfo.state == 1" class="text-orange">处理类型</span>
+        <span v-if="detailInfo.state == 2" class="text-red">现象复测</span>
+        <span v-if="detailInfo.state == 3" class="text-blue">分类处理</span>
+        <span v-if="detailInfo.state == 4" class="text-cyan">问题处理</span>
         <span v-if="detailInfo.state == 5" class="text-yellow">维修处理</span>
         <span v-if="detailInfo.state == 6" class="text-green">处理完成</span>
       </el-descriptions-item>
@@ -96,6 +96,7 @@
         {{ detailInfo.logisticsEntity.address }}
       </el-descriptions-item>
     </el-descriptions>
+
     <el-descriptions
       v-if="isAttachmentInfo"
       class="margin-top-sm"
@@ -107,6 +108,7 @@
     >
       <el-descriptions-item label="不良图片">
         <preview-img
+          v-show="detailInfo.file"
           width="80px"
           height="80px"
           class="margin-right-sm"
@@ -118,6 +120,7 @@
       </el-descriptions-item>
       <el-descriptions-item label="不良视频">
         <el-upload-sortable
+          v-show="detailInfo.video"
           v-model="detailInfo.video"
           :isVideo="true"
           isDisabled
@@ -139,6 +142,7 @@
         </el-button>
       </el-descriptions-item>
     </el-descriptions>
+
     <el-descriptions
       v-if="isAgainCheckInfo"
       class="margin-top-sm"

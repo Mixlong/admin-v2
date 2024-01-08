@@ -1,3 +1,11 @@
+<!--
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-10-27 11:20:13
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2023-12-29 17:01:11
+ * @FilePath: \FILECONF-UI\src\views\third\sop\components\sopDetail.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <el-dialog
     class="sop-detail-box"
@@ -17,8 +25,18 @@
       :autoplay="false"
       indicator-position="outside"
     >
-      <el-carousel-item v-for="(item, index) in detailInfo" :key="index" :label="index + 1" name="index">
-        <el-image class="course-img" :src="item.file" :preview-src-list="[item.file]" fit="cover" />
+      <el-carousel-item
+        v-for="(item, index) in detailInfo"
+        :key="index"
+        :label="index + 1"
+        name="index"
+      >
+        <el-image
+          class="course-img"
+          :src="item.file"
+          :preview-src-list="[item.file]"
+          fit="cover"
+        />
         <div class="sop-intro-box">
           <p class="sop-intro">{{ item.remark }}</p>
         </div>
@@ -45,7 +63,8 @@ export default {
   },
   data() {
     return {
-      detailInfo: []
+      flag: true,
+      detailInfo: [],
     };
   },
   methods: {
@@ -70,10 +89,12 @@ export default {
     display: none;
   }
   .el-carousel {
+    display: flex;
+    flex-direction: column;
     .el-carousel__container {
       height: 500px;
       .el-carousel__arrow {
-        background-color: rgb(32,48,65);
+        background-color: rgb(32, 48, 65);
         font-size: 16px;
       }
       .el-carousel__item {
@@ -91,7 +112,27 @@ export default {
     }
 
     .el-carousel__indicators {
-      margin-top: 25px;
+      margin: 25px auto 0;
+      display: flex;
+      max-width: 500px;
+      overflow: hidden;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      &::-webkit-scrollbar {
+        height: 0;
+      }
+
+      &:hover {
+        &::-webkit-scrollbar {
+          height: 8px;
+        }
+      }
+      .el-carousel__indicator {
+        .el-carousel__button {
+          width: 60px;
+          white-space: nowrap;
+        }
+      }
     }
   }
 }

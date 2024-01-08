@@ -182,9 +182,22 @@ export default {
       },
     };
   },
+  watch: {
+    visible(isShow) {
+      if(!isShow) {
+        this.reset();
+      }
+    }
+  },
   methods: {
     close() {
       this.$emit("update:visible", false);
+    },
+    reset() {
+      this.form = {
+        logisticsEntity: {},
+      };
+      this.resetForm("form");
     },
     /** 提交按钮 */
     submitForm() {

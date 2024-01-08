@@ -138,7 +138,7 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col>
+            <!-- <el-col>
               <el-form-item label="客户要求到货日期" prop="arrivalTime">
                 <el-date-picker
                   v-model="form.arrivalTime"
@@ -152,7 +152,7 @@
                   format="yyyy-MM-dd"
                 />
               </el-form-item>
-            </el-col>
+            </el-col> -->
             <el-col>
               <el-form-item label="出货地址" prop="consigneeAddress">
                 <el-input
@@ -436,7 +436,7 @@ export default {
         bomCode,
         orderQuantity,
         sellTime,
-        arrivalTime,
+        // arrivalTime,
         consigneeAddress,
         isMark,
         containerMarkInfo,
@@ -453,7 +453,7 @@ export default {
         this.cloneForm.bomCode !== bomCode ||
         this.cloneForm.orderQuantity !== orderQuantity ||
         this.cloneForm.sellTime !== sellTime ||
-        this.cloneForm.arrivalTime !== arrivalTime ||
+        // this.cloneForm.arrivalTime !== arrivalTime ||
         this.cloneForm.consigneeAddress !== consigneeAddress ||
         this.cloneForm.isMark !== isMark ||
         this.cloneForm.containerMarkInfo !== containerMarkInfo ||

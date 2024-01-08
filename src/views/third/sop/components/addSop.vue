@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-10-16 10:58:52
+ * @LastEditTime: 2023-12-28 18:18:13
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -77,7 +77,7 @@
           class="add-file-sticky"
         >
           <el-button
-            v-if="form.list.length < 10"
+            v-if="form.list.length < 100"
             type="primary"
             icon="el-icon-plus"
             circle
@@ -319,7 +319,7 @@ export default {
 };
 </script>
   
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .after-sale-box {
   .el-dialog__body {
     max-height: 90vh;

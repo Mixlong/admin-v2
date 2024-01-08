@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-04-14 16:08:04
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-12-06 13:51:59
+ * @LastEditTime: 2023-12-21 16:14:32
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -122,7 +122,7 @@
           </el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="warning" @click="handleTypeIn"> 批量录入 </el-button>
+          <el-button type="warning" @click="handleTypeIn"> 批量修改 </el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
@@ -206,12 +206,13 @@
       <el-table-column label="客退方" prop="returnParty" align="center" />
       <el-table-column label="处理进展" prop="model" align="center" width="80">
         <template slot-scope="{ row }">
-          <span v-if="row.state === 1" class="text-red">现象复测</span>
-          <span v-if="row.state === 2" class="text-blue">分类处理</span>
-          <span v-if="row.state === 3" class="text-cyan">问题处理</span>
-          <span v-if="row.state === 4" class="text-orange">处理类型</span>
+          <span v-if="row.state === 1" class="text-orange">处理类型</span>
+          <span v-if="row.state === 2" class="text-red">现象复测</span>
+          <span v-if="row.state === 3" class="text-blue">分类处理</span>
+          <span v-if="row.state === 4" class="text-cyan">问题处理</span>
           <span v-if="row.state === 5" class="text-yellow">维修处理</span>
-          <span v-if="row.state === 6" class="text-green">处理完成</span>
+          <span v-if="row.state === 6" class="text-yellow">返厂入库</span>
+          <span v-if="row.state === 7" class="text-green">处理完成</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -221,7 +222,7 @@
         width="80"
       >
         <template slot-scope="{ row }">
-          <span v-if="row.state === 6" class="text-green">已完成</span>
+          <span v-if="row.state === 7" class="text-green">已完成</span>
           <span v-else>{{ row.handleName }}</span>
         </template>
       </el-table-column>
@@ -255,6 +256,20 @@
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">
               编辑
             </el-button>
+            <el-tooltip
+              v-if="isHandlerType(row)"
+              effect="dark"
+              content="处理类型人员确认中"
+              placement="top-end"
+            >
+              <el-button
+                type="text"
+                class="text-orange"
+                @click="handleProblem(row)"
+              >
+                处理
+              </el-button>
+            </el-tooltip>
             <el-tooltip
               v-if="isRetester(row)"
               effect="dark"
@@ -298,9 +313,9 @@
               </el-button>
             </el-tooltip>
             <el-tooltip
-              v-if="isHandlerType(row)"
+              v-if="isServiceBy(row)"
               effect="dark"
-              content="处理类型人员确认中"
+              content="维修处理人员确认中"
               placement="top-end"
             >
               <el-button
@@ -312,9 +327,9 @@
               </el-button>
             </el-tooltip>
             <el-tooltip
-              v-if="isServiceBy(row)"
+              v-if="isWarehousingBy(row)"
               effect="dark"
-              content="维修处理人员确认中"
+              content="返厂入库人员确认中"
               placement="top-end"
             >
               <el-button
@@ -447,12 +462,13 @@ export default {
       saleIdList: [],
       // 处理进展
       stateList: {
-        1: "现象复测",
-        2: "分类处理",
-        3: "问题处理",
-        4: "处理类型",
+        1: "处理类型",
+        2: "现象复测",
+        3: "分类处理",
+        4: "问题处理",
         5: "维修处理",
-        6: "处理完成",
+        6: "返厂入库",
+        7: "处理完成",
       },
       options: [
         {
@@ -530,34 +546,40 @@ export default {
     isWaitOrAllType() {
       return this.isWaitDispose ? "danger" : "success";
     },
+    // 处理类型人员确认中
+    isHandlerType() {
+      return ({ handlerType, state }) => {
+        return +handlerType === this.userId && state === 1;
+      };
+    },
     // 现象复测人员确认中
     isRetester() {
       return ({ retester, state }) => {
-        return +retester === this.userId && state === 1;
+        return +retester === this.userId && state === 2;
       };
     },
     // 分类处理人员确认中
     isClassifiedBy() {
       return ({ classifiedBy, state }) => {
-        return +classifiedBy === this.userId && state === 2;
+        return +classifiedBy === this.userId && state === 3;
       };
     },
     // 问题处理人员确认中
     isHandlerBy() {
       return ({ handlerBy, state }) => {
-        return +handlerBy === this.userId && state === 3;
-      };
-    },
-    // 处理类型人员确认中
-    isHandlerType() {
-      return ({ handlerType, state }) => {
-        return +handlerType === this.userId && state === 4;
+        return +handlerBy === this.userId && state === 4;
       };
     },
     // 维修处理人员确认中
     isServiceBy() {
       return ({ serviceBy, state }) => {
         return +serviceBy === this.userId && state === 5;
+      };
+    },
+    // 返厂入库人员确认中
+    isWarehousingBy() {
+      return ({ warehousing, state }) => {
+        return +warehousing === this.userId && state === 6;
       };
     },
   },
@@ -601,10 +623,10 @@ export default {
     handleSelectionChange(selection) {
       this.saleIdList = selection.map((item) => item.id);
     },
-    // 批量录入
+    // 批量修改物流信息
     handleTypeIn() {
       if (!this.saleIdList.length) {
-        return this.msgError("请选择批量录入项");
+        return this.msgError("请选择批量修改物流项");
       }
       this.isSaleInfoFlag = true;
     },
@@ -651,7 +673,7 @@ export default {
       ];
       this.$refs.isAddSaleRef.form = { ...dataCopy, list };
       this.$refs.isAddSaleRef.active =
-        dataCopy.state === 6 ? 6 : dataCopy.state - 1;
+        dataCopy.state === 7 ? 7 : dataCopy.state - 1;
     },
     // 详情
     handleDetail(row) {

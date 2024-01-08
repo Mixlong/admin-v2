@@ -17,8 +17,36 @@
       label-width="120px"
       label-position="right"
     >
-      <!-- 现象复测 -->
+      <!-- 处理类型 -->
       <template v-if="form.state === 1">
+        <el-form-item label="处理类型：" prop="handleType">
+          <el-select
+            v-model="form.handleType"
+            allow-create
+            placeholder="请选择处理类型"
+            clearable
+            style="width: 70%"
+          >
+            <el-option label="维修" value="维修" />
+            <el-option label="换货" value="换货" />
+            <el-option label="退货" value="退货" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="维修是否收费：" prop="isPay">
+          <el-select
+            v-model="form.isPay"
+            placeholder="请选择维修是否收费"
+            clearable
+            style="width: 70%"
+          >
+            <el-option label="是" :value="0" />
+            <el-option label="否" :value="1" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 现象复测 -->
+      <template v-if="form.state === 2">
         <el-form-item label="复测结果：" prop="retestResult">
           <el-select
             v-model="form.retestResult"
@@ -77,7 +105,7 @@
       </template>
 
       <!-- 分类处理 -->
-      <template v-if="form.state === 2">
+      <template v-if="form.state === 3">
         <el-form-item label="分类：" prop="classification">
           <el-select
             v-model="form.classification"
@@ -98,7 +126,7 @@
       </template>
 
       <!-- 问题处理 -->
-      <template v-if="form.state === 3">
+      <template v-if="form.state === 4">
         <el-form-item label="定位结果：" prop="locationResult">
           <el-input
             v-model="form.locationResult"
@@ -107,34 +135,6 @@
             style="width: 100%"
             placeholder="请输入定位结果"
           />
-        </el-form-item>
-      </template>
-
-      <!-- 处理类型 -->
-      <template v-if="form.state === 4">
-        <el-form-item label="处理类型：" prop="handleType">
-          <el-select
-            v-model="form.handleType"
-            allow-create
-            placeholder="请选择处理类型"
-            clearable
-            style="width: 70%"
-          >
-            <el-option label="维修" value="维修" />
-            <el-option label="换货" value="换货" />
-            <el-option label="退货" value="退货" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="维修是否收费：" prop="isPay">
-          <el-select
-            v-model="form.isPay"
-            placeholder="请选择维修是否收费"
-            clearable
-            style="width: 70%"
-          >
-            <el-option label="是" :value="0" />
-            <el-option label="否" :value="1" />
-          </el-select>
         </el-form-item>
       </template>
 
@@ -234,6 +234,19 @@
           />
         </el-form-item>
       </template>
+
+      <!-- 返厂入库 -->
+      <template v-if="form.state === 6">
+        <el-form-item label="入库描述：" prop="warehousingDesc">
+          <el-input
+            v-model="form.warehousingDesc"
+            type="textarea"
+            rows="5"
+            style="width: 100%"
+            placeholder="请输入入库描述"
+          />
+        </el-form-item>
+      </template>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
@@ -294,6 +307,9 @@ export default {
         handleResult: [
           { required: true, message: "请输入处理结果", trigger: "blur" },
         ],
+        warehousingDesc: [
+          { required: true, message: "请输入入库描述", trigger: "blur" },
+        ],
         serviceTime: [
           {
             required: true,
@@ -319,19 +335,22 @@ export default {
       let title;
       switch (state) {
         case 1:
-          title = "现象复测";
+          title = "处理类型";
           break;
         case 2:
-          title = "分类处理";
+          title = "现象复测";
           break;
         case 3:
-          title = "问题处理";
+          title = "分类处理";
           break;
         case 4:
-          title = "处理类型";
+          title = "问题处理";
           break;
         case 5:
           title = "维修处理";
+          break;
+        case 6:
+          title = "返厂入库";
           break;
       }
       return title;

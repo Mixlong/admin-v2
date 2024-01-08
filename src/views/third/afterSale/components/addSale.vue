@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-11-27 14:31:44
+ * @LastEditTime: 2024-01-03 11:43:47
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -309,16 +309,42 @@
         <el-steps :active="active" align-center finish-status="success">
           <el-step>
             <template slot="title">
-              <div class="title-top">现象复测</div>
+              <div class="title-top">处理类型</div>
             </template>
             <template slot="description">
               <div :class="isActiveClass(1)" @click.stop="stateChange(1)"></div>
+              <el-form-item label="" prop="handlerType" label-width="0">
+                <el-select
+                  v-model="form.handlerType"
+                  placeholder="请选择"
+                  clearable
+                  style="width: 100%"
+                  :disabled="isNoSelect"
+                >
+                  <el-option
+                    v-for="(item, index) in roleList('sale')"
+                    :key="index"
+                    :label="item.dictLabel"
+                    :value="item.dictValue"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </template>
+          </el-step>
+          <el-step>
+            <template slot="title">
+              <div class="title-top">现象复测</div>
+            </template>
+            <template slot="description">
+              <div :class="isActiveClass(2)" @click.stop="stateChange(2)"></div>
               <el-form-item label="" prop="retester" label-width="0">
                 <el-select
                   v-model="form.retester"
                   placeholder="请选择"
                   clearable
                   style="width: 100%"
+                  :disabled="isNoSelect"
                 >
                   <el-option
                     v-for="(item, p) in roleList('afterSale')"
@@ -336,13 +362,14 @@
               <div class="title-top">分类处理</div>
             </template>
             <template slot="description">
-              <div :class="isActiveClass(2)" @click.stop="stateChange(2)" />
+              <div :class="isActiveClass(3)" @click.stop="stateChange(3)" />
               <el-form-item label="" prop="classifiedBy" label-width="0">
                 <el-select
                   v-model="form.classifiedBy"
                   placeholder="请选择"
                   clearable
                   style="width: 100%"
+                  :disabled="isNoSelect"
                 >
                   <el-option
                     v-for="(item, p) in roleList('afterSale')"
@@ -360,40 +387,17 @@
               <div class="title-top">问题处理</div>
             </template>
             <template slot="description">
-              <div :class="isActiveClass(3)" @click.stop="stateChange(3)"></div>
+              <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
               <el-form-item label="" prop="handlerBy" label-width="0">
                 <el-select
                   v-model="form.handlerBy"
                   placeholder="请选择"
                   clearable
                   style="width: 100%"
+                  :disabled="isNoSelect"
                 >
                   <el-option
                     v-for="(item, index) in roleList('afterSale')"
-                    :key="index"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">处理类型</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
-              <el-form-item label="" prop="handlerType" label-width="0">
-                <el-select
-                  v-model="form.handlerType"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                >
-                  <el-option
-                    v-for="(item, index) in roleList('sale')"
                     :key="index"
                     :label="item.dictLabel"
                     :value="item.dictValue"
@@ -415,6 +419,7 @@
                   placeholder="请选择"
                   clearable
                   style="width: 100%"
+                  :disabled="isNoSelect"
                 >
                   <el-option
                     v-for="(item, p) in roleList('afterSale')"
@@ -429,10 +434,36 @@
           </el-step>
           <el-step>
             <template slot="title">
-              <div class="title-top">完成</div>
+              <div class="title-top">返厂处理</div>
             </template>
             <template slot="description">
               <div :class="isActiveClass(6)" @click.stop="stateChange(6)"></div>
+              <el-form-item label="" prop="warehousing" label-width="0">
+                <el-select
+                  v-model="form.warehousing"
+                  placeholder="请选择"
+                  clearable
+                  style="width: 100%"
+                  :disabled="isNoSelect"
+                >
+                  <el-option
+                    v-for="(item, p) in roleList('pmc')"
+                    :key="p"
+                    :label="item.dictLabel"
+                    :value="item.dictValue"
+                  >
+                  </el-option>
+                  <el-option label="无" value="-1"></el-option>
+                </el-select>
+              </el-form-item>
+            </template>
+          </el-step>
+          <el-step>
+            <template slot="title">
+              <div class="title-top">完成</div>
+            </template>
+            <template slot="description">
+              <div :class="isActiveClass(7)" @click.stop="stateChange(7)"></div>
             </template>
           </el-step>
         </el-steps>
@@ -674,19 +705,22 @@ export default {
           { required: true, message: "请选择仪表去向", trigger: "change" },
         ],
         retester: [
-          { required: true, message: "请选择现象复测人员", trigger: "change" },
+          { required: true, message: "请选择现象复测人", trigger: "change" },
         ],
         classifiedBy: [
-          { required: true, message: "请选择分类处理人员", trigger: "change" },
+          { required: true, message: "请选择分类处理人", trigger: "change" },
         ],
         handlerBy: [
-          { required: true, message: "请选择问题处理人员", trigger: "change" },
+          { required: true, message: "请选择问题处理人", trigger: "change" },
         ],
         handlerType: [
-          { required: true, message: "请选择处理类型人员", trigger: "change" },
+          { required: true, message: "请选择处理类型人", trigger: "change" },
         ],
         serviceBy: [
-          { required: true, message: "请选择维修处理人员", trigger: "change" },
+          { required: true, message: "请选择维修处理人", trigger: "change" },
+        ],
+        warehousing: [
+          { required: true, message: "请选择返厂处理人", trigger: "change" },
         ],
       },
     };
@@ -722,6 +756,9 @@ export default {
       return (active) => {
         return !!id && active < state && this.checkRole(["sale"]);
       };
+    },
+    isNoSelect() {
+      return this.form.id && this.active === 7;
     },
   },
   watch: {
@@ -843,13 +880,14 @@ export default {
     },
     stateChange(data) {
       const { state, id } = this.form;
+      console.log(data, state, this.checkRole(["sale"]))
       if (!this.checkRole(["sale"]) || data >= state) {
         return;
       }
 
       this.isState = data > this.active ? data + 1 : data;
 
-      data = data <= this.active ? data - 1 : 6;
+      data = data <= this.active ? data - 1 : 7;
       if (id) {
         this.active = data;
       }
@@ -872,6 +910,12 @@ export default {
             if (this.isState !== -1) {
               currentData.state = this.isState;
             }
+
+            // 返厂入库为无的情况
+            if(currentData.warehousing === '-1' && currentData.state === 6) {
+              currentData.state = 7;
+            }
+
             saleUpdate(currentData)
               .then(() => {
                 this.msgSuccess("修改成功");
@@ -899,7 +943,7 @@ export default {
 };
 </script>
   
-<style lang="scss" scope>
+<style lang="scss">
 .after-sale-box {
   .el-dialog__body {
     max-height: 90vh;
@@ -931,6 +975,7 @@ export default {
 
     .el-form-item__error {
       min-width: auto;
+      white-space: nowrap;
     }
   }
 

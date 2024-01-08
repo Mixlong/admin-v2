@@ -176,11 +176,11 @@
           {{ parseTime(row.sellTime, "{y}-{m}-{d}") }}
         </template>
       </el-table-column>
-      <el-table-column label="客户要求到货日期" align="center" width="130">
+      <!-- <el-table-column label="客户要求到货日期" align="center" width="130">
         <template slot-scope="{ row }">
           {{ parseTime(row.arrivalTime, "{y}-{m}-{d}") }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="订单状态" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag size="mini" :type="tagType(row.status)">

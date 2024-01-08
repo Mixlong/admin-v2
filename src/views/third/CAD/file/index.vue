@@ -459,12 +459,15 @@ export default {
       if (type) {
         this.queryParams.type = type;
       }
-      let { categoryId, status } = this.$route.query;
+      let { categoryId, computerId, status } = this.$route.query;
 
       if (categoryId) {
         this.queryParams.categoryId = categoryId;
         this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
+
+        if(this.$route.query.model) {
+          computerId = this.$route.query.model;
+        }
         if (computerId) {
           this.queryParams.computerId = computerId;
         }
