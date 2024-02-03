@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-14 13:47:31
- * @LastEditTime: 2021-05-19 14:07:54
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2024-01-29 19:43:14
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Description: In User Settings Edit
  * @FilePath: /fileConf-ui/src/permission.js
  */

@@ -1,4 +1,12 @@
-import store from '@/store'
+/*
+ * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @Date: 2023-04-14 16:08:04
+ * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
+ * @LastEditTime: 2024-01-29 15:08:44
+ * @FilePath: \FILECONF-UI\src\utils\permission.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+import store from "@/store";
 
 /**
  * 字符权限校验
@@ -7,15 +15,19 @@ import store from '@/store'
  */
 export function checkPermi(value) {
   if (value && Array.isArray(value) && value.length > 0) {
-    const permissions = store.getters && store.getters.permissions
-    const permissionDatas = value
+    const permissions = store.getters && store.getters.permissions;
+    const permissionDatas = value;
 
-    const hasPermission = permissions.some(permission => permissionDatas.includes(permission))
+    const hasPermission = permissions.some((permission) =>
+      permissionDatas.includes(permission)
+    );
 
-    return hasPermission
+    return hasPermission;
   } else {
-    console.error(`need roles! Like checkPermi="['system:user:add','system:user:edit']"`)
-    return false
+    console.error(
+      `need roles! Like checkPermi="['system:user:add','system:user:edit']"`
+    );
+    return false;
   }
 }
 
@@ -39,3 +51,4 @@ export function checkRole(value) {
     return false
   }
 }
+

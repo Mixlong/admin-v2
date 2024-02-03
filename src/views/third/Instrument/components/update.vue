@@ -39,6 +39,7 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            
             <el-form-item
               label="通讯方式"
               prop="instrumentModel.communicationType1"
@@ -50,7 +51,7 @@
                 <el-option
                   v-for="item in dicts_communication_type"
                   :key="item.dictValue"
-                  :label="item.dictValue"
+                  :label="item.dictLabel"
                   :value="item.dictValue"
                 >
                 </el-option>
@@ -153,6 +154,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item v-if="form.id" label="型号" prop="name">
               <el-input v-model="form.name" placeholder="型号" />
@@ -252,6 +254,7 @@
               </el-select>
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="ERP编码:" prop="erp" v-if="form.id">
               <el-input v-model="form.erp" placeholder="ERP编码" />
@@ -336,6 +339,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="缓启动" prop="slowStart">
               <el-input
@@ -409,6 +413,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="电机功率" prop="motorSys">
               <el-input
@@ -482,6 +487,7 @@
               >
             </el-form-item>
           </el-col>
+          
           <el-col :span="4">
             <el-form-item label="蓝牙" prop="instrumentModel.bluetooth">
               <el-radio v-model="form.instrumentModel.bluetooth" label="0"

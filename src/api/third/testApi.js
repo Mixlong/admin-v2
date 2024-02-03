@@ -357,3 +357,49 @@ export function caseUpload(data) {
     data
   });
 }
+
+// pdf转换图片
+export function fileConverter(data) {
+  return request({
+    url: "/file/converter",
+    method: "post",
+    data,
+    isToken: false
+  });
+}
+
+// 生产许可
+export function computerLicenseList(params) {
+  return request({
+    url: "/computer/license/list",
+    method: "get",
+    params
+  });
+}
+
+// 禁用、启用
+export function computerUpdate(data) {
+  return request({
+    url: "/computer/license/update",
+    method: "put",
+    data
+  });
+}
+
+// 配置总览
+export function modelConfigList(params) {
+  return request({
+    url: "/model/config/list",
+    method: "get",
+    params
+  });
+}
+
+// 审核
+export function modelConfigState(data) {
+  return request({
+    url: "/model/config/state",
+    method: "put",
+    data
+  });
+}

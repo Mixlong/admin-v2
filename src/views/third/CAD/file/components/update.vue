@@ -665,17 +665,17 @@ export default {
         this.form.webVersion = "";
         return;
       }
-      console.log(JSON.parse(info));
       const { id, version } = JSON.parse(info);
       this.form.webId = id;
       this.form.webVersion = version;
+      this.form.stsContent = version;
     },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isLoading = true;
-          if (this.form.id) {
+          if (this.form.id) {                          
             delete this.form.createTime;
             delete this.form.updateTime;
             delete this.form.updateBy;

@@ -23,7 +23,7 @@
           <el-image
             v-else
             :src="item"
-            fit="cover"
+            fit="contain"
             class="el-upload-list__item-thumbnail"
           />
           <span class="el-upload-list__item-actions">
@@ -59,17 +59,18 @@
       :on-error="handleError"
       :before-upload="beforeUpload"
     >
-      <i class="el-icon-plus"></i>
+      <i :class="isUploadIcon"></i>
     </el-upload>
     <el-dialog class="el-upload-video-img-box" :visible.sync="dialogVisible" append-to-body top="2vh">
       <video style="object-fit: fill;" controls  class="w100" v-if="isVideo" :src="dialogImageUrl" />
-      <img v-else width="100%" :src="dialogImageUrl" />
+      <img v-else width="100%" :src="dialogImageUrl" style="max-height: 80vh;" />
     </el-dialog>
   </div>
 </template>
 
 <script>
 import draggable from "vuedraggable";
+import reqUrl from "@/utils/requestUrl";
 
 export default {
   name: "ElUploadSortable",
@@ -89,7 +90,7 @@ export default {
     },
     action: {
       type: String,
-      default: "https://jsonplaceholder.typicode.com/posts/",
+      default: reqUrl + "/oss/batch-upload"
     },
     value: {
       type: String,
@@ -123,6 +124,7 @@ export default {
   data() {
     return {
       imgList: [],
+      isLoading: false,
       drag: false,
       dragOptions: {
         animation: 200,
@@ -141,6 +143,9 @@ export default {
         height: this.imgH + "px",
       };
     },
+    isUploadIcon() {
+      return this.isLoading ? "el-icon-loading" : "el-icon-plus";
+    }
   },
   watch: {
     value(value) {
@@ -175,15 +180,19 @@ export default {
         this.$message.error("只能上传一张图片，请删除后再上传!");
       }
 
+      this.isLoading = true;
+
       return isValidFormat && isLt50M && !maxLt;
     },
 
     handleSuccess(res) {
+      this.isLoading = false;
       this.imgList.push(res.data[0].url);
       this.$emit("input", this.imgList.toString());
     },
 
     handleError() {
+      this.isLoading = false;
       this.$message.error("上传失败!");
     },
 

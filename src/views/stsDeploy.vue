@@ -15,7 +15,7 @@
               >
                 <el-option
                   v-for="dict in dictList"
-                  :key="dict.id"
+                  :key="dict.id"     
                   :label="dict.name"
                   :value="dict.id"
                 />
@@ -69,10 +69,10 @@
                   allow-create
                 >
                   <el-option
-                    v-for="item in backlightBrightnessList"
-                    :key="item"
-                    :label="item"
-                    :value="item"
+                    v-for="(value, key) in backlightBrightnessList"
+                    :key="key"
+                    :label="value"
+                    :value="+key"
                   />
                 </el-select>
               </el-form-item>
@@ -748,6 +748,88 @@
               <el-radio :label="0"> NO </el-radio>
             </el-radio-group>
           </el-form-item>
+          <el-row type="flex">
+            <el-col :span="4">
+              <el-form-item label="按键类型" prop="otherOptions.keyType">
+                <el-select
+                  v-model="formData.otherOptions.keyType"
+                  placeholder="请选择按键类型"
+                  :style="inputWidth"
+                  @change="generateInputs"
+                >
+                  <el-option
+                    v-for="(value, key) in keyTypeList"
+                    :key="key"
+                    :label="value.keyTitle"
+                    :value="+key"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <!-- <el-col :span="4">
+              <el-form-item label="按键分类" prop="otherOptions.keySort">
+                <el-select
+                  v-model="formData.otherOptions.keySort"
+                  placeholder="请选择按键分类"
+                  :style="inputWidth"
+                  @change="generateInputs"
+                >
+                  <el-option
+                    v-for="(item, index) in keySortList"
+                    :key="index"
+                    :label="item.keyLabel"
+                    :value="item.keyValue"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col> -->
+          </el-row>
+          <div>
+            <el-form-item
+              ref="formItem"
+              v-for="(item, index) in formData.inputValues"
+              :key="index"
+              :label="item.keyLabel"
+              :prop="`inputValues[${index}].keyCode`"
+              :rules="inputValuesRules(item)"
+            >
+              <el-input
+                v-minMaxValue="{ min: 0 }"
+                v-model.number="item.keyCode"
+                oninput="value=value.replace(/[^\d]/g, '')"
+                clearable
+                :style="inputWidth"
+              />
+            </el-form-item>
+            <el-form-item
+              label="组合键"
+              prop="otherOptions.combinactionKey"
+              v-if="formData.otherOptions.keyType === 3"
+            >
+              <el-input
+                v-minMaxValue="{ min: 0 }"
+                v-model.number="formData.otherOptions.combinactionKey"
+                oninput="value=value.replace(/[^\d]/g, '')"
+                clearable
+                :style="inputWidth"
+              />
+            </el-form-item>
+            <el-form-item
+              label="仪表开机键值"
+              prop="otherOptions.powerKeyCode"
+              v-if="formData.otherOptions.keyType === 7"
+            >
+              <el-input
+                v-minMaxValue="{ min: 0 }"
+                v-model.number="formData.otherOptions.powerKeyCode"
+                oninput="value=value.replace(/[^\d]/g, '')"
+                clearable
+                :style="inputWidth"
+              />
+            </el-form-item>
+          </div>
         </el-form>
       </el-card>
     </el-main>
@@ -771,7 +853,7 @@
         </el-button>
         <el-button size="mini" type="primary" @click="exportForm">
           导出配置
-        </el-button>
+        </el-button>                 
       </template>
     </el-footer>
 
@@ -861,6 +943,8 @@ import {
 import { getToken } from "@/utils/auth";
 
 import Axios from "axios";
+import { scrollTo } from "@/utils/scroll-to";
+
 export default {
   data() {
     // 背光亮度
@@ -869,8 +953,8 @@ export default {
         callback(new Error("请输入数字值"));
       } else if (+value < 0) {
         callback("背光亮度不能小于0");
-      } else if (+value > 5) {
-        callback("背光亮度不能大于5");
+      } else if (+value > 6) {
+        callback("背光亮度不能大于6");
       } else {
         callback();
       }
@@ -940,6 +1024,63 @@ export default {
         categoryId: "",
         computerId: "",
       },
+      keyTypeList: {
+        2: {
+          keyTitle: "2键",
+          keyList: ["上键", "下键"],
+        },
+        3: {
+          keyTitle: "3键",
+          keyImgFlag: "DTK3_",
+          keyErrImgFlag: "DTK3_Err",
+          keyList: ["上(-)键", "中(+)键", "下(开机)键"],
+        },
+        4: {
+          keyTitle: "4键",
+          keyList: ["开机键", "上", "下", "左", "右"],
+        },
+        5: {
+          keyTitle: "5键",
+          keyImgFlag: "key",
+          keyErrImgFlag: "keyErr",
+          keyList: ["上(+)键", "中(开机)键", "下(-)键", "左键", "右键"],
+        },
+        6: {
+          keyTitle: "6键",
+          keyList: ["上", "中", "下", "左", "右"],
+        },
+        7: {
+          keyTitle: "7键",
+          keyImgFlag: "DTK7_",
+          keyErrImgFlag: "DTK7_Err",
+          keyList: [
+            "+键",
+            "中(电源键)",
+            "-键",
+            "左键",
+            "右键",
+            "左上键",
+            "左下键",
+          ],
+        },
+      },
+      keySortList: [
+        {
+          keyLabel: "本地按键1",
+          keyValue: 1,
+          imgSrc: "BT1.png",
+        },
+        {
+          keyLabel: "本地按键2",
+          keyValue: 2,
+          imgSrc: "BT2.png",
+        },
+        {
+          keyLabel: "按键3",
+          keyValue: 3,
+          imgSrc: "DTK3.png",
+        },
+      ],
       formData: {
         instrumentModel: {
           backlightBrightness: "",
@@ -986,7 +1127,11 @@ export default {
         },
         otherOptions: {
           shutdownTest: 1,
+          keyType: 5,
+          powerKeyCode: "",
+          keySort: "",
         },
+        inputValues: [],
       },
       deployForm: {
         categoryId: "",
@@ -1005,6 +1150,9 @@ export default {
           { required: true, message: "属性描述不能为空", trigger: "blur" },
         ],
         url: [{ required: true, message: "文件不能为空", trigger: "change" }],
+        keyCode: [
+          { required: true, message: "按键值不能为空", trigger: "blur" },
+        ],
       },
       formRules: {
         "instrumentModel.backlightBrightness": [
@@ -1028,11 +1176,21 @@ export default {
         "instrumentModel.perimeter": [
           { validator: validatePerimeter, trigger: ["blur", "change"] },
         ],
+        "otherOptions.powerKeyCode": [
+          { required: true, message: "仪表开机键值不能为空", trigger: "blur" },
+        ],
       },
       dictList: [],
       computerOptions: [],
       //   背光亮度
-      backlightBrightnessList: [1, 2, 3, 4, 5],
+      backlightBrightnessList: {
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: "AUTO",
+      },
       //   休眠时间
       sleepTimeList: [...Array(11)].map((v, i) => i),
       //   系统电压
@@ -1054,22 +1212,6 @@ export default {
       // 总线故障超时时间
       allLineErrTimeOutData: [...Array(251)].map((v, i) => i + 5),
       // 轮径
-      // wheelDiameterData: {
-      //   18: 9,
-      //   20: 10,
-      //   22: 11,
-      //   24: 12,
-      //   28: 14,
-      //   0: 16,
-      //   1: 18,
-      //   2: 20,
-      //   3: 22,
-      //   4: 24,
-      //   5: 26,
-      //   6: "700C",
-      //   7: 28,
-      //   58: 29,
-      // },
       wheelDiameterData: {
         0: 16,
         1: 18,
@@ -1212,6 +1354,18 @@ export default {
         return this.isUploadFlag && this.formData.instrumentModel[key] === "";
       };
     },
+    inputWidth() {
+      return "width: 120px";
+    },
+    inputValuesRules() {
+      return ({ keyLabel }) => {
+        return {
+          required: true,
+          message: `${keyLabel}不能为空`,
+          trigger: "blur",
+        };
+      };
+    },
   },
   watch: {
     "deployForm.url"(url) {
@@ -1231,9 +1385,44 @@ export default {
       this.wheelDiameterData[i] = i * 0.5;
     }
   },
+  mounted() {
+    this.generateInputs(5);
+    this.scrollToSavePosition();
+    window.addEventListener("beforeunload", () => {
+      sessionStorage.setItem("scrollPosition", window.scrollY);
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    sessionStorage.removeItem("scrollPosition");
+    next();
+  },
   methods: {
+    scrollToSavePosition() {
+      const savePostion = sessionStorage.getItem("scrollPosition");
+
+      if (savePostion) {
+        scrollTo(savePostion);
+
+        sessionStorage.removeItem("savePostion");
+      }
+    },
+    clearkeyCodeRules() {
+      this.$nextTick(() => {
+        this.$refs.formItem.forEach((item) => {
+          item.clearValidate();
+        });
+      });
+    },
+    generateInputs(keyType) {
+      this.formData.inputValues = [];
+
+      for (let i = 0; i < keyType; i++) {
+        const { keyList } = this.keyTypeList[keyType];
+        this.formData.inputValues.push({ keyCode: "", keyLabel: keyList[i] });
+      }
+      this.clearkeyCodeRules();
+    },
     changeCountPerimeter(wheelDiameter) {
-      console.log(wheelDiameter);
       let wheelDiameterVal = null;
       if (wheelDiameter === "6") {
         wheelDiameterVal = 27.5;
@@ -1278,7 +1467,11 @@ export default {
               ...jsonData,
               otherOptions: {
                 shutdownTest: 1,
+                keyType: 5,
+                powerKeyCode: "",
+                combinactionKey: "",
               },
+              inputValues: [],
             };
           }
         };
@@ -1357,8 +1550,7 @@ export default {
             }
             // 背光亮度
             if (childKey === "backlightBrightness" && parVal !== "") {
-              objVal[parallelism[childKey]] =
-                this.backlightBrightnessList[parVal];
+              objVal[parallelism[childKey]] = +parVal;
             }
             // 助力开始磁钢数
             if (childKey === "assistStartMagnetNumber" && parVal !== "") {
@@ -1471,10 +1663,17 @@ export default {
     handleFetchData(stsDeployFile) {
       Axios.get(stsDeployFile).then((res) => {
         this.formData = res.data;
+        console.log(this.formData);
         if (!this.formData.otherOptions) {
-          this.formData.otherOptions = {
+          this.$set(this.formData, "otherOptions", {
             shutdownTest: 1,
-          };
+            keyType: 5,
+            powerKeyCode: "",
+            combinactionKey: "",
+          });
+        }
+        if (!this.formData.inputValues) {
+          this.$set(this.formData, "inputValues", []);
         }
       });
     },
@@ -1511,6 +1710,9 @@ export default {
       });
     },
     exportToJsonFile(data, fileName) {
+      const { keyType } = data.otherOptions;
+      const { keyImgFlag, keyErrImgFlag } = this.keyTypeList[keyType];
+      data.otherOptions = { ...data.otherOptions, keyImgFlag, keyErrImgFlag };
       const jsonData = JSON.stringify(data);
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);

@@ -70,6 +70,12 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: "/pdfToImg",
+    name: "pdfToImg",
+    component: (resolve) => require(["@/views/pdfToImg"], resolve),
+    hidden: true
+  },
+  {
     path: "",
     component: Layout,
     redirect: "index",

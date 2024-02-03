@@ -225,8 +225,9 @@
               v-for="dict in statusOptions"
               :key="dict.dictValue"
               :label="dict.dictValue"
-              >{{ dict.dictLabel }}</el-radio
             >
+              {{ dict.dictLabel }}
+            </el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -331,7 +332,7 @@ export default {
         ],
         dictSort: [
           { required: true, message: "数据顺序不能为空", trigger: "blur" },
-        ],
+        ]
       },
     };
   },
@@ -405,6 +406,7 @@ export default {
       this.open = true;
       this.title = "添加字典数据";
       this.form.dictType = this.queryParams.dictType;
+      console.log(this.form.dictType);
     },
     // 多选框选中数据
     handleSelectionChange(selection) {

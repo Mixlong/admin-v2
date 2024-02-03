@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2024-01-02 09:50:18
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2024-01-05 18:41:59
+ * @LastEditTime: 2024-01-09 20:43:49
  * @FilePath: \FILECONF-UI\src\views\www\prodData\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -446,6 +446,7 @@ export default {
         testStatus,
         stsState,
         snStatus,
+        hopeDate
       } = row;
       const { label } = column;
       switch (label) {
@@ -466,10 +467,11 @@ export default {
         case "SN规则":
           return this.getDataState(snStatus);
         case "期望日期":
-        //   if (isSure === 0) {
-        //     return "bg-yellow pointer";
-        //   }
-        //   break;
+          if(hopeDate && +new Date() > hopeDate) {
+            return "bg-yellow pointer";
+          } else {
+            return "pointer";
+          }
         case "备注":
           return "pointer";
       }
@@ -524,7 +526,7 @@ export default {
       // /device/productData/fileConfig
       if (status !== 2) {
         this.$router.push(
-          `/productData/fileConfig?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
+          `/device/productData/fileConfig?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
         );
       }
     },
@@ -545,7 +547,7 @@ export default {
       this.isShow = false;
     },
     handleOk() {
-      this.$refs["form"].validate(async (valid) => {
+      this.$refs["form"].validate((valid) => {
         if (valid) {
           this.confirmLoading = true;
 
@@ -560,9 +562,6 @@ export default {
                   this.isShow = false;
                   this.confirmLoading = false;
                 });
-
-              await materialUpdate(this.form);
-              
             } catch (error) {
               console.error(error);
             }

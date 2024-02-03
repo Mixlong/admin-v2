@@ -2,7 +2,7 @@
  * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
  * @Date: 2023-09-18 20:05:34
  * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-12-28 18:18:13
+ * @LastEditTime: 2024-01-16 14:05:53
  * @FilePath: \FILECONF-UI\src\views\third\afterSale\components\addSale.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -12,7 +12,7 @@
     class="after-sale-box"
     :title="isTitle"
     :visible="visible"
-    width="800px"
+    width="900px"
     append-to-body
     center
     top="2vh"
@@ -62,7 +62,7 @@
               v-model="form.desc"
               type="textarea"
               clearable
-              :rows="3"
+              :rows="4"
               style="width: 100%"
               placeholder="请输入版本描述"
             />
@@ -77,6 +77,7 @@
           class="add-file-sticky"
         >
           <el-button
+            class="save-btn"
             v-if="form.list.length < 100"
             type="primary"
             icon="el-icon-plus"
@@ -101,20 +102,41 @@
               type="flex"
               justify="space-between"
               align="middle"
-              :gutter="10"
+              :gutter="5"
               v-for="(item, index) in form.list"
               :key="index"
               class="margin-bottom-sm"
             >
-              <el-col :span="1" class="text-center">
+              <!-- <el-col :span="1" class="text-center">
                 {{ index + 1 }}
-              </el-col>
-              <el-col :span="22">
-                <el-row type="flex" align="middle" class="file_list_box">
+              </el-col> -->
+              <el-col :span="23">
+                <el-row
+                  type="flex"
+                  :gutter="10"
+                  align="middle"
+                  class="file_list_box"
+                >
                   <el-col :span="1" class="text-center move-tag mover">
                     <i class="el-icon-menu"></i>
                   </el-col>
-                  <el-col :span="15">
+                  <el-col :span="3">
+                    <el-form-item
+                      label=""
+                      label-width="0"
+                      :prop="`list[${index}].indexNum`"
+                      :rules="rules.indexNum"
+                    >
+                      <el-input-number
+                        v-model="item.indexNum"
+                        clearable
+                        :min="0"
+                        controls-position="right"
+                        style="width: 100%"
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="14">
                     <el-form-item
                       label=""
                       label-width="0"
@@ -131,19 +153,51 @@
                     </el-form-item>
                   </el-col>
                   <el-col :span="8">
-                    <el-form-item
-                      label=""
-                      label-width="0"
-                      :prop="`list[${index}].remark`"
-                      :rules="rules.remark"
-                    >
-                      <el-input
-                        v-model="item.remark"
-                        clearable
-                        placeholder="请输入工位文件描述"
-                        style="width: 100%"
-                      />
-                    </el-form-item>
+                    <div class="flex">
+                      <el-form-item
+                        label=""
+                        label-width="0"
+                        :prop="`list[${index}].remark`"
+                        :rules="rules.remark"
+                      >
+                        <el-input
+                          v-model="item.remark"
+                          clearable
+                          placeholder="请输入工位文件描述"
+                          style="width: 100%"
+                        />
+                      </el-form-item>
+                      <!-- 保存 -->
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="保存"
+                        placement="top-end"
+                      >
+                        <el-button
+                          type="primary"
+                          icon="el-icon-check"
+                          circle
+                          class="margin-left-xs save-btn"
+                          @click="onSaveItem(item)"
+                        />
+                      </el-tooltip>
+                      <!-- 复制 -->
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="复制"
+                        placement="top-end"
+                      >
+                        <el-button
+                          type="warning"
+                          icon="el-icon-copy-document"
+                          circle
+                          class="margin-left-xs save-btn"
+                          @click="onCopyItem(index)"
+                        />
+                      </el-tooltip>
+                    </div>
                   </el-col>
                 </el-row>
               </el-col>
@@ -153,8 +207,9 @@
                   type="danger"
                   icon="el-icon-minus"
                   circle
-                  style="height: 28px"
+                  class="save-btn"
                   @click="removeSopData(item)"
+                  style="margin-top: -6px"
                 />
               </el-col>
             </el-row>
@@ -203,11 +258,13 @@ export default {
         desc: "",
         list: [
           {
+            indexNum: undefined,
             file: "",
             remark: "",
           },
         ],
       },
+      cloneForm: {},
       isCLoading: false,
       // 表单校验
       rules: {
@@ -218,16 +275,19 @@ export default {
           { required: true, message: "请输入版本号", trigger: "blur" },
         ],
         desc: [{ required: true, message: "请输入版本描述", trigger: "blur" }],
+        indexNum: [
+          { required: true, message: "请输入序号", trigger: "change" },
+        ],
         file: [
           {
-            required: true,
+            required: false,
             message: "工位文件不能为空",
             trigger: ["change", "blur"],
           },
         ],
         remark: [
-          { required: true, message: "工位文件描述为空", trigger: "blur" },
-        ],
+          { required: false, message: "工位文件描述为空", trigger: "blur" },
+        ]
       },
     };
   },
@@ -255,6 +315,7 @@ export default {
         desc: "",
         list: [
           {
+            indexNum: undefined,
             file: "",
             remark: "",
           },
@@ -265,13 +326,17 @@ export default {
     // 新增工位文件
     onAddStationFile() {
       this.form.list.push({
+        indexNum: undefined,
         file: "",
         remark: "",
       });
 
+      this.onSetStationBoxRef();
+    },
+    onSetStationBoxRef() {
       const scrollRef = this.$refs.stationBoxRef.$el;
       const scrollHeight = scrollRef.scrollHeight;
-      
+
       this.$nextTick(() => {
         scrollRef.scrollTop = scrollHeight;
       });
@@ -283,14 +348,47 @@ export default {
         this.form.list.splice(index, 1);
       }
     },
+    /** 保存 */
+    onSaveItem(item) {
+      for (const key in item) {
+        if (this.Is_Empty(item[key])) {
+          return this.msgError("请填入必要信息");
+        }
+      }
+      if (this.form.id) {
+        sopUpdate(this.form).then(() => {
+          this.msgSuccess("保存成功");
+        });
+      } else {
+        sopSave(this.form).then(() => {
+          this.msgSuccess("保存成功");
+        });
+      }
+    },
+    /** 复制 */
+    onCopyItem(index) {
+      const item = { ...this.form.list[index], id: "" };
+      this.form.list.splice(index + 1, 0, item);
+
+      // this.onSetStationBoxRef();
+    },
+    checkListItem() {
+      let arr = [];
+      for (const { indexNum } of this.form.list) {
+        if (arr.includes(indexNum)) {
+          this.msgError("工位序号不能重复");
+          return true;
+        } else {
+          arr.push(indexNum);
+        }
+      }
+    },
     /** 提交按钮 */
     submitForm: function () {
+      if (this.checkListItem()) return;
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
-          this.form.list.forEach(
-            (item, index) => (item.indexNum = String(index))
-          );
           if (this.form.id) {
             sopUpdate(this.form)
               .then(() => {
@@ -355,9 +453,17 @@ export default {
     }
   }
 
+  .save-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .file_list_box {
     box-sizing: border-box;
-    border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
     padding-top: 20px;
     padding-left: 10px;
     padding-right: 10px;
@@ -384,7 +490,7 @@ export default {
   }
 
   .fade-transform-sop-leave-active {
-    transition: all 0.5s ease-in-out;
+    transition: all 0.3s ease-in-out;
   }
 
   .station_box {
@@ -393,7 +499,7 @@ export default {
     overflow-y: auto;
     scroll-behavior: smooth;
     padding-right: 10px;
-    box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.5);
+    // box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.5);
     &::-webkit-scrollbar {
       width: 0;
       height: 0;

@@ -102,7 +102,7 @@ import {
 } from "@/api/third/computer";
 import { typeCategory } from "@/api/third/category";
 
-import CompUpdate from "./components/update";
+import CompUpdate from "./components/updates";
 
 export default {
   components: {
@@ -179,7 +179,6 @@ export default {
       this.$refs.compUpdate.reset();
       detailComputer(row.id).then((res) => {
         let { data } = res;
-        this.$refs.compUpdate.reset();
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;

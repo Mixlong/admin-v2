@@ -40,6 +40,7 @@ service.interceptors.response.use(res => {
   const code = res.data.code || 200;
   // 获取错误信息
   const msg = errorCode[code] || res.data.msg || errorCode['default']
+
   if (code === 401 || code === 3001 || code === 4003) {
     if (code == 4003) {
       Notification.error({
