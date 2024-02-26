@@ -9,6 +9,60 @@
       width="1560px"
       append-to-body
     >
+      <el-form
+        v-show="isCopyProduct"
+        :model="queryParams"
+        ref="queryParams"
+        :inline="true"
+      >
+        <el-form-item label="所属品类" prop="categoryId">
+          <el-select
+            v-model="queryParams.categoryId"
+            @change="changeCategory"
+            filterable
+            allow-create
+            clearable
+            placeholder="请选择品类"
+            style="width: 160px"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号" prop="computerId">
+          <el-select
+            :loading="isCLoading"
+            filterable
+            remote
+            clearable
+            :disabled="!queryParams.categoryId"
+            v-model="queryParams.computerId"
+            placeholder="请选择仪表型号"
+            :remote-method="getComputerNameList"
+            style="width: 160px"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            :disabled="!queryParams.computerId"
+            @click="handleCopy"
+            >复制</el-button
+          >
+        </el-form-item>
+      </el-form>
+
       <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
         <fieldset>
           <legend>基础配置</legend>
@@ -360,8 +414,8 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="助力档位数" 
+              <el-form-item
+                label="助力档位数"
                 prop="instrumentModel.powerGear"
                 :rules="isCheckConfigItem({ message: '助力档位数' })"
               >
@@ -405,7 +459,12 @@
               <el-form-item
                 label="助力比例"
                 prop="instrumentModel.assistPercentage"
-                :rules="isCheckConfigItem({ message: '助力开始磁钢数', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({
+                    message: '助力开始磁钢数',
+                    trigger: 'blur',
+                  })
+                "
               >
                 <el-input
                   type="number"
@@ -420,7 +479,9 @@
               <el-form-item
                 label="限流门限(A)"
                 prop="instrumentModel.currentlimiting"
-                :rules="isCheckConfigItem({ message: '限流门限', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '限流门限', trigger: 'blur' })
+                "
               >
                 <el-input
                   type="number"
@@ -457,7 +518,9 @@
               <el-form-item
                 label="显示轮径"
                 prop="instrumentModel.showWheelsize"
-                :rules="isCheckConfigItem({ message: '显示轮径', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '显示轮径', trigger: 'blur' })
+                "
               >
                 <el-input
                   type="number"
@@ -470,8 +533,8 @@
             </el-col>
 
             <el-col :span="6">
-              <el-form-item 
-                label="缓启动" 
+              <el-form-item
+                label="缓启动"
                 prop="instrumentModel.slowStart"
                 :rules="isCheckConfigItem({ message: '缓启动' })"
               >
@@ -524,10 +587,10 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="显示单位" 
+              <el-form-item
+                label="显示单位"
                 prop="instrumentModel.unit"
-                :rules="isCheckConfigItem({ message: '显示单位' })"  
+                :rules="isCheckConfigItem({ message: '显示单位' })"
               >
                 <el-select
                   v-model="form.instrumentModel.unit"
@@ -545,10 +608,10 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item 
-                label="协议" 
+              <el-form-item
+                label="协议"
                 prop="instrumentModel.agreement"
-                :rules="isCheckConfigItem({ message: '协议' })"  
+                :rules="isCheckConfigItem({ message: '协议' })"
               >
                 <el-select
                   v-model="form.instrumentModel.agreement"
@@ -566,10 +629,10 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item 
-                label="电量计算方式" 
+              <el-form-item
+                label="电量计算方式"
                 prop="instrumentModel.power"
-                :rules="isCheckConfigItem({ message: '电量计算方式' })"  
+                :rules="isCheckConfigItem({ message: '电量计算方式' })"
               >
                 <el-select
                   v-model="form.instrumentModel.power"
@@ -590,7 +653,7 @@
               <el-form-item
                 label="测速磁钢数"
                 prop="instrumentModel.speedSteel"
-                :rules="isCheckConfigItem({ message: '测速磁钢数' })" 
+                :rules="isCheckConfigItem({ message: '测速磁钢数' })"
               >
                 <el-select
                   v-model="form.instrumentModel.speedSteel"
@@ -612,7 +675,7 @@
               <el-form-item
                 label="电量变化时间(s)"
                 prop="instrumentModel.batteryVoltageChangeTime"
-                :rules="isCheckConfigItem({ message: '电量变化时间' })" 
+                :rules="isCheckConfigItem({ message: '电量变化时间' })"
               >
                 <el-select
                   v-model="form.instrumentModel.batteryVoltageChangeTime"
@@ -634,7 +697,7 @@
               <el-form-item
                 label="速度平滑等级"
                 prop="instrumentModel.smoothLevel"
-                :rules="isCheckConfigItem({ message: '速度平滑等级' })" 
+                :rules="isCheckConfigItem({ message: '速度平滑等级' })"
               >
                 <el-select
                   v-model="form.instrumentModel.smoothLevel"
@@ -656,7 +719,7 @@
               <el-form-item
                 label="总线故障超时时间(s)"
                 prop="instrumentModel.allLineErrTimeOut"
-                :rules="isCheckConfigItem({ message: '总线故障超时时间' })" 
+                :rules="isCheckConfigItem({ message: '总线故障超时时间' })"
               >
                 <el-select
                   v-model="form.instrumentModel.allLineErrTimeOut"
@@ -677,10 +740,10 @@
             </el-col>
 
             <el-col :span="6">
-              <el-form-item 
-                label="车名" 
+              <el-form-item
+                label="车名"
                 prop="instrumentModel.ebikeName"
-                :rules="isCheckConfigItem({ message: '车名' })" 
+                :rules="isCheckConfigItem({ message: '车名' })"
               >
                 <el-select
                   v-model="form.instrumentModel.ebikeName"
@@ -698,8 +761,8 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item 
-                label="车型" 
+              <el-form-item
+                label="车型"
                 prop="instrumentModel.carModel"
                 :rules="isCheckConfigItem({ message: '车型', trigger: 'blur' })"
               >
@@ -711,10 +774,12 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="默认档位" 
+              <el-form-item
+                label="默认档位"
                 prop="instrumentModel.defaultGear"
-                :rules="isCheckConfigItem({ message: '默认档位', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '默认档位', trigger: 'blur' })
+                "
               >
                 <el-input
                   v-minMaxValue="{ min: 0, max: 9 }"
@@ -724,8 +789,8 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="Logo界面" 
+              <el-form-item
+                label="Logo界面"
                 prop="instrumentModel.logo"
                 :rules="isCheckConfigItem({ message: 'Logo界面' })"
               >
@@ -748,7 +813,9 @@
               <el-form-item
                 label="开机密码"
                 prop="instrumentModel.startupPasswd"
-                :rules="isCheckConfigItem({ message: '开机密码', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '开机密码', trigger: 'blur' })
+                "
               >
                 <el-input
                   type="number"
@@ -762,7 +829,12 @@
               <el-form-item
                 label="高级菜单密码"
                 prop="instrumentModel.highMenuPasswd"
-                :rules="isCheckConfigItem({ message: '高级菜单密码', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({
+                    message: '高级菜单密码',
+                    trigger: 'blur',
+                  })
+                "
               >
                 <el-input
                   v-model="form.instrumentModel.highMenuPasswd"
@@ -773,10 +845,12 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="电机功率(W)" 
+              <el-form-item
+                label="电机功率(W)"
                 prop="instrumentModel.motorSys"
-                :rules="isCheckConfigItem({ message: '电机功率', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '电机功率', trigger: 'blur' })
+                "
               >
                 <el-input
                   type="number"
@@ -787,10 +861,12 @@
                 />
               </el-form-item>
 
-              <el-form-item 
-                label="电池容量" 
+              <el-form-item
+                label="电池容量"
                 prop="instrumentModel.batteryCap"
-                :rules="isCheckConfigItem({ message: '电池容量', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '电池容量', trigger: 'blur' })
+                "
               >
                 <el-input
                   type="number"
@@ -804,7 +880,12 @@
               <el-form-item
                 label="高速蜂鸣器提醒"
                 prop="instrumentModel.highSpeedBuzzerRemind"
-                :rules="isCheckConfigItem({ message: '高速蜂鸣器提醒', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({
+                    message: '高速蜂鸣器提醒',
+                    trigger: 'blur',
+                  })
+                "
               >
                 <el-input
                   v-model="form.instrumentModel.highSpeedBuzzerRemind"
@@ -818,7 +899,12 @@
               <el-form-item
                 label="自动关机时间"
                 prop="instrumentModel.autoShutdownTime"
-                :rules="isCheckConfigItem({ message: '自动关机时间', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({
+                    message: '自动关机时间',
+                    trigger: 'blur',
+                  })
+                "
               >
                 <el-input
                   v-model.number="form.instrumentModel.autoShutdownTime"
@@ -830,10 +916,12 @@
             </el-col>
 
             <el-col :span="6">
-              <el-form-item 
-                label="车轮宽度" 
+              <el-form-item
+                label="车轮宽度"
                 prop="instrumentModel.tiresSize"
-                :rules="isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })"
+                :rules="
+                  isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })
+                "
               >
                 <el-input
                   v-minMaxValue="{ min: 0, max: 99 }"
@@ -843,8 +931,8 @@
                   clearable
                 />
               </el-form-item>
-              <el-form-item 
-                label="蓝牙" 
+              <el-form-item
+                label="蓝牙"
                 prop="instrumentModel.bluetooth"
                 :rules="isCheckConfigItem({ message: '蓝牙' })"
               >
@@ -853,8 +941,8 @@
                   <el-radio :label="0"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item 
-                label="推车助力" 
+              <el-form-item
+                label="推车助力"
                 prop="instrumentModel.driveAssist"
                 :rules="isCheckConfigItem({ message: '推车助力' })"
               >
@@ -893,10 +981,10 @@
                   <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item 
-              label="定速巡航功能" 
-              prop="instrumentModel.cruise"
-              :rules="isCheckConfigItem({ message: '定速巡航功能' })"
+              <el-form-item
+                label="定速巡航功能"
+                prop="instrumentModel.cruise"
+                :rules="isCheckConfigItem({ message: '定速巡航功能' })"
               >
                 <el-radio-group v-model="form.instrumentModel.cruise">
                   <el-radio :label="0"> YES </el-radio>
@@ -938,8 +1026,8 @@
                   </div>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item 
-                label="助力正反" 
+              <el-form-item
+                label="助力正反"
                 prop="instrumentModel.assist"
                 :rules="isCheckConfigItem({ message: '助力正反' })"
               >
@@ -1010,7 +1098,7 @@
       <div slot="footer" class="dialog-footer flex justify-center">
         <div>
           <el-button
-            v-if="form.instrumentModel.id"
+            v-if="form.instrumentModel.id && !isCopyProduct"
             type="primary"
             @click="submitForm"
             :loading="isSubmitLoading"
@@ -1027,7 +1115,7 @@
 
     <el-dialog
       :close-on-click-modal="false"
-      title="添加品类"
+      title="添加型号"
       :visible.sync="open"
       width="540px"
       append-to-body
@@ -1039,22 +1127,12 @@
         label-width="150px"
         @submit.native.prevent
       >
-        <el-form-item
-          label="型号:"
-          prop="name"
-          :rules="[
-            {
-              required: true,
-              message: '型号',
-              trigger: 'blur',
-            },
-          ]"
-        >
-          <el-input v-model="form.name" placeholder="仪表型号" />
+        <el-form-item label="仪表型号:" prop="name">
+          <el-input v-model.trim="form.name" placeholder="仪表型号" />
         </el-form-item>
 
         <el-form-item label="ERP编码" prop="erp">
-          <el-input v-model="form.erp" placeholder="ERP编码" />
+          <el-input v-model.trim="form.erp" placeholder="ERP编码" />
         </el-form-item>
         <el-form-item label="描述" prop="desc" style="width: 100%">
           <el-input
@@ -1067,8 +1145,14 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="isSubmitLoading" @click="submitForm">确 定</el-button>
-        <el-button @click="open = false">取 消</el-button>
+        <el-button
+          type="primary"
+          :loading="isSubmitLoading"
+          @click="submitForm"
+        >
+          确 定
+        </el-button>
+        <el-button @click="onResetForm">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -1168,16 +1252,29 @@ export default {
     };
     return {
       isSubmitLoading: false,
+      isCopyProduct: false,
       modelList: [],
       selectList: [],
+      queryParams: {
+        categoryId: "",
+        computerId: "",
+      },
       dialogVisible: false,
       open: false,
       // 表单参数
-      form: { instrumentModel: {}, instrumentModel: {} },
+      form: { name: null, instrumentModel: {}, instrumentModel: {} },
       title: "",
       disabled: false,
       // 表单校验
-      rules: {},
+      rules: {
+        name: [
+          {
+            required: false,
+            message: "仪表型号不能为空",
+            trigger: "blur",
+          },
+        ],
+      },
       formRules: {
         "instrumentModel.backlightBrightness": [
           {
@@ -1229,10 +1326,6 @@ export default {
       dicts_voltage: [],
       dicts_power: [],
       dicts_logo: [],
-      // dicts_currentlimiting: [],
-      // dicts_undervoltage: [],
-      // dicts_ortherConfig: [],
-      // dicts_ebike: [],
       // 客户数据
       customerNameData: {
         data: [],
@@ -1259,26 +1352,23 @@ export default {
     },
     isCheckConfigItem() {
       return ({ required = true, message = "", trigger = "change" } = {}) => {
-        return { required, message: `${message}不能为空`, trigger }
-      }
-     }
+        return { required, message: `${message}不能为空`, trigger };
+      };
+    },
   },
   watch: {
     dialogVisible(val) {
       if (val) {
+        this.resetForm("queryParams");
+        this.resetForm("form");
         this.getList();
       }
     },
-    // "form.id": {
-    //   handler: function (newId, oldId) {
-    //     if (!newId) {
-    //       selectComputer(this.form).then((res) => {
-    //         this.selectList = res.data;
-    //       });
-    //     }
-    //   },
-    //   deep: true,
-    // },
+    open(val) {
+      if(!val) {
+        this.rules.name[0].required = false;
+      }
+    }
   },
   created() {
     this.echoWheelDiameter();
@@ -1398,24 +1488,6 @@ export default {
       this.getDicts("instrument_logo").then((res) => {
         this.dicts_logo = res.data;
       });
-      return;
-
-      //仪表限流门限
-      this.getDicts("instrument_currentlimiting").then((res) => {
-        this.dicts_currentlimiting = res.data;
-      });
-      //仪表欠压门限
-      this.getDicts("instrument_undervoltage").then((res) => {
-        this.dicts_undervoltage = res.data;
-      });
-      //其它配置
-      this.getDicts("instrument_ortherConfig").then((res) => {
-        this.dicts_ortherConfig = res.data;
-      });
-      //车名
-      this.getDicts("instrument_ebike_name").then((res) => {
-        this.dicts_ebike = res.data;
-      });
     },
     //查看同配详情
     getDetail(row) {
@@ -1431,7 +1503,7 @@ export default {
             delete data.categoryId;
           }
         }
-        this.resetForm("queryForm");
+        this.resetForm("queryParams");
         let val = Object.assign(this.form, data);
 
         this.$set(this, "form", val);
@@ -1513,6 +1585,50 @@ export default {
           showWheelsize: null,
           carModel: null,
           assistStartMagnetNumber: null,
+
+    //       "backlightBrightness": 5,
+    // "sleepTime": 10,
+    // "voltage": 48,
+    // "powerGear": 4,
+    // "agreement": 3,
+    // "assist": 0,
+    // "assistStartMagnetNumber": 2,
+    // "assistPercentage": "64",
+    // "rotateHandle": 0,
+    // "rotateHandleSpeedLimit": 0,
+    // "slowStart": "2",
+    // "speedSteel": "6",
+    // "currentlimiting": "17",
+    // "undervoltage": 42,
+    // "assistLimit": 32,
+    // "wheelDiameter": "5",
+    // "perimeter": "2355",
+    // "batteryVoltageChangeTime": 1,
+    // "allLineErrTimeOut": 10,
+    // "smoothLevel": "3",
+    // "unit": "1",
+    // "bluetooth": 1,
+    // "power": "2",
+    // "driveAssist": 1,
+    // "defaultGear": "0",
+    // "logo": "2",
+    // "highSpeedBuzzerRemind": "0",
+    // "startupPasswd": "0",
+    // "menuPasswd": "0",
+    // "factoryReset": 1,
+    // "ebikeName": "19",
+    // "motorSys": "750",
+    // "batteryCap": "7200",
+    // "showWheelsize": "260",
+    // "tiresSize": "40",
+    // "carModel": "AE",
+    // "turnOnPasswd": 1,
+    // "menuPassword": 1,
+    // "buzzerSwitch": 1,
+    // "cruise": 1,
+    // "serialLevel": "0",
+    // "highMenuPasswd": "2020",
+    // "autoShutdownTime": 10
         },
       };
     },
@@ -1523,8 +1639,48 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.categoryId && (this.open = true);
+          this.rules.name[0].required = true;
         }
       });
+    },
+    onResetForm() {
+      this.open = false;
+    },
+    changeCategory(name) {
+      if (name) {
+        this.product = name;
+        const data = this.dictList.filter((item) => item.name === name);
+        this.computerOptions = data[0].computerList;
+      } else {
+        this.computerOptions = [];
+      }
+    },
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = true;
+        categoryNameList({ name, categoryName: this.product })
+          .then((res) => {
+            this.computerOptions = res.data;
+            this.isCLoading = false;
+          })
+          .catch(() => {
+            this.isCLoading = false;
+          });
+      } else {
+        this.computerOptions = [];
+      }
+    },
+    async handleCopy() {
+      const { computerId } = this.queryParams;
+
+      try {
+        const { data } = await detailComputer(computerId);
+        data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
+
+        this.form = Object.assign({}, data);
+      } catch (error) {
+        console.error(error);
+      }
     },
     configToJsonString() {
       const {
@@ -1571,7 +1727,7 @@ export default {
         assist,
       } = this.form.instrumentModel;
 
-      const configData = {
+      const instrumentModel = {
         backlightBrightness,
         sleepTime,
         voltage,
@@ -1614,7 +1770,13 @@ export default {
         rotateHandleSpeedLimit,
         assist,
       };
-      return JSON.stringify(configData);
+
+      const data = {
+        instrumentModel,
+        otherOptions: {},
+        inputValues: {},
+      };
+      return JSON.stringify(data);
     },
     /** 提交按钮 */
     submitForm: function () {
@@ -1624,27 +1786,35 @@ export default {
           const configJsonString = this.configToJsonString();
           this.form.jsonStr = configJsonString;
 
-          if (this.form.instrumentModel.id) {
-            editComputer(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            }).finally(() => {
-              this.isSubmitLoading = false;
-            })
+          if (this.form.instrumentModel.id && !this.isCopyProduct) {
+            editComputer(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubmitLoading = false;
+              });
           } else {
-            addComputer(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("添加成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-                this.open = false;
-              }
-            }).finally(() => {
-              this.isSubmitLoading = false;
-            })
+            if (this.isCopyProduct) {
+              delete this.form.id;
+              delete this.form.instrumentModel.id;
+            }
+            addComputer(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("添加成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                  this.open = false;
+                }
+              })
+              .finally(() => {
+                this.isSubmitLoading = false;
+              });
           }
         }
       });

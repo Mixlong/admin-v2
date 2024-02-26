@@ -167,13 +167,7 @@ export default {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.form.categoryId = this.queryParams.key;
       this.$refs.compUpdate.title = "添加子产品";
-    },
-    handleAddItem(item) {
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form.categoryId = item.id;
-      this.$refs.compUpdate.disabled = true;
-      this.$refs.compUpdate.title = "添加子产品";
+      this.$refs.compUpdate.isCopyProduct = true;
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
@@ -182,6 +176,7 @@ export default {
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;
+        this.$refs.compUpdate.isCopyProduct = false;
         this.$refs.compUpdate.form = Object.assign({}, data);
         this.$refs.compUpdate.title = "修改子产品";
       });

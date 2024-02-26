@@ -97,7 +97,11 @@
         align="center"
         width="90"
       />
-      <el-table-column label="不含头控制器出线线长(mm)" align="center" width="100">
+      <el-table-column
+        label="不含头控制器出线线长(mm)"
+        align="center"
+        width="100"
+      >
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.controlHead === 1">（含头）</span>
           <p>
@@ -153,7 +157,12 @@
           {{ dicts_agreement[row.agreement] }}
         </template>
       </el-table-column>
-      <el-table-column label="测速磁钢数" prop="speedSteel" align="center" width="100" />
+      <el-table-column
+        label="测速磁钢数"
+        prop="speedSteel"
+        align="center"
+        width="100"
+      />
       <el-table-column label="车轮宽度" prop="tiresSize" align="center" />
       <el-table-column
         label="助力限速门限(km/h)"
@@ -166,7 +175,12 @@
           {{ wheelDiameterData[row.wheelDiameter] }}
         </template>
       </el-table-column>
-      <el-table-column label="周长(mm)" prop="perimeter" align="center" width="100" />
+      <el-table-column
+        label="周长(mm)"
+        prop="perimeter"
+        align="center"
+        width="100"
+      />
       <el-table-column label="电压" prop="voltage" align="center" />
       <el-table-column label="APP" prop="app" align="center">
         <el-tag
@@ -279,7 +293,11 @@
       />
       <el-table-column label="显示轮径" prop="showWheelsize" align="center" />
       <el-table-column label="系统电压(V)" prop="voltage" align="center" />
-      <el-table-column label="限流门限(A)" prop="currentlimiting" align="center" />
+      <el-table-column
+        label="限流门限(A)"
+        prop="currentlimiting"
+        align="center"
+      />
       <el-table-column label="欠压门限(V)" prop="undervoltage" align="center" />
       <el-table-column label="蜂鸣器" prop="buzzerSwitch" align="center">
         <el-tag
@@ -336,8 +354,13 @@
       <el-table-column label="输出人" prop="typeName" align="center" />
       <el-table-column label="核对人 " prop="check_By" align="center" />
       <el-table-column label="操作" align="center" width="90">
-        <template v-if="row.state !== 1" slot-scope="{ row }">
-          <el-tooltip effect="dark" content="审核" placement="top-end">
+        <template slot-scope="{ row }">
+          <el-tooltip
+            v-if="row.state === 0"
+            effect="dark"
+            content="审核"
+            placement="top-end"
+          >
             <el-button
               icon="el-icon-coordinate"
               class="text-orange"
@@ -345,6 +368,12 @@
               @click="handleAuthChange(row)"
             />
           </el-tooltip>
+          <template v-if="row.state === 1">
+            <el-tag type="success">通过</el-tag>
+          </template>
+          <template v-if="row.state === 2">
+            <el-tag type="danger">未通过</el-tag>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -381,8 +410,14 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button :loading="isSubmitLoading" @click="handleStatusChange(2)">不通过</el-button>
-        <el-button type="primary" :loading="isSubmitLoading" @click="handleStatusChange(1)">
+        <el-button :loading="isSubmitLoading" @click="handleStatusChange(2)"
+          >不通过</el-button
+        >
+        <el-button
+          type="primary"
+          :loading="isSubmitLoading"
+          @click="handleStatusChange(1)"
+        >
           通过
         </el-button>
       </span>
@@ -568,7 +603,7 @@ export default {
       const data = {};
       if (state === 2) {
         // 不通过 检查原因是否为空
-        if (this.authForm.msg === "") {
+        if (this.Is_Empty(this.authForm.msg)) {
           return this.msgError("不通过原因不能为空");
         }
 
@@ -578,16 +613,18 @@ export default {
       data.id = this.authForm.id;
       data.state = state;
       this.isSubmitLoading = true;
-      modelConfigState(data).then((response) => {
-        let { code } = response;
-        if (code == 200) {
-          this.authDialogVisible = false;
-          this.msgSuccess("操作成功！");
-          this.getList();
-        }
-      }).finally(() => {
-        this.isSubmitLoading = false;
-      })
+      modelConfigState(data)
+        .then((response) => {
+          let { code } = response;
+          if (code == 200) {
+            this.authDialogVisible = false;
+            this.msgSuccess("操作成功！");
+            this.getList();
+          }
+        })
+        .finally(() => {
+          this.isSubmitLoading = false;
+        });
     },
   },
 };

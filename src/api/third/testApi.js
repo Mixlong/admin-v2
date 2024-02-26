@@ -386,6 +386,15 @@ export function computerUpdate(data) {
   });
 }
 
+// 操作记录
+export function computerLogList(params) {
+  return request({
+    url: "/computer/log/list",
+    method: "get",
+    params
+  });
+}
+
 // 配置总览
 export function modelConfigList(params) {
   return request({
