@@ -38,7 +38,7 @@
           label="预期结果"
           align="center"
         />
-        <el-table-column
+        <!-- <el-table-column
           prop="reality"
           label="实际测试情况"
           align="center"
@@ -56,7 +56,7 @@
               }"
             />
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="实际测试结果" align="center" width="280">
           <template slot-scope="{ row }">
             <el-radio-group v-model="row.isPass">
@@ -82,7 +82,7 @@
             </el-radio-group>
           </template>
         </el-table-column>
-        <el-table-column prop="reality" label="失败/忽略原因" align="center" min-width="150">
+        <el-table-column prop="msg" label="失败/忽略原因" align="center" min-width="150">
           <template slot-scope="{ row }">
             <el-input
               v-if="row.isPass === 2 || row.isPass === 3"
@@ -133,11 +133,11 @@ export default {
         this.detailData = res.data;
       });
     },
-    checkListPass() {
-      return this.detailData.list.some(
-        (item) => !item.reality || item.isPass === 0
-      );
-    },
+    // checkListPass() {
+    //   return this.detailData.list.some(
+    //     (item) => !item.reality || item.isPass === 0
+    //   );
+    // },
     // 测试结果为 不通过，忽略时原因必填
     checkNoPassList() {
       return this.detailData.list.some(
@@ -145,11 +145,11 @@ export default {
       );
     },
     // 测试结果为 不通过，忽略时原因必填
-    checkLoss() {
-      return this.detailData.list.some(
-        (item) => this.Is_Empty(item.msg) && item.isPass === 3
-      );
-    },
+    // checkLoss() {
+    //   return this.detailData.list.some(
+    //     (item) => this.Is_Empty(item.msg) && item.isPass === 3
+    //   );
+    // },
     // 所有测试用例通过
     checkAllPass() {
       return this.detailData.list.every((item) => item.isPass === 1);
@@ -176,18 +176,17 @@ export default {
     },
     /** 提交按钮 */
     submitForm(state) {
-      if (this.checkListPass()) {
-        return this.msgError("请填写或选择必须的内容");
-      }
+      // if (this.checkListPass()) {
+      //   return this.msgError("请填写或选择必须的内容");
+      // }
       if (this.checkNoPassList()) {
         return this.msgError("请填写“不通过”原因");
       }
-      if (this.checkLoss()) {
-        return this.msgError("请填写“忽略”原因");
-      }
+      // if (this.checkLoss()) {
+      //   return this.msgError("请填写“忽略”原因");
+      // }
       // 通过
       if (state === 1) {
-        console.log(this.checkAllPass());
         // 全部测试通过
         if (this.checkAllPass()) {
           if (this.isPassFlag) {

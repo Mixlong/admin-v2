@@ -102,6 +102,16 @@ export function afterHandle(data) {
     });
 }
 
+
+// 批量处理
+export function afterBatchHandle(data) {
+    return request({
+        url: '/after/batch/handle',
+        method: 'put',
+        data
+    });
+}
+
 export function saleExport(params) {
     return request({
         url: '/after/export',

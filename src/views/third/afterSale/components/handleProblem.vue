@@ -258,7 +258,7 @@
 </template>
 
 <script>
-import { afterHandle } from "@/api/third/sale";
+import { afterHandle, afterBatchHandle } from "@/api/third/sale";
 import reqUrl from "@/utils/requestUrl";
 import globalData from "../mixins/global";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -285,6 +285,8 @@ export default {
       actionUrl: reqUrl + "/oss/batch-upload",
       form: {},
       isSubLoading: false,
+      isMultipleDeal: false,
+      idList: [],
       rules: {
         retestResult: [
           { required: true, message: "请选择客退清单", trigger: "change" },
@@ -350,7 +352,7 @@ export default {
           title = "维修处理";
           break;
         case 6:
-          title = "返厂入库";
+          title = "返厂处理";
           break;
       }
       return title;
@@ -404,33 +406,42 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
-          const { id, state, materialLossList } = this.form;
-          if (id) {
-            let data = { ...this.form, afterId: id, state: state + 1 };
-            if (state === 5) {
-              data = {
-                ...this.form,
-                afterId: id,
-                state: state + 1,
-                materialLoss: JSON.stringify(materialLossList),
-              };
+          const { id, state, list } = this.form;
+          // 批量
+          if (this.isMultipleDeal && list.length) {
+            let data = { ...this.form, state: state + 1 };
+
+            this.dealFn(state, data, afterBatchHandle);
+          } else {
+            if (id) {
+              let data = { ...this.form, afterId: id, state: state + 1 };
+
+              this.dealFn(state, data, afterHandle);
             }
-            afterHandle(data)
-              .then(() => {
-                this.msgSuccess("操作成功");
-                this.$parent.getList();
-              })
-              .finally(() => {
-                this.isSubLoading = false;
-                this.close();
-              });
           }
         }
       });
+    },
+    dealFn(state, data, fn) {
+      if (state === 5) {
+        data = {
+          ...data,
+          materialLoss: JSON.stringify(data.materialLossList),
+        };
+      }
+      fn(data)
+        .then(() => {
+          this.msgSuccess("操作成功");
+          this.$parent.getList();
+        })
+        .finally(() => {
+          this.isSubLoading = false;
+          this.$emit("clearSaleSelection");
+          this.close();
+        });
     },
   },
 };
 </script>
 
-<style>
-</style>
+<style></style>

@@ -412,3 +412,51 @@ export function modelConfigState(data) {
     data
   });
 }
+
+
+// 维修记录
+export function recordList(params) {
+  return request({
+    url: "/maintenance/record/list",
+    method: "get",
+    params
+  })
+}
+
+// 新增维修记录
+export function recordSave(data) {
+  return request({
+    url: "/maintenance/record/save",
+    method: "post",
+    data
+  })
+}
+
+// 修改维修记录
+export function recordUpdate(data) {
+  return request({
+    url: "/maintenance/record/update",
+    method: "put",
+    data
+  })
+}
+
+// 删除维修记录
+export function recordDelete(data) {
+  return request({
+    url: "/maintenance/record/delete",
+    method: "delete",
+    data
+  })
+}
+
+// 数据报表
+export function recordDataReport(params) {
+  return request({
+    url: "/maintenance/record/data/report",
+    method: "get",
+    params
+  })
+}
+
+

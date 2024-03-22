@@ -627,6 +627,7 @@ export default {
       this.updateType = 4;
       let params = Object.assign({}, row);
 
+      this.$refs.compUpdate.reset();
       this.$refs.compUpdate.form = params;
       this.$refs.compUpdate.dialogVisible = true;
     },

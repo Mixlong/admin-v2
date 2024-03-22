@@ -159,7 +159,20 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="按键线头" prop="instrumentModel.keyLineType">
+              <el-form-item label="按键连接类型" prop="instrumentModel.keyLinkType">
+                <el-select
+                  v-model.number="form.instrumentModel.keyLinkType"
+                  filterable
+                  clearable
+                  placeholder="请选择按键连接类型"
+                  class="w100"
+                >
+                  <el-option label="直连" :value="0" />
+                  <el-option label="快拆" :value="1" />
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="按键线头" prop="instrumentModel.keyLineType" v-if="form.instrumentModel.keyLinkType === 1">
                 <el-select
                   v-model.number="form.instrumentModel.keyLineType"
                   filterable
@@ -408,7 +421,7 @@
                   v-model.number="form.instrumentModel.undervoltage"
                   :precision="1"
                   :min="0"
-                  :max="99.9"
+                  :max="99"
                   :controls="false"
                   placeholder="请输入欠压门限"
                 />
@@ -470,7 +483,7 @@
                   type="number"
                   v-minMaxValue="{ min: 0, max: 255 }"
                   v-model.number="form.instrumentModel.assistPercentage"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入助力比例"
                   clearable
                 />
@@ -485,9 +498,9 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 40 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   v-model.number="form.instrumentModel.currentlimiting"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入限流门限"
                   clearable
                 />
@@ -526,7 +539,7 @@
                   type="number"
                   v-minMaxValue="{ min: 0, max: 999 }"
                   v-model.number="form.instrumentModel.showWheelsize"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="显示轮径"
                 />
               </el-form-item>
@@ -580,6 +593,7 @@
 
               <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
                 <el-input
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model.number="form.instrumentModel.perimeter"
                   oninput="value=value.replace(/[^\d]/, '')"
                   placeholder="请输入周长"
@@ -784,7 +798,7 @@
                 <el-input
                   v-minMaxValue="{ min: 0, max: 9 }"
                   v-model="form.instrumentModel.defaultGear"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入默认档位"
                 />
               </el-form-item>
@@ -821,7 +835,7 @@
                   type="number"
                   v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.startupPasswd"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入开机密码"
                 />
               </el-form-item>
@@ -838,9 +852,9 @@
               >
                 <el-input
                   v-model="form.instrumentModel.highMenuPasswd"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
                   type="number"
                   v-minMaxValue="{ min: 0, max: 9999 }"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高级菜单密码"
                 />
               </el-form-item>
@@ -856,7 +870,7 @@
                   type="number"
                   v-minMaxValue="{ min: 0, max: 999 }"
                   v-model="form.instrumentModel.motorSys"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入电机功率"
                 />
               </el-form-item>
@@ -872,7 +886,7 @@
                   type="number"
                   v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.batteryCap"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="电池容量"
                 />
               </el-form-item>
@@ -896,7 +910,7 @@
                 />
               </el-form-item>
 
-              <el-form-item
+              <!-- <el-form-item
                 label="自动关机时间"
                 prop="instrumentModel.autoShutdownTime"
                 :rules="
@@ -908,11 +922,12 @@
               >
                 <el-input
                   v-model.number="form.instrumentModel.autoShutdownTime"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  v-minMaxValue="{ min: 0, max: 99 }"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入自动关机时间"
                   clearable
                 />
-              </el-form-item>
+              </el-form-item> -->
             </el-col>
 
             <el-col :span="6">
@@ -924,9 +939,9 @@
                 "
               >
                 <el-input
-                  v-minMaxValue="{ min: 0, max: 99 }"
                   v-model="form.instrumentModel.tiresSize"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                  v-minMaxValue="{ min: 0, max: 99 }"
+                  oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入车轮宽度"
                   clearable
                 />
@@ -1365,10 +1380,10 @@ export default {
       }
     },
     open(val) {
-      if(!val) {
+      if (!val) {
         this.rules.name[0].required = false;
       }
-    }
+    },
   },
   created() {
     this.echoWheelDiameter();
@@ -1519,7 +1534,8 @@ export default {
         erp: null,
         name: null,
         instrumentModel: {
-          sleepTime: null,
+          sleepTime: 10,
+          assistLimit: "25",
           controlConnect: null,
           controlHead: null,
           notControllerJointString: null,
@@ -1536,8 +1552,8 @@ export default {
           app: null,
           usb: null,
           agreement: null,
-          assist: null,
-          backlightBrightness: null,
+          assist: 0,
+          backlightBrightness: 5,
           bluetooth: null,
           buzzer: null,
           buzzerSwitch: null,
@@ -1547,14 +1563,14 @@ export default {
           communicationType2: null,
           configVersion: null,
           controllerJoint: null,
-          powerGear: null,
+          powerGear: 5,
           createBy: null,
           createTime: null,
           cruise: null,
-          currentlimiting: null,
+          currentlimiting: 12,
           defaultGear: null,
           driveAssist: null,
-          highSpeedBuzzerRemind: null,
+          highSpeedBuzzerRemind: 0,
           logo: null,
           maxGear: null,
           menuPasswd: null,
@@ -1564,71 +1580,30 @@ export default {
           power: null,
           shutdownTime: null,
           speedLimit: null,
-          speedSteel: null,
-          startupPasswd: null,
-          undervoltage: null,
+          speedSteel: 1,
+          startupPasswd: 2020,
+          highMenuPasswd: 2020,
+          undervoltage: 31.5,
+          tiresSize: 0,
           unit: null,
           usb: null,
-          voltage: null,
-          wheelDiameter: null,
-          rotateHandle: null,
-          rotateHandleSpeedLimit: null,
-          slowStart: null,
+          voltage: 36,
+          wheelDiameter: 5,
+          rotateHandle: 0,
+          rotateHandleSpeedLimit: 0,
+          slowStart: '1',
           assistSpeedLimitThreshold: null,
-          batteryVoltageChangeTime: null,
+          batteryVoltageChangeTime: '10',
+          allLineErrTimeOut: '10',
           busOvertime: null,
-          smoothLevel: null,
-          assistPercentage: null,
+          smoothLevel: '0',
+          assistPercentage: 128,
           ebikeName: null,
           motorSys: null,
-          batteryCap: null,
+          batteryCap: 0,
           showWheelsize: null,
           carModel: null,
-          assistStartMagnetNumber: null,
-
-    //       "backlightBrightness": 5,
-    // "sleepTime": 10,
-    // "voltage": 48,
-    // "powerGear": 4,
-    // "agreement": 3,
-    // "assist": 0,
-    // "assistStartMagnetNumber": 2,
-    // "assistPercentage": "64",
-    // "rotateHandle": 0,
-    // "rotateHandleSpeedLimit": 0,
-    // "slowStart": "2",
-    // "speedSteel": "6",
-    // "currentlimiting": "17",
-    // "undervoltage": 42,
-    // "assistLimit": 32,
-    // "wheelDiameter": "5",
-    // "perimeter": "2355",
-    // "batteryVoltageChangeTime": 1,
-    // "allLineErrTimeOut": 10,
-    // "smoothLevel": "3",
-    // "unit": "1",
-    // "bluetooth": 1,
-    // "power": "2",
-    // "driveAssist": 1,
-    // "defaultGear": "0",
-    // "logo": "2",
-    // "highSpeedBuzzerRemind": "0",
-    // "startupPasswd": "0",
-    // "menuPasswd": "0",
-    // "factoryReset": 1,
-    // "ebikeName": "19",
-    // "motorSys": "750",
-    // "batteryCap": "7200",
-    // "showWheelsize": "260",
-    // "tiresSize": "40",
-    // "carModel": "AE",
-    // "turnOnPasswd": 1,
-    // "menuPassword": 1,
-    // "buzzerSwitch": 1,
-    // "cruise": 1,
-    // "serialLevel": "0",
-    // "highMenuPasswd": "2020",
-    // "autoShutdownTime": 10
+          assistStartMagnetNumber: '2'
         },
       };
     },
@@ -1713,7 +1688,7 @@ export default {
         motorSys,
         batteryCap,
         highSpeedBuzzerRemind,
-        autoShutdownTime,
+        // autoShutdownTime,
         tiresSize,
         bluetooth,
         driveAssist,
@@ -1731,7 +1706,7 @@ export default {
         backlightBrightness,
         sleepTime,
         voltage,
-        undervoltage,
+        undervoltage: undervoltage * 1000,
         powerGear,
         assistStartMagnetNumber,
         assistPercentage,
@@ -1757,7 +1732,7 @@ export default {
         motorSys,
         batteryCap,
         highSpeedBuzzerRemind,
-        autoShutdownTime,
+        // autoShutdownTime,
         tiresSize,
         bluetooth,
         driveAssist,

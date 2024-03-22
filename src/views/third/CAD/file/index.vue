@@ -95,7 +95,12 @@
         >
           {{ batchCheck }}
         </el-button>
-        <el-button v-if="checkRole(['test', 'admin'])" type="warning" @click="onCreateTaskCode">任务令</el-button>
+        <el-button
+          v-if="checkRole(['test', 'admin'])"
+          type="warning"
+          @click="onCreateTaskCode"
+          >任务令</el-button
+        >
         <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
           @click="handleResetCheck">重置审核</el-button> -->
       </el-form-item>
@@ -135,9 +140,18 @@
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
-          <span v-if="isStsType(row.type) && row.stsContent">STS: {{ row.stsContent }}</span>
-          <br />  
-          <span>{{ row.content || "---" }}</span>  
+          <!-- PC上位机 -->
+          <span v-if="row.dataType === 1">{{ row.content || "---" }}</span>
+
+          <!-- STS网页 -->
+          <span v-if="isStsType(row.type) && row.stsContent && row.dataType === 2">
+            STS: {{ row.stsContent }}
+          </span>
+
+          <!-- STS程序脚本 -->
+          <span v-if="row.dataType === 3" class="text-green">
+            STS脚本： {{ row.jsContent }}
+          </span>
         </template>
       </el-table-column>
       <el-table-column
@@ -233,10 +247,24 @@
           </el-tooltip>
 
           <el-tooltip
+            v-if="scope.row.jsFile"
+            class="item font16"
+            effect="dark"
+            content="下载STS脚本"
+            placement="top-end"
+          >
+            <svg-icon
+              icon-class="xiazai"
+              class-name="card-panel-icon pointer margin-left-xs"
+              @click="zipFile(scope.row.jsFile)"
+            />
+          </el-tooltip>
+
+          <el-tooltip
             v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
-            content="下载"
+            content="下载PC上位机"
             placement="top-end"
           >
             <svg-icon
@@ -323,13 +351,20 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >
+          >
             通过
           </el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" name key jack  :dictList="dictList" :isStsType="isStsType"  />
+    <CompUpdate
+      ref="compUpdate"
+      name
+      key
+      jack
+      :dictList="dictList"
+      :isStsType="isStsType"
+    />
 
     <!-- 任务令 -->
     <task-code :visible.sync="isTaskCodeFlag"></task-code>
@@ -353,7 +388,7 @@ import CompUpdate from "./components/update";
 export default {
   components: {
     CompUpdate,
-    TaskCode: () => import("./components/taskCode")
+    TaskCode: () => import("./components/taskCode"),
   },
   name: "BikeFileConfig",
   filters: {},
@@ -442,15 +477,12 @@ export default {
       };
     },
     isStsType() {
-      return type => {
-        return type === "iqc_tool" || 
-                type === "fqc_tool_soft" || 
-                type === "oqc_tool_soft" ||
-                type === "config_tools" ||
-                type === "pack_file" ||
-                type === "update_file"
-      }
-    }
+      return (type) => {
+        const typeList = ["iqc_tool", "fqc_tool_soft", "oqc_tool_soft", "config_tools", "pack_file", "update_file"];
+
+        return typeList.includes(type);
+      };
+    },
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -465,7 +497,7 @@ export default {
         this.queryParams.categoryId = categoryId;
         this.changeCategory(categoryId);
 
-        if(this.$route.query.model) {
+        if (this.$route.query.model) {
           computerId = this.$route.query.model;
         }
         if (computerId) {
@@ -670,7 +702,6 @@ export default {
       //     }
       //   }
       // }
-      console.log(row)
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row

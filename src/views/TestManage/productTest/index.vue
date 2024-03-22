@@ -356,12 +356,7 @@ export default {
           this.msgSuccess("操作成功");
         })
         .catch();
-    },
-    // rowClassName({ row }) {
-    //   if (row.isComplete === 1) {
-    //     return "fininshed";
-    //   }
-    // },
+    }
   },
 };
 </script>

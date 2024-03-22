@@ -1,11 +1,3 @@
-<!--
- * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @Date: 2023-04-14 16:08:04
- * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2023-12-21 16:14:32
- * @FilePath: \FILECONF-UI\src\views\third\afterSale\index.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
@@ -90,6 +82,7 @@
           style="width: 120px"
           clearable
           placeholder="请选择处理进展"
+          @change="handleQuery"
         >
           <el-option
             v-for="(label, value) in stateList"
@@ -123,6 +116,9 @@
         </el-col>
         <el-col :span="1.5">
           <el-button type="warning" @click="handleTypeIn"> 批量修改 </el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="info" @click="handleDeal"> 批量处理 </el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
@@ -211,7 +207,7 @@
           <span v-if="row.state === 3" class="text-blue">分类处理</span>
           <span v-if="row.state === 4" class="text-cyan">问题处理</span>
           <span v-if="row.state === 5" class="text-yellow">维修处理</span>
-          <span v-if="row.state === 6" class="text-yellow">返厂入库</span>
+          <span v-if="row.state === 6" class="text-yellow">返厂处理</span>
           <span v-if="row.state === 7" class="text-green">处理完成</span>
         </template>
       </el-table-column>
@@ -329,7 +325,7 @@
             <el-tooltip
               v-if="isWarehousingBy(row)"
               effect="dark"
-              content="返厂入库人员确认中"
+              content="返厂处理人员确认中"
               placement="top-end"
             >
               <el-button
@@ -385,8 +381,10 @@
 
     <!-- 处理 -->
     <handle-problem
+      ref="isHandleProblemRef"
       :visible.sync="isHandleProblemDia"
       :handleProblemData="handleProblemData"
+      @clearSaleSelection="clearSaleSelection"
     />
 
     <!-- 批量物流录入 -->
@@ -449,6 +447,7 @@ export default {
       single: true,
       // 非多个禁用
       multiple: true,
+      isSaleIdFlag: false,
       // 总条数
       total: 0,
       brandList: [],
@@ -460,6 +459,9 @@ export default {
       rootClassify: [],
       // 售后ID
       saleIdList: [],
+      multipleList: [],
+      // 批量处理ID
+      multipleDealIds: [],
       // 处理进展
       stateList: {
         1: "处理类型",
@@ -467,7 +469,7 @@ export default {
         3: "分类处理",
         4: "问题处理",
         5: "维修处理",
-        6: "返厂入库",
+        6: "返厂处理",
         7: "处理完成",
       },
       options: [
@@ -576,7 +578,7 @@ export default {
         return +serviceBy === this.userId && state === 5;
       };
     },
-    // 返厂入库人员确认中
+    // 返厂处理人员确认中
     isWarehousingBy() {
       return ({ warehousing, state }) => {
         return +warehousing === this.userId && state === 6;
@@ -621,6 +623,7 @@ export default {
       }
     },
     handleSelectionChange(selection) {
+      this.multipleList = selection;
       this.saleIdList = selection.map((item) => item.id);
     },
     // 批量修改物流信息
@@ -628,7 +631,57 @@ export default {
       if (!this.saleIdList.length) {
         return this.msgError("请选择批量修改物流项");
       }
+      this.isSaleIdFlag = true;
       this.isSaleInfoFlag = true;
+    },
+    // 批量处理
+    handleDeal() {
+      let { state } = this.queryParams;
+
+      // if (this.isSaleIdFlag && this.saleIdList.length) {
+      //   this.multipleList = [];
+      //   this.clearSaleSelection();
+      // }
+
+      if (this.isWaitDispose) {
+        return this.msgError("请先点击“待处理”按钮");
+      }
+
+      if (this.Is_Empty(state)) {
+        return this.msgError("请先选择“处理进展”筛选项");
+      }
+
+      state = +state;
+
+      let multipleDealIds = this.multipleList
+        .filter(
+          (item) => item.state === state && item.handleName === this.nickName
+        )
+        .map((item) => item.id);
+
+      if (!multipleDealIds.length) {
+        return this.msgError("请选择批量处理物流项");
+      }
+
+      this.isHandleProblemDia = true;
+      this.isSaleIdFlag = false;
+      this.$refs.isHandleProblemRef.isMultipleDeal = true;
+
+      if (state === 5) {
+        this.handleProblemData = {
+          state,
+          materialLossList: [
+            {
+              materialName: "",
+              materialCode: "",
+              materialNum: "",
+            },
+          ],
+          list: multipleDealIds,
+        };
+      } else {
+        this.handleProblemData = { state, list: multipleDealIds };
+      }
     },
     clearSaleSelection() {
       this.$refs.afterSaleRef.clearSelection();
@@ -719,6 +772,7 @@ export default {
     // 处理问题
     handleProblem(row) {
       this.isHandleProblemDia = true;
+      this.$refs.isHandleProblemRef.isMultipleDeal = false;
       if (row.state === 5) {
         this.handleProblemData = {
           ...row,

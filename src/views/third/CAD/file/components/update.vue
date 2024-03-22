@@ -35,6 +35,7 @@
             />
           </el-select>
         </el-form-item>
+
         <el-form-item label="型号" prop="computerId">
           <el-select
             :disabled="form.id ? true : false"
@@ -51,6 +52,7 @@
             />
           </el-select>
         </el-form-item>
+
         <el-form-item label="属性" prop="type">
           <el-select
             v-model="form.type"
@@ -67,17 +69,17 @@
             />
           </el-select>
         </el-form-item>
-        <el-row :gutter="0">
-          <el-col>
-            <el-form-item label="数据类型" prop="dataType">
-              <el-radio-group v-model="form.dataType" size="small">
-                <el-radio v-if="isStsType(form.type)" :label="2" border
-                  >STS程序</el-radio
-                >
-                <el-radio :label="1" border>PC上位机</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
+
+        <el-row>
+          <el-form-item label="数据类型" prop="dataType">
+            <el-select v-model="form.dataType" clearable size="small" placeholder="请选择数据类型">
+              <el-option label="PC上位机" :value="1"></el-option>
+              <template v-if="isStsType(form.type)">
+                <el-option label="STS网页" :value="2"></el-option>
+                <el-option label="STS程序脚本" :value="3"></el-option>
+              </template>
+            </el-select>
+          </el-form-item>
         </el-row>
 
         <template v-if="form.dataType === 2">
@@ -141,6 +143,7 @@
 						</el-col>
 					</el-row> -->
         </template>
+
         <template v-if="form.dataType === 1">
           <el-form-item label="属性描述" prop="content">
             <template v-if="form.type === 'hard_version'">
@@ -183,6 +186,35 @@
             </DrUpload>
           </el-form-item>
         </template>
+      </template>
+
+      <template v-if="form.dataType === 3">
+        <el-form-item label="js文件描述" prop="jsContent">
+          <el-input
+            v-model="form.jsContent"
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 8 }"
+            placeholder="请输入文件描述"
+          />
+        </el-form-item>
+        <el-form-item
+          label="文件"
+          prop="jsFile"
+          v-if="form.up == 1"
+          style="width: 100%"
+        >
+          <DrUpload
+            :limit="1"
+            v-model="form.jsFile"
+            :css="{ width: '100%' }"
+            :isOnePic="1"
+            accept=".js"
+          >
+            <div>
+              <el-button size="small" type="primary">点击上传</el-button>
+            </div>
+          </DrUpload>
+        </el-form-item>
       </template>
 
       <!-- 新增字段 -->
@@ -358,14 +390,15 @@ export default {
   props: ["dictList", "isStsType"],
   data() {
     const validateContent = (rule, value, callback) => {
-      if(value === "") {
-        return callback(new Error("属性描述值不能为空")); 
-      } else if(/\s/g.test(value)) {
+      if (value === "") {
+        return callback(new Error("属性描述值不能为空"));
+      } else if (/\s/g.test(value)) {
         return callback(new Error("属性描述值不能包含空格"));
       } else {
         callback();
       }
     };
+
     const validateIdList = (rule, value, callback) => {
       if (!value.length && this.isHaveBatchSync) {
         return callback(new Error("仪表型号不能为空"));
@@ -452,13 +485,13 @@ export default {
             trigger: "change",
           },
         ],
-        content: [
-          {
-            required: true,
-            validator: validateContent,
-            trigger: ["blur", "change"],
-          },
-        ],
+        // content: [
+        //   {
+        //     required: true,
+        //     validator: validateContent,
+        //     trigger: ["blur", "change"],
+        //   },
+        // ],
         idList: [
           {
             type: "array",
@@ -466,10 +499,17 @@ export default {
             trigger: "change",
           },
         ],
-        url: [
+        jsContent: [
           {
             required: true,
-            message: "请上传文件",
+            message: "STS脚本文件描述不能为空",
+            trigger: ["blur", "change"],
+          },
+        ],
+        jsFile: [
+          {
+            required: true,
+            message: "请上传STS脚本文件",
             trigger: "change",
           },
         ],
@@ -530,9 +570,9 @@ export default {
         });
       }
     },
-    "form.url"(url) {
-      if (url) {
-        this.clearValidateItem("form", "url");
+    "form.jsFile"(jsFile) {
+      if (jsFile) {
+        this.clearValidateItem("form", "jsFile");
       }
     },
   },
@@ -573,6 +613,8 @@ export default {
     reset() {
       this.form = {
         url: "",
+        jsFile: "",
+        jsContent: "",
         webVersion: "",
         testInfo: [],
       };
@@ -635,7 +677,7 @@ export default {
         stsWebList({
           p: page,
           version: keyword,
-          categoryName: this.form.category
+          categoryName: this.form.category,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
@@ -675,7 +717,7 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isLoading = true;
-          if (this.form.id) {                          
+          if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
             delete this.form.updateBy;

@@ -76,13 +76,13 @@
         </el-step>
         <el-step>
           <template slot="title">
-            <div class="title-txt">返厂入库</div>
+            <div class="title-txt">返厂处理</div>
           </template>
           <template slot="description" v-if="currentState > 6">
             <div class="desciption-box">
               <template v-if="afterHData.warehousingName">
-                <p>入库人：{{ afterHData.warehousingName }}</p>
-                <p>入库描述：{{ afterHData.warehousingDesc }}</p>
+                <p>处理人：{{ afterHData.warehousingName }}</p>
+                <p>处理描述：{{ afterHData.warehousingDesc }}</p>
               </template>
               <template v-else>
                 <p class="text-red">

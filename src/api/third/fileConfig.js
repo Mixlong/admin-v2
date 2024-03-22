@@ -273,3 +273,13 @@ export function testList(params) {
     params
   })
 }
+
+
+// 物料追踪系统
+export function trackLogList(params) {
+  return request({
+    url: '/tracking/list',
+    method: 'get',
+    params
+  })
+}

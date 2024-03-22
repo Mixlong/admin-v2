@@ -11,6 +11,9 @@ import SelectLoadMore from '@/components/selectLoadMore'
 import DictTag from '@/components/DictTag'
 // 字典数据组件
 import DictData from '@/components/DictData'
+import VueDraggableResizable from 'vue-draggable-resizable'
+// optionally import default styles
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 
 // 全局组件挂载
 Vue.component('Pagination', Pagination)
@@ -21,4 +24,5 @@ Vue.component('ModalStyle', ModalStyle)
 Vue.component('preview-img', PreviewImg)
 Vue.component('select-loadMore', SelectLoadMore)
 Vue.component('DictTag', DictTag)
+Vue.component('vue-draggable-resizable', VueDraggableResizable)
 DictData.install()
