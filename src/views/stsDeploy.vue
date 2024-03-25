@@ -1663,7 +1663,7 @@ export default {
     handleFetchData(stsDeployFile) {
       Axios.get(stsDeployFile).then((res) => {
         this.formData = res.data;
-        console.log(this.formData);
+
         if (!this.formData.otherOptions) {
           this.$set(this.formData, "otherOptions", {
             shutdownTest: 1,

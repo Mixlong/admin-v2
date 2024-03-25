@@ -94,6 +94,13 @@ export function resetForm(refName) {
   }
 }
 
+// table表格清除用户选择项
+export function resetTableSelection(refName) {
+  if (this.$refs[refName]) {
+    this.$refs[refName].clearSelection();
+  }
+}
+
 // 添加日期范围
 export function addDateRange(params, dateRange, { begin = 'beginTime', end = 'endTime' } = {}) {
   var search = params;

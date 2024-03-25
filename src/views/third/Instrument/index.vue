@@ -237,7 +237,6 @@ export default {
       }
     },
     handleStatus(row) {
-      console.log(row.status);
       let text = row.status ? "禁用" : "启用";
       this.$confirm("确认要" + text, "警告", {
         confirmButtonText: "确定",

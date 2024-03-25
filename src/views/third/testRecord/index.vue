@@ -224,7 +224,7 @@ export default {
   },
   created() {
     const { sn, recordId } = this.$route.query;
-    console.log(this.$route.query)
+
     if (sn !== "" && sn !== "null") {
       this.queryParams.sn = sn;
     }
@@ -271,7 +271,6 @@ export default {
       this.isStsDetailShow = true;
 
       this.stsDetail = { ...row, detail: JSON.parse(row.detail) };
-      console.log(this.stsDetail);
     },
     changeCategory(categoryName) {
       if (!categoryName) return;

@@ -1,11 +1,3 @@
-<!--
- * @Author: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @Date: 2024-01-15 18:25:26
- * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @LastEditTime: 2024-01-23 10:49:59
- * @FilePath: \FILECONF-UI\src\views\pdfToImg.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
 <template>
   <el-container>
     <el-header>PDF转图片</el-header>

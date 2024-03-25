@@ -15,7 +15,7 @@
             clearable
             @change="changeCategory"
             placeholder="请选择所属品类"
-            style="width: 140px;"
+            style="width: 140px"
           >
             <el-option
               v-for="dict in dictList"
@@ -35,7 +35,7 @@
             placeholder="请选择仪表型号"
             @change="changeComputer"
             :remote-method="getComputerNameList"
-            style="width: 140px;"
+            style="width: 140px"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -51,7 +51,7 @@
             placeholder="请输入迪太订单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 140px;"
+            style="width: 140px"
           />
         </el-form-item>
         <el-form-item label="排产单号" prop="no">
@@ -60,7 +60,7 @@
             placeholder="请输入排产单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 140px;"
+            style="width: 140px"
           />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
@@ -68,7 +68,7 @@
             v-model="queryParams.productStatus"
             clearable
             placeholder="请选择排产状态"
-            style="width: 100px;"
+            style="width: 100px"
           >
             <el-option
               v-for="(value, key) in productStatusList"
@@ -139,7 +139,12 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品品类" align="center" prop="categoryName" width="100" />
+      <el-table-column
+        label="产品品类"
+        align="center"
+        prop="categoryName"
+        width="100"
+      />
       <el-table-column label="产品型号" align="center" prop="computerName" />
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
       <el-table-column label="排产单号" align="center" prop="no" />
@@ -297,7 +302,7 @@
               <el-button
                 class="mlZero"
                 type="text"
-                @click="handleDownloadFile(row.fileZip)"
+                @click="zipFile(row.fileZip)"
               >
                 下载生产资料
               </el-button>
@@ -309,13 +314,14 @@
               >
                 生成预览资料
               </el-button>
-              <!-- 
-              <el-button class="mlZero" type="text" @click="textExcel">
-                生成预览资料
-              </el-button> -->
 
-              <el-button class="mlZero" type="text" @click="uploadFile(row)">
-                上传资料清单
+              <el-button
+                v-if="row.excelUrl"
+                class="mlZero"
+                type="text"
+                @click="zipFile(row.excelUrl)"
+              >
+                下载资料清单
               </el-button>
               <!-- <el-button
                 v-if="row.excelUrl"
@@ -367,12 +373,7 @@
     />
 
     <!-- 任务令 -->
-    <el-dialog
-      title="任务令"
-      :visible.sync="isQrCode"
-      width="350px"
-      center
-    >
+    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
       <el-card shadow="hover">
         <div class="flex flex-direction">
           <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
@@ -480,7 +481,7 @@ import {
   schedulingDel,
   createDataFile,
   sendProd,
-  proSecDetail
+  proSecDetail,
 } from "@/api/www/planSchedule";
 import { typeCategory } from "@/api/third/category";
 import { listComputer, computerName } from "@/api/third/computer";
@@ -646,14 +647,30 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList(); 
+      this.getList();
     });
   },
   methods: {
-    getProSecDetail(id) {
+    loadingFn(text) {
+      return new Promise((resolve) => {
+        let downloadLoadingInstance = this.$loading({
+          text,
+          lock: true,
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.7)",
+        });
+        setTimeout(() => {
+          resolve(downloadLoadingInstance);
+        }, 1000);
+      });
+    },
+    async getProSecDetail(id) {
+      let downloadLoadingInstance = await this.loadingFn("预览资料生成中...");
       proSecDetail(id).then((res) => {
         this.handleExcel(res.data);
-      });
+      }).finally(() => {
+        downloadLoadingInstance.close();
+      })
     },
     handleExcel(data) {
       const column = [
@@ -682,45 +699,18 @@ export default {
       const table2excel = new Table2Excel();
       table2excel.export(document.getElementById("table"));
       const wb = XLSX.utils.table_to_book(document.getElementById("table"));
-      console.log(wb);
+
       const wbout = XLSX.write(wb, {
         bookType: "xlsx",
         bookSST: true,
         type: "binary",
       });
-      console.log("wbout", wbout);
 
       const blob = new Blob([this.s2ab(wbout)], {
         type: "application/octet-stream",
       });
 
       this.uploadExcelFile(blob, id);
-
-      // const data = [
-      //   ["jose", "Done", 29],
-      //   ["jose", "Done", 29],
-      //   ["jose", "Done", 29],
-      // ];
-      // const worksheet = XLSX.utils.aoa_to_sheet(data);
-      // const workBook = XLSX.utils.book_new();
-      // XLSX.utils.book_append_sheet(workBook, worksheet, "Sheet1");
-
-      // const fileName = "测试";
-      // const wbout = XLSX.write(workBook, {
-      //   bookType: "xlsx",
-      //   bookSST: false,
-      //   type: "binary",
-      // });
-
-      // FileSaver.saveAs(
-      //   new Blob([s2ab(wbout)], { type: "application/octet-stream" }),
-      //   fileName
-      // );
-
-      // FileSaver.saveAs(
-      //   new Blob(["hello world"], { type: "text/plain;charset=utf-8" }),
-      //   "hello world.txt"
-      // );
 
       // 上传到服务器
 
@@ -959,7 +949,9 @@ export default {
       this.dataInfo = { softList, hardList, projectList };
     },
     // 生成生产资料
-    handleCreateFile(id) {
+    async handleCreateFile(id) {
+      let downloadLoadingInstance = await this.loadingFn("生产资料生成中...");
+
       createDataFile(id)
         .then(() => {
           this.msgSuccess("生成生产资料成功");
@@ -967,11 +959,9 @@ export default {
         })
         .catch(() => {
           this.msgError("生成生产资料失败");
-        });
-    },
-    // 下载生产资料
-    handleDownloadFile(url) {
-      this.zipFile(url);
+        }).finally(() => {
+          downloadLoadingInstance.close();
+        })
     },
     // 外发生产
     handleProd(id) {

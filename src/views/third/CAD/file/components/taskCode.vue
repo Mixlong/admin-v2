@@ -213,7 +213,6 @@ export default {
           const { category, computer, processId, chipVersion } = this.form;
           const random = Math.floor(+new Date() / 1000);
           this.qrCode = `SMT:category=${category}_stsTest?computer=${computer}?processId=${processId}?random=${random}?chipVersion=${chipVersion}`;
-          console.log(this.qrCode);
         }
       });
     },

@@ -193,7 +193,6 @@ export default {
             this.isPassFlag = false;
             return this.msgError("请再次检查一遍测试用例");
           } else {
-            console.info("通过");
             this.onTaskState(state);
           }
         }

@@ -38,7 +38,6 @@ export default {
 
     // 系统电压
     const validateVoltage = (rule, value, callback) => {
-      console.log(value);
       if (!this.dicts_voltage.includes(value)) {
         callback(new Error("系统电压不在可选值范围内"));
       } else {

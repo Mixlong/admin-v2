@@ -731,7 +731,6 @@ export default {
     },
     handleUpdate(row, name) {
       let currentData = Object.assign({}, row);
-      console.log(currentData)
       if (name === 'progress' && currentData.progress === null) {
         currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>

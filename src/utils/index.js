@@ -399,6 +399,7 @@ export function isNumberStr(str) {
 const loadingFn = () => {
   return new Promise((resolve) => {
     let downloadLoadingInstance = Loading.service({
+      lock: true,
       text: "正在下载数据，请稍候",
       spinner: "el-icon-loading",
       background: "rgba(0, 0, 0, 0.7)",

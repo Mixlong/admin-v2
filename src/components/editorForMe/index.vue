@@ -75,7 +75,6 @@ export default Vue.extend({
                         maxFileSize: 5 * 1024 * 1024,
                         base64LimitSize: 5 * 1024, // 5kb
                         customInsert: (res, insertFn) => {
-                            console.log(res, '图片地址')
                             const { url } = res.data[0]
                             insertFn(url)
                         }

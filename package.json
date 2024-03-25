@@ -1,7 +1,7 @@
 {
-  "name": "ruoyi",
+  "name": "digitech",
   "version": "1.0.0",
-  "description": "迪太云",
+  "description": "迪太云管理后台",
   "author": "Joker",
   "license": "MIT",
   "scripts": {

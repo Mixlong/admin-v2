@@ -77,7 +77,6 @@ export default {
             this.resetForm("form");
         },
         submitForm() {
-            console.log(this.isType, this.form)
             this.$refs.form.validate(valid => {
                 if(valid) {
                     if(this.form.id) {

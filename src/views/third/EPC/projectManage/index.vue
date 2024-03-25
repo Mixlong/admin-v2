@@ -77,9 +77,8 @@
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button
-          type="warning"
-          :disabled="multiple"
           v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
+          type="warning"
           @click="handleAuthBatchChange"
         >
           {{ batchCheck }}
@@ -87,12 +86,13 @@
       </el-form-item>
     </el-form>
     <el-table
+      ref="multipleTableRef"
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
-      border
       :row-class-name="tableRowClassName"
       @selection-change="handleSelectionChange"
+      border
     >
       <el-table-column
         type="selection"
@@ -190,7 +190,7 @@
           </el-tooltip>
 
           <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['fo_test','admin'])"
+            v-if="scope.row.status == 4 && checkRole(['fo_test', 'admin'])"
             class="item font16"
             effect="dark"
             content="审核"
@@ -296,7 +296,7 @@
           <el-button @click="handleStatusChange(3)">不通过</el-button>
           <el-button
             type="primary"
-            @click="handleStatusChange(checkRole(['fo_test','admin']) ? 2 : 4)"
+            @click="handleStatusChange(checkRole(['fo_test', 'admin']) ? 2 : 4)"
           >
             通过
           </el-button>
@@ -506,6 +506,10 @@ export default {
         });
     },
     handleAuthBatchChange() {
+      if (this.ids.length === 0) {
+        return this.msgError("请选择批量处理项");
+      }
+
       this.auth.why = "";
       this.auth.id = "";
       this.authDialogVisible = true;
@@ -565,6 +569,8 @@ export default {
         if (code == 200) {
           this.authDialogVisible = false;
           this.msgSuccess("操作成功！");
+          this.ids = [];
+          this.resetTableSelection("multipleTableRef");
           this.getList();
         }
       });

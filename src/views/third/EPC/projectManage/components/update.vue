@@ -246,7 +246,6 @@ export default {
       this.$nextTick(() => {
         const _iframe = document.getElementById("detail_box_ifr").contentWindow;
         const childHtml = _iframe.document.getElementById("tinymce");
-        console.log(childHtml);
         html2canvas(childHtml, {
           useCORS: true,
         }).then((canvas) => {
