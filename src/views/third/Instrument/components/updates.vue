@@ -159,7 +159,10 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="按键连接类型" prop="instrumentModel.keyLinkType">
+              <el-form-item
+                label="按键连接类型"
+                prop="instrumentModel.keyLinkType"
+              >
                 <el-select
                   v-model.number="form.instrumentModel.keyLinkType"
                   filterable
@@ -172,7 +175,11 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="按键线头" prop="instrumentModel.keyLineType" v-if="form.instrumentModel.keyLinkType === 1">
+              <el-form-item
+                label="按键线头"
+                prop="instrumentModel.keyLineType"
+                v-if="form.instrumentModel.keyLinkType === 1"
+              >
                 <el-select
                   v-model.number="form.instrumentModel.keyLineType"
                   filterable
@@ -247,7 +254,6 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-
               <el-form-item label="串口波特率" prop="instrumentModel.baudRate">
                 <el-select
                   v-model="form.instrumentModel.baudRate"
@@ -264,36 +270,36 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="帧类型" prop="instrumentModel.msgType">
-                <el-select
-                  v-model.number="form.instrumentModel.msgType"
-                  filterable
-                  clearable
-                  placeholder="请选择帧类型"
-                  class="w100"
-                  :disabled="form.instrumentModel.serialLevel !== 2"
-                >
-                  <el-option label="标准帧" :value="0" />
-                  <el-option label="扩展帧" :value="1" />
-                </el-select>
-              </el-form-item>
+              <template v-if="form.instrumentModel.serialLevel === 2">
+                <el-form-item label="帧类型" prop="instrumentModel.msgType">
+                  <el-select
+                    v-model.number="form.instrumentModel.msgType"
+                    filterable
+                    clearable
+                    placeholder="请选择帧类型"
+                    class="w100"
+                  >
+                    <el-option label="标准帧" :value="0" />
+                    <el-option label="扩展帧" :value="1" />
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item label="CAN波特率" prop="instrumentModel.canRate">
-                <el-select
-                  v-model="form.instrumentModel.canRate"
-                  placeholder="请选择CAN波特率"
-                  class="w100"
-                  clearable
-                  :disabled="form.instrumentModel.serialLevel !== 2"
-                >
-                  <el-option
-                    v-for="(value, key) in canRateList"
-                    :key="key"
-                    :label="`${value}k`"
-                    :value="+key"
-                  ></el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="CAN波特率" prop="instrumentModel.canRate">
+                  <el-select
+                    v-model="form.instrumentModel.canRate"
+                    placeholder="请选择CAN波特率"
+                    class="w100"
+                    clearable
+                  >
+                    <el-option
+                      v-for="(value, key) in canRateList"
+                      :key="key"
+                      :label="`${value}k`"
+                      :value="+key"
+                    ></el-option>
+                  </el-select>
+                </el-form-item>
+              </template>
             </el-col>
 
             <el-col :span="6">
@@ -658,7 +664,7 @@
                     v-for="item in dicts_power"
                     :key="item.dictValue"
                     :label="item.dictLabel"
-                    :value="+item.dictValue"
+                    :value="item.dictValue"
                   >
                   </el-option>
                 </el-select>
@@ -941,7 +947,7 @@
                 <el-input
                   v-model="form.instrumentModel.tiresSize"
                   v-minMaxValue="{ min: 0, max: 99 }"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
+                  oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入车轮宽度"
                   clearable
                 />
@@ -1333,6 +1339,34 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
+        "instrumentModel.serialLevel": [
+          {
+            required: true,
+            message: "通讯方式不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.baudRate": [
+          {
+            required: true,
+            message: "串口波特率不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.msgType": [
+          {
+            required: true,
+            message: "帧类型不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.canRate": [
+          {
+            required: true,
+            message: "CAN波特率不能为空",
+            trigger: "change",
+          },
+        ],
       },
       dicts_controller_joint: [],
       dicts_communication_type: [],
@@ -1425,6 +1459,8 @@ export default {
       if (type !== 2) {
         this.form.instrumentModel.msgType = "";
         this.form.instrumentModel.canRate = "";
+      } else {
+        this.form.instrumentModel.baudRate = 115200;
       }
     },
     changeCountPerimeter(wheelDiameter) {
@@ -1591,19 +1627,19 @@ export default {
           wheelDiameter: 5,
           rotateHandle: 0,
           rotateHandleSpeedLimit: 0,
-          slowStart: '1',
+          slowStart: "1",
           assistSpeedLimitThreshold: null,
-          batteryVoltageChangeTime: '10',
-          allLineErrTimeOut: '10',
+          batteryVoltageChangeTime: "10",
+          allLineErrTimeOut: "10",
           busOvertime: null,
-          smoothLevel: '0',
+          smoothLevel: "0",
           assistPercentage: 128,
           ebikeName: null,
           motorSys: null,
           batteryCap: 0,
           showWheelsize: null,
           carModel: null,
-          assistStartMagnetNumber: '2'
+          assistStartMagnetNumber: "2",
         },
       };
     },

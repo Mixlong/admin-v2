@@ -82,15 +82,6 @@
           {{ dicts_ebike[row.ebikeName] }}
         </template>
       </el-table-column>
-      <el-table-column label="蓝牙" prop="bluetooth" align="center">
-        <el-tag
-          v-if="isShow(row.bluetooth)"
-          slot-scope="{ row }"
-          :type="isType(row.bluetooth)"
-        >
-          {{ isTypeVal(row.bluetooth) }}
-        </el-tag>
-      </el-table-column>
       <el-table-column
         label="控制器接头"
         prop="controlConnect"
@@ -109,16 +100,6 @@
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="USB" prop="usb" align="center">
-        <el-tag
-          v-if="isShow(row.usb)"
-          slot-scope="{ row }"
-          :type="isType(row.usb)"
-        >
-          {{ isTypeVal(row.usb) }}
-        </el-tag>
-      </el-table-column>
-
       <el-table-column label="通讯方式" prop="serialLevel" align="center">
         <template v-if="isShow(row.serialLevel)" slot-scope="{ row }">
           {{ serialLevelData[row.serialLevel] }}
@@ -182,15 +163,6 @@
         width="100"
       />
       <el-table-column label="电压" prop="voltage" align="center" />
-      <el-table-column label="APP" prop="app" align="center">
-        <el-tag
-          v-if="isShow(row.app)"
-          slot-scope="{ row }"
-          :type="isType(row.app)"
-        >
-          {{ isTypeVal(row.app) }}
-        </el-tag>
-      </el-table-column>
       <el-table-column label="缓启动" prop="slowStart" align="center" />
       <el-table-column label="显示单位" prop="unit" align="center">
         <template v-if="isShow(row.unit)" slot-scope="{ row }">
@@ -202,31 +174,58 @@
           {{ dicts_power[row.power] }}
         </template>
       </el-table-column>
+      <el-table-column label="APP" prop="app" align="center">
+        <el-tag
+          v-if="isShow(row.app)"
+          slot-scope="{ row }"
+          :type="row.app === 1 ? 'success' : 'danger'"
+        >
+          {{ row.app === 1 ? "YES" : "NO" }}
+        </el-tag>
+      </el-table-column>
+      <el-table-column label="USB" prop="usb" align="center">
+        <el-tag
+          v-if="isShow(row.usb)"
+          slot-scope="{ row }"
+          :type="row.usb === 1 ? 'success' : 'danger'"
+        >
+          {{ row.usb === 1 ? "YES" : "NO" }}
+        </el-tag>
+      </el-table-column>
+      <el-table-column label="蓝牙" prop="bluetooth" align="center">
+        <el-tag
+          v-if="isShow(row.bluetooth)"
+          slot-scope="{ row }"
+          :type="row.bluetooth === 1 ? 'success' : 'danger'"
+        >
+          {{ row.bluetooth === 1 ? "YES" : "NO" }}
+        </el-tag>
+      </el-table-column>
       <el-table-column label="推车助力" prop="driveAssist" align="center">
         <el-tag
           v-if="isShow(row.driveAssist)"
           slot-scope="{ row }"
-          :type="isType(row.driveAssist)"
+          :type="row.driveAssist === 1 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.driveAssist) }}
+          {{ row.driveAssist === 1 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column label="恢复出厂设置" prop="factoryReset" align="center">
         <el-tag
           v-if="isShow(row.factoryReset)"
           slot-scope="{ row }"
-          :type="isType(row.factoryReset)"
+          :type="row.factoryReset === 0 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.factoryReset) }}
+          {{ row.factoryReset === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column label="转把分档" prop="rotateHandle" align="center">
         <el-tag
           v-if="isShow(row.rotateHandle)"
           slot-scope="{ row }"
-          :type="isType(row.rotateHandle)"
+          :type="row.rotateHandle === 1 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.rotateHandle) }}
+          {{ row.rotateHandle === 1 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column label="助力正反" prop="assist" align="center">
@@ -252,11 +251,6 @@
       <el-table-column
         label="电量变化时间(s)"
         prop="batteryVoltageChangeTime"
-        align="center"
-      />
-      <el-table-column
-        label="自动关机时间(s)"
-        prop="autoShutdownTime"
         align="center"
       />
       <el-table-column
@@ -303,9 +297,9 @@
         <el-tag
           v-if="isShow(row.buzzerSwitch)"
           slot-scope="{ row }"
-          :type="isType(row.buzzerSwitch)"
+          :type="row.buzzerSwitch === 0 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.buzzerSwitch) }}
+          {{ row.buzzerSwitch === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column
@@ -317,18 +311,18 @@
         <el-tag
           v-if="isShow(row.cruise)"
           slot-scope="{ row }"
-          :type="isType(row.cruise)"
+          :type="row.cruise === 0 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.cruise) }}
+          {{ row.cruise === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column label="是否开机密码" prop="turnOnPasswd" align="center">
         <el-tag
           v-if="isShow(row.turnOnPasswd)"
           slot-scope="{ row }"
-          :type="isType(row.turnOnPasswd)"
+          :type="row.turnOnPasswd === 0 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.turnOnPasswd) }}
+          {{ row.turnOnPasswd === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column label="开机密码" prop="startupPasswd" align="center" />
@@ -336,9 +330,9 @@
         <el-tag
           v-if="isShow(row.menuPassword)"
           slot-scope="{ row }"
-          :type="isType(row.menuPassword)"
+          :type="row.menuPassword === 0 ? 'success' : 'danger'"
         >
-          {{ isTypeVal(row.menuPassword) }}
+          {{ row.menuPassword === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
       <el-table-column

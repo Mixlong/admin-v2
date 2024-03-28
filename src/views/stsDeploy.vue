@@ -15,7 +15,7 @@
               >
                 <el-option
                   v-for="dict in dictList"
-                  :key="dict.id"     
+                  :key="dict.id"
                   :label="dict.name"
                   :value="dict.id"
                 />
@@ -853,7 +853,7 @@
         </el-button>
         <el-button size="mini" type="primary" @click="exportForm">
           导出配置
-        </el-button>                 
+        </el-button>
       </template>
     </el-footer>
 

@@ -1,122 +1,140 @@
-import axios from 'axios';
-import { Notification, MessageBox, Message, Loading } from 'element-ui';
-import store from '@/store';
-import { getToken } from '@/utils/auth';
-import errorCode from '@/utils/errorCode';
+import axios from "axios";
+import { Notification, MessageBox, Message, Loading } from "element-ui";
+import store from "@/store";
+import { getToken } from "@/utils/auth";
+import errorCode from "@/utils/errorCode";
 import { tansParams, blobValidate } from "@/utils/ruoyi";
-import baseURL from '@/utils/requestUrl';
+import baseURL from "@/utils/requestUrl";
 import Cookies from "js-cookie";
 
 // 创建axios实例
 const service = axios.create({
   baseURL,
   // 超时
-  timeout: 1000 * 1800,
-  headers: { 'Content-Type': 'application/json;charset=utf-8' }
-})
+  timeout: 1000 * 180,
+  headers: { "Content-Type": "application/json;charset=utf-8" },
+});
 // request拦截器
-service.interceptors.request.use(config => {
-  const iamKey = Cookies.get('iamKeys')
-  const iamValue = Cookies.get(iamKey)
-  // 是否需要设置 token
-  if (config.url.indexOf('/login') !== -1) {
-    config.headers['iam'] = `${iamValue}`
+service.interceptors.request.use(
+  (config) => {
+    const iamKey = Cookies.get("iamKeys");
+    const iamValue = Cookies.get(iamKey);
+    // 是否需要设置 token
+    if (config.url.indexOf("/login") !== -1) {
+      config.headers["iam"] = `${iamValue}`;
+    }
+    // const isToken = (config.headers || {}).isToken === false
+    const isToken = config.isToken === false;
+    if (getToken() && !isToken) {
+      config.headers["Authorization"] = "Bearer " + getToken(); // 让每个请求携带自定义token 请根据实际情况自行修改
+    }
+    delete config.headers.isToken;
+    return config;
+  },
+  (error) => {
+    Promise.reject(error);
   }
-  // const isToken = (config.headers || {}).isToken === false
-  const isToken = config.isToken === false
-  if (getToken() && !isToken) {
-    config.headers['Authorization'] = 'Bearer ' + getToken()  // 让每个请求携带自定义token 请根据实际情况自行修改
-  }
-  delete config.headers.isToken
-  return config
-}, error => {
-  Promise.reject(error)
-})
+);
 
 // 响应拦截器
-service.interceptors.response.use(res => {
-  // 未设置状态码则默认成功状态
-  const code = res.data.code || 200;
-  // 获取错误信息
-  const msg = errorCode[code] || res.data.msg || errorCode['default']
+service.interceptors.response.use(
+  (res) => {
+    // 未设置状态码则默认成功状态
+    const code = res.data.code || 200;
+    // 获取错误信息
+    const msg = errorCode[code] || res.data.msg || errorCode["default"];
 
-  if (code === 401 || code === 3001 || code === 4003) {
-    if (code == 4003) {
-      Notification.error({
-        title: msg
-      })
-    } else {
-      MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', {
-        confirmButtonText: '重新登录',
-        cancelButtonText: '取消',
-        type: 'warning'
+    if (code === 401 || code === 3001 || code === 4003) {
+      if (code == 4003) {
+        Notification.error({
+          title: msg,
+        });
+      } else {
+        MessageBox.confirm(
+          "登录状态已过期，您可以继续留在该页面，或者重新登录",
+          "系统提示",
+          {
+            confirmButtonText: "重新登录",
+            cancelButtonText: "取消",
+            type: "warning",
+          }
+        ).then(() => {
+          store.dispatch("LogOut").then(() => {
+            location.href = "/index";
+          });
+        });
       }
-      ).then(() => {
-        store.dispatch('LogOut').then(() => {
-          location.href = '/index';
-        })
-      })
+    } else if (code === 500) {
+      Message({
+        message: msg,
+        type: "error",
+      });
+      return Promise.reject(res.data.code);
+    } else if (code !== 200) {
+      Message({
+        message: msg,
+        type: "error",
+      });
+      return Promise.reject(res.data.code);
+    } else {
+      return res.data;
     }
-  } else if (code === 500) {
-    Message({
-      message: msg,
-      type: 'error'
-    })
-    return Promise.reject(res.data.code)
-  } else if (code !== 200) {
-    Notification.error({
-      title: msg
-    })
-    return Promise.reject(res.data.code)
-  } else {
-    return res.data
-  }
-},
-  error => {
+  },
+  (error) => {
     let { message } = error;
     if (message == "Network Error") {
-      message = "正在维护中"// "后端接口连接异常";
-    }
-    else if (message.includes("timeout")) {
+      message = "正在维护中"; // "后端接口连接异常";
+    } else if (message.includes("timeout")) {
       message = "系统接口请求超时";
-    }
-    else if (message.includes("Request failed with status code")) {
+    } else if (message.includes("Request failed with status code")) {
       message = "系统接口" + message.substr(message.length - 3) + "异常";
     }
     Message({
       message: message,
-      type: 'error',
-      duration: 5 * 1000
-    })
-    return Promise.reject(error)
+      type: "error",
+      duration: 5 * 1000,
+    });
+    return Promise.reject(error);
   }
-)
+);
 
 // 通用下载方法
 export function download(url, data, filename, config) {
-  let downloadLoadingInstance = Loading.service({ text: "正在下载数据，请稍候", spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
-  return service.post(url, data, {
-    transformRequest: [(data) => { return tansParams(data) }],
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    responseType: 'blob',
-    ...config
-  }).then(async (data) => {
-    const isBlob = blobValidate(data);
-    if (isBlob) {
-      const blob = new Blob([data])
-      saveAs(blob, filename)
-    } else {
-      const resText = await data.text();
-      const rspObj = JSON.parse(resText);
-      const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
-      Message.error(errMsg);
-    }
-    downloadLoadingInstance.close();
-  }).catch((r) => {
-    console.error(r)
-    Message.error('下载文件出现错误，请联系管理员！')
-    downloadLoadingInstance.close();
-  })
+  let downloadLoadingInstance = Loading.service({
+    text: "正在下载数据，请稍候",
+    spinner: "el-icon-loading",
+    background: "rgba(0, 0, 0, 0.7)",
+  });
+  return service
+    .post(url, data, {
+      transformRequest: [
+        (data) => {
+          return tansParams(data);
+        },
+      ],
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      responseType: "blob",
+      ...config,
+    })
+    .then(async (data) => {
+      const isBlob = blobValidate(data);
+      if (isBlob) {
+        const blob = new Blob([data]);
+        saveAs(blob, filename);
+      } else {
+        const resText = await data.text();
+        const rspObj = JSON.parse(resText);
+        const errMsg =
+          errorCode[rspObj.code] || rspObj.msg || errorCode["default"];
+        Message.error(errMsg);
+      }
+      downloadLoadingInstance.close();
+    })
+    .catch((r) => {
+      console.error(r);
+      Message.error("下载文件出现错误，请联系管理员！");
+      downloadLoadingInstance.close();
+    });
 }
 
-export default service
+export default service;

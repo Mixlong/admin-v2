@@ -315,15 +315,15 @@
                 生成预览资料
               </el-button>
 
-              <el-button
-                v-if="row.excelUrl"
-                class="mlZero"
-                type="text"
-                @click="zipFile(row.excelUrl)"
-              >
-                下载资料清单
-              </el-button>
-              <!-- <el-button
+              <template v-if="row.excelUrl">
+                <el-button
+                  class="mlZero"
+                  type="text"
+                  @click="zipFile(row.excelUrl)"
+                >
+                  下载资料清单
+                </el-button>
+                <!-- <el-button
                 v-if="row.excelUrl"
                 class="mlZero"
                 type="text"
@@ -331,15 +331,15 @@
               >
                 预览资料清单
               </el-button> -->
+                <el-button
+                  class="mlZero"
+                  type="text"
+                  @click="handleProd(row.id)"
+                >
+                  外发生产
+                </el-button>
+              </template>
             </template>
-            <el-button
-              v-if="row.excelUrl"
-              class="mlZero"
-              type="text"
-              @click="handleProd(row.id)"
-            >
-              外发生产
-            </el-button>
           </div>
         </div>
       </el-table-column>
@@ -666,11 +666,14 @@ export default {
     },
     async getProSecDetail(id) {
       let downloadLoadingInstance = await this.loadingFn("预览资料生成中...");
-      proSecDetail(id).then((res) => {
-        this.handleExcel(res.data);
-      }).finally(() => {
-        downloadLoadingInstance.close();
-      })
+      proSecDetail(id)
+        .then((res) => {
+          // this.handleExcel(res.data);
+          this.getList();
+        })
+        .finally(() => {
+          downloadLoadingInstance.close();
+        });
     },
     handleExcel(data) {
       const column = [
@@ -959,19 +962,23 @@ export default {
         })
         .catch(() => {
           this.msgError("生成生产资料失败");
-        }).finally(() => {
-          downloadLoadingInstance.close();
         })
+        .finally(() => {
+          downloadLoadingInstance.close();
+        });
     },
     // 外发生产
-    handleProd(id) {
+    async handleProd(id) {
+      let downloadLoadingInstance = await this.loadingFn("外发生产处理中...");
       sendProd(id).then((res) => {
         if (res.code === 200) {
           this.msgSuccess("外发成功,请查看邮箱");
         } else {
           this.msgError("外发失败");
         }
-      });
+      }).finally(() => {
+        downloadLoadingInstance.close();
+      })
     },
     /** 修改日志 */
     onEditLog(id) {
