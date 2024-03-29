@@ -1,20 +1,32 @@
-.upload-queue{
+.upload-queue {
   .video-box {
     width: 100%;
     height: 100%;
   }
-    .el-upload-list__item:hover{
-      .el-upload-list__item-actions{
-        display: block;
-        opacity: 1;
-      }
-    }
-  
-    .el-upload--picture-card .el-upload--text{
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  .el-upload-list__item:hover {
+    .el-upload-list__item-actions {
+      display: block;
+      opacity: 1;
     }
   }
+
+  .el-upload--picture-card .el-upload--text {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+.el-upload-video-img-box {
+  .el-dialog__body {
+    max-height: 90vh;
+    video {
+      max-height: 80vh;
+    }
+
+    img {
+      object-fit: contain;
+    }
+  }
+}

@@ -39,6 +39,7 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            
             <el-form-item
               label="通讯方式"
               prop="instrumentModel.communicationType1"
@@ -50,7 +51,7 @@
                 <el-option
                   v-for="item in dicts_communication_type"
                   :key="item.dictValue"
-                  :label="item.dictValue"
+                  :label="item.dictLabel"
                   :value="item.dictValue"
                 >
                 </el-option>
@@ -153,6 +154,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item v-if="form.id" label="型号" prop="name">
               <el-input v-model="form.name" placeholder="型号" />
@@ -252,6 +254,7 @@
               </el-select>
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="ERP编码:" prop="erp" v-if="form.id">
               <el-input v-model="form.erp" placeholder="ERP编码" />
@@ -336,6 +339,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="缓启动" prop="slowStart">
               <el-input
@@ -409,6 +413,7 @@
               />
             </el-form-item>
           </el-col>
+
           <el-col :span="4">
             <el-form-item label="电机功率" prop="motorSys">
               <el-input
@@ -466,78 +471,79 @@
               </div>
             </el-form-item>
             <el-form-item label="开机密码" prop="instrumentModel.startupPasswd">
-              <el-radio v-model="form.instrumentModel.startupPasswd" :label="0"
+              <el-radio v-model="form.instrumentModel.startupPasswd" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.startupPasswd" :label="1"
+              <el-radio v-model="form.instrumentModel.startupPasswd" label="1"
                 >YES</el-radio
               >
             </el-form-item>
             <el-form-item label="定速巡航功能" prop="instrumentModel.cruise">
-              <el-radio v-model="form.instrumentModel.cruise" :label="0"
+              <el-radio v-model="form.instrumentModel.cruise" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.cruise" :label="1"
+              <el-radio v-model="form.instrumentModel.cruise" label="1"
                 >YES</el-radio
               >
             </el-form-item>
           </el-col>
+          
           <el-col :span="4">
             <el-form-item label="蓝牙" prop="instrumentModel.bluetooth">
-              <el-radio v-model="form.instrumentModel.bluetooth" :label="0"
+              <el-radio v-model="form.instrumentModel.bluetooth" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.bluetooth" :label="1"
+              <el-radio v-model="form.instrumentModel.bluetooth" label="1"
                 >YES</el-radio
               >
             </el-form-item>
             <el-form-item label="菜单密码" prop="instrumentModel.menuPasswd">
-              <el-radio v-model="form.instrumentModel.menuPasswd" :label="0"
+              <el-radio v-model="form.instrumentModel.menuPasswd" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.menuPasswd" :label="1"
+              <el-radio v-model="form.instrumentModel.menuPasswd" label="1"
                 >YES</el-radio
               >
             </el-form-item>
             <el-form-item label="USB" prop="instrumentModel.usb">
-              <el-radio v-model="form.instrumentModel.usb" :label="0"
+              <el-radio v-model="form.instrumentModel.usb" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.usb" :label="1"
+              <el-radio v-model="form.instrumentModel.usb" label="1"
                 >YES</el-radio
               >
             </el-form-item>
             <el-form-item label="蜂鸣器" prop="instrumentModel.buzzer">
-              <el-radio v-model="form.instrumentModel.buzzer" :label="0"
+              <el-radio v-model="form.instrumentModel.buzzer" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.buzzer" :label="1"
+              <el-radio v-model="form.instrumentModel.buzzer" label="1"
                 >YES</el-radio
               >
             </el-form-item>
 
             <el-form-item label="APP" prop="instrumentModel.app">
-              <el-radio v-model="form.instrumentModel.app" :label="0"
+              <el-radio v-model="form.instrumentModel.app" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.app" :label="1"
+              <el-radio v-model="form.instrumentModel.app" label="1"
                 >YES</el-radio
               >
             </el-form-item>
             <el-form-item label="推车助力" prop="instrumentModel.driveAssist">
-              <el-radio v-model="form.instrumentModel.driveAssist" :label="0"
+              <el-radio v-model="form.instrumentModel.driveAssist" label="0"
                 >NO</el-radio
               >
-              <el-radio v-model="form.instrumentModel.driveAssist" :label="1"
+              <el-radio v-model="form.instrumentModel.driveAssist" label="1"
                 >YES</el-radio
               >
             </el-form-item>
 
             <el-form-item label="助力正反" prop="instrumentModel.assist">
-              <el-radio v-model="form.instrumentModel.assist" :label="0"
+              <el-radio v-model="form.instrumentModel.assist" label="0"
                 >正</el-radio
               >
-              <el-radio v-model="form.instrumentModel.assist" :label="1"
+              <el-radio v-model="form.instrumentModel.assist" label="1"
                 >反</el-radio
               >
             </el-form-item>

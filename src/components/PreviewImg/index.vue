@@ -1,5 +1,6 @@
+
 <template>
-  <el-image :style="{ width, height, borderRadius }" :src="url"  fit="cover" :preview-src-list="srcList" :z-index="10000">
+  <el-image :style="{ width, height, lineHeight: height, borderRadius }" :src="url"  fit="contain" :preview-src-list="srcList" :z-index="10000">
     <div slot="error">暂无图片</div>
     <div slot="placeholder">
       <i class="el-icon-loading"></i>
@@ -32,6 +33,3 @@ export default {
   },
 };
 </script>
-
-<style>
-</style>

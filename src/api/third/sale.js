@@ -102,6 +102,24 @@ export function afterHandle(data) {
     });
 }
 
+
+// 批量处理
+export function afterBatchHandle(data) {
+    return request({
+        url: '/after/batch/handle',
+        method: 'put',
+        data
+    });
+}
+
+export function saleExport(params) {
+    return request({
+        url: '/after/export',
+        method: 'get',
+        params
+    });
+}
+
 // 处理进展
 export function afterHandleDetail(afterSaleId) {
     return request({
@@ -130,4 +148,40 @@ export function afterTopList() {
         url: "/after/top/list",
         method: "get"
     })
+}
+
+export function afterSearch(params) {
+    return request({
+        url: "/after/search",
+        method: "get",
+        params
+    })
+}
+
+
+// 品类 （可根据客户id查询）
+export function afterCategoryList(params) {
+    return request({
+        url: "/after/category/list",
+        method: "get",
+        params
+    })
+}
+
+// 售后图表查询 
+export function afterResultList(params) {
+    return request({
+        url: '/after/result/list',
+        method: 'get',
+        params
+    });
+}
+
+// 批量物流信息输入
+export function afterLogistics(data) {
+    return request({
+        url: '/after/logistics',
+        method: 'put',
+        data
+    });
 }

@@ -476,6 +476,9 @@ export default {
               })
               .then(() => {
                 this.isBtnLoading = false;
+              })
+              .finally(() => {
+                this.isBtnLoading = false;
               });
           }
         }

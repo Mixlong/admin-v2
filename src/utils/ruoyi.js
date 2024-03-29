@@ -94,6 +94,13 @@ export function resetForm(refName) {
   }
 }
 
+// table表格清除用户选择项
+export function resetTableSelection(refName) {
+  if (this.$refs[refName]) {
+    this.$refs[refName].clearSelection();
+  }
+}
+
 // 添加日期范围
 export function addDateRange(params, dateRange, { begin = 'beginTime', end = 'endTime' } = {}) {
   var search = params;
@@ -290,4 +297,16 @@ export function tansParams(params) {
 // 验证是否为blob格式
 export function blobValidate(data) {
   return data.type !== 'application/json'
+}
+
+/**
+ * 字符串的图片链接转数组
+ * @param {*} imgStr 
+ * @returns 
+ */
+export function setCheckListArr(imgStr, count) {
+  if(!is_Empty(imgStr)) {
+    const imgList = imgStr.split(',');
+    return count === 1 ? imgList[0] : imgList;
+  }
 }

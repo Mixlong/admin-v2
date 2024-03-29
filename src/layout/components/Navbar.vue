@@ -12,7 +12,7 @@
             : require('@/assets/logo/logo1.png')
         "
         alt=""
-        style="vertical-align: middle; width: 100px; height: 25px;"
+        style="vertical-align: middle; width: 100px;"
       />
       <div
         class="text-center font20 company-name"

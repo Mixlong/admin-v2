@@ -81,11 +81,11 @@
               {{ parseTime(form.sellTime) }}
             </el-form-item>
           </el-col>
-          <el-col :span="16">
+          <!-- <el-col :span="16">
             <el-form-item label="客户要求到货日期：">
               {{ parseTime(form.arrivalTime) }}
             </el-form-item>
-          </el-col>
+          </el-col> -->
           <el-col :span="8" v-show="form.containerMarkInfo">
             <el-form-item label="箱唛文件:">
               <el-button

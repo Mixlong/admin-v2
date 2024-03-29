@@ -198,7 +198,6 @@ export default {
       this.$emit("delete", params);
     },
     handleCellClick(row, column) {
-      console.log(row)
       if(column.label === '详细需求') {
         window.open(window.location.origin + '/survey?row=' + JSON.stringify(row))
       }

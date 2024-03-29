@@ -1,39 +1,38 @@
 <template>
-  <div
-    id="app"
-    :style="{
-      backgroundImage:
-        customImage > 0
-          ? 'url(' +
-            require('@/assets/theme/smallDemo' + customImage + '.png') +
-            ')'
-          : '',
-    }"
-    :class="{ 'theme-style': customImage > 0}"
-  >
-    <router-view />
-  </div>
+    <div
+      v-if="isOnLine"
+      id="app"
+      :style="{ backgroundImage: bgImage }"
+      :class="{ 'theme-style': customImage > 0 }"
+    >
+      <router-view />
+    </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
 export default {
   name: "App",
+  components: {
+    NoWekwork: () => import("@/views/error/noNetwork")
+  },
+  data() {
+    return {
+      isOnLine: navigator.onLine,
+    };
+  },
   computed: {
     ...mapState({
       customImage: (state) => state.settings.customImage,
     }),
-  },
-  data() {
-    return {
-      image: "",
-    };
-  },
-  mounted() {
-    // this.image = require("@/assets/theme/smallDemo" +
-    //   this.customImage +
-    //   ".png");
-  },
+    bgImage() {
+      const customImage = this.customImage;
+      if (customImage > 0) {
+        const imageSrc = require(`@/assets/theme/smallDemo${customImage}.png`);
+        return `url(${imageSrc})`;
+      }
+    },
+  }
 };
 </script>
 <style lang='scss'>
@@ -45,7 +44,7 @@ export default {
 }
 .app-container {
   height: calc(100vh - 70px);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .theme-style {
   .tags-view-container {

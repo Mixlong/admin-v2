@@ -16,20 +16,21 @@
         label-position="left"
       >
         <el-form-item label="模块名称：" prop="productType">
-          <el-select
-            v-model="form.productType"
-            size="mini"
-            filterable
-            placeholder="请选择模块名称"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="dict in moduleList"
-              :key="dict.dictCode"
-              :label="dict.dictValue"
-              :value="String(dict.dictCode)"
-            />
-          </el-select>
+          <el-input
+            v-model.trim="form.productType"
+            placeholder="请输入模块名称"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item label="排序序号：" prop="sort">
+          <el-input-number
+            v-model="form.sort"
+            :min="0"
+            :precision="0"
+            controls-position="right"
+            placeholder="请输入排序序号"
+            class="w100 ipt-number"
+          />
         </el-form-item>
         <el-form-item label="描述：" prop="desc">
           <el-input
@@ -37,7 +38,10 @@
             type="textarea"
             placeholder="请输入描述"
             clearable
-            maxlength="10"
+            :autosize="{
+              minRows: 3,
+              maxRows: 6
+            }"
           />
         </el-form-item>
       </el-form>
@@ -54,7 +58,6 @@ import { testProductAdd, testProductEdit } from "@/api/third/testApi";
 
 export default {
   inheritAttrs: false,
-  props: ["moduleList"],
   data() {
     return {
       step: 1,
@@ -63,14 +66,18 @@ export default {
       // 表单参数
       form: {
         productType: "",
+        sort: "",
         desc: "",
       },
       // 表单校验
       rules: {
         productType: [
-          { required: true, message: "请选择模块名称", trigger: "change" },
+          { required: true, message: "请输入模块名称", trigger: "change" },
         ],
-        desc: [{ required: true, message: "请输入描述", trigger: "blur" }],
+        sort: [
+          { required: true, message: "请输入排序序号", trigger: "change" },
+        ],
+        desc: [{ required: false, message: "请输入描述", trigger: "blur" }],
       },
     };
   },
@@ -110,3 +117,10 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+  .ipt-number {
+    /deep/.el-input__inner {
+      text-align: left;
+    }
+  }
+</style>

@@ -1,167 +1,252 @@
 <template>
   <div class="app-container">
-    <el-card shadow="hover">
-      <div slot="header" class="clearfix">
-        <span class="text-blue font20">{{ commonObj && commonObj.title }}</span>
-      </div>
-      <el-form
-        ref="form"
-        label-position="left"
-        :model="form"
-        :rules="rules"
-        label-width="90px"
-        class="test_box"
-      >
-        <el-tabs
-          type="border-card"
-          v-model="form.type"
-          @tab-click="handleClick"
+    <div class="text-blue font20 margin-bottom">
+      {{ commonObj && commonObj.title }}
+    </div>
+    <el-form
+      ref="form"
+      label-position="left"
+      :model="form"
+      :rules="rules"
+      label-width="90px"
+      class="test_box"
+    >
+      <el-tabs type="card" v-model="form.type" @tab-click="handleClick">
+        <el-tab-pane
+          label="送样需求"
+          name="0"
+          v-if="
+            (this.testData.id && this.form.type === '0') || !this.testData.id
+          "
         >
-          <el-tab-pane
-            label="送样需求"
-            name="0"
-            v-if="
-              (this.testData.id && this.form.type === '0') || !this.testData.id
-            "
-          >
-            <el-container class="test_left_box flex">
-              <el-aside
-                class="test_aside_box flex-sub bg-white reset_pad_mar solid-right"
-              >
-                <el-descriptions
-                  title="送样信息"
-                  direction="vertical"
-                  :column="4"
-                  border
-                >
-                  <template slot="extra">
-                    <el-button size="mini" type="primary" @click="onSampleData">
-                      {{ sampleSingleData.id ? "修改" : "选择" }}送样需求
-                    </el-button>
-                  </template>
-                  <el-descriptions-item label="产品型号">
-                    <el-tag
-                      class="margin-right-xs"
-                      v-for="(item, index) in modelList(
-                        sampleSingleData.baseModel
-                      )"
-                      :key="index"
-                    >
-                      {{ item }}
-                    </el-tag>
-                  </el-descriptions-item>
-                  <el-descriptions-item label="客户名称">
-                    {{ sampleSingleData.customerName }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="软件版本">
-                    {{ sampleSingleData.softVersion }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="硬件版本">
-                    {{ sampleSingleData.hardVersion }}
-                  </el-descriptions-item>
-                </el-descriptions>
-              </el-aside>
-              <el-main class="flex-sub reset_pad_mar">
-                <CareList
-                  ref="careListRef1"
+          <div class="margin-bottom">
+            <el-descriptions
+              title="送样信息"
+              direction="vertical"
+              :column="6"
+              size="mini"
+              border
+            >
+              <template slot="extra">
+                <el-button size="mini" type="primary" @click="onSampleData">
+                  {{ sampleSingleData.id ? "修改" : "选择" }}送样需求
+                </el-button>
+              </template>
 
-                  :mulList="form.list"
-                  :sammpleId="sammpleId"
-                />
-              </el-main>
-            </el-container>
-          </el-tab-pane>
-          <el-tab-pane
-            label="新增需求"
-            name="1"
-            v-if="
-              (this.testData.id && this.form.type === '1') || !this.testData.id
-            "
-          >
-            <el-container class="test_left_box flex">
-              <el-aside
-                class="test_aside_box flex-sub bg-white reset_pad_mar solid-right"
-              >
-                <el-form-item label="客户" prop="customerName">
-                  <el-input
-                    v-model.trim="form.customerName"
-                    clearable
-                    placeholder="请输入客户"
-                  />
-                </el-form-item>
-                <el-form-item label="产品品类" prop="categoryName">
-                  <el-input
-                    v-model.trim="form.categoryName"
-                    clearable
-                    placeholder="请输入产品品类"
-                  />
-                </el-form-item>
-                <el-form-item label="产品型号" prop="computerName">
-                  <el-input
-                    v-model.trim="form.computerName"
-                    clearable
-                    placeholder="请输入产品型号"
-                  />
-                </el-form-item>
-                <el-form-item label="软件版本" prop="softVersion">
-                  <el-input
-                    v-model.trim="form.softVersion"
-                    clearable
-                    placeholder="请输入软件版本"
-                  />
-                </el-form-item>
-                <el-form-item label="硬件版本" prop="hardVersion">
-                  <el-input
-                    v-model.trim="form.hardVersion"
-                    clearable
-                    placeholder="请输入硬件版本"
-                  />
-                </el-form-item>
-                <el-form-item label="需求总表" prop="needInfo">
-                  <DrUpload
-                    class="flex flex-direction"
-                    v-model="form.needInfo"
-                    :limit="1"
-                    :isOnePic="1"
+              <template v-if="sampleSingleData.id">
+                <el-descriptions-item
+                  label="产品型号"
+                  :labelStyle="labelStyle({ width: 250 })"
+                  contentClassName="text-center"
+                >
+                  <el-tag
+                    class="margin-right-xs"
+                    v-for="(item, index) in modelList(
+                      sampleSingleData.baseModel
+                    )"
+                    :key="index"
                   >
-                    <div class="text-left">
-                      <el-button size="mini" type="primary">
-                        附件上传
-                      </el-button>
-                    </div>
-                  </DrUpload>
-                </el-form-item>
-              </el-aside>
-              <el-main class="flex-sub reset_pad_mar">
-                <!--          :multipleSelection.sync="form.list" -->
-                <CareList
-                  ref="careListRef2"
-                  :mulList="form.list"
-                  :sammpleId="sammpleId"
+                    {{ item }}
+                  </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="客户名称"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
+                  {{ sampleSingleData.customerName }}
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="软件版本"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
+                  {{ sampleSingleData.softVersion }}
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="硬件版本"
+                  :labelStyle="labelStyle()"
+                  contentClassName="text-center"
+                >
+                  {{ sampleSingleData.hardVersion }}
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="配置需求表"
+                  labelClassName="text-center"
+                >
+                  <span
+                    v-for="(url, index) in $setCheckListArr(
+                      sampleSingleData.checklist
+                    )"
+                    :key="index"
+                    :class="{ 'margin-right-xs': isSetImgMargin(index) }"
+                  >
+                    <preview-img
+                      :url="url"
+                      :srcList="[url]"
+                      width="60px"
+                      height="60px"
+                    />
+                  </span>
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="详细需求"
+                  width="80"
+                  :labelStyle="labelStyle({ width: 120 })"
+                  contentClassName="text-center"
+                >
+                  <el-button type="primary" @click="isDemandDetail = true"
+                    >查看</el-button
+                  >
+                </el-descriptions-item>
+              </template>
+            </el-descriptions>
+
+            <el-empty
+              style="padding: 0"
+              v-if="!sampleSingleData.id"
+              :image-size="60"
+              description="~送样需求为空~"
+            ></el-empty>
+          </div>
+          <CareList
+            ref="careListRef1"
+            :mulList="form.list"
+            :sammpleId="sammpleId"
+          />
+        </el-tab-pane>
+        <el-tab-pane
+          label="新增需求"
+          name="1"
+          v-if="
+            (this.testData.id && this.form.type === '1') || !this.testData.id
+          "
+        >
+          <el-row :gutter="20" style="width: 60%">
+            <el-col :span="12">
+              <el-form-item label="客户" prop="customerName">
+                <el-input
+                  v-model.trim="form.customerName"
+                  clearable
+                  placeholder="请输入客户"
                 />
-              </el-main>
-            </el-container>
-          </el-tab-pane>
-        </el-tabs>
-      </el-form>
-      <div class="text-center margin-top-lg">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="$router.push('/TestManage/productTest')">
-          取 消
-        </el-button>
-      </div>
-    </el-card>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="产品品类" prop="categoryName">
+                <el-input
+                  v-model.trim="form.categoryName"
+                  clearable
+                  placeholder="请输入产品品类"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="产品型号" prop="computerName">
+                <el-input
+                  v-model.trim="form.computerName"
+                  clearable
+                  placeholder="请输入产品型号"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="软件版本" prop="softVersion">
+                <el-input
+                  v-model.trim="form.softVersion"
+                  clearable
+                  placeholder="请输入软件版本"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="硬件版本" prop="hardVersion">
+                <el-input
+                  v-model.trim="form.hardVersion"
+                  clearable
+                  placeholder="请输入硬件版本"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col>
+              <el-form-item label="需求总表" prop="needInfo">
+                <DrUpload v-model="form.needInfo" :limit="1" :isOnePic="1">
+                  <div class="text-left">
+                    <el-button size="mini" type="primary"> 附件上传 </el-button>
+                  </div>
+                </DrUpload>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <CareList
+            ref="careListRef2"
+            :mulList="form.list"
+            :sammpleId="sammpleId"
+          />
+        </el-tab-pane>
+      </el-tabs>
+    </el-form>
+    <div class="text-center margin-top-sm">
+      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button @click="$router.go(-1)"> 取 消 </el-button>
+    </div>
 
     <!-- 送样 -->
     <el-drawer
       title="送样需求列表"
-      size="60%"
+      size="65%"
       custom-class="elDrawer_box"
       :wrapperClosable="false"
       :show-close="false"
       :visible.sync="isDrawer"
       :close-on-press-escape="false"
     >
+      <el-form :model="queryParams" ref="queryForm" :inline="true">
+        <el-form-item label="客户" prop="key">
+          <el-autocomplete
+            size="small"
+            clearable
+            v-model="queryParams.key"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="请输入客户"
+            @select="handleQuery"
+          ></el-autocomplete>
+        </el-form-item>
+        <el-form-item label="产品型号" prop="baseModel">
+          <el-input
+            size="small"
+            clearable
+            v-model="queryParams.baseModel"
+            placeholder="请输入产品型号"
+            @keyup.enter.native="handleQuery"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="需求" prop="demand">
+          <el-input
+            size="small"
+            clearable
+            v-model="queryParams.demand"
+            placeholder="请输入需求"
+            @keyup.enter.native="handleQuery"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="handleQuery"
+          >
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
       <el-table
         ref="sampleTableRef"
         v-loading="isSampleLoading"
@@ -223,8 +308,8 @@
       <pagination
         v-show="sampleTotal > 0"
         :total="sampleTotal"
-        :page.sync="sampleQueryParams.p"
-        :limit.sync="sampleQueryParams.l"
+        :page.sync="queryParams.p"
+        :limit.sync="queryParams.l"
         @pagination="getSampleList"
       />
 
@@ -233,14 +318,23 @@
         <el-button @click="handleCloseDrawer">取 消</el-button>
       </div>
     </el-drawer>
+
+    <!-- 详细需求 -->
+    <el-drawer size="40%" :visible.sync="isDemandDetail">
+      <span slot="title" class="text-blue font20"
+        >型号：{{ sampleSingleData.baseModel }} 的详细需求</span
+      >
+      <div
+        class="text-left app-container"
+        v-html="sampleSingleData.demand"
+      ></div>
+    </el-drawer>
   </div>
 </template>
 
 <script>
-import {
-  getOrderProcess,
-} from "@/api/order";
-import { sampleList } from "@/api/third/sample";
+import { getOrderProcess } from "@/api/order";
+import { sampleList, listCustomer } from "@/api/third/sample";
 import { taskSave, taskUpdate, taskInfo } from "@/api/third/testApi";
 
 import { categoryComputerDict } from "@/api/third/fileConfig";
@@ -257,6 +351,8 @@ export default {
     return {
       isDrawer: false,
       isCateLoading: false,
+      // 详细需求
+      isDemandDetail: false,
       // 品类
       dictList: [],
       // 型号
@@ -276,9 +372,12 @@ export default {
       sampleSingleData: {},
       // 选中项
       multipleSelection: {},
-      sampleQueryParams: {
+      queryParams: {
         p: 1,
         l: 10,
+        key: "",
+        baseModel: "",
+        demand: "",
       },
 
       testData: {},
@@ -335,6 +434,21 @@ export default {
         return true;
       }
     },
+    labelStyle() {
+      return ({ width = 200, textAlign = "center" } = {}) => {
+        return {
+          width: `${width}px`,
+          textAlign,
+        };
+      };
+    },
+    isSetImgMargin() {
+      return (index) => {
+        const { checklist } = this.sampleSingleData;
+        const imgCount = this.$setCheckListArr(checklist).length;
+        return imgCount > 1 && index < imgCount - 1;
+      };
+    },
   },
   watch: {
     "form.needInfo"(needInfo) {
@@ -374,6 +488,7 @@ export default {
           customerName,
           softVersion,
           hardVersion,
+          demand,
         } = this.testData;
         this.sampleSingleData = {
           id: demandId,
@@ -381,14 +496,15 @@ export default {
           customerName,
           softVersion,
           hardVersion,
+          demand,
         };
         this.$refs.careListRef1.getList();
         this.form = Object.assign({}, this.testData);
-        this.$refs.careListRef1.checkList = this.form.list
+        this.$refs.careListRef1.checkList = this.form.list;
       } else {
         this.$refs.careListRef2.getList();
         this.form = Object.assign({}, this.testData);
-        this.$refs.careListRef2.checkList = this.form.list
+        this.$refs.careListRef2.checkList = this.form.list;
       }
       this.form.type = String(this.testData.type);
     }
@@ -409,10 +525,30 @@ export default {
         });
       });
     },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.p = 1;
+      this.getSampleList();
+    },
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.getSampleList();
+    },
+    querySearchAsync(queryString, cb) {
+      listCustomer({ key: queryString || "" }).then((res) => {
+        cb(
+          res.data.map((item) => {
+            return {
+              value: item.name,
+            };
+          })
+        );
+      });
+    },
     // 送样列表
     getSampleList() {
       this.isSampleLoading = true;
-      sampleList(this.sampleQueryParams).then((res) => {
+      sampleList(this.queryParams).then((res) => {
         const { list, total } = res.data;
         this.sampleDataList = list.filter((item) => item.state !== 6);
         this.sampleTotal = total;
@@ -434,9 +570,9 @@ export default {
       if (!this.multipleSelection.id) {
         return this.msgError("请先选择一项");
       } else {
-        const { appVersion, harkVersion } = this.multipleSelection;
+        const { appVersion, harkVersion, demand } = this.multipleSelection;
         this.sampleSingleData = Object.assign(
-          { softVersion: appVersion, hardVersion: harkVersion },
+          { softVersion: appVersion, hardVersion: harkVersion, demand },
           this.multipleSelection
         );
         this.isDrawer = false;
@@ -444,11 +580,7 @@ export default {
     },
 
     handleCloseDrawer() {
-      this.$confirm("确认关闭？")
-        .then((_) => {
-          this.isDrawer = false;
-        })
-        .catch((_) => {});
+      this.isDrawer = false;
     },
 
     handleSelection(selection, row) {
@@ -500,15 +632,16 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          // if (!this.form.list.length) {
-          //   return this.msgError("请选择用例库");
-          // }
-          if ((this.form.type === "0" && !this.$refs.careListRef1.mulSelList.length) || (this.form.type !== "0" && !this.$refs.careListRef2.mulSelList.length)) {
+          if (
+            (this.form.type === "0" &&
+              !this.$refs.careListRef1.mulSelList.length) ||
+            (this.form.type !== "0" &&
+              !this.$refs.careListRef2.mulSelList.length)
+          ) {
             return this.msgError("请选择用例库");
           }
           if (this.form.id) {
             if (this.form.type === "0") {
-              console.log(666, this.$refs.careListRef1.mulSelList)
               const { baseModel, customerName, softVersion, hardVersion, id } =
                 this.sampleSingleData;
               this.form = {
@@ -521,12 +654,12 @@ export default {
                 demandId: id,
               };
             } else {
-              this.form.list = this.$refs.careListRef2.mulSelList
+              this.form.list = this.$refs.careListRef2.mulSelList;
             }
             taskUpdate(this.form).then((res) => {
               if (res.code === 200) {
                 this.msgSuccess("更新成功");
-                this.$router.push("/TestManage/productTest");
+                this.$router.go(-1);
               }
             });
           } else {
@@ -543,16 +676,15 @@ export default {
                 hardVersion,
                 demandId: this.sampleSingleData.id,
                 type: 0,
-                // list: this.form.list,
                 list: this.$refs.careListRef1.mulSelList,
               };
             } else {
-              this.form.list = this.$refs.careListRef2.mulSelList
+              this.form.list = this.$refs.careListRef2.mulSelList;
             }
             taskSave(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
-                this.$router.push("/TestManage/productTest");
+                this.$router.go(-1);
               }
             });
           }

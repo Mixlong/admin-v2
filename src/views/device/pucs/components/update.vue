@@ -29,7 +29,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="产品品类:" prop="dutCode" v-if="type == 2">
+      <el-form-item label="产品品类:" :prop="type === 2 ? 'dutCode' : ''" v-if="type == 2">
         <el-select
           v-model="form.dutCode"
           clearable
@@ -81,7 +81,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="生产工序:" :prop="form.dutCode ? 'processId' : ''" v-if="type == 2">
+      <el-form-item label="生产工序:" :prop="form.dutCode && type === 2 ? 'processId' : ''" v-if="type === 2">
         <el-select
           clearable
           v-model="form.processId"
@@ -102,7 +102,7 @@
       <div v-if="type == 4" class="col-12-cust">
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="测试脚本:" prop="dutCode" style="width: 100%">
+            <el-form-item label="测试脚本:" prop="testJsFileName" style="width: 100%">
               <el-input
                 style="position: relative; z-index: 10"
                 v-model="formUpload.testJsFileName"
@@ -371,17 +371,13 @@ export default {
         ],
         schemeVersion: [
           { required: true, message: "请选择方案版本", trigger: "change" },
-        ],
-        processId: [
-          { required: true, message: "请选择生产工序", trigger: "change" },
-        ],
+        ]
       },
     };
   },
   watch: {
     dialogVisible(val) {
       if (val) {
-        this.resetForm("form");
         if (this.type == 4) {
           this.getInfo();
         }
@@ -425,6 +421,10 @@ export default {
     });
   },
   methods: {
+    reset() {
+      this.form = {};
+      this.resetForm("form");
+    },
     changeCategory(val) {
       this.form.computerId = "";
       this.computerOptions = [];

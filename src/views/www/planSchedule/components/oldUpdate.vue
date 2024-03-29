@@ -50,7 +50,7 @@
           />
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="芯片版本:" prop="chipVersion">
+      <el-form-item label="芯片版本:" prop="chipVersion">
         <el-select
           v-model="form.chipVersion"
           style="width: 65%"
@@ -65,9 +65,9 @@
             :value="dict.dictLabel"
           />
         </el-select>
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="生产流程:" prop="process">
-        <el-radio-group v-model="form.process" :disabled="form.id">
+        <el-radio-group v-model="form.process" :disabled="!!form.id">
           <el-radio
             v-for="(item, index) in operationList"
             :key="index"
@@ -121,22 +121,6 @@
         </el-radio-group>
       </el-form-item>
       <template v-if="form.process === 'SMT'">
-        <el-form-item label="方案版本:" prop="schemeVersion">
-          <el-select
-            v-model="form.schemeVersion"
-            style="width: 65%"
-            placeholder="请选择产品型号"
-            clearable
-            filterable
-          >
-            <el-option
-              v-for="dict in versionList"
-              :key="dict.dictCode"
-              :label="dict.dictLabel"
-              :value="String(dict.dictCode)"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item label="有效期:" prop="dateRange">
           <el-date-picker
             style="width: 65%"
@@ -309,7 +293,7 @@ export default {
   created() {
     this.getProductAddress();
     this.getScheduleVersion();
-    // this.getChipTypeList();
+    this.getChipTypeList();
   },
   methods: {
     getComputerId(id) {
@@ -319,10 +303,6 @@ export default {
     },
     // 芯片类型
     getChipTypeList() {
-      //   schemeTypeList({ p: 1, l: 10 }).then((res) => {
-      //     const { list } = res.data;
-      //     this.chipList = list;
-      //   });
       getOrderProcess({ dictType: "scheme_version" }).then((res) => {
         this.chipList = res.data;
       });

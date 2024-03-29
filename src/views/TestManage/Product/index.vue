@@ -2,19 +2,11 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="模块名称：" prop="productType">
-        <el-select
-          v-model="queryParams.productType"
-          size="mini"
-          filterable
-          placeholder="请选择模块名称"
-        >
-          <el-option
-            v-for="dict in moduleList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictCode"
+        <el-input
+            v-model.trim="queryParams.productType"
+            placeholder="请输入模块名称"
+            clearable
           />
-        </el-select>
       </el-form-item>
       <el-form-item label="产品状态：" prop="status">
         <el-select
@@ -64,11 +56,12 @@
       </el-table-column>
       <el-table-column
         label="模块名称"
-        prop="productName"
+        prop="productType"
         align="center"
         width="250"
       />
-      <el-table-column label="描述" prop="desc" align="center" />
+      <el-table-column label="描述" prop="desc" align="center"  />
+      <el-table-column label="排序序号" prop="sort" align="center" width="120" />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
@@ -83,7 +76,7 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="140"
+        width="120"
       />
       <el-table-column
         label="创建时间"
@@ -95,7 +88,7 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"
@@ -127,6 +120,7 @@
       :title="title"
       :moduleList="moduleList"
     />
+
   </div>
 </template>
 

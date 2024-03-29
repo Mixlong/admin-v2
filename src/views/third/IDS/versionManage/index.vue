@@ -84,10 +84,9 @@
           重置
         </el-button>
         <el-button
+          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
           type="warning"
           size="mini"
-          :disabled="multiple"
-          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
           @click="handleAuthBatchChange"
         >
           {{ batchCheck }}
@@ -95,12 +94,13 @@
       </el-form-item>
     </el-form>
     <el-table
+      ref="multipleTableRef"
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
-      border
       :row-class-name="tableRowClassName"
       @selection-change="handleSelectionChange"
+      border
     >
       <el-table-column
         type="selection"
@@ -499,6 +499,10 @@ export default {
         });
     },
     handleAuthBatchChange() {
+      if (this.ids.length === 0) {
+        return this.msgError("请选择批量处理项");
+      }
+
       this.auth.why = "";
       this.auth.id = "";
       this.authDialogVisible = true;
@@ -558,6 +562,8 @@ export default {
         if (code == 200) {
           this.authDialogVisible = false;
           this.msgSuccess("操作成功！");
+          this.ids = [];
+          this.resetTableSelection("multipleTableRef");
           this.getList();
         }
       });

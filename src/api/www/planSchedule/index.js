@@ -68,14 +68,6 @@ export function downloadDataFile(id) {
   })
 }
 
-// 下载资料清单
-export function createDataDetail(id) {
-  return request({
-    url: `/production/scheduling/create/detail/${id}`,
-    method: 'post'
-  })
-}
-
 // 外发生产文件
 export function sendProd(id) {
   return request({
@@ -87,8 +79,8 @@ export function sendProd(id) {
 // 获取资料清单
 export function proSecDetail(id) {
   return request({
-    url: "/production/scheduling/create/detail/product/" + id,
-    method: 'get'
+    url: "/production/scheduling/create/detail/" + id,
+    method: 'post'
   })
 }
 

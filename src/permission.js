@@ -1,11 +1,3 @@
-/*
- * @Author: your name
- * @Date: 2021-04-14 13:47:31
- * @LastEditTime: 2021-05-19 14:07:54
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: /fileConf-ui/src/permission.js
- */
 import router from './router'
 import store from './store'
 import { Message } from 'element-ui'

@@ -239,7 +239,7 @@
                 @click="handleDownload(scope.row)"></el-button>
             </el-tooltip>
             <Tooltip icon="el-icon-position" content="软件发布"
-              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}&`)" />
+              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}`)" />
             <Tooltip v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
               @click="handleProd(scope.row)" />
           </div>
@@ -731,7 +731,6 @@ export default {
     },
     handleUpdate(row, name) {
       let currentData = Object.assign({}, row);
-      console.log(currentData)
       if (name === 'progress' && currentData.progress === null) {
         currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>

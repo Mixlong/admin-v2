@@ -1,7 +1,6 @@
 import Vue from 'vue'
 Vue.directive('throttle', {
     bind: (el, binding) => {
-        console.log(binding.value)
         let throttleTime = binding.value
         if(!throttleTime) {
             throttleTime = 2000

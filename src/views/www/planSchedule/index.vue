@@ -15,7 +15,7 @@
             clearable
             @change="changeCategory"
             placeholder="请选择所属品类"
-            style="width: 160px;"
+            style="width: 140px"
           >
             <el-option
               v-for="dict in dictList"
@@ -35,7 +35,7 @@
             placeholder="请选择仪表型号"
             @change="changeComputer"
             :remote-method="getComputerNameList"
-            style="width: 160px;"
+            style="width: 140px"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -51,7 +51,7 @@
             placeholder="请输入迪太订单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 160px;"
+            style="width: 140px"
           />
         </el-form-item>
         <el-form-item label="排产单号" prop="no">
@@ -60,7 +60,7 @@
             placeholder="请输入排产单号"
             clearable
             @keyup.native.enter="handleQuery"
-            style="width: 160px;"
+            style="width: 140px"
           />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
@@ -68,7 +68,7 @@
             v-model="queryParams.productStatus"
             clearable
             placeholder="请选择排产状态"
-            style="width: 160px;"
+            style="width: 100px"
           >
             <el-option
               v-for="(value, key) in productStatusList"
@@ -139,7 +139,12 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品品类" align="center" prop="categoryName" />
+      <el-table-column
+        label="产品品类"
+        align="center"
+        prop="categoryName"
+        width="100"
+      />
       <el-table-column label="产品型号" align="center" prop="computerName" />
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
       <el-table-column label="排产单号" align="center" prop="no" />
@@ -147,9 +152,9 @@
         label="生产地点"
         align="center"
         prop="address"
-        width="110"
+        width="90"
       />
-      <el-table-column label="生产日期" align="center" prop="date" width="110">
+      <el-table-column label="生产日期" align="center" prop="date" width="90">
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
           <br />
@@ -160,20 +165,20 @@
         label="生产流程"
         align="center"
         prop="process"
-        width="110"
+        width="80"
       />
       <el-table-column
         label="方案版本"
         align="center"
         prop="soChipVersion"
-        width="110"
+        width="80"
       />
-      <el-table-column label="排产数量" align="center" prop="num" width="100" />
+      <el-table-column label="排产数量" align="center" prop="num" width="90" />
       <el-table-column
         label="排产状态"
         align="center"
         prop="productStatus"
-        width="100"
+        width="80"
       >
         <template slot-scope="{ row }">
           <el-tag
@@ -189,13 +194,13 @@
         label="订单数量"
         align="center"
         prop="orderQuantity"
-        width="100"
+        width="90"
       />
       <el-table-column
         label="资料状态"
         align="center"
         prop="dataState"
-        width="100"
+        width="90"
       >
         <template slot-scope="scope">
           <p v-if="isDataAll(scope.row)" class="text-green">全部已配齐</p>
@@ -204,19 +209,22 @@
               v-if="scope.row.softList !== null"
               :class="dataStateColor(isDataLen(scope.row.softList))"
             >
-              软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }}
+              <!-- 软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }} -->
+              软件
             </p>
             <p
               v-if="scope.row.hardList !== null"
               :class="dataStateColor(isDataLen(scope.row.hardList))"
             >
-              硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }}
+              <!-- 硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }} -->
+              硬件
             </p>
             <p
               v-if="scope.row.projectList !== null"
               :class="dataStateColor(isDataLen(scope.row.projectList))"
             >
-              工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }}
+              <!-- 工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }} -->
+              工程
             </p>
           </template>
         </template>
@@ -225,16 +233,16 @@
         label="排产人"
         align="center"
         prop="createBy"
-        width="100"
+        width="90"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
-        width="140"
+        width="120"
       >
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime) }}
+          {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="150">
@@ -294,7 +302,7 @@
               <el-button
                 class="mlZero"
                 type="text"
-                @click="handleDownloadFile(row.fileZip)"
+                @click="zipFile(row.fileZip)"
               >
                 下载生产资料
               </el-button>
@@ -306,15 +314,16 @@
               >
                 生成预览资料
               </el-button>
-              <!-- 
-              <el-button class="mlZero" type="text" @click="textExcel">
-                生成预览资料
-              </el-button> -->
 
-              <el-button class="mlZero" type="text" @click="uploadFile(row)">
-                上传资料清单
-              </el-button>
-              <!-- <el-button
+              <template v-if="row.excelUrl">
+                <el-button
+                  class="mlZero"
+                  type="text"
+                  @click="zipFile(row.excelUrl)"
+                >
+                  下载资料清单
+                </el-button>
+                <!-- <el-button
                 v-if="row.excelUrl"
                 class="mlZero"
                 type="text"
@@ -322,15 +331,15 @@
               >
                 预览资料清单
               </el-button> -->
+                <el-button
+                  class="mlZero"
+                  type="text"
+                  @click="handleProd(row.id)"
+                >
+                  外发生产
+                </el-button>
+              </template>
             </template>
-            <el-button
-              v-if="row.excelUrl"
-              class="mlZero"
-              type="text"
-              @click="handleProd(row.id)"
-            >
-              外发生产
-            </el-button>
           </div>
         </div>
       </el-table-column>
@@ -364,13 +373,7 @@
     />
 
     <!-- 任务令 -->
-    <el-dialog
-      title="任务令"
-      :visible.sync="isQrCode"
-      width="350px"
-      center
-      :close-on-click-modal="false"
-    >
+    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
       <el-card shadow="hover">
         <div class="flex flex-direction">
           <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
@@ -478,7 +481,7 @@ import {
   schedulingDel,
   createDataFile,
   sendProd,
-  proSecDetail
+  proSecDetail,
 } from "@/api/www/planSchedule";
 import { typeCategory } from "@/api/third/category";
 import { listComputer, computerName } from "@/api/third/computer";
@@ -503,7 +506,6 @@ export default {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
       isExcelFile: false,
-      listId: "",
       // 显示搜索条件
       showSearch: true,
       // 遮罩层
@@ -620,7 +622,7 @@ export default {
     }
     const { listId } = this.$route.params;
     if (listId) {
-      this.listId = listId;
+      this.queryParams.id = listId;
     }
     this.getList();
     this.getOperationList();
@@ -649,10 +651,29 @@ export default {
     });
   },
   methods: {
-    getProSecDetail(id) {
-      proSecDetail(id).then((res) => {
-        this.handleExcel(res.data);
+    loadingFn(text) {
+      return new Promise((resolve) => {
+        let downloadLoadingInstance = this.$loading({
+          text,
+          lock: true,
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.7)",
+        });
+        setTimeout(() => {
+          resolve(downloadLoadingInstance);
+        }, 1000);
       });
+    },
+    async getProSecDetail(id) {
+      let downloadLoadingInstance = await this.loadingFn("预览资料生成中...");
+      proSecDetail(id)
+        .then((res) => {
+          // this.handleExcel(res.data);
+          this.getList();
+        })
+        .finally(() => {
+          downloadLoadingInstance.close();
+        });
     },
     handleExcel(data) {
       const column = [
@@ -681,45 +702,18 @@ export default {
       const table2excel = new Table2Excel();
       table2excel.export(document.getElementById("table"));
       const wb = XLSX.utils.table_to_book(document.getElementById("table"));
-      console.log(wb);
+
       const wbout = XLSX.write(wb, {
         bookType: "xlsx",
         bookSST: true,
         type: "binary",
       });
-      console.log("wbout", wbout);
 
       const blob = new Blob([this.s2ab(wbout)], {
         type: "application/octet-stream",
       });
 
       this.uploadExcelFile(blob, id);
-
-      // const data = [
-      //   ["jose", "Done", 29],
-      //   ["jose", "Done", 29],
-      //   ["jose", "Done", 29],
-      // ];
-      // const worksheet = XLSX.utils.aoa_to_sheet(data);
-      // const workBook = XLSX.utils.book_new();
-      // XLSX.utils.book_append_sheet(workBook, worksheet, "Sheet1");
-
-      // const fileName = "测试";
-      // const wbout = XLSX.write(workBook, {
-      //   bookType: "xlsx",
-      //   bookSST: false,
-      //   type: "binary",
-      // });
-
-      // FileSaver.saveAs(
-      //   new Blob([s2ab(wbout)], { type: "application/octet-stream" }),
-      //   fileName
-      // );
-
-      // FileSaver.saveAs(
-      //   new Blob(["hello world"], { type: "text/plain;charset=utf-8" }),
-      //   "hello world.txt"
-      // );
 
       // 上传到服务器
 
@@ -862,9 +856,6 @@ export default {
         this.list = response.data.list;
         this.total = response.data.total;
         this.loading = false;
-        if (this.listId) {
-          this.list = this.list.filter((item) => item.id === this.listId);
-        }
       });
     },
     handleAdd() {
@@ -901,13 +892,15 @@ export default {
 
     /** 搜索按钮操作 */
     handleQuery() {
-      this.listId = this.listId && "";
+      this.queryParams.orderId = "";
+      this.queryParams.id = "";
       this.queryParams.p = 1;
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.listId = this.listId && "";
+      this.queryParams.orderId = "";
+      this.queryParams.id = "";
       this.dateRange = [];
       this.modelList = [];
       this.resetForm("queryForm");
@@ -959,7 +952,9 @@ export default {
       this.dataInfo = { softList, hardList, projectList };
     },
     // 生成生产资料
-    handleCreateFile(id) {
+    async handleCreateFile(id) {
+      let downloadLoadingInstance = await this.loadingFn("生产资料生成中...");
+
       createDataFile(id)
         .then(() => {
           this.msgSuccess("生成生产资料成功");
@@ -967,21 +962,23 @@ export default {
         })
         .catch(() => {
           this.msgError("生成生产资料失败");
+        })
+        .finally(() => {
+          downloadLoadingInstance.close();
         });
     },
-    // 下载生产资料
-    handleDownloadFile(url) {
-      this.zipFile(url);
-    },
     // 外发生产
-    handleProd(id) {
+    async handleProd(id) {
+      let downloadLoadingInstance = await this.loadingFn("外发生产处理中...");
       sendProd(id).then((res) => {
         if (res.code === 200) {
           this.msgSuccess("外发成功,请查看邮箱");
         } else {
           this.msgError("外发失败");
         }
-      });
+      }).finally(() => {
+        downloadLoadingInstance.close();
+      })
     },
     /** 修改日志 */
     onEditLog(id) {

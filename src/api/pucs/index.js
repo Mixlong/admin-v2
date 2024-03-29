@@ -1,11 +1,3 @@
-/*
- * @Author: your name
- * @Date: 2021-04-14 13:47:31
- * @LastEditTime: 2023-08-08 14:42:02
- * @LastEditors: chao.wu@riding-evolved.com chao.wu@riding-evolved.com
- * @Description: In User Settings Edit
- * @FilePath: /fileConf-ui/src/api/pucs/index.js
- */
 import request from '@/utils/request';
 
 // 模块列表

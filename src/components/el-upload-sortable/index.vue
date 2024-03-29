@@ -6,6 +6,7 @@
   <div class="upload-queue">
     <draggable
       v-model="imgList"
+      :disabled="isDisabled"
       @start="drag = true"
       @end="drag = false"
       @update="updateList(imgList)"
@@ -22,7 +23,7 @@
           <el-image
             v-else
             :src="item"
-            fit="cover"
+            fit="contain"
             class="el-upload-list__item-thumbnail"
           />
           <span class="el-upload-list__item-actions">
@@ -33,6 +34,7 @@
               <i class="el-icon-zoom-in"></i>
             </span>
             <span
+              v-if="!isDisabled"
               class="el-upload-list__item-delete"
               @click="handleRemove(item, index)"
             >
@@ -50,23 +52,25 @@
       v-if="imgList.length < max"
       :action="action"
       :accept="accept"
+      :disabled="isDisabled"
+      :limit="isLimit"
       :show-file-list="false"
       :on-success="handleSuccess"
       :on-error="handleError"
       :before-upload="beforeUpload"
     >
-      <i class="el-icon-plus"></i>
+      <i :class="isUploadIcon"></i>
     </el-upload>
-
-    <el-dialog :visible.sync="dialogVisible" append-to-body top="2vh">
-      <video controls class="w100" v-if="isVideo" :src="dialogImageUrl" />
-      <img v-else width="100%" :src="dialogImageUrl" />
+    <el-dialog class="el-upload-video-img-box" :visible.sync="dialogVisible" append-to-body top="2vh">
+      <video style="object-fit: fill;" controls  class="w100" v-if="isVideo" :src="dialogImageUrl" />
+      <img v-else width="100%" :src="dialogImageUrl" style="max-height: 80vh;" />
     </el-dialog>
   </div>
 </template>
 
 <script>
 import draggable from "vuedraggable";
+import reqUrl from "@/utils/requestUrl";
 
 export default {
   name: "ElUploadSortable",
@@ -86,7 +90,7 @@ export default {
     },
     action: {
       type: String,
-      default: "https://jsonplaceholder.typicode.com/posts/",
+      default: reqUrl + "/oss/batch-upload"
     },
     value: {
       type: String,
@@ -104,6 +108,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    isLimit: {
+      type: Number,
+      required: false
+    },
     accept: {
       type: String,
       default: "image/jpeg, image/gif, image/png,image/bmp",
@@ -112,6 +124,7 @@ export default {
   data() {
     return {
       imgList: [],
+      isLoading: false,
       drag: false,
       dragOptions: {
         animation: 200,
@@ -130,6 +143,9 @@ export default {
         height: this.imgH + "px",
       };
     },
+    isUploadIcon() {
+      return this.isLoading ? "el-icon-loading" : "el-icon-plus";
+    }
   },
   watch: {
     value(value) {
@@ -151,11 +167,11 @@ export default {
         return true;
       }
       const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
-      const isLt2M = file.size / 1024 / 1024 < 2; // 2M
+      const isLt50M = file.size / 1024 / 1024 < 50; // 50M
 
       if (!isValidFormat) {
         this.$message.error("图片只能是 JPG或PNG 格式!");
-      } else if (!isLt2M) {
+      } else if (!isLt50M) {
         this.$message.error("图片大小不能超过 2MB!");
       }
 
@@ -164,15 +180,19 @@ export default {
         this.$message.error("只能上传一张图片，请删除后再上传!");
       }
 
-      return isValidFormat && isLt2M && !maxLt;
+      this.isLoading = true;
+
+      return isValidFormat && isLt50M && !maxLt;
     },
 
     handleSuccess(res) {
+      this.isLoading = false;
       this.imgList.push(res.data[0].url);
       this.$emit("input", this.imgList.toString());
     },
 
     handleError() {
+      this.isLoading = false;
       this.$message.error("上传失败!");
     },
 

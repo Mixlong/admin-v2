@@ -14,9 +14,17 @@
       <el-steps direction="vertical" space="100px" :active="state">
         <el-step>
           <template slot="title">
-            <div class="title-txt">现象复测</div>
+            <div class="title-txt">处理类型</div>
           </template>
           <template slot="description" v-if="currentState > 1">
+            <p>{{ afterHData.handleType }}</p>
+          </template>
+        </el-step>
+        <el-step>
+          <template slot="title">
+            <div class="title-txt">现象复测</div>
+          </template>
+          <template slot="description" v-if="currentState > 2">
             <div class="desciption-box">
               <p>复测人：{{ afterHData.retestName }}</p>
               <p>
@@ -30,7 +38,7 @@
           <template slot="title">
             <div class="title-txt">分类处理</div>
           </template>
-          <template slot="description" v-if="currentState > 2">
+          <template slot="description" v-if="currentState > 3">
             <p>复测结果：{{ classificationData[afterHData.classification] }}</p>
           </template>
         </el-step>
@@ -38,17 +46,11 @@
           <template slot="title">
             <div class="title-txt">问题处理</div>
           </template>
-          <template slot="description" v-if="currentState > 3">
-            <p>处理人：{{ afterHData.handleName }}</p>
-            <p>定位结果：{{ afterHData.locationResult }}</p>
-          </template>
-        </el-step>
-        <el-step>
-          <template slot="title">
-            <div class="title-txt">处理类型</div>
-          </template>
           <template slot="description" v-if="currentState > 4">
-            <p>{{ afterHData.handleType }}</p>
+            <div class="desciption-box">
+              <p>处理人：{{ afterHData.handleName }}</p>
+              <p>定位结果：{{ afterHData.locationResult }}</p>
+            </div>
           </template>
         </el-step>
       </el-steps>
@@ -69,6 +71,24 @@
                   <span v-if="index < materialLossList.length - 1">,</span>
                 </span>
               </p>
+            </div>
+          </template>
+        </el-step>
+        <el-step>
+          <template slot="title">
+            <div class="title-txt">返厂处理</div>
+          </template>
+          <template slot="description" v-if="currentState > 6">
+            <div class="desciption-box">
+              <template v-if="afterHData.warehousingName">
+                <p>处理人：{{ afterHData.warehousingName }}</p>
+                <p>处理描述：{{ afterHData.warehousingDesc }}</p>
+              </template>
+              <template v-else>
+                <p class="text-red">
+                  无
+                </p>
+              </template>
             </div>
           </template>
         </el-step>
@@ -120,7 +140,7 @@ export default {
         this.isActive = -1;
       } else {
         this.state = 4;
-        this.isActive = state === 5 ? 0 : 2;
+        this.isActive = state === 5 ? 0 : state === 7 ? 3 : state - 5;
       }
       try {
         const { data } = await afterHandleDetail(afterSaleId);
@@ -168,6 +188,10 @@ export default {
           top: -8px;
           color: #303133;
           font-size: 14px;
+
+          .desciption-box {
+            line-height: 13px;
+          }
         }
       }
 

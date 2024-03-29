@@ -17,90 +17,8 @@
       label-width="120px"
       label-position="right"
     >
-      <!-- 现象复测 -->
-      <template v-if="form.state === 1">
-        <el-form-item label="复测结果：" prop="retestResult">
-          <el-select
-            v-model="form.retestResult"
-            filterable
-            clearable
-            style="width: 70%"
-            placeholder="请选择复测结果"
-          >
-            <el-option
-              v-for="(value, key) in againCheckResultData"
-              :key="key"
-              :label="value"
-              :value="key"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="是否问题：" prop="isProblem">
-          <el-switch
-            v-model="form.isProblem"
-            active-color="#409EFF"
-            inactive-color="#DCDFE6"
-            :active-value="0"
-            :inactive-value="1"
-          >
-          </el-switch>
-        </el-form-item>
-        <el-form-item label="复测图片：" prop="retestFile" style="width: 100%">
-          <el-upload-sortable
-            v-model="form.retestFile"
-            :action="actionUrl"
-            :imgW="98"
-            :imgH="98"
-          />
-        </el-form-item>
-        <el-form-item label="复测视频：" prop="retestVideo" style="width: 100%">
-          <el-upload-sortable
-            v-model="form.retestVideo"
-            :action="actionUrl"
-            :isVideo="true"
-            accept="video/mp4"
-            :imgW="150"
-            :imgH="98"
-          />
-        </el-form-item>
-      </template>
-
-      <!-- 分类处理 -->
-      <template v-if="form.state === 2">
-        <el-form-item label="分类：" prop="classification">
-          <el-select
-            v-model="form.classification"
-            filterable
-            allow-create
-            clearable
-            style="width: 70%"
-            placeholder="请选择分类处理"
-          >
-            <el-option
-              v-for="(value, key) in classificationData"
-              :key="key"
-              :label="value"
-              :value="key"
-            />
-          </el-select>
-        </el-form-item>
-      </template>
-
-      <!-- 问题处理 -->
-      <template v-if="form.state === 3">
-        <el-form-item label="定位结果：" prop="locationResult">
-          <el-input
-            v-model="form.locationResult"
-            type="textarea"
-            rows="5"
-            style="width: 100%"
-            placeholder="请输入定位结果"
-          />
-        </el-form-item>
-      </template>
-
       <!-- 处理类型 -->
-      <template v-if="form.state === 4">
+      <template v-if="form.state === 1">
         <el-form-item label="处理类型：" prop="handleType">
           <el-select
             v-model="form.handleType"
@@ -124,6 +42,99 @@
             <el-option label="是" :value="0" />
             <el-option label="否" :value="1" />
           </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 现象复测 -->
+      <template v-if="form.state === 2">
+        <el-form-item label="复测结果：" prop="retestResult">
+          <el-select
+            v-model="form.retestResult"
+            filterable
+            clearable
+            style="width: 80%"
+            placeholder="请选择复测结果"
+          >
+            <el-option
+              v-for="(value, key) in againCheckResultData"
+              :key="key"
+              :label="value"
+              :value="key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="是否问题：" prop="isProblem">
+          <el-switch
+            v-model="form.isProblem"
+            active-color="#409EFF"
+            inactive-color="#DCDFE6"
+            :active-value="0"
+            :inactive-value="1"
+          >
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="问题描述：" prop="retestDesc">
+          <el-input
+            v-model="form.retestDesc"
+            type="textarea"
+            rows="5"
+            placeholder="请输入问题描述"
+            clearable
+            style="width: 80%"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="复测图片：" prop="retestFile" style="width: 100%">
+          <el-upload-sortable
+            v-model="form.retestFile"
+            :action="actionUrl"
+            :imgW="98"
+            :imgH="98"
+          />
+        </el-form-item>
+        <el-form-item label="复测视频：" prop="retestVideo" style="width: 100%">
+          <el-upload-sortable
+            v-model="form.retestVideo"
+            :action="actionUrl"
+            :isVideo="true"
+            accept="video/mp4"
+            :imgW="150"
+            :imgH="98"
+          />
+        </el-form-item>
+      </template>
+
+      <!-- 分类处理 -->
+      <template v-if="form.state === 3">
+        <el-form-item label="分类：" prop="classification">
+          <el-select
+            v-model="form.classification"
+            filterable
+            allow-create
+            clearable
+            style="width: 70%"
+            placeholder="请选择分类处理"
+          >
+            <el-option
+              v-for="(value, key) in classificationData"
+              :key="key"
+              :label="value"
+              :value="key"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 问题处理 -->
+      <template v-if="form.state === 4">
+        <el-form-item label="定位结果：" prop="locationResult">
+          <el-input
+            v-model="form.locationResult"
+            type="textarea"
+            rows="5"
+            style="width: 100%"
+            placeholder="请输入定位结果"
+          />
         </el-form-item>
       </template>
 
@@ -223,6 +234,19 @@
           />
         </el-form-item>
       </template>
+
+      <!-- 返厂入库 -->
+      <template v-if="form.state === 6">
+        <el-form-item label="入库描述：" prop="warehousingDesc">
+          <el-input
+            v-model="form.warehousingDesc"
+            type="textarea"
+            rows="5"
+            style="width: 100%"
+            placeholder="请输入入库描述"
+          />
+        </el-form-item>
+      </template>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
@@ -234,7 +258,7 @@
 </template>
 
 <script>
-import { afterHandle } from "@/api/third/sale";
+import { afterHandle, afterBatchHandle } from "@/api/third/sale";
 import reqUrl from "@/utils/requestUrl";
 import globalData from "../mixins/global";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -261,6 +285,8 @@ export default {
       actionUrl: reqUrl + "/oss/batch-upload",
       form: {},
       isSubLoading: false,
+      isMultipleDeal: false,
+      idList: [],
       rules: {
         retestResult: [
           { required: true, message: "请选择客退清单", trigger: "change" },
@@ -282,6 +308,9 @@ export default {
         ],
         handleResult: [
           { required: true, message: "请输入处理结果", trigger: "blur" },
+        ],
+        warehousingDesc: [
+          { required: true, message: "请输入入库描述", trigger: "blur" },
         ],
         serviceTime: [
           {
@@ -308,19 +337,22 @@ export default {
       let title;
       switch (state) {
         case 1:
-          title = "现象复测";
+          title = "处理类型";
           break;
         case 2:
-          title = "分类处理";
+          title = "现象复测";
           break;
         case 3:
-          title = "问题处理";
+          title = "分类处理";
           break;
         case 4:
-          title = "处理类型";
+          title = "问题处理";
           break;
         case 5:
           title = "维修处理";
+          break;
+        case 6:
+          title = "返厂处理";
           break;
       }
       return title;
@@ -340,7 +372,6 @@ export default {
             },
           ];
         }
-        console.log(this.form);
       } else {
         this.reset();
       }
@@ -375,33 +406,42 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
-          const { id, state, materialLossList } = this.form;
-          if (id) {
-            let data = { ...this.form, afterId: id, state: state + 1 };
-            if (state === 5) {
-              data = {
-                ...this.form,
-                afterId: id,
-                state: state + 1,
-                materialLoss: JSON.stringify(materialLossList),
-              };
+          const { id, state, list } = this.form;
+          // 批量
+          if (this.isMultipleDeal && list.length) {
+            let data = { ...this.form, state: state + 1 };
+
+            this.dealFn(state, data, afterBatchHandle);
+          } else {
+            if (id) {
+              let data = { ...this.form, afterId: id, state: state + 1 };
+
+              this.dealFn(state, data, afterHandle);
             }
-            afterHandle(data)
-              .then(() => {
-                this.msgSuccess("操作成功");
-                this.$parent.getList();
-              })
-              .finally(() => {
-                this.isSubLoading = false;
-                this.close();
-              });
           }
         }
       });
+    },
+    dealFn(state, data, fn) {
+      if (state === 5) {
+        data = {
+          ...data,
+          materialLoss: JSON.stringify(data.materialLossList),
+        };
+      }
+      fn(data)
+        .then(() => {
+          this.msgSuccess("操作成功");
+          this.$parent.getList();
+        })
+        .finally(() => {
+          this.isSubLoading = false;
+          this.$emit("clearSaleSelection");
+          this.close();
+        });
     },
   },
 };
 </script>
 
-<style>
-</style>
+<style></style>

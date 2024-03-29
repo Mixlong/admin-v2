@@ -1,4 +1,4 @@
-import store from '@/store'
+import store from "@/store";
 
 /**
  * 字符权限校验
@@ -7,15 +7,19 @@ import store from '@/store'
  */
 export function checkPermi(value) {
   if (value && Array.isArray(value) && value.length > 0) {
-    const permissions = store.getters && store.getters.permissions
-    const permissionDatas = value
+    const permissions = store.getters && store.getters.permissions;
+    const permissionDatas = value;
 
-    const hasPermission = permissions.some(permission => permissionDatas.includes(permission))
+    const hasPermission = permissions.some((permission) =>
+      permissionDatas.includes(permission)
+    );
 
-    return hasPermission
+    return hasPermission;
   } else {
-    console.error(`need roles! Like checkPermi="['system:user:add','system:user:edit']"`)
-    return false
+    console.error(
+      `need roles! Like checkPermi="['system:user:add','system:user:edit']"`
+    );
+    return false;
   }
 }
 
@@ -39,3 +43,4 @@ export function checkRole(value) {
     return false
   }
 }
+

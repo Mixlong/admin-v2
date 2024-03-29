@@ -326,6 +326,10 @@ aside {
   font-size: 28px;
 }
 
+.font45 {
+  font-size: 45px;
+}
+
 /* -- 浮动 --  */
 
 .cf::after,
@@ -903,8 +907,8 @@ aside {
 }
 
 .bg-deepBlue {
-  background: #6190e8;
-  color: #fff;
+  background: #6190e8 !important;
+  color: #fff !important;
 }
 
 .bg-purple {
@@ -946,6 +950,7 @@ aside {
   background-color: #ffffff !important;
   color: #666666 !important;
 }
+
 
 /* -- 实线 -- */
 
@@ -1456,4 +1461,9 @@ fieldset {
     width: 100px !important;
     height: 100px !important;
   }
+}
+
+// table 的完成状态
+.fininshed {
+  background-color: rgba(155, 216, 148, 0.3) !important;
 }

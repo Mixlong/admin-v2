@@ -25,6 +25,7 @@
     </el-option>
     <!-- 此处加载中的value可以随便设置，只要不与其他数据重复即可 -->
     <el-option v-if="hasMore" disabled label="加载中..." value="-1" />
+    <el-option v-if="!data.length" disabled label="暂无数据" value="-2" />
   </el-select>
 </template>
 

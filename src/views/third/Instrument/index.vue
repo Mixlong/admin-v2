@@ -102,7 +102,7 @@ import {
 } from "@/api/third/computer";
 import { typeCategory } from "@/api/third/category";
 
-import CompUpdate from "./components/update";
+import CompUpdate from "./components/updates";
 
 export default {
   components: {
@@ -167,22 +167,16 @@ export default {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.form.categoryId = this.queryParams.key;
       this.$refs.compUpdate.title = "添加子产品";
-    },
-    handleAddItem(item) {
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form.categoryId = item.id;
-      this.$refs.compUpdate.disabled = true;
-      this.$refs.compUpdate.title = "添加子产品";
+      this.$refs.compUpdate.isCopyProduct = true;
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
       detailComputer(row.id).then((res) => {
         let { data } = res;
-        this.$refs.compUpdate.reset();
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;
+        this.$refs.compUpdate.isCopyProduct = false;
         this.$refs.compUpdate.form = Object.assign({}, data);
         this.$refs.compUpdate.title = "修改子产品";
       });
@@ -243,7 +237,6 @@ export default {
       }
     },
     handleStatus(row) {
-      console.log(row.status);
       let text = row.status ? "禁用" : "启用";
       this.$confirm("确认要" + text, "警告", {
         confirmButtonText: "确定",

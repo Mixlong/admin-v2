@@ -89,24 +89,31 @@
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         <el-button
           type="warning"
-          :disabled="multiple"
           v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
           @click="handleAuthBatchChange"
         >
           {{ batchCheck }}
+        </el-button>
+        <el-button
+          v-if="checkRole(['test', 'admin'])"
+          type="warning"
+          @click="onCreateTaskCode"
+        >
+          任务令
         </el-button>
         <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
           @click="handleResetCheck">重置审核</el-button> -->
       </el-form-item>
     </el-form>
     <el-table
-      border
+      ref="multipleTableRef"
       v-loading="loading"
       :data="brandList"
       :row-key="getRowKeys"
       :height="tableHeight()"
       :row-class-name="tableRowClassName"
       @selection-change="handleSelectionChange"
+      border
     >
       <el-table-column
         type="selection"
@@ -134,9 +141,20 @@
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
-          <span v-if="isStsType(row.type) && row.stsContent">STS: {{ row.stsContent }}</span>
-          <br />  
-          <span>{{ row.content || "---" }}</span>  
+          <!-- PC上位机 -->
+          <span v-if="row.dataType === 1">{{ row.content || "---" }}</span>
+
+          <!-- STS网页 -->
+          <span
+            v-if="isStsType(row.type) && row.stsContent && row.dataType === 2"
+          >
+            STS: {{ row.stsContent }}
+          </span>
+
+          <!-- STS程序脚本 -->
+          <span v-if="row.dataType === 3" class="text-green">
+            STS脚本： {{ row.jsContent }}
+          </span>
         </template>
       </el-table-column>
       <el-table-column
@@ -183,7 +201,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin'])"
+            v-if="checkRole(['dev', 'admin', 'factory'])"
             @click="handleUpdate(scope.row)"
           />
 
@@ -232,10 +250,24 @@
           </el-tooltip>
 
           <el-tooltip
+            v-if="scope.row.jsFile"
+            class="item font16"
+            effect="dark"
+            content="下载STS脚本"
+            placement="top-end"
+          >
+            <svg-icon
+              icon-class="xiazai"
+              class-name="card-panel-icon pointer margin-left-xs"
+              @click="zipFile(scope.row.jsFile)"
+            />
+          </el-tooltip>
+
+          <el-tooltip
             v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
-            content="下载"
+            content="下载PC上位机"
             placement="top-end"
           >
             <svg-icon
@@ -322,13 +354,23 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >
+          >
             通过
           </el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" name key jack  :dictList="dictList" :isStsType="isStsType"  />
+    <CompUpdate
+      ref="compUpdate"
+      name
+      key
+      jack
+      :dictList="dictList"
+      :isStsType="isStsType"
+    />
+
+    <!-- 任务令 -->
+    <task-code :visible.sync="isTaskCodeFlag"></task-code>
   </div>
 </template>
 
@@ -349,6 +391,7 @@ import CompUpdate from "./components/update";
 export default {
   components: {
     CompUpdate,
+    TaskCode: () => import("./components/taskCode"),
   },
   name: "BikeFileConfig",
   filters: {},
@@ -362,6 +405,7 @@ export default {
       // 遮罩层
       loading: true,
       authDialogVisible: false,
+      isTaskCodeFlag: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -436,15 +480,19 @@ export default {
       };
     },
     isStsType() {
-      return type => {
-        return type === "iqc_tool" || 
-                type === "fqc_tool_soft" || 
-                type === "oqc_tool_soft" ||
-                type === "config_tools" ||
-                type === "pack_file" ||
-                type === "update_file"
-      }
-    }
+      return (type) => {
+        const typeList = [
+          "iqc_tool",
+          "fqc_tool_soft",
+          "oqc_tool_soft",
+          "config_tools",
+          "pack_file",
+          "update_file",
+        ];
+
+        return typeList.includes(type);
+      };
+    },
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -453,12 +501,15 @@ export default {
       if (type) {
         this.queryParams.type = type;
       }
-      let { categoryId, status } = this.$route.query;
+      let { categoryId, computerId, status } = this.$route.query;
 
       if (categoryId) {
         this.queryParams.categoryId = categoryId;
         this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
+
+        if (this.$route.query.model) {
+          computerId = this.$route.query.model;
+        }
         if (computerId) {
           this.queryParams.computerId = computerId;
         }
@@ -470,6 +521,9 @@ export default {
     });
   },
   methods: {
+    onCreateTaskCode() {
+      this.isTaskCodeFlag = true;
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
@@ -541,6 +595,10 @@ export default {
         });
     },
     handleAuthBatchChange() {
+      if (this.ids.length === 0) {
+        return this.msgError("请选择批量处理项");
+      }
+
       this.auth.why = "";
       this.auth.id = "";
       this.authDialogVisible = true;
@@ -591,6 +649,7 @@ export default {
         }
         data.push({ id: auth.id, why: auth.why, status });
       }
+
       if (status === 3) {
         // 不通过 检查原因是否为空
         if (!auth.why) {
@@ -603,6 +662,8 @@ export default {
         if (code == 200) {
           this.authDialogVisible = false;
           this.msgSuccess("操作成功！");
+          this.ids = [];
+          this.resetTableSelection("multipleTableRef");
           this.getList();
         }
       });
@@ -658,7 +719,6 @@ export default {
       //     }
       //   }
       // }
-      console.log(row)
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row

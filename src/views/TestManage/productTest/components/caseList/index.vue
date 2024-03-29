@@ -2,21 +2,17 @@
   <div>
     <el-form ref="queryForm" :model="queryParams" :inline="true">
       <el-form-item label="所属模块：" prop="productType">
-        <el-select
+        <select-loadMore
           v-model="queryParams.productType"
-          size="mini"
-          filterable
-          clearable
-          placeholder="请选择所属模块"
-          @change="getList"
-        >
-          <el-option
-            v-for="dict in moduleList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictCode"
-          />
-        </el-select>
+          :data="moduleData.data"
+          :page="moduleData.page"
+          :hasMore="moduleData.more"
+          dictLabel="productType"
+          dictValue="productType"
+          :request="getModuleList"
+          placeholder="请选择模块"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="用例类型：" prop="type">
         <el-select
@@ -51,21 +47,32 @@
       </el-form-item>
     </el-form>
     <el-table
-      v-loading="loading"
       ref="multipleTable"
+      v-loading="loading"
+      border
       :data="testList"
       tooltip-effect="dark"
       row-key="id"
       style="width: 100%"
+      :height="tabHeight"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" reserve-selection width="50" />
-      <el-table-column label="用例类型" prop="typeName" align="center" />
       <el-table-column label="所属模块" prop="productName" align="center" />
-      <el-table-column label="测试项" prop="content" align="center" />
+      <el-table-column
+        label="用例类型"
+        prop="typeName"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="测试项"
+        prop="content"
+        align="center"
+      />
       <el-table-column label="前置条件" prop="preconditions" align="center" />
       <el-table-column label="输入与操作" prop="inter" align="center" />
-      <el-table-column label="预期结果" prop="result" align="center" />
+      <el-table-column label="预期结果" prop="result" align="center" min-width="200" />
     </el-table>
 
     <pagination
@@ -80,15 +87,22 @@
 
 <script>
 import { testCaseList } from "@/api/third/testApi";
+import CommonMinins from "@/views/TestManage/mixins";
+
 export default {
   inheritAttrs: false,
+  mixins: [CommonMinins],
+  props: {
+    tabHeight: {
+      type: Number,
+      default: 400,
+    },
+  },
   data() {
     return {
       loading: false,
       total: 0,
       testList: [],
-      // 模块名称
-      moduleList: [],
       // 用例类型
       useCaseTypeList: [],
       mulSelList: [],
@@ -104,13 +118,10 @@ export default {
     };
   },
   created() {
-    this.getDicts("test_moduleName").then((res) => {
-      this.moduleList = res.data;
-    });
     this.getDicts("useCaseType").then((res) => {
       this.useCaseTypeList = res.data;
     });
-    
+
     this.getList();
   },
   methods: {
@@ -123,7 +134,7 @@ export default {
       this.handleQuery();
     },
     handleSelectionChange(list) {
-      this.mulSelList = list
+      this.mulSelList = list;
     },
     getList() {
       this.loading = true;

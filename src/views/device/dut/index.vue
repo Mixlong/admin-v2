@@ -94,8 +94,6 @@
         prop="createTime"
         width="180"
       />
-      <!-- <el-table-column label="创建人" align="center" prop="createTime" />
-      <el-table-column label="创建时间" align="center" prop="createTime" /> -->
 
       <el-table-column
         label="操作"
@@ -167,7 +165,6 @@
 import { listDut, authDut } from "@/api/dut";
 import { categoryComputerDict } from "@/api/third/fileConfig";
 import CompUpdate from "./components/update";
-import { dictList } from "@/api/computer";
 import axios from "axios";
 export default {
   components: {

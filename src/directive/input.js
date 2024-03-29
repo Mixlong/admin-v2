@@ -1,11 +1,4 @@
-/*
- * @Author: your name
- * @Date: 2021-04-23 17:07:10
- * @LastEditTime: 2021-05-07 09:31:48
- * @LastEditors: your name
- * @Description: In User Settings Edit
- * @FilePath: /fileConf-ui/src/directive/input.js
- */
+
 import Vue from "vue"
 
 const minMaxValue = Vue.directive('minMaxValue', {
