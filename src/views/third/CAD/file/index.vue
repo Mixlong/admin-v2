@@ -267,7 +267,7 @@
             v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
-            content="下载PC上位机"
+            :content="`下载${scope.row.typeName}`"
             placement="top-end"
           >
             <svg-icon
@@ -469,9 +469,10 @@ export default {
       };
     },
     isDownloadUrl() {
-      return ({ computerStatus, status, url }) => {
+      return ({ computerStatus, status, url, dataType }) => {
         return (
           !computerStatus &&
+          dataType === 1 &&
           url &&
           (((status !== 2 || status !== 4) &&
             this.checkRole(["test", "dev"])) ||
@@ -487,7 +488,7 @@ export default {
           "oqc_tool_soft",
           "config_tools",
           "pack_file",
-          "update_file",
+          "update_file"
         ];
 
         return typeList.includes(type);

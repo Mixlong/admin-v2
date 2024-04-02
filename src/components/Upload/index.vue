@@ -119,10 +119,7 @@ export default {
 
 <style lang="scss">
 .my-upload-demo {
-  // display: flex;
-  // flex-wrap: wrap;
   .el-upload {
-    // border: 1px solid #ccc;
     height: inherit;
     .all-img {
       height: inherit !important;
@@ -136,15 +133,6 @@ export default {
   .el-upload-list {
     display: flex;
     flex-wrap: wrap;
-    // .el-upload-list__item {
-    //   .el-upload-list__item-status-label {
-    //     .el-icon-upload-success {
-    //       position: absolute;
-    //       top: -2px;
-    //       left: 14px;
-    //     }
-    //   }
-    // }
   }
   .el-upload-dragger {
     width: 100%;
@@ -158,32 +146,5 @@ export default {
       line-height: inherit !important;
     }
   }
-  // .avatar-uploader-icon,
-  // .el-upload-list__item {
-  //   width: 100px;
-  //   height: 100px;
-  //   line-height: 100px;
-  // }
 }
-// .el-upload--picture-card {
-//   width: 100px;
-//   height: 100px;
-//   line-height: 112px;
-// }
-// .el-upload-list--picture-card .el-upload-list__item, .all-img, .el-image {
-//   width: 100px;
-//   height: 100px;
-// }
-// .el-image {
-//   border-radius: 10px;
-// }
-// .all-img {
-//   background-color: #fbfdff;
-//   border: 1px dashed #c0ccda;
-//   border-radius: 6px;
-//   .avatar-uploader-icon {
-//     font-size: 28px;
-//     line-height: 100px;
-//   }
-// }
 </style>

@@ -916,24 +916,25 @@
                 />
               </el-form-item>
 
-              <!-- <el-form-item
-                label="自动关机时间"
-                prop="instrumentModel.autoShutdownTime"
-                :rules="
-                  isCheckConfigItem({
-                    message: '自动关机时间',
-                    trigger: 'blur',
-                  })
-                "
+              <el-form-item
+                label="串口通讯电平"
+                prop="instrumentModel.serialLevel_log"
               >
-                <el-input
-                  v-model.number="form.instrumentModel.autoShutdownTime"
-                  v-minMaxValue="{ min: 0, max: 99 }"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  placeholder="请输入自动关机时间"
+                <el-select
+                  v-model="form.instrumentModel.serialLevel_log"
+                  placeholder="请选择串口通讯电平"
+                  class="w100"
                   clearable
-                />
-              </el-form-item> -->
+                >
+                  <el-option
+                    v-for="(value, key) in serialLevelLogData"
+                    :key="key"
+                    :label="value"
+                    :value="+key"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-col>
 
             <el-col :span="6">
@@ -1286,6 +1287,10 @@ export default {
       form: { name: null, instrumentModel: {}, instrumentModel: {} },
       title: "",
       disabled: false,
+      serialLevelLogData: {
+        0: "3.3V",
+        1: "5V"
+      },
       // 表单校验
       rules: {
         name: [
@@ -1337,6 +1342,13 @@ export default {
             required: true,
             validator: validatePerimeter,
             trigger: ["blur", "change"],
+          },
+        ],
+        "instrumentModel.serialLevel_log": [
+          {
+            required: true,
+            message: "串口通讯电平不能为空",
+            trigger: "change",
           },
         ],
         "instrumentModel.serialLevel": [
@@ -1570,6 +1582,7 @@ export default {
         erp: null,
         name: null,
         instrumentModel: {
+          communicateType: 0,
           sleepTime: 10,
           assistLimit: "25",
           controlConnect: null,
@@ -1580,6 +1593,7 @@ export default {
           keyLineLen: null,
           customerName: null,
           serialLevel: null,
+          serialLevel_log: 0,
           msgType: null,
           canRate: null,
           baudRate: null,
@@ -1632,7 +1646,7 @@ export default {
           batteryVoltageChangeTime: "10",
           allLineErrTimeOut: "10",
           busOvertime: null,
-          smoothLevel: "0",
+          smoothLevel: "3",
           assistPercentage: 128,
           ebikeName: null,
           motorSys: null,
@@ -1736,6 +1750,7 @@ export default {
         menuPassword,
         rotateHandleSpeedLimit,
         assist,
+        serialLevel_log
       } = this.form.instrumentModel;
 
       const instrumentModel = {
@@ -1780,6 +1795,7 @@ export default {
         menuPassword,
         rotateHandleSpeedLimit,
         assist,
+        serialLevel: serialLevel_log
       };
 
       const data = {

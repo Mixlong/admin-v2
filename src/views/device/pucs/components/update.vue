@@ -29,7 +29,11 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="产品品类:" :prop="type === 2 ? 'dutCode' : ''" v-if="type == 2">
+      <el-form-item
+        label="产品品类:"
+        :prop="type === 2 ? 'dutCode' : ''"
+        v-if="type == 2"
+      >
         <el-select
           v-model="form.dutCode"
           clearable
@@ -64,7 +68,11 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="方案版本:"  :prop="form.dutCode ? 'schemeVersion' : ''" v-if="type == 2">
+      <el-form-item
+        label="方案版本:"
+        :prop="form.dutCode ? 'schemeVersion' : ''"
+        v-if="type == 2"
+      >
         <el-select
           v-model="form.schemeVersion"
           clearable
@@ -81,7 +89,11 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="生产工序:" :prop="form.dutCode && type === 2 ? 'processId' : ''" v-if="type === 2">
+      <el-form-item
+        label="生产工序:"
+        :prop="form.dutCode && type === 2 ? 'processId' : ''"
+        v-if="type === 2"
+      >
         <el-select
           clearable
           v-model="form.processId"
@@ -102,7 +114,11 @@
       <div v-if="type == 4" class="col-12-cust">
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="测试脚本:" prop="testJsFileName" style="width: 100%">
+            <el-form-item
+              label="测试脚本:"
+              prop="testJsFileName"
+              style="width: 100%"
+            >
               <el-input
                 style="position: relative; z-index: 10"
                 v-model="formUpload.testJsFileName"
@@ -122,8 +138,9 @@
                 @uploadSuccess="testJsUploadSuccess"
                 ref="testJsUpload"
               >
-              </DrUpload> </el-form-item
-          ></el-col>
+              </DrUpload>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item
               label="烧录文件:"
@@ -371,7 +388,7 @@ export default {
         ],
         schemeVersion: [
           { required: true, message: "请选择方案版本", trigger: "change" },
-        ]
+        ],
       },
     };
   },
@@ -569,5 +586,4 @@ export default {
   },
 };
 </script>
-<style lang="scss">
-</style>
+<style lang="scss"></style>

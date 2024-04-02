@@ -72,7 +72,13 @@
 
         <el-row>
           <el-form-item label="数据类型" prop="dataType">
-            <el-select v-model="form.dataType" clearable size="small" placeholder="请选择数据类型">
+            <el-select
+              v-model="form.dataType"
+              clearable
+              size="small"
+              placeholder="请选择数据类型"
+              @change="resetValidForm"
+            >
               <el-option label="PC上位机" :value="1"></el-option>
               <template v-if="isStsType(form.type)">
                 <el-option label="STS网页" :value="2"></el-option>
@@ -82,6 +88,52 @@
           </el-form-item>
         </el-row>
 
+        <!-- PC上位机 -->
+        <template v-if="form.dataType === 1">
+          <el-form-item label="属性描述" prop="content">
+            <template v-if="form.type === 'hard_version'">
+              <select-loadMore
+                style="width: 100%"
+                v-model="form.content"
+                :data="hardData.data"
+                :page="hardData.page"
+                :hasMore="hardData.more"
+                dictLabel="name"
+                dictValue="name"
+                :request="getHardList"
+                placeholder="请选择硬件版本号"
+              />
+            </template>
+            <template v-else>
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                v-model="form.content"
+                placeholder="请输入文件描述"
+              />
+            </template>
+          </el-form-item>
+          <el-form-item
+            label="文件"
+            prop="url"
+            v-if="form.up == 1"
+            style="width: 100%"
+          >
+            <DrUpload
+              :limit="1"
+              v-model="form.url"
+              :css="{ width: '100%' }"
+              :isOnePic="1"
+              :accept="isFileType"
+            >
+              <div>
+                <el-button size="small" type="primary">点击上传</el-button>
+              </div>
+            </DrUpload>
+          </el-form-item>
+        </template>
+
+        <!-- STS网页 -->
         <template v-if="form.dataType === 2">
           <el-row>
             <el-col>
@@ -144,41 +196,28 @@
 					</el-row> -->
         </template>
 
-        <template v-if="form.dataType === 1">
-          <el-form-item label="属性描述" prop="content">
-            <template v-if="form.type === 'hard_version'">
-              <select-loadMore
-                style="width: 100%"
-                v-model="form.content"
-                :data="hardData.data"
-                :page="hardData.page"
-                :hasMore="hardData.more"
-                dictLabel="name"
-                dictValue="name"
-                :request="getHardList"
-                placeholder="请选择硬件版本号"
-              />
-            </template>
-            <template v-else>
-              <el-input
-                type="textarea"
-                :autosize="{ minRows: 1, maxRows: 8 }"
-                v-model="form.content"
-                placeholder="请输入文件描述"
-              />
-            </template>
+        <!-- STS程序脚本 -->
+        <template v-if="form.dataType === 3">
+          <el-form-item label="js文件描述" prop="jsContent">
+            <el-input
+              v-model="form.jsContent"
+              type="textarea"
+              :autosize="{ minRows: 1, maxRows: 8 }"
+              placeholder="请输入文件描述"
+            />
           </el-form-item>
           <el-form-item
             label="文件"
-            prop="url"
+            prop="jsFile"
             v-if="form.up == 1"
             style="width: 100%"
           >
             <DrUpload
               :limit="1"
-              v-model="form.url"
+              v-model="form.jsFile"
               :css="{ width: '100%' }"
               :isOnePic="1"
+              accept=".js"
             >
               <div>
                 <el-button size="small" type="primary">点击上传</el-button>
@@ -186,35 +225,6 @@
             </DrUpload>
           </el-form-item>
         </template>
-      </template>
-
-      <template v-if="form.dataType === 3">
-        <el-form-item label="js文件描述" prop="jsContent">
-          <el-input
-            v-model="form.jsContent"
-            type="textarea"
-            :autosize="{ minRows: 1, maxRows: 8 }"
-            placeholder="请输入文件描述"
-          />
-        </el-form-item>
-        <el-form-item
-          label="文件"
-          prop="jsFile"
-          v-if="form.up == 1"
-          style="width: 100%"
-        >
-          <DrUpload
-            :limit="1"
-            v-model="form.jsFile"
-            :css="{ width: '100%' }"
-            :isOnePic="1"
-            accept=".js"
-          >
-            <div>
-              <el-button size="small" type="primary">点击上传</el-button>
-            </div>
-          </DrUpload>
-        </el-form-item>
       </template>
 
       <!-- 新增字段 -->
@@ -550,6 +560,14 @@ export default {
         }
       }
     },
+    isFileType() {
+      const fileType = {
+        config_file_ini: ".ini",
+        config_file: ".json",
+      };
+      const { type } = this.form;
+      return fileType[type];
+    },
   },
   watch: {
     form(val) {
@@ -609,6 +627,15 @@ export default {
     });
   },
   methods: {
+    // 重置表单校验规则
+    resetValidForm(dataType) {
+      if(dataType !== 3) {
+        this.clearValidateItem("form", "jsContent");
+        this.clearValidateItem("form", "jsFile");
+      } else if(dataType !== 2) {
+        this.clearValidateItem("form", "webVersion");
+      }
+    },
     // 表单重置
     reset() {
       this.form = {

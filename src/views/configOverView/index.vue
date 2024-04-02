@@ -457,20 +457,6 @@ export default {
     };
   },
   computed: {
-    isType() {
-      return (type) => {
-        if (type !== null) {
-          return type === 1 || type === 0 ? "success" : "danger";
-        }
-      };
-    },
-    isTypeVal() {
-      return (type) => {
-        if (type !== null) {
-          return type === 1 || type === 0 ? "YES" : "NO";
-        }
-      };
-    },
     isShow() {
       const list = [null, "null", undefined, "undefined", false, "false"];
       return (val) => {
