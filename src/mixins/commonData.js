@@ -1,5 +1,6 @@
 import { categoryComputerDict, categoryNameList } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
+import { getDicts } from "@/api/system/dict/data";
 
 export default {
   data() {
@@ -75,55 +76,21 @@ export default {
         1: "UART 5V",
         2: "CAN",
       },
-      dicts_ebike: {
-        0: "Pace500",
-        1: "Pace350",
-        2: "Level",
-        3: "Sinch",
-        4: "Aventure",
-        5: "Pace",
-        6: "Sinch ST",
-        7: "Pace500 V2",
-        8: "Pace350 V2",
-        9: "Soltera",
-        10: "Soltera-7S",
-        11: "Cruiser",
-        12: "Level V2",
-        13: "Sinch V2 ST",
-        14: "Aventure V2",
-        15: "Abound",
-        16: "Aventure CN",
-        17: "Sinch ST CN",
-        18: "Sinch CN",
-        19: "Aventure.2",
-        20: "Pace350.3",
-        21: "Pace500.3",
-        22: "Level.3",
-        23: "Sinch ST.2",
-        24: "Soltera.2",
-        25: "Level.2",
-      },
-      canRateList: {
-        0: "100",
-        1: "125",
-        2: "150",
-        3: "200",
-        4: "250",
-        5: "300",
-        6: "400",
-        7: "500",
-        8: "600",
-        9: "900",
-      },
-      baudRateList: [
-        1200, 2400, 4800, 9600, 14400, 19200, 38400, 43000, 57600, 76800,
-        115200, 128000,
-      ],
+      // 车名
+      dicts_ebike: {},
+      canRateList: {},
+      baudRateList: [],
     };
   },
   created() {
     // 品类
     this.getCategoryComputerDict();
+    // 车名
+    this.getConfigDicts("instrument_ebike_name", "dicts_ebike");
+    // can波特率
+    this.getConfigDicts("can_baud_rate", "canRateList");
+    // uart波特率
+    this.getConfigDicts("uart_baud_rate", "baudRateList");
   },
   methods: {
     // 品类
@@ -170,6 +137,19 @@ export default {
           })
         );
       });
+    },
+    // 配置字典
+    getConfigDicts(dictName, currentData) {
+      try {
+        getDicts(dictName).then((res) => {
+          const data = res.data;
+          data.forEach(({ dictLabel, dictValue }) => {
+            this[currentData][dictValue] = dictLabel;
+          });
+        });
+      } catch (error) {
+        throw new Error(error);
+      }
     },
   },
 };

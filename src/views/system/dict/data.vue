@@ -200,7 +200,21 @@
           <el-input v-model="form.dictLabel" placeholder="请输入数据标签" />
         </el-form-item>
         <el-form-item label="数据键值" prop="dictValue">
-          <el-input v-model="form.dictValue" placeholder="请输入数据键值" />
+          <el-input v-model="form.dictValue" placeholder="请输入数据键值">
+            <template slot="append" v-if="form.dictType === 'key_img_file'">
+              <DrUpload
+                :limit="1"
+                v-model="form.dictValue"
+                :css="{ width: '100%' }"
+                :isOnePic="1"
+                :showFileList="false"
+              >
+                <div>
+                  <el-button size="small" type="success">点击上传</el-button>
+                </div>
+              </DrUpload>
+            </template>
+          </el-input>  
         </el-form-item>
         <el-form-item label="显示排序" prop="dictSort">
           <el-input-number

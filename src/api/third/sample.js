@@ -8,6 +8,14 @@ export function sampleList(query) {
   });
 }
 
+export function taskSampleList(params) {
+  return request({
+    url: '/task/sample/list',
+    method: 'get',
+    params
+  });
+}
+
 export function sampleDetail(query) {
   return request({
     url: '/sample/detail/' + query,

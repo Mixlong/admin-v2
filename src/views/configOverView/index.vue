@@ -56,28 +56,60 @@
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
-    <el-table
-      border
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-    >
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()">
       <el-table-column label="序号" width="58" type="index" align="center" />
       <el-table-column
         label="品类"
         prop="category"
         align="center"
-        width="100"
+        width="150"
       />
-      <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="客户" prop="customerName" align="center" />
-      <el-table-column label="客户车型" prop="carModel" align="center" />
+      <el-table-column
+        label="型号"
+        prop="computerName"
+        align="center"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.computerName"></span>
+      </el-table-column>
+      <el-table-column
+        label="规格书"
+        prop="specification"
+        align="center"
+        width="120"
+      >
+        <template slot-scope="{ row }">
+          <preview-img width="60px" height="60px" :isDisBadge="false" :url="row.specification" />
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="客户"
+        prop="customerName"
+        align="center"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
+      </el-table-column>
+      <el-table-column
+        label="客户车型"
+        prop="carModel"
+        align="center"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.carModel"></span>
+      </el-table-column>
       <el-table-column
         label="客户料号"
         prop="customerMaterialNum"
         align="center"
-      />
-      <el-table-column label="车名" prop="ebikeName" align="center">
+        width="150"
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.customerMaterialNum"
+        ></span>
+      </el-table-column>
+      <el-table-column label="车名" prop="ebikeName" align="center" width="120">
         <template v-if="isShow(row.ebikeName)" slot-scope="{ row }">
           {{ dicts_ebike[row.ebikeName] }}
         </template>
@@ -86,54 +118,104 @@
         label="控制器接头"
         prop="controlConnect"
         align="center"
-        width="90"
-      />
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.controlConnect"></span>
+      </el-table-column>
       <el-table-column
         label="不含头控制器出线线长(mm)"
         align="center"
-        width="100"
+        width="200"
       >
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.controlHead === 1">（含头）</span>
+
           <p>
-            {{ row.notControllerJointString }}
+            <span v-NoData="row.notControllerJointString"></span>
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="通讯方式" prop="serialLevel" align="center">
+      <el-table-column
+        label="按键【仪表端】接头"
+        align="center"
+        prop="modelEndHead"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.modelEndHead"></span>
+      </el-table-column>
+      <el-table-column
+        label="按键【按键端】接头"
+        align="center"
+        prop="keyEndHead"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
+      </el-table-column>
+      <el-table-column
+        label="通讯方式"
+        prop="serialLevel"
+        align="center"
+        width="120"
+      >
         <template v-if="isShow(row.serialLevel)" slot-scope="{ row }">
           {{ serialLevelData[row.serialLevel] }}
         </template>
       </el-table-column>
-      <el-table-column label="按键型号" prop="keyType" align="center">
+      <el-table-column
+        label="按键型号"
+        prop="keyType"
+        align="center"
+        width="120"
+      >
         <template v-if="isShow(row.keyType)" slot-scope="{ row }">
           {{ dicts_keyType_list[row.keyType] }}
         </template>
+        <template v-else>
+          ---
+        </template>
       </el-table-column>
-      <el-table-column label="按键线长(mm)" prop="keyLineLen" align="center">
+      <el-table-column
+        label="按键线长(mm)"
+        prop="keyLineLen"
+        align="center"
+        width="120"
+      >
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.keyLineType === 1">（含头）</span>
-          <p>{{ row.keyLineLen }}</p>
+          <p>
+            <span v-NoData="row.keyLineLen"></span>
+          </p>
         </template>
       </el-table-column>
       <el-table-column
         label="按键图片"
         prop="keyImgUrl"
         align="center"
-        width="100"
+        width="120"
       >
         <template slot-scope="{ row }">
           <preview-img
             width="60px"
             height="60px"
             :url="row.keyImgUrl"
-            :srcList="[row.keyImgUrl]"
           />
         </template>
       </el-table-column>
-      <!-- <el-table-column label="其他配置" prop="typeName" align="center" />
-      <el-table-column label="适配车吧" prop="typeName" align="center" /> -->
-      <el-table-column label="协议" prop="agreement" align="center">
+      <el-table-column
+        label="开机logo"
+        prop="powerLogo"
+        align="center"
+        width="120"
+      >
+        <template slot-scope="{ row }">
+          <preview-img
+            width="60px"
+            height="60px"
+            :url="row.powerLogo"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="协议" prop="agreement" align="center" width="120">
         <template v-if="isShow(row.agreement)" slot-scope="{ row }">
           {{ dicts_agreement[row.agreement] }}
         </template>
@@ -142,16 +224,26 @@
         label="测速磁钢数"
         prop="speedSteel"
         align="center"
-        width="100"
+        width="120"
       />
-      <el-table-column label="车轮宽度" prop="tiresSize" align="center" />
+      <el-table-column
+        label="车轮宽度"
+        prop="tiresSize"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="助力限速门限(km/h)"
         prop="assistLimit"
         align="center"
-        width="110"
+        width="140"
       />
-      <el-table-column label="轮径" prop="wheelDiameter" align="center">
+      <el-table-column
+        label="轮径"
+        prop="wheelDiameter"
+        align="center"
+        width="120"
+      >
         <template v-if="isShow(row.wheelDiameter)" slot-scope="{ row }">
           {{ wheelDiameterData[row.wheelDiameter] }}
         </template>
@@ -160,21 +252,26 @@
         label="周长(mm)"
         prop="perimeter"
         align="center"
-        width="100"
+        width="120"
       />
-      <el-table-column label="电压" prop="voltage" align="center" />
-      <el-table-column label="缓启动" prop="slowStart" align="center" />
-      <el-table-column label="显示单位" prop="unit" align="center">
+      <el-table-column label="电压" prop="voltage" align="center" width="120" />
+      <el-table-column
+        label="缓启动"
+        prop="slowStart"
+        align="center"
+        width="120"
+      />
+      <el-table-column label="显示单位" prop="unit" align="center" width="120">
         <template v-if="isShow(row.unit)" slot-scope="{ row }">
           {{ dicts_unit[row.unit] }}
         </template>
       </el-table-column>
-      <el-table-column label="电量计算" prop="power" align="center">
+      <el-table-column label="电量计算" prop="power" align="center" width="120">
         <template v-if="isShow(row.power)" slot-scope="{ row }">
           {{ dicts_power[row.power] }}
         </template>
       </el-table-column>
-      <el-table-column label="APP" prop="app" align="center">
+      <el-table-column label="APP" prop="app" align="center" width="120">
         <el-tag
           v-if="isShow(row.app)"
           slot-scope="{ row }"
@@ -182,8 +279,11 @@
         >
           {{ row.app === 1 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else>
+          ---
+        </template>
       </el-table-column>
-      <el-table-column label="USB" prop="usb" align="center">
+      <el-table-column label="USB" prop="usb" align="center" width="120">
         <el-tag
           v-if="isShow(row.usb)"
           slot-scope="{ row }"
@@ -191,8 +291,11 @@
         >
           {{ row.usb === 1 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else>
+          ---
+        </template>
       </el-table-column>
-      <el-table-column label="蓝牙" prop="bluetooth" align="center">
+      <el-table-column label="蓝牙" prop="bluetooth" align="center" width="120">
         <el-tag
           v-if="isShow(row.bluetooth)"
           slot-scope="{ row }"
@@ -201,7 +304,12 @@
           {{ row.bluetooth === 1 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="推车助力" prop="driveAssist" align="center">
+      <el-table-column
+        label="推车助力"
+        prop="driveAssist"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.driveAssist)"
           slot-scope="{ row }"
@@ -210,7 +318,12 @@
           {{ row.driveAssist === 1 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="恢复出厂设置" prop="factoryReset" align="center">
+      <el-table-column
+        label="恢复出厂设置"
+        prop="factoryReset"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.factoryReset)"
           slot-scope="{ row }"
@@ -219,7 +332,12 @@
           {{ row.factoryReset === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="转把分档" prop="rotateHandle" align="center">
+      <el-table-column
+        label="转把分档"
+        prop="rotateHandle"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.rotateHandle)"
           slot-scope="{ row }"
@@ -228,7 +346,12 @@
           {{ row.rotateHandle === 1 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="助力正反" prop="assist" align="center">
+      <el-table-column
+        label="助力正反"
+        prop="assist"
+        align="center"
+        width="120"
+      >
         <template v-if="isShow(row.assist)" slot-scope="{ row }">
           {{ row.assist === 0 ? "助力正" : "助力反" }}
         </template>
@@ -237,6 +360,7 @@
         label="转把限速"
         prop="rotateHandleSpeedLimit"
         align="center"
+        width="120"
       >
         <template
           v-if="isShow(row.rotateHandleSpeedLimit)"
@@ -245,55 +369,107 @@
           {{ row.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
         </template>
       </el-table-column>
-      <el-table-column label="默认档位" prop="defaultGear" align="center" />
-      <el-table-column label="最高档位" prop="topGear" align="center" />
-      <el-table-column label="速度平滑等级" prop="smoothLevel" align="center" />
+      <el-table-column
+        label="默认档位"
+        prop="defaultGear"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="最高档位"
+        prop="topGear"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.topGear"></span>
+      </el-table-column>
+      <el-table-column
+        label="速度平滑等级"
+        prop="smoothLevel"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="电量变化时间(s)"
         prop="batteryVoltageChangeTime"
         align="center"
+        width="120"
       />
       <el-table-column
         label="总线故障超时时间(s)"
         prop="allLineErrTimeOut"
         align="center"
-        width="110"
+        width="150"
       />
       <el-table-column
         label="背光亮度"
         prop="backlightBrightness"
         align="center"
+        width="120"
       >
         <template v-if="isShow(row.backlightBrightness)" slot-scope="{ row }">
           {{ backlightBrightnessList[row.backlightBrightness] }}
         </template>
       </el-table-column>
-      <el-table-column label="Logo界面" prop="logo" align="center">
+      <el-table-column label="Logo界面" prop="logo" align="center" width="120">
         <template v-if="isShow(row.logo)" slot-scope="{ row }">
           {{ dicts_logo[row.logo] }}
         </template>
       </el-table-column>
-      <el-table-column label="休眠时间(min)" prop="sleepTime" align="center" />
-      <el-table-column label="助力档位数" prop="powerGear" align="center" />
+      <el-table-column
+        label="休眠时间(min)"
+        prop="sleepTime"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="助力档位数"
+        prop="powerGear"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="助力开始磁钢数"
         prop="assistStartMagnetNumber"
         align="center"
+        width="120"
       />
       <el-table-column
         label="助力比例"
         prop="assistPercentage"
         align="center"
+        width="120"
       />
-      <el-table-column label="显示轮径" prop="showWheelsize" align="center" />
-      <el-table-column label="系统电压(V)" prop="voltage" align="center" />
+      <el-table-column
+        label="显示轮径"
+        prop="showWheelsize"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="系统电压(V)"
+        prop="voltage"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="限流门限(A)"
         prop="currentlimiting"
         align="center"
+        width="120"
       />
-      <el-table-column label="欠压门限(V)" prop="undervoltage" align="center" />
-      <el-table-column label="蜂鸣器" prop="buzzerSwitch" align="center">
+      <el-table-column
+        label="欠压门限(V)"
+        prop="undervoltage"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="蜂鸣器"
+        prop="buzzerSwitch"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.buzzerSwitch)"
           slot-scope="{ row }"
@@ -306,8 +482,14 @@
         label="高速蜂鸣器提醒"
         prop="highSpeedBuzzerRemind"
         align="center"
+        width="120"
       />
-      <el-table-column label="定速巡航功能" prop="cruise" align="center">
+      <el-table-column
+        label="定速巡航功能"
+        prop="cruise"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.cruise)"
           slot-scope="{ row }"
@@ -316,7 +498,12 @@
           {{ row.cruise === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="是否开机密码" prop="turnOnPasswd" align="center">
+      <el-table-column
+        label="是否开机密码"
+        prop="turnOnPasswd"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.turnOnPasswd)"
           slot-scope="{ row }"
@@ -325,8 +512,18 @@
           {{ row.turnOnPasswd === 0 ? "YES" : "NO" }}
         </el-tag>
       </el-table-column>
-      <el-table-column label="开机密码" prop="startupPasswd" align="center" />
-      <el-table-column label="是否菜单密码" prop="menuPassword" align="center">
+      <el-table-column
+        label="开机密码"
+        prop="startupPasswd"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="是否菜单密码"
+        prop="menuPassword"
+        align="center"
+        width="120"
+      >
         <el-tag
           v-if="isShow(row.menuPassword)"
           slot-scope="{ row }"
@@ -339,14 +536,37 @@
         label="高级菜单密码"
         prop="highMenuPasswd"
         align="center"
+        width="120"
       />
-      <el-table-column label="电机功率(W)" prop="motorSys" align="center" />
-      <el-table-column label="电池容量" prop="batteryCap" align="center" />
-      <!-- <el-table-column label="自动大灯" prop="typeName" align="center" /> -->
-      <!-- <el-table-column label="其它" prop="typeName" align="center" /> -->
-      <el-table-column label="SN标签" prop="snTag" align="center" />
-      <el-table-column label="输出人" prop="typeName" align="center" />
-      <el-table-column label="核对人 " prop="check_By" align="center" />
+      <el-table-column
+        label="电机功率(W)"
+        prop="motorSys"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="电池容量"
+        prop="batteryCap"
+        align="center"
+        width="120"
+      />
+      <el-table-column label="SN标签" prop="snTag" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.snTag"></span>
+      </el-table-column>
+      <el-table-column
+        label="创建人"
+        prop="createBy"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="审核人 "
+        prop="checkBy"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.checkBy"></span>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tooltip
@@ -460,7 +680,7 @@ export default {
     isShow() {
       const list = [null, "null", undefined, "undefined", false, "false"];
       return (val) => {
-        if (typeof val === String) {
+        if (typeof val === 'string') {
           return !list.includes(val.toLowerCase());
         } else {
           return !list.includes(val);

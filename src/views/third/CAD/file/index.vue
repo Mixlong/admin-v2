@@ -488,7 +488,7 @@ export default {
           "oqc_tool_soft",
           "config_tools",
           "pack_file",
-          "update_file"
+          "update_file",
         ];
 
         return typeList.includes(type);
@@ -705,28 +705,19 @@ export default {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
 
-      // if (row.configExtend === null) {
-      //   row.configExtend = {
-      //     schemeVersion: "",
-      //     agreementVersion: "",
-      //     pcbaSn: "",
-      //     testInfo: [],
-      //   };
-      // } else {
-      //   // 测试项目数据
-      //   if (row.configExtend.testInfo) {
-      //     if (!Array.isArray(row.configExtend.testInfo)) {
-      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
-      //     }
-      //   }
-      // }
-      this.$refs.compUpdate.form = Object.assign(
-        { idList: [], content: "", testInfo: [] },
-        row
-      );
-      this.$refs.compUpdate.form.firmwareConf = row.firmwareConf
-        ? row.firmwareConf
-        : {};
+      // 蓝牙地址转化
+      let bleVersionList = [{ bleName: "" }];
+      if (row.type === "ble_version" && !this.Is_Empty(row.content)) {
+        let bleNameList = row.content.split(",");
+
+        bleVersionList = bleNameList.map((bleName) => {
+          return { bleName };
+        });
+      }
+
+      this.$refs.compUpdate.form = Object.assign({ idList: [], content: "", testInfo: [], bleVersionList }, row);
+
+      this.$refs.compUpdate.form.firmwareConf = row.firmwareConf ? row.firmwareConf : {};
       if (this.$refs.compUpdate.form.firmwareConf.mid) {
         this.$refs.compUpdate.changeMidValue(
           this.$refs.compUpdate.form.firmwareConf.mid,

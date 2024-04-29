@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container font12">
+  <div class="app-container">
     <el-form
       :model="queryParams"
       ref="queryForm"
@@ -11,7 +11,7 @@
           v-model="queryParams.key"
           filterable
           @change="changeCategory"
-          placeholder="请选择"
+          placeholder="请选择产品品类"
         >
           <el-option
             v-for="dict in dictList"
@@ -81,6 +81,7 @@
         </template>
       </el-table-column>
     </el-table>
+	
     <pagination
       v-show="total > 0"
       :total="total"
@@ -108,7 +109,6 @@ export default {
   components: {
     CompUpdate,
   },
-  filters: {},
   data() {
     return {
       form: {},
@@ -174,6 +174,7 @@ export default {
       detailComputer(row.id).then((res) => {
         let { data } = res;
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
+        data.otherOptions = data.otherOptions ? data.otherOptions : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;
         this.$refs.compUpdate.isCopyProduct = false;

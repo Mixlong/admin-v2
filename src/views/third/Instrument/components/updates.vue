@@ -18,12 +18,12 @@
         <el-form-item label="所属品类" prop="categoryId">
           <el-select
             v-model="queryParams.categoryId"
-            @change="changeCategory"
             filterable
             allow-create
             clearable
             placeholder="请选择品类"
             style="width: 160px"
+            @change="changeCategory"
           >
             <el-option
               v-for="dict in dictList"
@@ -35,12 +35,12 @@
         </el-form-item>
         <el-form-item label="仪表型号" prop="computerId">
           <el-select
+            v-model="queryParams.computerId"
             :loading="isCLoading"
             filterable
             remote
             clearable
             :disabled="!queryParams.categoryId"
-            v-model="queryParams.computerId"
             placeholder="请选择仪表型号"
             :remote-method="getComputerNameList"
             style="width: 160px"
@@ -58,14 +58,15 @@
             type="primary"
             :disabled="!queryParams.computerId"
             @click="handleCopy"
-            >复制</el-button
           >
+            复制
+          </el-button>
         </el-form-item>
       </el-form>
 
       <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
         <fieldset>
-          <legend>基础配置</legend>
+          <legend class="text-red">基础配置</legend>
           <el-row :gutter="10">
             <el-col :span="6">
               <el-form-item
@@ -95,111 +96,34 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="控制器接头"
-                prop="instrumentModel.controlConnect"
-              >
-                <el-select
-                  v-model="form.instrumentModel.controlConnect"
-                  placeholder="请选择控制器接头"
-                  filterable
-                  allow-create
-                  clearable
-                  class="w100"
-                >
-                  <el-option
-                    v-for="item in dicts_controller_joint"
-                    :key="item.dictLabel"
-                    :label="item.dictValue"
-                    :value="item.dictValue"
+            </el-col>
+
+            <template v-if="form.id">
+              <el-col :span="6">
+                <el-form-item label="型号" prop="name">
+                  <el-input v-model="form.name" placeholder="型号" clearable />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
+                <el-form-item label="ERP编码" prop="erp">
+                  <el-input
+                    v-model="form.erp"
+                    placeholder="ERP编码"
+                    clearable
                   />
-                </el-select>
-              </el-form-item>
+                </el-form-item>
+              </el-col>
+            </template>
 
-              <el-form-item label="控制器头" prop="instrumentModel.controlHead">
-                <el-select
-                  v-model.number="form.instrumentModel.controlHead"
-                  filterable
-                  clearable
-                  placeholder="请选择控制器头"
-                  class="w100"
-                >
-                  <el-option label="不含头" :value="0" />
-                  <el-option label="含头" :value="1" />
-                </el-select>
-              </el-form-item>
-
+            <el-col :span="6">
               <el-form-item
-                label="控制器出线线长(mm)"
-                prop="instrumentModel.notControllerJointString"
+                label="客户料号"
+                prop="instrumentModel.customerMaterialNum"
               >
                 <el-input
-                  v-model.number="form.instrumentModel.notControllerJointString"
-                  placeholder="请输入控制器出线线长"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  clearable
-                />
-              </el-form-item>
-
-              <el-form-item label="按键型号" prop="instrumentModel.keyType">
-                <el-select
-                  v-model="form.instrumentModel.keyType"
-                  placeholder="请选择按键型号"
-                  clearable
-                  class="w100"
-                  filterable
-                  allow-create
-                >
-                  <el-option
-                    v-for="item in dicts_keyType_list"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="+item.dictValue"
-                  />
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                label="按键连接类型"
-                prop="instrumentModel.keyLinkType"
-              >
-                <el-select
-                  v-model.number="form.instrumentModel.keyLinkType"
-                  filterable
-                  clearable
-                  placeholder="请选择按键连接类型"
-                  class="w100"
-                >
-                  <el-option label="直连" :value="0" />
-                  <el-option label="快拆" :value="1" />
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                label="按键线头"
-                prop="instrumentModel.keyLineType"
-                v-if="form.instrumentModel.keyLinkType === 1"
-              >
-                <el-select
-                  v-model.number="form.instrumentModel.keyLineType"
-                  filterable
-                  clearable
-                  placeholder="请选择按键线头"
-                  class="w100"
-                >
-                  <el-option label="不含头" :value="0" />
-                  <el-option label="含头" :value="1" />
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                label="按键线长(mm)"
-                prop="instrumentModel.keyLineLen"
-              >
-                <el-input
-                  v-model.number="form.instrumentModel.keyLineLen"
-                  placeholder="请输入按键线长"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
+                  v-model="form.instrumentModel.customerMaterialNum"
+                  placeholder="请输入客户料号"
                   clearable
                 />
               </el-form-item>
@@ -223,106 +147,21 @@
                 >
                 </select-loadMore>
               </el-form-item>
-
-              <template v-if="form.id">
-                <el-form-item label="型号" prop="name">
-                  <el-input v-model="form.name" placeholder="型号" clearable />
-                </el-form-item>
-                <el-form-item label="ERP编码" prop="erp">
-                  <el-input
-                    v-model="form.erp"
-                    placeholder="ERP编码"
-                    clearable
-                  />
-                </el-form-item>
-              </template>
-
-              <el-form-item label="通讯方式" prop="instrumentModel.serialLevel">
-                <el-select
-                  v-model="form.instrumentModel.serialLevel"
-                  placeholder="请选择通讯方式"
-                  class="w100"
-                  clearable
-                  @change="clearRateOrType"
-                >
-                  <el-option
-                    v-for="item in dicts_communication_type"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="+item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="串口波特率" prop="instrumentModel.baudRate">
-                <el-select
-                  v-model="form.instrumentModel.baudRate"
-                  placeholder="请选择串口波特率"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in baudRateList"
-                    :label="item"
-                    :value="item"
-                    :key="item"
-                  ></el-option>
-                </el-select>
-              </el-form-item>
-
-              <template v-if="form.instrumentModel.serialLevel === 2">
-                <el-form-item label="帧类型" prop="instrumentModel.msgType">
-                  <el-select
-                    v-model.number="form.instrumentModel.msgType"
-                    filterable
-                    clearable
-                    placeholder="请选择帧类型"
-                    class="w100"
-                  >
-                    <el-option label="标准帧" :value="0" />
-                    <el-option label="扩展帧" :value="1" />
-                  </el-select>
-                </el-form-item>
-
-                <el-form-item label="CAN波特率" prop="instrumentModel.canRate">
-                  <el-select
-                    v-model="form.instrumentModel.canRate"
-                    placeholder="请选择CAN波特率"
-                    class="w100"
-                    clearable
-                  >
-                    <el-option
-                      v-for="(value, key) in canRateList"
-                      :key="key"
-                      :label="`${value}k`"
-                      :value="+key"
-                    ></el-option>
-                  </el-select>
-                </el-form-item>
-              </template>
             </el-col>
 
             <el-col :span="6">
-              <el-form-item
-                label="客户料号"
-                prop="instrumentModel.customerMaterialNum"
-              >
-                <el-input
-                  v-model="form.instrumentModel.customerMaterialNum"
-                  placeholder="请输入客户料号"
-                  clearable
-                />
-              </el-form-item>
               <el-form-item label="最高档位" prop="instrumentModel.topGear">
                 <el-input
                   v-minMaxValue="{ min: 0, max: 9 }"
                   v-model="form.instrumentModel.topGear"
                   oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
                   placeholder="请输入最高档位"
+                  clearable
                 />
               </el-form-item>
             </el-col>
-
+          </el-row>
+          <el-row :gutter="10">
             <el-col :span="6">
               <el-form-item label="APP" prop="instrumentModel.app">
                 <el-radio-group v-model="form.instrumentModel.app">
@@ -332,6 +171,9 @@
                   </div>
                 </el-radio-group>
               </el-form-item>
+            </el-col>
+
+            <el-col :span="6">
               <el-form-item label="USB" prop="instrumentModel.usb">
                 <el-radio-group v-model="form.instrumentModel.usb">
                   <div class="flex">
@@ -341,24 +183,277 @@
                 </el-radio-group>
               </el-form-item>
             </el-col>
-          </el-row>
-          <el-row :gutter="0">
+
             <el-col :span="6">
-              <el-form-item label="按键图片" prop="instrumentModel.keyImgUrl">
-                <el-upload-sortable
-                  v-model="form.instrumentModel.keyImgUrl"
-                  :imgW="80"
-                  :imgH="80"
-                  :isLimit="1"
-                  :max="1"
-                />
+              <el-form-item label="关机测试" prop="otherOptions.shutdownTest">
+                <el-radio-group v-model="form.otherOptions.shutdownTest">
+                  <el-radio :label="1"> YES </el-radio>
+                  <el-radio :label="0"> NO </el-radio>
+                </el-radio-group>
               </el-form-item>
             </el-col>
           </el-row>
+          <fieldset class="margin-top">
+            <legend class="text-green">仪表配置区</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item
+                  label="通讯方式"
+                  prop="instrumentModel.serialLevel"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.serialLevel"
+                    placeholder="请选择通讯方式"
+                    class="w100"
+                    clearable
+                    @change="clearRateOrType"
+                  >
+                    <el-option
+                      v-for="item in dicts_communication_type"
+                      :key="item.dictValue"
+                      :label="item.dictLabel"
+                      :value="+item.dictValue"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="串口波特率"
+                  prop="instrumentModel.baudRate"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.baudRate"
+                    placeholder="请选择串口波特率"
+                    class="w100"
+                    clearable
+                  >
+                    <el-option
+                      v-for="(value, key) in baudRateList"
+                      :label="value"
+                      :value="+value"
+                      :key="key"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <template v-if="form.instrumentModel.serialLevel === 2">
+                <el-col :span="6">
+                  <el-form-item label="帧类型" prop="instrumentModel.msgType">
+                    <el-select
+                      v-model.number="form.instrumentModel.msgType"
+                      filterable
+                      clearable
+                      placeholder="请选择帧类型"
+                      class="w100"
+                    >
+                      <el-option label="标准帧" :value="0" />
+                      <el-option label="扩展帧" :value="1" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                  <el-form-item
+                    label="CAN波特率"
+                    prop="instrumentModel.canRate"
+                  >
+                    <el-select
+                      v-model="form.instrumentModel.canRate"
+                      placeholder="请选择CAN波特率"
+                      class="w100"
+                      clearable
+                    >
+                      <el-option
+                        v-for="(value, key) in canRateList"
+                        :key="key"
+                        :label="value"
+                        :value="+key"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+              </template>
+            </el-row>
+          </fieldset>
+          <fieldset class="margin-top">
+            <legend class="text-green">控制器、按键配置区</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item
+                  label="控制器接头"
+                  prop="instrumentModel.controlConnect"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.controlConnect"
+                    placeholder="请选择控制器接头"
+                    filterable
+                    allow-create
+                    clearable
+                    class="w100"
+                  >
+                    <el-option
+                      v-for="item in dicts_controller_joint"
+                      :key="item.dictLabel"
+                      :label="item.dictValue"
+                      :value="item.dictValue"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="控制器头"
+                  prop="instrumentModel.controlHead"
+                >
+                  <el-select
+                    v-model.number="form.instrumentModel.controlHead"
+                    filterable
+                    clearable
+                    placeholder="请选择控制器头"
+                    class="w100"
+                  >
+                    <el-option label="不含头" :value="0" />
+                    <el-option label="含头" :value="1" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="控制器出线线长(mm)"
+                  prop="instrumentModel.notControllerJointString"
+                >
+                  <el-input
+                    v-model.number="
+                      form.instrumentModel.notControllerJointString
+                    "
+                    placeholder="请输入控制器出线线长"
+                    oninput="value=value.replace(/[^\d.]/g, '')"
+                    clearable
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="按键型号" prop="instrumentModel.keyType">
+                  <el-select
+                    v-model="form.instrumentModel.keyType"
+                    placeholder="请选择按键型号"
+                    clearable
+                    class="w100"
+                    filterable
+                    allow-create
+                  >
+                    <el-option
+                      v-for="item in dicts_keyType_list"
+                      :key="item.dictValue"
+                      :label="item.dictLabel"
+                      :value="+item.dictValue"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="按键连接类型"
+                  prop="instrumentModel.keyLinkType"
+                >
+                  <el-select
+                    v-model.number="form.instrumentModel.keyLinkType"
+                    filterable
+                    clearable
+                    placeholder="请选择按键连接类型"
+                    class="w100"
+                  >
+                    <el-option label="直连" :value="0" />
+                    <el-option label="快拆" :value="1" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <template v-if="form.instrumentModel.keyLinkType === 1">
+                <el-col :span="6">
+                  <el-form-item
+                    label="按键【仪表端】接头"
+                    prop="instrumentModel.modelEndHead"
+                  >
+                    <el-input
+                      v-model="form.instrumentModel.modelEndHead"
+                      placeholder="请输入按键【仪表端】接头"
+                      clearable
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                  <el-form-item
+                    label="按键【按键端】接头"
+                    prop="instrumentModel.keyEndHead"
+                  >
+                    <el-input
+                      v-model="form.instrumentModel.keyEndHead"
+                      placeholder="请输入按键【按键端】接头"
+                      clearable
+                    />
+                  </el-form-item>
+                </el-col>
+              </template>
+              <el-col :span="6">
+                <el-form-item
+                  label="按键线长(mm)"
+                  prop="instrumentModel.keyLineLen"
+                >
+                  <el-input
+                    v-model.number="form.instrumentModel.keyLineLen"
+                    placeholder="请输入按键线长"
+                    oninput="value=value.replace(/[^\d.]/g, '')"
+                    clearable
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </fieldset>
+          <fieldset class="margin-top">
+            <legend class="text-green">图片配置区</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item label="按键图片" prop="instrumentModel.keyImgUrl">
+                  <el-upload-sortable
+                    v-model="form.instrumentModel.keyImgUrl"
+                    :imgW="80"
+                    :imgH="80"
+                    :isLimit="1"
+                    :max="1"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="开机logo" prop="instrumentModel.powerLogo">
+                  <el-upload-sortable
+                    v-model="form.instrumentModel.powerLogo"
+                    :imgW="80"
+                    :imgH="80"
+                    :isLimit="1"
+                    :max="1"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item
+                  label="规格书"
+                  prop="instrumentModel.specification"
+                >
+                  <el-upload-sortable
+                    v-model="form.instrumentModel.specification"
+                    :imgW="80"
+                    :imgH="80"
+                    :max="20"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </fieldset>
         </fieldset>
 
         <fieldset class="margin-top">
-          <legend>车型配置</legend>
+          <legend class="text-red">车型配置</legend>
           <el-row :gutter="10">
             <el-col :span="6">
               <el-form-item
@@ -638,6 +733,7 @@
                   placeholder="请选择协议"
                   class="w100"
                   clearable
+                  @change="onChangeAgreement"
                 >
                   <el-option
                     v-for="item in dicts_agreement"
@@ -789,7 +885,7 @@
                 <el-input
                   maxlength="2"
                   v-model="form.instrumentModel.carModel"
-                  placeholder="车型"
+                  placeholder="请输入车型"
                   clearable
                 />
               </el-form-item>
@@ -918,10 +1014,10 @@
 
               <el-form-item
                 label="串口通讯电平"
-                prop="instrumentModel.serialLevel_log"
+                prop="instrumentModel.serialLevelLog"
               >
                 <el-select
-                  v-model="form.instrumentModel.serialLevel_log"
+                  v-model="form.instrumentModel.serialLevelLog"
                   placeholder="请选择串口通讯电平"
                   class="w100"
                   clearable
@@ -1182,7 +1278,6 @@
 
 <script>
 import {
-  selectComputer,
   addComputer,
   editComputer,
   detailComputer,
@@ -1192,6 +1287,7 @@ import { getCustomerList } from "@/api/order";
 import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import ItemList from "./itemList.vue";
 
 export default {
   mixins: [mixin, commonData],
@@ -1284,12 +1380,16 @@ export default {
       dialogVisible: false,
       open: false,
       // 表单参数
-      form: { name: null, instrumentModel: {}, instrumentModel: {} },
+      form: {
+        name: null,
+        instrumentModel: {},
+        otherOptions: { shutdownTest: 1 },
+      },
       title: "",
       disabled: false,
       serialLevelLogData: {
         0: "3.3V",
-        1: "5V"
+        1: "5V",
       },
       // 表单校验
       rules: {
@@ -1344,7 +1444,7 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
-        "instrumentModel.serialLevel_log": [
+        "instrumentModel.serialLevelLog": [
           {
             required: true,
             message: "串口通讯电平不能为空",
@@ -1399,6 +1499,7 @@ export default {
   },
   components: {
     ElUploadSortable,
+    ItemList
   },
   computed: {
     isEmpty() {
@@ -1468,11 +1569,32 @@ export default {
       });
     },
     clearRateOrType(type) {
+      const { agreement } = this.form.instrumentModel;
+
       if (type !== 2) {
         this.form.instrumentModel.msgType = "";
         this.form.instrumentModel.canRate = "";
+
+        if (agreement === 2) {
+          // 八方
+          this.form.instrumentModel.baudRate = 1200;
+        }
       } else {
         this.form.instrumentModel.baudRate = 115200;
+
+        if (agreement !== "") {
+          this.form.instrumentModel.msgType = 1;
+          this.form.instrumentModel.canRate = 4;
+
+          if (agreement === 7) {
+            // 天腾
+            this.form.instrumentModel.msgType = 0;
+          }
+          if (agreement === 4) {
+            // 高标
+            this.form.instrumentModel.canRate = 7;
+          }
+        }
       }
     },
     changeCountPerimeter(wheelDiameter) {
@@ -1593,9 +1715,9 @@ export default {
           keyLineLen: null,
           customerName: null,
           serialLevel: null,
-          serialLevel_log: 0,
-          msgType: null,
-          canRate: null,
+          serialLevelLog: 1,
+          msgType: 1,
+          canRate: 4,
           baudRate: null,
           topGear: null,
           customerMaterialNum: null,
@@ -1621,7 +1743,7 @@ export default {
           defaultGear: null,
           driveAssist: null,
           highSpeedBuzzerRemind: 0,
-          logo: null,
+          logo: "0",
           maxGear: null,
           menuPasswd: null,
           notControllerJointString: null,
@@ -1655,6 +1777,9 @@ export default {
           carModel: null,
           assistStartMagnetNumber: "2",
         },
+        otherOptions: {
+          shutdownTest: 1,
+        },
       };
     },
     handleFleetnessAdd() {
@@ -1671,7 +1796,27 @@ export default {
     onResetForm() {
       this.open = false;
     },
+    // 根据协议来自动切换仪表波特率   八方（UART） ---> 1200
+    onChangeAgreement(agreement) {
+      this.form.instrumentModel.msgType = 1;
+      this.form.instrumentModel.canRate = 4;
+      const { serialLevel } = this.form.instrumentModel;
+
+      if (agreement === 2 && serialLevel !== 2) {
+        // 八方
+        this.form.instrumentModel.baudRate = 1200;
+      }
+      if (agreement === 7) {
+        // 天腾
+        this.form.instrumentModel.msgType = 0;
+      }
+      if (agreement === 4) {
+        // 高标
+        this.form.instrumentModel.canRate = 7;
+      }
+    },
     changeCategory(name) {
+      this.queryParams.computerId = "";
       if (name) {
         this.product = name;
         const data = this.dictList.filter((item) => item.name === name);
@@ -1701,7 +1846,7 @@ export default {
       try {
         const { data } = await detailComputer(computerId);
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
-
+        data.otherOptions = data.otherOptions ? data.otherOptions : {};
         this.form = Object.assign({}, data);
       } catch (error) {
         console.error(error);
@@ -1750,14 +1895,14 @@ export default {
         menuPassword,
         rotateHandleSpeedLimit,
         assist,
-        serialLevel_log
+        serialLevelLog,
       } = this.form.instrumentModel;
 
       const instrumentModel = {
         backlightBrightness,
         sleepTime,
         voltage,
-        undervoltage: undervoltage * 1000,
+        undervoltage,
         powerGear,
         assistStartMagnetNumber,
         assistPercentage,
@@ -1780,6 +1925,7 @@ export default {
         logo,
         startupPasswd,
         highMenuPasswd,
+        menuPasswd: highMenuPasswd,
         motorSys,
         batteryCap,
         highSpeedBuzzerRemind,
@@ -1795,12 +1941,12 @@ export default {
         menuPassword,
         rotateHandleSpeedLimit,
         assist,
-        serialLevel: serialLevel_log
+        serialLevel: serialLevelLog,
       };
 
       const data = {
         instrumentModel,
-        otherOptions: {},
+        otherOptions: this.form.otherOptions,
         inputValues: {},
       };
       return JSON.stringify(data);
