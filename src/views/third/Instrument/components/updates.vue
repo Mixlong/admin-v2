@@ -152,7 +152,7 @@
             <el-col :span="6">
               <el-form-item label="最高档位" prop="instrumentModel.topGear">
                 <el-input
-                  v-minMaxValue="{ min: 0, max: 9 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   v-model="form.instrumentModel.topGear"
                   oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
                   placeholder="请输入最高档位"
@@ -638,7 +638,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model.number="form.instrumentModel.showWheelsize"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="显示轮径"
@@ -694,7 +694,7 @@
 
               <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
                 <el-input
-                  v-minMaxValue="{ min: 0, max: 9999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model.number="form.instrumentModel.perimeter"
                   oninput="value=value.replace(/[^\d]/, '')"
                   placeholder="请输入周长"
@@ -935,7 +935,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 9999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model="form.instrumentModel.startupPasswd"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入开机密码"
@@ -955,7 +955,7 @@
                 <el-input
                   v-model="form.instrumentModel.highMenuPasswd"
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 9999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高级菜单密码"
                 />
@@ -970,7 +970,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model="form.instrumentModel.motorSys"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入电机功率"
@@ -986,7 +986,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 9999 }"
+                  v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model="form.instrumentModel.batteryCap"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="电池容量"
@@ -1005,7 +1005,7 @@
               >
                 <el-input
                   v-model="form.instrumentModel.highSpeedBuzzerRemind"
-                  v-minMaxValue="{ min: 0, max: 99 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高速蜂鸣器提醒"
                   clearable
@@ -1043,7 +1043,7 @@
               >
                 <el-input
                   v-model="form.instrumentModel.tiresSize"
-                  v-minMaxValue="{ min: 0, max: 99 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入车轮宽度"
                   clearable
@@ -1161,58 +1161,6 @@
         </fieldset>
       </el-form>
 
-      <!-- <div
-        class="flex align-center"
-        v-if="!form.instrumentModel.id"
-        style="height: 173px; overflow-y: scroll"
-      >
-        <div>同配推荐：</div>
-        <div class="flex-sub margin-left-xs">
-          <el-card style="min-height: 120px">
-            <el-button
-              :class="{ 'margin-left-xs': i == 0 }"
-              class="margin-bottom-xs"
-              v-for="(pg, i) in selectList"
-              :key="i + 'q'"
-              @click="getDetail(pg)"
-            >
-              {{ pg.computerName }}
-            </el-button>
-          </el-card>
-        </div>
-      </div> -->
-
-      <!-- <div slot="footer" class="dialog-footer flex justify-between">
-        <div class="flex">
-          <el-upload
-            action=""
-            class="upload-demo"
-            ref="upload"
-            :on-change="handleChange"
-            :auto-upload="false"
-            :show-file-list="false"
-          >
-            <el-button type="warning"> 导入 </el-button>
-          </el-upload>
-          <el-button type="info" class="margin-left-xs" @click="exportForm">
-            导出
-          </el-button>
-        </div>
-        <div>
-          <el-button
-            type="primary"
-            @click="submitForm"
-            v-if="form.instrumentModel.id"
-          >
-            修改
-          </el-button>
-          <el-button type="primary" @click="submitOpen" v-else>
-            确定
-          </el-button>
-          <el-button @click="dialogVisible = false">取 消</el-button>
-        </div>
-      </div> -->
-
       <div slot="footer" class="dialog-footer flex justify-center">
         <div>
           <el-button
@@ -1287,7 +1235,6 @@ import { getCustomerList } from "@/api/order";
 import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
-import ItemList from "./itemList.vue";
 
 export default {
   mixins: [mixin, commonData],
@@ -1498,8 +1445,7 @@ export default {
     };
   },
   components: {
-    ElUploadSortable,
-    ItemList
+    ElUploadSortable
   },
   computed: {
     isEmpty() {

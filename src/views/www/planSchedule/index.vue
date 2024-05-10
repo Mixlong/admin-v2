@@ -289,7 +289,6 @@
           </div>
           <div
             class="flex flex-direction align-start margin-left-xs"
-            v-if="isDataAll(row)"
           >
             <el-button
               class="mlZero"
