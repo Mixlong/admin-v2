@@ -156,6 +156,19 @@
             </template>
           </el-form-item>
           <el-form-item
+            v-show="form.type === 'dt_pack_sn'"
+            label="整机SN长度"
+            prop="packSnLen"
+          >
+            <el-input-number
+              v-model="form.packSnLen"
+              :min="1"
+              :max="31"
+              :precision="0"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item
             label="文件"
             prop="url"
             v-if="form.up == 1"
@@ -477,6 +490,7 @@ export default {
       form: {
         url: "",
         testInfo: [],
+        packSnLen: "",
         bleVersionList: [{ bleName: "" }],
       },
       title: "",
@@ -687,6 +701,7 @@ export default {
         jsContent: "",
         webVersion: "",
         testInfo: [],
+        packSnLen: "",
         bleVersionList: [{ bleName: "" }],
       };
       this.stsData.data = [];
@@ -809,16 +824,31 @@ export default {
             delete this.form.updateBy;
             delete this.form.updateTime;
             let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
-            const { type, bleVersionList } = this.form;
+            const { type, bleVersionList, packSnLen, content } = this.form;
 
-            if(type === "ble_version") {
-              const bleCodeStr = bleVersionList.map(item => item.bleName).filter(bleName => bleName !== '').join(',');
-              if(bleCodeStr) {
+            if (type === "ble_version") {
+              const bleCodeStr = bleVersionList
+                .map((item) => item.bleName)
+                .filter((bleName) => bleName !== "")
+                .join(",");
+              if (bleCodeStr) {
                 this.form.content = bleCodeStr;
                 delete this.form.bleVersionList;
               } else {
                 this.isLoading = false;
                 return this.msgError("蓝牙版本至少有一项");
+              }
+            }
+
+            if (type === "dt_pack_sn") {
+              if (!this.Is_Empty(content) && this.Is_Empty(packSnLen)) {
+                this.isLoading = false;
+                return this.msgError("整机SN的长度不能为空");
+              } else if (!this.Is_Empty(packSnLen) && this.Is_Empty(content)) {
+                this.isLoading = false;
+                return this.msgError("整机SN不能为空");
+              } else if (!this.Is_Empty(content) && !this.Is_Empty(packSnLen)) {
+                this.form.content = `${content},${packSnLen}`;
               }
             }
 

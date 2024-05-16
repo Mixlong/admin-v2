@@ -701,34 +701,43 @@ export default {
       this.multiple = !selection.length;
     },
     handleUpdate(row, isBatchSync) {
+      let copyRow = JSON.parse(JSON.stringify(row));
       // shit 改不动了
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.changeCategory2(row.categoryId);
+      this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
 
       // 蓝牙地址转化
       let bleVersionList = [{ bleName: "" }];
-      if (row.type === "ble_version" && !this.Is_Empty(row.content)) {
-        let bleNameList = row.content.split(",");
+      if (copyRow.type === "ble_version" && !this.Is_Empty(copyRow.content)) {
+        let bleNameList = copyRow.content.split(",");
 
         bleVersionList = bleNameList.map((bleName) => {
           return { bleName };
         });
       }
 
-      this.$refs.compUpdate.form = Object.assign({ idList: [], content: "", testInfo: [], bleVersionList }, row);
+      // 整机SN的长度转化
+      if(copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
+        const packContentAndLen = copyRow.content.split(',');
 
-      this.$refs.compUpdate.form.firmwareConf = row.firmwareConf ? row.firmwareConf : {};
+        copyRow.content = packContentAndLen[0];
+        copyRow.packSnLen = packContentAndLen[1];
+      }
+
+      this.$refs.compUpdate.form = Object.assign({ idList: [], content: "", testInfo: [], bleVersionList }, copyRow);
+
+      this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf ? copyRow.firmwareConf : {};
       if (this.$refs.compUpdate.form.firmwareConf.mid) {
         this.$refs.compUpdate.changeMidValue(
           this.$refs.compUpdate.form.firmwareConf.mid,
           false
         );
       }
-      this.$refs.compUpdate.form.firmwareConf.fileConfId = row.id;
+      this.$refs.compUpdate.form.firmwareConf.fileConfId = copyRow.id;
       this.$refs.compUpdate.boleConfig =
-        row.type == "boot_file" ||
-        row.type == "app_file" ||
-        row.type == "ui_data";
+      copyRow.type == "boot_file" ||
+      copyRow.type == "app_file" ||
+      copyRow.type == "ui_data";
       this.$refs.compUpdate.isBatchSync = isBatchSync;
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";

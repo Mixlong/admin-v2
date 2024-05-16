@@ -55,12 +55,7 @@ export default {
         0: "km/h",
         1: "mph",
       },
-      dicts_agreement: {
-        0: "KM5S",
-        1: "锂电2号",
-        2: "八方",
-        3: "J协议",
-      },
+      dicts_agreement: {},
       dicts_power: {
         0: "控制器上报电压，仪表计算电量",
         1: "控制器上报电量",
@@ -78,8 +73,12 @@ export default {
       },
       // 车名
       dicts_ebike: {},
+      // can波特率
       canRateList: {},
-      baudRateList: [],
+      // uart波特率
+      baudRateList: {},
+      // 按键型号
+      dicts_keyType_list: {}
     };
   },
   created() {
@@ -91,6 +90,15 @@ export default {
     this.getConfigDicts("can_baud_rate", "canRateList");
     // uart波特率
     this.getConfigDicts("uart_baud_rate", "baudRateList");
+    //仪表协议
+    this.getConfigDicts("instrument_agreement", "dicts_agreement");
+    // 按键型号
+    this.getConfigDicts("STS_KEY_TYPE", "dicts_keyType_list");
+
+    // 轮径
+    for (let i = 8; i < 100; i++) {
+      this.wheelDiameterData[i] = i * 0.5;
+    }
   },
   methods: {
     // 品类

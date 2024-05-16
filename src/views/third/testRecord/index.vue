@@ -7,7 +7,7 @@
           placeholder="请选择品类"
           clearable
           filterable
-          style="max-width: 140px"
+          style="max-width: 160px"
           @change="changeCategory"
         >
           <el-option
@@ -40,7 +40,7 @@
           v-model="queryParams.sn"
           placeholder="请输入整机SN"
           clearable
-          style="max-width: 130px"
+          style="width: 160px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -49,7 +49,7 @@
           v-model="queryParams.processName"
           placeholder="请选择测试环节"
           clearable
-          style="max-width: 140px"
+          style="max-width: 160px"
         >
           <el-option
             v-for="dict in testList"
@@ -64,7 +64,7 @@
           v-model="queryParams.result"
           placeholder="请选择判定结果 "
           clearable
-          style="max-width: 140px"
+          style="max-width: 160px"
         >
           <el-option label="OK" value="OK"></el-option>
           <el-option label="NG" value="NG"></el-option>
@@ -92,7 +92,9 @@
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
       <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="整机SN" prop="sn" align="center" />
+      <el-table-column label="整机SN" prop="sn" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
+      </el-table-column>  
       <el-table-column label="测试环节" prop="processName" align="center" />
       <el-table-column label="判断结果" prop="result" align="center">
         <span slot-scope="{row}" :class="stsResultStyle(row.result)">

@@ -1440,7 +1440,7 @@ export default {
         page: 1,
         more: true,
       },
-      // 按键图片
+      // 按键型号
       dicts_keyType_list: [],
     };
   },
@@ -1481,10 +1481,6 @@ export default {
   created() {
     this.echoWheelDiameter();
     this.getOptions();
-    // 轮径
-    for (let i = 8; i < 100; i++) {
-      this.wheelDiameterData[i] = i * 0.5;
-    }
   },
   methods: {
     getList() {

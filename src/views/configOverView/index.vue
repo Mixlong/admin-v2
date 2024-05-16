@@ -79,7 +79,12 @@
         width="120"
       >
         <template slot-scope="{ row }">
-          <preview-img width="60px" height="60px" :isDisBadge="false" :url="row.specification" />
+          <preview-img
+            width="60px"
+            height="60px"
+            :isDisBadge="false"
+            :url="row.specification"
+          />
         </template>
       </el-table-column>
       <el-table-column
@@ -157,8 +162,11 @@
         align="center"
         width="120"
       >
-        <template v-if="isShow(row.serialLevel)" slot-scope="{ row }">
-          {{ serialLevelData[row.serialLevel] }}
+        <template v-slot="{ row }">
+          <template v-if="isShow(row.serialLevel)">
+            {{ serialLevelData[row.serialLevel] }}
+          </template>
+          <template v-else> --- </template>
         </template>
       </el-table-column>
       <el-table-column
@@ -167,11 +175,11 @@
         align="center"
         width="120"
       >
-        <template v-if="isShow(row.keyType)" slot-scope="{ row }">
-          {{ dicts_keyType_list[row.keyType] }}
-        </template>
-        <template v-else>
-          ---
+        <template v-slot="{ row }">
+          <template v-if="isShow(row.keyType)">
+            {{ dicts_keyType_list[row.keyType] }}
+          </template>
+          <template v-else> --- </template>
         </template>
       </el-table-column>
       <el-table-column
@@ -194,11 +202,7 @@
         width="120"
       >
         <template slot-scope="{ row }">
-          <preview-img
-            width="60px"
-            height="60px"
-            :url="row.keyImgUrl"
-          />
+          <preview-img width="60px" height="60px" :url="row.keyImgUrl" />
         </template>
       </el-table-column>
       <el-table-column
@@ -208,11 +212,7 @@
         width="120"
       >
         <template slot-scope="{ row }">
-          <preview-img
-            width="60px"
-            height="60px"
-            :url="row.powerLogo"
-          />
+          <preview-img width="60px" height="60px" :url="row.powerLogo" />
         </template>
       </el-table-column>
       <el-table-column label="协议" prop="agreement" align="center" width="120">
@@ -279,9 +279,7 @@
         >
           {{ row.app === 1 ? "YES" : "NO" }}
         </el-tag>
-        <template v-else>
-          ---
-        </template>
+        <template v-else> --- </template>
       </el-table-column>
       <el-table-column label="USB" prop="usb" align="center" width="120">
         <el-tag
@@ -291,9 +289,7 @@
         >
           {{ row.usb === 1 ? "YES" : "NO" }}
         </el-tag>
-        <template v-else>
-          ---
-        </template>
+        <template v-else> --- </template>
       </el-table-column>
       <el-table-column label="蓝牙" prop="bluetooth" align="center" width="120">
         <el-tag
@@ -664,8 +660,6 @@ export default {
       dictList: [],
       categoryOptions: [],
       computerOptions: [],
-      // 按键图片
-      dicts_keyType_list: {},
       // 查询参数
       queryParams: {
         p: 1,
@@ -680,23 +674,13 @@ export default {
     isShow() {
       const list = [null, "null", undefined, "undefined", false, "false"];
       return (val) => {
-        if (typeof val === 'string') {
+        if (typeof val === "string") {
           return !list.includes(val.toLowerCase());
         } else {
           return !list.includes(val);
         }
       };
     },
-  },
-  created() {
-    // 按键型号
-    this.getDicts("STS_KEY_TYPE").then((res) => {
-      const data = res.data;
-
-      data.forEach(({ dictLabel, dictValue }) => {
-        this.dicts_keyType_list[dictValue] = dictLabel;
-      });
-    });
   },
   mounted() {
     categoryComputerDict().then((response) => {

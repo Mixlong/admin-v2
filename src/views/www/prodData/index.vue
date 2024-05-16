@@ -515,10 +515,11 @@ export default {
       }
     },
     onCellStateClick({ categoryId, computerId }, status) {
-      // /device/productData/fileConfig
+      const pageUrl = process.env.NODE_ENV === "development" ?  "/productData/fileConfig" : "/device/productData/fileConfig";      
+   
       if (status !== 2) {
         this.$router.push(
-          `/device/productData/fileConfig?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
+          `${pageUrl}?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
         );
       }
     },
