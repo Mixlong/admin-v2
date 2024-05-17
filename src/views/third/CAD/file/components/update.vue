@@ -72,7 +72,13 @@
 
         <el-row>
           <el-form-item label="数据类型" prop="dataType">
-            <el-select v-model="form.dataType" clearable size="small" placeholder="请选择数据类型">
+            <el-select
+              v-model="form.dataType"
+              clearable
+              size="small"
+              placeholder="请选择数据类型"
+              @change="resetValidForm"
+            >
               <el-option label="PC上位机" :value="1"></el-option>
               <template v-if="isStsType(form.type)">
                 <el-option label="STS网页" :value="2"></el-option>
@@ -82,6 +88,107 @@
           </el-form-item>
         </el-row>
 
+        <!-- PC上位机 -->
+        <template v-if="form.dataType === 1">
+          <el-form-item label="属性描述" prop="content">
+            <template v-if="form.type === 'hard_version'">
+              <select-loadMore
+                style="width: 100%"
+                v-model="form.content"
+                :data="hardData.data"
+                :page="hardData.page"
+                :hasMore="hardData.more"
+                dictLabel="name"
+                dictValue="name"
+                :request="getHardList"
+                placeholder="请选择硬件版本号"
+              />
+            </template>
+            <template v-else>
+              <template v-if="form.type === 'ble_version'">
+                <el-row
+                  v-for="(item, index) in form.bleVersionList"
+                  :key="index"
+                >
+                  <el-col :span="23">
+                    <el-form-item style="width: 100%">
+                      <el-input
+                        v-model.trim="item.bleName"
+                        clearable
+                        placeholder="请输入蓝牙版本号"
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="1">
+                    <el-button
+                      @click="removeDomain(item)"
+                      class="margin-left-xs"
+                      icon="el-icon-minus"
+                      circle
+                      plain
+                      v-if="
+                        index > 0 &&
+                        form.bleVersionList.length > 0 &&
+                        index + 1 !== form.bleVersionList.length
+                      "
+                      type="primary"
+                    />
+                    <el-button
+                      @click="addDomain"
+                      class="margin-left-xs"
+                      icon="el-icon-plus"
+                      circle
+                      plain
+                      v-if="index + 1 == form.bleVersionList.length"
+                      type="primary"
+                    />
+                  </el-col>
+                </el-row>
+              </template>
+              <template v-else>
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 1, maxRows: 8 }"
+                  v-model="form.content"
+                  placeholder="请输入文件描述"
+                />
+              </template>
+            </template>
+          </el-form-item>
+          <el-form-item
+            v-show="form.type === 'dt_pack_sn'"
+            label="整机SN长度"
+            prop="packSnLen"
+          >
+            <el-input-number
+              v-model="form.packSnLen"
+              :min="1"
+              :max="31"
+              :precision="0"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item
+            label="文件"
+            prop="url"
+            v-if="form.up == 1"
+            style="width: 100%"
+          >
+            <DrUpload
+              :limit="1"
+              v-model="form.url"
+              :css="{ width: '100%' }"
+              :isOnePic="1"
+              :accept="isFileType"
+            >
+              <div>
+                <el-button size="small" type="primary">点击上传</el-button>
+              </div>
+            </DrUpload>
+          </el-form-item>
+        </template>
+
+        <!-- STS网页 -->
         <template v-if="form.dataType === 2">
           <el-row>
             <el-col>
@@ -144,41 +251,28 @@
 					</el-row> -->
         </template>
 
-        <template v-if="form.dataType === 1">
-          <el-form-item label="属性描述" prop="content">
-            <template v-if="form.type === 'hard_version'">
-              <select-loadMore
-                style="width: 100%"
-                v-model="form.content"
-                :data="hardData.data"
-                :page="hardData.page"
-                :hasMore="hardData.more"
-                dictLabel="name"
-                dictValue="name"
-                :request="getHardList"
-                placeholder="请选择硬件版本号"
-              />
-            </template>
-            <template v-else>
-              <el-input
-                type="textarea"
-                :autosize="{ minRows: 1, maxRows: 8 }"
-                v-model="form.content"
-                placeholder="请输入文件描述"
-              />
-            </template>
+        <!-- STS程序脚本 -->
+        <template v-if="form.dataType === 3">
+          <el-form-item label="js文件描述" prop="jsContent">
+            <el-input
+              v-model="form.jsContent"
+              type="textarea"
+              :autosize="{ minRows: 1, maxRows: 8 }"
+              placeholder="请输入文件描述"
+            />
           </el-form-item>
           <el-form-item
             label="文件"
-            prop="url"
+            prop="jsFile"
             v-if="form.up == 1"
             style="width: 100%"
           >
             <DrUpload
               :limit="1"
-              v-model="form.url"
+              v-model="form.jsFile"
               :css="{ width: '100%' }"
               :isOnePic="1"
+              accept=".js"
             >
               <div>
                 <el-button size="small" type="primary">点击上传</el-button>
@@ -186,35 +280,6 @@
             </DrUpload>
           </el-form-item>
         </template>
-      </template>
-
-      <template v-if="form.dataType === 3">
-        <el-form-item label="js文件描述" prop="jsContent">
-          <el-input
-            v-model="form.jsContent"
-            type="textarea"
-            :autosize="{ minRows: 1, maxRows: 8 }"
-            placeholder="请输入文件描述"
-          />
-        </el-form-item>
-        <el-form-item
-          label="文件"
-          prop="jsFile"
-          v-if="form.up == 1"
-          style="width: 100%"
-        >
-          <DrUpload
-            :limit="1"
-            v-model="form.jsFile"
-            :css="{ width: '100%' }"
-            :isOnePic="1"
-            accept=".js"
-          >
-            <div>
-              <el-button size="small" type="primary">点击上传</el-button>
-            </div>
-          </DrUpload>
-        </el-form-item>
       </template>
 
       <!-- 新增字段 -->
@@ -371,7 +436,7 @@
       <el-button :loading="isLoading" type="primary" @click="submitForm">
         确 定
       </el-button>
-      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button @click="cancel">取 消</el-button>
     </div>
   </el-dialog>
 </template>
@@ -425,6 +490,8 @@ export default {
       form: {
         url: "",
         testInfo: [],
+        packSnLen: "",
+        bleVersionList: [{ bleName: "" }],
       },
       title: "",
       // 表单校验
@@ -550,6 +617,14 @@ export default {
         }
       }
     },
+    isFileType() {
+      const fileType = {
+        config_file_ini: ".ini",
+        config_file: ".json",
+      };
+      const { type } = this.form;
+      return fileType[type];
+    },
   },
   watch: {
     form(val) {
@@ -609,6 +684,15 @@ export default {
     });
   },
   methods: {
+    // 重置表单校验规则
+    resetValidForm(dataType) {
+      if (dataType !== 3) {
+        this.clearValidateItem("form", "jsContent");
+        this.clearValidateItem("form", "jsFile");
+      } else if (dataType !== 2) {
+        this.clearValidateItem("form", "webVersion");
+      }
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -617,9 +701,22 @@ export default {
         jsContent: "",
         webVersion: "",
         testInfo: [],
+        packSnLen: "",
+        bleVersionList: [{ bleName: "" }],
       };
       this.stsData.data = [];
       this.resetForm("form");
+    },
+    addDomain() {
+      this.form.bleVersionList.push({
+        bleName: "",
+      });
+    },
+    removeDomain(item) {
+      var index = this.form.bleVersionList.indexOf(item);
+      if (index !== -1) {
+        this.form.bleVersionList.splice(index, 1);
+      }
     },
     changeMidValue(val, isChange) {
       let arr = [];
@@ -712,6 +809,10 @@ export default {
       this.form.webVersion = version;
       this.form.stsContent = version;
     },
+    cancel() {
+      this.dialogVisible = false;
+      this.isLoading = false;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -723,6 +824,34 @@ export default {
             delete this.form.updateBy;
             delete this.form.updateTime;
             let fn = this.isBatchSync ? resetBatchSync : editFileConfig;
+            const { type, bleVersionList, packSnLen, content } = this.form;
+
+            if (type === "ble_version") {
+              const bleCodeStr = bleVersionList
+                .map((item) => item.bleName)
+                .filter((bleName) => bleName !== "")
+                .join(",");
+              if (bleCodeStr) {
+                this.form.content = bleCodeStr;
+                delete this.form.bleVersionList;
+              } else {
+                this.isLoading = false;
+                return this.msgError("蓝牙版本至少有一项");
+              }
+            }
+
+            if (type === "dt_pack_sn") {
+              if (!this.Is_Empty(content) && this.Is_Empty(packSnLen)) {
+                this.isLoading = false;
+                return this.msgError("整机SN的长度不能为空");
+              } else if (!this.Is_Empty(packSnLen) && this.Is_Empty(content)) {
+                this.isLoading = false;
+                return this.msgError("整机SN不能为空");
+              } else if (!this.Is_Empty(content) && !this.Is_Empty(packSnLen)) {
+                this.form.content = `${content},${packSnLen}`;
+              }
+            }
+
             fn(this.form)
               .then((response) => {
                 if (response.code === 200) {

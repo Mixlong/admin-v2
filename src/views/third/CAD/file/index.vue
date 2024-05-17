@@ -267,7 +267,7 @@
             v-if="isDownloadUrl(scope.row)"
             class="item font16"
             effect="dark"
-            content="下载PC上位机"
+            :content="`下载${scope.row.typeName}`"
             placement="top-end"
           >
             <svg-icon
@@ -469,9 +469,10 @@ export default {
       };
     },
     isDownloadUrl() {
-      return ({ computerStatus, status, url }) => {
+      return ({ computerStatus, status, url, dataType }) => {
         return (
           !computerStatus &&
+          dataType === 1 &&
           url &&
           (((status !== 2 || status !== 4) &&
             this.checkRole(["test", "dev"])) ||
@@ -700,43 +701,43 @@ export default {
       this.multiple = !selection.length;
     },
     handleUpdate(row, isBatchSync) {
+      let copyRow = JSON.parse(JSON.stringify(row));
       // shit 改不动了
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.changeCategory2(row.categoryId);
+      this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
 
-      // if (row.configExtend === null) {
-      //   row.configExtend = {
-      //     schemeVersion: "",
-      //     agreementVersion: "",
-      //     pcbaSn: "",
-      //     testInfo: [],
-      //   };
-      // } else {
-      //   // 测试项目数据
-      //   if (row.configExtend.testInfo) {
-      //     if (!Array.isArray(row.configExtend.testInfo)) {
-      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
-      //     }
-      //   }
-      // }
-      this.$refs.compUpdate.form = Object.assign(
-        { idList: [], content: "", testInfo: [] },
-        row
-      );
-      this.$refs.compUpdate.form.firmwareConf = row.firmwareConf
-        ? row.firmwareConf
-        : {};
+      // 蓝牙地址转化
+      let bleVersionList = [{ bleName: "" }];
+      if (copyRow.type === "ble_version" && !this.Is_Empty(copyRow.content)) {
+        let bleNameList = copyRow.content.split(",");
+
+        bleVersionList = bleNameList.map((bleName) => {
+          return { bleName };
+        });
+      }
+
+      // 整机SN的长度转化
+      if(copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
+        const packContentAndLen = copyRow.content.split(',');
+
+        copyRow.content = packContentAndLen[0];
+        copyRow.packSnLen = packContentAndLen[1];
+      }
+
+      this.$refs.compUpdate.form = Object.assign({ idList: [], content: "", testInfo: [], bleVersionList }, copyRow);
+
+      this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf ? copyRow.firmwareConf : {};
       if (this.$refs.compUpdate.form.firmwareConf.mid) {
         this.$refs.compUpdate.changeMidValue(
           this.$refs.compUpdate.form.firmwareConf.mid,
           false
         );
       }
-      this.$refs.compUpdate.form.firmwareConf.fileConfId = row.id;
+      this.$refs.compUpdate.form.firmwareConf.fileConfId = copyRow.id;
       this.$refs.compUpdate.boleConfig =
-        row.type == "boot_file" ||
-        row.type == "app_file" ||
-        row.type == "ui_data";
+      copyRow.type == "boot_file" ||
+      copyRow.type == "app_file" ||
+      copyRow.type == "ui_data";
       this.$refs.compUpdate.isBatchSync = isBatchSync;
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";

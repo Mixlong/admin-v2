@@ -1,11 +1,8 @@
 import {
-  listFileConfig,
   categoryComputerDict,
-  stsEditFileConfig,
 } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
 
-import Axios from "axios";
 import { scrollTo } from "@/utils/scroll-to";
 
 export default {

@@ -154,7 +154,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin'])"
+            v-if="checkRole(['dev', 'soft_internship', 'admin'])"
             @click="handleUpdate(scope.row)"
           />
 

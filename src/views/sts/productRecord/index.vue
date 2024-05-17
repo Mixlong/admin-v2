@@ -7,7 +7,7 @@
           placeholder="请选择品类"
           clearable
           filterable
-          style="width: 160px"
+          style="max-width: 160px"
           @change="changeCategory"
         >
           <el-option
@@ -25,7 +25,7 @@
           filterable
           placeholder="请选择型号"
           @change="getList"
-          style="width: 160px"
+          style="max-width: 160px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -40,7 +40,7 @@
           v-model="queryParams.sn"
           placeholder="请输入整机SN"
           clearable
-          style="max-width: 130px"
+          style="max-width: 160px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -49,7 +49,7 @@
           v-model="queryParams.customerOrderNo"
           placeholder="请输入客户订单号"
           clearable
-          style="max-width: 130px"
+          style="max-width: 160px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -58,7 +58,7 @@
           v-model="queryParams.boxNo"
           placeholder="请输入箱号"
           clearable
-          style="max-width: 130px"
+          style="max-width: 160px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -84,28 +84,48 @@
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
       <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="整机SN" prop="sn" align="center" />
-      <el-table-column label="客户订单号" prop="customerOrderNo" align="center" />
+      <el-table-column label="整机SN" prop="sn" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
+      </el-table-column>
+      <el-table-column
+        label="客户订单号"
+        prop="customerOrderNo"
+        align="center"
+      />
       <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" />
-      <el-table-column label="箱号" prop="boxNo" align="center" />
+      <el-table-column label="箱号" prop="boxNo" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
+      </el-table-column>
       <el-table-column label="装箱时间" prop="packingTime" align="center">
         <template slot-scope="{ row }">
-          {{ parseTime(row.packingTime) }}
+          {{ parseTime(row.packingTime) || "---" }}
         </template>
       </el-table-column>
-      <el-table-column label="版本信息" align="center" width=100>
+      <el-table-column label="版本信息" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="配件信息" align="center" width=100>
+      <el-table-column label="配件信息" align="center" width="100">
         <template slot-scope="{ row }">
-          <el-button type="text" @click="$router.push(`/www/PartInfoView/parts?sn=${row.sn}`)">查看</el-button>
+          <el-button
+            type="text"
+            @click="$router.push(`/www/PartInfoView/parts?sn=${row.sn}`)"
+          >
+            查看
+          </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="测试信息" align="center" width=100>
+      <el-table-column label="测试信息" align="center" width="100">
         <template slot-scope="{ row }">
-          <el-button type="text" @click="$router.push(`/STS/stsTestResult?sn=${row.sn}&recordId=${row.id}`)">查看</el-button>
+          <el-button
+            type="text"
+            @click="
+              $router.push(`/STS/stsTestResult?sn=${row.sn}&recordId=${row.id}`)
+            "
+          >
+            查看
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -121,7 +141,7 @@
     <el-dialog
       title="版本信息"
       :visible.sync="isStsDetailShow"
-      width="700px"         
+      width="700px"
       center
       append-to-body
       top="1vh"
@@ -133,11 +153,7 @@
           width="120"
           align="center"
         />
-        <el-table-column
-          label="HW版本"
-          prop="hwVersion"
-          align="center"
-        />
+        <el-table-column label="HW版本" prop="hwVersion" align="center" />
         <el-table-column label="UI版本" prop="uiVersion" align="center" />
         <el-table-column label="BOOT版本" prop="bootVersion" align="center" />
         <el-table-column label="APP版本" prop="appVersion" align="center" />
@@ -145,8 +161,8 @@
     </el-dialog>
   </div>
 </template>
-  
-  <script>
+
+<script>
 import { categoryComputerDict, recordList } from "@/api/third/fileConfig";
 
 export default {
@@ -174,7 +190,7 @@ export default {
         sn: "",
         processName: "",
         result: "",
-      }
+      },
     };
   },
   created() {
@@ -219,7 +235,7 @@ export default {
         this.loading = false;
       });
     },
-    // 测试详情 
+    // 测试详情
     seeDetail(row) {
       this.isStsDetailShow = true;
 

@@ -72,7 +72,7 @@
                     v-for="(value, key) in backlightBrightnessList"
                     :key="key"
                     :label="value"
-                    :value="+key"
+                    :value="transformValueInt('backlightBrightness', key)"
                   />
                 </el-select>
               </el-form-item>
@@ -92,7 +92,7 @@
                     v-for="item in sleepTimeList"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('sleepTime', item)"
                   />
                 </el-select>
               </el-form-item>
@@ -113,7 +113,7 @@
                     v-for="item in dicts_voltage"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('voltage', item)"
                   />
                 </el-select>
               </el-form-item>
@@ -144,7 +144,7 @@
                     v-for="item in powerGearData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('powerGear', item)"
                   >
                   </el-option>
                 </el-select>
@@ -165,7 +165,7 @@
                     v-for="item in assistStartMagnetNumberData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('assistStartMagnetNumber', item)"
                   >
                   </el-option>
                 </el-select>
@@ -203,14 +203,6 @@
                 prop="assistLimit"
                 class="noData"
               >
-                <!-- <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0, max: 99 }"
-                  v-model.number="formData.instrumentModel.assistLimit"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="请输入助力限速门限"
-                  clearable
-                /> -->
                 <el-select
                   v-model="formData.instrumentModel.assistLimit"
                   placeholder="请选择助力限速门限"
@@ -222,7 +214,7 @@
                     v-for="item in assistLimitData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('assistLimit', item)"
                   >
                   </el-option>
                 </el-select>
@@ -258,7 +250,7 @@
                     v-for="item in slowStartData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('slowStart', item)"
                   >
                   </el-option>
                 </el-select>
@@ -280,7 +272,7 @@
                     v-for="(value, key) in wheelDiameterData"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('wheelDiameter', key)"
                   >
                   </el-option>
                 </el-select>
@@ -312,7 +304,7 @@
                     v-for="(value, key) in dicts_unit"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('unit', key)"
                   >
                   </el-option>
                 </el-select>
@@ -332,7 +324,7 @@
                     v-for="(value, key) in dicts_agreement"
                     :key="key"
                     :label="value"
-                    :value="+key"
+                    :value="transformValueInt('agreement', key)"
                   >
                   </el-option>
                 </el-select>
@@ -352,7 +344,7 @@
                     v-for="(value, key) in dicts_power"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('power', key)"
                   >
                   </el-option>
                 </el-select>
@@ -373,7 +365,7 @@
                     v-for="item in speedSteelData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('speedSteel', item)"
                   >
                   </el-option>
                 </el-select>
@@ -383,13 +375,6 @@
                 prop="instrumentModel.batteryVoltageChangeTime"
                 :class="{ noData: isNoData('batteryVoltageChangeTime') }"
               >
-                <!-- <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 1, max: 60 }"
-                  v-model="formData.instrumentModel.batteryVoltageChangeTime"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="电量显示变化时间"
-                /> -->
                 <el-select
                   v-model="formData.instrumentModel.batteryVoltageChangeTime"
                   placeholder="请选择电量变化时间"
@@ -401,7 +386,7 @@
                     v-for="item in batteryVoltageChangeTimeData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('batteryVoltageChangeTime', item)"
                   >
                   </el-option>
                 </el-select>
@@ -411,13 +396,6 @@
                 prop="instrumentModel.smoothLevel"
                 :class="{ noData: isNoData('smoothLevel') }"
               >
-                <!-- <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0, max: 10 }"
-                  v-model="formData.instrumentModel.smoothLevel"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="速度平滑等级"
-                /> -->
                 <el-select
                   v-model="formData.instrumentModel.smoothLevel"
                   placeholder="请选择速度平滑等级"
@@ -429,7 +407,7 @@
                     v-for="item in smoothLevelData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('smoothLevel', item)"
                   >
                   </el-option>
                 </el-select>
@@ -439,13 +417,6 @@
                 prop="allLineErrTimeOut"
                 :class="{ noData: isNoData('allLineErrTimeOut') }"
               >
-                <!-- <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 5, max: 255 }"
-                  v-model="formData.instrumentModel.allLineErrTimeOut"
-                  oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                  placeholder="请输入总线故障超时时间"
-                /> -->
                 <el-select
                   v-model="formData.instrumentModel.allLineErrTimeOut"
                   placeholder="请选择总线故障超时时间"
@@ -457,7 +428,7 @@
                     v-for="item in allLineErrTimeOutData"
                     :key="item"
                     :label="item"
-                    :value="item"
+                    :value="transformValueInt('allLineErrTimeOut', item)"
                   >
                   </el-option>
                 </el-select>
@@ -480,7 +451,7 @@
                     v-for="(value, key) in dicts_ebike"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('ebikeName', key)"
                   />
                 </el-select>
               </el-form-item>
@@ -523,7 +494,7 @@
                     v-for="(value, key) in dicts_logo"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('logo', key)"
                   >
                   </el-option>
                 </el-select>
@@ -582,7 +553,7 @@
                     v-for="(value, key) in serialLevelData"
                     :key="key"
                     :label="value"
-                    :value="key"
+                    :value="transformValueInt('serialLevel', key)"
                   >
                   </el-option>
                 </el-select>
@@ -635,8 +606,12 @@
                 :class="{ noData: isNoData('bluetooth') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.bluetooth">
-                  <el-radio :label="1"> YES </el-radio>
-                  <el-radio :label="0"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeOneList"
+                    :label="transformValueInt('bluetooth', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -645,8 +620,12 @@
                 :class="{ noData: isNoData('driveAssist') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.driveAssist">
-                  <el-radio :label="1">YES</el-radio>
-                  <el-radio :label="0">NO</el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeOneList"
+                    :label="transformValueInt('driveAssist', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -655,8 +634,12 @@
                 :class="{ noData: isNoData('factoryReset') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.factoryReset">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeTwoList"
+                    :label="transformValueInt('factoryReset', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -665,8 +648,12 @@
                 :class="{ noData: isNoData('rotateHandle') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.rotateHandle">
-                  <el-radio :label="1"> YES </el-radio>
-                  <el-radio :label="0"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeOneList"
+                    :label="transformValueInt('rotateHandle', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -675,8 +662,12 @@
                 :class="{ noData: isNoData('buzzerSwitch') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.buzzerSwitch">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeTwoList"
+                    :label="transformValueInt('buzzerSwitch', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -685,8 +676,12 @@
                 :class="{ noData: isNoData('cruise') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.cruise">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeTwoList"
+                    :label="transformValueInt('cruise', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -695,8 +690,12 @@
                 :class="{ noData: isNoData('turnOnPasswd') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.turnOnPasswd">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeTwoList"
+                    :label="transformValueInt('turnOnPasswd', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -705,8 +704,12 @@
                 :class="{ noData: isNoData('menuPassword') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.menuPassword">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
+                  <el-radio
+                    v-for="(value, key) in radioTypeTwoList"
+                    :label="transformValueInt('menuPassword', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
 
@@ -718,10 +721,12 @@
                 <el-radio-group
                   v-model="formData.instrumentModel.rotateHandleSpeedLimit"
                 >
-                  <div class="flex">
-                    <el-radio :label="0">正常</el-radio>
-                    <el-radio :label="1">限速6Km</el-radio>
-                  </div>
+                  <el-radio
+                    v-for="(value, key) in rotateHandleSpeedLimitList"
+                    :label="transformValueInt('rotateHandleSpeedLimit', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item
@@ -730,10 +735,12 @@
                 :class="{ noData: isNoData('assist') }"
               >
                 <el-radio-group v-model="formData.instrumentModel.assist">
-                  <div class="flex">
-                    <el-radio :label="0">助力正</el-radio>
-                    <el-radio :label="1">助力反</el-radio>
-                  </div>
+                  <el-radio
+                    v-for="(value, key) in assistList"
+                    :label="transformValueInt('assist', key)"
+                  >
+                    {{ value }}
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>
@@ -744,8 +751,12 @@
           <h3>其他配置项</h3>
           <el-form-item label="关机测试" prop="otherOptions.shutdownTest">
             <el-radio-group v-model="formData.otherOptions.shutdownTest">
-              <el-radio :label="1"> YES </el-radio>
-              <el-radio :label="0"> NO </el-radio>
+              <el-radio
+                v-for="(value, key) in radioTypeOneList"
+                :label="transformValueInt('shutdownTest', key)"
+              >
+                {{ value }}
+              </el-radio>
             </el-radio-group>
           </el-form-item>
           <el-row type="flex">
@@ -857,7 +868,13 @@
       </template>
     </el-footer>
 
-    <el-dialog title="上传配置" width="400px" :visible.sync="visible">
+    <el-dialog
+      title="上传配置"
+      width="400px"
+      :visible.sync="visible"
+      :close-on-click-modal="false"
+      center
+    >
       <el-form
         ref="deployForm"
         :model="deployForm"
@@ -921,7 +938,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="handleCancel">取 消</el-button>
+        <el-button size="small" @click="visible = false">取 消</el-button>
         <el-button
           size="small"
           type="primary"
@@ -975,8 +992,7 @@ export default {
 
     // 系统电压
     const validateVoltage = (rule, value, callback) => {
-      console.log(value);
-      if (!this.dicts_voltage.includes(value)) {
+      if (!this.dicts_voltage.includes(+value)) {
         callback(new Error("系统电压不在可选值范围内"));
       } else {
         callback();
@@ -997,7 +1013,7 @@ export default {
     // 轮径
     const validateWheelDiameter = (rule, value, callback) => {
       const wheelDiameterKeys = Object.keys(this.wheelDiameterData);
-      if (!wheelDiameterKeys.includes(value)) {
+      if (!wheelDiameterKeys.includes(String(value))) {
         callback(new Error("请重新选择轮径值"));
       } else {
         callback();
@@ -1246,34 +1262,23 @@ export default {
         0: "3.3V",
         1: "5V",
       },
-      dicts_ebike: {
-        0: "Pace500",
-        1: "Pace350",
-        2: "Level",
-        3: "Sinch",
-        4: "Aventure",
-        5: "Pace",
-        6: "Sinch ST",
-        7: "Pace500 V2",
-        8: "Pace350 V2",
-        9: "Soltera",
-        10: "Soltera-7S",
-        11: "Cruiser",
-        12: "Level V2",
-        13: "Sinch V2 ST",
-        14: "Aventure V2",
-        15: "Abound",
-        16: "Aventure CN",
-        17: "Sinch ST CN",
-        18: "Sinch CN",
-        19: "Aventure.2",
-        20: "Pace350.3",
-        21: "Pace500.3",
-        22: "Level.3",
-        23: "Sinch ST.2",
-        24: "Soltera.2",
-        25: "Level.2",
+      radioTypeOneList: {
+        0: "NO",
+        1: "YES",
       },
+      radioTypeTwoList: {
+        0: "YES",
+        1: "NO",
+      },
+      rotateHandleSpeedLimitList: {
+        0: "正常",
+        1: "限速6Km",
+      },
+      assistList: {
+        0: "助力正",
+        1: "助力反",
+      },
+      dicts_ebike: {},
       parallelism: {
         //待确认对应关系
         name: "name",
@@ -1366,6 +1371,13 @@ export default {
         };
       };
     },
+    transformValueInt() {
+      return (keyType, value) => {
+        return typeof this.formData.instrumentModel[keyType] === "string"
+          ? String(value)
+          : +value;
+      };
+    },
   },
   watch: {
     "deployForm.url"(url) {
@@ -1373,8 +1385,16 @@ export default {
         this.clearValidateItem("deployForm", "url");
       }
     },
+    visible(bool) {
+      if (!bool) {
+        this.$refs.deployForm.resetFields();
+      }
+    },
   },
   created() {
+    // 车名
+    this.getConfigDicts("instrument_ebike_name", "dicts_ebike");
+
     this.echoWheelDiameter();
     categoryComputerDict().then((res) => {
       this.dictList = res.data;
@@ -1463,6 +1483,14 @@ export default {
             this.convertIniToJson(content);
           } else {
             jsonData = JSON.parse(content);
+
+            let { undervoltage } = jsonData.instrumentModel;
+
+            if (undervoltage > 99.9) {
+              undervoltage /= 1000;
+              jsonData.instrumentModel.undervoltage = undervoltage;
+            }
+
             this.formData = {
               ...jsonData,
               otherOptions: {
@@ -1540,6 +1568,8 @@ export default {
         for (let childKey in parallelism) {
           if (parallelism[childKey] === parentKey) {
             let parVal = objVal[parallelism[childKey]];
+
+            // 欠压门限
             if (childKey === "undervoltage" && parVal !== "") {
               objVal[parallelism[childKey]] = (+parVal + 20000) / 1000;
             }
@@ -1662,7 +1692,14 @@ export default {
     },
     handleFetchData(stsDeployFile) {
       Axios.get(stsDeployFile).then((res) => {
-        this.formData = res.data;
+        const configData = res.data;
+
+        let { undervoltage } = configData.instrumentModel;
+        if (undervoltage > 99.9) {
+          undervoltage /= 1000;
+          configData.instrumentModel.undervoltage = undervoltage;
+        }
+        this.formData = { ...configData };
 
         if (!this.formData.otherOptions) {
           this.$set(this.formData, "otherOptions", {
@@ -1729,7 +1766,11 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.confirmLoading = true;
-          stsEditFileConfig({ ...this.deployForm, type: "config_file" })
+          stsEditFileConfig({
+            ...this.deployForm,
+            type: "config_file",
+            dataType: 2,
+          })
             .then(() => {
               this.msgSuccess("配置上传成功");
               this.visible = false;
@@ -1740,16 +1781,25 @@ export default {
         }
       });
     },
-    handleCancel() {
-      this.visible = false;
-      this.$refs.deployForm.resetFields();
-    },
     setContentName(computerId) {
       if (computerId) {
         const contentName = this.computerOptions.filter(
           ({ model }) => model === computerId
         );
         this.deployForm.content = contentName[0].name;
+      }
+    },
+    // 配置字典
+    getConfigDicts(dictName, currentData) {
+      try {
+        this.getDicts(dictName).then((res) => {
+          const data = res.data;
+          data.forEach(({ dictLabel, dictValue }) => {
+            this[currentData][dictValue] = dictLabel;
+          });
+        });
+      } catch (error) {
+        throw new Error(error);
       }
     },
   },

@@ -300,7 +300,7 @@
         />
         <el-table-column label="详细需求" prop="demand" align="center">
           <template slot-scope="scope">
-            <div class="text-left" v-html="scope.row.demand"></div>
+            <div class="text-left demand-box" v-html="scope.row.demand"></div>
           </template>
         </el-table-column>
       </el-table>
@@ -321,11 +321,11 @@
 
     <!-- 详细需求 -->
     <el-drawer size="40%" :visible.sync="isDemandDetail">
-      <span slot="title" class="text-blue font20"
-        >型号：{{ sampleSingleData.baseModel }} 的详细需求</span
-      >
+      <span slot="title" class="text-blue font20">
+        型号：{{ sampleSingleData.baseModel }} 的详细需求
+      </span>
       <div
-        class="text-left app-container"
+        class="text-left app-container demand-box"
         v-html="sampleSingleData.demand"
       ></div>
     </el-drawer>
@@ -334,7 +334,7 @@
 
 <script>
 import { getOrderProcess } from "@/api/order";
-import { sampleList, listCustomer } from "@/api/third/sample";
+import { taskSampleList, listCustomer } from "@/api/third/sample";
 import { taskSave, taskUpdate, taskInfo } from "@/api/third/testApi";
 
 import { categoryComputerDict } from "@/api/third/fileConfig";
@@ -548,9 +548,9 @@ export default {
     // 送样列表
     getSampleList() {
       this.isSampleLoading = true;
-      sampleList(this.queryParams).then((res) => {
+      taskSampleList(this.queryParams).then((res) => {
         const { list, total } = res.data;
-        this.sampleDataList = list.filter((item) => item.state !== 6);
+        this.sampleDataList = list;
         this.sampleTotal = total;
         this.isSampleLoading = false;
 
@@ -718,6 +718,12 @@ export default {
     padding-bottom: 0;
     margin-top: 0;
     margin-bottom: 0;
+  }
+}
+.demand-box {
+  /deep/ img {
+    width: 100% !important;
+    height: auto;
   }
 }
 </style>

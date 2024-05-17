@@ -40,8 +40,9 @@
         <el-select
           v-model="form.type"
           placeholder="请选择系列名称"
-          style="width: 100%"
+          filterable
           clearable
+          style="width: 100%"
           @change="form.module = ''"
         >
           <el-option
@@ -53,7 +54,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-	  
+
       <el-form-item label="模块名称:" prop="module">
         <el-select
           v-model="form.module"
@@ -75,6 +76,8 @@
         <el-select
           v-model="form.updateCondition"
           placeholder="请选择覆盖条件"
+          filterable
+          clearable
           style="width: 100%"
           @change="changeTargetIdType"
         >
@@ -95,7 +98,9 @@
       >
         <el-select
           v-model="form.targetId"
-          placeholder="请选择"
+          placeholder="请选择工厂名称"
+          filterable
+          clearable
           style="width: 100%"
         >
           <el-option
@@ -115,9 +120,11 @@
       >
         <el-select
           v-model="form.targetId"
-          placeholder="请选择"
-          style="width: 100%"
+          placeholder="请选择在测试DUT"
+          filterable
+          clearable
           multiple
+          style="width: 100%"
         >
           <el-option
             v-for="item in computerOptions"
@@ -136,7 +143,9 @@
       >
         <el-select
           v-model="form.targetId"
-          placeholder="请选择"
+          placeholder="请选择PUCS项"
+          filterable
+          clearable
           style="width: 100%"
         >
           <el-option
@@ -166,9 +175,9 @@
       </el-form-item>
       <el-form-item label="版本描叙:" prop="explains" class="form-textarea">
         <el-input
+          v-model="form.explains"
           type="textarea"
           :rows="4"
-          v-model="form.explains"
           placeholder="请输入版本描叙"
         >
         </el-input>
@@ -176,8 +185,8 @@
 
       <el-form-item label="文件上传:" prop="fileUrl">
         <DrUpload
-          :limit="1"
           v-model="form.fileUrl"
+          :limit="1"
           :isOnePic="1"
           class="flex-direction align-start"
         >

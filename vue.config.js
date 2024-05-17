@@ -31,6 +31,7 @@ module.exports = {
   devServer: {
     host: '0.0.0.0',
     port,
+    hot: true,
     open: false,
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy

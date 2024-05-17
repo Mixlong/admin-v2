@@ -61,9 +61,20 @@
     >
       <i :class="isUploadIcon"></i>
     </el-upload>
-    <el-dialog class="el-upload-video-img-box" :visible.sync="dialogVisible" append-to-body top="2vh">
-      <video style="object-fit: fill;" controls  class="w100" v-if="isVideo" :src="dialogImageUrl" />
-      <img v-else width="100%" :src="dialogImageUrl" style="max-height: 80vh;" />
+    <el-dialog
+      class="el-upload-video-img-box"
+      :visible.sync="dialogVisible"
+      append-to-body
+      top="2vh"
+    >
+      <video
+        style="object-fit: fill"
+        controls
+        class="w100"
+        v-if="isVideo"
+        :src="dialogImageUrl"
+      />
+      <img v-else width="100%" :src="dialogImageUrl" style="max-height: 80vh" />
     </el-dialog>
   </div>
 </template>
@@ -90,7 +101,7 @@ export default {
     },
     action: {
       type: String,
-      default: reqUrl + "/oss/batch-upload"
+      default: reqUrl + "/oss/batch-upload",
     },
     value: {
       type: String,
@@ -114,11 +125,11 @@ export default {
     },
     isLimit: {
       type: Number,
-      required: false
+      required: false,
     },
     accept: {
       type: String,
-      default: "image/jpeg, image/gif, image/png,image/bmp",
+      default: ""
     },
   },
   data() {
@@ -145,7 +156,7 @@ export default {
     },
     isUploadIcon() {
       return this.isLoading ? "el-icon-loading" : "el-icon-plus";
-    }
+    },
   },
   watch: {
     value(value) {
@@ -166,14 +177,15 @@ export default {
       if (this.isVideo) {
         return true;
       }
-      const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
-      const isLt50M = file.size / 1024 / 1024 < 50; // 50M
 
-      if (!isValidFormat) {
-        this.$message.error("图片只能是 JPG或PNG 格式!");
-      } else if (!isLt50M) {
-        this.$message.error("图片大小不能超过 2MB!");
-      }
+      // const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
+      // const isLt50M = file.size / 1024 / 1024 < 50; // 50M
+
+      // if (!isValidFormat) {
+      //   this.$message.error("图片只能是 JPG或PNG 格式!");
+      // } else if (!isLt50M) {
+      //   this.$message.error("图片大小不能超过 2MB!");
+      // }
 
       const maxLt = this.max === 1 && this.imgList.length > 0;
       if (maxLt) {
@@ -182,7 +194,8 @@ export default {
 
       this.isLoading = true;
 
-      return isValidFormat && isLt50M && !maxLt;
+      // return isValidFormat && isLt50M && !maxLt;
+      return !maxLt;
     },
 
     handleSuccess(res) {
