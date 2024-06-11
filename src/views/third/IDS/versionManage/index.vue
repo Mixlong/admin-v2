@@ -97,7 +97,7 @@
       ref="multipleTableRef"
       v-loading="loading"
       :data="brandList"
-      :height="tableHeight()"
+      :height="tableHeight(35)"
       :row-class-name="tableRowClassName"
       @selection-change="handleSelectionChange"
       border
@@ -113,13 +113,13 @@
         label="品类"
         prop="categoryName"
         align="center"
-        width="100"
+        width="150"
       />
       <el-table-column
         label="版本号"
         prop="versionName"
         align="center"
-        width="130"
+        width="180"
       />
       <el-table-column
         label="属性"
@@ -128,7 +128,7 @@
         width="150"
       />
       <el-table-column label="属性描述" prop="content" align="center">
-        <template slot-scope="{ row }">{{ row.content || "---" }}</template>
+        <span slot-scope="scope" v-NoData="scope.row.content"></span>
       </el-table-column>
       <el-table-column
         label="产品状态"
@@ -142,27 +142,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="140"
-      >
-        <template slot-scope="{ row }">
-          {{ row.createBy ? row.createBy : row.updateBy }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        width="140"
-      >
-        <template slot-scope="{ row }">
-          {{ row.updateTime || "---" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="审核" align="center" width="100">
+      <el-table-column label="审核状态" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -170,9 +150,25 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="创建人"
+        align="center"
+        prop="createBy"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
+      </el-table-column>
+      <el-table-column
+        label="创建时间"
+        align="center"
+        prop="createTime"
+        width="140"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
+      </el-table-column>
+      <el-table-column
         label="操作"
         align="center"
-        width="105"
+        width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
@@ -316,10 +312,10 @@ import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 
 export default {
+  name: "VersionManage",
   components: {
     CompUpdate,
   },
-  name: "BikeFileConfig",
   data() {
     return {
       commonStatusList,

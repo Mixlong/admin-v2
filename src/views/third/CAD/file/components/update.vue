@@ -841,10 +841,7 @@ export default {
             }
 
             if (type === "dt_pack_sn") {
-              if (!this.Is_Empty(content) && this.Is_Empty(packSnLen)) {
-                this.isLoading = false;
-                return this.msgError("整机SN的长度不能为空");
-              } else if (!this.Is_Empty(packSnLen) && this.Is_Empty(content)) {
+              if (!this.Is_Empty(packSnLen) && this.Is_Empty(content)) {
                 this.isLoading = false;
                 return this.msgError("整机SN不能为空");
               } else if (!this.Is_Empty(content) && !this.Is_Empty(packSnLen)) {

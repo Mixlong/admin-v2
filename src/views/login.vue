@@ -174,7 +174,7 @@ export default {
   watch: {
     $route: {
       handler: function (route) {
-        this.redirect = route.query && route.query.redirect;
+        this.redirect = route?.query?.redirect
       },
       immediate: true,
     },
@@ -383,6 +383,7 @@ export default {
   opacity: 0.95;
   display: flex;
   flex-direction: row;
+  box-shadow: 0 12px 32px 4px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.08);
 }
 
 .left-wrapper {
@@ -505,5 +506,16 @@ export default {
     0px 14px 0 #141414, 0px 15px 0 #121212, 2px 20px 5px rgba(0, 0, 0, 0.9),
     5px 23px 5px rgba(0, 0, 0, 0.3), 8px 27px 8px rgba(0, 0, 0, 0.5),
     8px 28px 35px rgba(0, 0, 0, 0.9);
+}
+
+@media screen and (max-width: 1200px) {
+  .bg-wrapper {
+    flex-direction: column;
+    min-width: 450px;
+
+    .right-wrapper {
+      padding-top: 30px;
+    }
+  }
 }
 </style>

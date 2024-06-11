@@ -608,6 +608,7 @@
                 <el-radio-group v-model="formData.instrumentModel.bluetooth">
                   <el-radio
                     v-for="(value, key) in radioTypeOneList"
+                    :key="key"
                     :label="transformValueInt('bluetooth', key)"
                   >
                     {{ value }}
@@ -622,6 +623,7 @@
                 <el-radio-group v-model="formData.instrumentModel.driveAssist">
                   <el-radio
                     v-for="(value, key) in radioTypeOneList"
+                    :key="key"
                     :label="transformValueInt('driveAssist', key)"
                   >
                     {{ value }}
@@ -636,6 +638,7 @@
                 <el-radio-group v-model="formData.instrumentModel.factoryReset">
                   <el-radio
                     v-for="(value, key) in radioTypeTwoList"
+                    :key="key"
                     :label="transformValueInt('factoryReset', key)"
                   >
                     {{ value }}
@@ -650,6 +653,7 @@
                 <el-radio-group v-model="formData.instrumentModel.rotateHandle">
                   <el-radio
                     v-for="(value, key) in radioTypeOneList"
+                    :key="key"
                     :label="transformValueInt('rotateHandle', key)"
                   >
                     {{ value }}
@@ -664,6 +668,7 @@
                 <el-radio-group v-model="formData.instrumentModel.buzzerSwitch">
                   <el-radio
                     v-for="(value, key) in radioTypeTwoList"
+                    :key="key"
                     :label="transformValueInt('buzzerSwitch', key)"
                   >
                     {{ value }}
@@ -678,6 +683,7 @@
                 <el-radio-group v-model="formData.instrumentModel.cruise">
                   <el-radio
                     v-for="(value, key) in radioTypeTwoList"
+                    :key="key"
                     :label="transformValueInt('cruise', key)"
                   >
                     {{ value }}
@@ -692,6 +698,7 @@
                 <el-radio-group v-model="formData.instrumentModel.turnOnPasswd">
                   <el-radio
                     v-for="(value, key) in radioTypeTwoList"
+                    :key="key"
                     :label="transformValueInt('turnOnPasswd', key)"
                   >
                     {{ value }}
@@ -706,6 +713,7 @@
                 <el-radio-group v-model="formData.instrumentModel.menuPassword">
                   <el-radio
                     v-for="(value, key) in radioTypeTwoList"
+                    :key="key"
                     :label="transformValueInt('menuPassword', key)"
                   >
                     {{ value }}
@@ -723,6 +731,7 @@
                 >
                   <el-radio
                     v-for="(value, key) in rotateHandleSpeedLimitList"
+                    :key="key"
                     :label="transformValueInt('rotateHandleSpeedLimit', key)"
                   >
                     {{ value }}
@@ -737,6 +746,7 @@
                 <el-radio-group v-model="formData.instrumentModel.assist">
                   <el-radio
                     v-for="(value, key) in assistList"
+                    :key="key"
                     :label="transformValueInt('assist', key)"
                   >
                     {{ value }}
@@ -745,102 +755,6 @@
               </el-form-item>
             </el-col>
           </el-row>
-
-          <!-- 其他配置 -->
-          <el-divider></el-divider>
-          <h3>其他配置项</h3>
-          <el-form-item label="关机测试" prop="otherOptions.shutdownTest">
-            <el-radio-group v-model="formData.otherOptions.shutdownTest">
-              <el-radio
-                v-for="(value, key) in radioTypeOneList"
-                :label="transformValueInt('shutdownTest', key)"
-              >
-                {{ value }}
-              </el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-row type="flex">
-            <el-col :span="4">
-              <el-form-item label="按键类型" prop="otherOptions.keyType">
-                <el-select
-                  v-model="formData.otherOptions.keyType"
-                  placeholder="请选择按键类型"
-                  :style="inputWidth"
-                  @change="generateInputs"
-                >
-                  <el-option
-                    v-for="(value, key) in keyTypeList"
-                    :key="key"
-                    :label="value.keyTitle"
-                    :value="+key"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!-- <el-col :span="4">
-              <el-form-item label="按键分类" prop="otherOptions.keySort">
-                <el-select
-                  v-model="formData.otherOptions.keySort"
-                  placeholder="请选择按键分类"
-                  :style="inputWidth"
-                  @change="generateInputs"
-                >
-                  <el-option
-                    v-for="(item, index) in keySortList"
-                    :key="index"
-                    :label="item.keyLabel"
-                    :value="item.keyValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col> -->
-          </el-row>
-          <div>
-            <el-form-item
-              ref="formItem"
-              v-for="(item, index) in formData.inputValues"
-              :key="index"
-              :label="item.keyLabel"
-              :prop="`inputValues[${index}].keyCode`"
-              :rules="inputValuesRules(item)"
-            >
-              <el-input
-                v-minMaxValue="{ min: 0 }"
-                v-model.number="item.keyCode"
-                oninput="value=value.replace(/[^\d]/g, '')"
-                clearable
-                :style="inputWidth"
-              />
-            </el-form-item>
-            <el-form-item
-              label="组合键"
-              prop="otherOptions.combinactionKey"
-              v-if="formData.otherOptions.keyType === 3"
-            >
-              <el-input
-                v-minMaxValue="{ min: 0 }"
-                v-model.number="formData.otherOptions.combinactionKey"
-                oninput="value=value.replace(/[^\d]/g, '')"
-                clearable
-                :style="inputWidth"
-              />
-            </el-form-item>
-            <el-form-item
-              label="仪表开机键值"
-              prop="otherOptions.powerKeyCode"
-              v-if="formData.otherOptions.keyType === 7"
-            >
-              <el-input
-                v-minMaxValue="{ min: 0 }"
-                v-model.number="formData.otherOptions.powerKeyCode"
-                oninput="value=value.replace(/[^\d]/g, '')"
-                clearable
-                :style="inputWidth"
-              />
-            </el-form-item>
-          </div>
         </el-form>
       </el-card>
     </el-main>
@@ -867,6 +781,47 @@
         </el-button>
       </template>
     </el-footer>
+
+    <!-- 选择客户 -->
+    <el-dialog
+      title="导出"
+      width="330px"
+      center
+      top="0"
+      :visible.sync="isCustomerShow"
+      :close-on-click-modal="false"
+    >
+      <el-form ref="downloadForm" :model="downloadForm" :rules="rules" inline>
+        <el-form-item label="客户名称" prop="customerName">
+          <select-loadMore
+            v-model="downloadForm.customerName"
+            :data="customerNameData.data"
+            :page="customerNameData.page"
+            :hasMore="customerNameData.more"
+            allow-create
+            dictLabel="name"
+            dictValue="name"
+            :request="getCustomerNameList"
+            placeholder="请选择客户名称"
+          >
+          </select-loadMore>
+        </el-form-item>
+        <el-form-item label="仪表品类" prop="categoryName">
+          <model-category
+            v-if="isCustomerShow"
+            v-model="downloadForm.categoryName"
+            dictLabel="name"
+            dictValue="name"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="isCustomerShow = false">取 消</el-button>
+        <el-button type="primary" @click="handleDownloadSubmit">
+          确 定
+        </el-button>
+      </div>
+    </el-dialog>
 
     <el-dialog
       title="上传配置"
@@ -957,8 +912,8 @@ import {
   categoryComputerDict,
   stsEditFileConfig,
 } from "@/api/third/fileConfig";
+import { getCustomerList } from "@/api/order";
 import { getToken } from "@/utils/auth";
-
 import Axios from "axios";
 import { scrollTo } from "@/utils/scroll-to";
 
@@ -1036,49 +991,17 @@ export default {
       isUploadFlag: false,
       visible: false,
       confirmLoading: false,
+      isCustomerShow: false,
+      customerName: "",
       queryParams: {
         categoryId: "",
         computerId: "",
       },
-      keyTypeList: {
-        2: {
-          keyTitle: "2键",
-          keyList: ["上键", "下键"],
-        },
-        3: {
-          keyTitle: "3键",
-          keyImgFlag: "DTK3_",
-          keyErrImgFlag: "DTK3_Err",
-          keyList: ["上(-)键", "中(+)键", "下(开机)键"],
-        },
-        4: {
-          keyTitle: "4键",
-          keyList: ["开机键", "上", "下", "左", "右"],
-        },
-        5: {
-          keyTitle: "5键",
-          keyImgFlag: "key",
-          keyErrImgFlag: "keyErr",
-          keyList: ["上(+)键", "中(开机)键", "下(-)键", "左键", "右键"],
-        },
-        6: {
-          keyTitle: "6键",
-          keyList: ["上", "中", "下", "左", "右"],
-        },
-        7: {
-          keyTitle: "7键",
-          keyImgFlag: "DTK7_",
-          keyErrImgFlag: "DTK7_Err",
-          keyList: [
-            "+键",
-            "中(电源键)",
-            "-键",
-            "左键",
-            "右键",
-            "左上键",
-            "左下键",
-          ],
-        },
+      // 客户数据
+      customerNameData: {
+        data: [],
+        page: 1,
+        more: true,
       },
       keySortList: [
         {
@@ -1141,13 +1064,6 @@ export default {
           cruise: "",
           serialLevel: "",
         },
-        otherOptions: {
-          shutdownTest: 1,
-          keyType: 5,
-          powerKeyCode: "",
-          keySort: "",
-        },
-        inputValues: [],
       },
       deployForm: {
         categoryId: "",
@@ -1155,7 +1071,17 @@ export default {
         content: "",
         url: "",
       },
+      downloadForm: {
+        customerName: "",
+        categoryName: "",
+      },
       rules: {
+        customerName: [
+          { required: true, message: "客户名称不能为空", trigger: "change" },
+        ],
+        categoryName: [
+          { required: true, message: "仪表品类不能为空", trigger: "change" },
+        ],
         categoryId: [
           { required: true, message: "所属品类不能为空", trigger: "change" },
         ],
@@ -1191,9 +1117,6 @@ export default {
         ],
         "instrumentModel.perimeter": [
           { validator: validatePerimeter, trigger: ["blur", "change"] },
-        ],
-        "otherOptions.powerKeyCode": [
-          { required: true, message: "仪表开机键值不能为空", trigger: "blur" },
         ],
       },
       dictList: [],
@@ -1406,7 +1329,6 @@ export default {
     }
   },
   mounted() {
-    this.generateInputs(5);
     this.scrollToSavePosition();
     window.addEventListener("beforeunload", () => {
       sessionStorage.setItem("scrollPosition", window.scrollY);
@@ -1425,22 +1347,6 @@ export default {
 
         sessionStorage.removeItem("savePostion");
       }
-    },
-    clearkeyCodeRules() {
-      this.$nextTick(() => {
-        this.$refs.formItem.forEach((item) => {
-          item.clearValidate();
-        });
-      });
-    },
-    generateInputs(keyType) {
-      this.formData.inputValues = [];
-
-      for (let i = 0; i < keyType; i++) {
-        const { keyList } = this.keyTypeList[keyType];
-        this.formData.inputValues.push({ keyCode: "", keyLabel: keyList[i] });
-      }
-      this.clearkeyCodeRules();
     },
     changeCountPerimeter(wheelDiameter) {
       let wheelDiameterVal = null;
@@ -1493,13 +1399,6 @@ export default {
 
             this.formData = {
               ...jsonData,
-              otherOptions: {
-                shutdownTest: 1,
-                keyType: 5,
-                powerKeyCode: "",
-                combinactionKey: "",
-              },
-              inputValues: [],
             };
           }
         };
@@ -1700,18 +1599,6 @@ export default {
           configData.instrumentModel.undervoltage = undervoltage;
         }
         this.formData = { ...configData };
-
-        if (!this.formData.otherOptions) {
-          this.$set(this.formData, "otherOptions", {
-            shutdownTest: 1,
-            keyType: 5,
-            powerKeyCode: "",
-            combinactionKey: "",
-          });
-        }
-        if (!this.formData.inputValues) {
-          this.$set(this.formData, "inputValues", []);
-        }
       });
     },
     changeVoltage(voltageVal) {
@@ -1738,18 +1625,62 @@ export default {
       }
       this.formData.instrumentModel.undervoltage = voltage;
     },
+    /** 客户名称列表 */
+    getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.customerNameData.data = [
+              ...this.customerNameData.data,
+              ...list,
+            ];
+          } else {
+            this.customerNameData.data = list;
+          }
+          this.customerNameData.more = pageNum * pageSize < total;
+          this.customerNameData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     // 导出
     exportForm() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.exportToJsonFile(this.formData, "配置文件.json");
+          this.isCustomerShow = true;
+          this.reset();
         }
       });
     },
+    reset() {
+      this.resetForm("downloadForm");
+      this.downloadForm = {
+        customerName: "",
+        categoryName: "",
+      };
+    },
+    handleDownloadSubmit() {
+      this.$refs.downloadForm.validate((valid) => {
+        if (valid) {
+          const fileName = this.handleDownloadName();
+          this.exportToJsonFile(this.formData, fileName);
+        }
+      });
+    },
+    handleDownloadName() {
+      const currentDate = this.moment().format("YYYYMMDD");
+      return (
+        currentDate +
+        "-" +
+        this.downloadForm.customerName +
+        this.downloadForm.categoryName
+      );
+    },
     exportToJsonFile(data, fileName) {
-      const { keyType } = data.otherOptions;
-      const { keyImgFlag, keyErrImgFlag } = this.keyTypeList[keyType];
-      data.otherOptions = { ...data.otherOptions, keyImgFlag, keyErrImgFlag };
       const jsonData = JSON.stringify(data);
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -1758,6 +1689,9 @@ export default {
       link.href = url;
       link.setAttribute("download", fileName);
       link.click();
+
+      this.isCustomerShow = false;
+      this.customerName = "";
 
       URL.revokeObjectURL(url);
     },

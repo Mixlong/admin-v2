@@ -76,6 +76,15 @@ export function saleUpdate(data) {
     });
 }
 
+// 打开关闭售后
+export function saleOperation(data) {
+    return request({
+        url: '/after/operation',
+        method: 'put',
+        data
+    })
+}
+
 // 删除
 export function saleDelete(data) {
     return request({

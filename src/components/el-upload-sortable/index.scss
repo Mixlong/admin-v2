@@ -18,15 +18,25 @@
     align-items: center;
   }
 }
-.el-upload-video-img-box {
-  .el-dialog__body {
-    max-height: 90vh;
-    video {
-      max-height: 80vh;
-    }
 
-    img {
-      object-fit: contain;
+.video-box {
+  .el-dialog {
+    width: 900px;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .el-dialog__header {
+      display: none;
+    }
+    
+    .el-dialog__body {
+      width: inherit;
+      height: 650px;
+      padding: 0;
+      video {
+        width: inherit;
+        height: inherit;
+      }
     }
   }
 }

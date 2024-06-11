@@ -416,11 +416,15 @@ export async function urlDownload(url) {
     url,
     method: "get",
     responseType: "arraybuffer",
-  }).then((res) => {
-    const { data, headers } = res;
-    const fileName = transFileUrl(url);
-    saveImage(data, headers, fileName);
-  });
+  })
+    .then((res) => {
+      const { data, headers } = res;
+      const fileName = transFileUrl(url);
+      saveImage(data, headers, fileName);
+    })
+    .catch(() => {
+      downloadLoadingInstance.close();
+    });
 
   const saveImage = (data, headers, fileName) => {
     const blob = new Blob([data], { type: headers["content-type"] });

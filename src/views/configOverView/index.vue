@@ -27,7 +27,7 @@
           clearable
           v-model="queryParams.computerId"
           placeholder="请选择仪表型号"
-          @change="changeComputer"
+          @change="getList"
           :remote-method="getComputerNameList"
           style="width: 160px"
         >
@@ -57,7 +57,42 @@
       </el-form-item>
     </el-form>
     <el-table v-loading="loading" :data="brandList" :height="tableHeight()">
-      <el-table-column label="序号" width="58" type="index" align="center" />
+      <el-table-column label="操作" align="center" width="90">
+        <template slot-scope="{ row }">
+          <div class="flex flex-direction">
+            <Tooltip
+              v-if="row.state === 0"
+              class="text-orange"
+              icon="el-icon-coordinate"
+              content="审核"
+              v-hasPermi="['product:configOverView:check']"
+              @click="handleAuthChange(row)"
+            />
+            <Tooltip
+              class="margin-0"
+              icon="el-icon-position"
+              content="产品族谱"
+              v-hasPermi="['product:configOverView:btn']"
+              @click="
+                handleNameToPage('Instrument', {
+                  categoryId: row.categoryId,
+                  computerId: row.computerId,
+                })
+              "
+            />
+
+            <template v-if="row.state === 1">
+              <el-tag type="success">通过</el-tag>
+            </template>
+            <template v-else-if="row.state === 2">
+              <el-tag type="danger">未通过</el-tag>
+            </template>
+            <template v-else>
+              <el-tag type="warning">未审核</el-tag>
+            </template>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column
         label="品类"
         prop="category"
@@ -96,14 +131,6 @@
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
       <el-table-column
-        label="客户车型"
-        prop="carModel"
-        align="center"
-        width="150"
-      >
-        <span slot-scope="scope" v-NoData="scope.row.carModel"></span>
-      </el-table-column>
-      <el-table-column
         label="客户料号"
         prop="customerMaterialNum"
         align="center"
@@ -114,10 +141,27 @@
           v-NoData="scope.row.customerMaterialNum"
         ></span>
       </el-table-column>
-      <el-table-column label="车名" prop="ebikeName" align="center" width="120">
-        <template v-if="isShow(row.ebikeName)" slot-scope="{ row }">
-          {{ dicts_ebike[row.ebikeName] }}
-        </template>
+      <el-table-column
+        label="实际客户车名"
+        prop="customerCarName"
+        align="center"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
+      </el-table-column>
+      <el-table-column label="车名" prop="ebikeName" align="center" width="150">
+        <span
+          slot-scope="scope"
+          v-NoData="dicts_ebike[scope.row.ebikeName]"
+        ></span>
+      </el-table-column>
+      <el-table-column
+        label="客户车型编码"
+        prop="carModel"
+        align="center"
+        width="150"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.carModel"></span>
       </el-table-column>
       <el-table-column
         label="控制器接头"
@@ -215,61 +259,90 @@
           <preview-img width="60px" height="60px" :url="row.powerLogo" />
         </template>
       </el-table-column>
+      <el-table-column
+        label="限速范围"
+        prop="speedLimitRang"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.speedLimitRang"></span>
+      </el-table-column>
+      <el-table-column
+        label="车把尺寸"
+        prop="handlebarSize"
+        align="center"
+        width="120"
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="handlebarSizeData[scope.row.handlebarSize]"
+        ></span>
+      </el-table-column>
       <el-table-column label="协议" prop="agreement" align="center" width="120">
-        <template v-if="isShow(row.agreement)" slot-scope="{ row }">
-          {{ dicts_agreement[row.agreement] }}
-        </template>
+        <span
+          slot-scope="scope"
+          v-NoData="dicts_agreement[scope.row.agreement]"
+        ></span>
       </el-table-column>
       <el-table-column
         label="测速磁钢数"
         prop="speedSteel"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.speedSteel"></span>
+      </el-table-column>
       <el-table-column
         label="车轮宽度"
         prop="tiresSize"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.tiresSize"></span>
+      </el-table-column>
       <el-table-column
         label="助力限速门限(km/h)"
         prop="assistLimit"
         align="center"
         width="140"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
+      </el-table-column>
       <el-table-column
         label="轮径"
         prop="wheelDiameter"
         align="center"
         width="120"
       >
-        <template v-if="isShow(row.wheelDiameter)" slot-scope="{ row }">
-          {{ wheelDiameterData[row.wheelDiameter] }}
-        </template>
+        <span
+          slot-scope="scope"
+          v-NoData="wheelDiameterData[scope.row.wheelDiameter]"
+        ></span>
       </el-table-column>
       <el-table-column
         label="周长(mm)"
         prop="perimeter"
         align="center"
         width="120"
-      />
-      <el-table-column label="电压" prop="voltage" align="center" width="120" />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
+      </el-table-column>
+      <el-table-column label="电压" prop="voltage" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
+      </el-table-column>
       <el-table-column
         label="缓启动"
         prop="slowStart"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.slowStart"></span>
+      </el-table-column>
       <el-table-column label="显示单位" prop="unit" align="center" width="120">
-        <template v-if="isShow(row.unit)" slot-scope="{ row }">
-          {{ dicts_unit[row.unit] }}
-        </template>
+        <span slot-scope="scope" v-NoData="dicts_unit[scope.row.unit]"></span>
       </el-table-column>
       <el-table-column label="电量计算" prop="power" align="center" width="120">
-        <template v-if="isShow(row.power)" slot-scope="{ row }">
-          {{ dicts_power[row.power] }}
-        </template>
+        <span slot-scope="scope" v-NoData="dicts_power[scope.row.power]"></span>
       </el-table-column>
       <el-table-column label="APP" prop="app" align="center" width="120">
         <el-tag
@@ -370,7 +443,9 @@
         prop="defaultGear"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.defaultGear"></span>
+      </el-table-column>
       <el-table-column
         label="最高档位"
         prop="topGear"
@@ -384,82 +459,109 @@
         prop="smoothLevel"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.smoothLevel"></span>
+      </el-table-column>
       <el-table-column
         label="电量变化时间(s)"
         prop="batteryVoltageChangeTime"
         align="center"
         width="120"
-      />
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.batteryVoltageChangeTime"
+        ></span>
+      </el-table-column>
       <el-table-column
         label="总线故障超时时间(s)"
         prop="allLineErrTimeOut"
         align="center"
         width="150"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.allLineErrTimeOut"></span>
+      </el-table-column>
       <el-table-column
         label="背光亮度"
         prop="backlightBrightness"
         align="center"
         width="120"
       >
-        <template v-if="isShow(row.backlightBrightness)" slot-scope="{ row }">
-          {{ backlightBrightnessList[row.backlightBrightness] }}
-        </template>
+        <span
+          slot-scope="scope"
+          v-NoData="backlightBrightnessList[scope.row.backlightBrightness]"
+        ></span>
       </el-table-column>
       <el-table-column label="Logo界面" prop="logo" align="center" width="120">
-        <template v-if="isShow(row.logo)" slot-scope="{ row }">
-          {{ dicts_logo[row.logo] }}
-        </template>
+        <span slot-scope="scope" v-NoData="dicts_logo[scope.row.logo]"></span>
       </el-table-column>
       <el-table-column
         label="休眠时间(min)"
         prop="sleepTime"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.sleepTime"></span>
+      </el-table-column>
       <el-table-column
         label="助力档位数"
         prop="powerGear"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.powerGear"></span>
+      </el-table-column>
       <el-table-column
         label="助力开始磁钢数"
         prop="assistStartMagnetNumber"
         align="center"
         width="120"
-      />
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.assistStartMagnetNumber"
+        ></span>
+      </el-table-column>
       <el-table-column
         label="助力比例"
         prop="assistPercentage"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.assistPercentage"></span>
+      </el-table-column>
       <el-table-column
         label="显示轮径"
         prop="showWheelsize"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.showWheelsize"></span>
+      </el-table-column>
       <el-table-column
         label="系统电压(V)"
         prop="voltage"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
+      </el-table-column>
       <el-table-column
         label="限流门限(A)"
         prop="currentlimiting"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.currentlimiting"></span>
+      </el-table-column>
       <el-table-column
         label="欠压门限(V)"
         prop="undervoltage"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
+      </el-table-column>
       <el-table-column
         label="蜂鸣器"
         prop="buzzerSwitch"
@@ -479,7 +581,12 @@
         prop="highSpeedBuzzerRemind"
         align="center"
         width="120"
-      />
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.highSpeedBuzzerRemind"
+        ></span>
+      </el-table-column>
       <el-table-column
         label="定速巡航功能"
         prop="cruise"
@@ -513,7 +620,9 @@
         prop="startupPasswd"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.startupPasswd"></span>
+      </el-table-column>
       <el-table-column
         label="是否菜单密码"
         prop="menuPassword"
@@ -533,19 +642,25 @@
         prop="highMenuPasswd"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.highMenuPasswd"></span>
+      </el-table-column>
       <el-table-column
         label="电机功率(W)"
         prop="motorSys"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.motorSys"></span>
+      </el-table-column>
       <el-table-column
         label="电池容量"
         prop="batteryCap"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.batteryCap"></span>
+      </el-table-column>
       <el-table-column label="SN标签" prop="snTag" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.snTag"></span>
       </el-table-column>
@@ -554,7 +669,9 @@
         prop="createBy"
         align="center"
         width="120"
-      />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
+      </el-table-column>
       <el-table-column
         label="审核人 "
         prop="checkBy"
@@ -562,29 +679,6 @@
         width="120"
       >
         <span slot-scope="scope" v-NoData="scope.row.checkBy"></span>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="90">
-        <template slot-scope="{ row }">
-          <el-tooltip
-            v-if="row.state === 0"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(row)"
-            />
-          </el-tooltip>
-          <template v-if="row.state === 1">
-            <el-tag type="success">通过</el-tag>
-          </template>
-          <template v-if="row.state === 2">
-            <el-tag type="danger">未通过</el-tag>
-          </template>
-        </template>
       </el-table-column>
     </el-table>
 
@@ -620,9 +714,9 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button :loading="isSubmitLoading" @click="handleStatusChange(2)"
-          >不通过</el-button
-        >
+        <el-button :loading="isSubmitLoading" @click="handleStatusChange(2)">
+          不通过
+        </el-button>
         <el-button
           type="primary"
           :loading="isSubmitLoading"
@@ -642,10 +736,14 @@ import { modelConfigList, modelConfigState } from "@/api/third/testApi";
 import commonData from "@/mixins/commonData";
 
 export default {
-  name: "BikeFileConfig",
+  name: "ConfigOverview",
   mixins: [commonData],
+  components: {
+    CategoryComputer: () => import("@/components/CategoryComputer"),
+  },
   data() {
     return {
+      myCategoryId: "",
       isCLoading: false,
       authDialogVisible: false,
       isSubmitLoading: false,
@@ -660,6 +758,8 @@ export default {
       dictList: [],
       categoryOptions: [],
       computerOptions: [],
+      // 车把尺寸
+      handlebarSizeData: {},
       // 查询参数
       queryParams: {
         p: 1,
@@ -682,29 +782,12 @@ export default {
       };
     },
   },
-  mounted() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, computerId, status } = this.$route.query;
+  created() {
+    // 车把尺寸
+    this.getConfigDicts("handleBar_size", "handlebarSizeData");
 
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-
-        if (this.$route.query.model) {
-          computerId = this.$route.query.model;
-        }
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
+    categoryComputerDict().then((res) => {
+      this.dictList = res.data;
       this.getList();
     });
   },
@@ -719,18 +802,11 @@ export default {
       });
     },
     changeCategory(val) {
-      if (!val) return;
       this.queryParams.computerId = "";
-      this.getList();
-      return new Promise((resove) => {
-        this.computerOptions = this.dictList.filter(
-          (item) => item.id === val
-        )[0].computerList;
-        resove();
-      });
-    },
-    changeComputer(val) {
-      this.getList();
+
+      this.computerOptions = this.dictList.filter(
+        (item) => item.id === val
+      )[0].computerList;
     },
     // 取消按钮
     cancel() {

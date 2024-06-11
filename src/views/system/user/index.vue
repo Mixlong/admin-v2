@@ -79,11 +79,12 @@
               icon="el-icon-search"
               size="mini"
               @click="handleQuery"
-              >搜索</el-button
             >
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-              >重置</el-button
-            >
+              搜索
+            </el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+              重置
+            </el-button>
           </el-form-item>
         </el-form>
 
@@ -165,7 +166,11 @@
         </el-form-item>
 
         <el-form-item label="用户手机号" prop="phonenumber">
-          <el-input v-model="form.phonenumber" type="number" placeholder="请输入用户手机号" />
+          <el-input
+            v-model="form.phonenumber"
+            type="number"
+            placeholder="请输入用户手机号"
+          />
         </el-form-item>
 
         <el-form-item

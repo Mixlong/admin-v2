@@ -1,4 +1,4 @@
-import { categoryComputerDict, categoryNameList } from "@/api/third/fileConfig";
+import { categoryComputerDict, categoryNameList, computerNameList } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
 import { getDicts } from "@/api/system/dict/data";
 
@@ -123,7 +123,7 @@ export default {
     getComputerNameList(name) {
       if (name) {
         this.isCLoading = true;
-        categoryNameList({ name, categoryName: this.product })
+        computerNameList({ name, categoryName: this.product })
           .then((res) => {
             this.computerOptions = res.data;
             this.isCLoading = false;

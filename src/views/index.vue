@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-editor-container font14">
+  <div class="dashboard-editor-container font14 app-container">
     <el-row :gutter="10">
       <el-col :xs="24" :sm="24" :lg="8">
         <el-card shadow="nerver" class="production-box">

@@ -71,15 +71,10 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button
-            type="primary"
-            icon="el-icon-search"
-            size="mini"
-            @click="handleQuery"
-          >
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
             搜 索
           </el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          <el-button icon="el-icon-refresh" @click="resetQuery">
             重 置
           </el-button>
         </el-form-item>
@@ -107,14 +102,16 @@
       <el-table-column
         prop="customerName"
         label="客户"
-        align="center"
         width="120"
-      />
+        align="center"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
+      </el-table-column>
       <el-table-column
         prop="categoryName"
         label="品类"
         align="center"
-        width="140"
+        width="120"
       />
       <el-table-column
         prop="computerName"
@@ -146,7 +143,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.pucsStatus" />
+            <ColumnState :state="row.map[1]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -156,7 +153,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.hardStatus" />
+            <ColumnState :state="row.map[2]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -166,7 +163,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.softStatus" />
+            <ColumnState :state="row.map[3]" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -178,7 +175,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.configStatus" />
+            <ColumnState :state="row.map[4]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -188,7 +185,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.testStatus" />
+            <ColumnState :state="row.map[5]" />
           </template>
         </el-table-column>
         <!-- <el-table-column
@@ -208,7 +205,7 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.snStatus" />
+            <ColumnState :state="row.map[6]" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -218,16 +215,21 @@
         align="center"
         width="120"
       >
-        <template slot-scope="{ row }">
-          <span>{{ parseTime(row.hopeDate, "{y}/{m}/{d} {h}:{i}") }}</span>
-        </template>
+        <span
+          slot-scope="scope"
+          v-NoData="parseTime(scope.row.hopeDate, '{y}/{m}/{d} {h}:{i}')"
+        >
+        </span>
       </el-table-column>
       <el-table-column prop="remark" label="备注" align="center">
         <template slot-scope="{ row }">
-          <div v-html="row.remark"></div>
+          <span v-show="!row.remark">- - -</span>
+          <div v-show="row.remark" v-html="row.remark"></div>
+          <!-- <read-more v-show="row.remark" :showHeight="50">
+            <div v-html="row.remark"></div>
+          </read-more> -->
         </template>
       </el-table-column>
-      <!-- </el-table-column> -->
     </el-table>
 
     <pagination
@@ -287,6 +289,7 @@ export default {
   components: {
     tinymce,
     ColumnState: () => import("./columnState"),
+    ReadMore: () => import("@/components/ReadMore"),
   },
   data() {
     return {
@@ -317,7 +320,7 @@ export default {
           { required: true, message: "期望日期不能为空", trigger: "change" },
         ],
         remark: [
-          { required: true, message: "备注不能为空", trigger: "change" },
+          { required: false, message: "备注不能为空", trigger: "change" },
         ],
       },
       queryParams: {
@@ -429,37 +432,27 @@ export default {
       // }
     },
     getCellClassName({ row, column }) {
-      const {
-        PCBAState,
-        pucsStatus,
-        hardStatus,
-        softStatus,
-        configStatus,
-        testStatus,
-        stsState,
-        snStatus,
-        hopeDate
-      } = row;
+      const { map, hopeDate } = row;
       const { label } = column;
       switch (label) {
         // case "PCBA资料":
         //   return this.getDataState(PCBAState);
         case "PUCS资料":
-          return this.getDataState(pucsStatus);
+          return this.getDataState(map[1]);
         case "硬件资料":
-          return this.getDataState(hardStatus);
+          return this.getDataState(map[2]);
         case "软件资料":
-          return this.getDataState(softStatus);
+          return this.getDataState(map[3]);
         case "配置文件":
-          return this.getDataState(configStatus);
+          return this.getDataState(map[4]);
         case "测试上位机":
-          return this.getDataState(testStatus);
+          return this.getDataState(map[5]);
         // case "STS系统":
         //   return this.getDataState(stsState);
         case "SN规则":
-          return this.getDataState(snStatus);
+          return this.getDataState(map[6]);
         case "期望日期":
-          if(hopeDate && +new Date() > hopeDate) {
+          if (hopeDate && +new Date() > hopeDate) {
             return "bg-yellow pointer";
           } else {
             return "pointer";
@@ -470,13 +463,15 @@ export default {
     },
     getDataState(state) {
       switch (state) {
-        case 0:
+        case 0: // 待上传
           return "bg-danger pointer";
-        case 1:
-          return "bg-warning pointer";
-        case 4:
+        case 1: // 待审核
+          return "bg-yellow pointer";
+        case 2: // 测试审核通过
           return "bg-primary pointer";
-        case 2:
+        case 3: // 未通过
+          return "bg-warning pointer";
+        case 4: // 审核通过
           return "bg-success";
       }
     },
@@ -486,25 +481,25 @@ export default {
         //   this.onCellStateClick(row);
         //   break;
         case "PUCS资料":
-          this.onCellStateClick(row, row.pucsStatus);
+          this.onCellStateClick(row, row.map[1]);
           break;
         case "硬件资料":
-          this.onCellStateClick(row, row.hardStatus);
+          this.onCellStateClick(row, row.map[2]);
           break;
         case "软件资料":
-          this.onCellStateClick(row, row.softStatus);
+          this.onCellStateClick(row, row.map[3]);
           break;
         case "配置文件":
-          this.onCellStateClick(row, row.configStatus);
+          this.onCellStateClick(row, row.map[4]);
           break;
         case "测试上位机":
-          this.onCellStateClick(row, row.testStatus);
+          this.onCellStateClick(row, row.map[5]);
           break;
           // case "STS系统":
           //   this.onCellStateClick(row);
           break;
         case "SN规则":
-          this.onCellStateClick(row, row.snStatus);
+          this.onCellStateClick(row, row.map[6]);
           break;
         case "期望日期":
           this.onShowDia(row, 1);
@@ -515,9 +510,12 @@ export default {
       }
     },
     onCellStateClick({ categoryId, computerId }, status) {
-      const pageUrl = process.env.NODE_ENV === "development" ?  "/productData/fileConfig" : "/device/productData/fileConfig";      
-   
-      if (status !== 2) {
+      const pageUrl =
+        process.env.NODE_ENV === "development"
+          ? "/productData/fileConfig"
+          : "/device/productData/fileConfig";
+
+      if (status !== 4) {
         this.$router.push(
           `${pageUrl}?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
         );
@@ -577,7 +575,7 @@ export default {
   background-color: #ffc000 !important;
 }
 .bg-danger {
-  background-color: #f00 !important;
+  background-color: #f56c6c !important;
 }
 .bg-yellow {
   background-color: yellow !important;

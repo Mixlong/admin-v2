@@ -51,7 +51,7 @@ export default {
         this.checkAll = data.length === this.typeList.length;
         this.checkedCities = data;
       },
-      immediate: true
+      immediate: true,
     },
   },
   methods: {
@@ -63,7 +63,8 @@ export default {
     handleCheckedCitiesChange(value) {
       let checkedCount = value.length;
       this.checkAll = checkedCount === this.typeList.length;
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.typeList.length;
+      this.isIndeterminate =
+        checkedCount > 0 && checkedCount < this.typeList.length;
       this.$emit("input", this.checkedCities);
     },
   },
@@ -80,7 +81,6 @@ export default {
     white-space: inherit;
   }
   &:hover {
-    transition: all 0.3s;
     overflow-y: auto;
   }
 }

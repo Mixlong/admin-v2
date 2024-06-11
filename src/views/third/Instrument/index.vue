@@ -1,17 +1,15 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      class="flex justify-between"
-    >
-      <el-form-item label="产品品类：">
+    <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form-item label="所属品类" prop="key">
         <el-select
           v-model="queryParams.key"
-          filterable
           @change="changeCategory"
-          placeholder="请选择产品品类"
+          filterable
+          allow-create
+          clearable
+          placeholder="请选择品类"
+          style="width: 160px"
         >
           <el-option
             v-for="dict in dictList"
@@ -21,17 +19,43 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-button
-          v-if="checkRole(['project_manager', 'admin', 'product'])"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
+
+      <el-form-item label="仪表型号" prop="computerId">
+        <el-select
+          :loading="isCLoading"
+          filterable
+          remote
+          clearable
+          v-model="queryParams.computerId"
+          placeholder="请选择仪表型号"
+          @change="getList()"
+          :remote-method="getComputerNameList"
+          style="width: 160px"
         >
-          新增
-        </el-button>
-        <el-button type="primary" @click="getList">刷新</el-button>
+          <el-option
+            v-for="dict in computerOptions"
+            :key="dict.model"
+            :label="dict.name"
+            :value="dict.model"
+          />
+        </el-select>
       </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+      </el-form-item>
+      <el-button
+        class="fr"
+        v-if="checkRole(['project_manager', 'admin', 'product'])"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleAdd"
+      >
+        新增
+      </el-button>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
@@ -81,7 +105,7 @@
         </template>
       </el-table-column>
     </el-table>
-	
+
     <pagination
       v-show="total > 0"
       :total="total"
@@ -101,20 +125,22 @@ import {
   authComputer,
   changeStatus,
 } from "@/api/third/computer";
-import { typeCategory } from "@/api/third/category";
-
+import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 import CompUpdate from "./components/updates";
 
+import Cookies from "js-cookie";
+
 export default {
+  name: "Instrument",
   components: {
     CompUpdate,
   },
   data() {
     return {
       form: {},
-      urls: [],
       // 遮罩层
-      loading: false,
+      loading: true,
+      isCLoading: false,
       authDialogVisible: false,
       // 选中数组
       ids: [],
@@ -127,30 +153,59 @@ export default {
       list: [],
       // 品类
       dictList: [],
+      computerOptions: [],
       // 查询参数
       queryParams: {
         p: 1,
         l: 20,
         key: "",
+        computerId: "",
       },
     };
   },
-  mounted() {
+  created() {
     this.getTypeCategory();
+  },
+  activated() {
+    const { categoryId, computerId } = this.$route.params;
+
+    if(categoryId && computerId) {
+      this.queryParams.key = categoryId;
+      this.changeCategory(categoryId);
+      this.queryParams.computerId = computerId;
+      this.getList();
+    }
   },
   methods: {
     // 获取品类
     getTypeCategory() {
-      typeCategory().then((res) => {
+      categoryComputerDict().then((res) => {
         this.dictList = res.data;
-        const firstId = res.data[0].id;
-        this.queryParams.key = firstId;
+        this.queryParams.key = this.dictList[0].id; // 默认取第一项
         this.getList();
       });
     },
-    changeCategory(key) {
-      this.queryParams.key = key;
-      this.getList();
+    // 获取型号
+    changeCategory(categoryId) {
+      this.queryParams.computerId = "";
+
+      this.computerOptions = this.dictList.filter(
+        (item) => item.id === categoryId
+      )[0].computerList;
+    },
+    // 型号查询
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = false;
+        computerNameList({
+          name,
+          categoryId: this.queryParams.categoryId,
+        }).then((res) => {
+          this.computerOptions = res.data;
+        });
+      } else {
+        this.computerOptions = [];
+      }
     },
     /** 查询品牌列表 */
     getList() {
@@ -158,6 +213,7 @@ export default {
       listComputer(this.queryParams).then((response) => {
         this.list = response.data.list;
         this.total = response.data.total;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -179,6 +235,7 @@ export default {
         this.$refs.compUpdate.disabled = true;
         this.$refs.compUpdate.isCopyProduct = false;
         this.$refs.compUpdate.form = Object.assign({}, data);
+
         this.$refs.compUpdate.title = "修改子产品";
       });
     },
@@ -211,7 +268,7 @@ export default {
           let data = [];
           let authData = { id: this.auth.id, why: this.auth.why, status: 1 };
           data.push(authData);
-          authFileConfig(data).then((response) => {
+          authFileConfig(data).then(() => {
             this.msgSuccess("拒绝通过审核成功");
             this.form.status = 1;
             this.loading = false;
@@ -229,7 +286,7 @@ export default {
         let authData = { id: this.auth.id, why: "", status: 0 };
         data.push(authData);
 
-        authFileConfig(data).then((response) => {
+        authFileConfig(data).then(() => {
           this.msgSuccess("通过审核成功");
           this.form.status = 0;
           this.loading = false;
@@ -257,7 +314,6 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false;
-      this.urls = [];
       this.reset();
     },
 
@@ -268,28 +324,10 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.dateRange = [];
       this.resetForm("queryForm");
+      
+      this.queryParams.key = this.dictList[0].id; // 默认取第一项
       this.handleQuery();
-    },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.id);
-      this.single = selection.length != 1;
-      this.multiple = !selection.length;
-    },
-
-    handleExport() {
-      let { ids } = this;
-      if (ids.length <= 0) {
-        this.msgError("请勾选要导出的列表");
-      } else {
-        instrumentExport({
-          key: ids.toString(),
-        }).then((response) => {
-          this.download(response.msg);
-        });
-      }
     },
     /** 删除按钮操作 */
     handleDelete(row) {

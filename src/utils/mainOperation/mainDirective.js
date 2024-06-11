@@ -9,6 +9,7 @@ import vuescroll from "vue-scroll";
 import commonSelect from "@/directive/commonDirective/select";
 import "@/directive/debounce";
 import Element from "element-ui";
+import VueViewer from "v-viewer";
 
 // 测试
 
@@ -24,3 +25,8 @@ Vue.use(VueClipboard);
 Vue.use(vuescroll);
 Vue.use(commonSelect);
 Vue.use(Element);
+Vue.use(VueViewer, {
+  defaultOptions: {
+    zIndex: 9999
+  },
+});

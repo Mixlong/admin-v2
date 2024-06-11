@@ -110,7 +110,7 @@
       v-loading="loading"
       :data="brandList"
       :row-key="getRowKeys"
-      :height="tableHeight()"
+      :height="tableHeight(35)"
       :row-class-name="tableRowClassName"
       @selection-change="handleSelectionChange"
       border
@@ -127,22 +127,24 @@
         label="品类"
         prop="category"
         align="center"
-        width="100"
+        width="150"
       />
       <el-table-column
         label="型号"
         prop="computer"
         align="center"
-        width="130"
+        width="150"
       />
       <el-table-column label="ERP编码" prop="erp" align="center" width="130">
-        <span slot-scope="{ row }">{{ row.erp || "---" }}</span>
+        <span slot-scope="scope" v-NoData="scope.row.erp"></span>
       </el-table-column>
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <!-- PC上位机 -->
-          <span v-if="row.dataType === 1">{{ row.content || "---" }}</span>
+          <template v-if="row.dataType === 1">
+            {{ row.content || "- - -" }}
+          </template>
 
           <!-- STS网页 -->
           <span
@@ -169,22 +171,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="120"
-      >
-        <template slot-scope="{ row }">
-          {{ row.createBy ? row.createBy : row.updateBy }}
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140">
-        <template slot-scope="{ row }">
-          {{ row.updateTime || "---" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="审核" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="105">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -192,9 +179,23 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="创建人"
+        align="center"
+        prop="createBy"
+        width="120"
+      >
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.createBy || scope.row.updateBy"
+        ></span>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center" width="140">
+        <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
+      </el-table-column>
+      <el-table-column
         label="操作"
         align="center"
-        width="105"
+        width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
@@ -389,12 +390,11 @@ import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 
 export default {
+  name: "FileConfig",
   components: {
     CompUpdate,
     TaskCode: () => import("./components/taskCode"),
   },
-  name: "BikeFileConfig",
-  filters: {},
   data() {
     return {
       commonStatusList,
@@ -717,16 +717,21 @@ export default {
       }
 
       // 整机SN的长度转化
-      if(copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
-        const packContentAndLen = copyRow.content.split(',');
+      if (copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
+        const packContentAndLen = copyRow.content.split(",");
 
         copyRow.content = packContentAndLen[0];
         copyRow.packSnLen = packContentAndLen[1];
       }
 
-      this.$refs.compUpdate.form = Object.assign({ idList: [], content: "", testInfo: [], bleVersionList }, copyRow);
+      this.$refs.compUpdate.form = Object.assign(
+        { idList: [], content: "", testInfo: [], bleVersionList },
+        copyRow
+      );
 
-      this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf ? copyRow.firmwareConf : {};
+      this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf
+        ? copyRow.firmwareConf
+        : {};
       if (this.$refs.compUpdate.form.firmwareConf.mid) {
         this.$refs.compUpdate.changeMidValue(
           this.$refs.compUpdate.form.firmwareConf.mid,
@@ -735,9 +740,9 @@ export default {
       }
       this.$refs.compUpdate.form.firmwareConf.fileConfId = copyRow.id;
       this.$refs.compUpdate.boleConfig =
-      copyRow.type == "boot_file" ||
-      copyRow.type == "app_file" ||
-      copyRow.type == "ui_data";
+        copyRow.type == "boot_file" ||
+        copyRow.type == "app_file" ||
+        copyRow.type == "ui_data";
       this.$refs.compUpdate.isBatchSync = isBatchSync;
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";

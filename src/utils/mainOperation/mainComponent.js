@@ -7,6 +7,9 @@ import Tooltip from '@/components/Tooltip'
 import ModalStyle from '@/components/ModalStyle'
 import PreviewImg from '@/components/PreviewImg'
 import SelectLoadMore from '@/components/selectLoadMore'
+import ElUploadSortable from "@/components/el-upload-sortable";
+import ModelCategory from "@/components/ModelCategory";
+import ScreenFull from '@/components/Screenfull';
 // 字典标签组件
 import DictTag from '@/components/DictTag'
 // 字典数据组件
@@ -22,7 +25,10 @@ Vue.component('DrUpload', DrUpload)
 Vue.component('Tooltip', Tooltip)
 Vue.component('ModalStyle', ModalStyle)
 Vue.component('preview-img', PreviewImg)
+Vue.component('ElUploadSortable', ElUploadSortable)
 Vue.component('select-loadMore', SelectLoadMore)
 Vue.component('DictTag', DictTag)
 Vue.component('vue-draggable-resizable', VueDraggableResizable)
+Vue.component('ModelCategory', ModelCategory)
+Vue.component('ScreenFull', ScreenFull)
 DictData.install()

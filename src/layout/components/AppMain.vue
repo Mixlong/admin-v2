@@ -39,15 +39,14 @@ export default {
   .app-main {
     /* 84 = navbar + tags-view = 50 + 34 */
     min-height: calc(100vh);
-    padding-left: 10px;
-    padding-right: 10px;
+    // padding-left: 10px;
+    // padding-right: 10px;
     box-sizing: border-box;
- 
     background-size: 50%;
   }
 
   .fixed-header+.app-main {
-    padding-top: 50px;
+    padding-top: 80px;
   }
 }
 </style>
