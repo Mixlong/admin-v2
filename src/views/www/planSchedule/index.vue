@@ -116,6 +116,7 @@
           新 增
         </el-button>
         <el-button
+          v-hasPermi="['planSchedule:add:old']"
           type="primary"
           icon="el-icon-plus"
           size="mini"
@@ -379,8 +380,11 @@
           <span class="margin-bottom-xs">
             产品品类：<el-tag>{{ qrCodeObj.categoryName }}</el-tag>
           </span>
-          <span>
+          <span class="margin-bottom-xs">
             产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
+          </span>
+          <span>
+            芯片版本：<el-tag>{{ qrCodeObj.soChipVersion }}</el-tag>
           </span>
         </div>
       </el-card>

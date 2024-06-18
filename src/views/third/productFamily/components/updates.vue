@@ -1418,13 +1418,13 @@ export default {
       },
       // 表单校验
       rules: {
-        // name: [
-        //   {
-        //     required: false,
-        //     message: "仪表型号不能为空",
-        //     trigger: "blur",
-        //   },
-        // ],
+        name: [
+          {
+            required: false,
+            message: "仪表型号不能为空",
+            trigger: "blur",
+          },
+        ],
       },
       formRules: {
         "instrumentModel.backlightBrightness": [

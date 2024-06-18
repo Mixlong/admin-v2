@@ -26,7 +26,8 @@ import {
   setCheckListArr,
   handleNameToPage,
   handlePathToPage,
-  getConfigDicts
+  getConfigDicts,
+  HandleDelete
 } from "@/utils/ruoyi";
 
 // 全局方法挂载
@@ -55,6 +56,7 @@ Vue.prototype.axios = axios;
 Vue.prototype.Enter_Fn = Enter_Fn;
 Vue.prototype.Is_Empty = is_Empty;
 Vue.prototype.fileDownload = fileDownload;
+Vue.prototype.HandleDelete = HandleDelete;
 Vue.prototype.$setCheckListArr = setCheckListArr;
 Vue.prototype.handleNameToPage = handleNameToPage;
 Vue.prototype.handlePathToPage = handlePathToPage;

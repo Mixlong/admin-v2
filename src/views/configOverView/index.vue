@@ -74,7 +74,7 @@
               content="产品族谱"
               v-hasPermi="['product:configOverView:btn']"
               @click="
-                handleNameToPage('Instrument', {
+                handleNameToPage('ProductFamily', {
                   categoryId: row.categoryId,
                   computerId: row.computerId,
                 })

@@ -175,6 +175,11 @@ export default {
       this.$emit("input", list.toString());
     },
     beforeUpload(file) {
+      if (file?.name.indexOf("+") !== -1) {
+        this.msgError("上传的文件名称不能包含‘+’字符");
+        return false;
+      }
+      
       if (this.isVideo) {
         return this.handleCheckVideo(file);
       } else {

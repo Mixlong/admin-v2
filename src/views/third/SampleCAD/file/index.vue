@@ -34,29 +34,29 @@
         </el-select>
       </el-form-item>
       <el-form-item label="客户" prop="customerName">
-        <el-autocomplete 
-          v-model="queryParams.customerName" 
-          clearable 
-          :fetch-suggestions="querySearchAsync" 
-          placeholder="请选择客户" 
+        <el-autocomplete
+          v-model="queryParams.customerName"
+          clearable
+          :fetch-suggestions="querySearchAsync"
+          placeholder="请选择客户"
           @change="handleQuery"
         />
       </el-form-item>
       <el-form-item label="属性" prop="typeName">
-        <el-input 
-          v-model="queryParams.typeName" 
-          clearable 
-          placeholder="请输入属性" 
+        <el-input
+          v-model="queryParams.typeName"
+          clearable
+          placeholder="请输入属性"
         />
       </el-form-item>
       <el-form-item label="送样单号" prop="number">
-        <select-loadMore 
-          v-model="queryParams.number" 
-          :data="sampleNumberData.data" 
+        <select-loadMore
+          v-model="queryParams.number"
+          :data="sampleNumberData.data"
           :page="sampleNumberData.page"
-          :hasMore="sampleNumberData.more" 
-          :request="getSampleNumberList" 
-          placeholder="请选择送样单号" 
+          :hasMore="sampleNumberData.more"
+          :request="getSampleNumberList"
+          placeholder="请选择送样单号"
         />
       </el-form-item>
 
@@ -100,16 +100,8 @@
         align="center"
         width="100"
       />
-      <el-table-column
-        label="送样单号"
-        prop="number"
-        align="center"
-      />
-      <el-table-column
-        label="客户"
-        prop="customerName"
-        align="center"
-      />
+      <el-table-column label="送样单号" prop="number" align="center" />
+      <el-table-column label="客户" prop="customerName" align="center" />
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="{ row }">{{ row.content || "---" }}</span>
@@ -172,21 +164,6 @@
               @click="handleAuthChange(scope.row, 1)"
             ></el-button>
           </el-tooltip>
-
-          <!-- <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip> -->
 
           <el-tooltip
             v-if="isSResetCheck(scope.row)"
@@ -293,7 +270,7 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >
+          >
             通过
           </el-button>
         </el-form-item>
@@ -307,19 +284,19 @@
 import {
   sampleSoftList,
   sampleAuthFileConfig,
-  sampleResetFileConfig,                               
+  sampleResetFileConfig,
   categoryComputerDict,
-  sampleFileCancel
+  sampleFileCancel,
 } from "@/api/third/fileConfig";
 import { sampleNumberList, listCustomer } from "@/api/third/sample";
 import { mapGetters } from "vuex";
 import CompUpdate from "./components/update";
 
 export default {
+  name: "CadFileConfig",
   components: {
     CompUpdate,
   },
-  name: "BikeFileConfig",
   data() {
     return {
       checkStatus: null,
@@ -353,12 +330,12 @@ export default {
         1: "待初审",
         2: "已审核",
         3: "未通过",
-        4: "审核通过"
-    },
+        4: "审核通过",
+      },
       sampleNumberData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
       // 查询参数
       queryParams: {
@@ -367,7 +344,7 @@ export default {
         categoryName: undefined,
         status: undefined,
         customerName: undefined,
-        number: undefined
+        number: undefined,
       },
       similarList: [],
       disabledName: "",
@@ -409,7 +386,8 @@ export default {
     },
   },
   created() {
-    const { number } = this.$route.query;
+    const { number } = this.$route.params;
+    console.log(this.$route.params)
     this.queryParams.number = number;
   },
   mounted() {
@@ -455,15 +433,18 @@ export default {
         }).then((res) => {
           let { list, total, pageNum, pageSize } = res.data;
           if (list.length) {
-            list = list.map(item => {
+            list = list.map((item) => {
               return {
                 label: item,
-                value: item
-              }
-            })
+                value: item,
+              };
+            });
           }
           if (more) {
-            this.sampleNumberData.data = [...this.sampleNumberData.data, ...list];
+            this.sampleNumberData.data = [
+              ...this.sampleNumberData.data,
+              ...list,
+            ];
           } else {
             this.sampleNumberData.data = list;
           }
@@ -664,7 +645,7 @@ export default {
           this.msgSuccess("撤销成功！");
         }
       });
-    }
+    },
   },
 };
 </script>

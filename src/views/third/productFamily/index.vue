@@ -67,7 +67,7 @@
         label="产品型号"
         prop="name"
         align="center"
-        width="180"
+        width="200"
       />
       <el-table-column label="描述" prop="desc" align="center">
         <span slot-scope="scope" v-NoData="scope.row.desc" />
@@ -94,14 +94,19 @@
         align="center"
         width="140"
       />
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
-          <el-button type="warning" @click="handleUpdate(scope.row)">
-            编辑
-          </el-button>
-          <el-button type="danger" @click="handleDelete(scope.row)">
-            删除
-          </el-button>
+          <Tooltip
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate(scope.row)"
+          />
+          <Tooltip
+            icon="el-icon-delete"
+            :className="['text-red']"
+            content="删除"
+            @click="handleDelete(scope.row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -128,10 +133,8 @@ import {
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 import CompUpdate from "./components/updates";
 
-import Cookies from "js-cookie";
-
 export default {
-  name: "Instrument",
+  name: "ProductFamily",
   components: {
     CompUpdate,
   },
@@ -163,35 +166,54 @@ export default {
       },
     };
   },
-  created() {
-    this.getTypeCategory();
+  async created() {
+    this.dictList = await this.getTypeCategory();
+    this.handleFirstLink();
+    this.getList();
   },
   activated() {
-    const { categoryId, computerId } = this.$route.params;
-
-    if(categoryId && computerId) {
-      this.queryParams.key = categoryId;
-      this.changeCategory(categoryId);
-      this.queryParams.computerId = computerId;
-      this.getList();
-    }
+    this.handleCacheLink();
   },
   methods: {
+    // 页面初次带参 或 初次打开当前页面
+    handleFirstLink() {
+      const { categoryId, computerId } = this.$route.params;
+
+      if(categoryId && computerId) {
+        this.changeCategory(categoryId);
+        this.queryParams.key = categoryId;
+        this.queryParams.computerId = computerId;
+      } else {
+        this.queryParams.key = this.dictList[0].id; // 默认取第一项
+      }
+    },
+    handleCacheLink() {
+      const { categoryId, computerId } = this.$route.params;
+
+      if (categoryId && computerId) {
+        this.changeCategory(categoryId);
+        this.queryParams.key = categoryId;
+        this.queryParams.computerId = computerId;
+        this.getList();
+      }
+    },
     // 获取品类
     getTypeCategory() {
-      categoryComputerDict().then((res) => {
-        this.dictList = res.data;
-        this.queryParams.key = this.dictList[0].id; // 默认取第一项
-        this.getList();
+      return new Promise((resolve, reject) => {
+        try {
+          categoryComputerDict().then((res) => {
+            resolve(res.data);
+          });
+        } catch (error) {
+          reject(error)
+        }
       });
     },
     // 获取型号
     changeCategory(categoryId) {
       this.queryParams.computerId = "";
 
-      this.computerOptions = this.dictList.filter(
-        (item) => item.id === categoryId
-      )[0].computerList;
+      this.computerOptions = this.dictList.filter((item) => item.id === categoryId)[0]?.computerList;
     },
     // 型号查询
     getComputerNameList(name) {
@@ -210,14 +232,15 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      listComputer(this.queryParams).then((response) => {
-        this.list = response.data.list;
-        this.total = response.data.total;
-      }).finally(() => {
-        this.loading = false;
-      });
+      listComputer(this.queryParams)
+        .then((response) => {
+          this.list = response.data.list;
+          this.total = response.data.total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
-
     handleAdd() {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.reset();
@@ -316,7 +339,6 @@ export default {
       this.open = false;
       this.reset();
     },
-
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -325,28 +347,19 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
-      
+
       this.queryParams.key = this.dictList[0].id; // 默认取第一项
+      this.computerOptions = [];
       this.handleQuery();
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$confirm(
-        '是否确认删除产品型号为"' + row.name + '"的数据项?',
-        "警告",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        }
-      )
-        .then(function () {
-          return authComputer({ id: row.id, status: 1 });
-        })
-        .then(() => {
-          this.getList();
-          this.msgSuccess("删除成功");
-        });
+      this.HandleDelete({
+        title: '是否确认删除产品型号为"' + row.name + '"的数据项?',
+        delFn: authComputer,
+        data: { id: row.id, status: 1 },
+        cb: this.getList
+      })
     },
   },
 };

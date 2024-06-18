@@ -179,6 +179,22 @@ export function downloadFile({
     });
 }
 
+// 删除按钮
+export function HandleDelete({ title = "是否确认删除该项?", delFn, data, cb } = {}) {
+  this.$confirm(title, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(() => {
+      return delFn(data);
+    })
+    .then(() => {
+      cb();
+      this.msgSuccess("删除成功");
+    })
+}
+
 // 字符串格式化(%s )
 export function sprintf(str) {
   var args = arguments,

@@ -87,6 +87,10 @@ export default {
       });
     },
     beforeUpload(file) {
+      if (file?.name.indexOf("+") !== -1) {
+        this.msgError("上传的文件名称不能包含‘+’字符");
+        return false;
+      }
       this.$emit("beforeUpload", file);
     },
     uploadSuccess(response, file, fileList) {
