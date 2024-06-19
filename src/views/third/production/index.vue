@@ -80,39 +80,39 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
+
+      <el-button
+        class="fr"
+        type="warning"
+        icon="el-icon-download"
+        size="mini"
+        @click="handleExport"
+      >
+        导出
+      </el-button>
     </el-form>
 
     <el-table
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
-      border
-      @selection-change="handleSelectionChange"
     >
-      <el-table-column
-        type="selection"
-        width="55"
-        align="center"
-        :selectable="checkSelectable"
-      />
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
-          <span>{{
-            (queryParams.p - 1) * queryParams.l + scope.$index + 1
-          }}</span>
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column
         label="品类"
         prop="category"
         align="center"
-        width="100"
       />
       <el-table-column label="型号" prop="model" align="center" />
       <el-table-column label="SN" prop="sn" align="center" />
@@ -122,7 +122,6 @@
         label="装箱时间"
         prop="packageTime"
         align="center"
-        width="130"
       />
       <el-table-column label="版本号" align="center">
         <el-table-column
@@ -147,61 +146,68 @@
         ></el-table-column>
       </el-table-column>
       <el-table-column label="测试环节" align="center">
-        <el-table-column label="FCT" align="center">
+        <el-table-column label="FCT" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 1)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="半成品" align="center">
+        <el-table-column label="IQC" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 2)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="FQC" align="center">
+        <el-table-column label="FQC" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 3)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="防水" align="center">
+        <el-table-column label="防水" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 4)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="配置工位" align="center">
+        <el-table-column label="配置工位" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 5)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="老化测试" align="center">
+        <el-table-column label="老化" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 6)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
-        <el-table-column label="OQC测试" align="center">
+        <el-table-column label="OQC" align="center" width="80">
           <el-button
             slot-scope="scope"
             type="text"
             @click="onSeeDetail(scope.row.id, 7)"
-            >查看</el-button
           >
+            查看
+          </el-button>
         </el-table-column>
       </el-table-column>
     </el-table>
@@ -209,18 +215,19 @@
     <pagination
       v-if="total > 0"
       :total="total"
+      :ls="[20, 50, 1000]"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
     <CompUpdate ref="compUpdate" :dictList="dictList" />
-    <!-- 查看详情 -->
-    <!-- <com-detail ref="comDetail" :comName="comName" /> -->
+
     <el-dialog
       title="详情"
-      :visible.sync="ditailShow"
-      width="780px"
+      top="0"
+      width="1200px"
       append-to-body
+      :visible.sync="ditailShow"
     >
       <component :is="comName" :dataList="dataList" />
     </el-dialog>
@@ -240,14 +247,13 @@ import {
   oqcList,
   undoneList,
   waterProofList,
+  productExportList,
 } from "@/api/third/fileConfig";
 
-import axios from "axios";
 import CompUpdate from "./components/update";
 export default {
   components: {
     CompUpdate,
-    "com-detail": () => import("./components/detail.vue"),
     aging: () => import("./components/aging.vue"),
     "see-detail": () => import("./components/seeDetail.vue"),
   },
@@ -335,7 +341,7 @@ export default {
       timeVal: "",
     };
   },
-  created(){
+  created() {
     const { sn } = this.$route.query;
     this.queryParams.sn = sn;
   },
@@ -390,46 +396,49 @@ export default {
       }
       this.ditailShow = true;
     },
+    handleData(data) {
+      return data === null ? [] : [data];
+    },
     // 获取老化测试报告
     getAgingList(id) {
-      agingList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      agingList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // 获取配置工位报告
     getConfList(id) {
-      confList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      confList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // fqc
     getFqcList(id) {
-      fqcList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      fqcList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // 获取fct测试报告
     getFctList(id) {
-      fctList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      fctList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // 获取oqc测试报告
     getOqcList(id) {
-      oqcList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      oqcList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // 获取半成品测试报告
     getUndoneList(id) {
-      undoneList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      undoneList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     // 获取防水测试报告
     getWaterProofList(id) {
-      waterProofList({ devProductionId: id }).then((res) => {
-        this.dataList = [res.data];
+      waterProofList({ devProductionId: id }).then(({ data }) => {
+        this.dataList = this.handleData(data);
       });
     },
     /** 查询品牌列表 */
@@ -445,31 +454,6 @@ export default {
     changeCategory() {
       this.queryParams.computerId = "";
       this.getList();
-    },
-    changeComputer(val) {
-      this.getList();
-    },
-    changeStatus(val) {
-      this.getList();
-    },
-    downloadFile(url) {
-      axios({
-        method: "get",
-        url,
-        responseType: "arraybuffer",
-      }).then((res) => {
-        let headers = res.headers;
-        let blob = new Blob([res.data], {
-          type: headers["content-type"],
-        });
-        let link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        let i = url.lastIndexOf("/");
-        let fileName = url.slice(i + 1);
-
-        link.download = fileName;
-        link.click();
-      });
     },
     checkSelectable(row) {
       return row.status == 1;
@@ -534,12 +518,6 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.id);
-      this.single = selection.length != 1;
-      this.multiple = !selection.length;
-    },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(row.categoryId);
@@ -569,6 +547,13 @@ export default {
           this.getList();
           this.msgSuccess("撤销成功！");
         }
+      });
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.downloadFile({
+        aFn: productExportList,
+        queryParams: this.queryParams,
       });
     },
   },

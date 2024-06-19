@@ -34,29 +34,29 @@
         </el-select>
       </el-form-item>
       <el-form-item label="客户" prop="customerName">
-        <el-autocomplete 
-          v-model="queryParams.customerName" 
-          clearable 
-          :fetch-suggestions="querySearchAsync" 
-          placeholder="请选择客户" 
+        <el-autocomplete
+          v-model="queryParams.customerName"
+          clearable
+          :fetch-suggestions="querySearchAsync"
+          placeholder="请选择客户"
           @change="handleQuery"
         />
       </el-form-item>
       <el-form-item label="属性" prop="typeName">
-        <el-input 
-          v-model="queryParams.typeName" 
-          clearable 
-          placeholder="请输入属性" 
+        <el-input
+          v-model="queryParams.typeName"
+          clearable
+          placeholder="请输入属性"
         />
       </el-form-item>
       <el-form-item label="送样单号" prop="number">
-        <select-loadMore 
-          v-model="queryParams.number" 
-          :data="sampleNumberData.data" 
+        <select-loadMore
+          v-model="queryParams.number"
+          :data="sampleNumberData.data"
           :page="sampleNumberData.page"
-          :hasMore="sampleNumberData.more" 
-          :request="getSampleNumberList" 
-          placeholder="请选择送样单号" 
+          :hasMore="sampleNumberData.more"
+          :request="getSampleNumberList"
+          placeholder="请选择送样单号"
         />
       </el-form-item>
 
@@ -93,26 +93,20 @@
         :reserve-selection="true"
         :selectable="checkSelectable"
       />
-      <el-table-column label="序号" width="58" type="index" align="center" />
-      <el-table-column
-        label="品类"
-        prop="category"
-        align="center"
-        width="100"
-      />
-      <el-table-column
-        label="送样单号"
-        prop="number"
-        align="center"
-      />
-      <el-table-column
-        label="客户"
-        prop="customerName"
-        align="center"
-      />
+      <el-table-column label="品类" prop="category" align="center" />
+      <el-table-column label="送样单号" prop="number" align="center">
+        <span slot-scope="{ row }" v-NoData="row.number"></span>
+      </el-table-column>
+      <el-table-column label="客户" prop="customerName" align="center" />
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }">{{ row.content || "---" }}</span>
+        <span slot-scope="{ row }" v-NoData="row.content"></span>
+      </el-table-column>
+      <el-table-column label="创建人" align="center" prop="updateBy">
+        <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center" width="140">
+        <span slot-scope="{ row }" v-NoData="row.updateTime"></span>
       </el-table-column>
       <el-table-column
         label="产品状态"
@@ -126,18 +120,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="updateBy"
-        width="120"
-      />
-      <el-table-column label="创建时间" align="center" width="140">
-        <template slot-scope="{ row }">
-          {{ row.updateTime || "---" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="审核" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -147,7 +130,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="105"
+        width="120"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
@@ -172,21 +155,6 @@
               @click="handleAuthChange(scope.row, 1)"
             ></el-button>
           </el-tooltip>
-
-          <!-- <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip> -->
 
           <el-tooltip
             v-if="isSResetCheck(scope.row)"
@@ -293,7 +261,7 @@
           <el-button
             type="primary"
             @click="handleStatusChange(checkRole(['DATA_MANAGER']) ? 2 : 4)"
-            >
+          >
             通过
           </el-button>
         </el-form-item>
@@ -307,19 +275,19 @@
 import {
   sampleSoftList,
   sampleAuthFileConfig,
-  sampleResetFileConfig,                               
+  sampleResetFileConfig,
   categoryComputerDict,
-  sampleFileCancel
+  sampleFileCancel,
 } from "@/api/third/fileConfig";
 import { sampleNumberList, listCustomer } from "@/api/third/sample";
 import { mapGetters } from "vuex";
 import CompUpdate from "./components/update";
 
 export default {
+  name: "CadFileConfig",
   components: {
     CompUpdate,
   },
-  name: "BikeFileConfig",
   data() {
     return {
       checkStatus: null,
@@ -353,12 +321,12 @@ export default {
         1: "待初审",
         2: "已审核",
         3: "未通过",
-        4: "审核通过"
-    },
+        4: "审核通过",
+      },
       sampleNumberData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
       // 查询参数
       queryParams: {
@@ -367,7 +335,7 @@ export default {
         categoryName: undefined,
         status: undefined,
         customerName: undefined,
-        number: undefined
+        number: undefined,
       },
       similarList: [],
       disabledName: "",
@@ -409,7 +377,8 @@ export default {
     },
   },
   created() {
-    const { number } = this.$route.query;
+    const { number } = this.$route.params;
+    console.log(this.$route.params);
     this.queryParams.number = number;
   },
   mounted() {
@@ -455,15 +424,18 @@ export default {
         }).then((res) => {
           let { list, total, pageNum, pageSize } = res.data;
           if (list.length) {
-            list = list.map(item => {
+            list = list.map((item) => {
               return {
                 label: item,
-                value: item
-              }
-            })
+                value: item,
+              };
+            });
           }
           if (more) {
-            this.sampleNumberData.data = [...this.sampleNumberData.data, ...list];
+            this.sampleNumberData.data = [
+              ...this.sampleNumberData.data,
+              ...list,
+            ];
           } else {
             this.sampleNumberData.data = list;
           }
@@ -606,6 +578,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
+      this.queryParams = {};
       this.resetForm("queryForm");
       this.handleQuery();
     },
@@ -618,22 +591,7 @@ export default {
     handleUpdate(row, isBatchSync) {
       // shit 改不动了
       this.$refs.compUpdate.reset();
-
-      // if (row.configExtend === null) {
-      //   row.configExtend = {
-      //     schemeVersion: "",
-      //     agreementVersion: "",
-      //     pcbaSn: "",
-      //     testInfo: [],
-      //   };
-      // } else {
-      //   // 测试项目数据
-      //   if (row.configExtend.testInfo) {
-      //     if (!Array.isArray(row.configExtend.testInfo)) {
-      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
-      //     }
-      //   }
-      // }
+      
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row
@@ -664,7 +622,7 @@ export default {
           this.msgSuccess("撤销成功！");
         }
       });
-    }
+    },
   },
 };
 </script>

@@ -145,7 +145,6 @@
       </el-table-column>
       <el-table-column label="时间管理" align="center" prop="sendTime" width="170">
         <template slot-scope="scope">
-          <!-- <template v-if="new Date(scope.row.sendTime + ' 20:00:00').getTime() > new Date().getTime()"> -->
             <template v-if="scope.row.state !== 6">
               <div class="text-shadow mb5 text-left">下单时间: {{ scope.row.orderTime }}</div> 
               <div class="text-shadow mb5 text-left" :class="[difference(scope.row.sendTime)]">计划送样时间: {{ scope.row.sendTime }}</div>
@@ -159,22 +158,6 @@
               <div class="text-shadow mb5 text-left" :class="[difference(scope.row.actualTime)]">实际送样时间: {{ scope.row.actualTime }}</div>
               <div class="text-left">用时天数: {{ scope.row.dateDiff }}</div>
             </template>
-          <!-- </template> -->
-          <!-- <div v-if="new Date(scope.row.sendTime + ' 20:00:00').getTime() > new Date().getTime() && scope.row.state != 5">
-            <div class="text-shadow mb5"
-              :class="[difference(scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime)]">
-              {{ scope.row.state === 6 ? scope.row.actualTime : scope.row.sendTime }}
-            </div>
-            <div class="flex justify-center align-center" style="transform: scale(0.8)">
-              <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
-                :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
-            </div>
-          </div> -->
-          <!-- <div v-else>
-            <div class="text-shadow" :class="[scope.row.state == 5 ? 'text-green' : 'text-red text-bold']">
-              {{ scope.row.sendTime }}
-            </div>
-          </div> -->
         </template>
       </el-table-column>
       <el-table-column label="评审表" width="160" align="center">
@@ -191,7 +174,6 @@
       <el-table-column label="操作" align="center" width="80">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
-            <div class="iflex" style="padding-left: 8px; height: 5px"></div>
             <el-tooltip class="item font16" effect="dark" content="产品经理确认中" placement="top-end" v-if="(checkRole(['admin']) || scope.row.pm == userId) &&
               scope.row.state == 0
               ">
@@ -228,19 +210,20 @@
                 @click="handleAuthChange(scope.row, 6)"></el-button>
             </el-tooltip>
 
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
               @click="handleSampleUpdate(scope.row)" />
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-copy-document" content="复制"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-copy-document" content="复制"
               @click="handleCopy(scope.row)" />
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
               @click="handleDelete(scope.row)" />
             <el-tooltip class="item" effect="dark" content="附件" placement="top-end" v-if="scope.row.attachment">
               <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
                 @click="handleDownload(scope.row)"></el-button>
             </el-tooltip>
-            <Tooltip icon="el-icon-position" content="软件发布"
-              @click="$router.push(`/notice/sampleManage/fileConfig?number=${scope.row.number}`)" />
-            <Tooltip v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
+            <Tooltip class="mlZero" icon="el-icon-position" content="软件发布"
+              @click="handleNameToPage('CadFileConfig', { number: scope.row.number })"
+               />
+            <Tooltip class="mlZero" v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
               @click="handleProd(scope.row)" />
           </div>
         </template>
@@ -309,6 +292,7 @@ import Verify from "vue2-verify";
 import { pmList } from "@/utils/commonData";
 
 export default {
+  name: "Sample",
   components: {
     CompUpdate,
     FlipDown,

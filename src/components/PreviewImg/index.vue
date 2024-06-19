@@ -6,6 +6,7 @@
       :style="imgStyle"
       :src="previewImgList(1)"
       :fit="fit"
+      scroll-container=".el-table__body-wrapper"
       :preview-src-list="previewImgList()"
     >
       <div
@@ -20,7 +21,6 @@
         class="image-slot flex align-center justify-center"
         :style="imgStyle"
       >
-        <!-- <i style="font-size: 25px" class="el-icon-picture-outline"></i> -->
         暂无
       </div>
     </el-image>

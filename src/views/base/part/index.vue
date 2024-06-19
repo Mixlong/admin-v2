@@ -9,44 +9,38 @@
       <el-form-item label="时间范围">
         <el-date-picker
           v-model="dateRange"
-          size="small"
-          style="width: 185px"
           value-format="yyyy-MM-dd"
           type="daterange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-        ></el-date-picker>
+          clearable
+        />
       </el-form-item>
       <el-form-item label="sn、箱号" prop="key">
         <el-input
-          size="small"
           v-model="queryParams.key"
-          placeholder="请输入"
-          style="width: 185px"
+          clearable
+          placeholder="请输入sn、箱号"
         >
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-          >搜索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
+
       <el-button
-        part="warning"
+        class="fr"
+        type="warning"
         icon="el-icon-download"
         size="mini"
         @click="handleExport"
-        class="fr margin-top-xs"
-        >导出</el-button
       >
+        导出
+      </el-button>
     </el-form>
 
     <el-table
@@ -57,7 +51,7 @@
     >
       <el-table-column label="序号" width="58" type="index" align="center" />
       <el-table-column label="SN" prop="sn" align="center" />
-            <el-table-column label=" DT SN" prop="dtSn" align="center" width="100" />
+      <el-table-column label="DT SN" prop="dtSn" align="center" width="100" />
       <el-table-column label="Model" prop="model" align="center" />
       <el-table-column
         label="Manufacturer"
@@ -84,8 +78,7 @@
       <el-table-column label="HardwareVer" prop="hardwareVer" align="center" />
       <el-table-column label="AppVer" prop="appVer" align="center" />
       <el-table-column label="BootVer" prop="bootVer" align="center" />
-      <el-table-column label="UiVer" prop="uiVer" align="center" width="80" />
- 
+      <el-table-column label="UiVer" prop="uiVer" align="center" />
       <el-table-column label="创建时间" align="center" prop="createTime" />
     </el-table>
 
@@ -108,25 +101,12 @@ export default {
     return {
       // 遮罩层
       loading: true,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
       // 总条数
       total: 0,
       // 用户表格数据
       partList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
-      // 是否显示弹出层（数据权限）
-      openDataScope: false,
       // 日期范围
       dateRange: [],
-      genderOptions: [],
       // 查询参数
       queryParams: {
         p: 1,
@@ -137,8 +117,7 @@ export default {
       form: {},
     };
   },
-  created() {},
-  mounted() {
+  created() {
     this.getList();
   },
   methods: {
@@ -152,24 +131,6 @@ export default {
           this.loading = false;
         }
       );
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
-    },
-    // 表单重置
-    reset() {
-      if (this.$refs.menu != undefined) {
-        this.$refs.menu.setCheckedKeys([]);
-      }
-      this.form = {
-        id: undefined,
-        p: 1,
-        l: 50,
-        key: undefined,
-      };
-      this.resetForm("form");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -186,17 +147,11 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.addDateRange(this.queryParams, this.dateRange);
-      this.$confirm("是否确认导出所有数据项?", "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(function () {
-          return exportPartInfo(queryParams);
-        })
-        .then((response) => {
-          this.download(response.msg);
-        });
+
+      this.downloadFile({
+        aFn: exportPartInfo,
+        queryParams,
+      });
     },
   },
 };

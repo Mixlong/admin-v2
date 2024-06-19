@@ -30,7 +30,7 @@ export function authComputer (data) {
   return request ({
     url: '/computer/auth',
     method: 'put',
-    data: data,
+    data,
   });
 }
 
@@ -39,7 +39,7 @@ export function addComputer (data) {
   return request ({
     url: '/computer',
     method: 'post',
-    data: data,
+    data,
   });
 }
 
@@ -48,7 +48,7 @@ export function editComputer (data) {
   return request ({
     url: '/computer',
     method: 'put',
-    data: data,
+    data,
   });
 }
 
@@ -56,7 +56,7 @@ export function selectComputer (data) {
   return request ({
     url: '/computer/select',
     method: 'post',
-    data: data,
+    data,
   });
 }
 

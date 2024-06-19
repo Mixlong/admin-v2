@@ -2,7 +2,7 @@
  * 通用js方法封装处理
  * Copyright (c) 2019 ruoyi
  */
-import reqUrl from '@/utils/requestUrl';
+import reqUrl from "@/utils/requestUrl";
 
 const baseURL = reqUrl;
 /**
@@ -12,12 +12,11 @@ const baseURL = reqUrl;
  */
 export function extend(source) {
   let target;
-  if (typeof source === 'object') {
-
+  if (typeof source === "object") {
     target = Array.isArray(source) ? [] : {};
     for (let key in source) {
       if (source.hasOwnProperty(key)) {
-        if (typeof source[key] !== 'object') {
+        if (typeof source[key] !== "object") {
           target[key] = source[key];
         } else {
           target[key] = extend(source[key]);
@@ -34,17 +33,17 @@ export function parseTime(time, pattern) {
   if (arguments.length === 0 || !time) {
     return null;
   }
-  const format = pattern || '{y}-{m}-{d} {h}:{i}:{s}';
+  const format = pattern || "{y}-{m}-{d} {h}:{i}:{s}";
   let date;
-  if (typeof time === 'object') {
+  if (typeof time === "object") {
     date = time;
   } else {
-    if (typeof time === 'string' && /^[0-9]+$/.test(time)) {
+    if (typeof time === "string" && /^[0-9]+$/.test(time)) {
       time = parseInt(time);
-    } else if (typeof time === 'string') {
-      time = time.replace(new RegExp(/-/gm), '/');
+    } else if (typeof time === "string") {
+      time = time.replace(new RegExp(/-/gm), "/");
     }
-    if (typeof time === 'number' && time.toString().length === 10) {
+    if (typeof time === "number" && time.toString().length === 10) {
       time = time * 1000;
     }
     date = new Date(time);
@@ -61,11 +60,11 @@ export function parseTime(time, pattern) {
   const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key];
     // Note: getDay() returns 0 on Sunday
-    if (key === 'a') {
-      return ['日', '一', '二', '三', '四', '五', '六'][value];
+    if (key === "a") {
+      return ["日", "一", "二", "三", "四", "五", "六"][value];
     }
     if (result.length > 0 && value < 10) {
-      value = '0' + value;
+      value = "0" + value;
     }
     return value || 0;
   });
@@ -74,10 +73,10 @@ export function parseTime(time, pattern) {
 
 // 图片地址格式化
 export function transFileUrl(url) {
-  if(!url) {
-    throw new Error('转化的图片地址不能为空')
+  if (!url) {
+    throw new Error("转化的图片地址不能为空");
   }
-  return url.slice(url.lastIndexOf('/') + 1)
+  return url.slice(url.lastIndexOf("/") + 1);
 }
 
 // 去除表单项校验
@@ -102,11 +101,15 @@ export function resetTableSelection(refName) {
 }
 
 // 添加日期范围
-export function addDateRange(params, dateRange, { begin = 'beginTime', end = 'endTime' } = {}) {
+export function addDateRange(
+  params,
+  dateRange,
+  { begin = "beginTime", end = "endTime" } = {}
+) {
   var search = params;
-  search[begin] = '';
-  search[end] = '';
-  if (null != dateRange && '' != dateRange) {
+  search[begin] = "";
+  search[end] = "";
+  if (null != dateRange && "" != dateRange) {
     search[begin] = dateRange[0];
     search[end] = dateRange[1];
   }
@@ -116,57 +119,105 @@ export function addDateRange(params, dateRange, { begin = 'beginTime', end = 'en
 // 回显数据字典
 export function selectDictLabel(datas, value) {
   var actions = [];
-  Object.keys(datas).some(key => {
-    if (datas[key].dictValue == '' + value) {
+  Object.keys(datas).some((key) => {
+    if (datas[key].dictValue == "" + value) {
       actions.push(datas[key].dictLabel);
       return true;
     }
   });
-  return actions.join('');
+  return actions.join("");
 }
 
 // 回显数据字典（字符串数组）
 export function selectDictLabels(datas, value, separator) {
   var actions = [];
-  var currentSeparator = undefined === separator ? ',' : separator;
+  var currentSeparator = undefined === separator ? "," : separator;
   var temp = value.split(currentSeparator);
-  Object.keys(value.split(currentSeparator)).some(val => {
-    Object.keys(datas).some(key => {
-      if (datas[key].dictValue == '' + temp[val]) {
+  Object.keys(value.split(currentSeparator)).some((val) => {
+    Object.keys(datas).some((key) => {
+      if (datas[key].dictValue == "" + temp[val]) {
         actions.push(datas[key].dictLabel + currentSeparator);
       }
     });
   });
-  return actions.join('').substring(0, actions.join('').length - 1);
+  return actions.join("").substring(0, actions.join("").length - 1);
 }
 
 // 通用下载方法
 export function download(fileName) {
-  window.location.href = baseURL + '/common/download?fileName=' + encodeURI(fileName) + '&delete=' + true;
+  window.location.href =
+    baseURL +
+    "/common/download?fileName=" +
+    encodeURI(fileName) +
+    "&delete=" +
+    true;
+}
+
+// 导出文件
+export function downloadFile({
+  title = "是否确认导出数据项?",
+  aFn,
+  queryParams,
+} = {}) {
+  this.$confirm(title, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(() => {
+      return aFn(queryParams);
+    })
+    .then((response) => {
+      const fileName = response.msg;
+      const url =
+        baseURL +
+        "/common/download?fileName=" +
+        encodeURI(fileName) +
+        "&delete=" +
+        true;
+      this.urlDownload(url);
+    });
+}
+
+// 删除按钮
+export function HandleDelete({ title = "是否确认删除该项?", delFn, data, cb } = {}) {
+  this.$confirm(title, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(() => {
+      return delFn(data);
+    })
+    .then(() => {
+      cb();
+      this.msgSuccess("删除成功");
+    })
 }
 
 // 字符串格式化(%s )
 export function sprintf(str) {
-  var args = arguments, flag = true, i = 1;
+  var args = arguments,
+    flag = true,
+    i = 1;
   str = str.replace(/%s/g, function () {
     var arg = args[i++];
-    if (typeof arg === 'undefined') {
+    if (typeof arg === "undefined") {
       flag = false;
-      return '';
+      return "";
     }
     return arg;
   });
-  return flag ? str : '';
+  return flag ? str : "";
 }
 
 // 转换字符串，undefined,null等转化为""
 export function praseStrEmpty(str) {
-  if (!str || str == 'undefined' || str == 'null') {
-    return '';
+  if (!str || str == "undefined" || str == "null") {
+    return "";
   }
   return str;
 }
-
 
 // 数据合并
 export function mergeRecursive(source, target) {
@@ -182,8 +233,7 @@ export function mergeRecursive(source, target) {
     }
   }
   return source;
-};
-
+}
 
 /**
  * 构造树型结构数据
@@ -194,14 +244,14 @@ export function mergeRecursive(source, target) {
  * @param {*} rootId 根Id 默认 0
  */
 export function handleTree(data, id, parentId, children, rootId) {
-  id = id || 'id';
-  parentId = parentId || 'parentId';
-  children = children || 'children';
+  id = id || "id";
+  parentId = parentId || "parentId";
+  children = children || "children";
   rootId =
     rootId ||
     Math.min.apply(
       Math,
-      data.map(item => {
+      data.map((item) => {
         return item[parentId];
       })
     ) ||
@@ -209,16 +259,16 @@ export function handleTree(data, id, parentId, children, rootId) {
   //对源数据深度克隆
   const cloneData = JSON.parse(JSON.stringify(data));
   //循环所有项
-  const treeData = cloneData.filter(father => {
-    let branchArr = cloneData.filter(child => {
+  const treeData = cloneData.filter((father) => {
+    let branchArr = cloneData.filter((child) => {
       //返回每一项的子级数组
       return father[id] === child[parentId];
     });
-    branchArr.length > 0 ? (father.children = branchArr) : '';
+    branchArr.length > 0 ? (father.children = branchArr) : "";
     //返回第一层
     return father[parentId] === rootId;
   });
-  return treeData != '' ? treeData : data;
+  return treeData != "" ? treeData : data;
 }
 
 // TABLE 通用高度
@@ -229,11 +279,11 @@ export function tableHeight(num) {
 
 // dialog 通用宽度
 export function dialogTop() {
-  const w = document.documentElement.clientWidth
+  const w = document.documentElement.clientWidth;
   if (w < 1350) {
-    return '50vh'
+    return "50vh";
   }
-  return '10vh'
+  return "10vh";
 }
 
 // 全局通用表单按enter提交方法
@@ -245,14 +295,14 @@ export function Enter_Fn(fn) {
       }
     };
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
 /**
- * 
- * @param {*} obj 
- * @returns 
+ *
+ * @param {*} obj
+ * @returns
  */
 export function is_Empty(obj) {
   if (
@@ -267,21 +317,24 @@ export function is_Empty(obj) {
   }
 }
 
-
 /**
-* 参数处理
-* @param {*} params  参数
-*/
+ * 参数处理
+ * @param {*} params  参数
+ */
 export function tansParams(params) {
-  let result = ''
+  let result = "";
   for (const propName of Object.keys(params)) {
     const value = params[propName];
     var part = encodeURIComponent(propName) + "=";
-    if (value !== null && value !== "" && typeof (value) !== "undefined") {
-      if (typeof value === 'object') {
+    if (value !== null && value !== "" && typeof value !== "undefined") {
+      if (typeof value === "object") {
         for (const key of Object.keys(value)) {
-          if (value[key] !== null && value[key] !== "" && typeof (value[key]) !== 'undefined') {
-            let params = propName + '[' + key + ']';
+          if (
+            value[key] !== null &&
+            value[key] !== "" &&
+            typeof value[key] !== "undefined"
+          ) {
+            let params = propName + "[" + key + "]";
             var subPart = encodeURIComponent(params) + "=";
             result += subPart + encodeURIComponent(value[key]) + "&";
           }
@@ -291,22 +344,68 @@ export function tansParams(params) {
       }
     }
   }
-  return result
+  return result;
 }
 
 // 验证是否为blob格式
 export function blobValidate(data) {
-  return data.type !== 'application/json'
+  return data.type !== "application/json";
 }
 
 /**
  * 字符串的图片链接转数组
- * @param {*} imgStr 
- * @returns 
+ * @param {*} imgStr
+ * @returns
  */
 export function setCheckListArr(imgStr, count) {
-  if(!is_Empty(imgStr)) {
-    const imgList = imgStr.split(',');
+  if (!is_Empty(imgStr)) {
+    const imgList = imgStr.split(",");
     return count === 1 ? imgList[0] : imgList;
+  }
+}
+
+/**
+ * 组件名称跳转
+ * @param {*} params
+ * @param {*} linkType 1 - 组件名称跳转方式   2 - 组件路径跳转方式
+ */
+export function handleNameToPage(name, params) {
+  try {
+    this.$router.push({
+      name,
+      params,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+/**
+ * 组件path跳转
+ * @param {*} params
+ * @param {*} linkType 1 - 组件名称跳转方式   2 - 组件路径跳转方式
+ */
+export function handlePathToPage(path, query) {
+  try {
+    this.$router.push({
+      path,
+      query,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// 配置字典
+export function getConfigDicts(dictName, currentData) {
+  try {
+    this.getDicts(dictName).then((res) => {
+      const data = res.data;
+      data.forEach(({ dictLabel, dictValue }) => {
+        this[currentData][dictValue] = dictLabel;
+      });
+    });
+  } catch (error) {
+    throw new Error(error);
   }
 }

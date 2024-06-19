@@ -43,7 +43,7 @@ export default {
   background-size: cover;
 }
 .app-container {
-  height: calc(100vh - 70px);
+  height: calc(100vh - 100px);
   overflow-y: auto;
 }
 .theme-style {

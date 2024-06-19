@@ -17,6 +17,7 @@
       <el-row>
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
           <vue-cropper
+            v-if="visible"
             ref="cropper"
             :img="options.img"
             :info="true"
@@ -25,7 +26,6 @@
             :autoCropHeight="options.autoCropHeight"
             :fixedBox="options.fixedBox"
             @realTime="realTime"
-            v-if="visible"
           />
         </el-col>
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
@@ -78,9 +78,9 @@
           ></el-button>
         </el-col>
         <el-col :lg="{ span: 2, offset: 6 }" :md="2">
-          <el-button type="primary" size="small" @click="uploadImg()"
-            >提 交</el-button
-          >
+          <el-button type="primary" size="small" @click="uploadImg()">
+            提 交
+          </el-button>
         </el-col>
       </el-row>
     </el-dialog>

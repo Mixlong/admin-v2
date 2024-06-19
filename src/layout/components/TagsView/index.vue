@@ -4,7 +4,6 @@
       ref="scrollPane"
       class="tags-view-wrapper"
       @scroll="handleScroll"
-      style="position: relative; top: -5px"
     >
       <router-link
         v-for="tag in visitedViews"
@@ -231,14 +230,12 @@ export default {
 .tags-view-container {
   height: 34px;
   width: 100%;
-
   background: #fff;
   padding-left: 220px;
   border-bottom: 1px solid #d8dce5;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 0 3px 0 rgba(0, 0, 0, 0.04);
   .tags-view-wrapper {
     .tags-view-item {
-      border-radius: 5px;
       display: inline-block;
       position: relative;
       cursor: pointer;
@@ -262,14 +259,14 @@ export default {
         color: #fff;
         border-color: #42b983;
         &::before {
-          // content: "";
-          // background:transparent;
-          // display: inline-block;
-          // width: 8px;
-          // height: 8px;
-          // border-radius: 50%;
-          // position: relative;
-          // margin-right: 2px;
+          content: "";
+          background:#fff;
+          display: inline-block;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          position: relative;
+          margin-right: 2px;
         }
       }
     }

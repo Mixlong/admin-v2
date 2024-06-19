@@ -36,11 +36,12 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -52,8 +53,9 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:menu:add']"
-          >新增</el-button
         >
+          新增
+        </el-button>
       </el-col>
       <right-toolbar
         :showSearch.sync="showSearch"
@@ -384,7 +386,6 @@ export default {
     /** 查询菜单下拉树结构 */
     getTreeselect() {
       listMenu().then((response) => {
-
         this.menuOptions = [];
         const menu = { menuId: 0, menuName: "主类目", children: [] };
         menu.children = this.handleTree(response.data, "menuId");

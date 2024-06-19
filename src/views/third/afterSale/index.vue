@@ -16,6 +16,7 @@
           v-model="queryParams.customerName"
           clearable
           style="width: 140px"
+          multiple
           :fetch-suggestions="querySearchAsync"
           placeholder="请选择客户名称"
         ></el-autocomplete>
@@ -233,11 +234,11 @@
           <el-tag v-else type="danger">否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="问题根因" prop="rootMatter" align="center" />
+      <el-table-column label="问题根因" prop="rootMatter" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
+      </el-table-column>
       <el-table-column label="根因分类" prop="rootMatterType" align="center">
-        <template slot-scope="{ row }">
-          {{ directionLabel(rootClassify, row.rootMatterType) }}
-        </template>
+        <span slot-scope="scope" v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"></span>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
@@ -403,7 +404,7 @@
 import {
   afterList,
   saleDelete,
-  saleUpdate,
+  saleOperation,
   saleExport,
 } from "@/api/third/sale";
 import { mapGetters } from "vuex";
@@ -757,7 +758,7 @@ export default {
         type: "warning",
       })
         .then(() => {
-          return saleUpdate({ ...row, status: status === 0 ? 1 : 0 });
+          return saleOperation({ id: row.id, status: status === 0 ? 1 : 0 });
         })
         .then(() => {
           this.getList();

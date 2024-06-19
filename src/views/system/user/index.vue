@@ -79,11 +79,12 @@
               icon="el-icon-search"
               size="mini"
               @click="handleQuery"
-              >搜索</el-button
             >
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-              >重置</el-button
-            >
+              搜索
+            </el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+              重置
+            </el-button>
           </el-form-item>
         </el-form>
 
@@ -95,8 +96,9 @@
               size="mini"
               @click="handleAdd"
               v-hasPermi="['system:user:add']"
-              >新增</el-button
             >
+              新增
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -106,8 +108,9 @@
               :disabled="single"
               @click="handleUpdate"
               v-hasPermi="['system:user:edit']"
-              >修改</el-button
             >
+              修改
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -117,8 +120,9 @@
               :disabled="multiple"
               @click="handleDelete"
               v-hasPermi="['system:user:remove']"
-              >删除</el-button
             >
+              删除
+            </el-button>
           </el-col>
         </el-row>
         <el-row class="userList-box">
@@ -165,7 +169,11 @@
         </el-form-item>
 
         <el-form-item label="用户手机号" prop="phonenumber">
-          <el-input v-model="form.phonenumber" type="number" placeholder="请输入用户手机号" />
+          <el-input
+            v-model="form.phonenumber"
+            type="number"
+            placeholder="请输入用户手机号"
+          />
         </el-form-item>
 
         <el-form-item

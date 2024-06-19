@@ -2,7 +2,7 @@
   <section class="app-main">
     <transition name="fade-transform" mode="out-in">
       <keep-alive :include="cachedViews">
-        <router-view :key="key" />
+        <router-view v-if="!$route.meta.link" :key="key" />
       </keep-alive>
     </transition>
   </section>
@@ -39,15 +39,12 @@ export default {
   .app-main {
     /* 84 = navbar + tags-view = 50 + 34 */
     min-height: calc(100vh);
-    padding-left: 10px;
-    padding-right: 10px;
     box-sizing: border-box;
- 
     background-size: 50%;
   }
 
   .fixed-header+.app-main {
-    padding-top: 50px;
+    padding-top: 80px;
   }
 }
 </style>

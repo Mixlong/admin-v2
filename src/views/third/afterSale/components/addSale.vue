@@ -465,8 +465,9 @@
         <el-upload-sortable
           v-model="form.file"
           :action="actionUrl"
-          :imgW="98"
-          :imgH="98"
+          :imgW="80"
+          :imgH="80"
+          :multiple="true"
         />
       </el-form-item>
       <el-form-item label="不良视频" prop="video" style="width: 100%">

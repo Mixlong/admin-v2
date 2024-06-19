@@ -7,18 +7,14 @@
       <!-- 迪太云后台管理 -->
       <img
         :src="
-          customImage==0
+          customImage == 0
             ? require('@/assets/logo/logo.png')
             : require('@/assets/logo/logo1.png')
         "
         alt=""
-        style="vertical-align: middle; width: 100px;"
+        style="vertical-align: middle; width: 100px"
       />
-      <div
-        class="text-center font20 company-name"
-      >
-        迪太云
-      </div>
+      <div class="text-center font20 company-name">迪太云</div>
     </div>
     <hamburger
       id="hamburger-container"
@@ -30,10 +26,7 @@
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <div
-        style="font-size: 14px; cursor: pointer"
-        class="text-red padding-right"
-      >
+      <div style="font-size: 14px; cursor: pointer" class="text-red">
         <el-popover placement="top" width="620">
           <el-row :gutter="15">
             <el-col
@@ -75,17 +68,17 @@
           </el-button>
         </el-popover>
       </div>
-      <div style="font-size: 14px; cursor: pointer" class="text-red">
+
+      <!-- <div style="font-size: 14px; cursor: pointer" class="text-red">
         <router-link tag="a" target="_blank" :to="{ path: '/document' }">
           <i
             class="el-icon-edit-outline"
             @click="toProjectNote"
             :class="{ news: readNum > 0 }"
-            style="'cursor:pointer;margin-right: 5px;' "
-          ></i>
+          />
           <span class="solid-right padding-right"> api文档</span>
         </router-link>
-      </div>
+      </div> -->
 
       <div class="user-info padding-left padding-right-xs">
         <span>welcome,</span>
@@ -225,10 +218,10 @@ export default {
 }
 .navbar-wrap-style {
   height: 50px;
-  // overflow: hidden;
+  overflow: hidden;
   position: relative;
   background: #fff;
-  // box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .company-name {
     color: #00bdfe;

@@ -1,14 +1,8 @@
 <template>
   <div class="app-container font12">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      class="flex justify-between"
-    >
+    <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="产品品类：">
         <el-select
-          size="small"
           v-model="queryParams.key"
           filterable
           @change="changeCategory"
@@ -27,25 +21,22 @@
           v-if="checkRole(['project_manager', 'admin', 'product'])"
           type="primary"
           icon="el-icon-plus"
-          size="small"
           @click="handleAdd"
         >
           新增
         </el-button>
-        <el-button type="primary" size="small" @click="getList">刷新</el-button>
+        <el-button type="primary" @click="getList">刷新</el-button>
       </el-form-item>
     </el-form>
-    <el-table v-loading="loading" :data="list" :height="tableHeight()" border>
+    <el-table v-loading="loading" :data="list" :height="tableHeight(38)">
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
-          <span>
-            {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
-          </span>
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="版本号" prop="name" align="center" width="200" />
+      <el-table-column label="版本号" prop="name" align="center" />
       <el-table-column label="描述" prop="desc" align="center" />
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -55,26 +46,21 @@
           ></el-switch>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        prop="createBy"
-        align="center"
-        width="120"
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="140"
-      />
-      <el-table-column label="操作" align="center" width="200">
+      <el-table-column label="创建人" prop="createBy" align="center" />
+      <el-table-column label="创建时间" prop="createTime" align="center" sortable />
+      <el-table-column label="操作" align="center">
         <template slot-scope="scope">
-          <el-button type="warning" @click="handleUpdate(scope.row)">
-            编辑
-          </el-button>
-          <el-button type="danger" @click="handleDelete(scope.row)">
-            删除
-          </el-button>
+          <Tooltip
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate(scope.row)"
+          />
+          <Tooltip
+            icon="el-icon-delete"
+            :className="['text-red']"
+            content="删除"
+            @click="handleDelete(scope.row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -97,6 +83,7 @@ import { typeCategory } from "@/api/third/category";
 import CompUpdate from "./components/update";
 
 export default {
+  name: "Version",
   components: {
     CompUpdate,
   },

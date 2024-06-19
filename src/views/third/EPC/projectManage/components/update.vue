@@ -90,7 +90,7 @@
             </DrUpload>
           </el-form-item>
 
-          <el-button
+          <!-- <el-button
             style="height: 30px"
             type="primary"
             size="mini"
@@ -98,7 +98,7 @@
             :loading="isImgLoading"
           >
             {{ isImgLoading ? "图片生成中..." : "生成图片" }}
-          </el-button>
+          </el-button> -->
         </div>
       </template>
 

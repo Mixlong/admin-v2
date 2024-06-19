@@ -47,20 +47,20 @@
     <el-table
       v-loading="loading"
       :data="typeList"
-      :height="tableHeight()"
       border
+      :height="tableHeight()"
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
-      <el-table-column label="键" prop="key" align="center" width="160" />
-      <el-table-column label="值" prop="value" align="center" width="160" />
-      <el-table-column label="上传文件" align="center" width="80">
+      <el-table-column label="键" prop="key" align="center" width="140" />
+      <el-table-column label="值" prop="value" align="center" width="140" />
+      <el-table-column label="上传文件" align="center" width="140">
         <template slot-scope="scope">
           <el-tag :type="scope.row.up === 1 ? 'success' : 'danger'">
             {{ scope.row.up === 1 ? "是" : "否" }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort" align="center" width="60" />
+      <el-table-column label="排序" prop="sort" align="center" width="140" />
       <el-table-column label="可见性" align="center">
         <template slot-scope="scope">
           <el-tag
@@ -82,13 +82,13 @@
         label="创建时间"
         align="center"
         prop="createTime"
-        width="190"
+        width="140"
       />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="80"
+        width="100"
       >
         <template slot-scope="scope">
           <Tooltip
@@ -170,7 +170,7 @@
           style="width: 100%"
           class="flex checkbox-wrap"
         >
-          <el-checkbox-group v-model="roleTypeCheckedList">
+          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList">
             <el-checkbox
               v-for="(item, index) in roleTypeDictList"
               :key="index"
@@ -231,7 +231,7 @@ import { getCodeImg } from "@/api/base/code";
 import { commonJs } from "@/mixins/common";
 
 export default {
-  name: "BikeType",
+  name: "CadType",
   mixins: [commonJs],
   data() {
     return {
@@ -454,6 +454,11 @@ export default {
 .checkbox-wrap {
   .el-form-item__content {
     width: 80%;
+    .role-type {
+      display: grid;
+      grid-auto-rows: 30px;
+      grid-template-columns: auto auto auto auto;
+    }
   }
 }
 </style>

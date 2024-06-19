@@ -6,26 +6,18 @@
       v-show="showSearch"
       :inline="true"
     >
-      <el-form-item label="品类" prop="categoryId">
-        <ModelCategory
-          v-model="queryParams.categoryId"
-          dictLabel="name"
-          dictValue="id"
-        ></ModelCategory>
-      </el-form-item>
-      <el-form-item label="芯片类型" prop="label">
+      <el-form-item label="资料类型：" prop="type">
         <el-select
-          v-model="queryParams.label"
-          placeholder="请选择芯片类型"
+          v-model="queryParams.type"
+          placeholder="请选择资料类型"
           clearable
-          filterable
-          style="width: 185px"
+          style="width: 200px"
         >
           <el-option
-            v-for="dict in chipTypeList"
-            :key="dict.dictCode"
-            :label="dict.dictLabel"
-            :value="dict.dictLabel"
+            v-for="(label, value) in dataTypeList"
+            :key="value"
+            :label="label"
+            :value="+value"
           />
         </el-select>
       </el-form-item>
@@ -41,7 +33,12 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+          v-hasPermi="['system:role:add']"
+        >
           新增
         </el-button>
       </el-col>
@@ -57,8 +54,6 @@
       :height="tableHeight()"
       border
     >
-      <el-table-column label="品类" align="center" prop="categoryName" />
-      <el-table-column label="芯片类型" align="center" prop="schemeVersion" />
       <el-table-column label="资料类型" align="center" prop="type" :formatter="onTypeFormatter" />
       <el-table-column label="创建人" align="center" prop="createBy">
         <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
@@ -85,6 +80,12 @@
             content="详情"
             @click="handleDetail(scope.row)"
           />
+          <Tooltip
+            icon="el-icon-delete"
+            :className="['text-red']"
+            content="删除"
+            @click="handleDelete(scope.row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -110,29 +111,19 @@
     >
       <el-form ref="form" inline :model="form" :rules="rules">
         <el-card :body-style="{ paddingBottom: '0px' }">
-          <el-form-item label="品类" prop="categoryName">
-            <ModelCategory
-              v-model="form.categoryName"
-              :disabled="!!form.id"
-              dictLabel="name"
-              :moreParams="true"
-              @getChange="getChange"
-            ></ModelCategory>
-          </el-form-item>
-          <el-form-item label="芯片类型：" prop="schemeVersion">
+          <el-form-item label="资料类型：" prop="type">
             <el-select
-              v-model="form.schemeVersion"
-              placeholder="请选择芯片类型"
+              v-model="form.type"
+              placeholder="请选择资料类型"
               clearable
-              filterable
               style="width: 200px"
               :disabled="!!form.id"
             >
               <el-option
-                v-for="dict in chipTypeList"
-                :key="dict.dictCode"
-                :label="dict.dictLabel"
-                :value="dict.dictLabel"
+                v-for="(label, value) in dataTypeList"
+                :key="value"
+                :label="label"
+                :value="+value"
               />
             </el-select>
           </el-form-item>
@@ -181,7 +172,7 @@
       :close-on-click-modal="false"
     >
       <el-descriptions
-        :title="`芯片类型:  ${isDetailTypeName}`"
+        :title="`资料类型:  ${isDetailTypeName}`"
         direction="vertical"
         :column="3"
         border
@@ -242,15 +233,18 @@
 
 <script>
 import {
-  schemeTypeList,
-  schemeTypePtList,
-  schemeTypeSave,
-  schemeTypeUpdate,
-  schemeTypePtPick,
+  meansList,
+  meansSave,
+  meansUpdate,
+  meansDelete,
 } from "@/api/system/skipType";
 
+import { listType as softwareList } from "@/api/third/type";
+import { listType as hardList } from "@/api/third/ids/type";
+import { listType as epcList } from "@/api/third/epc/type";
+
 export default {
-  name: "ChipType",
+  name: "TotalChipType",
   components: {
     ChooseType: () => import("./ChooseType.vue"),
   },
@@ -265,23 +259,21 @@ export default {
       chipList: [],
       title: "",
       open: false,
-      chipTypeList: [],
+      TypeList: [],
       // 资料类型
       dataTypeList: {},
       // 查询参数
       queryParams: {
         p: 1,
         l: 20,
-        label: "", // 芯片类型
-        categoryId: "", // 品类id
+        type: "",
       },
       softwareType: [],
       hardType: [],
       epcType: [],
       // 表单参数
       form: {
-        categoryName: "",
-        schemeVersion: "",
+        type: "",
         softValue: [],
         hardValue: [],
         projectValue: [],
@@ -296,30 +288,24 @@ export default {
       },
       // 表单校验
       rules: {
-        categoryName: [
-          { required: true, message: "品类不能为空", trigger: "change" },
-        ],
-        schemeVersion: [
-          { required: true, message: "芯片类型不能为空", trigger: "change" },
+        type: [
+          { required: true, message: "资料类型不能为空", trigger: "change" },
         ],
       },
     };
   },
   created() {
-    // 芯片类型
-    this.getDicts("scheme_version").then((res) => {
-      this.chipTypeList = res.data;
-    });
     // 资料类型
     this.getConfigDicts("production_means", "dataTypeList");
+
     this.getList();
+
     this.getTypePyList();
   },
   methods: {
-    /** 查询角色列表 */
     getList() {
       this.loading = true;
-      schemeTypeList(this.queryParams).then((res) => {
+      meansList(this.queryParams).then((res) => {
         const { list, total } = res.data;
         this.chipList = list;
         this.total = total;
@@ -332,14 +318,19 @@ export default {
      */
     getTypePyList() {
       Promise.all([
-        schemeTypePtList({ type: 1 }),
-        schemeTypePtList({ type: 2 }),
-        schemeTypePtList({ type: 3 }),
+        softwareList({ p: 1, l: 150 }),
+        hardList({ p: 1, l: 50 }),
+        epcList({ p: 1, l: 50 }),
       ]).then((res) => {
-        let [softwareType, hardType, epcType] = res;
-        this.softwareType = softwareType.data;
-        this.hardType = hardType.data;
-        this.epcType = epcType.data;
+        let [softwareTypeData, hardTypeData, epcTypeData] = res;
+        this.softwareType = this.getTypeKey(softwareTypeData.data.list);
+        this.hardType = this.getTypeKey(hardTypeData.data.list);
+        this.epcType = this.getTypeKey(epcTypeData.data.list);
+      });
+    },
+    getTypeKey(data) {
+      return data.map((item) => {
+        return { id: item.id, typeKey: item.key, typeValue: item.value };
       });
     },
     onTypeFormatter(row) {
@@ -348,8 +339,8 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        categoryName: "",
-        schemeVersion: "",
+        type: "",
+        process: "",
         softValue: [],
         hardValue: [],
         projectValue: [],
@@ -371,62 +362,35 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加芯片属性";
+      this.title = "添加资料归类";
     },
     /** 修改按钮操作 */
     async handleUpdate(row) {
       this.reset();
       this.open = true;
-      this.title = "修改芯片属性";
-      const { schemeVersion, id, categoryName, categoryId } = row;
+      this.title = "修改资料归类";
 
-      this.form.schemeVersion = schemeVersion;
-      this.form.categoryName = categoryName;
-      this.form.categoryId = categoryId;
-      this.form.id = id;
-      this.isAddOrUpLoading = true;
-
-      const { softList, hardList, projectList } = await this.getChipType(
-        schemeVersion,
-        categoryId
-      );
-      this.form.softValue = softList;
-      this.form.hardValue = hardList;
-      this.form.projectValue = projectList;
-    },
-    /** 已选属性 */
-    getChipType(scheme, categoryId, type) {
-      return new Promise((resolve, reject) => {
-        schemeTypePtPick({ scheme, categoryId }).then((res) => {
-          this.isAddOrUpLoading = false;
-          this.isDetailLoading = false;
-          resolve({
-            softList: res.data[1] || [],
-            hardList: res.data[2] || [],
-            projectList: res.data[3] || [],
-          });
-        });
-      });
+      this.form = Object.assign({}, row);
     },
     /** 详情 */
     async handleDetail(row) {
       this.isDetail = true;
-      const { schemeVersion, categoryId } = row;
-      this.isDetailTypeName = schemeVersion;
-      this.isDetailLoading = true;
-      const { softList, hardList, projectList } = await this.getChipType(
-        schemeVersion,
-        categoryId
-      );
+      const { type, softValue, hardValue, projectValue } = row;
+
+      this.isDetailTypeName = this.dataTypeList[type];
+
       // 软件
       this.detailData.softwareType = this.handleTransType(
         this.softwareType,
-        softList
+        softValue
       );
       // 硬件
-      this.detailData.hardType = this.handleTransType(this.hardType, hardList);
+      this.detailData.hardType = this.handleTransType(this.hardType, hardValue);
       // 工程
-      this.detailData.epcType = this.handleTransType(this.epcType, projectList);
+      this.detailData.epcType = this.handleTransType(
+        this.epcType,
+        projectValue
+      );
     },
     /** 已选属性转化  */
     handleTransType(source, target) {
@@ -440,36 +404,41 @@ export default {
       });
       return newArr;
     },
-    getChange(e) {
-      const { id, name } = JSON.parse(e);
-
-      this.$set(this.form, "categoryName", name);
-      this.$set(this.form, "categoryId", id);
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      this.$confirm("确认要删除该数据吗？", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.loading = true;
+          return meansDelete([row.id]);
+        })
+        .then(() => {
+          this.loading = false;
+          this.getList();
+          this.msgSuccess("删除成功");
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          const { projectValue, hardValue, softValue } = this.form;
-          const dataFlag = [
-            this.Is_Empty(softValue),
-            this.Is_Empty(hardValue),
-            this.Is_Empty(projectValue),
-          ].every((item) => item === true);
+          const { softValue, hardValue, projectValue } = this.form;
 
-          // if (
-          //   this.Is_Empty(softValue) ||
-          //   this.Is_Empty(hardValue) ||
-          //   this.Is_Empty(projectValue)
-          // ) {
-          //   return this.msgError("软/硬/工属性每项至少选择一个");
-          // }
-          if (dataFlag) {
+          const dataFlag = [this.Is_Empty(softValue), this.Is_Empty(hardValue), this.Is_Empty(projectValue)].every(item => item === true);
+
+          if(dataFlag) {
             return this.msgError("软/硬/工属性至少有一项选择数据");
           }
+
           this.isSubLoading = true;
           if (this.form.id != undefined) {
-            schemeTypeUpdate(this.form)
+            meansUpdate(this.form)
               .then(() => {
                 this.msgSuccess("修改成功");
                 this.isSubLoading = false;
@@ -480,7 +449,7 @@ export default {
                 this.isSubLoading = false;
               });
           } else {
-            schemeTypeSave(this.form)
+            meansSave(this.form)
               .then(() => {
                 this.msgSuccess("新增成功");
                 this.isSubLoading = false;

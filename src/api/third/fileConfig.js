@@ -16,7 +16,6 @@ export function listFactoryFileConfig(query) {
   })
 }
 
-
 export function listModelDict(query) {
   return request({
     url: '/computer/dict/list',
@@ -87,6 +86,16 @@ export function productList(params) {
     params
   })
 }
+
+// 导出仪表生产数据
+export function productExportList(params) {
+  return request({
+    url: '/production/export/list',
+    method: 'get',
+    params
+  })
+}
+
 
 // 老化测试
 export function agingList(params) {

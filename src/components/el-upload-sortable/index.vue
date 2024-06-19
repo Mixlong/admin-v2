@@ -46,10 +46,10 @@
     </draggable>
 
     <el-upload
+      v-if="imgList.length < max"
       :style="imgListStyle"
       class="el-upload el-upload--picture-card"
       :multiple="multiple"
-      v-if="imgList.length < max"
       :action="action"
       :accept="accept"
       :disabled="isDisabled"
@@ -61,20 +61,15 @@
     >
       <i :class="isUploadIcon"></i>
     </el-upload>
-    <el-dialog
-      class="el-upload-video-img-box"
-      :visible.sync="dialogVisible"
-      append-to-body
-      top="2vh"
-    >
+
+    <el-dialog class="video-box" :visible.sync="dialogVisible" top="0" append-to-body>
       <video
-        style="object-fit: fill"
+        ref="videoRef"
         controls
-        class="w100"
-        v-if="isVideo"
+        :controlslist="controlslist"
+        disablePictureInPicture
         :src="dialogImageUrl"
       />
-      <img v-else width="100%" :src="dialogImageUrl" style="max-height: 80vh" />
     </el-dialog>
   </div>
 </template>
@@ -89,11 +84,11 @@ export default {
   props: {
     imgW: {
       type: Number,
-      default: 148,
+      default: 98,
     },
     imgH: {
       type: Number,
-      default: 148,
+      default: 98,
     },
     max: {
       type: Number,
@@ -129,7 +124,7 @@ export default {
     },
     accept: {
       type: String,
-      default: ""
+      default: "",
     },
   },
   data() {
@@ -145,6 +140,7 @@ export default {
       },
       dialogImageUrl: "",
       dialogVisible: false,
+      controlslist: "nodownload",
     };
   },
   computed: {
@@ -162,6 +158,11 @@ export default {
     value(value) {
       this.transImgVal(value);
     },
+    dialogVisible(dialogVisible) {
+      if (!dialogVisible) {
+        this.$refs.videoRef.pause();
+      }
+    },
   },
   mounted() {
     this.transImgVal(this.value);
@@ -174,30 +175,50 @@ export default {
       this.$emit("input", list.toString());
     },
     beforeUpload(file) {
+      if (file?.name.indexOf("+") !== -1) {
+        this.msgError("上传的文件名称不能包含‘+’字符");
+        return false;
+      }
+      
       if (this.isVideo) {
+        return this.handleCheckVideo(file);
+      } else {
+        return this.handleCheckImage(file);
+      }
+    },
+    handleCheckVideo(file) {
+      const isValidFormat = file.type.indexOf("video") !== -1;
+      const isLt100 = file.size / 1024 / 1024 < 100;
+      if (!isValidFormat) {
+        this.msgError("视频格式不正确!");
+        return false;
+      } else if (!isLt100) {
+        this.msgError("视频大小不能超过 100MB!");
+        return false;
+      } else {
+        this.isLoading = true;
         return true;
       }
-
-      // const isValidFormat = ["image/jpeg", "image/png"].indexOf(file.type) > -1;
-      // const isLt50M = file.size / 1024 / 1024 < 50; // 50M
-
-      // if (!isValidFormat) {
-      //   this.$message.error("图片只能是 JPG或PNG 格式!");
-      // } else if (!isLt50M) {
-      //   this.$message.error("图片大小不能超过 2MB!");
-      // }
-
-      const maxLt = this.max === 1 && this.imgList.length > 0;
-      if (maxLt) {
-        this.$message.error("只能上传一张图片，请删除后再上传!");
-      }
-
-      this.isLoading = true;
-
-      // return isValidFormat && isLt50M && !maxLt;
-      return !maxLt;
     },
+    handleCheckImage(file) {
+      const isValidFormat = file.type.indexOf("image") !== -1;
+      const isLt50M = file.size / 1024 / 1024 < 50;
+      const maxLt = this.max === 1 && this.imgList.length > 0;
 
+      if (!isValidFormat) {
+        this.msgError("图片格式不正确!");
+        return false;
+      } else if (!isLt50M) {
+        this.msgError("图片大小不能超过 50MB!");
+        return false;
+      } else if (maxLt) {
+        this.msgError("只能上传一张图片，请删除后再上传!");
+        return false;
+      } else {
+        this.isLoading = true;
+        return isValidFormat && isLt50M && !maxLt;
+      }
+    },
     handleSuccess(res) {
       this.isLoading = false;
       this.imgList.push(res.data[0].url);
@@ -215,8 +236,14 @@ export default {
     },
 
     handlePreview(url) {
-      this.dialogImageUrl = url;
-      this.dialogVisible = true;
+      if (this.isVideo) {
+        this.dialogImageUrl = url;
+        this.dialogVisible = true;
+      } else {
+        this.$viewerApi({
+          images: [url],
+        });
+      }
     },
   },
 };

@@ -35,12 +35,12 @@
     <el-table
       v-loading="loading"
       :data="customerList"
-      :height="tableHeight(38)"
+      :height="tableHeight()"
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
-      <el-table-column label="状态" prop="" align="center" width="120">
+      <el-table-column label="状态" prop="" align="center">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -51,12 +51,7 @@
         </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        width="180"
-      >
+      <el-table-column label="创建时间" align="center" prop="createTime" sortable>
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
@@ -65,14 +60,8 @@
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="80"
       >
         <template slot-scope="scope">
-          <!-- <el-button
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-          /> -->
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
@@ -128,7 +117,6 @@
 
 <script>
 import {
-  getOrderCusList,
   addCustomer,
   editCustomer,
   authCustomer,
@@ -136,7 +124,7 @@ import {
 } from "@/api/order";
 
 export default {
-  name: "BikeCustomer",
+  name: "Customer",
   data() {
     return {
       showSearch: true,
