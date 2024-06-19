@@ -174,7 +174,6 @@
       <el-table-column label="操作" align="center" width="80">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
-            <div class="iflex" style="padding-left: 8px; height: 5px"></div>
             <el-tooltip class="item font16" effect="dark" content="产品经理确认中" placement="top-end" v-if="(checkRole(['admin']) || scope.row.pm == userId) &&
               scope.row.state == 0
               ">
@@ -211,20 +210,20 @@
                 @click="handleAuthChange(scope.row, 6)"></el-button>
             </el-tooltip>
 
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
               @click="handleSampleUpdate(scope.row)" />
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-copy-document" content="复制"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-copy-document" content="复制"
               @click="handleCopy(scope.row)" />
-            <Tooltip v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
+            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
               @click="handleDelete(scope.row)" />
             <el-tooltip class="item" effect="dark" content="附件" placement="top-end" v-if="scope.row.attachment">
               <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
                 @click="handleDownload(scope.row)"></el-button>
             </el-tooltip>
-            <Tooltip icon="el-icon-position" content="软件发布"
+            <Tooltip class="mlZero" icon="el-icon-position" content="软件发布"
               @click="handleNameToPage('CadFileConfig', { number: scope.row.number })"
                />
-            <Tooltip v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
+            <Tooltip class="mlZero" v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
               @click="handleProd(scope.row)" />
           </div>
         </template>

@@ -96,8 +96,9 @@
               size="mini"
               @click="handleAdd"
               v-hasPermi="['system:user:add']"
-              >新增</el-button
             >
+              新增
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -107,8 +108,9 @@
               :disabled="single"
               @click="handleUpdate"
               v-hasPermi="['system:user:edit']"
-              >修改</el-button
             >
+              修改
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -118,8 +120,9 @@
               :disabled="multiple"
               @click="handleDelete"
               v-hasPermi="['system:user:remove']"
-              >删除</el-button
             >
+              删除
+            </el-button>
           </el-col>
         </el-row>
         <el-row class="userList-box">

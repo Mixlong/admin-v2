@@ -93,18 +93,20 @@
         :reserve-selection="true"
         :selectable="checkSelectable"
       />
-      <el-table-column label="序号" width="58" type="index" align="center" />
-      <el-table-column
-        label="品类"
-        prop="category"
-        align="center"
-        width="100"
-      />
-      <el-table-column label="送样单号" prop="number" align="center" />
+      <el-table-column label="品类" prop="category" align="center" />
+      <el-table-column label="送样单号" prop="number" align="center">
+        <span slot-scope="{ row }" v-NoData="row.number"></span>
+      </el-table-column>
       <el-table-column label="客户" prop="customerName" align="center" />
       <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }">{{ row.content || "---" }}</span>
+        <span slot-scope="{ row }" v-NoData="row.content"></span>
+      </el-table-column>
+      <el-table-column label="创建人" align="center" prop="updateBy">
+        <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center" width="140">
+        <span slot-scope="{ row }" v-NoData="row.updateTime"></span>
       </el-table-column>
       <el-table-column
         label="产品状态"
@@ -118,18 +120,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="updateBy"
-        width="120"
-      />
-      <el-table-column label="创建时间" align="center" width="140">
-        <template slot-scope="{ row }">
-          {{ row.updateTime || "---" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="审核" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -139,7 +130,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="105"
+        width="120"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
@@ -387,7 +378,7 @@ export default {
   },
   created() {
     const { number } = this.$route.params;
-    console.log(this.$route.params)
+    console.log(this.$route.params);
     this.queryParams.number = number;
   },
   mounted() {
@@ -587,6 +578,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
+      this.queryParams = {};
       this.resetForm("queryForm");
       this.handleQuery();
     },
@@ -599,22 +591,7 @@ export default {
     handleUpdate(row, isBatchSync) {
       // shit 改不动了
       this.$refs.compUpdate.reset();
-
-      // if (row.configExtend === null) {
-      //   row.configExtend = {
-      //     schemeVersion: "",
-      //     agreementVersion: "",
-      //     pcbaSn: "",
-      //     testInfo: [],
-      //   };
-      // } else {
-      //   // 测试项目数据
-      //   if (row.configExtend.testInfo) {
-      //     if (!Array.isArray(row.configExtend.testInfo)) {
-      //       row.configExtend.testInfo = row.configExtend.testInfo.split(",");
-      //     }
-      //   }
-      // }
+      
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row
