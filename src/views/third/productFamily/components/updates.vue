@@ -6,7 +6,7 @@
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       :top="dialogTop()"
-      width="1560px"
+      fullscreen
       append-to-body
     >
       <el-form
@@ -23,7 +23,7 @@
             clearable
             placeholder="请选择品类"
             style="width: 160px"
-            @change="changeCategory"
+            @change="changeCategory(queryParams.categoryId, false)"
           >
             <el-option
               v-for="dict in dictList"
@@ -249,98 +249,97 @@
             </el-col>
           </el-row>
 
-          <template v-if="form.isSts === 1">
-            <fieldset class="margin-top">
-              <legend class="text-green">仪表配置区</legend>
-              <el-row :gutter="10">
+          <fieldset class="margin-top">
+            <legend class="text-green">仪表配置区</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item
+                  label="通讯方式"
+                  prop="instrumentModel.serialLevel"
+                  :rules="isCheckConfigItem({ message: '通讯方式' })"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.serialLevel"
+                    placeholder="请选择通讯方式"
+                    class="w100"
+                    clearable
+                    @change="clearRateOrType"
+                  >
+                    <el-option
+                      v-for="item in dicts_communication_type"
+                      :key="item.dictValue"
+                      :label="item.dictLabel"
+                      :value="+item.dictValue"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="串口波特率"
+                  prop="instrumentModel.baudRate"
+                  :rules="isCheckConfigItem({ message: '串口波特率' })"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.baudRate"
+                    placeholder="请选择串口波特率"
+                    class="w100"
+                    clearable
+                  >
+                    <el-option
+                      v-for="(value, key) in baudRateList"
+                      :label="value"
+                      :value="+value"
+                      :key="key"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <template v-if="form.instrumentModel.serialLevel === 2">
                 <el-col :span="6">
                   <el-form-item
-                    label="通讯方式"
-                    prop="instrumentModel.serialLevel"
-                    :rules="isCheckConfigItem({ message: '通讯方式' })"
+                    label="帧类型"
+                    prop="instrumentModel.msgType"
+                    :rules="isCheckConfigItem({ message: '帧类型' })"
                   >
                     <el-select
-                      v-model="form.instrumentModel.serialLevel"
-                      placeholder="请选择通讯方式"
-                      class="w100"
+                      v-model.number="form.instrumentModel.msgType"
+                      filterable
                       clearable
-                      @change="clearRateOrType"
+                      placeholder="请选择帧类型"
+                      class="w100"
                     >
-                      <el-option
-                        v-for="item in dicts_communication_type"
-                        :key="item.dictValue"
-                        :label="item.dictLabel"
-                        :value="+item.dictValue"
-                      >
-                      </el-option>
+                      <el-option label="标准帧" :value="0" />
+                      <el-option label="扩展帧" :value="1" />
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="6">
                   <el-form-item
-                    label="串口波特率"
-                    prop="instrumentModel.baudRate"
-                    :rules="isCheckConfigItem({ message: '串口波特率' })"
+                    label="CAN波特率"
+                    prop="instrumentModel.canRate"
+                    :rules="isCheckConfigItem({ message: 'CAN波特率' })"
                   >
                     <el-select
-                      v-model="form.instrumentModel.baudRate"
-                      placeholder="请选择串口波特率"
+                      v-model="form.instrumentModel.canRate"
+                      placeholder="请选择CAN波特率"
                       class="w100"
                       clearable
                     >
                       <el-option
-                        v-for="(value, key) in baudRateList"
-                        :label="value"
-                        :value="+value"
+                        v-for="(value, key) in canRateList"
                         :key="key"
+                        :label="value"
+                        :value="+key"
                       />
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <template v-if="form.instrumentModel.serialLevel === 2">
-                  <el-col :span="6">
-                    <el-form-item
-                      label="帧类型"
-                      prop="instrumentModel.msgType"
-                      :rules="isCheckConfigItem({ message: '帧类型' })"
-                    >
-                      <el-select
-                        v-model.number="form.instrumentModel.msgType"
-                        filterable
-                        clearable
-                        placeholder="请选择帧类型"
-                        class="w100"
-                      >
-                        <el-option label="标准帧" :value="0" />
-                        <el-option label="扩展帧" :value="1" />
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="6">
-                    <el-form-item
-                      label="CAN波特率"
-                      prop="instrumentModel.canRate"
-                      :rules="isCheckConfigItem({ message: 'CAN波特率' })"
-                    >
-                      <el-select
-                        v-model="form.instrumentModel.canRate"
-                        placeholder="请选择CAN波特率"
-                        class="w100"
-                        clearable
-                      >
-                        <el-option
-                          v-for="(value, key) in canRateList"
-                          :key="key"
-                          :label="value"
-                          :value="+key"
-                        />
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                </template>
-              </el-row>
-            </fieldset>
-
+              </template>
+            </el-row>
+          </fieldset>
+          <template v-if="form.isSts === 1">
             <fieldset class="margin-top">
               <legend class="text-green">控制器、按键配置区</legend>
               <el-row :gutter="10">
@@ -1235,7 +1234,7 @@
         </fieldset>
       </el-form>
 
-      <div slot="footer" class="dialog-footer flex justify-center">
+      <div slot="footer" class="dialog-footer flex justify-center product-btn-box">
         <div>
           <el-button
             v-if="form.id && !isCopyProduct"
@@ -1911,12 +1910,16 @@ export default {
           // 非STS
 
           if (this.form.isSts === 0) {
-            const { customerMaterialNum, customerName, customerCarName, id } = this.form.instrumentModel;
+            const { customerMaterialNum, customerName, customerCarName, id, serialLevel, baudRate, msgType, canRate } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
             this.form.instrumentModel.customerName = customerName;
             this.form.instrumentModel.customerCarName = customerCarName;
             this.form.instrumentModel.id = id;
+            this.form.instrumentModel.serialLevel = serialLevel;
+            this.form.instrumentModel.baudRate = baudRate;
+            this.form.instrumentModel.msgType = msgType;
+            this.form.instrumentModel.canRate = canRate;
 
             this.form.jsonStr = "";
           } else {
@@ -1989,5 +1992,11 @@ export default {
     overflow: hidden;
     overflow-y: auto;
   }
+}
+.product-btn-box {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 30px;
 }
 </style>

@@ -33,7 +33,8 @@
             placeholder="请选择迪太订单号"
           />
         </el-form-item>
-        <template v-if="form.salesOrderNo && orderInfo.salesOrderNo">
+
+        <template v-if="form.salesOrderNo && orderInfo.salesOrderNo && dialogVisible">
           <transition name="fade">
             <el-descriptions
               class="margin-top margin-bottom"
@@ -79,9 +80,9 @@
                 {{ orderInfo.orderQuantity }}
               </el-descriptions-item>
               <el-descriptions-item label="出货日期" v-if="orderInfo.sellTime">
-                <span class="text-red">{{
-                  parseTime(orderInfo.sellTime)
-                }}</span>
+                <span class="text-red">
+                  {{ parseTime(orderInfo.sellTime) }}
+                </span>
               </el-descriptions-item>
               <el-descriptions-item
                 label="客户要求到货日期"
@@ -112,6 +113,7 @@
             </el-descriptions>
           </transition>
         </template>
+
         <el-form-item label="生产日期:" prop="date">
           <el-date-picker
             v-model="form.date"
@@ -128,7 +130,7 @@
         </el-form-item>
 
         <el-form-item label="生产流程:" prop="process">
-          <el-radio-group v-model="form.process" :disabled="form.id">
+          <el-radio-group v-model="form.process" :disabled="!!form.id">
             <el-radio
               v-for="(item, index) in operationList"
               :key="index"
@@ -275,7 +277,7 @@ export default {
   computed: {
     pickerOptions() {
       return {
-        disabledDate: this.disabledDate,
+        // disabledDate: this.disabledDate,
         selectableRange: `${this.defaultTime} - 23:59:59`,
       };
     },

@@ -25,7 +25,7 @@
     </el-option>
     <!-- 此处加载中的value可以随便设置，只要不与其他数据重复即可 -->
     <el-option v-if="hasMore" disabled label="加载中..." value="-1" />
-    <el-option v-if="!data.length" disabled label="暂无数据" value="-2" />
+    <el-option v-if="!hasMore && !data.length" disabled label="暂无数据" value="-2" />
   </el-select>
 </template>
 
@@ -133,7 +133,7 @@ export default {
     loadMore() {
       // 如果没有更多数据，则不请求
       if (!this.hasMore) {
-        return;
+        return false;
       }
       // 如果intercept属性为true则不请求数据，
       if (this.loadMore.intercept) {

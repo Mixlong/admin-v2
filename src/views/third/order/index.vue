@@ -137,50 +137,52 @@
       v-loading="loading"
       :height="tableHeight()"
       :data="list"
-      row-class-name="pointer"
     >
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName" />
+      <el-table-column label="客户名称" align="center" prop="customerName">
+        <span slot-scope="{ row }" v-NoData="row.customerName"></span>
+      </el-table-column>
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column
-        label="客户订单号"
-        align="center"
-        prop="customerOrderNo"
-      />
-      <el-table-column label="品类" align="center" prop="categoryName" />
-      <el-table-column label="型号" align="center" prop="computerName" />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo">
+        <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="品类" align="center" prop="categoryName">
+        <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
+      </el-table-column>
+      <el-table-column label="型号" align="center" prop="computerName">
+        <span slot-scope="{ row }" v-NoData="row.computerName"></span>
+      </el-table-column>
       <el-table-column
         label="BOM编码"
         align="center"
         prop="bomCode"
         width="100"
-      />
+      >
+        <span slot-scope="{ row }" v-NoData="row.bomCode"></span>
+      </el-table-column>
       <el-table-column
         label="芯片版本"
         align="center"
         prop="chipVersion"
         width="100"
-      />
+      >
+        <span slot-scope="{ row }" v-NoData="row.chipVersion"></span>
+      </el-table-column>
       <el-table-column
         label="订单数量"
         align="center"
         prop="orderQuantity"
         width="100"
-      />
-      <el-table-column label="出货日期" align="center" width="100">
-        <template slot-scope="{ row }">
-          {{ parseTime(row.sellTime, "{y}-{m}-{d}") }}
-        </template>
+      >
+        <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
       </el-table-column>
-      <!-- <el-table-column label="客户要求到货日期" align="center" width="130">
-        <template slot-scope="{ row }">
-          {{ parseTime(row.arrivalTime, "{y}-{m}-{d}") }}
-        </template>
-      </el-table-column> -->
+      <el-table-column label="出货日期" align="center" width="100">
+        <span slot-scope="{ row }" v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"></span>
+      </el-table-column>
       <el-table-column label="订单状态" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag size="mini" :type="tagType(row.status)">
@@ -188,11 +190,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排产状态" align="center" width="120">
+      <!-- <el-table-column label="排产状态" align="center" width="120">
         <template slot-scope="{ row }">
           {{ productStatusList[row.productStatus] }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         width="90"
         label="创建人"
@@ -209,7 +211,7 @@
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="200">
+      <el-table-column label="操作" align="center" width="210">
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button
@@ -261,6 +263,18 @@
             </el-button>
             <el-button type="text" @click="onEditLog(row.id)"> 日志 </el-button>
             <el-button type="text" @click="rowDbClick(row)">复制</el-button>
+            <Tooltip
+              icon="el-icon-position"
+              content="排产管理"
+              @click="
+                handleNameToPage('PlanSchedule', {
+                  categoryId: row.categoryId,
+                  computerId: row.computerId,
+                  salesOrderNo: row.salesOrderNo,
+                  orderId: row.id
+                })
+              "
+            />
           </div>
         </template>
       </el-table-column>
@@ -290,6 +304,7 @@ import commomFile from "./mixins";
 import { commonJs } from "@/mixins/common";
 
 export default {
+  name: "Order",
   mixins: [commomFile, commonJs],
   components: {
     orderDetail: () => import("./components/orderDetail"),

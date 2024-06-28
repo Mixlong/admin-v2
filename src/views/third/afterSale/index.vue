@@ -178,7 +178,9 @@
       </el-table-column>
       <el-table-column label="客户名称" prop="customerName" align="center" />
       <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center" />
+      <el-table-column label="型号" prop="computerName" align="center">
+        <span slot-scope="{ row }" v-NoData="row.computerName"></span>
+      </el-table-column>
       <el-table-column
         label="客诉现象"
         prop="result"
@@ -192,12 +194,14 @@
         min-width="110"
       >
         <template slot-scope="{ row }">
-          <el-tag
-            v-for="(item, index) in setInventory(row.inventory)"
-            :key="index"
-          >
-            {{ item }}
-          </el-tag>
+          <div class="inventory-box">
+            <el-tag
+              v-for="(item, index) in setInventory(row.inventory)"
+              :key="index"
+            >
+              {{ item }}
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="客退方" prop="returnParty" align="center" />
@@ -220,6 +224,7 @@
       >
         <template slot-scope="{ row }">
           <span v-if="row.state === 7" class="text-green">已完成</span>
+          <span v-if="row.state === 6 && !row.handleName" class="text-red">无</span>
           <span v-else>{{ row.handleName }}</span>
         </template>
       </el-table-column>
@@ -238,7 +243,10 @@
         <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
       </el-table-column>
       <el-table-column label="根因分类" prop="rootMatterType" align="center">
-        <span slot-scope="scope" v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"></span>
+        <span
+          slot-scope="scope"
+          v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
+        ></span>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
@@ -843,3 +851,11 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.inventory-box {
+  display: flex;
+  flex-wrap: wrap;
+  grid-gap: 5px;
+  justify-content: center;
+}
+</style>
