@@ -33,7 +33,7 @@
             remote
             clearable
             placeholder="请选择仪表型号"
-            @change="changeComputer"
+            @change="getList"
             :remote-method="getComputerNameList"
             style="width: 140px"
           >
@@ -288,9 +288,7 @@
               日志
             </el-button>
           </div>
-          <div
-            class="flex flex-direction align-start margin-left-xs"
-          >
+          <div class="flex flex-direction align-start margin-left-xs">
             <el-button
               class="mlZero"
               type="text"
@@ -486,7 +484,6 @@ import {
   sendProd,
   proSecDetail,
 } from "@/api/www/planSchedule";
-import { typeCategory } from "@/api/third/category";
 import { listComputer, computerName } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
@@ -499,6 +496,7 @@ import FileSaver from "file-saver";
 import axios from "axios";
 
 export default {
+  name: "PlanSchedule",
   components: {
     VueQr,
     CompUpdate: () => import("./components/update.vue"),
@@ -613,47 +611,68 @@ export default {
   watch: {
     "queryParams.categoryId"(id) {
       if (id) {
-        this.queryParams.computerId = "";
+        // this.queryParams.computerId = "";
         this.getlistComputer(id);
       }
     },
   },
   created() {
+    console.log("初始化1232");
     const { orderId } = this.$route.query;
     if (orderId) {
       this.queryParams.orderId = orderId;
     }
+
     const { listId } = this.$route.params;
     if (listId) {
       this.queryParams.id = listId;
     }
-    this.getList();
+
     this.getOperationList();
   },
-  mounted() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
+  async activated() {
+    console.log("activated");
+    await this.getCategoryComputerData();
 
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
-      this.getList();
-    });
+    const { categoryId, computerId, salesOrderNo, orderId } =
+      this.$route.params;
+
+    // 从订单管理跳转到当前页面
+    if (categoryId || computerId || salesOrderNo) {
+      this.queryParams.categoryId = categoryId;
+      this.queryParams.computerId = computerId;
+      this.queryParams.salesOrderNo = salesOrderNo;
+      this.queryParams.orderId = orderId;
+
+      const computerData = this.dictList.filter(
+        (item) => item.id === categoryId
+      );
+      this.computerOptions = computerData[0].computerList;
+    }
+
+    this.getList();
   },
   methods: {
+    getCategoryComputerData() {
+      return new Promise((resolve, reject) => {
+        categoryComputerDict().then((res) => {
+          this.dictList = res.data;
+
+          const { categoryId } = this.$route.query;
+
+          if (categoryId) {
+            this.queryParams.categoryId = categoryId;
+            this.changeCategory(categoryId);
+            let computerId = this.$route.query.model;
+            if (computerId) {
+              this.queryParams.computerId = computerId;
+            }
+          }
+
+          resolve();
+        });
+      });
+    },
     loadingFn(text) {
       return new Promise((resolve) => {
         let downloadLoadingInstance = this.$loading({
@@ -671,7 +690,6 @@ export default {
       let downloadLoadingInstance = await this.loadingFn("预览资料生成中...");
       proSecDetail(id)
         .then((res) => {
-          // this.handleExcel(res.data);
           this.getList();
         })
         .finally(() => {
@@ -803,9 +821,6 @@ export default {
         resove();
       });
     },
-    changeComputer() {
-      this.getList();
-    },
     getComputerNameList(name) {
       if (name) {
         this.isCLoading = false;
@@ -819,28 +834,12 @@ export default {
         this.computerOptions = [];
       }
     },
-    // 获取品类字典
-    getTypeCategory() {
-      typeCategory().then((res) => {
-        this.dictList = res.data;
-      });
-    },
     // 获取型号字典
     getlistComputer(key) {
       listComputer({ key }).then((res) => {
         const { list } = res.data;
         this.modelList = list;
       });
-    },
-    // 型号
-    getComputer(name) {
-      if (name) {
-        computerName(name).then((res) => {
-          this.modelList = res.data.map((item) => {
-            return { name: item.name, id: item.model };
-          });
-        });
-      }
     },
     // 生产流程
     getOperationList() {
@@ -973,15 +972,17 @@ export default {
     // 外发生产
     async handleProd(id) {
       let downloadLoadingInstance = await this.loadingFn("外发生产处理中...");
-      sendProd(id).then((res) => {
-        if (res.code === 200) {
-          this.msgSuccess("外发成功,请查看邮箱");
-        } else {
-          this.msgError("外发失败");
-        }
-      }).finally(() => {
-        downloadLoadingInstance.close();
-      })
+      sendProd(id)
+        .then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess("外发成功,请查看邮箱");
+          } else {
+            this.msgError("外发失败");
+          }
+        })
+        .finally(() => {
+          downloadLoadingInstance.close();
+        });
     },
     /** 修改日志 */
     onEditLog(id) {

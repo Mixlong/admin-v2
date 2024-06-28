@@ -537,14 +537,25 @@ export default {
         });
       });
     },
-    screenshot() {
-      this.isCopyDate = true;
-      const loading = this.$loading({
-        lock: true,
-        text: "页面生成中...",
-        spinner: "el-icon-loading",
-        background: "rgba(0, 0, 0, 0.7)",
+    handleCreatePageLoading() {
+      return new Promise((resolve, reject) => {
+        const loading = this.$loading({
+          lock: true,
+          text: "页面生成中...",
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.7)",
+        });
+
+        setTimeout(() => {
+          resolve(loading);
+        }, 1500);
       });
+    },
+    async screenshot() {
+      this.isCopyDate = true;
+
+      const loading = await this.handleCreatePageLoading();
+
       this.$nextTick(() => {
         html2canvas(this.$refs.snaphootBoxRef, {
           useCORS: true,

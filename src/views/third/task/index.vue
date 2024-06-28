@@ -56,11 +56,10 @@
   </div>
 </template>
 
-<script>
- 
+<script> 
 import Item from "./components/Item";
 import CompUpdate from "./components/update";
-import { taskDictDept, taskDeptList,   } from "@/api/third/task";
+import { taskDictDept, taskDeptList } from "@/api/third/task";
 import { treeselect } from "@/api/system/dept";
 export default {
   components: {
@@ -131,7 +130,6 @@ export default {
     },
     handleScroll() {},
     handleAdd() {
-      
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.showName = "";

@@ -110,12 +110,12 @@ export default {
         console.log(error);
       }
     },
-    changeCategory(name) {
+    changeCategory(name, isHandleQuery = true) {
       if (name) {
         this.product = name;
         const data = this.dictList.filter((item) => item.name === name);
         this.computerOptions = data[0].computerList;
-        this.handleQuery();
+        isHandleQuery && this.handleQuery();
       } else {
         this.computerOptions = [];
       }

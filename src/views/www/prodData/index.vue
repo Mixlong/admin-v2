@@ -85,15 +85,9 @@
       v-loading="loading"
       :data="tableData"
       :height="isTestTabHeight"
-      :header-cell-class-name="getHeaderCellClassName"
-      :cell-class-name="getCellClassName"
       @cell-click="onCellClick"
+      :cell-class-name="getCellClassName"
     >
-      <!-- <el-table-column
-        label="每日生产计划资料审核"
-        label-class-name="font20"
-        align="center"
-      > -->
       <el-table-column prop="date" label="计划日期" align="center" width="90">
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
@@ -143,7 +137,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[1]" />
+            <miss-data v-show="row.mapFile[1].length" :row="row" currentDataName="PUCS资料" :currentIndex="1"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[1].length" :state="row.map[1]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -153,7 +149,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[2]" />
+            <miss-data v-show="row.mapFile[2].length" :row="row" currentDataName="硬件资料" :currentIndex="2"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[2].length" :state="row.map[2]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -163,7 +161,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[3]" />
+            <miss-data v-show="row.mapFile[3].length" :row="row" currentDataName="软件资料" :currentIndex="3"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[3].length" :state="row.map[3]" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -175,7 +175,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[4]" />
+            <miss-data v-show="row.mapFile[4].length" :row="row" currentDataName="配置文件" :currentIndex="4"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[4].length" :state="row.map[4]" />
           </template>
         </el-table-column>
         <el-table-column
@@ -185,7 +187,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[5]" />
+            <miss-data v-show="row.mapFile[5].length" :row="row" currentDataName="测试上位机" :currentIndex="5"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[5].length" :state="row.map[5]" />
           </template>
         </el-table-column>
         <!-- <el-table-column
@@ -205,7 +209,9 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <ColumnState :state="row.map[6]" />
+            <miss-data v-show="row.mapFile[6].length" :row="row" currentDataName="SN规则" :currentIndex="6"></miss-data>
+
+            <ColumnState v-show="!row.mapFile[6].length" :state="row.map[6]" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -221,7 +227,31 @@
         >
         </span>
       </el-table-column>
-      <el-table-column prop="remark" label="备注" align="center">
+      <el-table-column
+        prop="surplusHour"
+        label="剩余时间（-:负为超期，单位小时）"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="{ row }" v-NoData="row.surplusHour"></span>
+      </el-table-column>
+      <el-table-column
+        prop="personLiable"
+        label="责任人"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="{ row }" v-NoData="row.personLiable"></span>
+      </el-table-column>
+      <el-table-column prop="result" label="结果" align="center" width="120">
+        <span slot-scope="{ row }" v-NoData="row.result"></span>
+      </el-table-column>
+      <el-table-column
+        prop="remark"
+        label="备注"
+        align="center"
+        min-width="250"
+      >
         <template slot-scope="{ row }">
           <span v-show="!row.remark">- - -</span>
           <div v-show="row.remark" v-html="row.remark"></div>
@@ -286,10 +316,12 @@ import { materialList, materialUpdate } from "@/api/third/prodData";
 import tinymce from "@/views/components/Editor";
 
 export default {
+  name: "ProdData",
   components: {
     tinymce,
     ColumnState: () => import("./columnState"),
     ReadMore: () => import("@/components/ReadMore"),
+    MissData: () => import("./MissData.vue")
   },
   data() {
     return {
@@ -422,14 +454,6 @@ export default {
         .finally(() => {
           this.loading = false;
         });
-    },
-    getHeaderCellClassName({ column }) {
-      // switch (column.label) {
-      //   case "SMT资料":
-      //     return "bg-header-lightBlue";
-      //   case "组装资料":
-      //     return "bg-header-deepBlue";
-      // }
     },
     getCellClassName({ row, column }) {
       const { map, hopeDate } = row;
