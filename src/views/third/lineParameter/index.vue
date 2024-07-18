@@ -242,7 +242,6 @@ export default {
   components: {
     Log,
     Return,
-
     CompUpdate,
   },
   data() {

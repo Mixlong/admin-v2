@@ -292,6 +292,7 @@ export default {
       this.loading = true;
       listDept(this.queryParams).then((response) => {
         this.deptList = this.handleTree(response.data, "deptId")
+        console.log(this.deptList)
         this.loading = false
       });
     },

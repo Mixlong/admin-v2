@@ -1,54 +1,84 @@
-/*
- * @Author: your name
- * @Date: 2021-05-07 16:07:30
- * @LastEditTime: 2021-05-07 18:47:20
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: /fileConf-ui/src/api/third/ecn.js
- */
-import request from '@/utils/request'
- 
+import request from "@/utils/request";
 
 // 查询仪表列表
-export function bomAdd(query) {
-    return request({
-        url: '/bom',
-        method: 'post',
-        data: query
-    })
+export function bomAdd(data) {
+  return request({
+    url: "/bom",
+    method: "post",
+    data,
+  });
 }
 
-
-export function bomUpdate(query) {
-    return request({
-        url: '/bom',
-        method: 'put',
-        data: query
-    })
+export function bomUpdate(data) {
+  return request({
+    url: "/bom",
+    method: "put",
+    data,
+  });
 }
 
- 
-export function bomDetail(query) {
-    return request({
-        url: '/bom/detail/' + query,
-        method: 'get',
-
-    })
+export function bomDetail(id) {
+  return request({
+    url: "/bom/detail/" + id,
+    method: "get",
+  });
 }
 
-export function bomList(query) {
-    return request({
-        url: '/bom/list',
-        method: 'get',
-        params: query
-    })
+export function bomList(params) {
+  return request({
+    url: "/bom/list",
+    method: "get",
+    params,
+  });
 }
- 
-export function bomAuth(query) {
-    return request({
-        url: '/bom/auth',
-        method: 'put',
-        data: query
-    })
+
+export function bomAuth(data) {
+  return request({
+    url: "/bom/auth",
+    method: "put",
+    data,
+  });
 }
- 
+
+// ECN人员列表
+export function ecnPersonList(params) {
+  return request({
+    url: "/bom/personnel/list",
+    method: "get",
+    params,
+  });
+}
+
+// ECN人员管理
+export function ecnPersonEdit(data) {
+  return request({
+    url: "/bom/personnel/edit",
+    method: "put",
+    data,
+  });
+}
+
+// 初审
+export function ecnFirstState(data) {
+  return request({
+    url: "/bom/first/state",
+    method: "put",
+    data,
+  });
+}
+// 会审
+export function ecnFieldState(data) {
+  return request({
+    url: "/bom/field/state",
+    method: "put",
+    data,
+  });
+}
+// 终审
+export function ecnSecondState(data) {
+  return request({
+    url: "/bom/second/state",
+    method: "put",
+    data,
+  });
+}

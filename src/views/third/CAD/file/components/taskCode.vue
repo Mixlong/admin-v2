@@ -3,14 +3,14 @@
     class="after-sale-box"
     title="任务令"
     :visible="visible"
-    width="600px"
+    width="650px"
     append-to-body
     center
     top="2vh"
     :close-on-click-modal="false"
     @close="close"
   >
-    <el-form ref="form" :model="form" inline>
+    <el-form ref="form" :model="form">
       <el-row :gutter="0">
         <el-col :span="12">
           <el-form-item label="所属品类" prop="category">
@@ -56,7 +56,6 @@
             <el-select
               v-model="form.processId"
               clearable
-              size="mini"
               placeholder="请选择测试工序"
             >
               <el-option

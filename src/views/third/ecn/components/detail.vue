@@ -1,206 +1,389 @@
 <template>
-  <!--   -->
   <el-dialog
-    :title="title"
+    class="ECN-Detail-box Header_Fixed"
+    title="ECN详情"
     :visible.sync="dialogVisible"
-    width="1020px"
     append-to-body
-    :close-on-click-modal="false"
+    fullscreen
     top="2vh"
+    center
+    :close-on-click-modal="false"
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="90px"
-      class="input-width"
-      :class="{ 'row-label-style': showName == 'plan' }"
-    >
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="ECN编号:" prop="ecn">
-            {{ form.ecn }}
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="项目名称:" prop="projectName">
-            {{ form.projectName }}
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="产品代号:" prop="productCode">
-            {{ form.productCode }}
-          </el-form-item></el-col
+    <el-row type="flex" justify="space-between">
+      <el-col :span="2"></el-col>
+      <el-col :span="20">
+        <el-form
+          ref="form"
+          :model="form"
+          label-width="90px"
+          class="input-width"
+          label-position="left"
         >
-        <el-col :span="12">
-          <el-form-item label="申请单位:" prop="reqUnit">
-            {{ form.reqUnit }}
-          </el-form-item>
-        </el-col>
-      </el-row>
+          <el-row style="width: 50%">
+            <el-col :md="24" :lg="12">
+              <el-form-item label="ECN编号:" prop="ecn">
+                {{ form.ecn }}
+              </el-form-item>
+            </el-col>
+            <el-col :md="24" :lg="12">
+              <el-form-item label="项目名称:" prop="projectName">
+                {{ form.projectName }}
+              </el-form-item>
+            </el-col>
+            <el-col :md="24" :lg="12">
+              <el-form-item label="产品代号:" prop="productCode">
+                {{ form.productCode }}
+              </el-form-item></el-col
+            >
+            <el-col :md="24" :lg="12">
+              <el-form-item label="申请部门:" prop="reqUnit">
+                {{ form.reqUnit }}
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-      <div class="mask-layer">
-        <el-form-item label="分类:" prop="changeCause">
-          <el-checkbox-group v-model="form.changeCause">
-            <el-checkbox
-              v-for="(item, index) in classifyList"
-              :label="item.dictValue"
-              :key="index"
-              >{{ item.dictLabel }}</el-checkbox
+          <el-form-item
+            label="分类:"
+            prop="changeCause"
+            class="flex align-center"
+          >
+            <div class="flex" style="column-gap: 15px; margin-left: -90px">
+              <el-tag
+                v-for="(item, index) in form.changeCauseData"
+                :key="index"
+              >
+                {{ item.dictLabel }}
+              </el-tag>
+            </div>
+          </el-form-item>
+
+          <el-form-item
+            label="涉及领域:"
+            prop="involveUnit"
+            class="flex align-center"
+          >
+            <div class="flex" style="column-gap: 15px; margin-left: -90px">
+              <el-tag
+                v-for="(item, index) in form.involveUnitData"
+                :key="index"
+              >
+                {{ item.dictLabel }}
+              </el-tag>
+            </div>
+          </el-form-item>
+
+          <el-row style="width: 50%">
+            <el-col :md="24" :lg="12">
+              <el-form-item label="导入方式:" prop="importType">
+                <el-tag v-show="form.importType === 1">立即导入</el-tag>
+                <el-tag v-show="form.importType === 2">自然导入</el-tag>
+                <el-tag v-show="form.importType === 3">条件导入</el-tag>
+              </el-form-item>
+            </el-col>
+            <el-col :md="24" :lg="12">
+              <el-form-item
+                v-show="form.importType === 2"
+                label="自然导入时间："
+                label-width="100"
+              >
+                {{ form.importTime }}
+              </el-form-item>
+              <el-form-item v-show="form.importType === 3" label="条件导入内容：" label-width="100">
+                {{ form.importCondition }}
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-form-item label="附件:" v-show="form.file">
+            <el-button
+              icon="el-icon-download"
+              type="primary"
+              @click="zipFile(form.file)"
             >
-          </el-checkbox-group>
-        </el-form-item>
-      </div>
-      <div class="mask-layer">
-        <el-form-item label="涉及领域:" prop="involveUnit">
-          <el-checkbox-group v-model="form.involveUnit">
-            <el-checkbox
-              v-for="(item, index) in involveUnitList"
-              :label="item.dictValue"
-              :key="index"
-              >{{ item.dictLabel }}</el-checkbox
+              下载
+            </el-button>
+          </el-form-item>
+
+          <el-row :gutter="15" class="margin-bottom">
+            <el-col :span="24" :md="12" :lg="6">
+              <el-card shadow="never">
+                <div slot="header" class="clearfix">
+                  <span>变更前BOOT版本</span>
+                </div>
+                <div style="min-height: 150px">
+                  {{ form.beforeVersion }}
+                </div>
+              </el-card>
+            </el-col>
+            <el-col :span="24" :md="12" :lg="6">
+              <el-card shadow="never">
+                <div slot="header" class="clearfix">
+                  <span>变更原因</span>
+                </div>
+                <div style="min-height: 150px">
+                  {{ form.changeCauseNote }}
+                </div>
+              </el-card>
+            </el-col>
+            <el-col :span="24" :md="12" :lg="6">
+              <el-card shadow="never">
+                <div slot="header" class="clearfix">
+                  <span>变更内容</span>
+                </div>
+                <div style="min-height: 150px">
+                  {{ form.changeContent }}
+                </div>
+              </el-card>
+            </el-col>
+            <el-col :span="24" :md="12" :lg="6">
+              <el-card shadow="never">
+                <div slot="header" class="clearfix">
+                  <span>变更结果</span>
+                </div>
+                <div style="min-height: 150px">
+                  {{ form.afterVersion }}
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+
+          <el-descriptions
+            v-if="form.list && form.list.length"
+            class="margin-bottom-sm"
+            title="变更涉及领域:"
+            :column="2"
+            border
+          >
+            <template v-for="item in form.list">
+              <el-descriptions-item
+                label="领域："
+                labelClassName="labelTitleClassName"
+                contentClassName="contentTitleClassName"
+              >
+                <el-tag>{{ TriageList[item.field] }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item
+                v-if="item.field !== 7"
+                :label="`${TriageListTitle[item.field]}:`"
+                labelClassName="labelContentClassName"
+              >
+                {{ item.programme }}
+              </el-descriptions-item>
+
+              <el-descriptions-item
+                v-if="item.field === 7 && item.programme"
+                label="在库物料处理方案："
+                labelClassName="labelContentClassName"
+              >
+                <div class="store-Seven-box">
+                  <span class="content-left-box">
+                    {{ item.programme }}
+                  </span>
+  
+                  <div
+                    class="content-right-box"
+                    v-if="item.field === 7 && item.treatment"
+                  >
+                    <span>在库成品处理方案：</span>
+                    {{ item.treatment }}
+                  </div>
+                </div>
+              </el-descriptions-item>
+            </template>
+          </el-descriptions>
+
+          <el-card shadow="never" class="margin-bottom-sm">
+            <div slot="header" class="clearfix">
+              <span class="text-red">初审状态</span>
+            </div>
+            <div style="min-height: 50px">
+              <el-row class="margin-bottom-sm">
+                <el-col :span="3">
+                  <span>审核状态：</span>
+
+                  <el-tag type="warning" v-show="form.firstState === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="form.firstState === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="form.firstState === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ form.firstPerson }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="form.firstState !== 0">
+                <template v-if="form.firstState === 1 && form.remark">
+                  备注： {{ form.remark }}
+                </template>
+                <template v-if="form.firstState === 2 && form.result">
+                  <span class="text-red">拒绝原因：</span> {{ form.result }}
+                </template>
+              </el-card>
+            </div>
+          </el-card>
+
+          <el-card shadow="never" class="margin-bottom-sm">
+            <div slot="header" class="clearfix">
+              <span class="text-yellow">会审状态</span>
+            </div>
+            <div
+              style="min-height: 50px"
+              v-for="item in form.list"
+              :key="item.id"
+              class="margin-bottom-sm"
             >
-          </el-checkbox-group>
-        </el-form-item>
-      </div>
-      <div class="flex mask-layer">
-        <el-form-item label="导入方式:" prop="importType">
-          <el-radio-group v-model="form.importType">
-            <el-radio :label="1">立即导入</el-radio>
-            <el-radio :label="2">自然导入</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item
-          style="margin-left: 48px:"
-          label=""
-          prop="importTime"
-        
-        >
-           {{form.importTime}}
-        </el-form-item>
-      </div>
-      <el-row>
-        <el-col :span="24">
-          <el-form-item label="BOM版本:" prop="beforeVersion">
-            <el-card shadow="never">
-              {{ form.beforeVersion }}
-            </el-card>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="变更原因:" prop="changeCauseNote">
-            <el-card shadow="never">
-              {{ form.changeCauseNote }}
-            </el-card>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="变更内容:" prop="changeContent">
-            <el-card shadow="never">
-              {{ form.changeContent }}
-            </el-card>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="变更结果" prop="afterVersion">
-            <el-card shadow="never">
-              {{ form.afterVersion }}
-            </el-card>
-          </el-form-item>
-        </el-col>
-      </el-row>
-    </el-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
-      <el-button @click="dialogVisible = false">取 消</el-button>
-    </div>
+              <el-row class="margin-bottom-sm">
+                <el-col :span="3">
+                  <span>{{ TriageList[item.field] }}：</span>
+                  <el-tag type="warning" v-show="item.state === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="item.state === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="item.state === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ item.fieldName }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="item.state !== 0">
+                <template v-if="item.state === 1 && item.remark">
+                  备注： {{ item.remark }}
+                </template>
+                <template v-if="item.state === 2 && item.result">
+                  <span class="text-red">拒绝原因：</span> {{ item.result }}
+                </template>
+              </el-card>
+
+              <el-divider></el-divider>
+            </div>
+          </el-card>
+
+          <el-card shadow="never">
+            <div slot="header" class="clearfix">
+              <span class="text-green">终审状态</span>
+            </div>
+            <div style="min-height: 50px">
+              <el-row class="margin-bottom-sm">
+                <el-col :span="3">
+                  <span>审核状态：</span>
+
+                  <el-tag type="warning" v-show="form.secondState === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="form.secondState === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="form.secondState === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ form.secondPerson }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="form.secondState !== 0">
+                <template v-if="form.secondState === 1 && form.finalRemark">
+                  备注： {{ form.finalRemark }}
+                </template>
+                <template v-if="form.secondState === 2 && form.finalResult">
+                  <span class="text-red">拒绝原因：</span>
+                  {{ form.finalResult }}
+                </template>
+              </el-card>
+            </div>
+          </el-card>
+        </el-form>
+      </el-col>
+      <el-col :span="2"></el-col>
+    </el-row>
   </el-dialog>
 </template>
 
 <script>
-import { bomAdd, bomUpdate } from "@/api/third/ecn";
 import tinymce from "@/views/components/Editor";
 export default {
   components: { tinymce },
   props: ["classifyList", "involveUnitList"],
   data() {
     return {
-      showName: "",
       dialogVisible: false,
       // 表单参数
       form: {
         isShow: 0,
       },
-      title: "",
-      // 表单校验
-      rules: {
-        ecn: [{ required: true, message: "请输入ECN编号", trigger: "blur" }],
-        projectName: [
-          { required: true, message: "请输入项目名称", trigger: "blur" },
-        ],
-        productCode: [
-          { required: true, message: "请输入产品代号", trigger: "blur" },
-        ],
-        reqUnit: [
-          { required: true, message: "请输入申请单位", trigger: "blur" },
-        ],
-        beforeVersion: [
-          { required: true, message: "请输入变更前BOM版本", trigger: "blur" },
-        ],
+      // 会审人员
+      TriageList: {
+        2: "采购",
+        3: "品质",
+        4: "生产",
+        5: "工程",
+        6: "研发",
+        7: "仓库",
+        8: "市场",
+      },
+      TriageListTitle: {
+        2: "在途物料处理方案",
+        3: "涉及更新的文件",
+        4: "在制产品处理方案",
+        5: "涉及更新的文件",
+        6: "涉及更新的文件",
+        7: "在库物料处理方案",
+        8: "已出货产品处理方案",
       },
     };
   },
-  watch: {
-    dialogVisible(val) {
-      // if (!val) {
-      //   this.form = {};
-      // }
-    },
-  },
-  mounted() {},
-  methods: {
-    // 表单重置
-    reset() {
-      this.form = {
-        importType: 1,
-        changeCause: [],
-        involveUnit: [],
-      };
-      this.resetForm("form");
-    },
-
-    /** 提交按钮 */
-    submitForm: function () {
-      this.$refs["form"].validate((valid) => {
-        if (valid) {
-          let param = Object.assign({}, this.form);
-          param.changeCause = param.changeCause.toString();
-          param.involveUnit = param.involveUnit.toString();
-          if (param.id) {
-            bomUpdate(param).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
-          } else {
-            bomAdd(param).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
-              }
-            });
-          }
-        }
-      });
-    },
-  },
 };
 </script>
+<style lang="scss">
+.ECN-Detail-box {
+  .el-descriptions__title {
+    font-weight: normal !important;
+    font-size: 14px !important;
+    color: #606266 !important;
+  }
 
-<style lang="scss" scope>
- 
+  .labelTitleClassName,
+  .labelContentClassName {
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-align: center !important;
+    color: #000 !important;
+  }
+  .labelTitleClassName {
+    width: 100px;
+  }
+  .labelContentClassName {
+    width: 200px;
+  }
+  .contentTitleClassName {
+    width: 150px;
+    text-align: center !important;
+  }
+}
+
+.store-Seven-box {
+  display: flex;
+  .content-left-box {
+    flex: 1;
+  }
+  .content-right-box {
+    flex: 1;
+    span {
+      display: inline-block;
+      color: #000;
+      font-weight: bold;
+      letter-spacing: 4px;
+      background: #fafafa;
+      box-sizing: border-box;
+    }
+  }
+}
 </style>
-

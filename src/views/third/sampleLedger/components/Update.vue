@@ -13,7 +13,6 @@
       :rules="rules"
       label-width="120px"
       @submit.native.prevent
-      inline
     >
       <template v-if="showName !== 'remark'">
         <el-row :gutter="15">

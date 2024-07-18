@@ -3,7 +3,7 @@
     class="item font16"
     effect="dark"
     :content="content"
-    placement="top-end"
+    :placement="placement"
   >
     <el-button
       size="small"
@@ -17,9 +17,24 @@
 
 <script>
 export default {
-  props: ["content", "icon", "className"],
-  data() {
-    return {};
+  name: "Tooltip",
+  props: {
+    content: {
+      type: String,
+      default: ""
+    },
+    icon: {
+      type: String,
+      default: ""
+    },
+    className: {
+      type: [String, Array],
+      default: () => []
+    },
+    placement: {
+      type: String,
+      default: "top"
+    }
   },
   methods: {
     cellClick() {

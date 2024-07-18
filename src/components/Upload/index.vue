@@ -41,6 +41,7 @@
 import reqUrl from "@/utils/requestUrl";
 
 export default {
+  name: "DrUpload",
   props: {
     value: "",
     limit: "",

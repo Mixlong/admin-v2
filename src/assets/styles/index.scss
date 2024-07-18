@@ -207,6 +207,10 @@ aside {
   margin-top: 30px;
 }
 
+.text-left {
+  text-align: left !important;
+}
+
 .text-center {
   text-align: center !important;
 }
@@ -574,7 +578,6 @@ aside {
 .margin-xl {
   margin: 50px;
 }
-
 .margin-top-xs {
   margin-top: 10px;
 }
@@ -950,7 +953,6 @@ aside {
   background-color: #ffffff !important;
   color: #666666 !important;
 }
-
 
 /* -- 实线 -- */
 
@@ -1467,4 +1469,17 @@ fieldset {
 // table 的完成状态
 .fininshed {
   background-color: rgba(155, 216, 148, 0.3) !important;
+}
+
+// dialog 标题样式
+.Header_Fixed {
+  .el-dialog__header {
+    position: sticky;
+    left: 0;
+    right: 0;
+    top: 0;
+    background: #fff;
+    z-index: 666;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
 }
