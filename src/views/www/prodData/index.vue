@@ -233,7 +233,7 @@
         align="center"
         width="120"
       >
-        <span slot-scope="{ row }" v-NoData="row.surplusHour"></span>
+        <span :class="{ 'text-red': row.surplusHour < 0 }" slot-scope="{ row }" v-NoData="row.surplusHour"></span>
       </el-table-column>
       <el-table-column
         prop="personLiable"
@@ -448,7 +448,7 @@ export default {
       )
         .then((res) => {
           const { list, total } = res.data;
-          this.tableData = list;
+          this.tableData = list
           this.total = total;
         })
         .finally(() => {

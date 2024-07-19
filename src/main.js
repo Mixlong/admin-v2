@@ -18,7 +18,8 @@ import '@/permission'; // permission control
 
 import '@/utils/sticky';
 import '@/utils/mainOperation/mainDirective'
-import '@/utils/mainOperation/mainComponent'
+// import '@/utils/mainOperation/mainComponent'
+import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
 // import VueNativeSock from 'vue-native-websocket';
 
@@ -34,10 +35,11 @@ Vue.prototype.msgInfo = function (msg) {
   this.$message.info(msg);
 };
 
-Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'mini', zIndex: 6666 };
+Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'small', zIndex: 6666 };
 Vue.config.productionTip = false;
 
 Vue.use(plugins)
+Vue.use(MainComponent)
 
 // Vue.use(VueNativeSock, WS, {
 //   // 启用Vuex集成,store的值为你的vuex

@@ -123,7 +123,6 @@
                 type="danger"
                 icon="el-icon-minus"
                 circle
-                style="height: 28px"
                 @click="removeSopData(item)"
               />
             </el-col>

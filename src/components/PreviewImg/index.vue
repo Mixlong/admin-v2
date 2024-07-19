@@ -29,6 +29,7 @@
 
 <script>
 export default {
+  name: "PreviewImg",
   props: {
     width: {
       type: String,

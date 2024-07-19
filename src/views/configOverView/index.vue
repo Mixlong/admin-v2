@@ -54,10 +54,19 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        <el-button class="fr" type="danger" @click="clearFilter"
+          >清除所有过滤器</el-button
+        >
       </el-form-item>
     </el-form>
-    <el-table v-loading="loading" :data="brandList" :height="tableHeight()">
-      <el-table-column label="操作" align="center" width="90">
+    <el-table
+      class="config-overview-box"
+      ref="filterTable"
+      v-loading="loading"
+      :data="brandList"
+      :height="tableHeight()"
+    >
+      <el-table-column label="操作" align="center" width="90" fixed>
         <template slot-scope="{ row }">
           <div class="flex flex-direction">
             <Tooltip
@@ -85,10 +94,10 @@
               <el-tag type="success">通过</el-tag>
             </template>
             <template v-else-if="row.state === 2">
-              <el-tag type="danger">未通过</el-tag>
+              <el-tag type="info">未通过</el-tag>
             </template>
             <template v-else>
-              <el-tag type="warning">未审核</el-tag>
+              <el-tag type="danger">未审核</el-tag>
             </template>
           </div>
         </template>
@@ -97,13 +106,21 @@
         label="品类"
         prop="category"
         align="center"
-        width="150"
+        width="120"
+        fixed
+        column-key="category"
+        :filters="getFiltersData('category')"
+        :filter-method="filterHandler"
       />
       <el-table-column
         label="型号"
         prop="computerName"
         align="center"
-        width="150"
+        width="120"
+        fixed
+        column-key="computerName"
+        :filters="getFiltersData('computerName')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.computerName"></span>
       </el-table-column>
@@ -112,6 +129,7 @@
         prop="specification"
         align="center"
         width="120"
+        fixed
       >
         <template slot-scope="{ row }">
           <preview-img
@@ -126,7 +144,11 @@
         label="客户"
         prop="customerName"
         align="center"
-        width="150"
+        width="120"
+        fixed
+        column-key="customerName"
+        :filters="getFiltersData('customerName')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
@@ -134,47 +156,66 @@
         label="客户料号"
         prop="customerMaterialNum"
         align="center"
-        width="150"
+        width="120"
+        fixed
+        column-key="customerMaterialNum"
+        :filters="getFiltersData('customerMaterialNum')"
+        :filter-method="filterHandler"
       >
-        <span
-          slot-scope="scope"
-          v-NoData="scope.row.customerMaterialNum"
-        ></span>
+        <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
       </el-table-column>
       <el-table-column
         label="实际客户车名"
         prop="customerCarName"
         align="center"
         width="150"
+        column-key="customerCarName"
+        :filters="getFiltersData('customerCarName')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
       </el-table-column>
-      <el-table-column label="车名" prop="ebikeName" align="center" width="150">
-        <span
-          slot-scope="scope"
-          v-NoData="dicts_ebike[scope.row.ebikeName]"
-        ></span>
+      <el-table-column
+        label="车名"
+        prop="ebikeName"
+        align="center"
+        width="150"
+        column-key="ebikeName"
+        :filters="handleDataFilter(dicts_ebike)"
+        :filter-method="filterHandler"
+      >
+        <span slot-scope="scope" v-NoData="dicts_ebike[scope.row.ebikeName]" />
       </el-table-column>
       <el-table-column
         label="客户车型编码"
         prop="carModel"
         align="center"
         width="150"
+        column-key="carModel"
+        :filters="getFiltersData('carModel')"
+        :filter-method="filterHandler"
       >
-        <span slot-scope="scope" v-NoData="scope.row.carModel"></span>
+        <span slot-scope="scope" v-NoData="scope.row.carModel" />
       </el-table-column>
       <el-table-column
         label="控制器接头"
         prop="controlConnect"
         align="center"
         width="120"
+        column-key="controlConnect"
+        :filters="getFiltersData('controlConnect')"
+        :filter-method="filterHandler"
       >
-        <span slot-scope="scope" v-NoData="scope.row.controlConnect"></span>
+        <span slot-scope="scope" v-NoData="scope.row.controlConnect" />
       </el-table-column>
       <el-table-column
         label="不含头控制器出线线长(mm)"
         align="center"
         width="200"
+        prop="notControllerJointString"
+        column-key="notControllerJointString"
+        :filters="getFiltersData('notControllerJointString')"
+        :filter-method="filterHandler"
       >
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.controlHead === 1">（含头）</span>
@@ -188,7 +229,10 @@
         label="按键【仪表端】接头"
         align="center"
         prop="modelEndHead"
-        width="150"
+        width="160"
+        column-key="modelEndHead"
+        :filters="getFiltersData('modelEndHead')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.modelEndHead"></span>
       </el-table-column>
@@ -196,7 +240,10 @@
         label="按键【按键端】接头"
         align="center"
         prop="keyEndHead"
-        width="150"
+        width="160"
+        column-key="keyEndHead"
+        :filters="getFiltersData('keyEndHead')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
       </el-table-column>
@@ -205,32 +252,34 @@
         prop="serialLevel"
         align="center"
         width="120"
+        column-key="serialLevel"
+        :filters="handleDataFilter(serialLevelData)"
+        :filter-method="filterHandler"
       >
-        <template v-slot="{ row }">
-          <template v-if="isShow(row.serialLevel)">
-            {{ serialLevelData[row.serialLevel] }}
-          </template>
-          <template v-else> --- </template>
-        </template>
+        <span
+          slot-scope="{ row }"
+          v-NoData="serialLevelData[row.serialLevel]"
+        />
       </el-table-column>
       <el-table-column
         label="按键型号"
         prop="keyType"
         align="center"
         width="120"
+        column-key="keyType"
+        :filters="handleDataFilter(dicts_keyType_list)"
+        :filter-method="filterHandler"
       >
-        <template v-slot="{ row }">
-          <template v-if="isShow(row.keyType)">
-            {{ dicts_keyType_list[row.keyType] }}
-          </template>
-          <template v-else> --- </template>
-        </template>
+        <span slot-scope="{ row }" v-NoData="dicts_keyType_list[row.keyType]" />
       </el-table-column>
       <el-table-column
         label="按键线长(mm)"
         prop="keyLineLen"
         align="center"
         width="120"
+        column-key="keyLineLen"
+        :filters="getFiltersData('keyLineLen')"
+        :filter-method="filterHandler"
       >
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.keyLineType === 1">（含头）</span>
@@ -264,6 +313,9 @@
         prop="speedLimitRang"
         align="center"
         width="120"
+        column-key="speedLimitRang"
+        :filters="getFiltersData('speedLimitRang')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.speedLimitRang"></span>
       </el-table-column>
@@ -272,23 +324,37 @@
         prop="handlebarSize"
         align="center"
         width="120"
+        column-key="handlebarSize"
+        :filters="handleDataFilter(handlebarSizeData)"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
           v-NoData="handlebarSizeData[scope.row.handlebarSize]"
-        ></span>
+        />
       </el-table-column>
-      <el-table-column label="协议" prop="agreement" align="center" width="120">
+      <el-table-column
+        label="协议"
+        prop="agreement"
+        align="center"
+        width="120"
+        column-key="agreement"
+        :filters="handleDataFilter(dicts_agreement)"
+        :filter-method="filterHandler"
+      >
         <span
           slot-scope="scope"
           v-NoData="dicts_agreement[scope.row.agreement]"
-        ></span>
+        />
       </el-table-column>
       <el-table-column
         label="测速磁钢数"
         prop="speedSteel"
         align="center"
         width="120"
+        column-key="speedSteel"
+        :filters="getFiltersData('speedSteel')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.speedSteel"></span>
       </el-table-column>
@@ -297,6 +363,9 @@
         prop="tiresSize"
         align="center"
         width="120"
+        column-key="tiresSize"
+        :filters="getFiltersData('tiresSize')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.tiresSize"></span>
       </el-table-column>
@@ -304,7 +373,10 @@
         label="助力限速门限(km/h)"
         prop="assistLimit"
         align="center"
-        width="140"
+        width="155"
+        column-key="assistLimit"
+        :filters="getFiltersData('assistLimit')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
       </el-table-column>
@@ -313,6 +385,9 @@
         prop="wheelDiameter"
         align="center"
         width="120"
+        column-key="wheelDiameter"
+        :filters="handleDataFilter(wheelDiameterData)"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
@@ -324,10 +399,21 @@
         prop="perimeter"
         align="center"
         width="120"
+        column-key="perimeter"
+        :filters="getFiltersData('perimeter')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
       </el-table-column>
-      <el-table-column label="电压" prop="voltage" align="center" width="120">
+      <el-table-column
+        label="电压"
+        prop="voltage"
+        align="center"
+        width="120"
+        column-key="voltage"
+        :filters="getFiltersData('voltage')"
+        :filter-method="filterHandler"
+      >
         <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
       </el-table-column>
       <el-table-column
@@ -335,16 +421,46 @@
         prop="slowStart"
         align="center"
         width="120"
+        column-key="slowStart"
+        :filters="getFiltersData('slowStart')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.slowStart"></span>
       </el-table-column>
-      <el-table-column label="显示单位" prop="unit" align="center" width="120">
+      <el-table-column
+        label="显示单位"
+        prop="unit"
+        align="center"
+        width="120"
+        column-key="unit"
+        :filters="handleDataFilter(dicts_unit)"
+        :filter-method="filterHandler"
+      >
         <span slot-scope="scope" v-NoData="dicts_unit[scope.row.unit]"></span>
       </el-table-column>
-      <el-table-column label="电量计算" prop="power" align="center" width="120">
+      <el-table-column
+        label="电量计算"
+        prop="power"
+        align="center"
+        width="120"
+        column-key="power"
+        :filters="handleDataFilter(dicts_power)"
+        :filter-method="filterHandler"
+      >
         <span slot-scope="scope" v-NoData="dicts_power[scope.row.power]"></span>
       </el-table-column>
-      <el-table-column label="APP" prop="app" align="center" width="120">
+      <el-table-column
+        label="APP"
+        prop="app"
+        align="center"
+        width="120"
+        column-key="app"
+        :filters="[
+          { text: 'YES', value: 1 },
+          { text: 'NO', value: 0 },
+        ]"
+        :filter-method="filterHandler"
+      >
         <el-tag
           v-if="isShow(row.app)"
           slot-scope="{ row }"
@@ -352,9 +468,20 @@
         >
           {{ row.app === 1 ? "YES" : "NO" }}
         </el-tag>
-        <template v-else> --- </template>
+        <template v-else> - - - </template>
       </el-table-column>
-      <el-table-column label="USB" prop="usb" align="center" width="120">
+      <el-table-column
+        label="USB"
+        prop="usb"
+        align="center"
+        width="120"
+        column-key="usb"
+        :filters="[
+          { text: 'YES', value: 1 },
+          { text: 'NO', value: 0 },
+        ]"
+        :filter-method="filterHandler"
+      >
         <el-tag
           v-if="isShow(row.usb)"
           slot-scope="{ row }"
@@ -362,9 +489,20 @@
         >
           {{ row.usb === 1 ? "YES" : "NO" }}
         </el-tag>
-        <template v-else> --- </template>
+        <template v-else> - - - </template>
       </el-table-column>
-      <el-table-column label="蓝牙" prop="bluetooth" align="center" width="120">
+      <el-table-column
+        label="蓝牙"
+        prop="bluetooth"
+        align="center"
+        width="120"
+        column-key="bluetooth"
+        :filters="[
+          { text: 'YES', value: 1 },
+          { text: 'NO', value: 0 },
+        ]"
+        :filter-method="filterHandler"
+      >
         <el-tag
           v-if="isShow(row.bluetooth)"
           slot-scope="{ row }"
@@ -372,12 +510,19 @@
         >
           {{ row.bluetooth === 1 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="推车助力"
         prop="driveAssist"
         align="center"
         width="120"
+        column-key="driveAssist"
+        :filters="[
+          { text: 'YES', value: 1 },
+          { text: 'NO', value: 0 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.driveAssist)"
@@ -386,12 +531,19 @@
         >
           {{ row.driveAssist === 1 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="恢复出厂设置"
         prop="factoryReset"
         align="center"
         width="120"
+        column-key="factoryReset"
+        :filters="[
+          { text: 'YES', value: 0 },
+          { text: 'NO', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.factoryReset)"
@@ -400,12 +552,19 @@
         >
           {{ row.factoryReset === 0 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="转把分档"
         prop="rotateHandle"
         align="center"
         width="120"
+        column-key="rotateHandle"
+        :filters="[
+          { text: 'YES', value: 1 },
+          { text: 'NO', value: 0 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.rotateHandle)"
@@ -414,22 +573,36 @@
         >
           {{ row.rotateHandle === 1 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="助力正反"
         prop="assist"
         align="center"
         width="120"
+        column-key="assist"
+        :filters="[
+          { text: '助力正', value: 0 },
+          { text: '助力反', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <template v-if="isShow(row.assist)" slot-scope="{ row }">
           {{ row.assist === 0 ? "助力正" : "助力反" }}
         </template>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="转把限速"
         prop="rotateHandleSpeedLimit"
         align="center"
         width="120"
+        column-key="rotateHandleSpeedLimit"
+        :filters="[
+          { text: '正常', value: 0 },
+          { text: '限速6Km', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <template
           v-if="isShow(row.rotateHandleSpeedLimit)"
@@ -437,12 +610,16 @@
         >
           {{ row.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
         </template>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="默认档位"
         prop="defaultGear"
         align="center"
         width="120"
+        column-key="defaultGear"
+        :filters="getFiltersData('defaultGear')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.defaultGear"></span>
       </el-table-column>
@@ -451,6 +628,9 @@
         prop="topGear"
         align="center"
         width="120"
+        column-key="topGear"
+        :filters="getFiltersData('topGear')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.topGear"></span>
       </el-table-column>
@@ -459,6 +639,9 @@
         prop="smoothLevel"
         align="center"
         width="120"
+        column-key="smoothLevel"
+        :filters="getFiltersData('smoothLevel')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.smoothLevel"></span>
       </el-table-column>
@@ -466,7 +649,10 @@
         label="电量变化时间(s)"
         prop="batteryVoltageChangeTime"
         align="center"
-        width="120"
+        width="150"
+        column-key="batteryVoltageChangeTime"
+        :filters="getFiltersData('batteryVoltageChangeTime')"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
@@ -477,7 +663,10 @@
         label="总线故障超时时间(s)"
         prop="allLineErrTimeOut"
         align="center"
-        width="150"
+        width="160"
+        column-key="allLineErrTimeOut"
+        :filters="getFiltersData('allLineErrTimeOut')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.allLineErrTimeOut"></span>
       </el-table-column>
@@ -486,13 +675,24 @@
         prop="backlightBrightness"
         align="center"
         width="120"
+        column-key="backlightBrightness"
+        :filters="handleDataFilter(backlightBrightnessList)"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
           v-NoData="backlightBrightnessList[scope.row.backlightBrightness]"
         ></span>
       </el-table-column>
-      <el-table-column label="Logo界面" prop="logo" align="center" width="120">
+      <el-table-column
+        label="Logo界面"
+        prop="logo"
+        align="center"
+        width="120"
+        column-key="logo"
+        :filters="handleDataFilter(dicts_logo)"
+        :filter-method="filterHandler"
+      >
         <span slot-scope="scope" v-NoData="dicts_logo[scope.row.logo]"></span>
       </el-table-column>
       <el-table-column
@@ -500,6 +700,9 @@
         prop="sleepTime"
         align="center"
         width="120"
+        column-key="sleepTime"
+        :filters="getFiltersData('sleepTime')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.sleepTime"></span>
       </el-table-column>
@@ -508,6 +711,9 @@
         prop="powerGear"
         align="center"
         width="120"
+        column-key="powerGear"
+        :filters="getFiltersData('powerGear')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.powerGear"></span>
       </el-table-column>
@@ -515,18 +721,24 @@
         label="助力开始磁钢数"
         prop="assistStartMagnetNumber"
         align="center"
-        width="120"
+        width="130"
+        column-key="assistStartMagnetNumber"
+        :filters="getFiltersData('assistStartMagnetNumber')"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
           v-NoData="scope.row.assistStartMagnetNumber"
-        ></span>
+        />
       </el-table-column>
       <el-table-column
         label="助力比例"
         prop="assistPercentage"
         align="center"
         width="120"
+        column-key="assistPercentage"
+        :filters="getFiltersData('assistPercentage')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.assistPercentage"></span>
       </el-table-column>
@@ -535,6 +747,9 @@
         prop="showWheelsize"
         align="center"
         width="120"
+        column-key="showWheelsize"
+        :filters="getFiltersData('showWheelsize')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.showWheelsize"></span>
       </el-table-column>
@@ -543,6 +758,9 @@
         prop="voltage"
         align="center"
         width="120"
+        column-key="voltage"
+        :filters="getFiltersData('voltage')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
       </el-table-column>
@@ -551,6 +769,9 @@
         prop="currentlimiting"
         align="center"
         width="120"
+        column-key="currentlimiting"
+        :filters="getFiltersData('currentlimiting')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.currentlimiting"></span>
       </el-table-column>
@@ -559,6 +780,9 @@
         prop="undervoltage"
         align="center"
         width="120"
+        column-key="undervoltage"
+        :filters="getFiltersData('undervoltage')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
       </el-table-column>
@@ -567,6 +791,12 @@
         prop="buzzerSwitch"
         align="center"
         width="120"
+        column-key="buzzerSwitch"
+        :filters="[
+          { text: 'YES', value: 0 },
+          { text: 'NO', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.buzzerSwitch)"
@@ -575,12 +805,16 @@
         >
           {{ row.buzzerSwitch === 0 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="高速蜂鸣器提醒"
         prop="highSpeedBuzzerRemind"
         align="center"
-        width="120"
+        width="140"
+        column-key="highSpeedBuzzerRemind"
+        :filters="getFiltersData('highSpeedBuzzerRemind')"
+        :filter-method="filterHandler"
       >
         <span
           slot-scope="scope"
@@ -592,6 +826,12 @@
         prop="cruise"
         align="center"
         width="120"
+        column-key="cruise"
+        :filters="[
+          { text: 'YES', value: 0 },
+          { text: 'NO', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.cruise)"
@@ -600,12 +840,19 @@
         >
           {{ row.cruise === 0 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="是否开机密码"
         prop="turnOnPasswd"
         align="center"
         width="120"
+        column-key="turnOnPasswd"
+        :filters="[
+          { text: 'YES', value: 0 },
+          { text: 'NO', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.turnOnPasswd)"
@@ -614,12 +861,16 @@
         >
           {{ row.turnOnPasswd === 0 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="开机密码"
         prop="startupPasswd"
         align="center"
         width="120"
+        column-key="startupPasswd"
+        :filters="getFiltersData('startupPasswd')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.startupPasswd"></span>
       </el-table-column>
@@ -628,6 +879,12 @@
         prop="menuPassword"
         align="center"
         width="120"
+        column-key="menuPassword"
+        :filters="[
+          { text: 'YES', value: 0 },
+          { text: 'NO', value: 1 },
+        ]"
+        :filter-method="filterHandler"
       >
         <el-tag
           v-if="isShow(row.menuPassword)"
@@ -636,12 +893,16 @@
         >
           {{ row.menuPassword === 0 ? "YES" : "NO" }}
         </el-tag>
+        <template v-else> - - - </template>
       </el-table-column>
       <el-table-column
         label="高级菜单密码"
         prop="highMenuPasswd"
         align="center"
         width="120"
+        column-key="highMenuPasswd"
+        :filters="getFiltersData('highMenuPasswd')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.highMenuPasswd"></span>
       </el-table-column>
@@ -650,6 +911,9 @@
         prop="motorSys"
         align="center"
         width="120"
+        column-key="motorSys"
+        :filters="getFiltersData('motorSys')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.motorSys"></span>
       </el-table-column>
@@ -658,17 +922,20 @@
         prop="batteryCap"
         align="center"
         width="120"
+        column-key="batteryCap"
+        :filters="getFiltersData('batteryCap')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.batteryCap"></span>
-      </el-table-column>
-      <el-table-column label="SN标签" prop="snTag" align="center" width="120">
-        <span slot-scope="scope" v-NoData="scope.row.snTag"></span>
       </el-table-column>
       <el-table-column
         label="创建人"
         prop="createBy"
         align="center"
         width="120"
+        column-key="createBy"
+        :filters="getFiltersData('createBy')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
       </el-table-column>
@@ -677,6 +944,9 @@
         prop="checkBy"
         align="center"
         width="120"
+        column-key="checkBy"
+        :filters="getFiltersData('checkBy')"
+        :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.checkBy"></span>
       </el-table-column>
@@ -781,6 +1051,34 @@ export default {
         }
       };
     },
+    // 协议查询条件
+    handleDataFilter() {
+      return (data) => {
+        return Object.entries(data)
+          .map(([key, value]) => {
+            return { text: value, value: +key };
+          })
+          .sort((a, b) => a.text - b.text);
+      };
+    },
+    // 获取每项的筛选值
+    getFiltersData() {
+      return (key) => {
+        let newList = [];
+        let filterList = [];
+        this.brandList.forEach((item) => {
+          if (!this.Is_Empty(item[key]) && !filterList.includes(item[key])) {
+            filterList.push(item[key]);
+            newList.push({
+              text: item[key],
+              value: item[key],
+            });
+          }
+        });
+
+        return newList.sort((a, b) => a.text - b.text);
+      };
+    },
   },
   created() {
     // 车把尺寸
@@ -795,11 +1093,21 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      modelConfigList(this.queryParams).then((response) => {
-        this.brandList = response.data.list;
-        this.total = response.data.total;
+      modelConfigList(this.queryParams).then((res) => {
+        const { list, total } = res.data;
+        this.brandList = list;
+        this.total = total;
         this.loading = false;
       });
+    },
+    // 每项筛选方法
+    filterHandler(value, row, column) {
+      const property = column["property"];
+      return row[property] == value;
+    },
+    // 清除所有过滤器
+    clearFilter() {
+      this.$refs.filterTable.clearFilter();
     },
     changeCategory(val) {
       this.queryParams.computerId = "";
@@ -822,11 +1130,11 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.p = 1;
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.queryParams.p = 1;
       this.dateRange = [];
       this.resetForm("queryForm");
       this.handleQuery();
@@ -889,6 +1197,34 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+.el-table.config-overview-box {
+  .el-table__body-wrapper::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    width: 10px;
+  }
+  .el-table__fixed {
+    height: auto !important;
+    bottom: 10px !important;
+  }
+  .is-scrolling-middle + .el-table__fixed {
+    z-index: 666;
+    box-shadow: 5px 0 10px #d8d5d5
+  }
+  .is-scrolling-right + .el-table__fixed {
+    z-index: 666;
+    box-shadow: 5px 0 10px #d8d5d5
+  }
+}
+
+.el-table-filter {
+  .el-table-filter__bottom {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+  }
+}
+</style>
 <style lang="scss" scoped>
 .auth {
   text-align: center;

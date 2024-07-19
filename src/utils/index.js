@@ -443,29 +443,36 @@ export async function urlDownload(url) {
 }
 
 export function zipFile(value, fileName) {
-  let data = value.split(",");
-  if (data.length === 1) {
-    urlDownload(data[0]);
-  } else {
-    const zip = new JSZip();
-    const cache = {};
-    const promises = [];
-    data.forEach((item) => {
-      const promise = getFile(item).then((data) => {
-        // 下载文件, 并存成ArrayBuffer对象
-        const arr_name = item.split("/");
-        const file_name = arr_name[arr_name.length - 1]; // 获取文件名
-        zip.file(file_name, data, { binary: true }); // 逐个添加文件
-        cache[file_name] = data;
+  try {
+    if(!value) {
+       throw new Error('下载文件地址为空')
+    }
+    let data = value.split(",");
+    if (data.length === 1) {
+      urlDownload(data[0]);
+    } else {
+      const zip = new JSZip();
+      const cache = {};
+      const promises = [];
+      data.forEach((item) => {
+        const promise = getFile(item).then((data) => {
+          // 下载文件, 并存成ArrayBuffer对象
+          const arr_name = item.split("/");
+          const file_name = arr_name[arr_name.length - 1]; // 获取文件名
+          zip.file(file_name, data, { binary: true }); // 逐个添加文件
+          cache[file_name] = data;
+        });
+        promises.push(promise);
       });
-      promises.push(promise);
-    });
-    Promise.all(promises).then(() => {
-      zip.generateAsync({ type: "blob" }).then((content) => {
-        // 生成二进制流
-        FileSaver.saveAs(content, `${fileName ? fileName : "迪太云"}.zip`); // 利用file-saver保存文件
+      Promise.all(promises).then(() => {
+        zip.generateAsync({ type: "blob" }).then((content) => {
+          // 生成二进制流
+          FileSaver.saveAs(content, `${fileName ? fileName : "迪太云"}.zip`); // 利用file-saver保存文件
+        });
       });
-    });
+    }
+  } catch(err) {
+    console.error(err);
   }
 }
 

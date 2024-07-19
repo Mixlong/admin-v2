@@ -19,6 +19,7 @@
 <script>
 import { listCategory } from "@/api/third/category";
 export default {
+  name: "ModelCategory",
   props: {
     value: {
       type: String,

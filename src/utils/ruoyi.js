@@ -307,7 +307,7 @@ export function Enter_Fn(fn) {
 export function is_Empty(obj) {
   if (
     typeof obj == "undefined" ||
-    obj == null ||
+    obj === null ||
     (typeof obj == "string" && obj.trim() == "") ||
     (typeof obj == "object" && Object.keys(obj).length === 0)
   ) {

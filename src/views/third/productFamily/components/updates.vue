@@ -597,6 +597,7 @@
                   :max="99"
                   :controls="false"
                   placeholder="请输入欠压门限"
+                  clearable
                 />
               </el-form-item>
 
@@ -713,6 +714,7 @@
                   v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model.number="form.instrumentModel.showWheelsize"
                   oninput="value=value.replace(/[^\d]/g, '')"
+                  clearable
                   placeholder="显示轮径"
                 />
               </el-form-item>
@@ -973,6 +975,7 @@
                   v-minMaxValue="{ min: 0, max: 9 }"
                   v-model="form.instrumentModel.defaultGear"
                   oninput="value=value.replace(/[^\d.]/g, '')"
+                  clearable
                   placeholder="请输入默认档位"
                 />
               </el-form-item>
@@ -1007,7 +1010,8 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  clearable
+                  v-minMaxValue="{ min: 0 }"
                   v-model="form.instrumentModel.startupPasswd"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入开机密码"
@@ -1026,8 +1030,9 @@
               >
                 <el-input
                   v-model="form.instrumentModel.highMenuPasswd"
+                  clearable
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  v-minMaxValue="{ min: 0 }"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高级菜单密码"
                 />
@@ -1045,6 +1050,7 @@
                   v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model="form.instrumentModel.motorSys"
                   oninput="value=value.replace(/[^\d.]/g, '')"
+                  clearable
                   placeholder="请输入电机功率"
                 />
               </el-form-item>
@@ -1061,6 +1067,7 @@
                   v-minMaxValue="{ min: 0, max: 65535 }"
                   v-model="form.instrumentModel.batteryCap"
                   oninput="value=value.replace(/[^\d.]/g, '')"
+                  clearable
                   placeholder="电池容量"
                 />
               </el-form-item>

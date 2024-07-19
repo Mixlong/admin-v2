@@ -13,7 +13,6 @@
       :rules="rules"
       label-width="120px"
       @submit.native.prevent
-      inline
     >
       <el-row :gutter="10">
         <el-col :span="8">
