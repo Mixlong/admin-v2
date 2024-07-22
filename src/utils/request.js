@@ -68,12 +68,14 @@ service.interceptors.response.use(
       Message({
         message: msg,
         type: "error",
+        customClass: 'messageCustomClass'
       });
       return Promise.reject(res.data.code);
     } else if (code !== 200) {
       Message({
         message: msg,
         type: "error",
+        customClass: 'messageCustomClass'
       });
       return Promise.reject(res.data.code);
     } else {
@@ -93,6 +95,7 @@ service.interceptors.response.use(
       message: message,
       type: "error",
       duration: 5 * 1000,
+      customClass: 'messageCustomClass'
     });
     return Promise.reject(error);
   }

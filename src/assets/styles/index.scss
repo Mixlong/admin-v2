@@ -1483,3 +1483,8 @@ fieldset {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   }
 }
+
+// 修改message的样式 （层级）
+.messageCustomClass {
+  z-index: 6666 !important;
+}
