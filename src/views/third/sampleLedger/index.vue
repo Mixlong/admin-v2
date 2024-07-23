@@ -260,10 +260,10 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 
 export default {
+  name: 'SampleLedgerOther',
   components: {
     Log,
     Return,
-
     CompUpdate,
   },
   data() {

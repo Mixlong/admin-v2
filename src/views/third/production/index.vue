@@ -252,12 +252,12 @@ import {
 
 import CompUpdate from "./components/update";
 export default {
+  name: "Production",
   components: {
     CompUpdate,
     aging: () => import("./components/aging.vue"),
     "see-detail": () => import("./components/seeDetail.vue"),
   },
-  name: "BikeFileConfig",
   data() {
     return {
       ditailShow: false,

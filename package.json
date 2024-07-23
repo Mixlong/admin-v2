@@ -81,6 +81,7 @@
     "vue-draggable-resizable": "^2.3.0",
     "vue-flip-down": "^1.0.7",
     "vue-markdown": "^2.2.4",
+    "vue-meta": "^2.4.0",
     "vue-native-websocket": "^2.0.14",
     "vue-print-nb": "^1.7.5",
     "vue-qr": "^4.0.9",

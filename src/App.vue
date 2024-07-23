@@ -1,20 +1,36 @@
 <template>
-    <div
-      v-if="isOnLine"
-      id="app"
-      :style="{ backgroundImage: bgImage }"
-      :class="{ 'theme-style': customImage > 0 }"
-    >
-      <router-view />
-    </div>
+  <div
+    v-if="isOnLine"
+    id="app"
+    :style="{ backgroundImage: bgImage }"
+    :class="{ 'theme-style': customImage > 0 }"
+  >
+    <router-view />
+    <theme-picker />
+  </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
+import ThemePicker from "@/components/ThemePicker";
+
 export default {
   name: "App",
   components: {
-    NoWekwork: () => import("@/views/error/noNetwork")
+    NoWekwork: () => import("@/views/error/noNetwork"),
+    ThemePicker,
+  },
+  metaInfo() {
+    return {
+      title:
+        this.$store.state.settings.dynamicTitle &&
+        this.$store.state.settings.title,
+      titleTemplate: (title) => {
+        return title
+          ? `${title} - ${process.env.VUE_APP_TITLE}`
+          : process.env.VUE_APP_TITLE;
+      },
+    };
   },
   data() {
     return {
@@ -32,7 +48,7 @@ export default {
         return `url(${imageSrc})`;
       }
     },
-  }
+  },
 };
 </script>
 <style lang='scss'>
@@ -42,6 +58,11 @@ export default {
   transition: background 1s ease;
   background-size: cover;
 }
+
+#app .theme-picker {
+  display: none;
+}
+
 .app-container {
   height: calc(100vh - 100px);
   overflow-y: auto;

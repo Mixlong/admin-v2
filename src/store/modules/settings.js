@@ -1,41 +1,61 @@
-import variables from '@/assets/styles/element-variables.scss'
-import defaultSettings from '@/settings'
+import variables from "@/assets/styles/element-variables.scss";
+import defaultSettings from "@/settings";
 
-const { showSettings, tagsView, fixedHeader, sidebarLogo } = defaultSettings
+const { showSettings, tagsView, fixedHeader, sidebarLogo, dynamicTitle } =
+  defaultSettings;
+
+const storageSetting = JSON.parse(localStorage.getItem("layout-setting")) || "";
 
 const state = {
-  theme: variables.theme,
+  title: "",
+  theme: storageSetting.theme || "#409EFF",
   showSettings,
-  tagsView,
-  fixedHeader,
-  sidebarLogo,
-  customImage: localStorage.getItem("themeImageFile") ? localStorage.getItem("themeImageFile") : '0',
   themeImageCount: 18,
-}
+  customImage: localStorage.getItem("themeImageFile")
+    ? localStorage.getItem("themeImageFile")
+    : "0",
+  tagsView:
+    storageSetting.tagsView === undefined ? tagsView : storageSetting.tagsView,
+  fixedHeader:
+    storageSetting.fixedHeader === undefined
+      ? fixedHeader
+      : storageSetting.fixedHeader,
+  sidebarLogo:
+    storageSetting.sidebarLogo === undefined
+      ? sidebarLogo
+      : storageSetting.sidebarLogo,
+  dynamicTitle:
+    storageSetting.dynamicTitle === undefined
+      ? dynamicTitle
+      : storageSetting.dynamicTitle,
+};
 
 const mutations = {
   CHANGE_SETTING: (state, { key, value }) => {
     Object.hasOwn(state, key) && (state[key] = value);
   },
   CHANGE_CUSTOMIMAGE: (state, data) => {
-    state.customImage = data
-  }
-}
+    state.customImage = data;
+  },
+};
 
 const actions = {
   changeSetting({ commit }, data) {
-    commit('CHANGE_SETTING', data)
+    commit("CHANGE_SETTING", data);
   },
   changeThemeImage({ commit }, data) {
     localStorage.setItem("themeImageFile", data);
-    commit('CHANGE_CUSTOMIMAGE', data)
-  }
-}
+    commit("CHANGE_CUSTOMIMAGE", data);
+  },
+  // 设置网页标题
+  setTitle({ commit, state }, title) {
+    state.title = title;
+  },
+};
 
 export default {
   namespaced: true,
   state,
   mutations,
-  actions
-}
-
+  actions,
+};

@@ -10,9 +10,10 @@ import commonSelect from "@/directive/commonDirective/select";
 import "@/directive/debounce";
 import Element from "element-ui";
 import VueViewer from "v-viewer";
+// 头部标签组件
+import VueMeta from 'vue-meta'
 
 // 测试
-
 import ellipsisPlugings from "@/directive/commonDirective/myDirectives";
 
 Vue.use(ellipsisPlugings);
@@ -25,6 +26,7 @@ Vue.use(VueClipboard);
 Vue.use(vuescroll);
 Vue.use(commonSelect);
 Vue.use(Element);
+Vue.use(VueMeta);
 Vue.use(VueViewer, {
   defaultOptions: {
     zIndex: 9999

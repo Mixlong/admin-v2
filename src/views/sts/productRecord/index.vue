@@ -166,7 +166,7 @@
 import { categoryComputerDict, recordList } from "@/api/third/fileConfig";
 
 export default {
-  name: "BikeFileConfig",
+  name: "ProductRecord",
   data() {
     return {
       isStsDetailShow: false,

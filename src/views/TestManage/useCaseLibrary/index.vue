@@ -270,6 +270,7 @@ import CommonMinins from "@/views/TestManage/mixins";
 import actionUrl from "@/utils/requestUrl";
 
 export default {
+  name: 'UseCaseLibrary',
   mixins: [CommonMinins],
   components: {
     CompUpdate: () => import("./components/update"),

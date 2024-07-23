@@ -183,7 +183,7 @@ import { categoryComputerDict } from "@/api/third/fileConfig";
 import { stsTestList } from "@/api/third/testApi";
 
 export default {
-  name: "BikeFileConfig",
+  name: "StsTestResult",
   data() {
     return {
       isStsDetailShow: false,

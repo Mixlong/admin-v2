@@ -129,6 +129,7 @@ import {
 import { categoryComputerDict } from "@/api/third/fileConfig";
 
 export default {
+  name: 'ProdPermit',
   data() {
     return {
       // 遮罩层

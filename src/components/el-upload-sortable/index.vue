@@ -17,7 +17,7 @@
           class="el-upload-list__item"
           :style="imgListStyle"
           v-for="(item, index) in imgList"
-          :key="index"
+          :key="`${item}-${index}`"
         >
           <video class="video-box" v-if="isVideo" :src="item"></video>
           <el-image

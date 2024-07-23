@@ -94,6 +94,7 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 import { memberDictUser } from "@/api/system/user";
 export default {
+  name: 'TestTool',
   components: {
     Log,
     Return,

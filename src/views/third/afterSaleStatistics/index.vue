@@ -199,9 +199,9 @@ import modelRankTop3 from "@/views/dashboard/commonChart";
 import searchChart from "@/views/dashboard/commonChart";
 
 import html2canvas from "html2canvas";
-import request from "@/utils/request";
 
 export default {
+  name: 'AfterSaleStatistics',
   mixins: [commonData, chartOptions],
   components: {
     problemRootStatus,

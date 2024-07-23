@@ -159,7 +159,7 @@
         width="90"
       />
       <el-table-column label="问题状态" prop="status" align="center" width="80">
-        <template scope="{ row }">
+        <template slot-scope="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
           <el-tag v-else type="success">CLOSE</el-tag>
         </template>
@@ -421,6 +421,7 @@ import FlipDown from "vue-flip-down";
 import commonData from "@/mixins/commonData";
 
 export default {
+  name: 'AfterSale',
   mixins: [commonData],
   components: {
     FlipDown,

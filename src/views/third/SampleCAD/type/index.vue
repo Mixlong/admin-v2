@@ -207,7 +207,7 @@ import { getCodeImg } from "@/api/base/code";
 import { commonJs } from "@/mixins/common";
 
 export default {
-  name: "BikeType",
+  name: "SampleSoftType",
   mixins: [commonJs],
   data() {
     return {

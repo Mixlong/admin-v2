@@ -107,7 +107,7 @@ import {
 } from "@/api/third/fileConfig";
 
 export default {
-  name: "BikeFileConfig",
+  name: "Parts",
   data() {
     return {
       ditailShow: false,

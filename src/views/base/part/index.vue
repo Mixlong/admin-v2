@@ -96,7 +96,7 @@
 import { listPartInfo, exportPartInfo } from "@/api/base/part";
 
 export default {
-  name: "BikePart",
+  name: "PartInfo",
   data() {
     return {
       // 遮罩层

@@ -289,7 +289,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="PCBA SN" prop="list">
-          <el-input v-model="form.list" type="textarea" rows="3" :disabled="!!form.id" />
+          <el-input
+            v-model="form.list"
+            type="textarea"
+            rows="3"
+            :disabled="!!form.id"
+          />
           <i>SN可以扫码输入，多个SN输入注意回车换行或英文逗号</i>
         </el-form-item>
       </el-form>
@@ -318,6 +323,7 @@ import {
 import { categoryComputerDict } from "@/api/third/fileConfig";
 
 export default {
+  name: "ProdServiceLog",
   data() {
     const checkPcba = (rule, value, callback) => {
       if (this.Is_Empty(value)) {
@@ -328,7 +334,6 @@ export default {
         callback();
       }
     };
-
     return {
       // 遮罩层
       loading: false,
@@ -534,7 +539,9 @@ export default {
           if (list.length) {
             const pucsList = list.split(/[/\n|，]/);
 
-            dataForm.list = Array.from(new Set(pucsList)).filter(item => item !== "");
+            dataForm.list = Array.from(new Set(pucsList)).filter(
+              (item) => item !== ""
+            );
           }
 
           if (dataForm.id) {
@@ -559,7 +566,7 @@ export default {
           }
         }
       });
-    }
+    },
   },
 };
 </script>

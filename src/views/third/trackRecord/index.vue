@@ -102,7 +102,7 @@
 import { categoryComputerDict, trackLogList } from "@/api/third/fileConfig";
 
 export default {
-  name: "BikeFileConfig",
+  name: "TrackRecord",
   data() {
     return {
       form: {},
