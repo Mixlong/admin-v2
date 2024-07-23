@@ -118,7 +118,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitCode">确 定</el-button>
+        <el-button type="primary" :loading="isCodeLoading" @click="submitCode">确 定</el-button>
         <el-button @click="isCodeDiag = false">取 消</el-button>
       </span>
     </el-dialog>
@@ -168,6 +168,7 @@ export default {
         ],
       },
       loading: false,
+      isCodeLoading: false,
       redirect: undefined,
     };
   },
@@ -327,15 +328,19 @@ export default {
     submitCode() {
       this.$refs.codeForm.validate((valid) => {
         if (valid) {
+          this.isCodeLoading = true;
           this.codeForm.username = this.loginForm.username;
           this.codeForm.password = this.loginForm.password;
+
           getSmsVerify(this.codeForm).then((res) => {
             const { iamKey, iamValue, token, username } = res.data;
             setToken(token);
             Cookies.set("iamKeys", iamKey, { expires: 30 });
             Cookies.set(iamKey, iamValue, { expires: 30 });
             this.$router.push({ path: this.redirect || "/" });
-          });
+          }).finally(() => {
+            this.isCodeLoading = false;
+          })
         }
       });
     },

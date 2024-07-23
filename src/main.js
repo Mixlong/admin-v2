@@ -35,7 +35,7 @@ Vue.prototype.msgInfo = function (msg) {
   this.$message.info(msg);
 };
 
-Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'small', zIndex: 6666 };
+Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'small', zIndex: 3000 };
 Vue.config.productionTip = false;
 
 Vue.use(plugins)

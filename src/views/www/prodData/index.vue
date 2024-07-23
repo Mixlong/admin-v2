@@ -88,7 +88,7 @@
       @cell-click="onCellClick"
       :cell-class-name="getCellClassName"
     >
-      <el-table-column prop="date" label="计划日期" align="center" width="90">
+      <el-table-column prop="date" label="计划日期" align="center" width="90" fixed>
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
         </template>
@@ -96,8 +96,9 @@
       <el-table-column
         prop="customerName"
         label="客户"
-        width="120"
+        width="110"
         align="center"
+        fixed
       >
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
@@ -105,31 +106,24 @@
         prop="categoryName"
         label="品类"
         align="center"
-        width="120"
+        width="110"
+        fixed
       />
       <el-table-column
         prop="computerName"
         label="型号"
         align="center"
-        width="140"
+        width="120"
+        fixed
       />
       <el-table-column
         prop="process"
         label="生产阶段"
         align="center"
         width="90"
+        fixed
       />
       <el-table-column label="SMT资料" align="center">
-        <!-- <el-table-column
-            prop="pcbaStatus"
-            label="PCBA资料"
-            align="center"
-            width="90"
-          >
-            <template slot-scope="{ row }">
-              <ColumnState :state="row.pcbaStatus" />
-            </template>
-          </el-table-column> -->
         <el-table-column
           prop="pucsStatus"
           label="PUCS资料"
@@ -137,7 +131,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[1].length" :row="row" currentDataName="PUCS资料" :currentIndex="1"></miss-data>
+            <miss-data
+              v-show="row.mapFile[1].length"
+              :row="row"
+              currentDataName="PUCS资料"
+              :currentIndex="1"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[1].length" :state="row.map[1]" />
           </template>
@@ -149,7 +148,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[2].length" :row="row" currentDataName="硬件资料" :currentIndex="2"></miss-data>
+            <miss-data
+              v-show="row.mapFile[2].length"
+              :row="row"
+              currentDataName="硬件资料"
+              :currentIndex="2"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[2].length" :state="row.map[2]" />
           </template>
@@ -161,7 +165,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[3].length" :row="row" currentDataName="软件资料" :currentIndex="3"></miss-data>
+            <miss-data
+              v-show="row.mapFile[3].length"
+              :row="row"
+              currentDataName="软件资料"
+              :currentIndex="3"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[3].length" :state="row.map[3]" />
           </template>
@@ -175,7 +184,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[4].length" :row="row" currentDataName="配置文件" :currentIndex="4"></miss-data>
+            <miss-data
+              v-show="row.mapFile[4].length"
+              :row="row"
+              currentDataName="配置文件"
+              :currentIndex="4"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[4].length" :state="row.map[4]" />
           </template>
@@ -187,7 +201,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[5].length" :row="row" currentDataName="测试上位机" :currentIndex="5"></miss-data>
+            <miss-data
+              v-show="row.mapFile[5].length"
+              :row="row"
+              currentDataName="测试上位机"
+              :currentIndex="5"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[5].length" :state="row.map[5]" />
           </template>
@@ -209,7 +228,12 @@
           width="90"
         >
           <template slot-scope="{ row }">
-            <miss-data v-show="row.mapFile[6].length" :row="row" currentDataName="SN规则" :currentIndex="6"></miss-data>
+            <miss-data
+              v-show="row.mapFile[6].length"
+              :row="row"
+              currentDataName="SN规则"
+              :currentIndex="6"
+            ></miss-data>
 
             <ColumnState v-show="!row.mapFile[6].length" :state="row.map[6]" />
           </template>
@@ -233,7 +257,11 @@
         align="center"
         width="120"
       >
-        <span :class="{ 'text-red': row.surplusHour < 0 }" slot-scope="{ row }" v-NoData="row.surplusHour"></span>
+        <span
+          :class="{ 'text-red': row.surplusHour < 0 }"
+          slot-scope="{ row }"
+          v-NoData="row.surplusHour"
+        ></span>
       </el-table-column>
       <el-table-column
         prop="personLiable"
@@ -243,21 +271,21 @@
       >
         <span slot-scope="{ row }" v-NoData="row.personLiable"></span>
       </el-table-column>
-      <el-table-column prop="result" label="结果" align="center" width="120">
-        <span slot-scope="{ row }" v-NoData="row.result"></span>
+      <el-table-column prop="result" label="结果" align="center" min-width="150">
+        <template slot-scope="{ row }">
+          <span v-show="!row.result">- - -</span>
+          <div v-show="row.result" v-html="row.result"></div>
+        </template>
       </el-table-column>
       <el-table-column
         prop="remark"
         label="备注"
         align="center"
-        min-width="250"
+        min-width="150"
       >
         <template slot-scope="{ row }">
           <span v-show="!row.remark">- - -</span>
           <div v-show="row.remark" v-html="row.remark"></div>
-          <!-- <read-more v-show="row.remark" :showHeight="50">
-            <div v-html="row.remark"></div>
-          </read-more> -->
         </template>
       </el-table-column>
     </el-table>
@@ -290,6 +318,19 @@
           >
           </el-date-picker>
         </el-form-item>
+        <!-- 责任人 -->
+        <el-form-item prop="personLiable " v-if="isType === 3">
+          <el-input
+            v-model="form.personLiable"
+            placeholder="请输入"
+            clearable
+          />
+        </el-form-item>
+        <!-- 结果 -->
+        <el-form-item prop="result" v-if="isType === 4">
+          <tinymce v-if="isShow" v-model="form.result" :height="350"> </tinymce>
+        </el-form-item>
+        <!-- 备注 -->
         <el-form-item prop="remark" v-if="isType === 2">
           <tinymce v-if="isShow" v-model="form.remark" :height="350"> </tinymce>
         </el-form-item>
@@ -321,7 +362,7 @@ export default {
     tinymce,
     ColumnState: () => import("./columnState"),
     ReadMore: () => import("@/components/ReadMore"),
-    MissData: () => import("./MissData.vue")
+    MissData: () => import("./MissData.vue"),
   },
   data() {
     return {
@@ -340,6 +381,8 @@ export default {
       form: {
         hopeDate: "",
         remark: "",
+        personLiable: "",
+        result: ""  
       },
       defaultTime: this.moment().format("HH:mm:ss"),
       pickerOptions: {
@@ -367,7 +410,7 @@ export default {
   },
   computed: {
     isDiaWidth() {
-      return this.isType === 1 ? "350px" : "650px";
+      return this.isType === 1 || this.isType === 3  ? "350px" : "650px";
     },
     isTestTabHeight() {
       return "calc(100vh - 250px)";
@@ -382,6 +425,11 @@ export default {
     "form.remark"(remark) {
       if (remark !== "") {
         this.clearValidateItem("form", "remark");
+      }
+    },
+    "form.result"(result) {
+      if (result !== "") {
+        this.clearValidateItem("form", "result");
       }
     },
   },
@@ -448,7 +496,7 @@ export default {
       )
         .then((res) => {
           const { list, total } = res.data;
-          this.tableData = list
+          this.tableData = list;
           this.total = total;
         })
         .finally(() => {
@@ -482,6 +530,8 @@ export default {
             return "pointer";
           }
         case "备注":
+        case "责任人":
+        case "结果":
           return "pointer";
       }
     },
@@ -531,6 +581,12 @@ export default {
         case "备注":
           this.onShowDia(row, 2);
           break;
+        case "责任人":
+          this.onShowDia(row, 3);
+          break;
+        case "结果":
+          this.onShowDia(row, 4);
+          break;
       }
     },
     onCellStateClick({ categoryId, computerId }, status) {
@@ -546,7 +602,12 @@ export default {
       }
     },
     onShowDia(row, type) {
-      this.isTitle = type === 1 ? "期望日期" : "备注";
+      switch(type) {
+        case 1: this.isTitle = '期望日期'; break;
+        case 2: this.isTitle = '备注'; break;
+        case 3: this.isTitle = '责任人'; break;
+        case 4: this.isTitle = '结果'; break;
+      }
       this.isType = type;
       this.isShow = true;
       this.form = Object.assign({}, row);
@@ -555,6 +616,8 @@ export default {
       this.form = {
         hopeDate: "",
         remark: "",
+        personLiable: "",
+        result: ""  
       };
       this.resetForm("form");
     },
