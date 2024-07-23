@@ -9,6 +9,12 @@ const whiteList = ["/login", "/auth-redirect", "/bind", "/register", "/survey"];
 router.beforeEach((to, from, next) => {
   start();
   if (getToken()) {
+    
+    if(to.matched && to.matched.length > 2) {
+      to.matched.splice(1, to.matched.length - 2)
+    }
+
+    to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
     /* has token*/
     if (to.path === "/login") {
       next({ path: "/" });
@@ -47,7 +53,7 @@ router.beforeEach((to, from, next) => {
       // 在免登录白名单，直接进入
       next();
     } else {
-      next(`/login?redirect=${to.fullPath}`); // 否则全部重定向到登录页
+      next(`/login?redirect=${encodeURIComponent(to.fullPath)}`); // 否则全部重定向到登录页
       done();
     }
   }

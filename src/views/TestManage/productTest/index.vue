@@ -198,11 +198,11 @@ import {
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
+  name: "ProductTest",
   components: {
     CompUpdate: () => import("./components/addOrUpdate"),
     WaitTest: () => import("./components/waitTest.vue"),
   },
-  filters: {},
   data() {
     return {
       commonStatusList,

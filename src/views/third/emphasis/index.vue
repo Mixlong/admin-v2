@@ -268,6 +268,7 @@ import { dutyUserList } from "@/api/system/user";
 import Update from "@/views/third/emphasis/components/update";
 
 export default {
+  name: 'Emphasis',
   components: {
     Update,
     Sortable,

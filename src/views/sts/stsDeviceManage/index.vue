@@ -207,6 +207,7 @@
 	} from "@/api/factory";
 
 	export default {
+		name: 'StsDevice',
 		data() {
 			return {
 				// 遮罩层

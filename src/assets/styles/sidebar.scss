@@ -296,10 +296,3 @@
 .el-menu-item:hover i {
   color: #6190e8;
 }
-
-/* 设置选中el-menu-item时的样式 */
-.el-menu-item.is-active {
-  border-left: #6190e8 solid 6px !important;
-  background-color: #e2eff9 !important;
-  color: #6190e8 !important;
-}

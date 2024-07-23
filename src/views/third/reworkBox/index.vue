@@ -241,6 +241,7 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 
 export default {
+  name: 'ReworkBox',
   components: {
     Log,
     Return,

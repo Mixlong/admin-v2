@@ -321,6 +321,7 @@ import { listModelDict } from "@/api/third/computer";
 import axios from "axios";
 
 export default {
+  name: 'Pucs',
   components: {
     DetailList,
     CompUpdate,

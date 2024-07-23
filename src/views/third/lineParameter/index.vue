@@ -239,6 +239,7 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 
 export default {
+  name: 'LineParameter',
   components: {
     Log,
     Return,

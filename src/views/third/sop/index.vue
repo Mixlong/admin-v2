@@ -157,6 +157,7 @@ import { mapGetters } from "vuex";
 import commonData from "@/mixins/commonData";
 
 export default {
+  name: 'Sop',
   mixins: [commonData],
   components: {
     AddSop: () => import("./components/addSop"),

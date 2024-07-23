@@ -158,6 +158,7 @@ import CompUpdate from "./components/update";
 import requestUrl from "@/utils/requestUrl";
 import { getToken } from "@/utils/auth";
 export default {
+  name: 'PucsType',
   components: {
     CompUpdate,
   },

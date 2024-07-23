@@ -147,13 +147,13 @@ import { commonStatusList } from "@/utils/commonData";
 import { categoryComputerDict } from "@/api/third/fileConfig";
 
 export default {
+  name: 'StsDevice',
   components: {
     CompUpdate: () => import("./components/update")
   },
   data() {
     return {
       isMyDialog: false,
-
       lovingVue: true,
       commonStatusList,
       // 遮罩层

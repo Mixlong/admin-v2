@@ -129,6 +129,7 @@ import { testProductList, taskProductAuth } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
+  name: "Product",
   components: {
     CompUpdate: () => import("./components/update"),
   },

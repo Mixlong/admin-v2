@@ -180,6 +180,7 @@ import {
 } from "@/api/pucs/soft";
 import CompUpdate from "./components/update";
 export default {
+  name: 'Software',
   components: {
     CompUpdate,
   },

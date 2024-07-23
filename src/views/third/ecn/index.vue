@@ -626,6 +626,7 @@ import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
 
 export default {
+  name: 'Ecn',
   components: {
     CompUpdate,
     CompDetail,

@@ -190,8 +190,8 @@ import {
 import { listCustomer, sampleNumberList } from "@/api/third/sample";
 
 export default {
+  name: "FileIsType",
   mixins: [commonJs],
-  name: "BikeType",
   data() {
     return {
       isLoading: false,

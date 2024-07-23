@@ -176,11 +176,11 @@ import CompDetail from "./components/detail";
 import ExportList from "./components/exportList";
 import { mapGetters } from "vuex";
 export default {
+  name: 'Fct',
   components: {
     CompDetail,
     ExportList,
   },
-  filters: {},
   data() {
     return {
       open: false,

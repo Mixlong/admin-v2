@@ -136,6 +136,7 @@ import { reportList, reportAuth, reportExcel } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
+  name: 'Report',
   components: {
     CompUpdate: () => import("./components/update"),
   },

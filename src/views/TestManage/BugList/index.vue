@@ -96,6 +96,7 @@
 import { testBugList } from "@/api/third/testApi";
 
 export default {
+  name: 'BugList',
   data() {
     return {
       form: {},
