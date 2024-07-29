@@ -82,13 +82,13 @@
             </el-col>
             <el-col :md="24" :lg="12">
               <el-form-item
-                v-show="form.importType === 2"
+                v-show="form.importType === 2 && form.importTime"
                 label="自然导入时间："
                 label-width="100"
               >
                 {{ form.importTime }}
               </el-form-item>
-              <el-form-item v-show="form.importType === 3" label="条件导入内容：" label-width="100">
+              <el-form-item v-show="form.importType === 3 && form.importCondition" label="条件导入内容：" label-width="100">
                 {{ form.importCondition }}
               </el-form-item>
             </el-col>
@@ -197,7 +197,7 @@
               <span class="text-red">初审状态</span>
             </div>
             <div style="min-height: 50px">
-              <el-row class="margin-bottom-sm">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
                 <el-col :span="3">
                   <span>审核状态：</span>
 
@@ -236,7 +236,7 @@
               :key="item.id"
               class="margin-bottom-sm"
             >
-              <el-row class="margin-bottom-sm">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
                 <el-col :span="3">
                   <span>{{ TriageList[item.field] }}：</span>
                   <el-tag type="warning" v-show="item.state === 0">
@@ -271,7 +271,7 @@
               <span class="text-green">终审状态</span>
             </div>
             <div style="min-height: 50px">
-              <el-row class="margin-bottom-sm">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
                 <el-col :span="3">
                   <span>审核状态：</span>
 
@@ -328,6 +328,7 @@ export default {
         6: "研发",
         7: "仓库",
         8: "市场",
+        9: "PMC",
       },
       TriageListTitle: {
         2: "在途物料处理方案",
@@ -337,6 +338,7 @@ export default {
         6: "涉及更新的文件",
         7: "在库物料处理方案",
         8: "已出货产品处理方案",
+        9: "处理方案",
       },
     };
   },
@@ -352,19 +354,19 @@ export default {
 
   .labelTitleClassName,
   .labelContentClassName {
-    font-weight: bold;
-    letter-spacing: 4px;
+    font-weight: bold !important;
+    letter-spacing: 4px !important;
     text-align: center !important;
     color: #000 !important;
   }
   .labelTitleClassName {
-    width: 100px;
+    width: 100px !important;
   }
   .labelContentClassName {
-    width: 200px;
+    width: 200px !important;
   }
   .contentTitleClassName {
-    width: 150px;
+    width: 150px !important;
     text-align: center !important;
   }
 }

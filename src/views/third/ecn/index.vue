@@ -140,6 +140,7 @@
         align="center"
         width="170"
         class-name="small-padding"
+        fixed="right"
       >
         <template slot-scope="{ row }">
           <Tooltip
@@ -267,6 +268,18 @@
               class="text-grey"
               icon="el-icon-circle-check"
               content="撤销市场会审"
+              @click="handleResetCheck(item, 2)"
+            />
+            <Tooltip
+              style="margin-left: 5px"
+              v-show="
+                item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 9
+              "
+              class="text-grey"
+              icon="el-icon-circle-check"
+              content="撤销PMC会审"
               @click="handleResetCheck(item, 2)"
             />
           </span>
@@ -520,6 +533,24 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item label="PMC：" prop="pmcData" label-width="70px">
+                <el-select
+                  class="w100"
+                  v-model="peopleManageForm.pmcData"
+                  filterable
+                  multiple
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in pmDictListOptions"
+                    :key="item.userId"
+                    :label="item.userName"
+                    :value="item.userName"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form-item>
 
             <el-form-item label="终审人员：" prop="finalJudgmentData">
@@ -626,7 +657,7 @@ import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
 
 export default {
-  name: 'Ecn',
+  name: "Ecn",
   components: {
     CompUpdate,
     CompDetail,
@@ -681,6 +712,7 @@ export default {
         researchData: [],
         warehouseData: [],
         marketerData: [],
+        pmcData: [],
         finalJudgmentData: [],
       },
       // 会审人员
@@ -692,6 +724,7 @@ export default {
         6: "研发",
         7: "仓库",
         8: "市场",
+        9: "PMC",
       },
       peopleManageRules: {
         firstAuditorData: [
@@ -750,6 +783,13 @@ export default {
             trigger: "change",
           },
         ],
+        pmcData: [
+          {
+            required: true,
+            message: "请选择PMC人员",
+            trigger: "change",
+          },
+        ],
         finalJudgmentData: [
           {
             required: true,
@@ -777,15 +817,7 @@ export default {
   watch: {
     isPeopleManageVisible(bool) {
       if (bool) {
-        this.getPeopleList(1);
-        this.getPeopleList(2);
-        this.getPeopleList(3);
-        this.getPeopleList(4);
-        this.getPeopleList(5);
-        this.getPeopleList(6);
-        this.getPeopleList(7);
-        this.getPeopleList(8);
-        this.getPeopleList(9);
+        this.getTotalPeopleData();
       }
     },
   },
@@ -857,8 +889,7 @@ export default {
     },
     //
     reqUnitFormatter(row, column, cellvalue, index) {
-      return this.deptOptions.filter((item) => item.deptId === +row.reqUnit)[0]
-        .deptName;
+      return this.deptOptions.filter((item) => item.deptId === +row.reqUnit)[0]?.deptName;
     },
     getCheckPeopleList() {
       dictUserList().then((res) => {
@@ -866,54 +897,56 @@ export default {
       });
     },
     // 获取人员列表
-    getPeopleList(type) {
-      ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
-        const { list } = res.data;
+    getTotalPeopleData() {
+      const requestList = [
+        this.getPeopleList(1),
+        this.getPeopleList(2),
+        this.getPeopleList(3),
+        this.getPeopleList(4),
+        this.getPeopleList(5),
+        this.getPeopleList(6),
+        this.getPeopleList(7),
+        this.getPeopleList(8),
+        this.getPeopleList(9),
+        this.getPeopleList(10),
+      ];
+      Promise.all(requestList).then((res) => {
+        const [
+          firstAuditorData,
+          buyerData,
+          QAData,
+          productData,
+          engineerData,
+          researchData,
+          warehouseData,
+          marketerData,
+          finalJudgmentData,
+          pmcData,
+        ] = res;
 
-        switch (type) {
-          case 1:
-            this.peopleManageForm.firstAuditorData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 2:
-            this.peopleManageForm.buyerData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 3:
-            this.peopleManageForm.QAData = list.map((item) => item.personnel);
-            break;
-          case 4:
-            this.peopleManageForm.productData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 5:
-            this.peopleManageForm.engineerData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 6:
-            this.peopleManageForm.researchData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 7:
-            this.peopleManageForm.warehouseData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 8:
-            this.peopleManageForm.marketerData = list.map(
-              (item) => item.personnel
-            );
-            break;
-          case 9:
-            this.peopleManageForm.finalJudgmentData = list.map(
-              (item) => item.personnel
-            );
-            break;
+        this.peopleManageForm = {
+          firstAuditorData,
+          buyerData,
+          QAData,
+          productData,
+          engineerData,
+          researchData,
+          warehouseData,
+          marketerData,
+          finalJudgmentData,
+          pmcData
+        };
+      });
+    },
+    getPeopleList(type) {
+      return new Promise((resolve) => {
+        try {
+          ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
+            const { list } = res.data;
+            resolve(list.map((item) => item.personnel));
+          });
+        } catch (error) {
+          console.error(error);
         }
       });
     },
@@ -945,6 +978,9 @@ export default {
         } else if (item.field === 8) {
           params.selMarketerData = item.fieldName;
           params.marketerDataTxt = item.programme;
+        } else if (item.field === 9) {
+          params.selPmcData = item.fieldName;
+          params.pmcDataTxt = item.programme;
         }
       });
 
@@ -1077,6 +1113,7 @@ export default {
         researchData: [],
         warehouseData: [],
         marketerData: [],
+        pmcData: [],
         finalJudgmentData: [],
       };
       this.resetForm("peopleForm");
@@ -1094,6 +1131,7 @@ export default {
             researchData,
             warehouseData,
             marketerData,
+            pmcData,
             finalJudgmentData,
           } = this.peopleManageForm;
 
@@ -1116,9 +1154,9 @@ export default {
             ...setPeopleList(warehouseData, 7),
             ...setPeopleList(marketerData, 8),
             ...setPeopleList(finalJudgmentData, 9),
+            ...setPeopleList(pmcData, 10),
           ];
 
-          console.log(list);
           ecnPersonEdit(list).then((res) => {
             console.log(res);
             if (res.data) {

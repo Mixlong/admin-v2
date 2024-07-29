@@ -37,11 +37,9 @@ function filterAsyncRouter(asyncRouterMap) {
       // Layout组件特殊处理
       if (route.component === "Layout") {
         route.component = Layout;
-      }
-      //  else if (route.component === "system/log") {
-      //   route.component = ParentView;
-      // } 
-      else {
+      } else if (route.component === "ParentView") {
+        route.component = ParentView;
+      } else {
         route.component = loadView(route.component);
       }
     }

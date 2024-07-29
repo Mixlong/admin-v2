@@ -177,6 +177,7 @@ export default {
   methods: {
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
+      console.log(this.$route)
       const { categoryId, computerId } = this.$route.params;
 
       if(categoryId && computerId) {
