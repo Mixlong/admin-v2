@@ -247,7 +247,6 @@ import {
   oqcList,
   undoneList,
   waterProofList,
-  productExportList,
 } from "@/api/third/fileConfig";
 
 import CompUpdate from "./components/update";

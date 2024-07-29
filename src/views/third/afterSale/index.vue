@@ -110,11 +110,20 @@
           <el-button
             type="success"
             icon="el-icon-download"
-            @click="handleExport"
+            @click="handleMultipleExport"
           >
-            导出
+            批量导出
           </el-button>
         </el-col>
+        <!-- <el-col :span="1.5">
+          <el-button
+            type="success"
+            icon="el-icon-download"
+            @click="handleExport"
+          >
+            全部导出
+          </el-button>
+        </el-col> -->
         <el-col :span="1.5">
           <el-button type="warning" @click="handleTypeIn"> 批量修改 </el-button>
         </el-col>
@@ -224,7 +233,9 @@
       >
         <template slot-scope="{ row }">
           <span v-if="row.state === 7" class="text-green">已完成</span>
-          <span v-if="row.state === 6 && !row.handleName" class="text-red">无</span>
+          <span v-if="row.state === 6 && !row.handleName" class="text-red"
+            >无</span
+          >
           <span v-else>{{ row.handleName }}</span>
         </template>
       </el-table-column>
@@ -414,6 +425,7 @@ import {
   saleDelete,
   saleOperation,
   saleExport,
+  afterMultipleDownload
 } from "@/api/third/sale";
 import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";
@@ -421,7 +433,7 @@ import FlipDown from "vue-flip-down";
 import commonData from "@/mixins/commonData";
 
 export default {
-  name: 'AfterSale',
+  name: "AfterSale",
   mixins: [commonData],
   components: {
     FlipDown,
@@ -469,6 +481,7 @@ export default {
       rootClassify: [],
       // 售后ID
       saleIdList: [],
+      uploadIds: [],
       multipleList: [],
       // 批量处理ID
       multipleDealIds: [],
@@ -635,6 +648,7 @@ export default {
     handleSelectionChange(selection) {
       this.multipleList = selection;
       this.saleIdList = selection.map((item) => item.id);
+      this.uploadIds = selection.map((item) => item.id);
     },
     // 批量修改物流信息
     handleTypeIn() {
@@ -848,6 +862,15 @@ export default {
         .then((response) => {
           this.download(response.msg);
         });
+    },
+    /** 批量导出按钮操作 */
+    handleMultipleExport() {
+      if (!this.uploadIds.length) return this.msgError("请选择导出项");
+
+      this.downloadFile({
+        aFn: afterMultipleDownload,
+        queryParams: this.uploadIds,
+      });
     },
   },
 };

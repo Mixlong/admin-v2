@@ -162,37 +162,38 @@ export default {
         },
         dataZoom: [
           {
-            type: "slider",
             show: true,
-            start: 60,
+            start: 0,
             end: 100,
             textStyle: {
-              color: "#fff"
+              color: "#fff",
             },
-            handleSize: 20,
-            handleStyle: {
-              color: "#fff"
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
             },
-            xAxisIndex: [0],
-            filterMode: "filter"
-          }
+          },
         ],
         xAxis: {
           type: "category",
           data: [],
           axisLabel: {
             textStyle: {
-              color: "#fff"
+              color: "#fff",
             },
             formatter: (value, index) => {
-              if(index > 25) {
+              if (index > 25) {
                 return "";
               } else {
                 return value;
               }
-            }
+            },
           },
-          boundaryGap: false
+          boundaryGap: false,
         },
         yAxis: {
           type: "value",
@@ -244,8 +245,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -304,10 +323,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -345,8 +364,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -404,10 +441,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -445,8 +482,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -504,10 +559,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -546,8 +601,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -605,10 +678,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -646,8 +719,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -705,10 +796,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -746,8 +837,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -806,10 +915,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -848,8 +957,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -907,10 +1034,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -948,8 +1075,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -1007,10 +1152,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -1048,8 +1193,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -1107,10 +1270,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -1149,8 +1312,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -1208,10 +1389,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -1249,8 +1430,26 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
@@ -1308,10 +1507,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -1349,32 +1548,31 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
         },
         xAxis: [
-          // {
-          //   type: "category",
-          //   data: ["1月", "2月"],
-          //   axisPointer: {
-          //     type: "shadow",
-          //   },
-          //   axisLabel: {
-          //     color: "#fff",
-          //   },
-          //   position: "bottom",
-          //   offset: 20,
-          //   axisTick: {
-          //     show: true,
-          //     length: 40,
-          //     lineStyle: {
-          //       type: "dotted",
-          //     },
-          //   },
-          // },
           {
             type: "category",
             data: [],
@@ -1431,10 +1629,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {
@@ -1469,36 +1667,35 @@ export default {
             },
           },
         },
+        dataZoom: [
+          {
+            show: true,
+            start: 0,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+          {
+            type: "inside",
+            start: 94,
+            end: 100,
+            textStyle: {
+              color: "#fff",
+            },
+          },
+        ],
         legend: {
-          top: "bottom",
+          top: "top",
           textStyle: {
             color: "#fff",
           },
         },
         grid: {
           left: "5%",
-          right: "5%"
+          right: "5%",
         },
         xAxis: [
-          // {
-          //   type: "category",
-          //   data: ["1月", "2月"],
-          //   axisPointer: {
-          //     type: "shadow",
-          //   },
-          //   axisLabel: {
-          //     color: "#fff",
-          //   },
-          //   position: "bottom",
-          //   offset: 20,
-          //   axisTick: {
-          //     show: true,
-          //     length: 40,
-          //     lineStyle: {
-          //       type: "dotted",
-          //     },
-          //   },
-          // },
           {
             type: "category",
             data: [],
@@ -1554,10 +1751,10 @@ export default {
           {
             name: "累计百分比",
             type: "line",
-            symbol: 'circle',
+            symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#ed7d31"
+              color: "#ed7d31",
             },
             yAxisIndex: 1,
             label: {

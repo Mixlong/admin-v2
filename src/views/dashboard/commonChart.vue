@@ -49,7 +49,7 @@ export default {
     initChart() {
       this.chart = echarts.init(this.$el, "macarons");
       this.chart.showLoading({
-        maskColor: "rgba(255, 255, 255, .2)"
+        maskColor: "rgba(255, 255, 255, .2)",
       });
       this.setOptions();
     },

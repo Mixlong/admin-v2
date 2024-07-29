@@ -462,6 +462,11 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          const { menuType, parentId } = this.form;
+          if(menuType === 'M' && parentId !== 0) {
+            this.form.component = 'ParentView';
+          }
+
           if (this.form.menuId != undefined) {
             updateMenu(this.form).then((response) => {
               this.msgSuccess("修改成功");

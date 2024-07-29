@@ -424,6 +424,48 @@
                     ></el-input>
                   </el-form-item>
                 </div>
+                <!-- PMC -->
+                <div class="flex">
+                  <el-form-item
+                    prop="selPmcData"
+                    label-width="0"
+                    :rules="[
+                      {
+                        required: isRequired(9),
+                        message: '请选择PMC人员',
+                        trigger: 'change',
+                      },
+                    ]"
+                  >
+                    <el-select
+                      v-model="form.selPmcData"
+                      placeholder="请选择PMC人员"
+                      filterable
+                      clearable
+                      :disabled="!isRequired(9)"
+                      style="width: 150px"
+                    >
+                      <el-option
+                        v-for="item in pmcData"
+                        :label="item.personnel"
+                        :value="item.personnel"
+                        :key="item.id"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item
+                    label="处理方案："
+                    prop="pmcDataTxt"
+                    class="iterm-box margin-left-xs flex flex-sub"
+                  >
+                    <el-input
+                      v-model="form.pmcDataTxt"
+                      clearable
+                      :disabled="!isRequired(9)"
+                      placeholder="请输入处理方案"
+                    ></el-input>
+                  </el-form-item>
+                </div>
               </el-col>
             </el-row>
           </div>
@@ -587,6 +629,8 @@ export default {
         finishedHandleTxt: "",
         selMarketerData: "",
         marketerDataTxt: "",
+        selPmcData: "",
+        pmcDataTxt: "",
       },
       // 初审人员
       firstAuditorData: [],
@@ -606,6 +650,8 @@ export default {
       warehouseData: [],
       // 市场人员
       marketerData: [],
+      // PMC人员
+      pmcData: [],
       // 表单校验
       rules: {
         ecn: [{ required: true, message: "请输入ECN编号", trigger: "blur" }],
@@ -657,6 +703,7 @@ export default {
         this.getPeopleList(7);
         this.getPeopleList(8);
         this.getPeopleList(9);
+        this.getPeopleList(10);
       }
     },
     "form.reqUnit"(reqUnit) {
@@ -714,6 +761,9 @@ export default {
           case 9:
             this.finalJudgmentData = list;
             break;
+          case 10:
+            this.pmcData = list;
+            break;
         }
       });
     },
@@ -740,6 +790,9 @@ export default {
       } else if (type === 8 && !this.form.involveUnit.includes(type)) {
         this.form.selMarketerData = "";
         this.form.marketerDataTxt = "";
+      } else if (type === 9 && !this.form.involveUnit.includes(type)) {
+        this.form.selPmcData = "";
+        this.form.pmcDataTxt = "";
       }
     },
 
@@ -768,6 +821,8 @@ export default {
         finishedHandleTxt: "",
         selMarketerData: "",
         marketerDataTxt: "",
+        selPmcData: "",
+        pmcDataTxt: "",
       };
       this.resetForm("form");
     },
@@ -799,8 +854,6 @@ export default {
           if (param.involveUnit.length === 0) {
             return this.msgError("设计领域最少选择一项");
           }
-
-          console.log(1111, param);
 
           if (param.id) {
             if (param.list.length) {
@@ -851,6 +904,12 @@ export default {
                     fieldName: param.selMarketerData,
                     programme: param.marketerDataTxt,
                   });
+                } else if (item.field === 9) {
+                  list.push({
+                    ...item,
+                    fieldName: param.selPmcData,
+                    programme: param.pmcDataTxt,
+                  });
                 }
               });
 
@@ -898,6 +957,12 @@ export default {
                     field: 8,
                     fieldName: param.selMarketerData,
                     programme: param.marketerDataTxt,
+                  });
+                } else if (item === 9) {
+                  newResidueList.push({
+                    field: 9,
+                    fieldName: param.selPmcData,
+                    programme: param.pmcDataTxt,
                   });
                 }
               });
@@ -957,6 +1022,12 @@ export default {
                     fieldName: param.selMarketerData,
                     programme: param.marketerDataTxt,
                   });
+                } else if (item === 9) {
+                  list.push({
+                    field: 9,
+                    fieldName: param.selPmcData,
+                    programme: param.pmcDataTxt,
+                  });
                 }
               });
 
@@ -964,10 +1035,9 @@ export default {
             }
           }
 
-          console.log(param);
-
           param.changeCause = param.changeCause.toString();
           param.involveUnit = param.involveUnit.toString();
+
           if (param.id) {
             bomUpdate(param).then((response) => {
               if (response.code === 200) {
@@ -1028,8 +1098,8 @@ export default {
         display: flex;
         flex-direction: column;
         row-gap: 20px;
-        .el-checkbox:last-child {
-          margin-top: 48px;
+        .el-checkbox:nth-last-child(2) {
+          margin-top: 50px;
         }
       }
     }

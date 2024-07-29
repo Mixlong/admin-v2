@@ -61,7 +61,32 @@
         {{ currentCopyDate }}
       </h1>
       <template v-if="isShow">
-        <h2 class="text-white margin-bottom">当前状态</h2>
+        <el-row
+          class="margin-bottom-xs"
+          type="flex"
+          justify="space-between"
+          align="middle"
+        >
+          <el-col :span="6">
+            <h2 class="text-white">当前状态</h2>
+          </el-col>
+          <!-- <el-col :span="18">
+            <el-date-picker
+              class="fr"
+              v-model="afterStatusDate"
+              type="datetimerange"
+              :picker-options="pickerOptions"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="timestamp"
+              align="right"
+              :default-time="defaultTime"
+              @change="getAfterStatusList"
+            >
+            </el-date-picker>
+          </el-col> -->
+        </el-row>
         <el-row type="flex" :gutter="20">
           <el-col :span="8">
             <!-- 问题根因状态 -->
@@ -81,9 +106,35 @@
           class="margin-top-lg"
           :chartOption="weekNewBadComplaintOption"
         />
-        <h2 class="text-white margin-bottom" style="margin-top: 80px">
-          不良分布（OPEN汇总）
-        </h2>
+
+        <el-row
+          class="margin-bottom-xs"
+          type="flex"
+          justify="space-between"
+          align="middle"
+          style="margin-top: 80px"
+        >
+          <el-col :span="6">
+            <h2 class="text-white">不良分布（OPEN汇总）</h2>
+          </el-col>
+          <el-col :span="18">
+            <el-date-picker
+              class="fr"
+              v-model="afterBadDate"
+              type="datetimerange"
+              :picker-options="pickerOptions"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="timestamp"
+              align="right"
+              :default-time="defaultTime"
+              @change="getAfterBadList"
+            >
+            </el-date-picker>
+          </el-col>
+        </el-row>
+
         <el-row type="flex" :gutter="20">
           <el-col :span="8">
             <!-- 所有客户排行 -->
@@ -99,9 +150,34 @@
           </el-col>
         </el-row>
 
-        <h2 class="text-white margin-bottom" style="margin-top: 80px">
-          TOP问题排行
-        </h2>
+        <el-row
+          style="margin-top: 80px"
+          class="margin-bottom-xs"
+          type="flex"
+          justify="space-between"
+          align="middle"
+        >
+          <el-col :span="6">
+            <h2 class="text-white">TOP问题排行</h2>
+          </el-col>
+          <el-col :span="18">
+            <el-date-picker
+              class="fr"
+              v-model="afterTopDate"
+              type="datetimerange"
+              :picker-options="pickerOptions"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="timestamp"
+              align="right"
+              :default-time="defaultTime"
+              @change="getAfterTopList"
+            >
+            </el-date-picker>
+          </el-col>
+        </el-row>
+
         <el-row type="flex" :gutter="20">
           <template v-if="!isTop1CustomerNameShow">
             <el-col :span="8">
@@ -201,7 +277,7 @@ import searchChart from "@/views/dashboard/commonChart";
 import html2canvas from "html2canvas";
 
 export default {
-  name: 'AfterSaleStatistics',
+  name: "AfterSaleStatistics",
   mixins: [commonData, chartOptions],
   components: {
     problemRootStatus,
@@ -249,6 +325,41 @@ export default {
         customerId: undefined,
         categoryId: undefined,
         result: undefined,
+      },
+      defaultTime: ["00:00:00", "23:59:59"],
+      afterStatusDate: [],
+      afterBadDate: [],
+      afterTopDate: [],
+      pickerOptions: {
+        shortcuts: [
+          {
+            text: "最近一周",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+          {
+            text: "最近一个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+          {
+            text: "最近三个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+        ],
       },
     };
   },
@@ -316,7 +427,15 @@ export default {
       this.resetForm("queryForm");
     },
     async getAfterStatusList() {
-      const { data } = await afterStatusList();
+      let dateRange = [];
+      if (this.afterStatusDate?.length) {
+        const [startTime, endTime] = this.afterStatusDate;
+        dateRange = [startTime / 1000, endTime / 1000];
+      }
+
+      const { data } = await afterStatusList(
+        this.addDateRange({}, dateRange, { begin: "startTime" })
+      );
       const {
         openNum,
         closeNum,
@@ -369,7 +488,15 @@ export default {
     },
     async getAfterBadList() {
       try {
-        const { data } = await afterBadList();
+        let dateRange = [];
+        if (this.afterBadDate?.length) {
+          const [startTime, endTime] = this.afterBadDate;
+          dateRange = [startTime / 1000, endTime / 1000];
+        }
+
+        const { data } = await afterBadList(
+          this.addDateRange({}, dateRange, { begin: "startTime" })
+        );
         const { customerList, categoryList, questionList } = data;
 
         let xCustomerData = [],
@@ -416,7 +543,15 @@ export default {
     },
     async getAfterTopList() {
       try {
-        const { data } = await afterTopList();
+        let dateRange = [];
+        if (this.afterTopDate?.length) {
+          const [startTime, endTime] = this.afterTopDate;
+          dateRange = [startTime / 1000, endTime / 1000];
+        }
+
+        const { data } = await afterTopList(
+          this.addDateRange({}, dateRange, { begin: "startTime" })
+        );
 
         const top1CustomerName = data[0] && data[0].customerName;
         const top2CustomerName = data[1] && data[1].customerName;

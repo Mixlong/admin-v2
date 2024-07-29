@@ -218,6 +218,14 @@
                       :label="item.dictLabel"
                       :value="item.dictValue"
                     >
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
                     </el-option>
                   </el-select>
                 </el-form-item>
@@ -271,6 +279,14 @@
                       :label="item.dictLabel"
                       :value="+item.dictValue"
                     >
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
                     </el-option>
                   </el-select>
                 </el-form-item>
@@ -292,7 +308,16 @@
                       :label="value"
                       :value="+value"
                       :key="key"
-                    />
+                    >
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ value }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ value }}
+                      </span>
+                    </el-option>
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -310,8 +335,24 @@
                       placeholder="请选择帧类型"
                       class="w100"
                     >
-                      <el-option label="标准帧" :value="0" />
-                      <el-option label="扩展帧" :value="1" />
+                      <el-option
+                        v-for="item in [
+                          { dictLabel: '标准帧', dictValue: 0 },
+                          { dictLabel: '扩展帧', dictValue: 1 },
+                        ]"
+                        :label="item.dictLabel"
+                        :value="item.dictValue"
+                        :key="item.dictValue"
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ item.dictLabel }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -332,7 +373,16 @@
                         :key="key"
                         :label="value"
                         :value="+key"
-                      />
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ value }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ key }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -361,7 +411,16 @@
                         :key="item.dictLabel"
                         :label="item.dictValue"
                         :value="item.dictValue"
-                      />
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -377,8 +436,24 @@
                       placeholder="请选择控制器头"
                       class="w100"
                     >
-                      <el-option label="不含头" :value="0" />
-                      <el-option label="含头" :value="1" />
+                      <el-option
+                        v-for="item in [
+                          { dictLabel: '不含头', dictValue: 0 },
+                          { dictLabel: '含头', dictValue: 1 },
+                        ]"
+                        :label="item.dictLabel"
+                        :value="item.dictValue"
+                        :key="item.dictValue"
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ item.dictLabel }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -412,7 +487,16 @@
                         :key="item.dictValue"
                         :label="item.dictLabel"
                         :value="+item.dictValue"
-                      />
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ item.dictLabel }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -428,8 +512,24 @@
                       placeholder="请选择按键连接类型"
                       class="w100"
                     >
-                      <el-option label="直连" :value="0" />
-                      <el-option label="快拆" :value="1" />
+                      <el-option
+                        v-for="item in [
+                          { dictLabel: '直连', dictValue: 0 },
+                          { dictLabel: '快拆', dictValue: 1 },
+                        ]"
+                        :label="item.dictLabel"
+                        :value="item.dictValue"
+                        :key="item.dictValue"
+                      >
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ item.dictLabel }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ item.dictValue }}
+                        </span>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
@@ -545,7 +645,16 @@
                     :key="key"
                     :label="value"
                     :value="+key"
-                  />
+                  >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ value }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ key }}
+                    </span>
+                  </el-option>
                 </el-select>
               </el-form-item>
 
@@ -564,7 +673,16 @@
                     :key="item"
                     :label="item"
                     :value="item"
-                  />
+                  >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
+                  </el-option>
                 </el-select>
               </el-form-item>
 
@@ -581,7 +699,16 @@
                     :key="item"
                     :label="item"
                     :value="item"
-                  />
+                  >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
+                  </el-option>
                 </el-select>
               </el-form-item>
 
@@ -618,6 +745,14 @@
                     :label="item"
                     :value="item"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -639,6 +774,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -698,6 +841,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -711,7 +862,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model.number="form.instrumentModel.showWheelsize"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   clearable
@@ -739,6 +890,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -762,13 +921,21 @@
                     :label="value"
                     :value="+key"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ value }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ key }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
 
               <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
                 <el-input
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model.number="form.instrumentModel.perimeter"
                   oninput="value=value.replace(/[^\d]/, '')"
                   placeholder="请输入周长"
@@ -793,6 +960,14 @@
                     :label="item.dictLabel"
                     :value="+item.dictValue"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item.dictLabel }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item.dictValue }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -815,6 +990,14 @@
                     :label="item.dictLabel"
                     :value="+item.dictValue"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item.dictLabel }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item.dictValue }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -836,6 +1019,14 @@
                     :label="item.dictLabel"
                     :value="item.dictValue"
                   >
+                    <span style="float: left" class="margin-right-sm">
+                      <b>展示值：</b>
+                      {{ item.dictLabel }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item.dictValue }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -858,6 +1049,14 @@
                     :label="item"
                     :value="item"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -880,6 +1079,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -902,6 +1109,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -924,6 +1139,14 @@
                     :label="item"
                     :value="String(item)"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -948,6 +1171,14 @@
                     :label="value"
                     :value="+key"
                   />
+                  <span style="float: left">
+                    <b>展示值：</b>
+                    {{ value }}
+                  </span>
+                  <span style="float: right">
+                    <b>实际值：</b>
+                    {{ key }}
+                  </span>
                 </el-select>
               </el-form-item>
 
@@ -997,6 +1228,14 @@
                     :label="item.dictLabel"
                     :value="item.dictValue"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item.dictLabel }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item.dictValue }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -1047,7 +1286,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.motorSys"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   clearable
@@ -1064,7 +1303,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0, max: 65535 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.batteryCap"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   clearable
@@ -1084,7 +1323,7 @@
               >
                 <el-input
                   v-model="form.instrumentModel.highSpeedBuzzerRemind"
-                  v-minMaxValue="{ min: 0, max: 255 }"
+                  v-minMaxValue="{ min: 0, max: 99 }"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高速蜂鸣器提醒"
                   clearable
@@ -1108,6 +1347,14 @@
                     :label="value"
                     :value="+key"
                   >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ value }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ key }}
+                    </span>
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -1241,7 +1488,10 @@
         </fieldset>
       </el-form>
 
-      <div slot="footer" class="dialog-footer flex justify-center product-btn-box">
+      <div
+        slot="footer"
+        class="dialog-footer flex justify-center product-btn-box"
+      >
         <div>
           <el-button
             v-if="form.id && !isCopyProduct"
@@ -1917,7 +2167,16 @@ export default {
           // 非STS
 
           if (this.form.isSts === 0) {
-            const { customerMaterialNum, customerName, customerCarName, id, serialLevel, baudRate, msgType, canRate } = this.form.instrumentModel;
+            const {
+              customerMaterialNum,
+              customerName,
+              customerCarName,
+              id,
+              serialLevel,
+              baudRate,
+              msgType,
+              canRate,
+            } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
             this.form.instrumentModel.customerName = customerName;

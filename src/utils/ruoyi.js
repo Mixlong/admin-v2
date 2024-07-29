@@ -169,13 +169,13 @@ export function downloadFile({
     })
     .then((response) => {
       const fileName = response.msg;
-      const url =
-        baseURL +
-        "/common/download?fileName=" +
-        encodeURI(fileName) +
-        "&delete=" +
-        true;
-      this.urlDownload(url);
+      // const url =
+      //   baseURL +
+      //   "/common/download?fileName=" +
+      //   encodeURI(fileName) +
+      //   "&delete=" +
+      //   true;
+      this.download(fileName);
     });
 }
 

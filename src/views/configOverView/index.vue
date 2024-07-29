@@ -69,13 +69,23 @@
       <el-table-column label="操作" align="center" width="90" fixed>
         <template slot-scope="{ row }">
           <div class="flex flex-direction">
+            <!-- 初审 -->
             <Tooltip
               v-if="row.state === 0"
               class="text-orange"
               icon="el-icon-coordinate"
-              content="审核"
+              content="待初审"
               v-hasPermi="['product:configOverView:check']"
-              @click="handleAuthChange(row)"
+              @click="handleAuthChange(row, 1)"
+            />
+            <!-- 终审 -->
+            <Tooltip
+              v-if="row.state === 1"
+              class="text-orange"
+              icon="el-icon-coordinate"
+              content="待终审"
+              v-hasPermi="['product:configOverView:check']"
+              @click="handleAuthChange(row, 2)"
             />
             <Tooltip
               class="margin-0"
@@ -726,10 +736,7 @@
         :filters="getFiltersData('assistStartMagnetNumber')"
         :filter-method="filterHandler"
       >
-        <span
-          slot-scope="scope"
-          v-NoData="scope.row.assistStartMagnetNumber"
-        />
+        <span slot-scope="scope" v-NoData="scope.row.assistStartMagnetNumber" />
       </el-table-column>
       <el-table-column
         label="助力比例"
@@ -984,13 +991,13 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button :loading="isSubmitLoading" @click="handleStatusChange(2)">
+        <el-button :loading="isSubmitLoading" @click="handleStatusChange(isAuthFlag === 1 ? 2 : 4)">
           不通过
         </el-button>
         <el-button
           type="primary"
           :loading="isSubmitLoading"
-          @click="handleStatusChange(1)"
+          @click="handleStatusChange(isAuthFlag === 1 ? 1 : 3)"
         >
           通过
         </el-button>
@@ -1017,6 +1024,7 @@ export default {
       isCLoading: false,
       authDialogVisible: false,
       isSubmitLoading: false,
+      isAuthFlag: null,
       authForm: {},
       form: {},
       // 遮罩层
@@ -1163,13 +1171,14 @@ export default {
         );
       });
     },
-    handleAuthChange(row) {
+    handleAuthChange(row, isAuthFlag) {
       this.authDialogVisible = true;
       this.authForm = row;
+      this.isAuthFlag = isAuthFlag;
     },
     handleStatusChange(state) {
       const data = {};
-      if (state === 2) {
+      if (state === 2 || state === 4) {
         // 不通过 检查原因是否为空
         if (this.Is_Empty(this.authForm.msg)) {
           return this.msgError("不通过原因不能为空");
@@ -1209,11 +1218,11 @@ export default {
   }
   .is-scrolling-middle + .el-table__fixed {
     z-index: 666;
-    box-shadow: 5px 0 10px #d8d5d5
+    box-shadow: 5px 0 10px #d8d5d5;
   }
   .is-scrolling-right + .el-table__fixed {
     z-index: 666;
-    box-shadow: 5px 0 10px #d8d5d5
+    box-shadow: 5px 0 10px #d8d5d5;
   }
 }
 

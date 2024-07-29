@@ -9,7 +9,7 @@
     "dev": "vue-cli-service serve",
     "build:stage": "vue-cli-service build --mode staging",
     "build:dev": "vue-cli-service build --mode development",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --mode production",
     "analyze": "npm run build"
   },
   "husky": {
