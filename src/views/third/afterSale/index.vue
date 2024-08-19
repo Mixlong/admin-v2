@@ -240,7 +240,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="是否问题"
+        label="是否异常"
         prop="isProblem"
         align="center"
         width="80"
@@ -261,14 +261,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
-          <div class="flex justify-center">
-            <el-button
-              class="text-green"
-              type="text"
-              @click="handleDetail(row)"
-            >
-              详情
-            </el-button>
+          <div class="flex justify-center align-center">
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">
               编辑
             </el-button>
@@ -356,17 +349,33 @@
                 处理
               </el-button>
             </el-tooltip>
-            <el-button
-              v-if="!Is_Empty(row.rootMatter)"
-              class="text-yellow"
-              type="text"
-              @click="handleClose(row)"
-            >
-              {{ isStatusTxt(row.status) }}
-            </el-button>
-            <el-button class="text-red" type="text" @click="handleDelete(row)">
-              删除
-            </el-button>
+            <el-dropdown size="mini" class="margin-left-xs">
+              <span class="el-dropdown-link">
+                <span class="text-green" style="font-size: 12px;">更多操作</span><i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>
+                  <el-button type="text" @click="handleDetail(row)">
+                    详情
+                  </el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button type="text" @click="handleDelete(row)">
+                    删除
+                  </el-button>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.video">
+                  <el-button type="text" @click="urlDownload(row.video)">
+                    视频下载
+                  </el-button>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="!Is_Empty(row.rootMatter)">
+                  <el-button type="text" @click="handleClose(row)">
+                    {{ isStatusTxt(row.status) }}
+                  </el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </template>
       </el-table-column>
@@ -425,7 +434,7 @@ import {
   saleDelete,
   saleOperation,
   saleExport,
-  afterMultipleDownload
+  afterMultipleDownload,
 } from "@/api/third/sale";
 import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";

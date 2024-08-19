@@ -87,6 +87,17 @@ export function productList(params) {
   })
 }
 
+// 导出生产数据列表
+export function producExporttList(params) {
+  return request({
+    url: '/production/export/list',
+    method: 'get',
+    params
+  })
+}
+
+
+
 // 批量导出仪表生产数据
 export function productMultipleExportList(data) {
   return request({

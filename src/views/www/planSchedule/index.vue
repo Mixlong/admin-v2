@@ -149,6 +149,7 @@
       <el-table-column label="产品型号" align="center" prop="computerName" />
       <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
       <el-table-column label="排产单号" align="center" prop="no" />
+      <el-table-column label="订单编号" align="center" prop="orderCode" />
       <el-table-column
         label="生产地点"
         align="center"
@@ -373,12 +374,12 @@
     <!-- 任务令 -->
     <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
       <el-card shadow="hover">
-        <div class="flex flex-direction">
+        <div class="flex flex-direction" style="row-gap: 10px">
           <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
-          <span class="margin-bottom-xs">
+          <span>
             产品品类：<el-tag>{{ qrCodeObj.categoryName }}</el-tag>
           </span>
-          <span class="margin-bottom-xs">
+          <span>
             产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
           </span>
           <span>
@@ -510,7 +511,7 @@ export default {
       // 显示搜索条件
       showSearch: true,
       // 遮罩层
-      loading: true,
+      loading: false,
       // 缺失资料状态弹窗
       isDataShow: false,
       isCLoading: false,
@@ -617,7 +618,6 @@ export default {
     },
   },
   created() {
-    console.log("初始化1232");
     const { orderId } = this.$route.query;
     if (orderId) {
       this.queryParams.orderId = orderId;

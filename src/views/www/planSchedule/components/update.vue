@@ -34,7 +34,9 @@
           />
         </el-form-item>
 
-        <template v-if="form.salesOrderNo && orderInfo.salesOrderNo && dialogVisible">
+        <template
+          v-if="form.salesOrderNo && orderInfo.salesOrderNo && dialogVisible"
+        >
           <transition name="fade">
             <el-descriptions
               class="margin-top margin-bottom"
@@ -114,6 +116,21 @@
           </transition>
         </template>
 
+        <el-form-item label="订单编号" prop="orderCode">
+          <select-loadMore
+            v-model="form.orderCode"
+            :data="prodPlatData.data"
+            :page="prodPlatData.page"
+            :hasMore="prodPlatData.more"
+            dictLabel="orderCode"
+            dictValue="orderCode"
+            :request="getProdPlantList"
+            placeholder="请选择订单编号"
+            style="width: 65%"
+          >
+          </select-loadMore>
+        </el-form-item>
+
         <el-form-item label="生产日期:" prop="date">
           <el-date-picker
             v-model="form.date"
@@ -189,10 +206,10 @@ import {
   schedulingEdit,
   scheduleVersion,
 } from "@/api/www/planSchedule";
-import { listComputer } from "@/api/third/computer";
 import { schemeTypeList } from "@/api/system/skipType";
 import tinymce from "@/views/components/Editor";
 import { orderList } from "@/api/order";
+import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
   name: "planScheduleUpdate",
@@ -207,7 +224,6 @@ export default {
       dialogVisible: false,
       // 生产地点
       productAddressList: [],
-      modelList: [],
       // 方案版本字典
       versionList: [],
       // 芯片列表
@@ -217,6 +233,7 @@ export default {
       form: {
         categoryId: "",
         computerId: "",
+        orderCode: "",
         date: "",
         address: "",
         process: "",
@@ -226,6 +243,12 @@ export default {
       },
       // 订单数据
       orderData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      // 订单编号
+      prodPlatData: {
         data: [],
         page: 1,
         more: true,
@@ -246,6 +269,9 @@ export default {
       rules: {
         salesOrderNo: [
           { required: true, message: "请选择迪太订单号", trigger: "change" },
+        ],
+        orderCode: [
+          { required: true, message: "请选择订单编号", trigger: "change" },
         ],
         computerId: [
           { required: true, message: "请选择产品型号", trigger: "change" },
@@ -283,12 +309,6 @@ export default {
     },
   },
   watch: {
-    "form.categoryId"(id) {
-      if (id)
-        this.modelList = this.dictList.filter(
-          (item) => item.id === id
-        )[0].computerList;
-    },
     "orderInfo.sellTime"(sellTime) {
       if (sellTime) {
         this.disabledDate = (time) => {
@@ -340,6 +360,25 @@ export default {
         });
       });
     },
+    /** 生产工单 */
+    getProdPlantList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        orderWorkList({
+          p: page,
+          orderCode: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.prodPlatData.data = [...this.prodPlatData.data, ...list];
+          } else {
+            this.prodPlatData.data = list;
+          }
+          this.prodPlatData.more = pageNum * pageSize < total;
+          this.prodPlatData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     getOrderId(info) {
       if (!info) {
         this.form.orderId = "";
@@ -370,13 +409,6 @@ export default {
         this.chipList = list;
       });
     },
-    // 获取型号字典
-    getlistComputer(key) {
-      listComputer({ key }).then((res) => {
-        const { list } = res.data;
-        this.modelList = list;
-      });
-    },
     // 方案版本字典
     getScheduleVersion() {
       scheduleVersion().then((res) => {
@@ -398,6 +430,7 @@ export default {
         categoryId: "",
         computerId: "",
         date: "",
+        orderCode: "",
         address: "",
         process: "",
         schemeVersion: "",

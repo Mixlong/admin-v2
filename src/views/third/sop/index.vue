@@ -38,7 +38,7 @@
         ></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button v-hasPermi="['sop:search:btn']" type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
@@ -51,7 +51,12 @@
         class="fr mt5"
       >
         <el-col :span="1.5">
-          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+          <el-button
+            v-hasPermi="['sop:add:btn']"
+            type="primary"
+            icon="el-icon-plus"
+            @click="handleAdd"
+          >
             新增
           </el-button>
         </el-col>
@@ -107,6 +112,7 @@
           <div class="flex justify-center">
             <el-button
               v-if="row.state === 0"
+              v-hasPermi="['sop:check:btn']"
               class="text-orange"
               type="text"
               @click="handleCheck(row)"
@@ -114,16 +120,27 @@
               审核
             </el-button>
             <el-button
+              v-hasPermi="['sop:detail:btn']"
               class="text-green"
               type="text"
               @click="handleDetail(row)"
             >
               查看
             </el-button>
-            <el-button class="text-blue" type="text" @click="handleUpdate(row)">
+            <el-button
+              v-hasPermi="['sop:update:btn']"
+              class="text-blue"
+              type="text"
+              @click="handleUpdate(row)"
+            >
               编辑
             </el-button>
-            <el-button class="text-red" type="text" @click="handleDelete(row)">
+            <el-button
+              v-hasPermi="['sop:delete:btn']"
+              class="text-red"
+              type="text"
+              @click="handleDelete(row)"
+            >
               删除
             </el-button>
           </div>
@@ -157,7 +174,7 @@ import { mapGetters } from "vuex";
 import commonData from "@/mixins/commonData";
 
 export default {
-  name: 'Sop',
+  name: "Sop",
   mixins: [commonData],
   components: {
     AddSop: () => import("./components/addSop"),
@@ -223,7 +240,7 @@ export default {
         .then((res) => res.data)
         .then((data) => {
           const { list, total } = data;
-          
+
           this.brandList = list;
           this.total = total;
         })

@@ -491,7 +491,7 @@ export default {
         let dateRange = [];
         if (this.afterBadDate?.length) {
           const [startTime, endTime] = this.afterBadDate;
-          dateRange = [startTime / 1000, endTime / 1000];
+          dateRange = [Math.round(startTime / 1000), Math.round((endTime / 1000))];
         }
 
         const { data } = await afterBadList(
@@ -546,7 +546,7 @@ export default {
         let dateRange = [];
         if (this.afterTopDate?.length) {
           const [startTime, endTime] = this.afterTopDate;
-          dateRange = [startTime / 1000, endTime / 1000];
+          dateRange = [Math.round((startTime / 1000)), Math.round((endTime / 1000))];
         }
 
         const { data } = await afterTopList(

@@ -63,7 +63,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="是否问题：" prop="isProblem">
+        <el-form-item label="是否异常：" prop="isProblem">
           <el-switch
             v-model="form.isProblem"
             active-color="#409EFF"

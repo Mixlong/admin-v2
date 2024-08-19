@@ -8,12 +8,34 @@
           clearable
           placeholder="请选择产品品类"
           class="w100"
+          @change="queryParams.computerId = ''"
         >
           <el-option
             v-for="dict in dictList"
             :key="dict.id"
             :label="dict.name"
             :value="dict.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="仪表型号" prop="computerId">
+        <el-select
+          v-model="queryParams.computerId"
+          :loading="isCLoading"
+          filterable
+          remote
+          clearable
+          placeholder="请选择仪表型号"
+          @change="getList"
+          @focus="getComputerData"
+          :remote-method="getComputerNameList"
+          style="width: 160px"
+        >
+          <el-option
+            v-for="dict in computerOptions"
+            :key="dict.model"
+            :label="dict.name"
+            :value="dict.model"
           />
         </el-select>
       </el-form-item>
@@ -96,11 +118,7 @@
             {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column
-          label="文件名称"
-          prop="typeName"
-          align="center"
-        />
+        <el-table-column label="文件名称" prop="typeName" align="center" />
         <el-table-column label="文件key" prop="type" align="center" />
         <el-table-column label="操作内容" prop="msg" align="center" />
         <el-table-column
@@ -126,20 +144,23 @@ import {
   computerUpdate,
   computerLogList,
 } from "@/api/third/testApi";
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 
 export default {
-  name: 'ProdPermit',
+  name: "ProdPermit",
   data() {
     return {
       // 遮罩层
       loading: false,
+      isCLoading: false,
       list: [],
       // 任务变更
       isTask: false,
       taskForm: {},
       // 品类
       dictList: [],
+      // 型号
+      computerOptions: [],
       // 操作日志
       logList: [],
       // 查询参数
@@ -147,6 +168,7 @@ export default {
         p: 1,
         l: 10,
         categoryId: "",
+        computerId: "",
       },
     };
   },
@@ -159,6 +181,29 @@ export default {
     this.getList();
   },
   methods: {
+    // 型号
+    getComputerData() {
+      if (this.queryParams.categoryId && this.dictList.length) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.id === this.queryParams.categoryId
+        )[0].computerList;
+      }
+    },
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = true;
+        computerNameList({
+          name,
+          categoryId: this.queryParams.categoryId,
+        }).then((res) => {
+          this.computerOptions = res.data;
+        }).finally(() => {
+          this.isCLoading = false;
+        })
+      } else {
+        this.computerOptions = [];
+      }
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;

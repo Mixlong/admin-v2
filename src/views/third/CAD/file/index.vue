@@ -495,9 +495,18 @@ export default {
       };
     },
   },
-  mounted() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
+  created() {
+    this.getCaategoryData();
+  },
+  methods: {
+    getCaategoryData() {
+      categoryComputerDict().then((response) => {
+        this.dictList = response.data;
+
+        this.getPathData();
+      });
+    },
+    getPathData() {
       let type = this.$route.query.type;
       if (type) {
         this.queryParams.type = type;
@@ -519,9 +528,7 @@ export default {
         this.queryParams.status = status;
       }
       this.getList();
-    });
-  },
-  methods: {
+    },
     onCreateTaskCode() {
       this.isTaskCodeFlag = true;
     },

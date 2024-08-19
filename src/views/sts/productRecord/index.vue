@@ -62,6 +62,20 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="工单号" prop="orderCode">
+        <select-loadMore
+          v-model="queryParams.orderCode"
+          :data="orderData.data"
+          :page="orderData.page"
+          :hasMore="orderData.more"
+          dictLabel="orderCode"
+          dictValue="orderCode"
+          :request="getProdPlantList"
+          placeholder="请选择工单号"
+          style="width: 100%"
+        >
+        </select-loadMore>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -96,10 +110,24 @@
       <el-table-column label="箱号" prop="boxNo" align="center">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
       </el-table-column>
-      <el-table-column label="装箱时间" prop="packingTime" align="center">
+      <el-table-column label="工单号" prop="orderCode" align="center">
         <template slot-scope="{ row }">
-          {{ parseTime(row.packingTime) || "---" }}
+          <el-tooltip effect="dark" content="点击跳转物料追踪" placement="top">
+            <span
+              class="pointer"
+              @click="
+                handleNameToPage('TrackRecord', {
+                  orderCode: row.orderCode,
+                })
+              "
+            >
+              {{ row.orderCode }}
+            </span>
+          </el-tooltip>
         </template>
+      </el-table-column>
+      <el-table-column label="装箱时间" prop="packingTime" align="center">
+        <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
       <el-table-column label="版本信息" align="center" width="100">
         <template slot-scope="scope">
@@ -164,6 +192,7 @@
 
 <script>
 import { categoryComputerDict, recordList } from "@/api/third/fileConfig";
+import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
   name: "ProductRecord",
@@ -181,6 +210,11 @@ export default {
       computerOptions: [],
       testDetail: [],
       stsDetail: {},
+      orderData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 查询参数
       queryParams: {
         p: 1,
@@ -190,6 +224,7 @@ export default {
         sn: "",
         processName: "",
         result: "",
+        orderCode: "",
       },
     };
   },
@@ -233,6 +268,25 @@ export default {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
+      });
+    },
+    /** 生产工单 */
+    getProdPlantList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        orderWorkList({
+          p: page,
+          orderCode: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.orderData.data = [...this.orderData.data, ...list];
+          } else {
+            this.orderData.data = list;
+          }
+          this.orderData.more = pageNum * pageSize < total;
+          this.orderData.page = pageNum;
+          resolve();
+        });
       });
     },
     // 测试详情

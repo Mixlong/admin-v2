@@ -149,6 +149,13 @@
                     label="在途物料处理方案："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="buyerTxt"
+                    :rules="[
+                      {
+                        required: isRequired(2),
+                        message: '请输入在途物料处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.buyerTxt"
@@ -191,6 +198,13 @@
                     label="涉及更新的文件："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="QADataTxt"
+                    :rules="[
+                      {
+                        required: isRequired(3),
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.QADataTxt"
@@ -233,6 +247,13 @@
                     label="在制产品处理方案："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="productDataTxt"
+                    :rules="[
+                      {
+                        required: isRequired(4),
+                        message: '请输入在制产品处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.productDataTxt"
@@ -275,6 +296,13 @@
                     label="涉及更新的文件："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="engineerDataTxt"
+                    :rules="[
+                      {
+                        required: isRequired(5),
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.engineerDataTxt"
@@ -317,6 +345,13 @@
                     label="涉及更新的文件："
                     prop="researchDataTxt"
                     class="iterm-box margin-left-xs flex flex-sub"
+                    :rules="[
+                      {
+                        required: isRequired(6),
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.researchDataTxt"
@@ -360,6 +395,13 @@
                       label="在库物料处理方案："
                       prop="warehouseDataTxt"
                       class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                      {
+                        required: isRequired(7),
+                        message: '请输入在库物料处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                     >
                       <el-input
                         v-model="form.warehouseDataTxt"
@@ -372,6 +414,13 @@
                       label="在库成品处理方案："
                       prop="finishedHandleTxt"
                       class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                      {
+                        required: isRequired(7),
+                        message: '请输入在库成品处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                     >
                       <el-input
                         v-model="form.finishedHandleTxt"
@@ -415,6 +464,13 @@
                     label="已出货产品处理方案："
                     prop="marketerDataTxt"
                     class="iterm-box margin-left-xs flex flex-sub"
+                    :rules="[
+                      {
+                        required: isRequired(8),
+                        message: '请输入已出货产品处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.marketerDataTxt"
@@ -457,6 +513,13 @@
                     label="处理方案："
                     prop="pmcDataTxt"
                     class="iterm-box margin-left-xs flex flex-sub"
+                    :rules="[
+                      {
+                        required: isRequired(8),
+                        message: '请输入处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.pmcDataTxt"
@@ -680,13 +743,15 @@ export default {
         beforeVersion: [
           { required: true, message: "请输入变更前BOM版本", trigger: "blur" },
         ],
+        file: [
+          { required: true, message: "请输入上传附件", trigger: "change" },
+        ],
       },
     };
   },
   computed: {
     isRequired() {
       return (type) => {
-        // this.clearDomainData(type);
         return this.form.involveUnit.includes(type);
       };
     },
@@ -708,6 +773,9 @@ export default {
     },
     "form.reqUnit"(reqUnit) {
       if (reqUnit) this.clearValidateItem("form", "reqUnit");
+    },
+    "form.file"(file) {
+      if (file) this.clearValidateItem("form", "file");
     },
   },
   created() {

@@ -82,6 +82,11 @@
           ></el-switch>
         </template>
       </el-table-column>
+      <el-table-column label="STS" align="center" width="120">
+        <template slot-scope="{ row }"> 
+          <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{ row.isSts === 1 ? '是' : '否' }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建人"
         prop="createBy"
@@ -177,7 +182,6 @@ export default {
   methods: {
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
-      console.log(this.$route)
       const { categoryId, computerId } = this.$route.params;
 
       if(categoryId && computerId) {

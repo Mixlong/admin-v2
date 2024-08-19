@@ -54,9 +54,9 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        <el-button class="fr" type="danger" @click="clearFilter"
-          >清除所有过滤器</el-button
-        >
+        <el-button class="fr" type="danger" @click="clearFilter">
+          清除所有过滤器
+        </el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -75,7 +75,7 @@
               class="text-orange"
               icon="el-icon-coordinate"
               content="待初审"
-              v-hasPermi="['product:configOverView:check']"
+              v-hasPermi="['config:overview:first:check']"
               @click="handleAuthChange(row, 1)"
             />
             <!-- 终审 -->
@@ -84,7 +84,7 @@
               class="text-orange"
               icon="el-icon-coordinate"
               content="待终审"
-              v-hasPermi="['product:configOverView:check']"
+              v-hasPermi="['config:overview:final:check']"
               @click="handleAuthChange(row, 2)"
             />
             <Tooltip
@@ -99,15 +99,20 @@
                 })
               "
             />
-
-            <template v-if="row.state === 1">
-              <el-tag type="success">通过</el-tag>
-            </template>
-            <template v-else-if="row.state === 2">
-              <el-tag type="info">未通过</el-tag>
-            </template>
-            <template v-else>
+            <template v-if="row.state === 0">
               <el-tag type="danger">未审核</el-tag>
+            </template>
+            <template v-if="row.state === 1">
+              <el-tag type="success">初审通过</el-tag>
+            </template>
+            <template v-if="row.state === 2">
+              <el-tag type="info">初审未通过</el-tag>
+            </template>
+            <template v-if="row.state === 3">
+              <el-tag type="success">终审通过</el-tag>
+            </template>
+            <template v-if="row.state === 4">
+              <el-tag type="info">终审未通过</el-tag>
             </template>
           </div>
         </template>
@@ -991,7 +996,10 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button :loading="isSubmitLoading" @click="handleStatusChange(isAuthFlag === 1 ? 2 : 4)">
+        <el-button
+          :loading="isSubmitLoading"
+          @click="handleStatusChange(isAuthFlag === 1 ? 2 : 4)"
+        >
           不通过
         </el-button>
         <el-button
@@ -1101,6 +1109,7 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
+      this.brandList = [];
       modelConfigList(this.queryParams).then((res) => {
         const { list, total } = res.data;
         this.brandList = list;

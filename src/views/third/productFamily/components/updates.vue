@@ -118,6 +118,16 @@
               </el-col>
 
               <el-col :span="6">
+                <el-form-item label="描述" prop="desc">
+                  <el-input
+                    v-model="form.desc"
+                    clearable
+                    placeholder="仪表描述"
+                  />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
                 <el-form-item label="ERP编码" prop="erp">
                   <el-input
                     v-model="form.erp"
@@ -127,6 +137,26 @@
                 </el-form-item>
               </el-col>
             </template>
+
+            <el-col :span="6">
+              <el-form-item label="SN" prop="instrumentModel.sn">
+                <el-input
+                  v-model.trim="form.instrumentModel.sn"
+                  clearable
+                  placeholder="请输入SN号"
+                />
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="6">
+              <el-form-item label="pcbaSn" prop="instrumentModel.pcbaSn">
+                <el-input
+                  v-model.trim="form.instrumentModel.pcbaSn"
+                  clearable
+                  placeholder="请输入pcbaSn"
+                />
+              </el-form-item>
+            </el-col>
 
             <el-col :span="6">
               <el-form-item
@@ -214,7 +244,7 @@
                   >
                     <el-option
                       v-for="item in handlebarSizeData"
-                      :key="item.value"
+                      :key="item.dictValue"
                       :label="item.dictLabel"
                       :value="item.dictValue"
                     >
@@ -408,7 +438,7 @@
                     >
                       <el-option
                         v-for="item in dicts_controller_joint"
-                        :key="item.dictLabel"
+                        :key="item.dictValue"
                         :label="item.dictValue"
                         :value="item.dictValue"
                       >
@@ -1941,7 +1971,11 @@ export default {
         desc: null,
         erp: null,
         name: null,
+        sn: "",
+        pcbaSn: "",
         instrumentModel: {
+          sn: null,
+          pcbaSn: null,
           communicateType: 0,
           sleepTime: 10,
           assistLimit: "25",

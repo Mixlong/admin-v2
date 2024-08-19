@@ -247,6 +247,7 @@ import {
   oqcList,
   undoneList,
   waterProofList,
+  producExporttList
 } from "@/api/third/fileConfig";
 
 import CompUpdate from "./components/update";
@@ -551,7 +552,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.downloadFile({
-        aFn: productExportList,
+        aFn: producExporttList,
         queryParams: this.queryParams,
       });
     },

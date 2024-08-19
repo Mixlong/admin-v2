@@ -3,6 +3,7 @@
  * Copyright (c) 2019 ruoyi
  */
 import reqUrl from "@/utils/requestUrl";
+import { saveAs } from "file-saver";
 
 const baseURL = reqUrl;
 /**
@@ -169,13 +170,21 @@ export function downloadFile({
     })
     .then((response) => {
       const fileName = response.msg;
-      // const url =
-      //   baseURL +
-      //   "/common/download?fileName=" +
-      //   encodeURI(fileName) +
-      //   "&delete=" +
-      //   true;
+
+      const url =
+        baseURL +
+        "/common/download?fileName=" +
+        encodeURI(fileName) +
+        "&delete=" +
+        true;
+
       this.download(fileName);
+
+      // fetch(url).then(res => {
+      //   return res.blob()
+      // }).then(res => {
+      //   saveAs(res)
+      // })
     });
 }
 

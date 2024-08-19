@@ -59,6 +59,17 @@
             <el-option label="组装" value="组装"></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="结果" prop="result">
+          <el-select
+            v-model="queryParams.result"
+            placeholder="请选择"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="OK" value="OK"></el-option>
+            <el-option label="NG" value="NG"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="计划日期">
           <el-date-picker
             v-model="dateRange"
@@ -88,15 +99,34 @@
       @cell-click="onCellClick"
       :cell-class-name="getCellClassName"
     >
-      <el-table-column prop="date" label="计划日期" align="center" width="90" fixed>
+      <el-table-column
+        prop="date"
+        label="计划日期"
+        align="center"
+        width="120"
+        fixed
+        sortable
+      >
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
         </template>
       </el-table-column>
       <el-table-column
+        prop="createTime"
+        label="任务令创建时间"
+        align="center"
+        fixed
+        width="140"
+        sortable
+      >
+        <template slot-scope="{ row }">
+          {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="customerName"
         label="客户"
-        width="110"
+        width="100"
         align="center"
         fixed
       >
@@ -106,73 +136,73 @@
         prop="categoryName"
         label="品类"
         align="center"
-        width="110"
+        width="100"
         fixed
       />
       <el-table-column
         prop="computerName"
         label="型号"
         align="center"
-        width="120"
         fixed
+        min-width="140"
       />
       <el-table-column
         prop="process"
         label="生产阶段"
         align="center"
-        width="90"
+        width="120"
         fixed
       />
       <el-table-column label="SMT资料" align="center">
         <el-table-column
           prop="pucsStatus"
-          label="PUCS资料"
+          label="JS脚本"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[1].length"
+              v-if="row.mapFile[1].length"
               :row="row"
-              currentDataName="PUCS资料"
+              currentDataName="JS脚本"
               :currentIndex="1"
-            ></miss-data>
-
-            <ColumnState v-show="!row.mapFile[1].length" :state="row.map[1]" />
+            >
+            </miss-data>
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
         <el-table-column
           prop="hardStatus"
           label="硬件资料"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[2].length"
+              v-if="row.mapFile[2].length"
               :row="row"
               currentDataName="硬件资料"
               :currentIndex="2"
-            ></miss-data>
-
-            <ColumnState v-show="!row.mapFile[2].length" :state="row.map[2]" />
+            >
+            </miss-data>
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
         <el-table-column
           prop="softStatus"
           label="软件资料"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[3].length"
+              v-if="row.mapFile[3].length"
               :row="row"
               currentDataName="软件资料"
               :currentIndex="3"
             ></miss-data>
 
-            <ColumnState v-show="!row.mapFile[3].length" :state="row.map[3]" />
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
       </el-table-column>
@@ -181,34 +211,33 @@
           prop="configStatus"
           label="配置文件"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[4].length"
+              v-if="row.mapFile[4].length"
               :row="row"
               currentDataName="配置文件"
               :currentIndex="4"
             ></miss-data>
 
-            <ColumnState v-show="!row.mapFile[4].length" :state="row.map[4]" />
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
         <el-table-column
           prop="testStatus"
           label="测试上位机"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[5].length"
+              v-if="row.mapFile[5].length"
               :row="row"
               currentDataName="测试上位机"
               :currentIndex="5"
             ></miss-data>
-
-            <ColumnState v-show="!row.mapFile[5].length" :state="row.map[5]" />
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
         <!-- <el-table-column
@@ -225,29 +254,29 @@
           prop="snStatus"
           label="SN规则"
           align="center"
-          width="90"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
-              v-show="row.mapFile[6].length"
+              v-if="row.mapFile[6].length"
               :row="row"
               currentDataName="SN规则"
               :currentIndex="6"
             ></miss-data>
 
-            <ColumnState v-show="!row.mapFile[6].length" :state="row.map[6]" />
+            <template v-else> - - - </template>
           </template>
         </el-table-column>
       </el-table-column>
       <el-table-column
-        prop="prodStage"
+        prop="hopeDate"
         label="期望日期"
         align="center"
-        width="120"
+        width="140"
       >
         <span
-          slot-scope="scope"
-          v-NoData="parseTime(scope.row.hopeDate, '{y}/{m}/{d} {h}:{i}')"
+          slot-scope="{ row }"
+          v-NoData="parseTime(row.hopeDate, '{y}-{m}-{d} {h}:{i}')"
         >
         </span>
       </el-table-column>
@@ -255,7 +284,7 @@
         prop="surplusHour"
         label="剩余时间（-:负为超期，单位小时）"
         align="center"
-        width="120"
+        width="140"
       >
         <span
           :class="{ 'text-red': row.surplusHour < 0 }"
@@ -267,17 +296,14 @@
         prop="personLiable"
         label="责任人"
         align="center"
-        width="120"
+        width="140"
       >
         <span slot-scope="{ row }" v-NoData="row.personLiable"></span>
       </el-table-column>
-      <el-table-column prop="result" label="结果" align="center" min-width="150">
-        <template slot-scope="{ row }">
-          <span v-show="!row.result">- - -</span>
-          <div v-show="row.result" v-html="row.result"></div>
-        </template>
+      <el-table-column prop="result" label="结果" align="center" width="120">
+        <span slot-scope="{ row }" v-NoData="row.result"> </span>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="remark"
         label="备注"
         align="center"
@@ -287,7 +313,7 @@
           <span v-show="!row.remark">- - -</span>
           <div v-show="row.remark" v-html="row.remark"></div>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <pagination
@@ -328,12 +354,21 @@
         </el-form-item>
         <!-- 结果 -->
         <el-form-item prop="result" v-if="isType === 4">
-          <tinymce v-if="isShow" v-model="form.result" :height="350"> </tinymce>
+          <!-- <tinymce v-if="isShow" v-model="form.result" :height="350"> </tinymce> -->
+          <el-select
+            v-model="form.result"
+            placeholder="请选择"
+            clearable
+            style="width: 100%"
+          >
+            <el-option label="OK" value="OK"></el-option>
+            <el-option label="NG" value="NG"></el-option>
+          </el-select>
         </el-form-item>
         <!-- 备注 -->
-        <el-form-item prop="remark" v-if="isType === 2">
+        <!-- <el-form-item prop="remark" v-if="isType === 2">
           <tinymce v-if="isShow" v-model="form.remark" :height="350"> </tinymce>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="handleCancel">取 消</el-button>
@@ -351,7 +386,7 @@
 </template>
 
 <script>
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
 import { materialList, materialUpdate } from "@/api/third/prodData";
 import tinymce from "@/views/components/Editor";
@@ -382,7 +417,7 @@ export default {
         hopeDate: "",
         remark: "",
         personLiable: "",
-        result: ""  
+        result: "",
       },
       defaultTime: this.moment().format("HH:mm:ss"),
       pickerOptions: {
@@ -394,9 +429,9 @@ export default {
         hopeDate: [
           { required: true, message: "期望日期不能为空", trigger: "change" },
         ],
-        remark: [
-          { required: false, message: "备注不能为空", trigger: "change" },
-        ],
+        // remark: [
+        //   { required: false, message: "备注不能为空", trigger: "change" },
+        // ],
       },
       queryParams: {
         p: 1,
@@ -405,15 +440,77 @@ export default {
         categoryId: "",
         computerId: "",
         process: "",
+        result: "",
       },
     };
   },
   computed: {
     isDiaWidth() {
-      return this.isType === 1 || this.isType === 3  ? "350px" : "650px";
+      return this.isType === 1 || this.isType === 3 || this.isType === 4
+        ? "350px"
+        : "650px";
     },
     isTestTabHeight() {
       return "calc(100vh - 250px)";
+    },
+    hopeDateStyle() {
+      return (hopeDate, result) => {
+        // 预计时间
+        const expectedTime = this.moment(hopeDate);
+
+        // const durationToAdd = this.moment
+        //   .duration(15, "hours")
+        //   .add(30, "minutes");
+
+        // const newExpectedTime = expectedTime.clone().add(durationToAdd);
+
+        const now = this.moment();
+
+        const diffInHours = expectedTime.diff(now, "hours");
+        let bgStyle = "";
+
+        if (result === "OK") {
+          bgStyle = "bg-green-noHurry ";
+        } else if (result === "NG") {
+          bgStyle = "bg-danger ";
+        } else {
+          // 判断时间差
+          if (diffInHours <= 8) {
+            bgStyle = "bg-danger ";
+          } else if (diffInHours <= 16) {
+            bgStyle = "bg-warning ";
+          } else if (diffInHours <= 32) {
+            bgStyle = "bg-yellow ";
+          } else {
+            bgStyle = "bg-green-noHurry ";
+          }
+        }
+        return bgStyle + `${result === "OK" ? "" : "pointer"} text-black`;
+      };
+    },
+    hopePlanDate() {
+      return (time) => {
+        const expectedTime = this.moment(time);
+
+        const durationToAdd = this.moment
+          .duration(15, "hours")
+          .add(30, "minutes");
+
+        const newExpectedTime = expectedTime.clone().add(durationToAdd);
+
+        return newExpectedTime.valueOf();
+      };
+    },
+    bgResultStyle() {
+      return (result) => {
+        if (result === "OK") {
+          return "bg-green-noHurry text-black";
+        } else if (result === "NG") {
+          return "bg-danger text-black";
+        } else {
+          return "";
+        }
+      };
     },
   },
   watch: {
@@ -504,38 +601,36 @@ export default {
         });
     },
     getCellClassName({ row, column }) {
-      const { map, hopeDate } = row;
+      const { map, mapFile, hopeDate, result } = row;
       const { label } = column;
       switch (label) {
         // case "PCBA资料":
         //   return this.getDataState(PCBAState);
-        case "PUCS资料":
-          return this.getDataState(map[1]);
+        case "JS脚本":
+          return this.getDataState(map[1], mapFile[1]?.length);
         case "硬件资料":
-          return this.getDataState(map[2]);
+          return this.getDataState(map[2], mapFile[2]?.length);
         case "软件资料":
-          return this.getDataState(map[3]);
+          return this.getDataState(map[3], mapFile[3]?.length);
         case "配置文件":
-          return this.getDataState(map[4]);
+          return this.getDataState(map[4], mapFile[4]?.length);
         case "测试上位机":
-          return this.getDataState(map[5]);
+          return this.getDataState(map[5], mapFile[5]?.length);
         // case "STS系统":
         //   return this.getDataState(stsState);
         case "SN规则":
-          return this.getDataState(map[6]);
+          return this.getDataState(map[6], mapFile[6]?.length);
         case "期望日期":
-          if (hopeDate && +new Date() > hopeDate) {
-            return "bg-yellow pointer";
-          } else {
-            return "pointer";
-          }
-        case "备注":
+          return this.hopeDateStyle(hopeDate, result);
+        // case "备注":
         case "责任人":
+          return `${result === "OK" ? "" : "pointer"}`;
         case "结果":
-          return "pointer";
+          return `${this.bgResultStyle(result)} pointer`;
       }
     },
-    getDataState(state) {
+    getDataState(state, fileLen) {
+      if (!fileLen) return null;
       switch (state) {
         case 0: // 待上传
           return "bg-danger pointer";
@@ -554,59 +649,78 @@ export default {
         // case "PCBA资料":
         //   this.onCellStateClick(row);
         //   break;
-        case "PUCS资料":
-          this.onCellStateClick(row, row.map[1]);
+        case "JS脚本":
+          this.onCellStateClick(row, row.map[1], row?.mapFile[1]?.length);
           break;
         case "硬件资料":
-          this.onCellStateClick(row, row.map[2]);
+          this.onCellStateClick(row, row.map[2], row?.mapFile[2]?.length);
           break;
         case "软件资料":
-          this.onCellStateClick(row, row.map[3]);
+          this.onCellStateClick(row, row.map[3], row?.mapFile[3]?.length);
           break;
         case "配置文件":
-          this.onCellStateClick(row, row.map[4]);
+          this.onCellStateClick(row, row.map[4], row?.mapFile[4]?.length);
           break;
         case "测试上位机":
-          this.onCellStateClick(row, row.map[5]);
+          this.onCellStateClick(row, row.map[5], row?.mapFile[5]?.length);
           break;
-          // case "STS系统":
-          //   this.onCellStateClick(row);
+        case "STS系统":
+          this.onCellStateClick(row);
           break;
         case "SN规则":
-          this.onCellStateClick(row, row.map[6]);
+          this.onCellStateClick(row, row.map[6], row?.mapFile[6]?.length);
           break;
         case "期望日期":
-          this.onShowDia(row, 1);
+          row.result !== "OK" && this.onShowDia(row, 1);
           break;
-        case "备注":
-          this.onShowDia(row, 2);
-          break;
+        // case "备注":
+        //   this.onShowDia(row, 2);
+        //   break;
         case "责任人":
-          this.onShowDia(row, 3);
+          row.result !== "OK" && this.onShowDia(row, 3);
           break;
         case "结果":
           this.onShowDia(row, 4);
           break;
       }
     },
-    onCellStateClick({ categoryId, computerId }, status) {
+    onCellStateClick({ categoryId, computerId }, status, fileLen) {
+      if (!fileLen) return;
+
       const pageUrl =
         process.env.NODE_ENV === "development"
           ? "/productData/fileConfig"
           : "/device/productData/fileConfig";
 
+      // const pageUrl = '/device/productData/fileConfig'
+
+      let currentStatus = status;
       if (status !== 4) {
+        if (status === 2) {
+          currentStatus = 4;
+        }
+        if (status === 4) {
+          currentStatus = 2;
+        }
         this.$router.push(
-          `${pageUrl}?categoryId=${categoryId}&computerId=${computerId}&status=${status}`
+          `${pageUrl}?categoryId=${categoryId}&computerId=${computerId}&status=${currentStatus}`
         );
       }
     },
     onShowDia(row, type) {
-      switch(type) {
-        case 1: this.isTitle = '期望日期'; break;
-        case 2: this.isTitle = '备注'; break;
-        case 3: this.isTitle = '责任人'; break;
-        case 4: this.isTitle = '结果'; break;
+      switch (type) {
+        case 1:
+          this.isTitle = "期望日期";
+          break;
+        // case 2:
+        //   this.isTitle = "备注";
+        //   break;
+        case 3:
+          this.isTitle = "责任人";
+          break;
+        case 4:
+          this.isTitle = "结果";
+          break;
       }
       this.isType = type;
       this.isShow = true;
@@ -617,7 +731,7 @@ export default {
         hopeDate: "",
         remark: "",
         personLiable: "",
-        result: ""  
+        result: "",
       };
       this.resetForm("form");
     },
@@ -631,7 +745,8 @@ export default {
 
           if (this.form.schedulingId) {
             try {
-              materialUpdate(this.form)
+              const { date, ...data } = this.form;
+              materialUpdate(data)
                 .then(() => {
                   this.getList();
                   this.msgSuccess("操作成功");
@@ -672,6 +787,9 @@ export default {
 }
 .bg-header-deepBlue {
   background-color: #00b0f0 !important;
+}
+.bg-green-noHurry {
+  background-color: green;
 }
 .font-black {
   color: #000;

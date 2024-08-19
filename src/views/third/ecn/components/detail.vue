@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    class="ECN-Detail-box Header_Fixed"
+    class="ecn-detail-box Header_Fixed"
     title="ECN详情"
     :visible.sync="dialogVisible"
     append-to-body
@@ -37,7 +37,7 @@
             >
             <el-col :md="24" :lg="12">
               <el-form-item label="申请部门:" prop="reqUnit">
-                {{ form.reqUnit }}
+                {{ reqUnitFormatter(form.reqUnit) }}
               </el-form-item>
             </el-col>
           </el-row>
@@ -88,7 +88,11 @@
               >
                 {{ form.importTime }}
               </el-form-item>
-              <el-form-item v-show="form.importType === 3 && form.importCondition" label="条件导入内容：" label-width="100">
+              <el-form-item
+                v-show="form.importType === 3 && form.importCondition"
+                label="条件导入内容："
+                label-width="100"
+              >
                 {{ form.importCondition }}
               </el-form-item>
             </el-col>
@@ -157,33 +161,30 @@
             <template v-for="item in form.list">
               <el-descriptions-item
                 label="领域："
-                labelClassName="labelTitleClassName"
-                contentClassName="contentTitleClassName"
+                label-class-name="label-title-class-name"
+                content-class-name="content-title-class-name"
               >
                 <el-tag>{{ TriageList[item.field] }}</el-tag>
               </el-descriptions-item>
               <el-descriptions-item
                 v-if="item.field !== 7"
                 :label="`${TriageListTitle[item.field]}:`"
-                labelClassName="labelContentClassName"
+                label-class-name="label-content-class-name"
               >
                 {{ item.programme }}
               </el-descriptions-item>
 
               <el-descriptions-item
-                v-if="item.field === 7 && item.programme"
+                v-if="item.field === 7"
                 label="在库物料处理方案："
-                labelClassName="labelContentClassName"
+                label-class-name="label-content-class-name"
               >
                 <div class="store-Seven-box">
                   <span class="content-left-box">
                     {{ item.programme }}
                   </span>
-  
-                  <div
-                    class="content-right-box"
-                    v-if="item.field === 7 && item.treatment"
-                  >
+
+                  <div class="content-right-box" v-if="item.field === 7">
                     <span>在库成品处理方案：</span>
                     {{ item.treatment }}
                   </div>
@@ -311,7 +312,7 @@
 import tinymce from "@/views/components/Editor";
 export default {
   components: { tinymce },
-  props: ["classifyList", "involveUnitList"],
+  props: ["classifyList", "involveUnitList", "deptOptions"],
   data() {
     return {
       dialogVisible: false,
@@ -342,49 +343,60 @@ export default {
       },
     };
   },
+  computed: {
+    reqUnitFormatter() {
+      return (reqUnit) => {
+        return this.deptOptions.find((item) => item.deptId === +reqUnit)?.deptName;
+      };
+    },
+  },
 };
 </script>
 <style lang="scss">
-.ECN-Detail-box {
-  .el-descriptions__title {
-    font-weight: normal !important;
-    font-size: 14px !important;
-    color: #606266 !important;
-  }
+.ecn-detail-box {
+  .el-descriptions {
+    .el-descriptions__title {
+      font-weight: normal !important;
+      font-size: 14px !important;
+      color: #606266 !important;
+    }
 
-  .labelTitleClassName,
-  .labelContentClassName {
-    font-weight: bold !important;
-    letter-spacing: 4px !important;
-    text-align: center !important;
-    color: #000 !important;
-  }
-  .labelTitleClassName {
-    width: 100px !important;
-  }
-  .labelContentClassName {
-    width: 200px !important;
-  }
-  .contentTitleClassName {
-    width: 150px !important;
-    text-align: center !important;
-  }
-}
+    .el-descriptions__body {
+      .label-title-class-name,
+      .label-content-class-name {
+        font-weight: bold !important;
+        letter-spacing: 4px !important;
+        text-align: center !important;
+        color: #000 !important;
+      }
+      .label-title-class-name {
+        width: 100px !important;
+      }
+      .label-content-class-name {
+        width: 200px !important;
+      }
+      .content-title-class-name {
+        width: 120px !important;
+        text-align: center !important;
+      }
 
-.store-Seven-box {
-  display: flex;
-  .content-left-box {
-    flex: 1;
-  }
-  .content-right-box {
-    flex: 1;
-    span {
-      display: inline-block;
-      color: #000;
-      font-weight: bold;
-      letter-spacing: 4px;
-      background: #fafafa;
-      box-sizing: border-box;
+      .store-Seven-box {
+        display: flex;
+        .content-left-box {
+          flex: 1;
+        }
+        .content-right-box {
+          flex: 1;
+          span {
+            display: inline-block;
+            color: #000;
+            font-weight: bold;
+            letter-spacing: 4px;
+            background: #fafafa;
+            box-sizing: border-box;
+          }
+        }
+      }
     }
   }
 }

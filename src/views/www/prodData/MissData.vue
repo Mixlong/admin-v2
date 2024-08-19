@@ -1,9 +1,12 @@
 <template>
-  <el-popover placement="top" width="600" trigger="hover">
-    <el-card class="box-card">
+  <el-popover placement="bottom" width="450" trigger="hover">
+    <el-card class="box-card" shadow="nerver">
       <div slot="header" class="clearfix flex justify-between">
         <div class="flex flex-sub">
-          {{ currentDataName }} （<ColumnState :state="row.map[currentIndex]" />）
+          {{ currentDataName }}
+          <!-- （<ColumnState
+            :state="row.map[currentIndex]"
+          />） -->
         </div>
 
         <div>
@@ -12,12 +15,20 @@
         </div>
       </div>
       <div class="missTag">
-        <el-tag
+        <div
           v-for="(item, index) in row.mapFile[currentIndex]"
           :key="index"
+          class="flex justify-between align-center"
         >
-          {{ item.typeValue }}
-        </el-tag>
+          <el-tag>
+            {{ item.typeValue }}
+          </el-tag>
+          <span v-if="item.status === 0" class="text-red">待上传</span>
+          <span v-if="item.status === 1" class="text-yellow">待初审</span>
+          <span v-if="item.status === 2" class="text-blue">待终审</span>
+          <span v-if="item.status === 3" class="text-gray">未通过</span>
+          <span v-if="item.status === 4" class="text-green">已审核</span>
+        </div>
       </div>
     </el-card>
 
@@ -31,13 +42,13 @@
 export default {
   props: {
     currentDataName: {
-        type: String,
-        required: true,
-        default: ""
+      type: String,
+      required: true,
+      default: "",
     },
     currentIndex: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true,
     },
     row: {
       type: Object,
@@ -47,16 +58,15 @@ export default {
   },
   components: {
     ColumnState: () => import("./columnState"),
-  },
+  }
 };
 </script>
 
 <style lang="scss" scoped>
 .missTag {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  grid-gap: 15px;
+  flex-direction: column;
+  grid-gap: 10px;
   max-height: 250px;
   overflow: hidden;
   overflow-y: auto;

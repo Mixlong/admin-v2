@@ -323,6 +323,13 @@
             content="删除"
             @click="handleDelete(row)"
           />
+
+          <Tooltip
+            v-if="row.file"
+            icon="el-icon-download"
+            content="附件下载"
+            @click="urlDownload(row.file)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -343,6 +350,7 @@
       ref="compDetail"
       :classifyList="classifyList"
       :involveUnitList="involveUnitList"
+      :deptOptions="deptOptions"
     />
 
     <!-- 审核人员管理 -->
@@ -889,7 +897,7 @@ export default {
     },
     //
     reqUnitFormatter(row, column, cellvalue, index) {
-      return this.deptOptions.filter((item) => item.deptId === +row.reqUnit)[0]?.deptName;
+      return this.deptOptions.find((item) => item.deptId === +row.reqUnit)?.deptName;
     },
     getCheckPeopleList() {
       dictUserList().then((res) => {

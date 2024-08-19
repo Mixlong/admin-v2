@@ -164,15 +164,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -249,15 +249,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -368,15 +368,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -486,15 +486,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -605,15 +605,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -723,15 +723,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -841,15 +841,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -961,15 +961,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1079,15 +1079,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1197,15 +1197,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1316,15 +1316,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1434,15 +1434,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1552,15 +1552,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1671,15 +1671,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },

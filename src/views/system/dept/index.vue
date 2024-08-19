@@ -51,9 +51,11 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
+          v-CopyText.copy="213223"
           v-hasPermi="['system:dept:add']"
-          >新增</el-button
         >
+          新增
+        </el-button>
       </el-col>
       <right-toolbar
         :showSearch.sync="showSearch"
@@ -291,9 +293,9 @@ export default {
     getList() {
       this.loading = true;
       listDept(this.queryParams).then((response) => {
-        this.deptList = this.handleTree(response.data, "deptId")
-        console.log(this.deptList)
-        this.loading = false
+        this.deptList = this.handleTree(response.data, "deptId");
+        console.log(this.deptList);
+        this.loading = false;
       });
     },
     /** 转换部门数据结构 */

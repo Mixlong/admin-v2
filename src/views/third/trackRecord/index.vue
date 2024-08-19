@@ -1,49 +1,6 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          placeholder="请选择品类"
-          clearable
-          filterable
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="型号" prop="computerName">
-        <el-select
-          v-model="queryParams.computerName"
-          clearable
-          filterable
-          placeholder="请选择型号"
-          @change="getList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="排产单号" prop="no">
-        <el-input
-          v-model="queryParams.no"
-          placeholder="请输入排产单号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-
       <el-form-item label="批次号" prop="batchNumber">
         <el-input
           v-model="queryParams.batchNumber"
@@ -52,7 +9,20 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      
+      <el-form-item label="工单号" prop="orderCode">
+        <select-loadMore
+          v-model="queryParams.orderCode"
+          :data="orderData.data"
+          :page="orderData.page"
+          :hasMore="orderData.more"
+          dictLabel="orderCode"
+          dictValue="orderCode"
+          :request="getProdPlantList"
+          placeholder="请选择工单号"
+          style="width: 100%"
+        >
+        </select-loadMore>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -72,15 +42,15 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center" />
+      <el-table-column label="工单号" prop="orderCode" align="center">
+        <span slot-scope="{ row }" v-NoData="row.orderCode"></span>
+      </el-table-column>
+      <el-table-column label="批次号" prop="batchNumber" align="center" />
       <el-table-column label="物料类型" prop="type" align="center">
         <template v-slot="{ row }">
           {{ typeList[row.type] }}
         </template>
       </el-table-column>
-      <el-table-column label="排产单号" prop="no" align="center" />
-      <el-table-column label="批次号" prop="batchNumber" align="center" />
       <el-table-column label="创建时间" align="center">
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime) }}
@@ -99,7 +69,8 @@
 </template>
 
 <script>
-import { categoryComputerDict, trackLogList } from "@/api/third/fileConfig";
+import { trackLogList } from "@/api/third/fileConfig";
+import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
   name: "TrackRecord",
@@ -110,7 +81,6 @@ export default {
       loading: true,
       // 总条数
       total: 0,
-      dictList: [],
       brandList: [],
       computerOptions: [],
       // 物料类型
@@ -120,21 +90,26 @@ export default {
         3: "线缆",
         4: "蓝牙",
       },
+      orderData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 查询参数
       queryParams: {
         p: 1,
         l: 20,
-        categoryName: "",
-        computerName: "",
         batchNumber: "",
-        no: "",
+        orderCode: "",
       },
     };
   },
   created() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-    });
+    this.getList();
+  },
+  activated() {
+    const { orderCode } = this.$route.params;
+    this.queryParams.orderCode = orderCode;
 
     this.getList();
   },
@@ -152,13 +127,24 @@ export default {
           this.loading = false;
         });
     },
-    changeCategory(categoryName) {
-      if (!categoryName) return;
-      this.queryParams.computerName = "";
-      this.getList();
-      this.computerOptions = this.dictList.filter(
-        (item) => item.name === categoryName
-      )[0].computerList;
+    /** 生产工单 */
+    getProdPlantList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        orderWorkList({
+          p: page,
+          orderCode: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.orderData.data = [...this.orderData.data, ...list];
+          } else {
+            this.orderData.data = list;
+          }
+          this.orderData.more = pageNum * pageSize < total;
+          this.orderData.page = pageNum;
+          resolve();
+        });
+      });
     },
     /** 搜索按钮操作 */
     handleQuery() {
