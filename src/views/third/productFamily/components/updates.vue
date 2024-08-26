@@ -2210,6 +2210,8 @@ export default {
               baudRate,
               msgType,
               canRate,
+              sn,
+              pcbaSn
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2220,6 +2222,8 @@ export default {
             this.form.instrumentModel.baudRate = baudRate;
             this.form.instrumentModel.msgType = msgType;
             this.form.instrumentModel.canRate = canRate;
+            this.form.instrumentModel.sn = sn;
+            this.form.instrumentModel.pcbaSn = pcbaSn;
 
             this.form.jsonStr = "";
           } else {

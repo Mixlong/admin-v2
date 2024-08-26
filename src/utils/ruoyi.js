@@ -4,6 +4,7 @@
  */
 import reqUrl from "@/utils/requestUrl";
 import { saveAs } from "file-saver";
+import moment from "moment";
 
 const baseURL = reqUrl;
 /**
@@ -28,6 +29,17 @@ export function extend(source) {
     target = source;
   }
   return target;
+}
+
+/**
+ *  时间戳秒转化为时分秒
+ * @param {时间戳，默认秒} time
+ * @param {*} pattern
+ * @param {时间戳类型} timeType  秒数 - 's' ,  毫秒数 - 'ms'
+ * @returns
+ */
+export function formattedTime(time, pattern = "HH:mm:ss", timeType = 's') {
+  return moment().startOf('day').add(time, timeType).format(pattern);
 }
 // 日期格式化
 export function parseTime(time, pattern) {
@@ -119,14 +131,15 @@ export function addDateRange(
 
 // 回显数据字典
 export function selectDictLabel(datas, value) {
-  var actions = [];
-  Object.keys(datas).some((key) => {
-    if (datas[key].dictValue == "" + value) {
-      actions.push(datas[key].dictLabel);
-      return true;
-    }
-  });
-  return actions.join("");
+  // var actions = [];
+  // Object.keys(datas).some((key) => {
+  //   if (datas[key].dictValue == "" + value) {
+  //     actions.push(datas[key].dictLabel);
+  //     return true;
+  //   }
+  // });
+  // return actions.join("");
+  return datas.find(item => item.dictValue === String(value))?.dictLabel;
 }
 
 // 回显数据字典（字符串数组）
@@ -189,7 +202,12 @@ export function downloadFile({
 }
 
 // 删除按钮
-export function HandleDelete({ title = "是否确认删除该项?", delFn, data, cb } = {}) {
+export function HandleDelete({
+  title = "是否确认删除该项?",
+  delFn,
+  data,
+  cb,
+} = {}) {
   this.$confirm(title, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -201,7 +219,7 @@ export function HandleDelete({ title = "是否确认删除该项?", delFn, data,
     .then(() => {
       cb();
       this.msgSuccess("删除成功");
-    })
+    });
 }
 
 // 字符串格式化(%s )

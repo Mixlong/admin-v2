@@ -101,10 +101,7 @@
 </template>
 
 <script>
-import {
-  categoryComputerDict,
-  partList,
-} from "@/api/third/fileConfig";
+import { categoryComputerDict, partList } from "@/api/third/fileConfig";
 
 export default {
   name: "Parts",
@@ -127,19 +124,30 @@ export default {
         categoryName: "",
         computerName: "",
         sn: "",
-        type: ""
-      }
+        type: "",
+      },
     };
   },
+  watch: {
+    queryParams: {
+      handler(newVal) {
+        if (newVal) {
+          this.getList();
+        }
+      },
+      deep: true,
+      immediate: true
+    },
+  },
   created() {
-    const { recordId,sn } = this.$route.query;
-    if (recordId) {
-      this.queryParams.recordId = recordId;
-      this.queryParams.sn = sn;
-    }
-    this.getDicts('sys_parts_name').then(res => {
-      this.partsList = res.data
-    })
+    this.getDicts("sys_parts_name").then((res) => {
+      this.partsList = res.data;
+    });
+  },
+  activated() {
+    const { recordId, sn } = this.$route.query;
+    this.queryParams.recordId = recordId;
+    this.queryParams.sn = sn;
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -161,7 +169,6 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList();
     });
   },
   methods: {
@@ -175,10 +182,12 @@ export default {
       });
     },
     changeCategory(categoryName) {
-      if(!categoryName) return;
+      if (!categoryName) return;
       this.queryParams.computerName = "";
       this.getList();
-      this.computerOptions = this.dictList.filter(item => item.name === categoryName)[0].computerList
+      this.computerOptions = this.dictList.filter(
+        (item) => item.name === categoryName
+      )[0].computerList;
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -191,7 +200,7 @@ export default {
       this.queryParams.sn = "";
       this.resetForm("queryForm");
       this.handleQuery();
-    }
+    },
   },
 };
 </script>

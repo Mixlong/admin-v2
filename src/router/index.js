@@ -67,13 +67,13 @@ export const constantRoutes = [
     path: "/stsDeploy",
     name: "stsDeploy",
     component: (resolve) => require(["@/views/stsDeploy"], resolve),
-    hidden: true
+    hidden: true,
   },
   {
     path: "/pdfToImg",
     name: "pdfToImg",
     component: (resolve) => require(["@/views/pdfToImg"], resolve),
-    hidden: true
+    hidden: true,
   },
   {
     path: "",
@@ -155,41 +155,39 @@ export const constantRoutes = [
       },
     ],
   },
-
-  // 
   {
-    path: '/tool/gen-edit',
+    path: "/tool/gen-edit",
     component: Layout,
     hidden: true,
-    permissions: ['tool:gen:edit'],
+    permissions: ["tool:gen:edit"],
     children: [
       {
-        path: 'index/:tableId(\\d+)',
-        component: () => import('@/views/tool/gen/editTable'),
-        name: 'GenEdit',
-        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
-      }
-    ]
+        path: "index/:tableId(\\d+)",
+        component: () => import("@/views/tool/gen/editTable"),
+        name: "GenEdit",
+        meta: { title: "修改生成配置", activeMenu: "/tool/gen" },
+      },
+    ],
   },
   {
-    path: '/workflow/process',
+    path: "/workflow/process",
     component: Layout,
     hidden: true,
-    permissions: ['workflow:process:query'],
+    permissions: ["workflow:process:query"],
     children: [
       {
-        path: 'start/:deployId([\\w|\\-]+)',
-        component: () => import('@/views/workflow/work/start'),
-        name: 'WorkStart',
-        meta: { title: '发起流程', icon: '' }
+        path: "start/:deployId([\\w|\\-]+)",
+        component: () => import("@/views/workflow/work/start"),
+        name: "WorkStart",
+        meta: { title: "发起流程", icon: "" },
       },
       {
-        path: 'detail/:procInsId([\\w|\\-]+)',
-        component: () => import('@/views/workflow/work/detail'),
-        name: 'WorkDetail',
-        meta: { title: '流程详情', activeMenu: '/work/own' }
-      }
-    ]
+        path: "detail/:procInsId([\\w|\\-]+)",
+        component: () => import("@/views/workflow/work/detail"),
+        name: "WorkDetail",
+        meta: { title: "流程详情", activeMenu: "/work/own" },
+      },
+    ],
   },
 ];
 
@@ -220,6 +218,13 @@ export const constantRoutes = [
 
 export default new Router({
   mode: "history", // 去掉url中的#
-  scrollBehavior: () => ({ y: 0 }),
+  // scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { x: 0, y: 0 };
+    }
+  },
   routes: constantRoutes,
 });

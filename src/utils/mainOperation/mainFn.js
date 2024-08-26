@@ -27,7 +27,8 @@ import {
   handleNameToPage,
   handlePathToPage,
   getConfigDicts,
-  HandleDelete
+  HandleDelete,
+  formattedTime
 } from "@/utils/ruoyi";
 
 // 全局方法挂载
@@ -61,3 +62,4 @@ Vue.prototype.$setCheckListArr = setCheckListArr;
 Vue.prototype.handleNameToPage = handleNameToPage;
 Vue.prototype.handlePathToPage = handlePathToPage;
 Vue.prototype.getConfigDicts = getConfigDicts;
+Vue.prototype.formattedTime = formattedTime;

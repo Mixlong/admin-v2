@@ -129,6 +129,13 @@
       <el-table-column label="装箱时间" prop="packingTime" align="center">
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
+      <el-table-column label="气密性测试" align="center" width="100">
+        <template slot-scope="scope">
+          <el-button type="text" @click="seeGasDetail(scope.row.sn)">
+            查看
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="版本信息" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
@@ -166,6 +173,55 @@
       @pagination="getList"
     />
 
+    <!-- 气密性测试 -->
+    <el-dialog
+      title="气密性测试"
+      :visible.sync="isGasDetailShow"
+      width="1000px"
+      center
+      append-to-body
+      top="1vh"
+    >
+      <el-table :data="gasDetail" bordered height="450">
+        <el-table-column label="迪太SN" prop="dtSn" align="center" />
+        <el-table-column
+          label="气压校准值"
+          prop="calibrationPa"
+          align="center"
+        />
+        <el-table-column label="气压校准" prop="standardPa" align="center" width="80" />
+        <el-table-column
+          label="气压波动范围"
+          prop="volatilityRange"
+          align="center"
+          width="110"
+        />
+        <el-table-column label="充气时间" prop="inflateTime" align="center" width="80">
+          <span
+            slot-scope="{ row }"
+            v-NoData="formattedTime(row.inflateTime)"
+          />
+        </el-table-column>
+        <el-table-column label="平衡时间" prop="balanceTime" align="center" width="80">
+          <span
+            slot-scope="{ row }"
+            v-NoData="formattedTime(row.balanceTime)"
+          />
+        </el-table-column>
+        <el-table-column label="测试时间" prop="testTime" align="center" width="80">
+          <span slot-scope="{ row }" v-NoData="formattedTime(row.testTime)" />
+        </el-table-column>
+        <el-table-column label="测试时间戳" prop="time" align="center" sortable>
+          <span slot-scope="{ row }" v-NoData="parseTime(row.time)" />
+        </el-table-column>
+        <el-table-column label="测试结果" prop="testResult" align="center" width="100">
+          <el-tag :type="gasTestResultTag[row.testResult]" slot-scope="{ row }">
+            {{ gasTestResultData[row.testResult] }}
+          </el-tag>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
     <el-dialog
       title="版本信息"
       :visible.sync="isStsDetailShow"
@@ -191,7 +247,11 @@
 </template>
 
 <script>
-import { categoryComputerDict, recordList } from "@/api/third/fileConfig";
+import {
+  categoryComputerDict,
+  recordList,
+  recordGasList,
+} from "@/api/third/fileConfig";
 import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
@@ -199,6 +259,7 @@ export default {
   data() {
     return {
       isStsDetailShow: false,
+      isGasDetailShow: false,
       form: {},
       // 遮罩层
       loading: true,
@@ -209,11 +270,22 @@ export default {
       testList: [],
       computerOptions: [],
       testDetail: [],
-      stsDetail: {},
+      stsDetail: [],
+      gasDetail: [],
       orderData: {
         data: [],
         page: 1,
         more: true,
+      },
+      gasTestResultData: {
+        1: "测试通过",
+        2: "测试NG",
+        3: "测试超时",
+      },
+      gasTestResultTag: {
+        1: "success",
+        2: "danger",
+        3: "warning",
       },
       // 查询参数
       queryParams: {
@@ -292,8 +364,14 @@ export default {
     // 测试详情
     seeDetail(row) {
       this.isStsDetailShow = true;
-
       this.stsDetail = row.list;
+    },
+    // 气密性测试
+    seeGasDetail(sn) {
+      this.isGasDetailShow = true;
+      recordGasList({ sn }).then((res) => {
+        this.gasDetail = res.data;
+      });
     },
     changeCategory(categoryName) {
       if (!categoryName) return;

@@ -371,7 +371,7 @@
     />
 
     <!-- 任务令 -->
-    <task-code :visible.sync="isTaskCodeFlag"></task-code>
+    <task-code :visible.sync="isTaskCodeFlag" :createTaskData="createTaskData"></task-code>
   </div>
 </template>
 
@@ -426,6 +426,7 @@ export default {
       computerOptions: [],
       fileTypeList: [],
       fileListCover: [],
+      createTaskData: {},
       auth: { id: undefined, why: "", idList: [] },
       // 查询参数
       queryParams: {
@@ -531,6 +532,10 @@ export default {
     },
     onCreateTaskCode() {
       this.isTaskCodeFlag = true;
+      this.createTaskData= {
+        categoryId: this.queryParams.categoryId,
+        computerId: this.queryParams.computerId
+      }
     },
     /** 查询品牌列表 */
     getList() {

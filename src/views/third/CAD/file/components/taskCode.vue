@@ -118,6 +118,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    createTaskData: {
+      type: Object,
+      default: () => {},
+    },
   },
   components: {
     VueQr,
@@ -132,12 +136,14 @@ export default {
       chipList: [],
       // sts测试工序
       stsTestList: [],
-      form: {
-        logisticsEntity: {},
-      },
+      form: {},
     };
   },
   computed: {
+    // this.form = {
+    //     category: this.createTaskData.categoryId,
+    //     computer: this.createTaskData.computerId,
+    //   };
     isCreateDis() {
       const { category, computer, processId, chipVersion } = this.form;
       return !category || !computer || !processId || !chipVersion;
@@ -146,7 +152,7 @@ export default {
   watch: {
     visible(isFlag) {
       if (isFlag) {
-        this.getCategoryComputerDict();
+        this.handleEchoData();
         // sts测试工序
         this.getDicts("sys_test_session").then((res) => {
           this.stsTestList = res.data;
@@ -162,13 +168,18 @@ export default {
     },
   },
   methods: {
-    async getCategoryComputerDict() {
-      try {
-        const result = await categoryComputerDict();
-        this.dictList = result.data;
-      } catch (error) {
-        console.error(error);
+    async handleEchoData() {
+      const result = await categoryComputerDict();
+      this.dictList = result.data;
+
+      if (this.createTaskData.categoryId) {
+        this.changeCategory(this.createTaskData.categoryId);
       }
+
+      this.form = {
+        category: this.createTaskData.categoryId,
+        computer: this.createTaskData.computerId,
+      };
     },
     getComputerNameList(name) {
       if (name) {
@@ -189,9 +200,9 @@ export default {
     },
     changeCategory(categoryId) {
       if (!categoryId) return;
-      this.computerOptions = this.dictList.filter(
+      this.computerOptions = this.dictList.find(
         (item) => item.id === categoryId
-      )[0].computerList;
+      )?.computerList;
     },
     resetQuery() {
       this.resetForm("form");

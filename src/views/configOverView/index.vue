@@ -99,6 +99,14 @@
                 })
               "
             />
+            <!-- 配置详情 -->
+            <Tooltip
+              class="margin-0"
+              icon="el-icon-s-management"
+              content="车型配置详情"
+              @click="handleOpenDetail(row)"
+            />
+
             <template v-if="row.state === 0">
               <el-tag type="danger">未审核</el-tag>
             </template>
@@ -166,6 +174,22 @@
         :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
+      </el-table-column>
+      <el-table-column
+        label="SN"
+        prop="sn"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
+      </el-table-column>
+      <el-table-column
+        label="pcbaSn"
+        prop="pcbaSn"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
       <el-table-column
         label="客户料号"
@@ -1011,6 +1035,141 @@
         </el-button>
       </span>
     </el-dialog>
+
+    <el-dialog
+      title="车型配置详情"
+      :visible.sync="isDeployShow"
+      width="50%"
+      center
+      top="2vh"
+      :close-on-click-modal="false"
+    >
+      <el-descriptions direction="vertical" :column="4" border>
+        <el-descriptions-item label="背光亮度">
+          <span v-NoData="backlightBrightnessList[deployData.backlightBrightness]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="缓启动">
+          <span v-NoData="deployData.slowStart"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="车名">
+          <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="车轮宽度">
+          <span v-NoData="deployData.tiresSize"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="休眠时间(min)">
+          <span v-NoData="deployData.sleepTime"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="轮径">
+          <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="车型">
+          <span v-NoData="deployData.carModel"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="蓝牙">
+          {{ deployData.bluetooth === 1 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="系统电压(V)">
+          <span v-NoData="deployData.voltage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="周长(mm)">
+          <span v-NoData="deployData.perimeter"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="默认档位">
+          <span v-NoData="deployData.defaultGear"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="推车助力">
+          {{ deployData.driveAssist === 1 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="欠压门限(V)">
+          <span v-NoData="deployData.undervoltage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="显示单位">
+          <span v-NoData="dicts_unit[deployData.unit]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="Logo界面">
+          <span v-NoData="dicts_logo[deployData.logo]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="恢复出厂设置">
+          {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="助力档位数">
+          <span v-NoData="deployData.powerGear"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="协议">
+          <span v-NoData="dicts_agreement[deployData.agreement]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="开机密码">
+          <span v-NoData="deployData.startupPasswd"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="转把分档">
+          {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="助力开始磁钢数">
+          <span v-NoData="deployData.assistStartMagnetNumber"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电量计算方式">
+          <span v-NoData="dicts_power[deployData.power]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="高级菜单密码">
+          <span v-NoData="deployData.highMenuPasswd"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="蜂鸣器开关">
+          {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="助力比例">
+          <span v-NoData="deployData.assistPercentage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="测速磁钢数">
+          <span v-NoData="deployData.speedSteel"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电机功率(W)">
+          <span v-NoData="deployData.motorSys"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="定速巡航功能">
+          {{ deployData.cruise === 0 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="限流门限(A)">
+          <span v-NoData="deployData.currentlimiting"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电量变化时间(s)">
+          <span v-NoData="deployData.batteryVoltageChangeTime"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电池容量">
+          <span v-NoData="deployData.batteryCap"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="开机密码">
+          {{ deployData.turnOnPasswd === 0 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="助力限速门限(km/h)">
+          <span v-NoData="deployData.assistLimit"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="速度平滑等级">
+          <span v-NoData="deployData.smoothLevel"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="高速蜂鸣器提醒">
+          <span v-NoData="deployData.highSpeedBuzzerRemind"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="菜单密码">
+          {{ deployData.menuPassword === 0 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="显示轮径">
+          <span v-NoData="deployData.showWheelsize"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="总线故障超时时间(s)">
+          <span v-NoData="deployData.allLineErrTimeOut"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="串口通讯电平">
+          <span v-NoData="serialLevelLogData[deployData.serialLevelLog]"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="转把限速">
+          {{ deployData.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="助力正反">
+          {{ deployData.assist === 0 ? "助力正" : "助力反" }}
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
   </div>
 </template>
 
@@ -1028,6 +1187,8 @@ export default {
   },
   data() {
     return {
+      isDeployShow: false,
+      deployData: {},
       myCategoryId: "",
       isCLoading: false,
       authDialogVisible: false,
@@ -1046,6 +1207,10 @@ export default {
       computerOptions: [],
       // 车把尺寸
       handlebarSizeData: {},
+      serialLevelLogData: {
+        0: "3.3V",
+        1: "5V",
+      },
       // 查询参数
       queryParams: {
         p: 1,
@@ -1211,6 +1376,10 @@ export default {
         .finally(() => {
           this.isSubmitLoading = false;
         });
+    },
+    handleOpenDetail(row) {
+      this.isDeployShow = true;
+      this.deployData = Object.assign({}, row);
     },
   },
 };

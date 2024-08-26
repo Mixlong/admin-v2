@@ -303,3 +303,12 @@ export function trackLogList(params) {
     params
   })
 }
+
+// 气密性测试
+export function recordGasList(params) {
+  return request({
+    url: '/record/gas/list',
+    method: 'get',
+    params
+  })
+}
