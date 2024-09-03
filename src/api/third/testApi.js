@@ -285,6 +285,17 @@ export function stsTestList(params) {
   });
 }
 
+// 导出
+export function stsTestExport(params) {
+  return request({
+    url: "/test/export",
+    method: "get",
+    params,
+  });
+}
+
+
+
 /***
  * sop管理
  */

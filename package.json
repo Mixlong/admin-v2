@@ -60,6 +60,7 @@
     "js-table2excel": "^1.0.3",
     "jsencrypt": "3.0.0-rc.1",
     "jszip": "^3.6.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.3",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",

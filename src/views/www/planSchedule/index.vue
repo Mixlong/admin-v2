@@ -95,11 +95,17 @@
             type="primary"
             icon="el-icon-search"
             size="mini"
+            v-hasPermi="['www:planSchedule:query']"
             @click="handleQuery"
           >
             搜 索
           </el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          <el-button
+            icon="el-icon-refresh"
+            size="mini"
+            v-hasPermi="['www:planSchedule:reset']"
+            @click="resetQuery"
+          >
             重 置
           </el-button>
         </el-form-item>
@@ -111,12 +117,13 @@
           type="primary"
           icon="el-icon-plus"
           size="mini"
+          v-hasPermi="['www:planSchedule:add']"
           @click="handleAdd"
         >
           新 增
         </el-button>
         <el-button
-          v-hasPermi="['planSchedule:add:old']"
+          v-hasPermi="['www:planSchedule:oldAdd']"
           type="primary"
           icon="el-icon-plus"
           size="mini"
@@ -253,6 +260,7 @@
             <!-- :disabled="isDisabled(row.date)" -->
             <el-button
               v-if="row.salesOrderNo"
+              v-hasPermi="['www:planSchedule:update']"
               :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
               type="text"
               @click="handleUpdate(row)"
@@ -261,6 +269,7 @@
             </el-button>
             <el-button
               v-if="!row.salesOrderNo"
+              v-hasPermi="['www:planSchedule:oldUpdate']"
               :class="[
                 isDisabled(row.date) ? 'text-gray' : 'text-blue',
                 'mlZero',
@@ -273,6 +282,7 @@
             <el-button
               class="text-red mlZero"
               type="text"
+              v-hasPermi="['www:planSchedule:delete']"
               @click="handleDelete(row)"
             >
               删除
@@ -281,11 +291,17 @@
               v-show="row.qrCode"
               class="mlZero"
               type="text"
+              v-hasPermi="['www:planSchedule:taskOrder']"
               @click="handleQrCode(row)"
             >
               任务令
             </el-button>
-            <el-button type="text" class="mlZero" @click="onEditLog(row.id)">
+            <el-button
+              type="text"
+              class="mlZero"
+              v-hasPermi="['www:planSchedule:log']"
+              @click="onEditLog(row.id)"
+            >
               日志
             </el-button>
           </div>
@@ -293,6 +309,7 @@
             <el-button
               class="mlZero"
               type="text"
+              v-hasPermi="['www:planSchedule:create:prodData']"
               @click="handleCreateFile(row.id)"
             >
               生成生产资料
@@ -301,6 +318,7 @@
               <el-button
                 class="mlZero"
                 type="text"
+                v-hasPermi="['www:planSchedule:download:prodData']"
                 @click="zipFile(row.fileZip)"
               >
                 下载生产资料
@@ -309,6 +327,7 @@
               <el-button
                 class="mlZero"
                 type="text"
+                v-hasPermi="['www:planSchedule:create:seeData']"
                 @click="getProSecDetail(row.id)"
               >
                 生成预览资料
@@ -318,6 +337,7 @@
                 <el-button
                   class="mlZero"
                   type="text"
+                  v-hasPermi="['www:planSchedule:download:fileData']"
                   @click="zipFile(row.excelUrl)"
                 >
                   下载资料清单
@@ -333,6 +353,7 @@
                 <el-button
                   class="mlZero"
                   type="text"
+                  v-hasPermi="['www:planSchedule:send:prod']"
                   @click="handleProd(row.id)"
                 >
                   外发生产

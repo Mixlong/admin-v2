@@ -72,16 +72,34 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          v-hasPermi="['third:epc:query']"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button
-          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
+          icon="el-icon-refresh"
+          v-hasPermi="['third:epc:reset']"
+          @click="resetQuery"
+        >
+          重置
+        </el-button>
+        <el-button
           type="warning"
+          v-hasPermi="['third:epc:batchFirstCheck']"
           @click="handleAuthBatchChange"
         >
-          {{ batchCheck }}
+          批量初审
+        </el-button>
+        <el-button
+          type="warning"
+          v-hasPermi="['third:epc:batchFinalCheck']"
+          @click="handleAuthBatchChange"
+        >
+          批量终审
         </el-button>
       </el-form-item>
     </el-form>
@@ -119,11 +137,7 @@
         align="center"
         width="150"
       />
-      <el-table-column
-        label="属性描述"
-        prop="content"
-        align="center"
-      >
+      <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="{ row }" v-html="row.content"></span>
       </el-table-column>
       <el-table-column
@@ -151,7 +165,10 @@
         prop="createBy"
         width="120"
       >
-        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.createBy || scope.row.updateBy"
+        ></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="140">
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
@@ -166,77 +183,59 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['factory', 'admin'])"
+            v-hasPermi="['third:epc:edit']"
             @click="handleUpdate(scope.row)"
           />
-          <el-tooltip
-            class="item"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['f_test', 'admin'])"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              type="text"
-              class="text-orange font16"
-              @click="handleAuthChange(scope.row, 1)"
-            ></el-button>
-          </el-tooltip>
 
-          <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['fo_test', 'admin'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip>
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="初审"
+            v-hasPermi="['third:epc:firstCheck']"
+            v-if="scope.row.status == 1"
+            @click="handleAuthChange(scope.row, 1)"
+          />
 
-          <el-tooltip
-            v-if="isSResetCheck(scope.row)"
-            class="item font16"
-            effect="dark"
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="终审"
+            v-hasPermi="['third:epc:finalCheck']"
+            v-if="scope.row.status == 4"
+            @click="handleAuthChange(scope.row, 4)"
+          />
+
+          <Tooltip
+            icon="el-icon-circle-check"
+            class="text-orange"
             content="重置审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-circle-check"
-              type="text"
-              @click="handleResetCheck(scope.row)"
-            ></el-button>
-          </el-tooltip>
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
+            v-hasPermi="['third:epc:resetCheck']"
+            v-if="isSResetCheck(scope.row)"
+            @click="handleResetCheck(scope.row)"
+          />
+
+          <Tooltip
+            icon="el-icon-download"
+            class="text-orange"
             content="下载"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
-            />
-          </el-tooltip>
+            v-hasPermi="['third:epc:downloadFile']"
+            v-if="isDownloadUrl(scope.row)"
+            @click="zipFile(scope.row.url)"
+          />
+
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
+            content="终审撤回"
+            v-hasPermi="['third:epc:resetFinalCheck']"
+            v-if="scope.row.status == 4"
             @click="handleRevocation(scope.row.id)"
           />
+
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
+            content="审核完毕撤回"
+            v-hasPermi="['third:epc:resetChecked']"
+            v-if="scope.row.status == 2"
             @click="handleRevocation(scope.row.id)"
           />
         </template>
@@ -262,11 +261,11 @@
       <el-form ref="form" :model="auth" class="form-data" :inline="false">
         <el-form-item class="auth" label="拒审原因">
           <el-input
-            class="width-100-style"
+            v-model="auth.why"
             type="textarea"
             :autosize="{ minRows: 4, maxRows: 8 }"
-            v-model="auth.why"
             placeholder="不通过则需要输入原因"
+            style="width: 100%"
           />
         </el-form-item>
         <el-form-item label="批量同步" v-if="auth.id">
@@ -274,8 +273,8 @@
             ref="select"
             v-model="auth.idList"
             multiple
-            class="similar-style width-100-style"
-            placeholder=""
+            placeholder="请选择"
+            style="width: 100%"
           >
             <el-option
               :disabled="disabledName == dict.computer"
@@ -372,13 +371,6 @@ export default {
       statusOptions: (state) => state.commonData.statusOptions,
     }),
     ...mapGetters("commonData", ["isCheckType"]),
-    batchCheck() {
-      if (this.checkRole(["DATA_MANAGER"])) {
-        return "批量终审";
-      } else {
-        return "批量初审";
-      }
-    },
     isComputerStatus() {
       return (status) => {
         return status ? "danger" : "success";
@@ -648,9 +640,5 @@ export default {
 .auth {
   text-align: center;
   margin-bottom: 10px;
-}
-
-.width-100-style {
-  width: 100%;
 }
 </style>

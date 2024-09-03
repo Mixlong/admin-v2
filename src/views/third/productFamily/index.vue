@@ -42,16 +42,27 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          v-hasPermi="['third:productFamily:query']"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        <el-button
+          icon="el-icon-refresh"
+          v-hasPermi="['third:productFamily:reset']"
+          @click="resetQuery"
+        >
+          重置
+        </el-button>
       </el-form-item>
       <el-button
         class="fr"
-        v-if="checkRole(['project_manager', 'admin', 'product'])"
         type="primary"
         icon="el-icon-plus"
+        v-hasPermi="['third:productFamily:add']"
         @click="handleAdd"
       >
         新增
@@ -83,8 +94,10 @@
         </template>
       </el-table-column>
       <el-table-column label="STS" align="center" width="120">
-        <template slot-scope="{ row }"> 
-          <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{ row.isSts === 1 ? '是' : '否' }}</el-tag>
+        <template slot-scope="{ row }">
+          <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{
+            row.isSts === 1 ? "是" : "否"
+          }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column
@@ -104,12 +117,14 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:productFamily:update']"
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:productFamily:delete']"
             @click="handleDelete(scope.row)"
           />
         </template>
@@ -184,7 +199,7 @@ export default {
     handleFirstLink() {
       const { categoryId, computerId } = this.$route.params;
 
-      if(categoryId && computerId) {
+      if (categoryId && computerId) {
         this.changeCategory(categoryId);
         this.queryParams.key = categoryId;
         this.queryParams.computerId = computerId;
@@ -210,7 +225,7 @@ export default {
             resolve(res.data);
           });
         } catch (error) {
-          reject(error)
+          reject(error);
         }
       });
     },
@@ -218,7 +233,9 @@ export default {
     changeCategory(categoryId) {
       this.queryParams.computerId = "";
 
-      this.computerOptions = this.dictList.filter((item) => item.id === categoryId)[0]?.computerList;
+      this.computerOptions = this.dictList.filter(
+        (item) => item.id === categoryId
+      )[0]?.computerList;
     },
     // 型号查询
     getComputerNameList(name) {
@@ -363,8 +380,8 @@ export default {
         title: '是否确认删除产品型号为"' + row.name + '"的数据项?',
         delFn: authComputer,
         data: { id: row.id, status: 1 },
-        cb: this.getList
-      })
+        cb: this.getList,
+      });
     },
   },
 };

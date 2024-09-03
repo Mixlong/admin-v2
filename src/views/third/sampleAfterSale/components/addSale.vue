@@ -258,7 +258,7 @@
                       :disabled="isNoSelect"
                     >
                       <el-option
-                        v-for="(item, p) in roleList('afterSale')"
+                        v-for="(item, p) in roleList('Sample_Sale')"
                         :key="p"
                         :label="item.dictLabel"
                         :value="item.dictValue"
@@ -286,7 +286,7 @@
                       :disabled="isNoSelect"
                     >
                       <el-option
-                        v-for="(item, index) in roleList('afterSale')"
+                        v-for="(item, index) in roleList('Sample_Sale')"
                         :key="index"
                         :label="item.dictLabel"
                         :value="item.dictValue"
@@ -314,7 +314,7 @@
                       :disabled="isNoSelect"
                     >
                       <el-option
-                        v-for="(item, p) in roleList('afterSale')"
+                        v-for="(item, p) in roleList('Sample_Sale')"
                         :key="p"
                         :label="item.dictLabel"
                         :value="item.dictValue"
@@ -645,6 +645,7 @@ export default {
       return new Promise((resolve) => {
         sampleList({
           p: page,
+          sampleName: keyword
         }).then((res) => {
           let { list, total, pageNum, pageSize } = res.data;
 

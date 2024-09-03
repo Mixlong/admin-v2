@@ -76,20 +76,32 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
+          v-hasPermi="['third:ids:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+        <el-button
+          icon="el-icon-refresh"
+          size="mini"
+          v-hasPermi="['third:ids:reset']"
+          @click="resetQuery"
+        >
           重置
         </el-button>
         <el-button
-          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
           type="warning"
-          size="mini"
+          v-hasPermi="['third:ids:batchFirstCheck']"
           @click="handleAuthBatchChange"
         >
-          {{ batchCheck }}
+          批量初审
+        </el-button>
+        <el-button
+          type="warning"
+          v-hasPermi="['third:ids:batchFinalCheck']"
+          @click="handleAuthBatchChange"
+        >
+          批量终审
         </el-button>
       </el-form-item>
     </el-form>
@@ -155,7 +167,10 @@
         prop="createBy"
         width="120"
       >
-        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.createBy || scope.row.updateBy"
+        ></span>
       </el-table-column>
       <el-table-column
         label="创建时间"
@@ -175,23 +190,25 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin'])"
+            v-hasPermi="['third:ids:edit']"
             @click="handleUpdate(scope.row)"
           />
 
           <Tooltip
             icon="el-icon-coordinate"
             class="text-orange"
-            content="审核"
-            v-if="scope.row.status == 1 && checkRole(['test', 'admin'])"
+            content="初审"
+            v-hasPermi="['third:ids:firstCheck']"
+            v-if="scope.row.status == 1"
             @click="handleAuthChange(scope.row, 1)"
           />
 
           <Tooltip
             icon="el-icon-coordinate"
             class="text-orange"
-            content="审核"
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
+            content="终审"
+            v-hasPermi="['third:ids:finalCheck']"
+            v-if="scope.row.status == 4"
             @click="handleAuthChange(scope.row, 4)"
           />
 
@@ -199,6 +216,7 @@
             icon="el-icon-circle-check"
             class="text-orange"
             content="重置审核"
+            v-hasPermi="['third:ids:resetCheck']"
             v-if="isSResetCheck(scope.row)"
             @click="handleResetCheck(scope.row)"
           />
@@ -207,22 +225,24 @@
             icon="el-icon-download"
             class="text-orange"
             content="下载"
+            v-hasPermi="['third:ids:downloadFile']"
             v-if="isDownloadUrl(scope.row)"
             @click="zipFile(scope.row.url)"
           />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 4 && checkRole(['test', 'admin'])"
+            content="终审撤回"
+            v-hasPermi="['third:ids:resetFinalCheck']"
+            v-if="scope.row.status == 4"
             @click="handleRevocation(scope.row.id)"
           />
+
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
+            content="审核完毕撤回"
+            v-hasPermi="['third:ids:resetChecked']"
+            v-if="scope.row.status == 2"
             @click="handleRevocation(scope.row.id)"
           />
 
@@ -367,13 +387,6 @@ export default {
       statusOptions: (state) => state.commonData.statusOptions,
     }),
     ...mapGetters("commonData", ["isCheckType"]),
-    batchCheck() {
-      if (this.checkRole(["DATA_MANAGER"])) {
-        return "批量终审";
-      } else {
-        return "批量初审";
-      }
-    },
     isComputerStatus() {
       return (status) => {
         return status ? "danger" : "success";
@@ -381,11 +394,7 @@ export default {
     },
     isSResetCheck() {
       return ({ versionStatus, status }) => {
-        return (
-          this.checkRole(["product"]) &&
-          !versionStatus &&
-          (status === 2 || status === 4)
-        );
+        return !versionStatus && (status === 2 || status === 4);
       };
     },
     isDownloadUrl() {
@@ -393,9 +402,7 @@ export default {
         return (
           !versionStatus &&
           url &&
-          (((status !== 2 || status !== 4) &&
-            this.checkRole(["test", "dev"])) ||
-            status === 2)
+          (status !== 2 || status !== 4 || status === 2)
         );
       };
     },

@@ -7,7 +7,6 @@ import minMaxValue from "@/directive/input";
 import VueClipboard from "vue-clipboard2";
 import vuescroll from "vue-scroll";
 import commonSelect from "@/directive/commonDirective/select";
-import "@/directive/debounce";
 import Element from "element-ui";
 import VueViewer from "v-viewer";
 // 头部标签组件

@@ -109,10 +109,19 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            v-hasPermi="['third:order:query']"
+            @click="handleQuery"
+          >
             搜索
           </el-button>
-          <el-button icon="el-icon-refresh" @click="resetQuery">
+          <el-button
+            icon="el-icon-refresh"
+            v-hasPermi="['third:order:reset']"
+            @click="resetQuery"
+          >
             重置
           </el-button>
         </el-form-item>
@@ -125,7 +134,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleAdd"
-          v-if="checkRole(['ms'])"
+          v-hasPermi="['third:order:add']"
         >
           新增
         </el-button>
@@ -133,11 +142,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table
-      v-loading="loading"
-      :height="tableHeight()"
-      :data="list"
-    >
+    <el-table v-loading="loading" :height="tableHeight()" :data="list">
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -181,7 +186,10 @@
         <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
       </el-table-column>
       <el-table-column label="出货日期" align="center" width="100">
-        <span slot-scope="{ row }" v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"></span>
+        <span
+          slot-scope="{ row }"
+          v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"
+        ></span>
       </el-table-column>
       <el-table-column label="订单状态" align="center" width="90">
         <template slot-scope="{ row }">
@@ -215,15 +223,16 @@
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button
-              v-if="!checkRole(['ms'])"
               class="text-green"
               type="text"
+              v-hasPermi="['third:order:prodSchedule:detail']"
               @click="$router.push(`/www/planSchedule?orderId=${row.id}`)"
             >
               排产详情
             </el-button>
+
             <el-button
-              v-if="!checkRole(['ms'])"
+              v-hasPermi="['third:order:prod:record']"
               type="text"
               @click="
                 $router.push(
@@ -233,7 +242,12 @@
             >
               生产记录
             </el-button>
-            <el-button type="text" @click="seeDetail(row.id)">
+
+            <el-button
+              type="text"
+              v-hasPermi="['third:order:detail']"
+              @click="seeDetail(row.id)"
+            >
               订单详情
             </el-button>
           </div>
@@ -241,14 +255,16 @@
             <el-button
               class="text-red"
               type="text"
+              v-hasPermi="['third:order:update']"
               @click="handleUpdate(row.id)"
             >
-              修改
+              编辑
             </el-button>
             <!-- 审核 -->
             <el-button
               type="text"
               @click="onOrderAuth(row.id)"
+              v-hasPermi="['third:order:check']"
               v-show="row.status === 0"
             >
               审核
@@ -257,13 +273,27 @@
               class="text-gray"
               type="text"
               @click="onOrderCancel(row.id)"
+              v-hasPermi="['third:order:cancel']"
               v-show="row.status !== 2"
             >
               取消
             </el-button>
-            <el-button type="text" @click="onEditLog(row.id)"> 日志 </el-button>
-            <el-button type="text" @click="rowDbClick(row)">复制</el-button>
+            <el-button
+              type="text"
+              v-hasPermi="['third:order:log']"
+              @click="onEditLog(row.id)"
+            >
+              日志
+            </el-button>
+            <el-button
+              type="text"
+              v-hasPermi="['third:order:copy']"
+              @click="rowDbClick(row)"
+            >
+              复制
+            </el-button>
             <Tooltip
+              v-hasPermi="['third:order:planSchedule']"
               icon="el-icon-position"
               content="排产管理"
               @click="
@@ -271,7 +301,7 @@
                   categoryId: row.categoryId,
                   computerId: row.computerId,
                   salesOrderNo: row.salesOrderNo,
-                  orderId: row.id
+                  orderId: row.id,
                 })
               "
             />

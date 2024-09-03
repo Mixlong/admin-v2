@@ -138,7 +138,9 @@
       </el-table-column>
       <el-table-column label="版本信息" align="center" width="100">
         <template slot-scope="scope">
-          <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
+          <el-button type="text" @click="seeDetail(scope.row.id)"
+            >查看</el-button
+          >
         </template>
       </el-table-column>
       <el-table-column label="配件信息" align="center" width="100">
@@ -156,7 +158,10 @@
           <el-button
             type="text"
             @click="
-              $router.push(`/STS/stsTestResult?sn=${row.sn}&recordId=${row.id}`)
+              handleNameToPage('StsTestResult', {
+                sn: row.sn,
+                recordId: row.id,
+              })
             "
           >
             查看
@@ -189,32 +194,57 @@
           prop="calibrationPa"
           align="center"
         />
-        <el-table-column label="气压校准" prop="standardPa" align="center" width="80" />
+        <el-table-column
+          label="气压校准"
+          prop="standardPa"
+          align="center"
+          width="80"
+        />
         <el-table-column
           label="气压波动范围"
           prop="volatilityRange"
           align="center"
           width="110"
         />
-        <el-table-column label="充气时间" prop="inflateTime" align="center" width="80">
+        <el-table-column
+          label="充气时间"
+          prop="inflateTime"
+          align="center"
+          width="80"
+        >
           <span
             slot-scope="{ row }"
             v-NoData="formattedTime(row.inflateTime)"
           />
         </el-table-column>
-        <el-table-column label="平衡时间" prop="balanceTime" align="center" width="80">
+        <el-table-column
+          label="平衡时间"
+          prop="balanceTime"
+          align="center"
+          width="80"
+        >
           <span
             slot-scope="{ row }"
             v-NoData="formattedTime(row.balanceTime)"
           />
         </el-table-column>
-        <el-table-column label="测试时间" prop="testTime" align="center" width="80">
+        <el-table-column
+          label="测试时间"
+          prop="testTime"
+          align="center"
+          width="80"
+        >
           <span slot-scope="{ row }" v-NoData="formattedTime(row.testTime)" />
         </el-table-column>
         <el-table-column label="测试时间戳" prop="time" align="center" sortable>
           <span slot-scope="{ row }" v-NoData="parseTime(row.time)" />
         </el-table-column>
-        <el-table-column label="测试结果" prop="testResult" align="center" width="100">
+        <el-table-column
+          label="测试结果"
+          prop="testResult"
+          align="center"
+          width="100"
+        >
           <el-tag :type="gasTestResultTag[row.testResult]" slot-scope="{ row }">
             {{ gasTestResultData[row.testResult] }}
           </el-tag>
@@ -225,22 +255,37 @@
     <el-dialog
       title="版本信息"
       :visible.sync="isStsDetailShow"
-      width="700px"
       center
       append-to-body
       top="1vh"
+      width="80%"
     >
       <el-table :data="stsDetail" bordered height="450">
         <el-table-column
-          label="环节"
+          label="工序名称"
           prop="processName"
-          width="120"
           align="center"
+          width="100"
         />
+        <el-table-column label="品类" prop="categoryName" align="center" />
+        <el-table-column label="型号" prop="computerName" align="center" />
         <el-table-column label="HW版本" prop="hwVersion" align="center" />
         <el-table-column label="UI版本" prop="uiVersion" align="center" />
         <el-table-column label="BOOT版本" prop="bootVersion" align="center" />
         <el-table-column label="APP版本" prop="appVersion" align="center" />
+        <el-table-column label="MAC" prop="mac" align="center" width="130" />
+        <el-table-column label="SN" prop="sn" align="center" />
+        <el-table-column label="pcbaSn" prop="pcbaSn" align="center" />
+        <el-table-column label="生产状态" prop="isRework" align="center">
+          <template slot-scope="{ row }">
+            <el-tag v-if="row.isRework === 0" type="success">正常生产</el-tag>
+            <el-tag v-if="row.isRework === 1" type="danger">返工</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="测试结果" prop="result" align="center" width="80" />
+        <el-table-column label="测试时间" prop="testTime" align="center" width="140" sortable>
+          <span slot-scope="{ row }" v-NoData="parseTime(row.testTime)"></span>
+        </el-table-column>
       </el-table>
     </el-dialog>
   </div>
@@ -251,6 +296,7 @@ import {
   categoryComputerDict,
   recordList,
   recordGasList,
+  recordVersionList,
 } from "@/api/third/fileConfig";
 import { orderWorkList } from "@/api/third/prodPlant";
 
@@ -362,9 +408,10 @@ export default {
       });
     },
     // 测试详情
-    seeDetail(row) {
+    async seeDetail(recordId) {
       this.isStsDetailShow = true;
-      this.stsDetail = row.list;
+      const result = await recordVersionList({ recordId });
+      this.stsDetail = result.data;
     },
     // 气密性测试
     seeGasDetail(sn) {

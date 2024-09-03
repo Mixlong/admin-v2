@@ -189,6 +189,18 @@ export function resetFileConfig(data) {
   })
 }
 
+
+// 获取SN信息
+export function fileConfigSn(params) {
+  return request({
+    url: '/file/config/sn',
+    method: 'get',
+    params
+  })
+}
+
+
+
 // 批量同步
 export function resetBatchSync(data) {
   return request({
@@ -276,6 +288,15 @@ export function recordList(params) {
   })
 }
 
+// 版本信息
+export function recordVersionList(params) {
+  return request({
+    url: '/record/version/list',
+    method: 'get',
+    params
+  })
+}
+
 // 配件信息
 export function partList(params) {
   return request({
@@ -312,3 +333,4 @@ export function recordGasList(params) {
     params
   })
 }
+

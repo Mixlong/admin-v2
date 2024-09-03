@@ -27,7 +27,6 @@
           clearable
           v-model="queryParams.computerId"
           placeholder="请选择仪表型号"
-          @change="changeComputer"
           :remote-method="getComputerNameList"
           style="width: 160px"
         >
@@ -83,19 +82,37 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          v-hasPermi="['third:cad:query']"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         <el-button
-          type="warning"
-          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
-          @click="handleAuthBatchChange"
+          icon="el-icon-refresh"
+          @click="resetQuery"
+          v-hasPermi="['third:cad:reset']"
         >
-          {{ batchCheck }}
+          重置
         </el-button>
         <el-button
-          v-if="checkRole(['test', 'admin'])"
+          type="warning"
+          v-hasPermi="['third:cad:batchFirstCheck']"
+          @click="handleAuthBatchChange"
+        >
+          批量初审
+        </el-button>
+        <el-button
+          type="warning"
+          v-hasPermi="['third:cad:batchFinalCheck']"
+          @click="handleAuthBatchChange"
+        >
+          批量终审
+        </el-button>
+        <el-button
+          v-hasPermi="['third:cad:missionOrder']"
           type="warning"
           @click="onCreateTaskCode"
         >
@@ -105,6 +122,16 @@
           @click="handleResetCheck">重置审核</el-button> -->
       </el-form-item>
     </el-form>
+    <div class="file_config_Sn_box">
+      <span>
+        <b>Sn：</b>
+        {{ fileConfigSnData.sn || "- - -" }}
+      </span>
+      <span class="margin-left">
+        <b>pcbaSn：</b>
+        {{ fileConfigSnData.pcbaSn || "- - -" }}
+      </span>
+    </div>
     <el-table
       ref="multipleTableRef"
       v-loading="loading"
@@ -202,104 +229,76 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['dev', 'admin', 'factory'])"
+            v-hasPermi="['third:cad:edit']"
             @click="handleUpdate(scope.row)"
           />
 
-          <el-tooltip
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['test', 'admin'])"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              type="text"
-              class="text-orange"
-              @click="handleAuthChange(scope.row, 1)"
-            ></el-button>
-          </el-tooltip>
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="初审"
+            v-hasPermi="['third:cad:firstCheck']"
+            v-if="scope.row.status == 1"
+            @click="handleAuthChange(scope.row, 1)"
+          />
 
-          <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip>
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="终审"
+            v-hasPermi="['third:cad:finalCheck']"
+            v-if="scope.row.status == 4"
+            @click="handleAuthChange(scope.row, 4)"
+          />
 
-          <el-tooltip
-            v-if="isSResetCheck(scope.row)"
-            class="item font16"
-            effect="dark"
+          <Tooltip
+            icon="el-icon-circle-check"
+            class="text-orange"
             content="重置审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-circle-check"
-              type="text"
-              @click="handleResetCheck(scope.row)"
-            ></el-button>
-          </el-tooltip>
+            v-hasPermi="['third:cad:resetCheck']"
+            v-if="isSResetCheck(scope.row)"
+            @click="handleResetCheck(scope.row)"
+          />
 
-          <el-tooltip
-            v-if="scope.row.jsFile"
-            class="item font16"
-            effect="dark"
+          <Tooltip
+            icon="el-icon-download"
+            class="text-orange"
             content="下载STS脚本"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.jsFile)"
-            />
-          </el-tooltip>
+            v-hasPermi="['third:cad:downloadSts']"
+            v-if="scope.row.jsFile"
+            @click="zipFile(scope.row.jsFile)"
+          />
 
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
+          <Tooltip
+            icon="el-icon-download"
+            class="text-orange"
             :content="`下载${scope.row.typeName}`"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
-            />
-          </el-tooltip>
+            v-hasPermi="['third:cad:downloadFile']"
+            v-if="isDownloadUrl(scope.row)"
+            @click="zipFile(scope.row.url)"
+          />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 4 && checkRole(['test', 'admin'])"
+            content="终审撤回"
+            v-hasPermi="['third:cad:resetFinalCheck']"
+            v-if="scope.row.status == 4"
             @click="handleRevocation(scope.row.id)"
           />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
+            content="审核完毕撤回"
+            v-hasPermi="['third:cad:resetChecked']"
+            v-if="scope.row.status == 2"
             @click="handleRevocation(scope.row.id)"
           />
 
           <!-- 批量同步 -->
           <Tooltip
+            v-hasPermi="['third:cad:batch']"
             icon="el-icon-s-claim"
             content="批量同步"
-            class="margin-left-xs"
-            v-if="checkRole(['dev'])"
             @click="handleUpdate(scope.row, (isBatchSync = true))"
           />
         </template>
@@ -371,7 +370,10 @@
     />
 
     <!-- 任务令 -->
-    <task-code :visible.sync="isTaskCodeFlag" :createTaskData="createTaskData"></task-code>
+    <task-code
+      :visible.sync="isTaskCodeFlag"
+      :createTaskData="createTaskData"
+    ></task-code>
   </div>
 </template>
 
@@ -384,6 +386,7 @@ import {
   computerDictList,
   fileCancel,
   computerNameList,
+  fileConfigSn,
 } from "@/api/third/fileConfig";
 import { commonStatusList } from "@/utils/commonData";
 import { mapGetters, mapState } from "vuex";
@@ -441,6 +444,7 @@ export default {
       },
       similarList: [],
       disabledName: "",
+      fileConfigSnData: {},
     };
   },
   computed: {
@@ -448,13 +452,6 @@ export default {
       statusOptions: (state) => state.commonData.statusOptions,
     }),
     ...mapGetters("commonData", ["isCheckType"]),
-    batchCheck() {
-      if (this.checkRole(["DATA_MANAGER"])) {
-        return "批量终审";
-      } else {
-        return "批量初审";
-      }
-    },
     isComputerStatus() {
       return (status) => {
         return status ? "danger" : "success";
@@ -462,11 +459,7 @@ export default {
     },
     isSResetCheck() {
       return ({ computerStatus, status }) => {
-        return (
-          this.checkRole(["product"]) &&
-          !computerStatus &&
-          (status === 2 || status === 4)
-        );
+        return !computerStatus && (status === 2 || status === 4);
       };
     },
     isDownloadUrl() {
@@ -475,9 +468,7 @@ export default {
           !computerStatus &&
           dataType === 1 &&
           url &&
-          (((status !== 2 || status !== 4) &&
-            this.checkRole(["test", "dev"])) ||
-            status === 2)
+          (status !== 2 || status !== 4 || status === 2)
         );
       };
     },
@@ -495,11 +486,25 @@ export default {
         return typeList.includes(type);
       };
     },
+    isFileConfigSnData() {
+      return Object.keys(this.fileConfigSnData)?.length;
+    },
   },
   created() {
     this.getCaategoryData();
   },
   methods: {
+    async getFileConfigSn() {
+      const { categoryId, computerId } = this.queryParams;
+      if (categoryId && computerId) {
+        const result = await fileConfigSn({
+          categoryId,
+          computerId,
+        });
+
+        this.fileConfigSnData = result.data ?? {};
+      }
+    },
     getCaategoryData() {
       categoryComputerDict().then((response) => {
         this.dictList = response.data;
@@ -532,10 +537,10 @@ export default {
     },
     onCreateTaskCode() {
       this.isTaskCodeFlag = true;
-      this.createTaskData= {
+      this.createTaskData = {
         categoryId: this.queryParams.categoryId,
-        computerId: this.queryParams.computerId
-      }
+        computerId: this.queryParams.computerId,
+      };
     },
     /** 查询品牌列表 */
     getList() {
@@ -554,16 +559,12 @@ export default {
     changeCategory(val) {
       if (!val) return;
       this.queryParams.computerId = "";
-      this.getList();
       return new Promise((resove) => {
         this.computerOptions = this.dictList.filter(
           (item) => item.id === val
         )[0].computerList;
         resove();
       });
-    },
-    changeComputer(val) {
-      this.getList();
     },
     checkSelectable(row) {
       if (row.computerStatus) {
@@ -687,7 +688,6 @@ export default {
       this.urls = [];
       this.reset();
     },
-
     // 表单重置
     reset() {
       if (this.$refs.menu != undefined) {
@@ -697,11 +697,13 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
+      this.getFileConfigSn();
       this.queryParams.p = 1;
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.fileConfigSnData = {};
       this.dateRange = [];
       this.resetForm("queryForm");
       this.handleQuery();
@@ -793,4 +795,18 @@ export default {
 .width-100-style {
   width: 100%;
 }
+.file_config_Sn_box {
+  background: #f0f9eb;
+  padding: 8px 16px;
+  border-radius: 4px;
+  b {
+    color: #67c23a;
+  }
+}
+/* .Cad-option-box {
+  column-gap: 10px;
+  .el-button {
+    margin: 0;
+  }
+} */
 </style>

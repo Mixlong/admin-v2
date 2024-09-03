@@ -21,13 +21,19 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
+          v-hasPermi="['third:epc:type:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
+        <el-button
+          icon="el-icon-refresh"
+          size="mini"
+          v-hasPermi="['third:epc:type:reset']"
+          @click="resetQuery"
         >
+          重置
+        </el-button>
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
@@ -35,10 +41,11 @@
             type="primary"
             icon="el-icon-plus"
             size="mini"
+            v-hasPermi="['third:epc:type:add']"
             @click="handleAdd"
-            v-hasPermi="['third:dev:add']"
-            >新增</el-button
           >
+            新增
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -92,17 +99,17 @@
       >
         <template slot-scope="scope">
           <Tooltip
-            v-if="checkPermi(['third:dev:edit']) || checkRole(['admin'])"
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:epc:type:update']"
             @click="handleUpdate(scope.row)"
           />
 
-          <Tooltip
-            v-if="checkPermi(['third:dev:auth']) || checkRole(['admin'])"
+          <Tooltip 
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:epc:type:delete']"
             @click="handleStatusChange(scope.row)"
           />
         </template>
@@ -171,7 +178,7 @@
           style="width: 100%"
           class="flex checkbox-wrap"
         >
-          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList" >
+          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList">
             <el-checkbox
               v-for="(item, index) in roleTypeDictList"
               :key="index"

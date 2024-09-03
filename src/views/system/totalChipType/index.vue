@@ -22,10 +22,20 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="cyan"
+          icon="el-icon-search"
+          v-hasPermi="['third:totalChipType:query']"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+        <el-button
+          icon="el-icon-refresh"
+          size="mini"
+          v-hasPermi="['third:totalChipType:reset']"
+          @click="resetQuery"
+        >
           重置
         </el-button>
       </el-form-item>
@@ -37,7 +47,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleAdd"
-          v-hasPermi="['system:role:add']"
+          v-hasPermi="['third:totalChipType:add']"
         >
           新增
         </el-button>
@@ -54,7 +64,12 @@
       :height="tableHeight()"
       border
     >
-      <el-table-column label="资料类型" align="center" prop="type" :formatter="onTypeFormatter" />
+      <el-table-column
+        label="资料类型"
+        align="center"
+        prop="type"
+        :formatter="onTypeFormatter"
+      />
       <el-table-column label="创建人" align="center" prop="createBy">
         <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
       </el-table-column>
@@ -73,17 +88,20 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:totalChipType:update']"
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
             icon="el-icon-reading"
             content="详情"
+            v-hasPermi="['third:totalChipType:detail']"
             @click="handleDetail(scope.row)"
           />
           <Tooltip
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:totalChipType:delete']"
             @click="handleDelete(scope.row)"
           />
         </template>
@@ -334,7 +352,7 @@ export default {
       });
     },
     onTypeFormatter(row) {
-      return this.dataTypeList[row.type]
+      return this.dataTypeList[row.type];
     },
     // 表单重置
     reset() {
@@ -430,9 +448,13 @@ export default {
         if (valid) {
           const { softValue, hardValue, projectValue } = this.form;
 
-          const dataFlag = [this.Is_Empty(softValue), this.Is_Empty(hardValue), this.Is_Empty(projectValue)].every(item => item === true);
+          const dataFlag = [
+            this.Is_Empty(softValue),
+            this.Is_Empty(hardValue),
+            this.Is_Empty(projectValue),
+          ].every((item) => item === true);
 
-          if(dataFlag) {
+          if (dataFlag) {
             return this.msgError("软/硬/工属性至少有一项选择数据");
           }
 

@@ -16,27 +16,39 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          v-hasPermi="['third:customer:query']"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button
+          icon="el-icon-refresh"
+          v-hasPermi="['third:customer:reset']"
+          @click="resetQuery"
+        >
+          重置
+        </el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          v-hasPermi="['third:customer:add']"
+          @click="handleAdd"
+        >
           新增
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table
-      v-loading="loading"
-      :data="customerList"
-      :height="tableHeight()"
-    >
+    <el-table v-loading="loading" :data="customerList" :height="tableHeight()">
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
@@ -51,7 +63,12 @@
         </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime" sortable>
+      <el-table-column
+        label="创建时间"
+        align="center"
+        prop="createTime"
+        sortable
+      >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
@@ -65,6 +82,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:customer:update']"
             @click="handleUpdate(scope.row)"
           />
         </template>

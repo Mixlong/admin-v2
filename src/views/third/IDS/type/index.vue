@@ -21,11 +21,12 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
+          v-hasPermi="['third:ids:type:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+        <el-button icon="el-icon-refresh" size="mini" v-hasPermi="['third:ids:type:reset']" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>
@@ -35,8 +36,8 @@
             type="primary"
             icon="el-icon-plus"
             size="mini"
+            v-hasPermi="['third:ids:type:add']"
             @click="handleAdd"
-            v-hasPermi="['third:dev:add']"
           >
             新增
           </el-button>
@@ -92,14 +93,14 @@
       >
         <template slot-scope="scope">
           <Tooltip
-            v-if="checkPermi(['third:dev:edit']) || checkRole(['admin'])"
+            v-hasPermi="['third:ids:type:update']"
             icon="el-icon-edit"
             content="编辑"
             @click="handleUpdate(scope.row)"
           />
 
           <Tooltip
-            v-if="checkPermi(['third:dev:auth']) || checkRole(['admin'])"
+            v-hasPermi="['third:ids:type:delete']"
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"

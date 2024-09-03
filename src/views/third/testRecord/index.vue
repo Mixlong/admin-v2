@@ -32,7 +32,7 @@
             :key="dict.model"
             :label="dict.name"
             :value="dict.name"
-          />                  
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="整机SN" prop="sn">
@@ -75,6 +75,14 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button
+          class="float-right"
+          type="warning"
+          icon="el-icon-download"
+          @click="handleExport"
+        >
+          导 出
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -94,10 +102,10 @@
       <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
       <el-table-column label="整机SN" prop="sn" align="center">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
-      </el-table-column>  
+      </el-table-column>
       <el-table-column label="测试环节" prop="processName" align="center" />
       <el-table-column label="判断结果" prop="result" align="center">
-        <span slot-scope="{row}" :class="stsResultStyle(row.result)">
+        <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
       </el-table-column>
@@ -144,7 +152,7 @@
         <el-descriptions-item
           label="测试结果"
           label-class-name="text-center"
-          :content-class-name="['text-center font20']"  
+          :content-class-name="['text-center font20']"
           :contentStyle="contentStyle"
         >
           <span :class="stsResultStyle(stsDetail.result)">
@@ -180,7 +188,7 @@
 
 <script>
 import { categoryComputerDict } from "@/api/third/fileConfig";
-import { stsTestList } from "@/api/third/testApi";
+import { stsTestList, stsTestExport } from "@/api/third/testApi";
 
 export default {
   name: "StsTestResult",
@@ -217,23 +225,27 @@ export default {
   computed: {
     stsResultStyle() {
       return (stsResult) => {
-        switch(stsResult) {
-          case "OK": return "text-navy";
-          case "NG": return "text-red"
+        switch (stsResult) {
+          case "OK":
+            return "text-navy";
+          case "NG":
+            return "text-red";
         }
-      }
-    }
+      };
+    },
   },
   created() {
-    const { sn, recordId } = this.$route.query;
-
-    if (sn !== "" && sn !== "null") {
-      this.queryParams.sn = sn;
-    }
-    this.queryParams.recordId = recordId;
+    this.getList();
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
+  },
+  activated() {
+    const { sn, recordId } = this.$route.params;
+    this.queryParams.sn = sn;
+    this.queryParams.recordId = recordId;
+
+    this.getList();
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -255,7 +267,6 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList();
     });
   },
   methods: {
@@ -292,6 +303,21 @@ export default {
       this.queryParams.sn = "";
       this.resetForm("queryForm");
       this.handleQuery();
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm("是否确认导出测试记录数据项?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(function () {
+          return stsTestExport(queryParams);
+        })
+        .then((response) => {
+          this.download(response.msg);
+        });
     },
   },
 };
