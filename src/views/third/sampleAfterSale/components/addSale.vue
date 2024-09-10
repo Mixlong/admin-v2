@@ -34,19 +34,12 @@
                   </el-col>
                   <el-col>
                     <el-form-item label="客户名称" prop="customerName">
-                      <select-loadMore
+                      <el-autocomplete
                         v-model="form.customerName"
-                        style="width: 100%"
-                        :data="customerNameData.data"
-                        :page="customerNameData.page"
-                        :hasMore="customerNameData.more"
-                        dictLabel="name"
-                        :moreParams="true"
-                        :request="getCustomerNameList"
-                        @getChange="getCustomerNameId"
+                        :fetch-suggestions="querySearchAsync"
                         placeholder="请选择客户名称"
-                      >
-                      </select-loadMore>
+                        style="width: 100%"
+                      ></el-autocomplete>
                     </el-form-item>
                   </el-col>
                   <el-col v-if="isUpdateId">
@@ -357,13 +350,17 @@
               :imgH="98"
             />
           </el-form-item>
-          <el-form-item label="上传8D报告" prop="report" v-if="isUpdateId">
-            <DrUpload v-model="form.report" :limit="1" :isOnePic="1">
-              <div class="text-left">
-                <el-button size="small" type="primary">点击上传</el-button>
-              </div>
-            </DrUpload>
-          </el-form-item>
+          <el-row :gutter="10">
+            <el-col :span="6">
+              <el-form-item label="上传8D报告" prop="report" v-if="isUpdateId">
+                <DrUpload v-model="form.report" :limit="1" :isOnePic="1">
+                  <div class="text-left">
+                    <el-button size="small" type="primary">点击上传</el-button>
+                  </div>
+                </DrUpload>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <template v-if="isUpdateId">
             <h3 class="margin-top-sm">返回客户信息</h3>
             <el-row :gutter="10">
@@ -465,8 +462,6 @@
 
 <script>
 import { saleSave, saleUpdate } from "@/api/third/sampleSale";
-import { getCustomerList } from "@/api/order";
-import { computerNameList } from "@/api/third/fileConfig";
 import { listCustomer, sampleList } from "@/api/third/sample";
 import tinymce from "@/views/components/Editor";
 import globalData from "../mixins/global";
@@ -509,12 +504,6 @@ export default {
             sn: "",
           },
         ],
-      },
-      // 客户数据
-      customerNameData: {
-        data: [],
-        page: 1,
-        more: true,
       },
       // 送样单号
       sampleData: {
@@ -645,7 +634,8 @@ export default {
       return new Promise((resolve) => {
         sampleList({
           p: page,
-          sampleName: keyword
+          state: 123,
+          sampleName: keyword,
         }).then((res) => {
           let { list, total, pageNum, pageSize } = res.data;
 
@@ -661,7 +651,7 @@ export default {
       });
     },
     getSampleName(info) {
-      console.log(JSON.parse(info))
+      console.log(JSON.parse(info));
       if (!info) {
         this.form.list[this.currentSampleIndex].sampleId = "";
         return;
@@ -672,37 +662,6 @@ export default {
     },
     handleFocus(index) {
       this.currentSampleIndex = index;
-    },
-    /** 客户名称列表 */
-    getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
-      return new Promise((resolve) => {
-        getCustomerList({
-          p: page,
-          name: keyword,
-        }).then((res) => {
-          const { list, total, pageNum, pageSize } = res.data;
-          if (more) {
-            this.customerNameData.data = [
-              ...this.customerNameData.data,
-              ...list,
-            ];
-          } else {
-            this.customerNameData.data = list;
-          }
-          this.customerNameData.more = pageNum * pageSize < total;
-          this.customerNameData.page = pageNum;
-          resolve();
-        });
-      });
-    },
-    getCustomerNameId(info) {
-      if (!info) {
-        this.form.customerId = "";
-        return;
-      }
-      const { id, name } = JSON.parse(info);
-      this.form.customerName = name;
-      this.form.customerId = id;
     },
     querySearchAsync(queryString, cb) {
       listCustomer({ key: queryString || "" }).then((res) => {
@@ -718,7 +677,8 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        direction: '1',
+        direction: "1",
+        customerName: "",
         list: [
           {
             categoryId: "",

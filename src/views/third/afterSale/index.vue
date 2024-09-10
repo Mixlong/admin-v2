@@ -107,6 +107,11 @@
         class="fr mt5 mb5"
       >
         <el-col :span="1.5">
+          <el-button class="fr" type="danger" @click="clearFilter">
+            清除所有过滤器
+          </el-button>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
             type="success"
             icon="el-icon-download"
@@ -166,34 +171,97 @@
         prop="returnDate"
         align="center"
         width="90"
+        column-key="returnDate"
+        :filters="getFiltersData('returnDate')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
       />
-      <el-table-column label="问题状态" prop="status" align="center" width="80">
+      <el-table-column
+        label="问题状态"
+        prop="status"
+        align="center"
+        width="90"
+        column-key="status"
+        :filters="
+          handleDataFilter({
+            '0': 'OPEN',
+            '1': 'CLOSE',
+          })
+        "
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <template slot-scope="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
           <el-tag v-else type="success">CLOSE</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="不良仪表去向" prop="direction" align="center">
+      <el-table-column
+        label="不良仪表去向"
+        prop="direction"
+        align="center"
+        width="115"
+        column-key="direction"
+        :filters="handleDataFilter(modelDirList)"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <template slot-scope="{ row }">
           <el-tag :type="directionListClass(modelDirList, row.direction)">
             {{ directionLabel(modelDirList, row.direction) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="产品SN" prop="sn" align="center">
+      <el-table-column
+        label="产品SN"
+        prop="sn"
+        align="center"
+        column-key="sn"
+        :filters="getFiltersData('sn')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <template slot-scope="{ row }">
           <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" prop="customerName" align="center" />
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center">
+      <el-table-column
+        label="客户名称"
+        prop="customerName"
+        align="center"
+        column-key="customerName"
+        :filters="getFiltersData('customerName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        column-key="categoryName"
+        :filters="getFiltersData('categoryName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+      <el-table-column
+        label="型号"
+        prop="computerName"
+        align="center"
+        column-key="computerName"
+        :filters="getFiltersData('computerName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
       <el-table-column
         label="客诉现象"
         prop="result"
         align="center"
+        column-key="result"
+        :filters="getFiltersData('result')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
         show-overflow-tooltip
       />
       <el-table-column
@@ -213,8 +281,25 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="客退方" prop="returnParty" align="center" />
-      <el-table-column label="处理进展" prop="model" align="center" width="80">
+      <el-table-column
+        label="客退方"
+        prop="returnParty"
+        align="center"
+        column-key="returnParty"
+        :filters="getFiltersData('returnParty')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+      <el-table-column
+        label="处理进展"
+        prop="state"
+        align="center"
+        width="90"
+        column-key="state"
+        :filters="handleDataFilter(stateList)"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <template slot-scope="{ row }">
           <span v-if="row.state === 1" class="text-orange">处理类型</span>
           <span v-if="row.state === 2" class="text-red">现象复测</span>
@@ -230,12 +315,16 @@
         prop="handleName"
         align="center"
         width="80"
+        column-key="handleName"
+        :filters="getFiltersData('handleName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
       >
         <template slot-scope="{ row }">
           <span v-if="row.state === 7" class="text-green">已完成</span>
-          <span v-if="row.state === 6 && !row.handleName" class="text-red"
-            >无</span
-          >
+          <span v-if="row.state === 6 && !row.handleName" class="text-red">
+            无
+          </span>
           <span v-else>{{ row.handleName }}</span>
         </template>
       </el-table-column>
@@ -243,23 +332,48 @@
         label="是否异常"
         prop="isProblem"
         align="center"
-        width="80"
+        width="90"
+        column-key="isProblem"
+        :filters="
+          handleDataFilter({
+            0: '是',
+            1: '否',
+          })
+        "
+        :filter-method="filterHandler"
+        filter-placement="bottom"
       >
         <template slot-scope="{ row }">
           <el-tag v-if="row.isProblem === 0" type="primary">是</el-tag>
           <el-tag v-else type="danger">否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="问题根因" prop="rootMatter" align="center">
+      <el-table-column
+        label="问题根因"
+        prop="rootMatter"
+        align="center"
+        column-key="rootMatter"
+        :filters="getFiltersData('rootMatter')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
       </el-table-column>
-      <el-table-column label="根因分类" prop="rootMatterType" align="center">
+      <el-table-column
+        label="根因分类"
+        prop="rootMatterType"
+        align="center"
+        column-key="rootMatterType"
+        :filters="handleDataFilter(rootClassify)"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
         <span
           slot-scope="scope"
           v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="160">
         <template slot-scope="{ row }">
           <div class="flex justify-center align-center">
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">
@@ -351,7 +465,8 @@
             </el-tooltip>
             <el-dropdown size="mini" class="margin-left-xs">
               <span class="el-dropdown-link">
-                <span class="text-green" style="font-size: 12px;">更多操作</span><i class="el-icon-arrow-down el-icon--right"></i>
+                <span class="text-green" style="font-size: 12px">更多操作</span
+                ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
@@ -616,6 +731,48 @@ export default {
         return +warehousing === this.userId && state === 6;
       };
     },
+    // 协议查询条件
+    handleDataFilter() {
+      return (data) => {
+        try {
+          if (data instanceof Object) {
+            if (Array.isArray(data)) {
+              return data.map(({ dictLabel, dictValue }) => {
+                return { text: dictLabel, value: +dictValue };
+              });
+            } else {
+              return Object.entries(data)
+                .map(([key, value]) => {
+                  return { text: value, value: +key };
+                })
+                .sort((a, b) => a.text - b.text);
+            }
+          } else {
+            throw new Error("传的值类型必须是对象或数组");
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+    },
+    // 获取每项的筛选值
+    getFiltersData() {
+      return (key) => {
+        let newList = [];
+        let filterList = [];
+        this.brandList.forEach((item) => {
+          if (!this.Is_Empty(item[key]) && !filterList.includes(item[key])) {
+            filterList.push(item[key]);
+            newList.push({
+              text: item[key],
+              value: item[key],
+            });
+          }
+        });
+
+        return newList.sort((a, b) => a.text - b.text);
+      };
+    },
   },
   created() {
     let { name } = this.$route.query;
@@ -670,11 +827,6 @@ export default {
     // 批量处理
     handleDeal() {
       let { state } = this.queryParams;
-
-      // if (this.isSaleIdFlag && this.saleIdList.length) {
-      //   this.multipleList = [];
-      //   this.clearSaleSelection();
-      // }
 
       if (this.isWaitDispose) {
         return this.msgError("请先点击“待处理”按钮");
@@ -880,6 +1032,16 @@ export default {
         aFn: afterMultipleDownload,
         queryParams: this.uploadIds,
       });
+    },
+    /** 每项筛选方法 */
+    filterHandler(value, row, column) {
+      const property = column["property"];
+
+      return row[property] == value;
+    },
+    /** 清除所有过滤器  */
+    clearFilter() {
+      this.$refs.afterSaleRef.clearFilter();
     },
   },
 };

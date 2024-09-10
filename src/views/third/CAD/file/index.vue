@@ -4,12 +4,12 @@
       <el-form-item label="所属品类" prop="categoryId">
         <el-select
           v-model="queryParams.categoryId"
-          @change="changeCategory"
           filterable
           allow-create
           clearable
           placeholder="请选择品类"
           style="width: 160px"
+          @change="changeCategory"
         >
           <el-option
             v-for="dict in dictList"
@@ -21,14 +21,15 @@
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
         <el-select
+          v-model="queryParams.computerId"
           :loading="isCLoading"
           filterable
           remote
           clearable
-          v-model="queryParams.computerId"
           placeholder="请选择仪表型号"
           :remote-method="getComputerNameList"
           style="width: 160px"
+          @change="getList"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -76,7 +77,7 @@
           v-model="queryParams.erp"
           placeholder="请输入ERP编码"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter.native="getList"
           style="width: 140px"
         />
       </el-form-item>

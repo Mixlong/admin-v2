@@ -18,7 +18,6 @@ import '@/permission'; // permission control
 
 import '@/utils/sticky';
 import '@/utils/mainOperation/mainDirective'
-// import '@/utils/mainOperation/mainComponent'
 import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
 // import VueNativeSock from 'vue-native-websocket';

@@ -1403,14 +1403,6 @@ export default {
     box-shadow: 5px 0 10px #d8d5d5;
   }
 }
-
-.el-table-filter {
-  .el-table-filter__bottom {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row-reverse;
-  }
-}
 </style>
 <style lang="scss" scoped>
 .auth {

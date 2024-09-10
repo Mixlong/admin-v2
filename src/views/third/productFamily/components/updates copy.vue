@@ -751,6 +751,7 @@
                   v-model.number="form.instrumentModel.undervoltage"
                   :precision="1"
                   :min="0"
+                  :max="99"
                   :controls="false"
                   placeholder="请输入欠压门限"
                   clearable
@@ -827,7 +828,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   v-model.number="form.instrumentModel.assistPercentage"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入助力比例"
@@ -844,7 +845,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   v-model.number="form.instrumentModel.currentlimiting"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入限流门限"
@@ -891,7 +892,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model.number="form.instrumentModel.showWheelsize"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   clearable
@@ -964,7 +965,7 @@
 
               <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
                 <el-input
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model.number="form.instrumentModel.perimeter"
                   oninput="value=value.replace(/[^\d]/, '')"
                   placeholder="请输入周长"
@@ -1232,7 +1233,7 @@
                 "
               >
                 <el-input
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 9 }"
                   v-model="form.instrumentModel.defaultGear"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   clearable
@@ -1315,7 +1316,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.motorSys"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   clearable
@@ -1332,7 +1333,7 @@
               >
                 <el-input
                   type="number"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 9999 }"
                   v-model="form.instrumentModel.batteryCap"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   clearable
@@ -1352,7 +1353,7 @@
               >
                 <el-input
                   v-model="form.instrumentModel.highSpeedBuzzerRemind"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 99 }"
                   oninput="value=value.replace(/[^\d.]/g, '')"
                   placeholder="请输入高速蜂鸣器提醒"
                   clearable
@@ -1399,7 +1400,7 @@
               >
                 <el-input
                   v-model="form.instrumentModel.tiresSize"
-                  v-minMaxValue="{ min: 0 }"
+                  v-minMaxValue="{ min: 0, max: 255 }"
                   oninput="value=value.replace(/[^\d]/g, '')"
                   placeholder="请输入车轮宽度"
                   clearable
