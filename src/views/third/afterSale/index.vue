@@ -147,7 +147,7 @@
         </el-col>
       </el-row>
     </el-form>
-
+    
     <el-table
       ref="afterSaleRef"
       class="afterSaleBox"

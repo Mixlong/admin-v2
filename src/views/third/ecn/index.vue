@@ -1,38 +1,54 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="ECN编号" prop="ecn">
-        <el-input
-          v-model="queryParams.ecn"
-          placeholder="请输入ECN编号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        ></el-input>
-      </el-form-item>
+    <el-form :model="queryParams" ref="queryForm" label-width="100px">
+      <el-row :gutter="10">
+        <el-col :xs="24" :span="6">
+          <el-form-item label="ECN编号" prop="ecn">
+            <el-input
+              v-model="queryParams.ecn"
+              placeholder="请输入ECN编号"
+              clearable
+              @keyup.enter.native="handleQuery"
+              style="width: 100%"
+            ></el-input>
+          </el-form-item>
+        </el-col>
 
-      <el-form-item label="项目名称" prop="projectName">
-        <el-input
-          v-model="queryParams.projectName"
-          placeholder="请输入项目名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        ></el-input>
-      </el-form-item>
-      <el-form-item label="产品代号" prop="productCode">
-        <el-input
-          v-model="queryParams.productCode"
-          placeholder="请输入产品代号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        ></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-      </el-form-item>
-      <el-row :gutter="20" class="fr mt5 flex align-center">
+        <el-col :xs="24" :span="6">
+          <el-form-item label="项目名称" prop="projectName">
+            <el-input
+              v-model="queryParams.projectName"
+              placeholder="请输入项目名称"
+              clearable
+              @keyup.enter.native="handleQuery"
+              style="width: 100%"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :span="6">
+          <el-form-item label="产品代号" prop="productCode">
+            <el-input
+              v-model="queryParams.productCode"
+              placeholder="请输入产品代号"
+              clearable
+              @keyup.enter.native="handleQuery"
+              style="width: 100%"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-row>
+
+      <el-row :gutter="20" class="fr flex align-center margin-bottom-xs">
         <el-col :span="1.5">
           <el-button
             type="primary"
@@ -135,13 +151,7 @@
         width="120"
       >
       </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        width="170"
-        class-name="small-padding"
-        fixed="right"
-      >
+      <el-table-column label="操作" align="center" fixed="right">
         <template slot-scope="{ row }">
           <Tooltip
             v-hasPermi="['ecn:update']"
@@ -150,6 +160,7 @@
             content="编辑"
             @click="handleUpdate(row)"
           />
+
           <Tooltip
             v-show="row.firstPerson === nickName && row.firstState !== 1"
             class="text-orange"
@@ -337,6 +348,7 @@
     <pagination
       v-show="total > 0"
       :total="total"
+      :small="true"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
       @pagination="getList"
@@ -364,8 +376,8 @@
       :close-on-click-modal="false"
     >
       <el-row type="flex" justify="center">
-        <el-col :span="2"></el-col>
-        <el-col :span="20">
+        <el-col :xs="0" :span="2"></el-col>
+        <el-col :xs="24" :span="20">
           <el-form
             ref="peopleForm"
             :model="peopleManageForm"
@@ -384,8 +396,8 @@
                 placeholder="请选择初审人员"
               >
                 <el-option
-                  v-for="item in pmDictListOptions"
-                  :key="item.userId"
+                  v-for="(item, index) in pmDictListOptions"
+                  :key="index"
                   :label="item.userName"
                   :value="item.userName"
                 >
@@ -394,7 +406,7 @@
             </el-form-item>
 
             <el-form-item label="会审人员："></el-form-item>
-            <el-form-item>
+            <el-form-item label-width="20px">
               <el-form-item label="采购：" prop="buyerData" label-width="70px">
                 <el-select
                   class="w100"
@@ -405,8 +417,8 @@
                   placeholder="请选择采购人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -423,8 +435,8 @@
                   placeholder="请选择品质人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -445,8 +457,8 @@
                   placeholder="请选择生产人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -467,8 +479,8 @@
                   placeholder="请选择工程人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -489,8 +501,8 @@
                   placeholder="请选择研发人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -511,8 +523,8 @@
                   placeholder="请选择仓库人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -533,8 +545,8 @@
                   placeholder="请选择市场人员"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -551,8 +563,8 @@
                   placeholder="请选择"
                 >
                   <el-option
-                    v-for="item in pmDictListOptions"
-                    :key="item.userId"
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
                     :label="item.userName"
                     :value="item.userName"
                   >
@@ -571,8 +583,8 @@
                 placeholder="请选择终审人员"
               >
                 <el-option
-                  v-for="item in pmDictListOptions"
-                  :key="item.userId"
+                  v-for="(item, index) in pmDictListOptions"
+                  :key="index"
                   :label="item.userName"
                   :value="item.userName"
                 >
@@ -581,7 +593,7 @@
             </el-form-item>
           </el-form>
         </el-col>
-        <el-col :span="2"></el-col>
+        <el-col :xs="0" :span="2"></el-col>
       </el-row>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitPeopleForm">确 定</el-button>
@@ -600,8 +612,8 @@
       <el-form
         ref="authForm"
         :model="authForm"
-        class="form-data"
-        :inline="false"
+        label-position="top"
+        label-width="0"
       >
         <el-form-item
           label="通过状态"
@@ -614,25 +626,81 @@
             },
           ]"
         >
-          <el-radio-group v-model="authForm.state">
+          <el-radio-group v-model="authForm.state" @change="handleResetErrTip">
             <el-radio :label="1">通过</el-radio>
             <el-radio :label="2">不通过</el-radio>
           </el-radio-group>
         </el-form-item>
-        <transition name="el-fade-in-linear">
-          <el-form-item class="auth" prop="remark" v-if="authForm.state === 1">
+
+        <el-form-item
+          label="是否有相关性"
+          prop="isCorrelation"
+          :rules="[
+            {
+              required: true,
+              message: '请选择',
+              trigger: 'change',
+            },
+          ]"
+        >
+          <el-radio-group v-model="authForm.isCorrelation">
+            <el-radio :label="0">是</el-radio>
+            <el-radio :label="1">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item
+          v-if="authForm.isCorrelation === 0"
+          label="相关性是否完成"
+          prop="isComplete"
+          :rules="[
+            {
+              required: false,
+              message: '请选择',
+              trigger: 'change',
+            },
+          ]"
+        >
+          <el-radio-group v-model="authForm.isComplete">
+            <el-radio :label="0">是</el-radio>
+            <el-radio :label="1">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <transition name="fade">
+          <el-form-item
+            v-if="authForm.state === 1"
+            class="auth"
+            prop="remark"
+            :rules="[
+              {
+                required: true,
+                message: '请输入备注信息',
+                trigger: 'blur',
+              },
+            ]"
+          >
             <el-input
               v-model="authForm.remark"
-              class="width-100-style"
               type="textarea"
               :autosize="{ minRows: 4, maxRows: 8 }"
               placeholder="请输入备注信息"
             />
           </el-form-item>
-          <el-form-item class="auth" prop="result" v-if="authForm.state === 2">
+          <el-form-item
+            v-if="authForm.state === 2"
+            class="auth"
+            prop="result"
+            :rules="[
+              {
+                required: true,
+                message: '请输入不通过的理由',
+                trigger: 'blur',
+              },
+            ]"
+          >
             <el-input
               v-model="authForm.result"
-              class="width-100-style"
               type="textarea"
               :autosize="{ minRows: 4, maxRows: 8 }"
               placeholder="请输入不通过的理由"
@@ -663,6 +731,7 @@ import CompUpdate from "./components/update";
 import CompDetail from "./components/detail";
 import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
+import introJs from "intro.js";
 
 export default {
   name: "Ecn",
@@ -677,7 +746,6 @@ export default {
       loading: true,
       authDialogVisible: false,
       isPeopleManageVisible: false,
-      authDialogVisible: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -833,6 +901,26 @@ export default {
     this.getTreeselect();
   },
   async mounted() {
+    const intro = introJs();
+    this.$nextTick(() => {
+      intro
+        .setOptions({
+          steps: [
+            {
+              title: "Welcome",
+              intro: "ECN审核流程管理 👋",
+            },
+            {
+              title: "操作区域",
+              intro: "审核流程可以撤销重新审核",
+              element: document.querySelector(".el-table__fixed-right"),
+            },
+          ],
+          dontShowAgain: true,
+        })
+        .start();
+    });
+
     await this.getDicts("ecn_classify_name").then((res) => {
       this.classifyList = res.data;
     });
@@ -897,7 +985,8 @@ export default {
     },
     //
     reqUnitFormatter(row, column, cellvalue, index) {
-      return this.deptOptions.find((item) => item.deptId === +row.reqUnit)?.deptName;
+      return this.deptOptions.find((item) => item.deptId === +row.reqUnit)
+        ?.deptName;
     },
     getCheckPeopleList() {
       dictUserList().then((res) => {
@@ -942,7 +1031,7 @@ export default {
           warehouseData,
           marketerData,
           finalJudgmentData,
-          pmcData
+          pmcData,
         };
       });
     },
@@ -963,37 +1052,37 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
       let params = Object.assign({}, row);
 
-      params.list.forEach((item) => {
-        if (item.field === 2) {
+      params.list.forEach((item, index) => {
+        if (index === 0) {
           params.selBuyerData = item.fieldName;
           params.buyerTxt = item.programme;
-        } else if (item.field === 3) {
+        } else if (index === 1) {
           params.selQAData = item.fieldName;
           params.QADataTxt = item.programme;
-        } else if (item.field === 4) {
+        } else if (index === 2) {
           params.selProductData = item.fieldName;
           params.productDataTxt = item.programme;
-        } else if (item.field === 5) {
+        } else if (index === 3) {
           params.selEngineerData = item.fieldName;
           params.engineerDataTxt = item.programme;
-        } else if (item.field === 6) {
+        } else if (index === 4) {
           params.selResearchData = item.fieldName;
           params.researchDataTxt = item.programme;
-        } else if (item.field === 7) {
+        } else if (index === 5) {
           params.selWarehouseData = item.fieldName;
           params.warehouseDataTxt = item.programme;
           params.finishedHandleTxt = item.treatment;
-        } else if (item.field === 8) {
+        } else if (index === 6) {
           params.selMarketerData = item.fieldName;
           params.marketerDataTxt = item.programme;
-        } else if (item.field === 9) {
+          params.noMarketerDataTxt = item.treatment;
+        } else if (index === 7) {
           params.selPmcData = item.fieldName;
           params.pmcDataTxt = item.programme;
         }
       });
 
       params.changeCause = params.changeCause.split(",");
-      params.involveUnit = params.involveUnit.split(",").map((item) => +item);
       this.$refs.compUpdate.form = params;
       this.$refs.compUpdate.showName = showName;
       this.$refs.compUpdate.title = title == undefined ? "修改ECN" : title;
@@ -1077,7 +1166,7 @@ export default {
       let params = Object.assign({}, row);
 
       params.changeCause = params.changeCause.split(",");
-      params.involveUnit = params.involveUnit.split(",").map((item) => +item);
+      // params.involveUnit = params.involveUnit.split(",").map((item) => +item);
 
       // 分类
       const changeCauseData = [];
@@ -1092,18 +1181,17 @@ export default {
       params.changeCauseData = changeCauseData;
 
       // 领域
-      const involveUnitData = [];
-      params.involveUnit.forEach((item) => {
-        this.involveUnitList.forEach((cItem) => {
-          if (item === +cItem.dictValue) {
-            involveUnitData.push(cItem);
-          }
-        });
-      });
+      // const involveUnitData = [];
+      // params.involveUnit.forEach((item) => {
+      //   this.involveUnitList.forEach((cItem) => {
+      //     if (item === +cItem.dictValue) {
+      //       involveUnitData.push(cItem);
+      //     }
+      //   });
+      // });
 
-      params.involveUnitData = involveUnitData;
+      params.involveUnitData = this.involveUnitList;
 
-      console.log(params);
       this.$refs.compDetail.form = params;
     },
     // ECN人员管理
@@ -1196,6 +1284,8 @@ export default {
           state: row.state || 1,
           remark: row.remark,
           result: row.result,
+          isCorrelation: row.isCorrelation,
+          isComplete: row.isComplete,
         };
       }
 
@@ -1206,8 +1296,6 @@ export default {
           result: row.finalResult,
         };
       }
-
-      console.log(this.authForm);
     },
 
     // 撤销审核
@@ -1331,6 +1419,9 @@ export default {
           }
         }
       });
+    },
+    handleResetErrTip(state) {
+      this.clearValidateItem("authForm", state === 1 ? "remark" : "result");
     },
   },
 };

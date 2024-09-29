@@ -81,66 +81,70 @@
           重置
         </el-button>
       </el-form-item>
-      <el-row
-        :gutter="15"
-        class="margin-bottom-xs"
-        type="flex"
-        justify="space-between"
-        align="middle"
-      >
-        <div class="flex align-center">
-          <el-col :span="1.5">
-            <el-checkbox
-              v-model="queryParams.myself"
-              @change="handleQuery"
-              false-label="0"
-              true-label="1"
-            >
-              查看我的
-            </el-checkbox>
-          </el-col>
-          <el-col :span="1.5">
-            <el-checkbox v-model="queryParams.state" @change="handleQuery">
-              显示已完成
-            </el-checkbox>
-          </el-col>
-        </div>
-
-        <div>
-          <el-col v-if="checkRole(['sale', 'admin'])" :span="1.5">
-            <el-badge :value="applyTotal > 0 ? applyTotal : ''" class="item">
-              <el-button size="mini" @click="showApply">申请列表</el-button>
-            </el-badge>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              part="warning"
-              icon="el-icon-download"
-              size="mini"
-              @click="handleExport"
-            >
-              导出
-            </el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              v-if="checkRole(['sale', 'admin'])"
-              type="primary"
-              icon="el-icon-plus"
-              size="mini"
-              @click="handleAdd"
-            >
-              新增
-            </el-button>
-          </el-col>
-          <right-toolbar
-            :showSearch.sync="showSearch"
-            @queryTable="getList"
-            :columns="columns"
-          ></right-toolbar>
-        </div>
-      </el-row>
     </el-form>
+
+    <el-row
+      :gutter="15"
+      class="margin-bottom-xs"
+      type="flex"
+      justify="space-between"
+      align="middle"
+    >
+      <div class="flex align-center">
+        <el-col :span="1.5">
+          <el-checkbox
+            v-model="queryParams.myself"
+            @change="handleQuery"
+            false-label="0"
+            true-label="1"
+          >
+            查看我的
+          </el-checkbox>
+        </el-col>
+        <el-col :span="1.5">
+          <el-checkbox v-model="queryParams.state" @change="handleQuery">
+            显示已完成
+          </el-checkbox>
+        </el-col>
+      </div>
+
+      <div>
+        <el-col v-hasPermi="['third:sample:apply']" :span="1.5">
+          <el-badge :value="applyTotal > 0 ? applyTotal : ''" class="item">
+            <el-button size="mini" @click="showApply">申请列表</el-button>
+          </el-badge>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
+            v-hasPermi="['third:sample:export']"
+            part="warning"
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+          >
+            导出
+          </el-button>
+        </el-col>
+
+        <el-col :span="1.5">
+          <el-button
+            v-hasPermi="['third:sample:add']"
+            type="primary"
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+          >
+            新增
+          </el-button>
+        </el-col>
+
+        <right-toolbar
+          :showSearch.sync="showSearch"
+          @queryTable="getList"
+          :columns="columns"
+        ></right-toolbar>
+      </div>
+    </el-row>
 
     <el-table
       :row-class-name="rowName"
@@ -328,35 +332,37 @@
       >
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
-            <Tooltip
-              v-if="scope.row.state === item.state"
-              v-for="item in authData"
-              :key="item.value"
-              class="mlZero"
-              icon="el-icon-check"
-              :content="item.content"
-              @click="handleAuthChange(scope.row, item.value)"
-            />
+            <div v-hasPermi="['third:sample:check']">
+              <Tooltip
+                v-if="scope.row.state === item.state"
+                v-for="item in authData"
+                :key="item.value"
+                class="mlZero"
+                icon="el-icon-check"
+                :content="item.content"
+                @click="handleAuthChange(scope.row, item.value)"
+              />
+            </div>
 
             <Tooltip
+              v-hasPermi="['third:sample:edit']"
               class="mlZero"
-              v-if="checkRole(['sale', 'admin'])"
               icon="el-icon-edit"
               content="编辑"
               @click="handleSampleUpdate(scope.row)"
             />
 
             <Tooltip
+              v-hasPermi="['third:sample:copy']"
               class="mlZero"
-              v-if="checkRole(['sale', 'admin'])"
               icon="el-icon-copy-document"
               content="复制"
               @click="handleCopy(scope.row)"
             />
 
             <Tooltip
+              v-hasPermi="['third:sample:delete']"
               class="mlZero"
-              v-if="checkRole(['sale', 'admin'])"
               icon="el-icon-delete"
               :className="['text-red']"
               content="删除"
@@ -364,15 +370,17 @@
             />
 
             <Tooltip
-              class="mlZero"
+              v-hasPermi="['third:sample:download']"
               v-show="scope.row.attachment"
+              class="mlZero"
               icon="el-icon-download"
               :className="['text-green']"
-              content="附件"
+              content="附件下载"
               @click="handleDownload(scope.row)"
             />
 
             <Tooltip
+              v-hasPermi="['third:sample:software']"
               class="mlZero"
               icon="el-icon-position"
               content="软件发布"
@@ -382,8 +390,9 @@
             />
 
             <Tooltip
+              v-hasPermi="['third:sample:toProduct']"
+              v-if="scope.row.state == 6"
               class="mlZero"
-              v-if="checkRole(['admin']) && scope.row.state == 6"
               icon="el-icon-box"
               content="转生产"
               @click="handleProd(scope.row)"
@@ -1124,7 +1133,10 @@ export default {
     cellClassName({ row, column, rowIndex, columnIndex }) {
       const columnIndexData = [1, 3, 4, 5];
 
-      if (columnIndexData.includes(columnIndex)) {
+      if (
+        columnIndexData.includes(columnIndex) &&
+        this.checkPermi(["third:sample:edit"])
+      ) {
         return "pointer";
       } else {
         return "";
@@ -1139,6 +1151,9 @@ export default {
      * @return {*}
      */
     cellClick(row, column, cell, event) {
+      if (!this.checkPermi(["third:sample:edit"])) {
+        return;
+      }
       switch (column.label) {
         case "详细需求":
           this.handleUpdate(row, "demand");

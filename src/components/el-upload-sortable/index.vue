@@ -84,11 +84,11 @@ export default {
   props: {
     imgW: {
       type: Number,
-      default: 98,
+      default: 80,
     },
     imgH: {
       type: Number,
-      default: 98,
+      default: 80,
     },
     max: {
       type: Number,

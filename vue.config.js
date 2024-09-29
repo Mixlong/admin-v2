@@ -3,6 +3,7 @@ const path = require("path");
 const webpack = require("webpack");
 const defaultSettings = require("./src/settings");
 const CompressionPlugin = require("compression-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 function resolve(dir) {
   return path.join(__dirname, dir);
@@ -57,6 +58,7 @@ module.exports = {
       // 'element-ui': 'ELEMENT',
       // 'axios': 'axios'
     },
+    // plugins: [new BundleAnalyzerPlugin()]
   },
   chainWebpack(config) {
     config.plugin("provide").use(webpack.ProvidePlugin, [
@@ -69,11 +71,6 @@ module.exports = {
     ]);
     config.plugins.delete("preload"); // TODO: need test
     config.plugins.delete("prefetch"); // TODO: need test
-
-    // 分析
-    // config
-    //   .plugin('webpack-bundle-analyzer')
-    //   .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
 
     // set svg-sprite-loader
     config.module.rule("svg").exclude.add(resolve("src/assets/icons")).end();

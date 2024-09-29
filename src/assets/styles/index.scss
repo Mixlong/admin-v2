@@ -1488,3 +1488,14 @@ fieldset {
 .messageCustomClass {
   z-index: 6666 !important;
 }
+
+.table-scrollContainer {
+  .el-table__body-wrapper {
+    cursor: grab;
+    user-select: none;
+    .cell {
+      cursor: auto !important;
+      user-select: text !important;
+    }
+  }
+}

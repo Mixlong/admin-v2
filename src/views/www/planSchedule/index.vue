@@ -652,7 +652,6 @@ export default {
     this.getOperationList();
   },
   async activated() {
-    console.log("activated");
     await this.getCategoryComputerData();
 
     const { categoryId, computerId, salesOrderNo, orderId } =

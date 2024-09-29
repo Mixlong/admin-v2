@@ -37,18 +37,5 @@ const install = (Vue) => {
         Vue.component(item.name, item)
     })
 };
-
-// Vue.component("Pagination", Pagination);
-// Vue.component("RightToolbar", RightToolbar);
-// Vue.component("DrUpload", DrUpload);
-// Vue.component("Tooltip", Tooltip);
-// Vue.component("ModalStyle", ModalStyle);
-// Vue.component("preview-img", PreviewImg);
-// Vue.component("ElUploadSortable", ElUploadSortable);
-// Vue.component("select-loadMore", SelectLoadMore);
-// Vue.component("DictTag", DictTag);
-// Vue.component("vue-draggable-resizable", VueDraggableResizable);
-// Vue.component("ModelCategory", ModelCategory);
-// Vue.component("ScreenFull", ScreenFull);
 DictData.install();
 export default install;

@@ -88,6 +88,7 @@
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
+      :cell-class-name="cellClassName"
       border
     >
       <el-table-column label="序号" width="58" type="index" align="center">
@@ -108,21 +109,52 @@
       />
       <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" />
       <el-table-column label="箱号" prop="boxNo" align="center">
-        <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
+        <template slot-scope="{ row }">
+          <el-tooltip
+            effect="dark"
+            content="点击跳转发货管理"
+            placement="top"
+            :disabled="Is_Empty(row.boxNo)"
+          >
+            <el-link
+              type="primary"
+              :underline="!Is_Empty(row.boxNo)"
+              :disabled="Is_Empty(row.boxNo)"
+              @click="
+                handleNameToPage('Delivery', {
+                  customerName: row.customerName,
+                  salesOrderNo: row.salesOrderNo,
+                  customerOrderNo: row.customerOrderNo,
+                  categoryName: row.categoryName,
+                  computerName: row.computerName,
+                })
+              "
+            >
+              {{ Is_Empty(row.boxNo) ? "- - -" : row.boxNo }}
+            </el-link>
+          </el-tooltip>
+        </template>
       </el-table-column>
       <el-table-column label="工单号" prop="orderCode" align="center">
         <template slot-scope="{ row }">
-          <el-tooltip effect="dark" content="点击跳转物料追踪" placement="top">
-            <span
-              class="pointer"
+          <el-tooltip
+            effect="dark"
+            content="点击跳转物料追踪"
+            placement="top"
+            :disabled="Is_Empty(row.orderCode)"
+          >
+            <el-link
+              type="primary"
+              :underline="!Is_Empty(row.orderCode)"
+              :disabled="Is_Empty(row.orderCode)"
               @click="
                 handleNameToPage('TrackRecord', {
                   orderCode: row.orderCode,
                 })
               "
             >
-              {{ row.orderCode }}
-            </span>
+              {{ Is_Empty(row.orderCode) ? "- - -" : row.orderCode }}
+            </el-link>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -282,8 +314,19 @@
             <el-tag v-if="row.isRework === 1" type="danger">返工</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="测试结果" prop="result" align="center" width="80" />
-        <el-table-column label="测试时间" prop="testTime" align="center" width="140" sortable>
+        <el-table-column
+          label="测试结果"
+          prop="result"
+          align="center"
+          width="80"
+        />
+        <el-table-column
+          label="测试时间"
+          prop="testTime"
+          align="center"
+          width="140"
+          sortable
+        >
           <span slot-scope="{ row }" v-NoData="parseTime(row.testTime)"></span>
         </el-table-column>
       </el-table>
@@ -343,19 +386,15 @@ export default {
         processName: "",
         result: "",
         orderCode: "",
+        boxNo: "",
       },
     };
   },
   created() {
-    const { recordId } = this.$route.query;
-    if (recordId) {
-      this.queryParams.recordId = recordId;
-    }
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
-  },
-  mounted() {
+
     categoryComputerDict().then((response) => {
       this.dictList = response.data;
       let type = this.$route.query.type;
@@ -375,10 +414,25 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList();
     });
   },
+  activated() {
+    this.handleSearchPage();
+  },
   methods: {
+    handleSearchPage() {
+      const { boxNo } = this.$route.params;
+      const { recordId } = this.$route.query;
+
+      if (boxNo) {
+        this.queryParams.boxNo = boxNo;
+      }
+
+      if (recordId) {
+        this.queryParams.recordId = recordId;
+      }
+      this.handleQuery();
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
@@ -423,7 +477,6 @@ export default {
     changeCategory(categoryName) {
       if (!categoryName) return;
       this.queryParams.computerName = "";
-      this.getList();
       this.computerOptions = this.dictList.filter(
         (item) => item.name === categoryName
       )[0].computerList;
@@ -436,8 +489,39 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.queryParams.recordId = "";
+      this.queryParams = {
+        p: 1,
+        l: 20,
+        categoryName: "",
+        computerName: "",
+        sn: "",
+        processName: "",
+        result: "",
+        orderCode: "",
+        boxNo: "",
+      };
       this.resetForm("queryForm");
       this.handleQuery();
+    },
+    /**
+     * @description: 鼠标移入表格显示小手帕
+     * @param {*} row
+     * @param {*} column
+     * @param {*} rowIndex
+     * @param {*} columnIndex
+     * @return {*}
+     */
+    cellClassName({ row, column, rowIndex, columnIndex }) {
+      const columnIndexData = [7];
+      if (this.Is_Empty(row.boxNo)) {
+        return;
+      }
+
+      if (columnIndexData.includes(columnIndex)) {
+        return "pointer";
+      } else {
+        return "";
+      }
     },
   },
 };

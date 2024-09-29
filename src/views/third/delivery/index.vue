@@ -36,14 +36,6 @@
             clearable
           />
         </el-form-item>
-        <el-form-item label="Bom编号" prop="bomCode">
-          <el-input
-            v-model="queryParams.bomCode"
-            filterable
-            placeholder="请输入Bom编号"
-            clearable
-          />
-        </el-form-item>
         <el-form-item label="所属品类" prop="categoryName">
           <el-select
             v-model="queryParams.categoryName"
@@ -80,7 +72,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="出货时间">
+        <el-form-item label="发货时间">
           <el-date-picker
             v-model="dateRange"
             style="width: 250px"
@@ -92,18 +84,18 @@
             @change="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="订单状态" prop="status">
+        <el-form-item label="发货状态" prop="status">
           <el-select
             v-model="queryParams.status"
-            placeholder="请选择订单状态"
+            placeholder="请选择发货状态"
             clearable
             @change="handleQuery"
           >
             <el-option
-              v-for="(value, index) in statusList"
-              :key="index"
-              :label="value"
-              :value="index"
+              v-for="(label, value) in statusList"
+              :key="value"
+              :label="label"
+              :value="value"
             >
             </el-option>
           </el-select>
@@ -112,14 +104,14 @@
           <el-button
             type="primary"
             icon="el-icon-search"
-            v-hasPermi="['third:order:query']"
+            v-hasPermi="['third:delivery:query']"
             @click="handleQuery"
           >
             搜索
           </el-button>
           <el-button
             icon="el-icon-refresh"
-            v-hasPermi="['third:order:reset']"
+            v-hasPermi="['third:delivery:reset']"
             @click="resetQuery"
           >
             重置
@@ -134,7 +126,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleAdd"
-          v-hasPermi="['third:order:add']"
+          v-hasPermi="['delivery:add:btn']"
         >
           新增
         </el-button>
@@ -142,67 +134,155 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :height="tableHeight()" :data="list">
-      <el-table-column label="序号" width="58" type="index" align="center">
+    <el-table
+      class="table-scrollContainer"
+      ref="tableRef"
+      v-loading="loading"
+      :height="tableHeight()"
+      :data="list"
+    >
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName">
+      <el-table-column
+        label="客户名称"
+        align="center"
+        prop="customerName"
+        fixed
+      >
         <span slot-scope="{ row }" v-NoData="row.customerName"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column label="客户订单号" align="center" prop="customerOrderNo">
+      <el-table-column
+        label="迪太订单号"
+        align="center"
+        prop="salesOrderNo"
+        width="120"
+        fixed
+      />
+      <el-table-column
+        label="客户订单号"
+        align="center"
+        prop="customerOrderNo"
+        width="120"
+        fixed
+      >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="品类" align="center" prop="categoryName">
+      <el-table-column
+        label="品类"
+        align="center"
+        prop="categoryName"
+        width="120"
+      >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
-      <el-table-column label="型号" align="center" prop="computerName">
+      <el-table-column
+        label="型号"
+        align="center"
+        prop="computerName"
+        width="120"
+      >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
       <el-table-column
-        label="BOM编码"
+        label="发货方式"
         align="center"
-        prop="bomCode"
+        prop="transportMode"
         width="100"
       >
-        <span slot-scope="{ row }" v-NoData="row.bomCode"></span>
+        <span slot-scope="{ row }" v-NoData="row.transportMode"></span>
       </el-table-column>
       <el-table-column
-        label="芯片版本"
+        label="发货单号"
         align="center"
-        prop="chipVersion"
+        prop="orderNumber"
         width="100"
       >
-        <span slot-scope="{ row }" v-NoData="row.chipVersion"></span>
+        <span slot-scope="{ row }" v-NoData="row.orderNumber"></span>
       </el-table-column>
       <el-table-column
-        label="订单数量"
+        label="发货图片"
         align="center"
-        prop="orderQuantity"
+        prop="shippingPicture"
         width="100"
       >
-        <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
+        <template slot-scope="{ row }">
+          <preview-img
+            width="60px"
+            height="60px"
+            :isDisBadge="false"
+            :url="row.shippingPicture"
+          />
+        </template>
       </el-table-column>
-      <el-table-column label="出货日期" align="center" width="100">
-        <span
-          slot-scope="{ row }"
-          v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"
-        ></span>
+      <el-table-column
+        label="回单图片"
+        align="center"
+        prop="receiptImg"
+        width="100"
+      >
+        <template slot-scope="{ row }">
+          <preview-img
+            width="60px"
+            height="60px"
+            :isDisBadge="false"
+            :url="row.receiptImg"
+          />
+        </template>
       </el-table-column>
-      <el-table-column label="订单状态" align="center" width="90">
+      <el-table-column
+        label="发货数量"
+        align="center"
+        prop="shippingNumber"
+        width="100"
+      >
+        <span slot-scope="{ row }" v-NoData="row.shippingNumber"></span>
+      </el-table-column>
+      <el-table-column label="发货状态" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag size="mini" :type="tagType(row.status)">
             {{ statusList[row.status] }}
           </el-tag>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="排产状态" align="center" width="120">
+      <el-table-column
+        label="发货人"
+        align="center"
+        prop="shippingName"
+        width="100"
+      >
+        <span slot-scope="{ row }" v-NoData="row.shippingName"></span>
+      </el-table-column>
+      <el-table-column
+        label="收货人"
+        align="center"
+        prop="consignee"
+        width="100"
+      >
+        <span slot-scope="{ row }" v-NoData="row.consignee"></span>
+      </el-table-column>
+      <el-table-column
+        label="发货时间"
+        align="center"
+        prop="shippingTime"
+        width="140"
+      >
         <template slot-scope="{ row }">
-          {{ productStatusList[row.productStatus] }}
+          <div v-show="!Is_Empty(row.shippingTime)">
+            <div>{{ parseTime(row.shippingTime, "{y}-{m}-{d}") }}</div>
+            <span>{{ parseTime(row.shippingTime, "{h}:{i}:{s}") }}</span>
+          </div>
+          <div v-show="Is_Empty(row.shippingTime)">- - -</div>
         </template>
-      </el-table-column> -->
+      </el-table-column>
       <el-table-column
         width="90"
         label="创建人"
@@ -216,112 +296,50 @@
         width="140"
       >
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime) }}
+          <div v-show="!Is_Empty(row.createTime)">
+            <div>{{ parseTime(row.createTime, "{y}-{m}-{d}") }}</div>
+            <span>{{ parseTime(row.createTime, "{h}:{i}:{s}") }}</span>
+          </div>
+          <div v-show="Is_Empty(row.createTime)">- - -</div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="210">
+      <el-table-column label="操作" align="center" width="130" fixed="right">
         <template slot-scope="{ row }">
-          <div class="flex flex-start">
-            <el-button
-              class="text-green"
-              type="text"
-              v-hasPermi="['third:order:prodSchedule:detail']"
-              @click="$router.push(`/www/planSchedule?orderId=${row.id}`)"
-            >
-              排产详情
-            </el-button>
+          <Tooltip
+            v-hasPermi="['delivery:edit:btn']"
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate(row)"
+          />
 
-            <el-button
-              v-hasPermi="['third:order:prod:record']"
-              type="text"
-              @click="
-                $router.push(
-                  `/www/PartInfoView/production?orderId=${row.customerOrderNo}`
-                )
-              "
-            >
-              生产记录
-            </el-button>
+          <Tooltip
+            v-hasPermi="['delivery:cancel:btn']"
+            v-show="row.status !== 2 && row.status !== 4"
+            icon="el-icon-close"
+            content="取消"
+            @click="handleCancel(row)"
+          />
 
-            <el-button
-              type="text"
-              v-hasPermi="['third:order:detail']"
-              @click="seeDetail(row.id)"
-            >
-              订单详情
-            </el-button>
-          </div>
-          <div class="flex flex-start">
-            <el-button
-              class="text-red"
-              type="text"
-              v-hasPermi="['third:order:update']"
-              @click="handleUpdate(row.id)"
-            >
-              编辑
-            </el-button>
-            <!-- 审核 -->
-            <el-button
-              type="text"
-              @click="onOrderAuth(row.id)"
-              v-hasPermi="['third:order:check']"
-              v-show="row.status === 0"
-            >
-              审核
-            </el-button>
-
-            <el-button
-              class="text-gray"
-              type="text"
-              @click="onOrderCancel(row.id)"
-              v-hasPermi="['third:order:cancel']"
-              v-show="row.status !== 2"
-            >
-              取消
-            </el-button>
-            <el-button
-              type="text"
-              v-hasPermi="['third:order:log']"
-              @click="onEditLog(row.id)"
-            >
-              日志
-            </el-button>
-
+          <el-popconfirm
+            title="确定要删除吗？"
+            @confirm="handleDelete(row)"
+            v-hasPermi="['delivery:delete:btn']"
+          >
             <Tooltip
-              v-hasPermi="['third:order:copy']"
-              icon="el-icon-document-copy"
-              content="复制"
-              @click="rowDbClick(row)"
+              style="margin: 0 10px"
+              slot="reference"
+              icon="el-icon-delete"
+              :className="['text-red']"
+              content="删除"
             />
+          </el-popconfirm>
 
-            <Tooltip
-              v-hasPermi="['third:order:planSchedule']"
-              icon="el-icon-position"
-              content="排产管理"
-              @click="
-                handleNameToPage('PlanSchedule', {
-                  categoryId: row.categoryId,
-                  computerId: row.computerId,
-                  salesOrderNo: row.salesOrderNo,
-                  orderId: row.id,
-                })
-              "
-            />
-
-            <Tooltip
-              icon="el-icon-box"
-              content="发货管理"
-              @click="
-                handleNameToPage('Delivery', {
-                  customerName: row.customerName,
-                  salesOrderNo: row.salesOrderNo,
-                  customerOrderNo: row.customerOrderNo,
-                  categoryName: row.categoryName,
-                  computerName: row.computerName
-                })
-              "
-            />
-          </div>
+          <Tooltip
+            v-hasPermi="['delivery:detail:btn']"
+            icon="el-icon-tickets"
+            content="发货详情"
+            @click="seeDetail(row.id)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -334,27 +352,32 @@
       @pagination="getList"
     />
 
+    <edit-delivery ref="compUpdate"></edit-delivery>
+
     <orderDetail
       ref="orderDetailRef"
       :statusList="statusList"
-      :productStatusList="productStatusList"
+      :tagType="tagType"
     />
+
     <edit-log ref="editLogRef" />
   </div>
 </template>
 
 <script>
-import { orderList, orderCancel, orderAuth } from "@/api/order";
+import { deliveryList, cancelDelivery, deleteDelivery } from "@/api/delivery";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import commomFile from "./mixins";
-import { commonJs } from "@/mixins/common";
+import { commonJs, dragTable } from "@/mixins/common";
+
 
 export default {
-  name: "Order",
-  mixins: [commomFile, commonJs],
+  name: "Delivery",
+  mixins: [commomFile, commonJs, dragTable],
   components: {
     orderDetail: () => import("./components/orderDetail"),
     EditLog: () => import("./components/log.vue"),
+    EditDelivery: () => import("./components/EditDelivery.vue"),
   },
   data() {
     return {
@@ -376,20 +399,10 @@ export default {
       title: "",
       typeCategoryList: [],
       statusList: {
-        0: "待审核",
-        1: "正常",
-        2: "取消",
-      },
-      productStatusList: {
-        0: "未排产",
-        1: "smt已排产、包装未排产",
-        2: "smt已排产、包装已排产",
-        3: "smt部分排产、包装部分排产",
-        4: "smt已排产、包装部分排产",
-        5: "smt部分排产、包装已排产",
-        6: "smt部分排产、包装未排产",
-        7: "smt未排产、包装部分排产",
-        8: "smt未排产、包装已排产",
+        1: "待发货",
+        2: "已取消",
+        3: "未完成",
+        4: "已出货",
       },
       // 查询参数
       queryParams: {
@@ -398,7 +411,6 @@ export default {
         customerName: undefined,
         salesOrderNo: undefined,
         customerOrderNo: undefined,
-        bomCode: undefined,
         categoryName: undefined,
         computerName: undefined,
         status: undefined,
@@ -409,26 +421,48 @@ export default {
     tagType() {
       return (status) => {
         switch (status) {
-          case 0:
-            return "warning";
           case 1:
-            return "success";
+            return "warning";
           case 2:
+            return "danger";
+          case 3:
             return "info";
+          case 4:
+            return "success";
         }
       };
     },
   },
   created() {
+    this.getParams();
     this.getCategoryComputerDict();
-    this.getList();
+  },
+  activated() {
+    this.getParams();
   },
   methods: {
+    getParams() {
+      const {
+        customerName,
+        salesOrderNo,
+        customerOrderNo,
+        categoryName,
+        computerName,
+      } = this.$route.params;
+
+      this.queryParams.customerName = customerName;
+      this.queryParams.salesOrderNo = salesOrderNo;
+      this.queryParams.customerOrderNo = customerOrderNo;
+      this.queryParams.categoryName = categoryName;
+      this.queryParams.computerName = computerName;
+
+      this.getList();
+    },
     getList() {
       this.loading = true;
-      orderList(
+      deliveryList(
         this.addDateRange(this.queryParams, this.dateRange, {
-          begin: "startTime",
+          begin: "beginTime",
           end: "endTime",
         })
       ).then((response) => {
@@ -436,6 +470,32 @@ export default {
         this.total = response.data.total;
         this.loading = false;
       });
+    },
+    // 删除
+    handleDelete(row) {
+      deleteDelivery([row.id]).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      });
+    },
+    // 取消
+    handleCancel(row) {
+      this.$confirm(
+        '是否确认取消发货单号为"' + row.orderNumber + '"项吗?',
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(() => {
+          return cancelDelivery(row.id);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("取消成功");
+        });
     },
     // 品类
     getCategoryComputerDict() {
@@ -456,7 +516,7 @@ export default {
       this.getList();
       this.computerOptions = this.dictList.filter(
         (item) => item.name === val
-      )[0]?.computerList;
+      )[0].computerList;
     },
     getComputerNameList(name) {
       if (name) {
@@ -471,83 +531,23 @@ export default {
         this.computerOptions = [];
       }
     },
-    // 复制
-    rowDbClick(row) {
-      this.$copyText(row).then(
-        () => {
-          this.copyRowData = Object.assign({}, row);
-          this.warningMessage("复制成功", 1);
-        },
-        () => {
-          this.warningMessage("复制失败", 3);
-        }
-      );
-    },
-    // 查看订单详情
+    // 查看详情
     seeDetail(id) {
       this.$refs.orderDetailRef.dialogVisible = true;
-      this.$refs.orderDetailRef.getOrderDetail(id);
-    },
-    // 审核
-    onOrderAuth(id) {
-      this.$confirm("确定该订单审核通过吗?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(() => {
-          orderAuth(id).then(() => {
-            this.getList();
-            this.$message({
-              type: "success",
-              message: "订单审核通过!",
-            });
-          });
-        })
-        .catch(() => {});
-    },
-    // 取消
-    onOrderCancel(id) {
-      this.$confirm("确定要取消订单吗?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }).then(() => {
-        orderCancel(id).then(() => {
-          this.getList();
-          this.$message({
-            type: "success",
-            message: "订单取消成功!",
-          });
-        });
-      });
+      this.$refs.orderDetailRef.getDetail(id);
     },
     handleAdd() {
-      if (this.copyRowData.id) {
-        sessionStorage.setItem("copyRowData", JSON.stringify(this.copyRowData));
-      }
-      this.$router.push({
-        path: "/addOrUpdate/CommonPage",
-        query: {
-          pageName: "AddOrderPage",
-          title: "新增订单",
-        },
-      });
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.dialogVisible = true;
+
+      this.$refs.compUpdate.title = "新增发货计划";
     },
-    handleUpdate(id) {
-      this.$router.push({
-        path: "/addOrUpdate/CommonPage",
-        query: {
-          pageName: "AddOrderPage",
-          title: "修改订单",
-          id,
-        },
-      });
-    },
-    /** 修改日志 */
-    onEditLog(id) {
-      this.$refs.editLogRef.dialogVisible = true;
-      this.$refs.editLogRef.getList(id);
+    handleUpdate(row) {
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.dialogVisible = true;
+      let params = Object.assign({}, row);
+      this.$refs.compUpdate.form = params;
+      this.$refs.compUpdate.title = "编辑发货计划";
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -557,9 +557,19 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
+      this.queryParams = {
+        p: 1,
+        l: 20,
+        customerName: undefined,
+        salesOrderNo: undefined,
+        customerOrderNo: undefined,
+        categoryName: undefined,
+        computerName: undefined,
+        status: undefined,
+      };
       this.resetForm("queryForm");
       this.handleQuery();
-    },
+    }
   },
 };
 </script>

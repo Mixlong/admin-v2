@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 const commonJs = {
     data() {
         return {
@@ -27,6 +29,73 @@ const commonJs = {
     }
 }
 
+const dragTable =  {
+    mounted() {
+      this.handleDrag();
+    },  
+    methods: {
+      handleDrag() {
+        this.$nextTick(() => {
+          const tableBodyWrapper = this.$refs.tableRef.$el.querySelector(
+            ".el-table__body-wrapper"
+          );
+  
+          if (!tableBodyWrapper) {
+            console.error("Table body wrapper not found.");
+            return;
+          }
+  
+          let isDown = false;
+          let startX, scrollLeft;
+  
+          // 鼠标事件
+          tableBodyWrapper.addEventListener("mousedown", (e) => {
+            const tableBodyCell = e.target.querySelector(".cell");
+  
+            if (tableBodyCell) {
+              isDown = true;
+              startX = e.pageX - tableBodyWrapper.offsetLeft;
+              scrollLeft = tableBodyWrapper.scrollLeft;
+              tableBodyWrapper.style.cursor = "grabbing";
+            } else {
+              isDown = false;
+            }
+          });
+  
+          tableBodyWrapper.addEventListener("mouseleave", () => {
+            isDown = false;
+            tableBodyWrapper.style.cursor = "grab";
+          });
+  
+          tableBodyWrapper.addEventListener("mouseup", () => {
+            isDown = false;
+            tableBodyWrapper.style.cursor = "grab";
+          });
+  
+          const handleMouseMove = (e) => {
+            if (!isDown) {
+              return;
+            }
+            
+            e.preventDefault();
+            const x = e.pageX - tableBodyWrapper.offsetLeft;
+            const walk = (x - startX) * 2;
+            tableBodyWrapper.scrollLeft = scrollLeft - walk;
+          };
+  
+          tableBodyWrapper.addEventListener(
+            "mousemove",
+            _.throttle(handleMouseMove, 200)
+          );
+  
+          tableBodyWrapper.style.overflowX = "hidden";
+        });
+      },
+    },
+  };
+
+
 export {
-    commonJs
+    commonJs,
+    dragTable
 }

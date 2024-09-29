@@ -261,20 +261,37 @@ export default {
     },
     // 审核
     handleCheck(row) {
+      let loading = null;
+
       this.$confirm("是否审核通过？", "警告", {
         confirmButtonText: "通 过",
         cancelButtonText: "驳 回",
         type: "warning",
       })
-        .then(function () {
-          return sopState({ id: row.id, state: 1 });
-        })
         .then(() => {
-          this.getList();
-          this.msgSuccess("操作成功");
+          loading = this.$loading({
+            lock: true,
+            text: "正在处理中...",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)",
+          });
+
+          sopState({ id: row.id, state: 1 }).then(() => {
+            loading.close();
+            this.getList();
+            this.msgSuccess("操作成功");
+          });
         })
         .catch(() => {
+          loading = this.$loading({
+            lock: true,
+            text: "正在处理中...",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)",
+          });
+
           sopState({ id: row.id, state: 2 }).then(() => {
+            loading.close();
             this.getList();
             this.msgSuccess("操作成功");
           });

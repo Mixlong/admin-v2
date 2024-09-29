@@ -378,7 +378,10 @@ export default {
   },
   created() {
     const { number } = this.$route.params;
-    console.log(this.$route.params);
+    this.queryParams.number = number;
+  },
+  activated(){
+    const { number } = this.$route.params;
     this.queryParams.number = number;
   },
   mounted() {

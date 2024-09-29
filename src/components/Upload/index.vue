@@ -6,33 +6,16 @@
     :action="actionUrl"
     :on-success="uploadSuccess"
     :on-remove="removeUpload"
+    :on-exceed="handleExceed"
     :before-upload="beforeUpload"
     :file-list="fileList"
     :drag="drag"
+    :limit="limit"
     :disabled="disabled"
+    :multiple="multiple"
     :list-type="listType"
-    :class="{ hide: fileList.length >= limit }"
-    :show-file-list="showFileList"
     :accept="accept"
   >
-    <!-- <div v-if="!$slots.default" class="all-img">
-      <i class="el-icon-plus avatar-uploader-icon" v-if="limit != 1"></i>
-      <div v-else style="background-color: #fbfdff; height: inherit">
-        <div v-if="fileList.length > 0">
-          <el-image
-            v-for="(item, index) in fileList"
-            :key="index"
-            :src="item.url"
-            fit="cover"
-          >
-            <div slot="placeholder" class="image-slot">
-              <i class="el-icon-loading"></i>
-            </div>
-          </el-image>
-        </div>
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </div>
-    </div> -->
     <slot></slot>
   </el-upload>
 </template>
@@ -55,6 +38,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
     // accept: {
     //   default: "image/jpeg, image/gif, image/png,image/bmp",
     // },
@@ -62,13 +49,13 @@ export default {
   data() {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
-      fileList: [],
+      fileList: []
     };
   },
   watch: {
     value(value) {
       this.transImgVal(value);
-    },
+    }
   },
   mounted() {
     let value = this.value;
@@ -76,13 +63,14 @@ export default {
   },
   methods: {
     transImgVal(value) {
-      value = value ? value : "";
+      value = value ?? "";
       let fileList = value.split(",").map((item) => {
         return {
           name: item.slice(item.lastIndexOf("/") + 1),
           url: item,
         };
       });
+
       this.fileList = fileList.filter((item) => {
         return item.url != "";
       });
@@ -92,32 +80,41 @@ export default {
         this.msgError("上传的文件名称不能包含‘+’字符");
         return false;
       }
-      this.$emit("beforeUpload", file);
+      // this.$emit("beforeUpload", file);
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
         this.$refs.upload.clearFiles();
       }
-      this.handleReturnData(this.limit == 1 ? [file] : fileList);
-      this.$emit("uploadSuccess", response, file, fileList);
+
+      this.handleReturnData(this.limit === 1 ? [file] : fileList);
+      // this.$emit("uploadSuccess", response, file, fileList);
+    },
+    handleExceed(files, fileList) {
+      this.msgWarning(
+        `当前限制选择 ${this.limit} 个文件，本次选择了 ${
+          files.length
+        } 个文件，共选择了 ${files.length + fileList.length} 个文件`
+      );
     },
     removeUpload(response, file, fileList) {
+      console.log('remove', file)
       this.handleReturnData(file);
-      this.$emit("removeUpload", response, file, fileList);
+      // this.$emit("removeUpload", response, file, fileList);
     },
     handleReturnData(file) {
-      let currentFill = file.map((item) => {
-        if (item.response) {
-          return item.response.data[0].url;
-        } else {
-          return item.url;
-        }
-      });
-      this.$emit("input", currentFill.toString());
-    },
-    clickInput() {
-      this.$refs["upload"].$children[0].$refs.input.click();
-    },
+      if (file.every((item) => item.status === "success")) {
+        let currentFill = file.map((item) => {
+          if (item.response) {
+            return item.response.data[0].url;
+          } else {
+            return item.url;
+          }
+        });
+
+        this.$emit("input", currentFill.toString());
+      }
+    }
   },
 };
 </script>
