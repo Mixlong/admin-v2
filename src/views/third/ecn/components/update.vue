@@ -67,7 +67,10 @@
             prop="changeCause"
             class="margin-bottom-xs"
           >
-            <el-checkbox-group v-model="form.changeCause" class="grid_column_two">
+            <el-checkbox-group
+              v-model="form.changeCause"
+              class="grid_column_two"
+            >
               <el-checkbox
                 v-for="(item, index) in classifyList"
                 :label="item.dictValue"
@@ -497,66 +500,40 @@
                     </el-form-item>
                   </div>
                 </div>
-                <!-- PMC -->
-                <div class="flex">
-                  <el-form-item
-                    prop="selPmcData"
-                    label-width="0"
-                    :rules="[
-                      {
-                        required: true,
-                        message: '请选择PMC人员',
-                        trigger: 'change',
-                      },
-                    ]"
-                  >
-                    <el-select
-                      v-model="form.selPmcData"
-                      placeholder="请选择PMC人员"
-                      filterable
-                      clearable
-                      style="width: 150px"
-                    >
-                      <el-option
-                        v-for="item in pmcData"
-                        :label="item.personnel"
-                        :value="item.personnel"
-                        :key="item.id"
-                      ></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item
-                    label="工单内容："
-                    prop="pmcDataTxt"
-                    class="iterm-box margin-left-xs flex flex-sub"
-                    :rules="[
-                      {
-                        required: true,
-                        message: '请输入工单内容',
-                        trigger: 'blur',
-                      },
-                    ]"
-                  >
-                    <el-input
-                      v-model="form.pmcDataTxt"
-                      clearable
-                      placeholder="请输入"
-                      style="min-width: 250px"
-                    ></el-input>
-                  </el-form-item>
-                </div>
               </el-col>
             </el-row>
           </div>
 
           <el-form-item
-            label="终审人员"
+            label="PMC终审人员"
+            label-width="110px"
+            prop="thirdPerson"
+            class="margin-bottom-xs"
+          >
+            <el-select
+              v-model="form.thirdPerson"
+              placeholder="请选择PMC终审人员"
+              filterable
+              clearable
+            >
+              <el-option
+                v-for="item in pmcData"
+                :label="item.personnel"
+                :value="item.personnel"
+                :key="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item
+            label="最终审核人员"
+            label-width="110px"
             prop="secondPerson"
             class="margin-bottom-xs"
           >
             <el-select
               v-model="form.secondPerson"
-              placeholder="请选择终审人员"
+              placeholder="请选择最终审核人员"
               filterable
               clearable
             >
@@ -708,9 +685,7 @@ export default {
         finishedHandleTxt: "",
         selMarketerData: "",
         marketerDataTxt: "",
-        noMarketerDataTxt: "",
-        selPmcData: "",
-        pmcDataTxt: "",
+        noMarketerDataTxt: ""
       },
       // 初审人员
       firstAuditorData: [],
@@ -747,8 +722,11 @@ export default {
         firstPerson: [
           { required: true, message: "请选择初审人员", trigger: "change" },
         ],
+        thirdPerson: [
+          { required: true, message: "请选择PMC人员", trigger: "change" },
+        ],
         secondPerson: [
-          { required: true, message: "请选择终审人员", trigger: "change" },
+          { required: true, message: "请选择最终审核人员", trigger: "change" },
         ],
         reqUnit: [
           {
@@ -877,9 +855,7 @@ export default {
         finishedHandleTxt: "",
         selMarketerData: "",
         marketerDataTxt: "",
-        noMarketerDataTxt: "",
-        selPmcData: "",
-        pmcDataTxt: "",
+        noMarketerDataTxt: ""
       };
       this.resetForm("form");
     },
@@ -957,13 +933,7 @@ export default {
                     programme: param.marketerDataTxt,
                     treatment: param.noMarketerDataTxt,
                   });
-                } else if (index === 7) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selPmcData,
-                    programme: param.pmcDataTxt,
-                  });
-                }
+                } 
               });
 
               param.list = list;
@@ -1006,12 +976,7 @@ export default {
                 fieldName: param.selMarketerData,
                 programme: param.marketerDataTxt,
                 treatment: param.noMarketerDataTxt,
-              },
-              {
-                field: 9,
-                fieldName: param.selPmcData,
-                programme: param.pmcDataTxt,
-              },
+              }
             ];
 
             param.list = list;
@@ -1081,8 +1046,7 @@ export default {
         row-gap: 20px;
         .each_unit {
           text-align: center;
-          &:nth-last-child(1),
-          &:nth-last-child(2) {
+          &:nth-last-child(1) {
             margin-top: 50px;
           }
         }
@@ -1109,7 +1073,8 @@ export default {
     display: grid;
     gap: 10px;
     grid-template-columns: repeat(2, 1fr);
-    .el-checkbox, .el-radio {
+    .el-checkbox,
+    .el-radio {
       margin-left: 0 !important;
       margin-right: 0 !important;
     }

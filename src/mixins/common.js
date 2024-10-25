@@ -88,7 +88,7 @@ const dragTable =  {
             _.throttle(handleMouseMove, 200)
           );
   
-          tableBodyWrapper.style.overflowX = "hidden";
+          // tableBodyWrapper.style.overflowX = "hidden";
         });
       },
     },

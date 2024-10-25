@@ -8,13 +8,9 @@
       :top="dialogTop()"
       fullscreen
       append-to-body
+      center
     >
-      <el-form
-        v-show="isCopyProduct"
-        :model="queryParams"
-        ref="queryParams"
-        :inline="true"
-      >
+      <el-form :model="queryParams" ref="queryParams" :inline="true">
         <el-form-item label="所属品类" prop="categoryId">
           <el-select
             v-model="queryParams.categoryId"
@@ -243,8 +239,8 @@
                     class="w100"
                   >
                     <el-option
-                      v-for="item in handlebarSizeData"
-                      :key="item.dictValue"
+                      v-for="(item, index) in handlebarSizeData"
+                      :key="index"
                       :label="item.dictLabel"
                       :value="item.dictValue"
                     >
@@ -304,8 +300,8 @@
                     @change="clearRateOrType"
                   >
                     <el-option
-                      v-for="item in dicts_communication_type"
-                      :key="item.dictValue"
+                      v-for="(item, index) in dicts_communication_type"
+                      :key="index"
                       :label="item.dictLabel"
                       :value="+item.dictValue"
                     >
@@ -437,8 +433,8 @@
                       class="w100"
                     >
                       <el-option
-                        v-for="item in dicts_controller_joint"
-                        :key="item.dictValue"
+                        v-for="(item, index) in dicts_controller_joint"
+                        :key="index"
                         :label="item.dictValue"
                         :value="item.dictValue"
                       >
@@ -513,8 +509,8 @@
                       allow-create
                     >
                       <el-option
-                        v-for="item in dicts_keyType_list"
-                        :key="item.dictValue"
+                        v-for="(item, index) in dicts_keyType_list"
+                        :key="index"
                         :label="item.dictLabel"
                         :value="+item.dictValue"
                       >
@@ -699,8 +695,8 @@
                   clearable
                 >
                   <el-option
-                    v-for="item in sleepTimeList"
-                    :key="item"
+                    v-for="(item, index) in sleepTimeList"
+                    :key="index"
                     :label="item"
                     :value="item"
                   >
@@ -725,8 +721,8 @@
                   clearable
                 >
                   <el-option
-                    v-for="item in dicts_voltage"
-                    :key="item"
+                    v-for="(item, index) in dicts_voltage"
+                    :key="index"
                     :label="item"
                     :value="item"
                   >
@@ -769,8 +765,8 @@
                   clearable
                 >
                   <el-option
-                    v-for="item in powerGearData"
-                    :key="item"
+                    v-for="(item, index) in powerGearData"
+                    :key="index"
                     :label="item"
                     :value="item"
                   >
@@ -1196,18 +1192,19 @@
                 >
                   <el-option
                     v-for="(value, key) in dicts_ebike"
-                    :key="key"
+                    :key="+key"
                     :label="value"
                     :value="+key"
-                  />
-                  <span style="float: left">
-                    <b>展示值：</b>
-                    {{ value }}
-                  </span>
-                  <span style="float: right">
-                    <b>实际值：</b>
-                    {{ key }}
-                  </span>
+                  >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ value }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ key }}
+                    </span>
+                  </el-option>
                 </el-select>
               </el-form-item>
 
@@ -1681,6 +1678,7 @@ export default {
     return {
       isSubmitLoading: false,
       isCopyProduct: false,
+      isEditCopy: false,
       modelList: [],
       selectList: [],
       queryParams: {
@@ -1787,6 +1785,7 @@ export default {
   watch: {
     dialogVisible(val) {
       if (val) {
+        this.isEditCopy = false;
         this.resetForm("queryParams");
         this.resetForm("form");
         this.getList();
@@ -2088,9 +2087,28 @@ export default {
 
       try {
         const { data } = await detailComputer(computerId);
-        data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
-        this.form = Object.assign({}, data);
+        data.instrumentModel = data.instrumentModel ?? {};
+        this.msgSuccess("操作成功");
+        // 编辑拷贝
+        if (this.form.id) {
+          this.isEditCopy = true;
+          const { id, categoryId, name, instrumentModel } = this.form;
+
+          const copyData = Object.assign({}, data);
+          copyData.id = id;
+          copyData.categoryId = categoryId;
+          copyData.name = name;
+          copyData.instrumentModel.id = instrumentModel?.id;
+          copyData.instrumentModel.categoryId = instrumentModel?.categoryId;
+          copyData.instrumentModel.computerId = instrumentModel?.computerId;
+
+          this.form = copyData;
+        } else {
+          // 新增拷贝
+          this.form = Object.assign({}, data);
+        }
       } catch (error) {
+        this.msgError("操作失败");
         console.error(error);
       }
     },
@@ -2196,9 +2214,11 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.isSubmitLoading = true;
-          // 非STS
+          if (!this.isEditCopy) {
+            this.isSubmitLoading = true;
+          }
 
+          // 非STS
           if (this.form.isSts === 0) {
             const {
               customerMaterialNum,
@@ -2210,7 +2230,7 @@ export default {
               msgType,
               canRate,
               sn,
-              pcbaSn
+              pcbaSn,
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2227,43 +2247,73 @@ export default {
             this.form.jsonStr = "";
           } else {
             // STS
-
             const configJsonString = this.configToJsonString();
             this.form.jsonStr = configJsonString;
           }
 
           if (this.form.id && !this.isCopyProduct) {
-            editComputer(this.form)
-              .then((response) => {
-                if (response.code === 200) {
-                  this.msgSuccess("修改成功");
-                  this.dialogVisible = false;
-                  this.$parent.getList();
-                }
-              })
-              .finally(() => {
-                this.isSubmitLoading = false;
-              });
+            this.handleSubmitEdit();
           } else {
-            if (this.isCopyProduct) {
-              delete this.form.id;
-              delete this.form.instrumentModel.id;
-            }
-            addComputer(this.form)
-              .then((response) => {
-                if (response.code === 200) {
-                  this.msgSuccess("添加成功");
-                  this.dialogVisible = false;
-                  this.$parent.getList();
-                  this.open = false;
-                }
-              })
-              .finally(() => {
-                this.isSubmitLoading = false;
-              });
+            this.handleSubmitAdd();
           }
         }
       });
+    },
+    // 新增操作
+    handleSubmitAdd() {
+      if (this.isCopyProduct) {
+        delete this.form.id;
+        delete this.form.instrumentModel.id;
+      }
+      addComputer(this.form)
+        .then((response) => {
+          if (response.code === 200) {
+            this.msgSuccess("添加成功");
+            this.dialogVisible = false;
+            this.$parent.getList();
+            this.open = false;
+          }
+        })
+        .finally(() => {
+          this.isSubmitLoading = false;
+        });
+    },
+    // 编辑操作
+    handleSubmitEdit() {
+      if (this.isEditCopy) {
+        this.$confirm("是否确认提交当前拷贝项?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            this.isSubmitLoading = true;
+            editComputer(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("拷贝成功");
+                  this.dialogVisible = false;
+                  this.$parent.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubmitLoading = false;
+              });
+          })
+          .catch(() => {});
+      } else {
+        editComputer(this.form)
+          .then((response) => {
+            if (response.code === 200) {
+              this.msgSuccess("修改成功");
+              this.dialogVisible = false;
+              this.$parent.getList();
+            }
+          })
+          .finally(() => {
+            this.isSubmitLoading = false;
+          });
+      }
     },
   },
 };

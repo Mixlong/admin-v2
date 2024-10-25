@@ -35,6 +35,15 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="PCBA SN" prop="pcbaSn">
+        <el-input
+          v-model="queryParams.pcbaSn"
+          placeholder="请输入整机SN"
+          clearable
+          style="width: 160px"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="整机SN" prop="sn">
         <el-input
           v-model="queryParams.sn"
@@ -212,6 +221,7 @@ export default {
         l: 20,
         categoryName: "",
         computerName: "",
+        pcbaSn: "",
         sn: "",
         processName: "",
         result: "",

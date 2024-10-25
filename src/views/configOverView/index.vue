@@ -54,14 +54,18 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        <el-button class="fr" type="danger" @click="clearFilter">
+        <el-button type="danger" @click="clearFilter">
           清除所有过滤器
         </el-button>
       </el-form-item>
+      <el-button class="fr" icon="el-icon-plus" @click="handleParamsCompare">
+        对比
+      </el-button>
     </el-form>
+
     <el-table
-      class="config-overview-box"
-      ref="filterTable"
+      class="config-overview-box table-scrollContainer"
+      ref="tableRef"
       v-loading="loading"
       :data="brandList"
       :height="tableHeight()"
@@ -176,22 +180,6 @@
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
       <el-table-column
-        label="SN"
-        prop="sn"
-        align="center"
-        width="120"
-      >
-        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
-      </el-table-column>
-      <el-table-column
-        label="pcbaSn"
-        prop="pcbaSn"
-        align="center"
-        width="120"
-      >
-        <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
-      </el-table-column>
-      <el-table-column
         label="客户料号"
         prop="customerMaterialNum"
         align="center"
@@ -202,6 +190,21 @@
         :filter-method="filterHandler"
       >
         <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
+      </el-table-column>
+      <el-table-column
+        label="描述"
+        prop="desc"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      >
+        <span slot-scope="scope" v-NoData="scope.row.desc"></span>
+      </el-table-column>
+      <el-table-column label="SN" prop="sn" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
+      </el-table-column>
+      <el-table-column label="pcbaSn" prop="pcbaSn" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
       <el-table-column
         label="实际客户车名"
@@ -1036,25 +1039,26 @@
       </span>
     </el-dialog>
 
-    <el-dialog
-      title="车型配置详情"
-      :visible.sync="isDeployShow"
-      width="50%"
-      center
-      top="2vh"
-      :close-on-click-modal="false"
-    >
+    <el-dialog :visible.sync="isDeployShow" width="50%" center top="2vh">
+      <template v-slot:title>
+        <div>
+          <h2>车型配置详情</h2>
+          <el-switch v-model="isSample" active-text="简化"> </el-switch>
+        </div>
+      </template>
       <el-descriptions direction="vertical" :column="4" border>
         <el-descriptions-item label="背光亮度">
-          <span v-NoData="backlightBrightnessList[deployData.backlightBrightness]"></span>
+          <span
+            v-NoData="backlightBrightnessList[deployData.backlightBrightness]"
+          ></span>
         </el-descriptions-item>
-        <el-descriptions-item label="缓启动">
+        <el-descriptions-item label="缓启动" v-if="isKm5s">
           <span v-NoData="deployData.slowStart"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="车名">
+        <el-descriptions-item label="车名" v-if="!isSample">
           <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="车轮宽度">
+        <el-descriptions-item label="车轮宽度" v-if="!isSample">
           <span v-NoData="deployData.tiresSize"></span>
         </el-descriptions-item>
         <el-descriptions-item label="休眠时间(min)">
@@ -1063,7 +1067,7 @@
         <el-descriptions-item label="轮径">
           <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="车型">
+        <el-descriptions-item label="车型" v-if="!isSample">
           <span v-NoData="deployData.carModel"></span>
         </el-descriptions-item>
         <el-descriptions-item label="蓝牙">
@@ -1090,7 +1094,7 @@
         <el-descriptions-item label="Logo界面">
           <span v-NoData="dicts_logo[deployData.logo]"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="恢复出厂设置">
+        <el-descriptions-item label="恢复出厂设置" v-if="!isSample">
           {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
         </el-descriptions-item>
         <el-descriptions-item label="助力档位数">
@@ -1102,10 +1106,10 @@
         <el-descriptions-item label="开机密码">
           <span v-NoData="deployData.startupPasswd"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="转把分档">
+        <el-descriptions-item label="转把分档" v-if="isKm5s">
           {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
         </el-descriptions-item>
-        <el-descriptions-item label="助力开始磁钢数">
+        <el-descriptions-item label="助力开始磁钢数" v-if="isKm5s">
           <span v-NoData="deployData.assistStartMagnetNumber"></span>
         </el-descriptions-item>
         <el-descriptions-item label="电量计算方式">
@@ -1114,10 +1118,10 @@
         <el-descriptions-item label="高级菜单密码">
           <span v-NoData="deployData.highMenuPasswd"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="蜂鸣器开关">
-          {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+        <el-descriptions-item label="蜂鸣器开关" v-if="!isSample">
+          {{ deployData.buzzerSwitch === 0 ? "YES" : "NO" }}
         </el-descriptions-item>
-        <el-descriptions-item label="助力比例">
+        <el-descriptions-item label="助力比例" v-if="isKm5s">
           <span v-NoData="deployData.assistPercentage"></span>
         </el-descriptions-item>
         <el-descriptions-item label="测速磁钢数">
@@ -1135,7 +1139,7 @@
         <el-descriptions-item label="电量变化时间(s)">
           <span v-NoData="deployData.batteryVoltageChangeTime"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="电池容量">
+        <el-descriptions-item label="电池容量" v-if="!isSample">
           <span v-NoData="deployData.batteryCap"></span>
         </el-descriptions-item>
         <el-descriptions-item label="开机密码">
@@ -1144,16 +1148,16 @@
         <el-descriptions-item label="助力限速门限(km/h)">
           <span v-NoData="deployData.assistLimit"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="速度平滑等级">
+        <el-descriptions-item label="速度平滑等级" v-if="!isSample">
           <span v-NoData="deployData.smoothLevel"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="高速蜂鸣器提醒">
+        <el-descriptions-item label="高速蜂鸣器提醒" v-if="!isSample">
           <span v-NoData="deployData.highSpeedBuzzerRemind"></span>
         </el-descriptions-item>
         <el-descriptions-item label="菜单密码">
           {{ deployData.menuPassword === 0 ? "YES" : "NO" }}
         </el-descriptions-item>
-        <el-descriptions-item label="显示轮径">
+        <el-descriptions-item label="显示轮径" v-if="!isSample">
           <span v-NoData="deployData.showWheelsize"></span>
         </el-descriptions-item>
         <el-descriptions-item label="总线故障超时时间(s)">
@@ -1162,14 +1166,24 @@
         <el-descriptions-item label="串口通讯电平">
           <span v-NoData="serialLevelLogData[deployData.serialLevelLog]"></span>
         </el-descriptions-item>
-        <el-descriptions-item label="转把限速">
+        <el-descriptions-item label="转把限速" v-if="isKm5s">
           {{ deployData.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
         </el-descriptions-item>
-        <el-descriptions-item label="助力正反">
+        <el-descriptions-item label="助力正反" v-if="isKm5s">
           {{ deployData.assist === 0 ? "助力正" : "助力反" }}
         </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
+
+    <!-- 对比项 -->
+    <!-- <el-drawer :visible.sync="isDrawerFlag" direction="btt" size="20%">
+      <template v-slot:title>
+        <div></div>
+      </template>
+    </el-drawer> -->
+
+    <!-- 对比 -->
+    <ParamsCompare :isParamsCompareShow.sync="isParamsCompareShow" :dictList="dictList" />
   </div>
 </template>
 
@@ -1178,20 +1192,26 @@ import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
 import { modelConfigList, modelConfigState } from "@/api/third/testApi";
 import commonData from "@/mixins/commonData";
+import { dragTable } from "@/mixins/common";
+import ParamsCompare from "./components/ParamsCompare.vue";
 
 export default {
   name: "ConfigOverview",
-  mixins: [commonData],
+  mixins: [commonData, dragTable],
   components: {
     CategoryComputer: () => import("@/components/CategoryComputer"),
+    ParamsCompare
   },
   data() {
     return {
+      isDrawerFlag: false,
+      isSample: false,
       isDeployShow: false,
       deployData: {},
       myCategoryId: "",
       isCLoading: false,
       authDialogVisible: false,
+      isParamsCompareShow: false,
       isSubmitLoading: false,
       isAuthFlag: null,
       authForm: {},
@@ -1260,6 +1280,13 @@ export default {
         return newList.sort((a, b) => a.text - b.text);
       };
     },
+    isKm5s() {
+      if (this.isSample) {
+        return this.deployData.agreement === 0;
+      } else {
+        return true;
+      }
+    },
   },
   created() {
     // 车把尺寸
@@ -1289,7 +1316,7 @@ export default {
     },
     // 清除所有过滤器
     clearFilter() {
-      this.$refs.filterTable.clearFilter();
+      this.$refs.tableRef.clearFilter();
     },
     changeCategory(val) {
       this.queryParams.computerId = "";
@@ -1379,7 +1406,11 @@ export default {
     },
     handleOpenDetail(row) {
       this.isDeployShow = true;
+      this.isSample = false;
       this.deployData = Object.assign({}, row);
+    },
+    handleParamsCompare() {
+      this.isParamsCompareShow = true;
     },
   },
 };
@@ -1402,15 +1433,5 @@ export default {
     z-index: 666;
     box-shadow: 5px 0 10px #d8d5d5;
   }
-}
-</style>
-<style lang="scss" scoped>
-.auth {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.width-100-style {
-  width: 100%;
 }
 </style>

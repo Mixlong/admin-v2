@@ -218,7 +218,7 @@ export default {
     // 启用、禁用
     handleStatus(row) {
       let text = row.isLicense ? "许可" : "不许可";
-      this.$confirm("确认要" + text, "警告", {
+      this.$confirm("确认要" + `“${text}”` + "吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
@@ -230,7 +230,7 @@ export default {
           });
         })
         .then(() => {
-          this.msgSuccess(text + "成功");
+          this.msgSuccess("操作成功");
         })
         .catch(function () {
           row.isLicense = row.isLicense ? 0 : 1;

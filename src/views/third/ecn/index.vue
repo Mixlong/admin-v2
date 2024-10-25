@@ -1,52 +1,42 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" label-width="100px">
-      <el-row :gutter="10">
-        <el-col :xs="24" :span="6">
-          <el-form-item label="ECN编号" prop="ecn">
-            <el-input
-              v-model="queryParams.ecn"
-              placeholder="请输入ECN编号"
-              clearable
-              @keyup.enter.native="handleQuery"
-              style="width: 100%"
-            ></el-input>
-          </el-form-item>
-        </el-col>
+  <div class="app-container ecn-box">
+    <el-form :model="queryParams" ref="queryForm" label-width="100px" inline>
+      <el-form-item label="ECN编号" prop="ecn">
+        <el-input
+          v-model.trim="queryParams.ecn"
+          placeholder="请输入ECN编号"
+          clearable
+          @keyup.enter.native="handleQuery"
+          style="width: 100%"
+        ></el-input>
+      </el-form-item>
 
-        <el-col :xs="24" :span="6">
-          <el-form-item label="项目名称" prop="projectName">
-            <el-input
-              v-model="queryParams.projectName"
-              placeholder="请输入项目名称"
-              clearable
-              @keyup.enter.native="handleQuery"
-              style="width: 100%"
-            ></el-input>
-          </el-form-item>
-        </el-col>
+      <el-form-item label="项目名称" prop="projectName">
+        <el-input
+          v-model="queryParams.projectName"
+          placeholder="请输入项目名称"
+          clearable
+          @keyup.enter.native="handleQuery"
+          style="width: 100%"
+        ></el-input>
+      </el-form-item>
 
-        <el-col :xs="24" :span="6">
-          <el-form-item label="产品代号" prop="productCode">
-            <el-input
-              v-model="queryParams.productCode"
-              placeholder="请输入产品代号"
-              clearable
-              @keyup.enter.native="handleQuery"
-              style="width: 100%"
-            ></el-input>
-          </el-form-item>
-        </el-col>
+      <el-form-item label="产品代号" prop="productCode">
+        <el-input
+          v-model="queryParams.productCode"
+          placeholder="请输入产品代号"
+          clearable
+          @keyup.enter.native="handleQuery"
+          style="width: 100%"
+        ></el-input>
+      </el-form-item>
 
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-            搜索
-          </el-button>
-          <el-button icon="el-icon-refresh" @click="resetQuery">
-            重置
-          </el-button>
-        </el-form-item>
-      </el-row>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+      </el-form-item>
 
       <el-row :gutter="20" class="fr flex align-center margin-bottom-xs">
         <el-col :span="1.5">
@@ -96,9 +86,9 @@
       />
       <el-table-column label="初审状态" prop="firstState" align="center">
         <template slot-scope="{ row }">
-          <el-tag type="warning" v-show="row.firstState === 0">待审核</el-tag>
-          <el-tag type="success" v-show="row.firstState === 1">已审核</el-tag>
-          <el-tag type="danger" v-show="row.firstState === 2">已驳回</el-tag>
+          <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
+          <el-tag type="success" v-if="row.firstState === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="row.firstState === 2">已驳回</el-tag>
 
           <div style="margin-top: 5px">审核人：{{ row.firstPerson }}</div>
         </template>
@@ -107,34 +97,55 @@
         label="会审状态"
         prop="changeContent"
         align="center"
-        width="220"
+        width="200"
       >
         <template slot-scope="{ row }">
           <div style="display: grid; row-gap: 5px">
             <div
               v-for="item in row.list"
               :key="item.id"
-              class="flex align-center"
+              class="flex align-center check-box"
             >
               <div class="flex-sub text-left">
                 {{ TriageList[item.field] }}
                 --
                 <span class="normal-wrap"> {{ item.fieldName }}</span>
               </div>
-              <el-tag type="warning" v-show="item.state === 0">待审核</el-tag>
-              <el-tag type="success" v-show="item.state === 1">已审核</el-tag>
-              <el-tag type="danger" v-show="item.state === 2">已驳回</el-tag>
+              <el-tag type="warning" v-if="item.state === 0">待审核</el-tag>
+              <el-tag type="success" v-if="item.state === 1">已审核</el-tag>
+              <el-tag type="danger" v-if="item.state === 2">已驳回</el-tag>
             </div>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="终审状态" prop="secondState" align="center">
+      <el-table-column
+        label="终审状态"
+        prop="secondState"
+        align="center"
+        width="200"
+      >
         <template slot-scope="{ row }">
-          <el-tag type="warning" v-show="row.secondState === 0">待审核</el-tag>
-          <el-tag type="success" v-show="row.secondState === 1">已审核</el-tag>
-          <el-tag type="danger" v-show="row.secondState === 2">已驳回</el-tag>
+          <div style="display: grid; row-gap: 5px">
+            <div class="flex align-center justify-between check-box">
+              <div>PMC -- {{ row.thirdPerson }}</div>
 
-          <div style="margin-top: 5px">审核人：{{ row.secondPerson }}</div>
+              <el-tag type="warning" v-if="row.thirdState === 0">待审核</el-tag>
+              <el-tag type="success" v-if="row.thirdState === 1">已审核</el-tag>
+              <el-tag type="danger" v-if="row.thirdState === 2">已驳回</el-tag>
+            </div>
+
+            <div class="flex align-center justify-between check-box">
+              <div>{{ row.secondPerson }}</div>
+
+              <el-tag type="warning" v-if="row.secondState === 0"
+                >待审核</el-tag
+              >
+              <el-tag type="success" v-if="row.secondState === 1"
+                >已审核</el-tag
+              >
+              <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
+            </div>
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -151,196 +162,218 @@
         width="120"
       >
       </el-table-column>
-      <el-table-column label="操作" align="center" fixed="right">
+      <el-table-column label="操作" align="center" fixed="right" width="80">
         <template slot-scope="{ row }">
-          <Tooltip
-            v-hasPermi="['ecn:update']"
-            v-show="row.secondState !== 1"
-            icon="el-icon-edit"
-            content="编辑"
-            @click="handleUpdate(row)"
-          />
-
-          <Tooltip
-            v-show="row.firstPerson === nickName && row.firstState !== 1"
-            class="text-orange"
-            icon="el-icon-coordinate"
-            :content="`待 （${row.firstPerson}） 初审`"
-            @click="handleAuthFlag(row, 1)"
-          />
-
-          <Tooltip
-            v-show="
-              row.firstPerson === nickName &&
-              row.firstState === 1 &&
-              row.list[0].state === 0
-            "
-            class="text-grey"
-            icon="el-icon-circle-check"
-            content="撤销初审"
-            @click="handleResetCheck(row, 1)"
-          />
-
-          <span v-for="item in row.list" :key="item.id">
+          <div class="flex flex-direction table-options-col">
             <Tooltip
-              style="margin-left: 5px"
-              v-if="
-                item.fieldName === nickName &&
-                item.state !== 1 &&
-                row.firstState === 1
+              v-hasPermi="['ecn:update']"
+              v-show="row.secondState !== 1"
+              icon="el-icon-edit"
+              content="编辑"
+              @click="handleUpdate(row)"
+            />
+
+            <Tooltip
+              v-show="row.firstPerson === nickName && row.firstState !== 1"
+              class="text-orange"
+              icon="el-icon-coordinate"
+              :content="`待 （${row.firstPerson}） 初审`"
+              @click="handleAuthFlag(row, 1)"
+            />
+
+            <Tooltip
+              v-show="isFirstStateFlag(row)"
+              class="text-grey"
+              icon="el-icon-circle-check"
+              content="撤销初审"
+              @click="handleResetCheck(row, 1)"
+            />
+
+            <span v-for="item in row.list" :key="item.id">
+              <Tooltip
+                style="margin-left: 5px"
+                v-if="
+                  item.fieldName === nickName &&
+                  item.state !== 1 &&
+                  row.firstState === 1
+                "
+                class="text-orange"
+                icon="el-icon-coordinate"
+                :content="`待 （${item.fieldName}） ${
+                  item.state === 2 ? '重新' : ''
+                }会审`"
+                @click="handleAuthFlag(item, 2)"
+              />
+
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 2 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销采购会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 3 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销品质会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 4 && 
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销生产会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 5 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销工程会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 6 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销研发会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 7 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销仓库会审"
+                @click="handleResetCheck(item, 2)"
+              />
+              <Tooltip
+                style="margin-left: 5px"
+                v-show="
+                  item.fieldName === nickName &&
+                  item.state === 1 &&
+                  item.field === 8 &&
+                  isFinalStateFlag(row)
+                "
+                class="text-grey"
+                icon="el-icon-circle-check"
+                content="撤销市场会审"
+                @click="handleResetCheck(item, 2)"
+              />
+            </span>
+
+            <!-- PMC终审 -->
+            <Tooltip
+              v-show="
+                row.thirdPerson === nickName &&
+                row.thirdState !== 1 &&
+                isSecondStateFlag(row)
               "
               class="text-orange"
               icon="el-icon-coordinate"
-              :content="`待 （${item.fieldName}） ${
-                item.state === 2 ? '重新' : ''
-              }会审`"
-              @click="handleAuthFlag(item, 2)"
+              :content="`待 （${row.thirdPerson}） 终审`"
+              @click="handleAuthFlag(row, 4)"
             />
 
             <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 2
-              "
+              v-show="row.thirdPerson === nickName && row.thirdState === 1"
               class="text-grey"
               icon="el-icon-circle-check"
-              content="撤销采购会审"
-              @click="handleResetCheck(item, 2)"
+              content="撤销PMC终审"
+              @click="handleResetCheck(row, 4)"
             />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 3
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销品质会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 4
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销生产会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 5
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销工程会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 6
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销研发会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 7
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销仓库会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 8
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销市场会审"
-              @click="handleResetCheck(item, 2)"
-            />
-            <Tooltip
-              style="margin-left: 5px"
-              v-show="
-                item.fieldName === nickName &&
-                item.state === 1 &&
-                item.field === 9
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销PMC会审"
-              @click="handleResetCheck(item, 2)"
-            />
-          </span>
 
-          <Tooltip
-            v-show="
-              row.secondPerson === nickName &&
-              row.secondState !== 1 &&
-              isSecondStateFlag(row)
-            "
-            class="text-orange"
-            icon="el-icon-coordinate"
-            :content="`待 （${row.secondPerson}） 终审`"
-            @click="handleAuthFlag(row, 3)"
-          />
-          <Tooltip
-            v-show="row.secondPerson === nickName && row.secondState === 1"
-            class="text-grey"
-            icon="el-icon-circle-check"
-            content="撤销终审"
-            @click="handleResetCheck(row, 3)"
-          />
-          <Tooltip
-            class="text-green"
-            icon="el-icon-view"
-            content="详情"
-            @click="handleDetail(row)"
-          />
+            <!-- 最终审核 -->
+            <Tooltip
+              v-show="
+                row.secondPerson === nickName &&
+                row.secondState !== 1 &&
+                row.thirdState === 1 &&
+                isSecondStateFlag(row)
+              "
+              class="text-orange"
+              icon="el-icon-coordinate"
+              :content="`待 （${row.secondPerson}） 终审`"
+              @click="handleAuthFlag(row, 3)"
+            />
 
-          <!-- <Tooltip
+            <Tooltip
+              v-show="
+                row.secondPerson === nickName &&
+                row.secondState === 1 &&
+                row.thirdState === 1
+              "
+              class="text-grey"
+              icon="el-icon-circle-check"
+              content="撤销终审"
+              @click="handleResetCheck(row, 3)"
+            />
+
+            <Tooltip
+              class="text-green"
+              icon="el-icon-view"
+              content="详情"
+              @click="handleDetail(row)"
+            />
+
+            <!-- <Tooltip
             :className="['text-orange']"
             icon="el-icon-folder"
             content="导出"
             @click="handleExport(row)"
           /> -->
 
-          <Tooltip
-            v-hasPermi="['ecn:delete']"
-            icon="el-icon-delete"
-            :class="['text-red']"
-            content="删除"
-            @click="handleDelete(row)"
-          />
+            <Tooltip
+              v-hasPermi="['ecn:delete']"
+              icon="el-icon-delete"
+              :class="['text-red']"
+              content="删除"
+              @click="handleDelete(row)"
+            />
 
-          <Tooltip
-            v-if="row.file"
-            icon="el-icon-download"
-            content="附件下载"
-            @click="urlDownload(row.file)"
-          />
+            <Tooltip
+              v-if="row.file"
+              icon="el-icon-download"
+              content="附件下载"
+              @click="urlDownload(row.file)"
+            />
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -553,7 +586,11 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="PMC：" prop="pmcData" label-width="70px">
+            </el-form-item>
+
+            <el-form-item label="终审人员："></el-form-item>
+            <el-form-item label-width="20px">
+              <el-form-item label="PMC：" prop="pmcData">
                 <el-select
                   class="w100"
                   v-model="peopleManageForm.pmcData"
@@ -571,25 +608,24 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-            </el-form-item>
-
-            <el-form-item label="终审人员：" prop="finalJudgmentData">
-              <el-select
-                class="w100"
-                v-model="peopleManageForm.finalJudgmentData"
-                filterable
-                multiple
-                clearable
-                placeholder="请选择终审人员"
-              >
-                <el-option
-                  v-for="(item, index) in pmDictListOptions"
-                  :key="index"
-                  :label="item.userName"
-                  :value="item.userName"
+              <el-form-item label="最终审核：" prop="finalJudgmentData">
+                <el-select
+                  class="w100"
+                  v-model="peopleManageForm.finalJudgmentData"
+                  filterable
+                  multiple
+                  clearable
+                  placeholder="请选择"
                 >
-                </el-option>
-              </el-select>
+                  <el-option
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
+                    :label="item.userName"
+                    :value="item.userName"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form-item>
           </el-form>
         </el-col>
@@ -723,6 +759,7 @@ import {
   ecnFirstState,
   ecnFieldState,
   ecnSecondState,
+  ecnPmcState,
   ecnPersonEdit,
   ecnPersonList,
 } from "@/api/third/ecn";
@@ -731,7 +768,7 @@ import CompUpdate from "./components/update";
 import CompDetail from "./components/detail";
 import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
-import introJs from "intro.js";
+// import introJs from "intro.js";
 
 export default {
   name: "Ecn",
@@ -882,6 +919,20 @@ export default {
   },
   computed: {
     ...mapGetters(["userId", "nickName"]),
+    isFirstStateFlag() {
+      return (row) => {
+        return (
+          row.firstPerson === this.nickName &&
+          row.firstState === 1 &&
+          row.list.every((item) => item.state === 0)
+        );
+      };
+    },
+    isFinalStateFlag() {
+      return (row) => {
+        return row.thirdState === 0 && row.secondState === 0;
+      };
+    },
     isSecondStateFlag() {
       return (row) => {
         return (
@@ -901,25 +952,25 @@ export default {
     this.getTreeselect();
   },
   async mounted() {
-    const intro = introJs();
-    this.$nextTick(() => {
-      intro
-        .setOptions({
-          steps: [
-            {
-              title: "Welcome",
-              intro: "ECN审核流程管理 👋",
-            },
-            {
-              title: "操作区域",
-              intro: "审核流程可以撤销重新审核",
-              element: document.querySelector(".el-table__fixed-right"),
-            },
-          ],
-          dontShowAgain: true,
-        })
-        .start();
-    });
+    // const intro = introJs();
+    // this.$nextTick(() => {
+    //   intro
+    //     .setOptions({
+    //       steps: [
+    //         {
+    //           title: "Welcome",
+    //           intro: "ECN审核流程管理 👋",
+    //         },
+    //         {
+    //           title: "操作区域",
+    //           intro: "审核流程可以撤销重新审核",
+    //           element: document.querySelector(".el-table__fixed-right"),
+    //         },
+    //       ],
+    //       dontShowAgain: true,
+    //     })
+    //     .start();
+    // });
 
     await this.getDicts("ecn_classify_name").then((res) => {
       this.classifyList = res.data;
@@ -1289,18 +1340,26 @@ export default {
         };
       }
 
-      if (isAuthFlag === 1) {
+      if (isAuthFlag === 3) {
         this.authForm = {
           state: row.secondState || 1,
           remark: row.finalRemark,
           result: row.finalResult,
         };
       }
+
+      if (isAuthFlag === 4) {
+        this.authForm = {
+          state: row.thirdState || 1,
+          remark: row.thirdRemark,
+          result: row.thirdResult,
+        };
+      }
     },
 
     // 撤销审核
     handleResetCheck(row, flag) {
-      this.$confirm("确定要撤销终审吗?", "提示", {
+      this.$confirm("确定要撤销审核吗?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
@@ -1309,7 +1368,9 @@ export default {
           // 撤销初审
           if (flag === 1) {
             const data = {
-              ...row,
+              id: row.id,
+              remark: row.remark,
+              result: row.result,
               state: 0,
             };
 
@@ -1344,11 +1405,31 @@ export default {
           // 撤销终审
           if (flag === 3) {
             const data = {
-              ...row,
+              id: row.id,
+              remark: row.finalRemark,
+              result: row.finalResult,
               state: 0,
             };
 
             ecnSecondState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+          // 撤销PMC终审
+          if (flag === 4) {
+            const data = {
+              id: row.id,
+              remark: row.thirdRemark,
+              result: row.thirdResult,
+              state: 0,
+            };
+
+            ecnPmcState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1417,6 +1498,22 @@ export default {
               }
             });
           }
+
+          // PMC终审
+          if (this.isAuthFlag === 4) {
+            const data = {
+              id: this.isAuthAlterData.id,
+              ...this.authForm,
+            };
+
+            ecnPmcState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
         }
       });
     },
@@ -1426,35 +1523,42 @@ export default {
   },
 };
 </script>
-<style lang="scss"  scope >
-.auth {
-  text-align: center;
-  margin-bottom: 10px;
-}
-.finish-row td,
-.finish-row:hover td {
-  background-color: rgba(155, 216, 148, 0.3) !important;
-}
-.mask-layer {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+<style lang="scss"  scoped>
+.ecn-box {
+  .auth {
+    text-align: center;
+    margin-bottom: 10px;
   }
-}
-.open-detail-style {
-  div {
-    > span {
-      &:first-child {
-        color: #666;
-        margin-right: 10px;
+  .finish-row td,
+  .finish-row:hover td {
+    background-color: rgba(155, 216, 148, 0.3) !important;
+  }
+  .mask-layer {
+    position: relative;
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+  }
+  .open-detail-style {
+    div {
+      > span {
+        &:first-child {
+          color: #666;
+          margin-right: 10px;
+        }
       }
     }
+  }
+
+  .check-box {
+    border-bottom: 1px solid #eee8e8;
+    padding: 5px 0;
   }
 }
 </style>

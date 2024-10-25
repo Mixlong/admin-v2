@@ -176,7 +176,7 @@
 
                 <template v-if="item.field === 8">
                   <div class="flex-sub">
-                    <b class="margin-right-xs">在库成品处理方案：</b>
+                    <b class="margin-right-xs">未出货产品处理方案：</b>
                     {{ item.treatment }}
                   </div>
                 </template>
@@ -258,9 +258,44 @@
             </div>
           </el-card>
 
+          <el-card shadow="never" class="margin-bottom-sm">
+            <div slot="header" class="clearfix">
+              <span class="text-green">PMC终审状态</span>
+            </div>
+            <div style="min-height: 50px">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
+                <el-col :span="3">
+                  <span>审核状态：</span>
+
+                  <el-tag type="warning" v-show="form.thirdState === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="form.thirdState === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="form.thirdState === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ form.thirdPerson }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="form.thirdState !== 0">
+                <template v-if="form.thirdState === 1 && form.thirdRemark">
+                  备注： {{ form.thirdRemark }}
+                </template>
+                <template v-if="form.thirdState === 2 && form.thirdResult">
+                  <span class="text-red">拒绝原因：</span>
+                  {{ form.thirdResult }}
+                </template>
+              </el-card>
+            </div>
+          </el-card>
+
           <el-card shadow="never">
             <div slot="header" class="clearfix">
-              <span class="text-green">终审状态</span>
+              <span class="text-green">最终审核状态</span>
             </div>
             <div style="min-height: 50px">
               <el-row class="margin-bottom-sm" type="flex" align="middle">

@@ -171,7 +171,7 @@
         ></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="140">
-        <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
+        <span slot-scope="scope" v-NoData="scope.row.createTime"></span>
       </el-table-column>
       <el-table-column
         label="操作"
@@ -184,6 +184,7 @@
             icon="el-icon-edit"
             content="编辑"
             v-hasPermi="['third:epc:edit']"
+            v-if="checkRole(['factory'])"
             @click="handleUpdate(scope.row)"
           />
 
@@ -192,7 +193,7 @@
             class="text-orange"
             content="初审"
             v-hasPermi="['third:epc:firstCheck']"
-            v-if="scope.row.status == 1"
+            v-if="scope.row.status == 1 && checkRole(['f_test'])"
             @click="handleAuthChange(scope.row, 1)"
           />
 
@@ -201,7 +202,7 @@
             class="text-orange"
             content="终审"
             v-hasPermi="['third:epc:finalCheck']"
-            v-if="scope.row.status == 4"
+            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
             @click="handleAuthChange(scope.row, 4)"
           />
 
@@ -225,17 +226,17 @@
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="终审撤回"
+            content="初审撤回"
             v-hasPermi="['third:epc:resetFinalCheck']"
-            v-if="scope.row.status == 4"
+            v-if="scope.row.status == 4 && checkRole(['f_test'])"
             @click="handleRevocation(scope.row.id)"
           />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="审核完毕撤回"
+            content="终审撤回"
             v-hasPermi="['third:epc:resetChecked']"
-            v-if="scope.row.status == 2"
+            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
             @click="handleRevocation(scope.row.id)"
           />
         </template>

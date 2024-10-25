@@ -13,7 +13,8 @@ export function checkPermi(value) {
 
     const hasPermission = permissions.some((permission) => {
       return (
-        all_permission === permission || permissionDatas.includes(permission)
+        // all_permission === permission || permissionDatas.includes(permission)
+        permissionDatas.includes(permission)
       );
     });
 
@@ -38,7 +39,8 @@ export function checkRole(value) {
     const super_admin = "admin";
 
     const hasRole = roles.some((role) => {
-      return super_admin === role || permissionRoles.includes(role);
+      // return super_admin === role || permissionRoles.includes(role);
+      return permissionRoles.includes(role);
     });
 
     return hasRole;

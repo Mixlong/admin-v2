@@ -215,14 +215,13 @@
           v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="190">
         <template slot-scope="{ row }">
           <div class="flex justify-center align-center">
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">
               编辑
             </el-button>
             <el-tooltip
-              v-if="isRetester(row)"
               effect="dark"
               content="现象复测人员确认中"
               placement="top-end"

@@ -100,6 +100,7 @@
         </el-button>
         <el-button
           type="warning"
+          v-if="checkRole(['test'])"
           v-hasPermi="['third:cad:batchFirstCheck']"
           @click="handleAuthBatchChange"
         >
@@ -107,6 +108,7 @@
         </el-button>
         <el-button
           type="warning"
+          v-if="checkRole(['DATA_MANAGER'])"
           v-hasPermi="['third:cad:batchFinalCheck']"
           @click="handleAuthBatchChange"
         >
@@ -239,7 +241,7 @@
             class="text-orange"
             content="初审"
             v-hasPermi="['third:cad:firstCheck']"
-            v-if="scope.row.status == 1"
+            v-if="scope.row.status == 1 && checkRole(['test'])"
             @click="handleAuthChange(scope.row, 1)"
           />
 
@@ -248,7 +250,7 @@
             class="text-orange"
             content="终审"
             v-hasPermi="['third:cad:finalCheck']"
-            v-if="scope.row.status == 4"
+            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
             @click="handleAuthChange(scope.row, 4)"
           />
 
@@ -281,18 +283,18 @@
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="终审撤回"
+            content="初审撤回"
             v-hasPermi="['third:cad:resetFinalCheck']"
-            v-if="scope.row.status == 4"
-            @click="handleRevocation(scope.row.id)"
+            v-if="scope.row.status == 4 && checkRole(['test'])"
+            @click="handleRevocation(scope.row)"
           />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="审核完毕撤回"
+            content="终审撤回"
             v-hasPermi="['third:cad:resetChecked']"
-            v-if="scope.row.status == 2"
-            @click="handleRevocation(scope.row.id)"
+            v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
+            @click="handleRevocation(scope.row)"
           />
 
           <!-- 批量同步 -->
@@ -361,14 +363,7 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate
-      ref="compUpdate"
-      name
-      key
-      jack
-      :dictList="dictList"
-      :isStsType="isStsType"
-    />
+    <CompUpdate ref="compUpdate" :dictList="dictList" :isStsType="isStsType" />
 
     <!-- 任务令 -->
     <task-code
@@ -445,7 +440,7 @@ export default {
       },
       similarList: [],
       disabledName: "",
-      fileConfigSnData: {},
+      fileConfigSnData: {}
     };
   },
   computed: {
@@ -460,7 +455,11 @@ export default {
     },
     isSResetCheck() {
       return ({ computerStatus, status }) => {
-        return !computerStatus && (status === 2 || status === 4);
+        return (
+          this.checkRole(["product"]) &&
+          !computerStatus &&
+          (status === 2 || status === 4)
+        );
       };
     },
     isDownloadUrl() {
@@ -493,6 +492,9 @@ export default {
   },
   created() {
     this.getCaategoryData();
+  },
+  activated() {
+    this.getList();
   },
   methods: {
     async getFileConfigSn() {
@@ -534,6 +536,7 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
+
       this.getList();
     },
     onCreateTaskCode() {
@@ -568,23 +571,15 @@ export default {
       });
     },
     checkSelectable(row) {
-      if (row.computerStatus) {
+      if(row.computerStatus) {
         return false;
-      } else if (this.checkRole(["DATA_MANAGER"]) && row.status === 4) {
-        return true;
-      } else if (
-        !this.checkRole(["DATA_MANAGER", "product"]) &&
-        row.status == 1
-      ) {
-        return true;
-      } else if (
-        this.checkRole(["product"]) &&
-        (row.status === 2 || row.status === 4)
-      ) {
+      } else if((this.checkRole(['test']) && row.status === 1) || (this.checkRole(['DATA_MANAGER']) && row.status === 4)) {
         return true;
       }
     },
     handleAuthChange(row, status) {
+      if (this.handleProPermit(row.isLicense)) return;
+
       this.auth.why = "";
       this.authDialogVisible = true;
       this.auth.id = row.id;
@@ -623,6 +618,8 @@ export default {
     },
     // 重置审核
     handleResetCheck(row) {
+      if (this.handleProPermit(row.isLicense)) return;
+
       let data = null;
       if (this.multiple) {
         data = [{ id: row.id }];
@@ -715,13 +712,15 @@ export default {
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
-    handleUpdate(row, isBatchSync) {
-      let copyRow = JSON.parse(JSON.stringify(row));
-      // shit 改不动了
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
-
-      // 蓝牙地址转化
+    //生产许可判断
+    handleProPermit(permitStatus) {
+      if (permitStatus === 1) {
+        this.msgWarning("当前项“生产许可”已打开, 不能操作！");
+        return true;
+      }
+    },
+    // 蓝牙地址转化
+    handleBleVersionlist(copyRow) {
       let bleVersionList = [{ bleName: "" }];
       if (copyRow.type === "ble_version" && !this.Is_Empty(copyRow.content)) {
         let bleNameList = copyRow.content.split(",");
@@ -730,6 +729,17 @@ export default {
           return { bleName };
         });
       }
+      return bleVersionList;
+    },
+    handleUpdate(row, isBatchSync) {
+      if (!isBatchSync && this.handleProPermit(row.isLicense)) return;
+
+      let copyRow = JSON.parse(JSON.stringify(row));
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
+
+      // 蓝牙地址转化
+      const bleVersionList = this.handleBleVersionlist(copyRow);
 
       // 整机SN的长度转化
       if (copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
@@ -762,14 +772,24 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
     },
-    handleRevocation(id) {
-      fileCancel({ id }).then((res) => {
-        let { code } = res;
-        if (code == 200) {
+    handleRevocation(row) {
+      if (this.handleProPermit(row.isLicense)) return;
+
+      this.$confirm("确认要撤销审核吗？", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(function () {
+          return fileCancel({ id: row.id });
+        })
+        .then(() => {
           this.getList();
           this.msgSuccess("撤销成功！");
-        }
-      });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     getComputerNameList(name) {
       if (name) {

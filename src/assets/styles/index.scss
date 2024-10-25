@@ -1410,6 +1410,7 @@ ul {
 // 自定义样式
 .el-form-item__error {
   min-width: 150px;
+  text-align: left;
 }
 
 .el-tooltip__popper {
@@ -1497,5 +1498,11 @@ fieldset {
       cursor: auto !important;
       user-select: text !important;
     }
+  }
+}
+
+.table-options-col {
+  .el-button {
+    margin-left: 0 !important;
   }
 }

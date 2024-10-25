@@ -199,7 +199,7 @@
             class="text-orange"
             content="初审"
             v-hasPermi="['third:ids:firstCheck']"
-            v-if="scope.row.status == 1"
+            v-if="scope.row.status == 1 && checkRole(['test'])"
             @click="handleAuthChange(scope.row, 1)"
           />
 
@@ -208,7 +208,7 @@
             class="text-orange"
             content="终审"
             v-hasPermi="['third:ids:finalCheck']"
-            v-if="scope.row.status == 4"
+            v-if="scope.row.status == 4 && checkRole(['DATA_MANAGER'])"
             @click="handleAuthChange(scope.row, 4)"
           />
 
@@ -232,17 +232,17 @@
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="终审撤回"
+            content="初审撤回"
             v-hasPermi="['third:ids:resetFinalCheck']"
-            v-if="scope.row.status == 4"
+            v-if="scope.row.status == 4 && checkRole(['test'])"
             @click="handleRevocation(scope.row.id)"
           />
 
           <Tooltip
             icon="el-icon-refresh-right"
-            content="审核完毕撤回"
+            content="终审撤回"
             v-hasPermi="['third:ids:resetChecked']"
-            v-if="scope.row.status == 2"
+            v-if="scope.row.status == 2 && checkRole(['DATA_MANAGER'])"
             @click="handleRevocation(scope.row.id)"
           />
 
@@ -394,7 +394,7 @@ export default {
     },
     isSResetCheck() {
       return ({ versionStatus, status }) => {
-        return !versionStatus && (status === 2 || status === 4);
+        return this.checkRole(["product"]) && !versionStatus && (status === 2 || status === 4);
       };
     },
     isDownloadUrl() {

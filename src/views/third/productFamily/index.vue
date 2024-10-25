@@ -272,10 +272,10 @@ export default {
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
+      
       detailComputer(row.id).then((res) => {
         let { data } = res;
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
-        data.otherOptions = data.otherOptions ? data.otherOptions : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;
         this.$refs.compUpdate.isCopyProduct = false;

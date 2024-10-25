@@ -174,7 +174,7 @@ export function waterProofList(params) {
 // 撤回
 export function fileCancel(data) {
   return request({
-    url: 'file/config/cancel',
+    url: '/file/config/cancel',
     method: 'put',
     data
   })
