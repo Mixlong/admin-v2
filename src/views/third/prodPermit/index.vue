@@ -7,7 +7,6 @@
           filterable
           clearable
           placeholder="请选择产品品类"
-          class="w100"
           @change="queryParams.computerId = ''"
         >
           <el-option
@@ -145,9 +144,11 @@ import {
   computerLogList,
 } from "@/api/third/testApi";
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "ProdPermit",
+  mixins: [CategoryMixin],
   data() {
     return {
       // 遮罩层
@@ -157,8 +158,6 @@ export default {
       // 任务变更
       isTask: false,
       taskForm: {},
-      // 品类
-      dictList: [],
       // 型号
       computerOptions: [],
       // 操作日志
@@ -173,11 +172,6 @@ export default {
     };
   },
   created() {
-    // 品类
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-    });
-
     this.getList();
   },
   methods: {

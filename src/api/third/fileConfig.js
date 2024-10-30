@@ -334,3 +334,11 @@ export function recordGasList(params) {
   })
 }
 
+// 导出
+export function stsProductRecordExport(params) {
+  return request({
+    url: "/record/export",
+    method: "get",
+    params,
+  });
+}

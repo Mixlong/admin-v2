@@ -347,6 +347,36 @@
                   </el-select>
                 </el-form-item>
               </el-col>
+              <el-col :span="6">
+                <el-form-item
+                  label="通讯协议"
+                  prop="instrumentModel.sysProtocol"
+                  :rules="isCheckConfigItem({ message: '通讯协议' })"
+                >
+                  <el-select
+                    v-model="form.instrumentModel.sysProtocol"
+                    placeholder="请选择通讯协议"
+                    class="w100"
+                    clearable
+                  >
+                    <el-option
+                      v-for="item in sysProtocolList"
+                      :label="item.dictLabel"
+                      :value="+item.dictValue"
+                      :key="item.dictValue"
+                    >
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
               <template v-if="form.instrumentModel.serialLevel === 2">
                 <el-col :span="6">
                   <el-form-item
@@ -1770,6 +1800,8 @@ export default {
       dicts_keyType_list: [],
       // 车把尺寸
       handlebarSizeData: [],
+      // 通讯协议
+      sysProtocolList: []
     };
   },
   components: {
@@ -1938,6 +1970,10 @@ export default {
       this.getDicts("handleBar_size").then((res) => {
         this.handlebarSizeData = res.data;
       });
+      // 通讯协议
+      this.getDicts("sys_protocol").then((res) => {
+        this.sysProtocolList = res.data;
+      });
     },
     //查看同配详情
     getDetail(row) {
@@ -2046,6 +2082,7 @@ export default {
           showWheelsize: null,
           carModel: null,
           assistStartMagnetNumber: "2",
+          sysProtocol: null
         },
       };
     },
@@ -2231,6 +2268,7 @@ export default {
               canRate,
               sn,
               pcbaSn,
+              sysProtocol
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2243,6 +2281,7 @@ export default {
             this.form.instrumentModel.canRate = canRate;
             this.form.instrumentModel.sn = sn;
             this.form.instrumentModel.pcbaSn = pcbaSn;
+            this.form.instrumentModel.sysProtocol = sysProtocol;
 
             this.form.jsonStr = "";
           } else {

@@ -3,10 +3,10 @@
     <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="产品品类" prop="categoryId">
         <el-select
+          v-model="queryParams.categoryId"
           filterable
           allow-create
           clearable
-          v-model="queryParams.categoryId"
           style="width: 140px"
           placeholder="请选择产品品类"
         >
@@ -32,8 +32,9 @@
       </el-form-item>
       <el-form-item label="版本号" prop="versionCode">
         <el-input
-          v-model="queryParams.versionCode"
+          v-model.trim="queryParams.versionCode"
           clearable
+          style="width: 140px"
           placeholder="请选择版本号"
         ></el-input>
       </el-form-item>
@@ -182,11 +183,11 @@
 <script>
 import { sopList, sopDelete, sopState } from "@/api/third/testApi";
 import { mapGetters } from "vuex";
-import commonData from "@/mixins/commonData";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "Sop",
-  mixins: [commonData],
+  mixins: [CategoryMixin],
   components: {
     AddSop: () => import("./components/addSop"),
     sopDetail: () => import("./components/sopDetail"),
@@ -207,8 +208,6 @@ export default {
       // 总条数
       total: 0,
       brandList: [],
-      // 品类
-      dictList: [],
       // 查询参数
       queryParams: {
         p: 1,

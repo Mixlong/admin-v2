@@ -7,7 +7,7 @@
           placeholder="请选择品类"
           clearable
           filterable
-          style="max-width: 160px"
+          style="max-width: 140px"
           @change="changeCategory"
         >
           <el-option
@@ -25,7 +25,7 @@
           filterable
           placeholder="请选择型号"
           @change="getList"
-          style="width: 160px"
+          style="width: 140px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -40,7 +40,7 @@
           v-model="queryParams.pcbaSn"
           placeholder="请输入整机SN"
           clearable
-          style="width: 160px"
+          style="width: 140px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -49,7 +49,7 @@
           v-model="queryParams.sn"
           placeholder="请输入整机SN"
           clearable
-          style="width: 160px"
+          style="width: 140px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -58,7 +58,7 @@
           v-model="queryParams.processName"
           placeholder="请选择测试环节"
           clearable
-          style="max-width: 160px"
+          style="max-width: 140px"
         >
           <el-option
             v-for="dict in testList"
@@ -71,15 +71,15 @@
       <el-form-item label="判定结果" prop="result">
         <el-select
           v-model="queryParams.result"
-          placeholder="请选择判定结果 "
+          placeholder="请选择判定结果"
           clearable
-          style="max-width: 160px"
+          style="max-width: 140px"
         >
           <el-option label="OK" value="OK"></el-option>
           <el-option label="NG" value="NG"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
+      <el-form-item class="fr">
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
@@ -196,11 +196,12 @@
 </template>
 
 <script>
-import { categoryComputerDict } from "@/api/third/fileConfig";
 import { stsTestList, stsTestExport } from "@/api/third/testApi";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "StsTestResult",
+  mixins: [CategoryMixin],
   data() {
     return {
       isStsDetailShow: false,
@@ -224,11 +225,11 @@ export default {
         pcbaSn: "",
         sn: "",
         processName: "",
-        result: "",
+        result: ""
       },
       contentStyle: {
         paddingTop: "20px",
-        paddingBottom: "20px",
+        paddingBottom: "20px"
       },
     };
   },
@@ -245,10 +246,17 @@ export default {
     },
   },
   created() {
-    this.getList();
+    const { type, categoryId, status, model } = this.$route.query;
+    this.queryParams.type = type ?? "";
+    this.queryParams.categoryId = categoryId ?? "";
+    this.queryParams.status = status ?? "";
+    this.queryParams.computerId = model ?? "";
+
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
+
+    this.getList();
   },
   activated() {
     const { sn, recordId } = this.$route.params;
@@ -256,28 +264,6 @@ export default {
     this.queryParams.recordId = recordId;
 
     this.getList();
-  },
-  mounted() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
-
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
-    });
   },
   methods: {
     /** 查询品牌列表 */

@@ -78,7 +78,9 @@ export default {
       // uart波特率
       baudRateList: {},
       // 按键型号
-      dicts_keyType_list: {}
+      dicts_keyType_list: {},
+      // 通讯协议
+      dicts_protocol_list: {},
     };
   },
   created() {
@@ -94,6 +96,8 @@ export default {
     this.getConfigDicts("instrument_agreement", "dicts_agreement");
     // 按键型号
     this.getConfigDicts("STS_KEY_TYPE", "dicts_keyType_list");
+    // 通讯协议
+    this.getConfigDicts("sys_protocol", "dicts_protocol_list");
 
     // 轮径
     for (let i = 8; i < 100; i++) {

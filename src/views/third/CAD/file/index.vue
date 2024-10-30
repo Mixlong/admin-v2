@@ -490,11 +490,11 @@ export default {
       return Object.keys(this.fileConfigSnData)?.length;
     },
   },
-  created() {
-    this.getCaategoryData();
-  },
-  activated() {
-    this.getList();
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.getCategoryData();
+      vm.getList();
+    });
   },
   methods: {
     async getFileConfigSn() {
@@ -508,7 +508,7 @@ export default {
         this.fileConfigSnData = result.data ?? {};
       }
     },
-    getCaategoryData() {
+    getCategoryData() {
       categoryComputerDict().then((response) => {
         this.dictList = response.data;
 
@@ -536,8 +536,6 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-
-      this.getList();
     },
     onCreateTaskCode() {
       this.isTaskCodeFlag = true;

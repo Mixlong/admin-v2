@@ -638,41 +638,34 @@ export default {
       }
     },
   },
+  beforeRouteEnter(to, from, next) {
+    next(async vm => {
+      await vm.getCategoryComputerData();
+      vm.getCacheParamsFn(to?.params);
+    });
+  },
   created() {
-    const { orderId } = this.$route.query;
-    if (orderId) {
-      this.queryParams.orderId = orderId;
-    }
-
-    const { listId } = this.$route.params;
-    if (listId) {
-      this.queryParams.id = listId;
-    }
-
     this.getOperationList();
   },
-  async activated() {
-    await this.getCategoryComputerData();
-
-    const { categoryId, computerId, salesOrderNo, orderId } =
-      this.$route.params;
-
-    // 从订单管理跳转到当前页面
-    if (categoryId || computerId || salesOrderNo) {
-      this.queryParams.categoryId = categoryId;
-      this.queryParams.computerId = computerId;
-      this.queryParams.salesOrderNo = salesOrderNo;
-      this.queryParams.orderId = orderId;
-
-      const computerData = this.dictList.filter(
-        (item) => item.id === categoryId
-      );
-      this.computerOptions = computerData[0].computerList;
-    }
-
-    this.getList();
-  },
   methods: {
+    getCacheParamsFn(params) {
+      const { categoryId, computerId, salesOrderNo, orderId } = params;
+
+      // 从订单管理跳转到当前页面
+      if (categoryId || computerId || salesOrderNo) {
+        this.queryParams.categoryId = categoryId;
+        this.queryParams.computerId = computerId;
+        this.queryParams.salesOrderNo = salesOrderNo;
+        this.queryParams.orderId = orderId;
+
+        const computerData = this.dictList.filter(
+          (item) => item.id === categoryId
+        );
+        this.computerOptions = computerData[0].computerList;
+      }
+
+      this.getList();
+    },
     getCategoryComputerData() {
       return new Promise((resolve, reject) => {
         categoryComputerDict().then((res) => {
@@ -833,7 +826,6 @@ export default {
     changeCategory(val) {
       if (!val) return;
       this.queryParams.computerId = "";
-      this.getList();
       return new Promise((resove) => {
         this.computerOptions = this.dictList.filter(
           (item) => item.id === val

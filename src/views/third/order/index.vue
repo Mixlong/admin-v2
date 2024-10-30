@@ -317,7 +317,9 @@
                   salesOrderNo: row.salesOrderNo,
                   customerOrderNo: row.customerOrderNo,
                   categoryName: row.categoryName,
-                  computerName: row.computerName
+                  computerName: row.computerName,
+                  orderQuantity: row.orderQuantity,
+                  isOrderFlag: true,
                 })
               "
             />
@@ -419,8 +421,12 @@ export default {
       };
     },
   },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.getCategoryComputerDict();
+    });
+  },
   created() {
-    this.getCategoryComputerDict();
     this.getList();
   },
   methods: {

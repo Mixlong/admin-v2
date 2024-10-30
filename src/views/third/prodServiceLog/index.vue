@@ -80,12 +80,12 @@
       <el-form-item label="创建时间">
         <el-date-picker
           v-model="dateRange"
-          style="width: 185px"
           value-format="yyyy-MM-dd"
           type="daterange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          style="width: 185px"
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -320,10 +320,11 @@ import {
   recordUpdate,
   recordDelete,
 } from "@/api/third/testApi";
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "ProdServiceLog",
+  mixins: [CategoryMixin],
   data() {
     const checkPcba = (rule, value, callback) => {
       if (this.Is_Empty(value)) {
@@ -349,8 +350,6 @@ export default {
       // 线号
       testLineList: [],
       isDutLoading: false,
-      // 品类
-      dictList: [],
       // 不良标签
       errLabelList: [],
       // 不良原因
@@ -440,11 +439,6 @@ export default {
     },
   },
   created() {
-    // 品类
-    categoryComputerDict().then((res) => {
-      this.dictList = res.data;
-    });
-
     // 线号
     this.getDicts("sts_test_line").then((res) => {
       this.testLineList = res.data;
@@ -466,8 +460,6 @@ export default {
     });
 
     this.getList();
-
-    // this.Enter_Fn(this.submitTaskForm);
   },
   methods: {
     /** 查询品牌列表 */

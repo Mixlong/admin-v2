@@ -797,11 +797,12 @@ export default {
       return (key) => {
         const seen = new Map();
         const newData = this.compareData.filter((item) => item.id);
-
+        
         for (const item of newData) {
           if (seen.has(item[key])) {
             return false;
           }
+
           seen.set(item[key], item);
         }
         return true;

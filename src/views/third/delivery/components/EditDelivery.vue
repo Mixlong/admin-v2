@@ -6,6 +6,7 @@
     center
     append-to-body
     :close-on-click-modal="false"
+    width="800px"
   >
     <el-form
       ref="form"
@@ -28,7 +29,7 @@
                   :hasMore="salesOrderNoData.more"
                   dictLabel="salesOrderNo"
                   :moreParams="true"
-                  :disabled="!!form.id"
+                  :disabled="!!form.id || isOrderFlag"
                   :request="getOrderList"
                   @getChange="getOrderData"
                   v-slot="{ proOption }"
@@ -139,14 +140,15 @@ import { orderList } from "@/api/order";
 import { addDelivery, updateDelivery } from "@/api/delivery";
 
 export default {
-  props: ["classifyList", "involveUnitList"],
+  props: ["classifyList", "involveUnitList", "isOrderFlag", "salesOrderNo", "orderQuantity"],
   data() {
     return {
       myFileList: "",
       dialogVisible: false,
       title: "",
       // 表单参数
-      form: {},
+      form: {
+      },
       // 迪太订单号
       salesOrderNoData: {
         data: [],
@@ -193,6 +195,17 @@ export default {
   watch: {
     "form.file"(file) {
       if (file) this.clearValidateItem("form", "file");
+    },
+    dialogVisible(show) {
+      if (show && this.isOrderFlag) {
+        this.form.salesOrderNo = this.salesOrderNo;
+        this.form.shippingNumber = this.orderQuantity;
+
+        this.getOrderList({ keyword: this.salesOrderNo }).then(() => {
+          const params = this.salesOrderNoData.data[0];
+          this.getOrderData(JSON.stringify(params));
+        });
+      }
     },
   },
   methods: {
@@ -278,4 +291,3 @@ export default {
   },
 };
 </script>
-

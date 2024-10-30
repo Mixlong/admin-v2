@@ -91,7 +91,6 @@
 <script>
 import { listComputer, authComputer, changeStatus } from "@/api/third/version";
 import { typeCategory } from "@/api/third/category";
-
 import CompUpdate from "./components/update";
 
 export default {
@@ -126,8 +125,10 @@ export default {
       },
     };
   },
-  mounted() {
-    this.getTypeCategory();
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.getTypeCategory();
+    })
   },
   methods: {
     // 获取品类

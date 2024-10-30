@@ -290,6 +290,20 @@
         <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
       </el-table-column>
       <el-table-column
+        label="通讯协议"
+        prop="sysProtocol"
+        align="center"
+        width="120"
+        column-key="sysProtocol"
+        :filters="handleDataFilter(dicts_protocol_list)"
+        :filter-method="filterHandler"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="dicts_protocol_list[row.sysProtocol]"
+        />
+      </el-table-column>
+      <el-table-column
         label="通讯方式"
         prop="serialLevel"
         align="center"
@@ -1175,13 +1189,6 @@
       </el-descriptions>
     </el-dialog>
 
-    <!-- 对比项 -->
-    <!-- <el-drawer :visible.sync="isDrawerFlag" direction="btt" size="20%">
-      <template v-slot:title>
-        <div></div>
-      </template>
-    </el-drawer> -->
-
     <!-- 对比 -->
     <ParamsCompare :isParamsCompareShow.sync="isParamsCompareShow" :dictList="dictList" />
   </div>
@@ -1291,11 +1298,10 @@ export default {
   created() {
     // 车把尺寸
     this.getConfigDicts("handleBar_size", "handlebarSizeData");
-
-    categoryComputerDict().then((res) => {
-      this.dictList = res.data;
-      this.getList();
-    });
+    this.getList();
+  },
+  activated() {
+    this.getCategoryComputerDict();
   },
   methods: {
     /** 查询品牌列表 */

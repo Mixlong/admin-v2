@@ -7,7 +7,7 @@
           placeholder="请选择品类"
           clearable
           filterable
-          style="max-width: 160px"
+          style="max-width: 135px"
           @change="changeCategory"
         >
           <el-option
@@ -25,7 +25,7 @@
           filterable
           placeholder="请选择型号"
           @change="getList"
-          style="max-width: 160px"
+          style="max-width: 135px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -40,7 +40,7 @@
           v-model="queryParams.sn"
           placeholder="请输入整机SN"
           clearable
-          style="max-width: 160px"
+          style="max-width: 135px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -49,7 +49,7 @@
           v-model="queryParams.customerOrderNo"
           placeholder="请输入客户订单号"
           clearable
-          style="max-width: 160px"
+          style="max-width: 135px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -58,7 +58,7 @@
           v-model="queryParams.boxNo"
           placeholder="请输入箱号"
           clearable
-          style="max-width: 160px"
+          style="max-width: 135px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
@@ -72,15 +72,42 @@
           dictValue="orderCode"
           :request="getProdPlantList"
           placeholder="请选择工单号"
-          style="width: 100%"
+          style="max-width: 135px"
         >
         </select-loadMore>
       </el-form-item>
-      <el-form-item>
+      <el-form-item label="迪太订单号" prop="salesOrderNo">
+        <el-input
+          v-model="queryParams.salesOrderNo"
+          placeholder="请输入迪太订单号"
+          clearable
+          style="width: 135px"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="测试环节" prop="processName">
+        <el-select
+          v-model="queryParams.processName"
+          placeholder="请选择测试环节"
+          clearable
+          style="max-width: 110px"
+        >
+          <el-option
+            v-for="dict in testList"
+            :key="dict.dictCode"
+            :label="dict.dictLabel"
+            :value="dict.dictLabel"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item class="fr">
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button type="warning" icon="el-icon-download" @click="handleExport">
+          导 出
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -106,8 +133,18 @@
         label="客户订单号"
         prop="customerOrderNo"
         align="center"
-      />
-      <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" />
+      >
+        <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="迪太订单号" prop="salesOrderNo" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="蓝牙地址" prop="mac" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.mac"></span>
+      </el-table-column>
+      <el-table-column label="生产地点" prop="factory" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.factory"></span>
+      </el-table-column>
       <el-table-column label="箱号" prop="boxNo" align="center">
         <template slot-scope="{ row }">
           <el-tooltip
@@ -126,7 +163,7 @@
                   salesOrderNo: row.salesOrderNo,
                   customerOrderNo: row.customerOrderNo,
                   categoryName: row.categoryName,
-                  computerName: row.computerName,
+                  computerName: row.computerName
                 })
               "
             >
@@ -161,21 +198,21 @@
       <el-table-column label="装箱时间" prop="packingTime" align="center">
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
-      <el-table-column label="气密性测试" align="center" width="100">
+      <el-table-column label="气密性测试" align="center" width="90">
         <template slot-scope="scope">
           <el-button type="text" @click="seeGasDetail(scope.row.sn)">
             查看
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="版本信息" align="center" width="100">
+      <el-table-column label="版本信息" align="center" width="85">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row.id)"
             >查看</el-button
           >
         </template>
       </el-table-column>
-      <el-table-column label="配件信息" align="center" width="100">
+      <el-table-column label="配件信息" align="center" width="85">
         <template slot-scope="{ row }">
           <el-button
             type="text"
@@ -185,7 +222,7 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="测试信息" align="center" width="100">
+      <el-table-column label="测试信息" align="center" width="85">
         <template slot-scope="{ row }">
           <el-button
             type="text"
@@ -336,15 +373,17 @@
 
 <script>
 import {
-  categoryComputerDict,
   recordList,
   recordGasList,
   recordVersionList,
+  stsProductRecordExport,
 } from "@/api/third/fileConfig";
 import { orderWorkList } from "@/api/third/prodPlant";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "ProductRecord",
+  mixins: [CategoryMixin],
   data() {
     return {
       isStsDetailShow: false,
@@ -354,10 +393,8 @@ export default {
       loading: true,
       // 总条数
       total: 0,
-      dictList: [],
       brandList: [],
       testList: [],
-      computerOptions: [],
       testDetail: [],
       stsDetail: [],
       gasDetail: [],
@@ -387,34 +424,23 @@ export default {
         result: "",
         orderCode: "",
         boxNo: "",
+        processName: "",
+        salesOrderNo: "",
       },
     };
   },
   created() {
+    const { type, categoryId, status, model } = this.$route.query;
+    this.queryParams.type = type ?? "";
+    this.queryParams.categoryId = categoryId ?? "";
+    this.queryParams.status = status ?? "";
+    this.queryParams.computerId = model ?? "";
+
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
-
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
-
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
-    });
+    
+    this.getList();
   },
   activated() {
     this.handleSearchPage();
@@ -474,13 +500,6 @@ export default {
         this.gasDetail = res.data;
       });
     },
-    changeCategory(categoryName) {
-      if (!categoryName) return;
-      this.queryParams.computerName = "";
-      this.computerOptions = this.dictList.filter(
-        (item) => item.name === categoryName
-      )[0].computerList;
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -522,6 +541,21 @@ export default {
       } else {
         return "";
       }
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm("是否确认导出产品记录数据项?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(function () {
+          return stsProductRecordExport(queryParams);
+        })
+        .then((response) => {
+          this.download(response.msg);
+        });
     },
   },
 };

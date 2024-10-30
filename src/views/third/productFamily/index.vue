@@ -9,7 +9,6 @@
           allow-create
           clearable
           placeholder="请选择品类"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in dictList"
@@ -30,7 +29,6 @@
           placeholder="请选择仪表型号"
           @change="getList()"
           :remote-method="getComputerNameList"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -191,7 +189,8 @@ export default {
     this.handleFirstLink();
     this.getList();
   },
-  activated() {
+  async activated() {
+    this.dictList = await this.getTypeCategory();
     this.handleCacheLink();
   },
   methods: {
