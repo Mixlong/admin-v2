@@ -442,6 +442,38 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
+                <el-col :span="6">
+                  <el-form-item
+                    label="标签规则"
+                    prop="instrumentModel.labelRule"
+                  >
+                    <el-select
+                      v-model="form.instrumentModel.labelRule"
+                      clearable
+                      @change="handleLabelRule"
+                      class="w100"
+                    >
+                      <el-option label="通用" :value="1"></el-option>
+                      <el-option label="图片" :value="2"></el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
+                  <el-form-item
+                    label="标签图片"
+                    prop="instrumentModel.labelRuleImg"
+                    :rules="isCheckConfigItem({ message: '标签图片' })"
+                  >
+                    <el-upload-sortable
+                      v-model="form.instrumentModel.labelRuleImg"
+                      :imgW="80"
+                      :imgH="80"
+                      :isLimit="1"
+                      :max="1"
+                    />
+                  </el-form-item>
+                </el-col>
               </template>
             </el-row>
           </fieldset>
@@ -662,6 +694,7 @@
                     />
                   </el-form-item>
                 </el-col>
+
                 <el-col :span="24">
                   <el-form-item
                     label="规格书"
@@ -1801,7 +1834,7 @@ export default {
       // 车把尺寸
       handlebarSizeData: [],
       // 通讯协议
-      sysProtocolList: []
+      sysProtocolList: [],
     };
   },
   components: {
@@ -1828,6 +1861,11 @@ export default {
         this.rules.name[0].required = false;
       }
     },
+    'form.instrumentModel.labelRuleImg'(labelRuleImg) {
+      if(labelRuleImg) {
+        this.clearValidateItem("form", "instrumentModel.labelRuleImg")
+      }
+    }
   },
   created() {
     this.echoWheelDiameter();
@@ -2008,6 +2046,8 @@ export default {
         sn: "",
         pcbaSn: "",
         instrumentModel: {
+          labelRule: null,
+          labelRuleImg: null,
           sn: null,
           pcbaSn: null,
           communicateType: 0,
@@ -2082,7 +2122,7 @@ export default {
           showWheelsize: null,
           carModel: null,
           assistStartMagnetNumber: "2",
-          sysProtocol: null
+          sysProtocol: null,
         },
       };
     },
@@ -2202,7 +2242,7 @@ export default {
         undervoltage,
         powerGear,
         assistStartMagnetNumber,
-        assistPercentage,
+        assistPercentage: String(assistPercentage),
         currentlimiting,
         assistLimit,
         showWheelsize,
@@ -2242,8 +2282,7 @@ export default {
       };
 
       const data = {
-        instrumentModel,
-        inputValues: {},
+        instrumentModel
       };
       return JSON.stringify(data);
     },
@@ -2268,7 +2307,9 @@ export default {
               canRate,
               sn,
               pcbaSn,
-              sysProtocol
+              sysProtocol,
+              labelRule,
+              labelRuleImg
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2282,6 +2323,8 @@ export default {
             this.form.instrumentModel.sn = sn;
             this.form.instrumentModel.pcbaSn = pcbaSn;
             this.form.instrumentModel.sysProtocol = sysProtocol;
+            this.form.instrumentModel.labelRule = labelRule;
+            this.form.instrumentModel.labelRuleImg = labelRuleImg;
 
             this.form.jsonStr = "";
           } else {
@@ -2354,6 +2397,11 @@ export default {
           });
       }
     },
+    // 标签规则
+    handleLabelRule(labelRule) {
+      if(labelRule === 1) 
+      this.form.instrumentModel.labelRuleImg = "";
+    }
   },
 };
 </script>

@@ -4,7 +4,6 @@
       <el-form-item label="品类" prop="categoryName">
         <el-select
           v-model="queryParams.categoryName"
-          placeholder="请选择品类"
           clearable
           filterable
           style="max-width: 135px"
@@ -23,7 +22,6 @@
           v-model="queryParams.computerName"
           clearable
           filterable
-          placeholder="请选择型号"
           @change="getList"
           style="max-width: 135px"
         >
@@ -38,7 +36,7 @@
       <el-form-item label="整机SN" prop="sn">
         <el-input
           v-model="queryParams.sn"
-          placeholder="请输入整机SN"
+          placeholder="请输入"
           clearable
           style="max-width: 135px"
           @keyup.enter.native="handleQuery"
@@ -47,7 +45,7 @@
       <el-form-item label="客户订单号" prop="customerOrderNo">
         <el-input
           v-model="queryParams.customerOrderNo"
-          placeholder="请输入客户订单号"
+          placeholder="请输入"
           clearable
           style="max-width: 135px"
           @keyup.enter.native="handleQuery"
@@ -56,7 +54,7 @@
       <el-form-item label="箱号" prop="boxNo">
         <el-input
           v-model="queryParams.boxNo"
-          placeholder="请输入箱号"
+          placeholder="请输入"
           clearable
           style="max-width: 135px"
           @keyup.enter.native="handleQuery"
@@ -71,15 +69,15 @@
           dictLabel="orderCode"
           dictValue="orderCode"
           :request="getProdPlantList"
-          placeholder="请选择工单号"
           style="max-width: 135px"
+          placeholder="请选择"
         >
         </select-loadMore>
       </el-form-item>
       <el-form-item label="迪太订单号" prop="salesOrderNo">
         <el-input
           v-model="queryParams.salesOrderNo"
-          placeholder="请输入迪太订单号"
+          placeholder="请输入"
           clearable
           style="width: 135px"
           @keyup.enter.native="handleQuery"
@@ -88,7 +86,6 @@
       <el-form-item label="测试环节" prop="processName">
         <el-select
           v-model="queryParams.processName"
-          placeholder="请选择测试环节"
           clearable
           style="max-width: 110px"
         >
@@ -129,11 +126,7 @@
       <el-table-column label="整机SN" prop="sn" align="center">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column
-        label="客户订单号"
-        prop="customerOrderNo"
-        align="center"
-      >
+      <el-table-column label="客户订单号" prop="customerOrderNo" align="center">
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
       <el-table-column label="迪太订单号" prop="salesOrderNo" align="center">
@@ -163,7 +156,7 @@
                   salesOrderNo: row.salesOrderNo,
                   customerOrderNo: row.customerOrderNo,
                   categoryName: row.categoryName,
-                  computerName: row.computerName
+                  computerName: row.computerName,
                 })
               "
             >
@@ -195,7 +188,12 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="装箱时间" prop="packingTime" align="center">
+      <el-table-column
+        label="装箱时间"
+        prop="packingTime"
+        align="center"
+        sortable
+      >
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
       <el-table-column label="气密性测试" align="center" width="90">
@@ -207,9 +205,9 @@
       </el-table-column>
       <el-table-column label="版本信息" align="center" width="85">
         <template slot-scope="scope">
-          <el-button type="text" @click="seeDetail(scope.row.id)"
-            >查看</el-button
-          >
+          <el-button type="text" @click="seeDetail(scope.row.id)">
+            查看
+          </el-button>
         </template>
       </el-table-column>
       <el-table-column label="配件信息" align="center" width="85">
@@ -439,7 +437,7 @@ export default {
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
-    
+
     this.getList();
   },
   activated() {

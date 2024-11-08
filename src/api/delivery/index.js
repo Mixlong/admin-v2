@@ -60,3 +60,42 @@ export function deliveryDetail(id) {
     method: "get",
   });
 }
+
+// 客户地址表
+export function deliveryAddress(params) {
+  return request({
+    url: "/delivery/address/address",
+    method: "get",
+    params
+  });
+}
+
+// 新增客户地址
+export function deliveryAddressAdd(data) {
+  return request({
+    url: "/delivery/address/add",
+    method: "post",
+    data
+  });
+}
+
+// 修改客户地址
+export function deliveryAddressUpdate(data) {
+  return request({
+    url: "/delivery/address/update",
+    method: "put",
+    data
+  });
+}
+
+// 删除客户地址
+export function deliveryAddressDel(id) {
+  return request({
+    url: "/delivery/address/delete/" + id,
+    method: "delete"
+  });
+}
+
+
+
+

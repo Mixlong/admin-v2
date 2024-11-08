@@ -17,6 +17,7 @@ export default {
       const hasPermissions = permissions.some((permission) => {
         return (
           all_permission === permission || permissionFlag.includes(permission)
+          // permissionFlag.includes(permission)
         );
       });
 

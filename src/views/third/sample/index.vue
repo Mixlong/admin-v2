@@ -8,52 +8,47 @@
     >
       <el-form-item label="客户" prop="key">
         <el-autocomplete
-          size="small"
-          clearable
           v-model="queryParams.key"
-          :fetch-suggestions="querySearchAsync"
+          clearable
           placeholder="请输入客户"
+          :fetch-suggestions="querySearchAsync"
           @select="handleQuery"
+          style="width: 140px"
         ></el-autocomplete>
       </el-form-item>
       <el-form-item label="产品型号" prop="baseModel">
         <el-input
-          size="small"
-          clearable
           v-model="queryParams.baseModel"
+          clearable
           placeholder="请输入产品型号"
           @keyup.enter.native="handleQuery"
+          style="width: 140px"
+        >
+        </el-input>
+      </el-form-item>
+      <el-form-item label="SN" prop="sn">
+        <el-input
+          v-model="queryParams.sn"
+          clearable
+          placeholder="请输入需求"
+          @keyup.enter.native="handleQuery"
+          style="width: 140px"
         >
         </el-input>
       </el-form-item>
       <el-form-item label="需求" prop="demand">
         <el-input
-          size="small"
           clearable
           v-model="queryParams.demand"
           placeholder="请输入需求"
           @keyup.enter.native="handleQuery"
+          style="width: 140px"
         >
         </el-input>
-      </el-form-item>
-      <el-form-item label="送样时间" prop="sendTime">
-        <el-date-picker
-          ref="datePicker"
-          size="small"
-          clearable
-          v-model="queryParams.sendTime"
-          type="date"
-          placeholder="选择日期时间"
-          format="yyyy-MM-dd"
-          value-format="yyyy-MM-dd"
-          @change="handleQuery"
-        >
-        </el-date-picker>
       </el-form-item>
       <el-form-item label="状态" prop="searchState">
         <el-select
           style="width: 130px"
-          size="small"
           clearable
           v-model="queryParams.searchState"
           placeholder="请选择状态"
@@ -67,6 +62,20 @@
           >
           </el-option>
         </el-select>
+      </el-form-item>
+      <el-form-item label="送样时间" prop="sendTime">
+        <el-date-picker
+          ref="datePicker"
+          clearable
+          v-model="queryParams.sendTime"
+          type="date"
+          placeholder="选择日期时间"
+          format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd"
+          @change="handleQuery"
+          style="width: 140px"
+        >
+        </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button
@@ -146,13 +155,17 @@
       </div>
     </el-row>
 
+    <!--       ref="tableRef"
+      class="table-scrollContainer"  -->
+
     <el-table
-      :row-class-name="rowName"
+      id="drag_table"
       v-loading="loading"
       :data="brandList"
+      :row-class-name="rowName"
       :height="tableHeight()"
       :cell-class-name="cellClassName"
-      @cell-click="cellClick"
+      @cell-dblclick="cellClick"
       border
     >
       <el-table-column
@@ -160,6 +173,7 @@
         align="left"
         header-align="center"
         width="220"
+        fixed
         v-if="columns[0].visible"
       >
         <template slot-scope="{ row }">
@@ -181,6 +195,7 @@
         label="详细需求"
         prop="demand"
         align="center"
+        width="350"
         v-if="columns[1].visible"
       >
         <template slot-scope="{ row }">
@@ -197,7 +212,7 @@
 
       <el-table-column
         label="配置需求表"
-        width="200"
+        width="150"
         align="center"
         v-if="columns[2].visible"
       >
@@ -229,7 +244,7 @@
         label="当前进展"
         prop="progress"
         align="center"
-        width="300"
+        width="350"
         v-if="columns[3].visible"
       >
         <template slot-scope="{ row }">
@@ -243,12 +258,22 @@
           </el-tag>
         </template>
       </el-table-column>
-
+      <el-table-column
+        label="SN号"
+        prop="progress"
+        align="center"
+        width="250"
+        v-if="columns[4].visible"
+      >
+        <template slot-scope="{ row }">
+          <div v-for="item in row.list">{{ item }}</div>
+        </template>
+      </el-table-column>
       <el-table-column
         label="责任人&状态"
         align="center"
         width="100"
-        v-if="columns[4].visible"
+        v-if="columns[5].visible"
       >
         <template slot-scope="{ row }">
           <span :class="[auditProcessTitleColor[row.state]]">
@@ -262,7 +287,7 @@
         align="center"
         prop="sendTime"
         width="170"
-        v-if="columns[5].visible"
+        v-if="columns[6].visible"
       >
         <template slot-scope="scope">
           <template v-if="scope.row.state !== 6">
@@ -306,9 +331,9 @@
 
       <el-table-column
         label="评审表"
-        width="160"
+        width="150"
         align="center"
-        v-if="columns[6].visible"
+        v-if="columns[7].visible"
       >
         <template slot-scope="{ row }">
           <div
@@ -328,7 +353,8 @@
         label="操作"
         align="center"
         width="80"
-        v-if="columns[7].visible"
+        fixed="right"
+        v-if="columns[8].visible"
       >
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
@@ -396,6 +422,13 @@
               icon="el-icon-box"
               content="转生产"
               @click="handleProd(scope.row)"
+            />
+
+            <Tooltip
+              class="mlZero"
+              icon="el-icon-full-screen"
+              content="录入SN"
+              @click="handleScanSn(scope.row)"
             />
           </div>
         </template>
@@ -507,6 +540,7 @@
 
     <CompUpdate ref="compUpdate" :pmDictListOptions="pmDictListOptions" />
     <CompApply ref="compApply" @applyTotal="applyTotalFn" />
+    <TypeInSn :isSnShow.sync="isSnShow" :sampleId="sampleId" :snData="snList" />
   </div>
 </template>
 
@@ -527,20 +561,28 @@ import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
 import Verify from "vue2-verify";
 import { pmList } from "@/utils/commonData";
+import TypeInSn from "./components/typeInSn.vue";
+import { dragTableFn } from "@/mixins/common";
 
 export default {
   name: "Sample",
+  mixins: [dragTableFn],
   components: {
     CompUpdate,
     FlipDown,
     Verify,
     CompApply,
+    TypeInSn,
   },
   data() {
     return {
       pmList,
       isSampleProd: false,
       isProdLoading: false,
+      // SN录入弹窗
+      isSnShow: false,
+      sampleId: "",
+      snList: [],
       open: false,
       form: {},
       urls: [],
@@ -620,6 +662,7 @@ export default {
         state: true,
         myself: "0",
         sendTime: undefined,
+        sn: null,
       },
       queryParamsApply: {
         p: 1,
@@ -647,10 +690,11 @@ export default {
         { key: 1, label: "详细需求", visible: true },
         { key: 2, label: "配置需求表", visible: true },
         { key: 3, label: "当前进展", visible: true },
-        { key: 4, label: "责任人&状态", visible: true },
-        { key: 5, label: "时间管理", visible: true },
-        { key: 6, label: "评审表", visible: true },
-        { key: 7, label: "操作", visible: true },
+        { key: 4, label: "SN号", visible: true },
+        { key: 5, label: "责任人&状态", visible: true },
+        { key: 6, label: "时间管理", visible: true },
+        { key: 7, label: "评审表", visible: true },
+        { key: 8, label: "操作", visible: true },
       ],
     };
   },
@@ -1131,7 +1175,7 @@ export default {
      * @return {*}
      */
     cellClassName({ row, column, rowIndex, columnIndex }) {
-      const columnIndexData = [1, 3, 4, 5];
+      const columnIndexData = [1, 3, 5, 6];
 
       if (
         columnIndexData.includes(columnIndex) &&
@@ -1151,9 +1195,11 @@ export default {
      * @return {*}
      */
     cellClick(row, column, cell, event) {
+      console.log(column)
       if (!this.checkPermi(["third:sample:edit"])) {
         return;
       }
+
       switch (column.label) {
         case "详细需求":
           this.handleUpdate(row, "demand");
@@ -1171,6 +1217,12 @@ export default {
         default:
           break;
       }
+    },
+    // 录入SN
+    handleScanSn(row) {
+      this.isSnShow = true;
+      this.sampleId = row.id;
+      this.snList = row.list;
     },
   },
 };

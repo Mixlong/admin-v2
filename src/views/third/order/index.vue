@@ -7,7 +7,7 @@
         :inline="true"
         v-show="showSearch"
       >
-        <el-form-item label="客户名称" prop="customerName">
+        <el-form-item label="客户名称" prop="customerName" class="customer-name">
           <select-loadMore
             style="width: 100%"
             v-model="queryParams.customerName"
@@ -112,14 +112,12 @@
           <el-button
             type="primary"
             icon="el-icon-search"
-            v-hasPermi="['third:order:query']"
             @click="handleQuery"
           >
             搜索
           </el-button>
           <el-button
             icon="el-icon-refresh"
-            v-hasPermi="['third:order:reset']"
             @click="resetQuery"
           >
             重置

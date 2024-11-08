@@ -91,6 +91,7 @@ export function addCustomer(data) {
     data
   });
 }
+
 // 修改客户
 export function editCustomer(data) {
   return request({
@@ -184,4 +185,3 @@ export function orderAuth(id) {
     method: 'get'
   })
 }
-
