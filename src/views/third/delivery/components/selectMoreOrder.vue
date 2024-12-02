@@ -112,6 +112,7 @@
           width="55"
           align="center"
           :reserve-selection="true"
+          :selectable="checkSelectable"
         />
         <el-table-column label="客户名称" align="center" prop="customerName">
           <span slot-scope="{ row }" v-NoData="row.customerName"></span>
@@ -158,11 +159,13 @@
         >
           <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
         </el-table-column>
-        <el-table-column label="出货日期" align="center" width="100">
-          <span
-            slot-scope="{ row }"
-            v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"
-          ></span>
+        <el-table-column
+          label="未发货数量"
+          align="center"
+          prop="unshippedNum"
+          width="100"
+        >
+          <span slot-scope="{ row }" v-NoData="row.unshippedNum"></span>
         </el-table-column>
       </el-table>
       <el-button
@@ -226,7 +229,7 @@ export default {
       oldMoreOrderData: [],
       queryParams: {
         p: 1,
-        l: 20,
+        l: 100,
         customerName: undefined,
         salesOrderNo: undefined,
         customerOrderNo: undefined,
@@ -243,7 +246,6 @@ export default {
         this.getCategoryComputerDict();
         const { list = [] } = this.customerOrderData;
         this.oldMoreOrderData = list;
-        console.log("oldMoreOrderData", this.oldMoreOrderData)
         this.getList();
       } else {
         this.$refs.tabRef.clearSelection();
@@ -251,6 +253,21 @@ export default {
     },
   },
   methods: {
+    checkSelectable(row) {
+      const { list = [] } = this.customerOrderData;
+
+      if (list.length) {
+        const { orderId } = list[0];
+       
+        if(orderId === row?.id) {
+          return false;
+        } else {
+          return true; 
+        }
+      } else {
+        return true;
+      }
+    },
     getRowKeys(row) {
       return row.id;
     },
@@ -263,7 +280,7 @@ export default {
           const matchedIndex = this.oldMoreOrderData.findIndex(
             (item) => item.orderId === row.id
           );
-          this.$refs["tabRef"].toggleRowSelection(row, matchedIndex != -1);
+          this.$refs["tabRef"].toggleRowSelection(row, matchedIndex !== -1);
         });
         this.rowSelectFlag = false;
       }, 0);
@@ -330,9 +347,7 @@ export default {
         })
       ).then((res) => {
         const { list, total } = res.data;
-        // this.orderList = list.filter(
-        //   (item) => item.id !== this.customerOrderData.orderId
-        // );
+
         this.orderList = list;
         this.total = total;
         this.loading = false;
@@ -353,12 +368,10 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      console.log("selection", selection)
       // if (this.rowSelectFlag) return;
       this.moreOrderData = selection;
     },
     handleSubmitOrder() {
-      console.log("this.moreOrderData", this.moreOrderData);
       if (!this.moreOrderData.length) {
         this.msgError("至少选择一项订单");
         return;
@@ -370,5 +383,3 @@ export default {
   },
 };
 </script>
-
-<style></style>

@@ -183,6 +183,14 @@
       >
         <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
       </el-table-column>
+      <el-table-column
+        label="未发货数量"
+        align="center"
+        prop="unshippedNum"
+        width="100"
+      >
+        <span slot-scope="{ row }" v-NoData="row.unshippedNum"></span>
+      </el-table-column>
       <el-table-column label="出货日期" align="center" width="100">
         <span
           slot-scope="{ row }"

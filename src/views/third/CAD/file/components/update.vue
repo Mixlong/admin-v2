@@ -9,189 +9,191 @@
     :width="isDigWidth"
     append-to-body
     :top="boleConfig ? '5vh' : '15vh'"
+    center
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="110px"
-      class="form-data form-data-inline"
-      :class="{ 'inline-form': boleConfig }"
-      inline
-    >
+    <el-form ref="form" :model="form" :rules="rules" label-position="top">
       <template v-if="!isBatchSync">
-        <el-form-item label="品类" prop="categoryId">
-          <el-select
-            :disabled="form.id ? true : false"
-            v-model="form.categoryId"
-            clearable
-            @change="changeCategory2"
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.id"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="型号" prop="computerId">
-          <el-select
-            :disabled="form.id ? true : false"
-            v-model="form.computerId"
-            clearable
-            size="small"
-            @change="$forceUpdate()"
-          >
-            <el-option
-              v-for="dict in computerFormOptions"
-              :key="dict.model"
-              :label="dict.name"
-              :value="dict.model"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="属性" prop="type">
-          <el-select
-            v-model="form.type"
-            clearable
-            size="small"
-            disabled
-            @change="$forceUpdate()"
-          >
-            <el-option
-              v-for="dict in fileTypeList"
-              :key="dict.key"
-              :label="dict.value"
-              :value="dict.key"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-row>
-          <el-form-item label="数据类型" prop="dataType">
-            <el-select
-              v-model="form.dataType"
-              clearable
-              size="small"
-              placeholder="请选择数据类型"
-              @change="resetValidForm"
-            >
-              <el-option label="PC上位机" :value="1"></el-option>
-              <template v-if="isStsType(form.type)">
-                <el-option label="STS网页" :value="2"></el-option>
-                <el-option label="STS程序脚本" :value="3"></el-option>
-              </template>
-            </el-select>
-          </el-form-item>
-        </el-row>
-
-        <!-- PC上位机 -->
-        <template v-if="form.dataType === 1">
-          <el-form-item label="属性描述" prop="content">
-            <template v-if="form.type === 'hard_version'">
-              <select-loadMore
-                style="width: 100%"
-                v-model="form.content"
-                :data="hardData.data"
-                :page="hardData.page"
-                :hasMore="hardData.more"
-                dictLabel="name"
-                dictValue="name"
-                :request="getHardList"
-                placeholder="请选择硬件版本号"
-              />
-            </template>
-            <template v-else>
-              <template v-if="form.type === 'ble_version'">
-                <el-row
-                  v-for="(item, index) in form.bleVersionList"
-                  :key="index"
-                >
-                  <el-col :span="23">
-                    <el-form-item style="width: 100%">
-                      <el-input
-                        v-model.trim="item.bleName"
-                        clearable
-                        placeholder="请输入蓝牙版本号"
-                      />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="1">
-                    <el-button
-                      @click="removeDomain(item)"
-                      class="margin-left-xs"
-                      icon="el-icon-minus"
-                      circle
-                      plain
-                      v-if="
-                        index > 0 &&
-                        form.bleVersionList.length > 0 &&
-                        index + 1 !== form.bleVersionList.length
-                      "
-                      type="primary"
-                    />
-                    <el-button
-                      @click="addDomain"
-                      class="margin-left-xs"
-                      icon="el-icon-plus"
-                      circle
-                      plain
-                      v-if="index + 1 == form.bleVersionList.length"
-                      type="primary"
-                    />
-                  </el-col>
-                </el-row>
-              </template>
-              <template v-else>
-                <el-input
-                  type="textarea"
-                  :autosize="{ minRows: 1, maxRows: 8 }"
-                  v-model="form.content"
-                  placeholder="请输入文件描述"
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="品类" prop="categoryId">
+              <el-select
+                :disabled="form.id ? true : false"
+                v-model="form.categoryId"
+                clearable
+                @change="changeCategory2"
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in dictList"
+                  :key="dict.id"
+                  :label="dict.name"
+                  :value="dict.id"
                 />
-              </template>
-            </template>
-          </el-form-item>
-          <el-form-item
-            v-show="form.type === 'dt_pack_sn'"
-            label="整机SN长度"
-            prop="packSnLen"
-          >
-            <el-input-number
-              v-model="form.packSnLen"
-              :min="1"
-              :max="31"
-              :precision="0"
-              controls-position="right"
-            />
-          </el-form-item>
-          <el-form-item
-            label="文件"
-            prop="url"
-            v-if="form.up == 1"
-            style="width: 100%"
-          >
-            <DrUpload
-              :limit="1"
-              v-model="form.url"
-              :css="{ width: '100%' }"
-              :isOnePic="1"
-              :accept="isFileType"
-            >
-              <div>
-                <el-button size="small" type="primary">点击上传</el-button>
-              </div>
-            </DrUpload>
-          </el-form-item>
-        </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="型号" prop="computerId">
+              <el-select
+                :disabled="form.id ? true : false"
+                v-model="form.computerId"
+                clearable
+                @change="$forceUpdate()"
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in computerFormOptions"
+                  :key="dict.model"
+                  :label="dict.name"
+                  :value="dict.model"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="属性" prop="type">
+              <el-select
+                v-model="form.type"
+                clearable
+                disabled
+                @change="$forceUpdate()"
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in fileTypeList"
+                  :key="dict.key"
+                  :label="dict.value"
+                  :value="dict.key"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="数据类型" prop="dataType">
+              <el-select
+                v-model="form.dataType"
+                clearable
+                placeholder="请选择数据类型"
+                @change="resetValidForm"
+                class="w100"
+              >
+                <el-option label="PC上位机" :value="1"></el-option>
+                <template v-if="isStsType(form.type)">
+                  <el-option label="STS网页" :value="2"></el-option>
+                  <el-option label="STS程序脚本" :value="3"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
 
-        <!-- STS网页 -->
-        <template v-if="form.dataType === 2">
-          <el-row>
+          <!-- PC上位机 -->
+          <template v-if="form.dataType === 1">
             <el-col>
+              <el-form-item label="属性描述" prop="content">
+                <template v-if="form.type === 'hard_version'">
+                  <select-loadMore
+                    style="width: 100%"
+                    v-model="form.content"
+                    :data="hardData.data"
+                    :page="hardData.page"
+                    :hasMore="hardData.more"
+                    dictLabel="name"
+                    dictValue="name"
+                    :request="getHardList"
+                    placeholder="请选择硬件版本号"
+                  />
+                </template>
+
+                <template v-else>
+                  <template v-if="form.type === 'ble_version'">
+                    <el-row
+                      v-for="(item, index) in form.bleVersionList"
+                      :key="index"
+                    >
+                      <el-col :span="23">
+                        <el-form-item style="width: 100%">
+                          <el-input
+                            v-model.trim="item.bleName"
+                            clearable
+                            placeholder="请输入蓝牙版本号"
+                          />
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="1">
+                        <el-button
+                          @click="removeDomain(item)"
+                          class="margin-left-xs"
+                          icon="el-icon-minus"
+                          circle
+                          plain
+                          v-if="
+                            index > 0 &&
+                            form.bleVersionList.length > 0 &&
+                            index + 1 !== form.bleVersionList.length
+                          "
+                          type="primary"
+                        />
+                        <el-button
+                          @click="addDomain"
+                          class="margin-left-xs"
+                          icon="el-icon-plus"
+                          circle
+                          plain
+                          v-if="index + 1 == form.bleVersionList.length"
+                          type="primary"
+                        />
+                      </el-col>
+                    </el-row>
+                  </template>
+                  <template v-else>
+                    <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 1, maxRows: 8 }"
+                      v-model="form.content"
+                      placeholder="请输入文件描述"
+                    />
+                  </template>
+                </template>
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="12">
+              <el-form-item
+                v-show="form.type === 'dt_pack_sn'"
+                label="整机SN长度"
+                prop="packSnLen"
+              >
+                <el-input-number
+                  v-model="form.packSnLen"
+                  :min="1"
+                  :max="31"
+                  :precision="0"
+                  controls-position="right"
+                  class="w100"
+                />
+              </el-form-item>
+            </el-col>
+
+            <el-col>
+              <el-form-item v-if="form.up == 1" label="文件" prop="url">
+                <DrUpload
+                  :limit="1"
+                  v-model="form.url"
+                  :css="{ width: '100%' }"
+                  :isOnePic="1"
+                  :accept="isFileType"
+                >
+                  <div>
+                    <el-button size="small" type="primary">点击上传</el-button>
+                  </div>
+                </DrUpload>
+              </el-form-item>
+            </el-col>
+          </template>
+
+          <!-- STS网页 -->
+          <template v-if="form.dataType === 2">
+            <el-col :span="12">
               <el-form-item label="sts工序网页" prop="webVersion">
                 <select-loadMore
                   v-model="form.webVersion"
@@ -208,7 +210,7 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col>
+            <el-col :span="12">
               <el-form-item label="属性描述" prop="stsContent">
                 <el-input
                   type="textarea"
@@ -218,9 +220,8 @@
                 />
               </el-form-item>
             </el-col>
-          </el-row>
-          <!-- 需求改改改，先留着吧 -->
-          <!-- <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
+            <!-- 需求改改改，先留着吧 -->
+            <!-- <el-form-item label="芯片版本" prop="configExtend.schemeVersion">
 						<el-select v-model="form.configExtend.schemeVersion" clearable size="mini">
 							<el-option v-for="(dict, index) in cidOptions" :key="index" :label="dict.dictLabel"
 								:value="dict.dictLabel" />
@@ -249,167 +250,200 @@
 							</el-form-item>
 						</el-col>
 					</el-row> -->
-        </template>
+          </template>
 
-        <!-- STS程序脚本 -->
-        <template v-if="form.dataType === 3">
-          <el-form-item label="js文件描述" prop="jsContent">
-            <el-input
-              v-model="form.jsContent"
-              type="textarea"
-              :autosize="{ minRows: 1, maxRows: 8 }"
-              placeholder="请输入文件描述"
-            />
-          </el-form-item>
-          <el-form-item
-            label="文件"
-            prop="jsFile"
-            v-if="form.up == 1"
-            style="width: 100%"
-          >
-            <DrUpload
-              :limit="1"
-              v-model="form.jsFile"
-              :css="{ width: '100%' }"
-              :isOnePic="1"
-              accept=".js"
-            >
-              <div>
-                <el-button size="small" type="primary">点击上传</el-button>
-              </div>
-            </DrUpload>
-          </el-form-item>
-        </template>
+          <!-- STS程序脚本 -->
+          <template v-if="form.dataType === 3">
+            <el-form-item label="js文件描述" prop="jsContent">
+              <el-input
+                v-model="form.jsContent"
+                type="textarea"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                placeholder="请输入文件描述"
+              />
+            </el-form-item>
+            <el-form-item v-if="form.up == 1" label="文件" prop="jsFile">
+              <DrUpload
+                :limit="1"
+                v-model="form.jsFile"
+                :css="{ width: '100%' }"
+                :isOnePic="1"
+                accept=".js"
+              >
+                <div>
+                  <el-button size="small" type="primary">点击上传</el-button>
+                </div>
+              </DrUpload>
+            </el-form-item>
+          </template>
+        </el-row>
       </template>
 
       <!-- 新增字段 -->
       <template v-if="!isBatchSync && boleConfig">
-        <el-form-item label="烧录的文件名">
-          <el-input
-            style="width: 100%"
-            v-model="form.firmwareConf.name"
-            placeholder="请输入烧录的文件名"
-          />
-        </el-form-item>
-        <el-form-item label=" 厂商">
-          <el-select
-            v-model.number="form.firmwareConf.mid"
-            size="small"
-            style="width: 100%"
-            @change="changeMidValue"
-          >
-            <el-option
-              v-for="dict in midOptions"
-              :key="dict.key"
-              :label="dict.dictLabel"
-              :value="dict.dictValue"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="芯片系列">
-          <el-select
-            v-model.number="form.firmwareConf.cid"
-            size="small"
-            style="width: 185px"
-            @change="changeCidValue"
-          >
-            <el-option
-              v-for="(dict, index) in splitCidOptions"
-              :key="index"
-              :label="dict.dictLabel"
-              :value="dict.dictValue"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="地址位置">
-          <el-input
-            type="number"
-            style="width: 100%"
-            v-model="form.firmwareConf.addr"
-            placeholder="请输入烧录到芯片中的首地址位置 "
-          />
-        </el-form-item>
-        <el-form-item label="烧录方式">
-          <el-select
-            v-model.number="form.firmwareConf.type"
-            size="small"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="(dict, index) in typeOptions"
-              :key="index"
-              :label="dict.dictLabel"
-              :value="dict.dictValue"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="烧录电压选择">
-          <el-select v-model.number="form.firmwareConf.voltage" size="small">
-            <el-option
-              v-for="(dict, index) in voltageOptions"
-              :key="index"
-              :label="dict.dictLabel"
-              :value="dict.dictValue"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="可烧录次数">
-          <el-input
-            type="number"
-            v-model="form.firmwareConf.bs"
-            placeholder="请输入表示可烧录次数"
-          />
-        </el-form-item>
-        <el-form-item label="否上电自动烧录">
-          <el-radio-group v-model="form.firmwareConf.auto" size="small">
-            <el-radio-button :label="0">自动烧录</el-radio-button>
-            <el-radio-button :label="1">不自动烧录</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="计算余剩可烧录次">
-          <el-radio-group v-model="form.firmwareConf.burnOnOff" size="small">
-            <el-radio-button :label="0"> 计算</el-radio-button>
-            <el-radio-button :label="1">不计算 </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="是否校验">
-          <el-radio-group v-model="form.firmwareConf.check" size="small">
-            <el-radio-button :label="0"> 校验</el-radio-button>
-            <el-radio-button :label="1">不校验 </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="擦除配置">
-          <el-radio-group v-model="form.firmwareConf.erase" size="small">
-            <el-radio-button :label="0"> 擦除全片</el-radio-button>
-            <el-radio-button :label="1">擦除烧写部分</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="擦除配置">
-          <el-radio-group v-model="form.firmwareConf.protect" size="small">
-            <el-radio-button :label="0"> 烧录后打开读写保护</el-radio-button>
-            <el-radio-button :label="1">录后不打开读写保护 </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="烧录完成重启程序">
-          <el-radio-group v-model="form.firmwareConf.reset" size="small">
-            <el-radio-button :label="0"> 重启运行</el-radio-button>
-            <el-radio-button :label="1">不重启运行 </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label=" 烧录速度">
-          <el-radio-group v-model="form.firmwareConf.speed" size="small">
-            <el-radio-button :label="0"> 高速</el-radio-button>
-            <el-radio-button :label="1">低速 </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="烧录的文件名">
+              <el-input
+                v-model="form.firmwareConf.name"
+                clearable
+                placeholder="请输入烧录的文件名"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label=" 厂商">
+              <el-select
+                v-model.number="form.firmwareConf.mid"
+                @change="changeMidValue"
+                clearable
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in midOptions"
+                  :key="dict.key"
+                  :label="dict.dictLabel"
+                  :value="dict.dictValue"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="芯片系列">
+              <el-select
+                v-model.number="form.firmwareConf.cid"
+                @change="changeCidValue"
+                clearable
+                class="w100"
+              >
+                <el-option
+                  v-for="(dict, index) in splitCidOptions"
+                  :key="index"
+                  :label="dict.dictLabel"
+                  :value="dict.dictValue"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="地址位置">
+              <el-input
+                type="number"
+                clearable
+                v-model="form.firmwareConf.addr"
+                placeholder="请输入烧录到芯片中的首地址位置 "
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="烧录方式">
+              <el-select
+                v-model.number="form.firmwareConf.type"
+                clearable
+                class="w100"
+              >
+                <el-option
+                  v-for="(dict, index) in typeOptions"
+                  :key="index"
+                  :label="dict.dictLabel"
+                  :value="dict.dictValue"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="烧录电压选择">
+              <el-select
+                v-model.number="form.firmwareConf.voltage"
+                clearable
+                class="w100"
+              >
+                <el-option
+                  v-for="(dict, index) in voltageOptions"
+                  :key="index"
+                  :label="dict.dictLabel"
+                  :value="dict.dictValue"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="可烧录次数">
+              <el-input
+                type="number"
+                clearable
+                v-model="form.firmwareConf.bs"
+                placeholder="请输入表示可烧录次数"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="否上电自动烧录">
+              <el-radio-group v-model="form.firmwareConf.auto">
+                <el-radio-button :label="0">自动烧录</el-radio-button>
+                <el-radio-button :label="1">不自动烧录</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="计算余剩可烧录次">
+              <el-radio-group v-model="form.firmwareConf.burnOnOff">
+                <el-radio-button :label="0"> 计算</el-radio-button>
+                <el-radio-button :label="1">不计算 </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="是否校验">
+              <el-radio-group v-model="form.firmwareConf.check">
+                <el-radio-button :label="0"> 校验</el-radio-button>
+                <el-radio-button :label="1">不校验 </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="擦除配置">
+              <el-radio-group v-model="form.firmwareConf.erase">
+                <el-radio-button :label="0"> 擦除全片</el-radio-button>
+                <el-radio-button :label="1">擦除烧写部分</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="擦除配置">
+              <el-radio-group v-model="form.firmwareConf.protect">
+                <el-radio-button :label="0">
+                  烧录后打开读写保护
+                </el-radio-button>
+                <el-radio-button :label="1"
+                  >录后不打开读写保护
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="烧录完成重启程序">
+              <el-radio-group v-model="form.firmwareConf.reset">
+                <el-radio-button :label="0"> 重启运行</el-radio-button>
+                <el-radio-button :label="1">不重启运行 </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label=" 烧录速度">
+              <el-radio-group v-model="form.firmwareConf.speed">
+                <el-radio-button :label="0"> 高速</el-radio-button>
+                <el-radio-button :label="1">低速 </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </template>
 
       <el-form-item
-        label="仪表型号"
         v-if="isBatchSync"
+        label="仪表型号"
         style="width: 100%"
-        label-width="100px"
         :required="isHaveBatchSync"
         prop="idList"
       >

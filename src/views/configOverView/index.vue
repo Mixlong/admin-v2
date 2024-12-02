@@ -8,8 +8,6 @@
           filterable
           allow-create
           clearable
-          placeholder="请选择品类"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in dictList"
@@ -21,15 +19,13 @@
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
         <el-select
+          v-model="queryParams.computerId"
           :loading="isCLoading"
           filterable
           remote
           clearable
-          v-model="queryParams.computerId"
-          placeholder="请选择仪表型号"
           @change="getList"
           :remote-method="getComputerNameList"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -40,13 +36,15 @@
         </el-select>
       </el-form-item>
       <el-form-item label="客户名称" prop="customerName">
-        <el-autocomplete
+        <select-loadMore
           v-model="queryParams.customerName"
-          clearable
-          style="width: 140px"
-          :fetch-suggestions="querySearchAsync"
-          placeholder="请选择客户名称"
-        ></el-autocomplete>
+          :data="customerNameData.data"
+          :page="customerNameData.page"
+          :hasMore="customerNameData.more"
+          dictLabel="name"
+          dictValue="name"
+          :request="getCustomerNameList"
+        />
       </el-form-item>
 
       <el-form-item>
@@ -63,8 +61,15 @@
       </el-button>
     </el-form>
 
+    <el-alert
+      title="表格可通过按住Ctrl + 鼠标左键左右拖动"
+      type="success"
+      show-icon
+    >
+    </el-alert>
+
     <el-table
-      class="config-overview-box table-scrollContainer"
+      id="drag_table"
       ref="tableRef"
       v-loading="loading"
       :data="brandList"
@@ -362,6 +367,27 @@
       >
         <template slot-scope="{ row }">
           <preview-img width="60px" height="60px" :url="row.powerLogo" />
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="标签规则"
+        prop="labelRule"
+        align="center"
+        width="120"
+        column-key="labelRule"
+        :filters="handleDataFilter(labelRuleData)"
+        :filter-method="filterHandler"
+      >
+        <span slot-scope="{ row }" v-NoData="labelRuleData[row.labelRule]" />
+      </el-table-column>
+      <el-table-column
+        label="标签图片"
+        prop="labelRuleImg"
+        align="center"
+        width="120"
+      >
+        <template slot-scope="{ row }">
+          <preview-img width="60px" height="60px" :url="row.labelRuleImg" />
         </template>
       </el-table-column>
       <el-table-column
@@ -1062,15 +1088,35 @@
       </template>
       <el-descriptions direction="vertical" :column="4" border>
         <el-descriptions-item label="背光亮度">
-          <span
-            v-NoData="backlightBrightnessList[deployData.backlightBrightness]"
-          ></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span
+                v-NoData="
+                  backlightBrightnessList[deployData.backlightBrightness]
+                "
+              ></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.backlightBrightness"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="缓启动" v-if="isKm5s">
           <span v-NoData="deployData.slowStart"></span>
         </el-descriptions-item>
         <el-descriptions-item label="车名" v-if="!isSample">
-          <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.ebikeName"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="车轮宽度" v-if="!isSample">
           <span v-NoData="deployData.tiresSize"></span>
@@ -1079,13 +1125,31 @@
           <span v-NoData="deployData.sleepTime"></span>
         </el-descriptions-item>
         <el-descriptions-item label="轮径">
-          <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.wheelDiameter"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="车型" v-if="!isSample">
           <span v-NoData="deployData.carModel"></span>
         </el-descriptions-item>
         <el-descriptions-item label="蓝牙">
-          {{ deployData.bluetooth === 1 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.bluetooth === 1 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.bluetooth"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="系统电压(V)">
           <span v-NoData="deployData.voltage"></span>
@@ -1103,37 +1167,100 @@
           <span v-NoData="deployData.undervoltage"></span>
         </el-descriptions-item>
         <el-descriptions-item label="显示单位">
-          <span v-NoData="dicts_unit[deployData.unit]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="dicts_unit[deployData.unit]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.unit"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="Logo界面">
-          <span v-NoData="dicts_logo[deployData.logo]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="dicts_logo[deployData.logo]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.logo"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="恢复出厂设置" v-if="!isSample">
-          {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.factoryReset"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力档位数">
           <span v-NoData="deployData.powerGear"></span>
         </el-descriptions-item>
         <el-descriptions-item label="协议">
-          <span v-NoData="dicts_agreement[deployData.agreement]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="dicts_agreement[deployData.agreement]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.agreement"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="开机密码">
           <span v-NoData="deployData.startupPasswd"></span>
         </el-descriptions-item>
         <el-descriptions-item label="转把分档" v-if="isKm5s">
-          {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.rotateHandle"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力开始磁钢数" v-if="isKm5s">
           <span v-NoData="deployData.assistStartMagnetNumber"></span>
         </el-descriptions-item>
         <el-descriptions-item label="电量计算方式">
-          <span v-NoData="dicts_power[deployData.power]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="dicts_power[deployData.power]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.power"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="高级菜单密码">
           <span v-NoData="deployData.highMenuPasswd"></span>
         </el-descriptions-item>
         <el-descriptions-item label="蜂鸣器开关" v-if="!isSample">
-          {{ deployData.buzzerSwitch === 0 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.buzzerSwitch === 0 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.buzzerSwitch"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力比例" v-if="isKm5s">
           <span v-NoData="deployData.assistPercentage"></span>
@@ -1145,7 +1272,16 @@
           <span v-NoData="deployData.motorSys"></span>
         </el-descriptions-item>
         <el-descriptions-item label="定速巡航功能">
-          {{ deployData.cruise === 0 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.cruise === 0 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.cruise"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="限流门限(A)">
           <span v-NoData="deployData.currentlimiting"></span>
@@ -1157,7 +1293,16 @@
           <span v-NoData="deployData.batteryCap"></span>
         </el-descriptions-item>
         <el-descriptions-item label="开机密码">
-          {{ deployData.turnOnPasswd === 0 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.turnOnPasswd === 0 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.turnOnPasswd"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力限速门限(km/h)">
           <span v-NoData="deployData.assistLimit"></span>
@@ -1169,7 +1314,16 @@
           <span v-NoData="deployData.highSpeedBuzzerRemind"></span>
         </el-descriptions-item>
         <el-descriptions-item label="菜单密码">
-          {{ deployData.menuPassword === 0 ? "YES" : "NO" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.menuPassword === 0 ? "YES" : "NO" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.menuPassword"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="显示轮径" v-if="!isSample">
           <span v-NoData="deployData.showWheelsize"></span>
@@ -1178,36 +1332,66 @@
           <span v-NoData="deployData.allLineErrTimeOut"></span>
         </el-descriptions-item>
         <el-descriptions-item label="串口通讯电平">
-          <span v-NoData="serialLevelLogData[deployData.serialLevelLog]"></span>
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              <span v-NoData="serialLevelLogData[deployData.serialLevelLog]"></span>
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.serialLevelLog"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="转把限速" v-if="isKm5s">
-          {{ deployData.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.rotateHandleSpeedLimit"></span>
+            </div>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力正反" v-if="isKm5s">
-          {{ deployData.assist === 0 ? "助力正" : "助力反" }}
+          <div class="flex justify-between">
+            <div>
+              展示值：
+              {{ deployData.assist === 0 ? "助力正" : "助力反" }}
+            </div>
+            <div>
+              实际值：
+              <span class="text-red" v-NoData="deployData.assist"></span>
+            </div>
+          </div>
         </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 对比 -->
-    <ParamsCompare :isParamsCompareShow.sync="isParamsCompareShow" :dictList="dictList" />
+    <ParamsCompare
+      :isParamsCompareShow.sync="isParamsCompareShow"
+      :dictList="dictList"
+    />
   </div>
 </template>
 
 <script>
-import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
-import { listCustomer } from "@/api/third/sample";
+import { computerNameList } from "@/api/third/fileConfig";
 import { modelConfigList, modelConfigState } from "@/api/third/testApi";
 import commonData from "@/mixins/commonData";
-import { dragTable } from "@/mixins/common";
+import { dragTableFn } from "@/mixins/common";
 import ParamsCompare from "./components/ParamsCompare.vue";
+import { getCustomerList } from "@/api/order";
 
 export default {
   name: "ConfigOverview",
-  mixins: [commonData, dragTable],
+  mixins: [commonData, dragTableFn],
   components: {
     CategoryComputer: () => import("@/components/CategoryComputer"),
-    ParamsCompare
+    ParamsCompare,
   },
   data() {
     return {
@@ -1237,6 +1421,16 @@ export default {
       serialLevelLogData: {
         0: "3.3V",
         1: "5V",
+      },
+      labelRuleData: {
+        1: "通用",
+        2: "图片",
+      },
+      // 客户名称
+      customerNameData: {
+        data: [],
+        page: 1,
+        more: true,
       },
       // 查询参数
       queryParams: {
@@ -1367,15 +1561,25 @@ export default {
         this.computerOptions = [];
       }
     },
-    querySearchAsync(queryString, cb) {
-      listCustomer({ key: queryString || "" }).then((res) => {
-        cb(
-          res.data.map((item) => {
-            return {
-              value: item.name,
-            };
-          })
-        );
+    getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.customerNameData.data = [
+              ...this.customerNameData.data,
+              ...list,
+            ];
+          } else {
+            this.customerNameData.data = list;
+          }
+          this.customerNameData.more = pageNum * pageSize < total;
+          this.customerNameData.page = pageNum;
+          resolve();
+        });
       });
     },
     handleAuthChange(row, isAuthFlag) {
@@ -1421,23 +1625,3 @@ export default {
   },
 };
 </script>
-<style lang="scss">
-.el-table.config-overview-box {
-  .el-table__body-wrapper::-webkit-scrollbar-thumb {
-    cursor: pointer;
-    width: 10px;
-  }
-  .el-table__fixed {
-    height: auto !important;
-    bottom: 10px !important;
-  }
-  .is-scrolling-middle + .el-table__fixed {
-    z-index: 666;
-    box-shadow: 5px 0 10px #d8d5d5;
-  }
-  .is-scrolling-right + .el-table__fixed {
-    z-index: 666;
-    box-shadow: 5px 0 10px #d8d5d5;
-  }
-}
-</style>

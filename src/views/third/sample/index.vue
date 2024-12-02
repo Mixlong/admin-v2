@@ -492,19 +492,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="转产型号" prop="computerName">
-          <el-radio-group
-            v-model="formProd.type"
-            size="mini"
-            class="flex justify-between"
-            style="margin-bottom: 10px; width: 100%"
-            @change="formProd.computerName = ''"
-          >
-            <el-radio :label="0" border>已有型号</el-radio>
-            <el-radio :label="1" border>新增型号</el-radio>
-          </el-radio-group>
-
           <el-select
-            v-if="formProd.type === 0"
             v-model="formProd.computerName"
             filterable
             clearable
@@ -518,12 +506,6 @@
               :value="item.name"
             ></el-option>
           </el-select>
-          <el-input
-            v-else
-            v-model="formProd.computerName"
-            clearable
-            placeholder="请输入转产型号"
-          ></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -776,7 +758,7 @@ export default {
       };
       this.resetForm("formProd");
     },
-    resetProdForm(formName) {
+    resetProdForm() {
       this.isSampleProd = false;
       this.resetProd();
     },
@@ -1223,7 +1205,7 @@ export default {
       this.isSnShow = true;
       this.sampleId = row.id;
       this.snList = row.list;
-    },
+    }
   },
 };
 </script>

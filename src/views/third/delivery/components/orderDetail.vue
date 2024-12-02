@@ -34,9 +34,6 @@
       <el-descriptions-item label="发货数量">
         <span v-NoData="form.shippingNumber"></span>
       </el-descriptions-item>
-      <el-descriptions-item label="发货人">
-        <span v-NoData="form.shippingName"></span>
-      </el-descriptions-item>
       <el-descriptions-item label="收货人">
         <span v-NoData="form.consignee"></span>
       </el-descriptions-item>

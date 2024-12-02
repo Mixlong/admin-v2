@@ -470,4 +470,48 @@ export function recordDataReport(params) {
   })
 }
 
+/**
+ * 气密性测试配置管理
+ */
+export function gasConfigList(params) {
+  return request({
+    url: "/tightness/config/list",
+    method: "get",
+    params
+  })
+}
 
+// 新增
+export function gasConfigSave(data) {
+  return request({
+    url: "/tightness/config/save",
+    method: "post",
+    data,
+  });
+}
+
+// 修改
+export function gasConfigUpdate(data) {
+  return request({
+    url: "/tightness/config/update",
+    method: "put",
+    data,
+  });
+}
+
+export function gasConfigAuth(data) {
+  return request({
+    url: "/tightness/config/auth",
+    method: "put",
+    data,
+  });
+}
+
+// 删除
+export function gasConfigDelete(data) {
+  return request({
+    url: "/tightness/config/delete",
+    method: "delete",
+    data,
+  });
+}

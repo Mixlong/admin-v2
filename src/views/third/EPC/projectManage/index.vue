@@ -1,4 +1,5 @@
 <template>
+  <!-- 工程数据 -->
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
@@ -72,32 +73,21 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          v-hasPermi="['third:epc:query']"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          v-hasPermi="['third:epc:reset']"
-          @click="resetQuery"
-        >
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button
           type="warning"
           v-hasPermi="['third:epc:batchFirstCheck']"
-          @click="handleAuthBatchChange"
+          @click="handleAuthBatchChange(1)"
         >
           批量初审
         </el-button>
         <el-button
           type="warning"
           v-hasPermi="['third:epc:batchFinalCheck']"
-          @click="handleAuthBatchChange"
+          @click="handleAuthBatchChange(2)"
         >
           批量终审
         </el-button>
@@ -193,7 +183,7 @@
             class="text-orange"
             content="初审"
             v-hasPermi="['third:epc:firstCheck']"
-            v-if="scope.row.status == 1 && checkRole(['f_test'])"
+            v-if="scope.row.status == 1 && checkRole(['p_state'])"
             @click="handleAuthChange(scope.row, 1)"
           />
 
@@ -202,7 +192,7 @@
             class="text-orange"
             content="终审"
             v-hasPermi="['third:epc:finalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
+            v-if="scope.row.status == 4"
             @click="handleAuthChange(scope.row, 4)"
           />
 
@@ -228,7 +218,7 @@
             icon="el-icon-refresh-right"
             content="初审撤回"
             v-hasPermi="['third:epc:resetFinalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['f_test'])"
+            v-if="scope.row.status == 4 && checkRole(['p_state'])"
             @click="handleRevocation(scope.row.id)"
           />
 
@@ -236,7 +226,7 @@
             icon="el-icon-refresh-right"
             content="终审撤回"
             v-hasPermi="['third:epc:resetChecked']"
-            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
+            v-if="scope.row.status == 2"
             @click="handleRevocation(scope.row.id)"
           />
         </template>
@@ -291,7 +281,14 @@
           <el-button @click="handleStatusChange(3)">不通过</el-button>
           <el-button
             type="primary"
-            @click="handleStatusChange(checkRole(['fo_test', 'admin']) ? 2 : 4)"
+            @click="
+              handleStatusChange(
+                checkRole(['admin']) &&
+                  (auth.status === 4 || isBatchType === 2)
+                  ? 2
+                  : 4
+              )
+            "
           >
             通过
           </el-button>
@@ -310,9 +307,9 @@ import {
   computerDictList,
   fileCancel,
   fileVersionList,
-  computerNameList,
 } from "@/api/third/epc/versionManage";
 import { commonStatusList } from "@/utils/commonData";
+import { computerNameList } from "@/api/third/fileConfig";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 
@@ -351,7 +348,8 @@ export default {
       computerOptions: [],
       fileTypeList: [],
       fileListCover: [],
-      auth: { id: undefined, why: "", idList: [] },
+      auth: { id: undefined, why: "", idList: [], status: undefined },
+      isBatchType: undefined,
       // 查询参数
       queryParams: {
         p: 1,
@@ -380,7 +378,6 @@ export default {
     isSResetCheck() {
       return ({ computerStatus, status }) => {
         return (
-          this.checkRole(["fo_test"]) &&
           !computerStatus &&
           (status === 2 || status === 4)
         );
@@ -396,6 +393,13 @@ export default {
             status === 2)
         );
       };
+    },
+  },
+  watch: {
+    authDialogVisible(bool) {
+      if (!bool) {
+        this.isBatchType = undefined;
+      }
     },
   },
   mounted() {
@@ -438,7 +442,9 @@ export default {
     },
     changeCategory(val) {
       if (!val) return;
+      this.queryParams.projectId = "";
       this.queryParams.versionId = "";
+
       this.getList();
       return new Promise((resove) => {
         this.computerOptions = this.dictList.filter(
@@ -453,26 +459,22 @@ export default {
     checkSelectable(row) {
       if (row.computerStatus) {
         return false;
-      } else if (this.checkRole(["DATA_MANAGER"]) && row.status === 4) {
-        return true;
       } else if (
-        !this.checkRole(["DATA_MANAGER", "product"]) &&
-        row.status == 1
-      ) {
-        return true;
-      } else if (
-        this.checkRole(["product"]) &&
-        (row.status === 2 || row.status === 4)
+        this.checkRole(["p_state"]) &&
+        (row.status === 1 || row.status === 4)
       ) {
         return true;
       }
     },
     handleAuthChange(row, status) {
+      this.auth = {};
+
       this.auth.why = "";
       this.authDialogVisible = true;
       this.auth.id = row.id;
       this.auth.why = row.why;
       this.auth.idList = [];
+      this.auth.status = row.status;
       this.checkStatus = status;
       this.$refs.compUpdate
         .changeCategory2(row.categoryId)
@@ -492,14 +494,16 @@ export default {
           });
         });
     },
-    handleAuthBatchChange() {
+    handleAuthBatchChange(type) {
       if (this.ids.length === 0) {
         return this.msgError("请选择批量处理项");
       }
 
       this.auth.why = "";
       this.auth.id = "";
+      this.auth.status = "";
       this.authDialogVisible = true;
+      this.isBatchType = type;
     },
     // 重置审核
     handleResetCheck(row) {
@@ -508,7 +512,7 @@ export default {
         data = [{ id: row.id }];
       } else {
         data = this.ids.map((item) => {
-          return { id: item };
+          return { id: item.id };
         });
       }
       this.$confirm("确认要重置审核吗？", "警告", {
@@ -532,8 +536,22 @@ export default {
       let { ids, auth } = this;
 
       if (auth.id == "") {
+        if (this.isBatchType === 1) {
+          const flag = ids.some((item) => item.status !== 1);
+          if (flag) {
+            this.msgError("批量初审中只能包含待初审项");
+            return;
+          }
+        } else if (this.isBatchType === 2) {
+          const flag = ids.some((item) => item.status !== 4);
+          if (flag) {
+            this.msgError("批量终审中只能包含待终审项");
+            return;
+          }
+        }
+
         data = ids.map((item) => {
-          return { id: item, why: auth.why, status };
+          return { id: item.id, why: auth.why, status };
         });
       } else {
         let { idList } = this.auth;
@@ -588,7 +606,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.id);
+      this.ids = selection;
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
@@ -610,7 +628,6 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = "修改";
       this.$refs.compUpdate.typeName = typeName;
-      this.title = "修改";
     },
     handleRevocation(id) {
       fileCancel({ id }).then((res) => {

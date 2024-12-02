@@ -189,6 +189,11 @@ const CategoryMixin = {
         try {
           categoryComputerDict().then((res) => {
             this.dictList = res.data;
+
+            // 默认选择第一个
+            this.queryParams.categoryId = this.dictList[0]?.id;
+
+            this.getList();
             resolve(res.data);
           });
         } catch (error) {

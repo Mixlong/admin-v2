@@ -807,7 +807,7 @@ export default {
       this.computerIdIndex = index;
       if (categoryId) {
         const data = this.categoryList.filter((item) => item.id === categoryId);
-        this.computerOptions = data[0].computerList;
+        this.computerOptions = data[0]?.computerList;
       } else {
         this.computerOptions = [];
       }

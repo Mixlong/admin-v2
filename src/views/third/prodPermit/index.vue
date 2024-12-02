@@ -171,9 +171,6 @@ export default {
       },
     };
   },
-  created() {
-    this.getList();
-  },
   methods: {
     // 型号
     getComputerData() {
@@ -238,6 +235,8 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
+      // 默认选择第一个
+      this.queryParams.categoryId = this.dictList[0]?.id;
       this.handleQuery();
     },
     // 任务变更

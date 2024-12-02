@@ -75,7 +75,6 @@
         <el-form-item label="发货时间">
           <el-date-picker
             v-model="dateRange"
-            style="width: 250px"
             value-format="timestamp"
             type="daterange"
             range-separator="-"
@@ -84,7 +83,7 @@
             @change="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="发货状态" prop="status">
+        <!-- <el-form-item label="发货状态" prop="status">
           <el-select
             v-model="queryParams.status"
             placeholder="请选择发货状态"
@@ -99,108 +98,113 @@
             >
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item>
-          <el-button
-            type="primary"
-            icon="el-icon-search"
-            v-hasPermi="['third:delivery:query']"
-            @click="handleQuery"
-          >
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
             搜索
           </el-button>
-          <el-button
-            icon="el-icon-refresh"
-            v-hasPermi="['third:delivery:reset']"
-            @click="resetQuery"
-          >
+          <el-button icon="el-icon-refresh" @click="resetQuery">
             重置
           </el-button>
         </el-form-item>
+
+        <el-row :gutter="10" class="mb8 fr">
+          <el-col :span="1.5">
+            <el-button
+              type="primary"
+              icon="el-icon-plus"
+              @click="handleAdd"
+              v-hasPermi="['delivery:add:btn']"
+            >
+              新增
+            </el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button type="danger" @click="toggleAllRows">
+              全部{{ expandAll ? "展开" : "收缩" }}
+            </el-button>
+          </el-col>
+          <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" /> -->
+        </el-row>
       </el-form>
     </transition>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
-          v-hasPermi="['delivery:add:btn']"
-        >
-          新增
-        </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
-    </el-row>
-
+    <el-alert
+      title="表格可通过按住Ctrl + 鼠标左键左右拖动"
+      type="success"
+      show-icon
+    ></el-alert>
+    
     <el-table
+      ref="expandTableRef"
       id="drag_table"
       v-loading="loading"
       :height="tableHeight()"
-      :data="list"
+      :data="dataList"
     >
       <el-table-column type="expand" fixed>
-        <template slot-scope="{ row }">
-          <el-table
-            :max-height="400"
-            :data="row.list"
-            :header-cell-style="{ background: '#c0c0f4 !important' }"
-            border
-          >
-            <el-table-column
-              label="序号"
-              width="58"
-              type="index"
-              align="center"
-            ></el-table-column>
-            <el-table-column
-              label="客户名称"
-              align="center"
-              prop="customerName"
+        <div slot-scope="{ row }">
+          <template v-if="row.list.length > 1">
+            <el-table
+              :max-height="400"
+              :data="row.list.slice(1)"
+              :header-cell-style="{ background: '#c0c0f4 !important' }"
+              border
             >
-              <span slot-scope="{ row }" v-NoData="row.customerName"></span>
-            </el-table-column>
-            <el-table-column
-              label="客户订单号"
-              align="center"
-              prop="customerOrderNo"
-            >
-              <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
-            </el-table-column>
-            <el-table-column
-              label="计划发货数量"
-              align="center"
-              prop="shippingNumber"
-            >
-              <span slot-scope="{ row }" v-NoData="row.shippingNumber"></span>
-            </el-table-column>
-            <el-table-column
-              label="送货单号"
-              align="center"
-              prop="oddNumbers"
-            >
-              <span slot-scope="{ row }" v-NoData="row.oddNumbers"></span>
-            </el-table-column>
-            <el-table-column label="计划发货时间" align="center">
-              <template slot-scope="{ row }">
-                <div v-show="!Is_Empty(row.shippingTime)">
-                  <div>{{ parseTime(row.shippingTime, "{y}-{m}-{d}") }}</div>
-                </div>
-                <div v-show="Is_Empty(row.shippingTime)">- - -</div>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作时间" align="center">
-              <template slot-scope="{ row }">
-                <div v-show="!Is_Empty(row.operationTime)">
-                  <div>{{ parseTime(row.operationTime, "{y}-{m}-{d}") }}</div>
-                  <span>{{ parseTime(row.operationTime, "{h}:{i}:{s}") }}</span>
-                </div>
-                <div v-show="Is_Empty(row.operationTime)">- - -</div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </template>
+              <el-table-column
+                label="序号"
+                width="58"
+                type="index"
+                align="center"
+              ></el-table-column>
+              <el-table-column
+                label="客户名称"
+                align="center"
+                prop="customerName"
+              >
+                <span slot-scope="{ row }" v-NoData="row.customerName"></span>
+              </el-table-column>
+              <el-table-column
+                label="客户订单号"
+                align="center"
+                prop="customerOrderNo"
+              >
+                <span
+                  slot-scope="{ row }"
+                  v-NoData="row.customerOrderNo"
+                ></span>
+              </el-table-column>
+              <el-table-column
+                label="计划发货数量"
+                align="center"
+                prop="shippingNumber"
+              >
+                <span slot-scope="{ row }" v-NoData="row.shippingNumber"></span>
+              </el-table-column>
+              <el-table-column
+                label="送货单号"
+                align="center"
+                prop="oddNumbers"
+              >
+                <span slot-scope="{ row }" v-NoData="row.oddNumbers"></span>
+              </el-table-column>
+              <el-table-column label="操作时间" align="center">
+                <template slot-scope="{ row }">
+                  <div v-show="!Is_Empty(row.operationTime)">
+                    <div>{{ parseTime(row.operationTime, "{y}-{m}-{d}") }}</div>
+                    <span>{{
+                      parseTime(row.operationTime, "{h}:{i}:{s}")
+                    }}</span>
+                  </div>
+                  <div v-show="Is_Empty(row.operationTime)">- - -</div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+          <!-- <template v-else>
+            <el-empty description="暂无子单"></el-empty>
+          </template> -->
+        </div>
       </el-table-column>
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
@@ -214,13 +218,13 @@
         label="迪太订单号"
         align="center"
         prop="salesOrderNo"
-        width="120"
+        width="140"
       />
       <el-table-column
         label="客户订单号"
         align="center"
         prop="customerOrderNo"
-        width="120"
+        width="150"
       >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
@@ -271,11 +275,6 @@
           />
         </template>
       </el-table-column>
-      <!--			<el-table-column label="回单图片" align="center" prop="receiptImg" width="100">-->
-      <!--				<template slot-scope="{ row }">-->
-      <!--					<preview-img width="60px" height="60px" :isDisBadge="false" :url="row.receiptImg" />-->
-      <!--				</template>-->
-      <!--			</el-table-column>-->
       <el-table-column
         label="发货数量"
         align="center"
@@ -290,14 +289,6 @@
             {{ statusList[row.status] }}
           </el-tag>
         </template>
-      </el-table-column>
-      <el-table-column
-        label="发货人"
-        align="center"
-        prop="shippingName"
-        width="100"
-      >
-        <span slot-scope="{ row }" v-NoData="row.shippingName"></span>
       </el-table-column>
       <el-table-column
         label="收货人"
@@ -317,27 +308,38 @@
         <template slot-scope="{ row }">
           <div v-show="!Is_Empty(row.shippingTime)">
             <div>{{ parseTime(row.shippingTime, "{y}-{m}-{d}") }}</div>
-            <span>{{ parseTime(row.shippingTime, "{h}:{i}:{s}") }}</span>
           </div>
           <div v-show="Is_Empty(row.shippingTime)">- - -</div>
         </template>
       </el-table-column>
-      <el-table-column width="90" label="创建人" align="center" prop="createBy">
-        <span slot-scope="{ row }" v-NoData="row.createBy"></span>
+      <el-table-column
+        width="100"
+        label="创建|更新人"
+        align="center"
+        prop="createBy"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="row.updateBy || row.createBy"
+        ></span>
       </el-table-column>
       <el-table-column
-        label="创建时间"
+        label="创建|更新时间"
         align="center"
         prop="createTime"
         width="140"
         sortable
       >
         <template slot-scope="{ row }">
-          <div v-show="!Is_Empty(row.createTime)">
-            <div>{{ parseTime(row.createTime, "{y}-{m}-{d}") }}</div>
-            <span>{{ parseTime(row.createTime, "{h}:{i}:{s}") }}</span>
+          <div v-show="!Is_Empty(row.updateTime || row.createTime)">
+            <div>
+              {{ parseTime(row.updateTime || row.createTime, "{y}-{m}-{d}") }}
+            </div>
+            <span>{{
+              parseTime(row.updateTime || row.createTime, "{h}:{i}:{s}")
+            }}</span>
           </div>
-          <div v-show="Is_Empty(row.createTime)">- - -</div>
+          <div v-show="Is_Empty(row.updateTime || row.createTime)">- - -</div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="130" fixed="right">
@@ -401,8 +403,6 @@
       :statusList="statusList"
       :tagType="tagType"
     />
-
-    <edit-log ref="editLogRef" />
   </div>
 </template>
 
@@ -417,7 +417,6 @@ export default {
   mixins: [commomFile, commonJs, dragTableFn],
   components: {
     orderDetail: () => import("./components/orderDetail"),
-    EditLog: () => import("./components/log.vue"),
     EditDelivery: () => import("./components/EditDelivery.vue"),
   },
   data() {
@@ -437,7 +436,8 @@ export default {
       // 总条数
       total: 0,
       // 表格数据
-      list: [],
+      dataList: [],
+      expandAll: true, // 控制是否展开所有行
       title: "",
       typeCategoryList: [],
       statusList: {
@@ -484,6 +484,14 @@ export default {
     this.getParams();
   },
   methods: {
+    // 展开、收起所有行
+    toggleAllRows() {
+      this.dataList.forEach((item) => {
+        this.$refs.expandTableRef.toggleRowExpansion(item, this.expandAll);
+      });
+
+      this.expandAll = !this.expandAll;
+    },
     getParams() {
       const {
         customerName,
@@ -494,7 +502,6 @@ export default {
         isOrderFlag,
       } = this.$route.params;
 
-      console.log(this.$route.params);
       this.queryParams.customerName = customerName;
       this.queryParams.salesOrderNo = salesOrderNo;
       this.queryParams.customerOrderNo = customerOrderNo;
@@ -512,7 +519,7 @@ export default {
           end: "endTime",
         })
       ).then((response) => {
-        this.list = response.data.list;
+        this.dataList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
       });
@@ -587,13 +594,13 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
 
       this.$refs.compUpdate.title = "新增发货计划";
-      if (this.isOrderFlag) {
-        const { salesOrderNo, orderQuantity } = this.$route.params;
-        this.editParams = {
-          salesOrderNo,
-          orderQuantity,
-        };
-      }
+      // if (this.isOrderFlag) {
+      //   const { salesOrderNo, orderQuantity } = this.$route.params;
+      //   this.editParams = {
+      //     salesOrderNo,
+      //     orderQuantity,
+      //   };
+      // }
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();

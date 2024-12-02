@@ -442,42 +442,39 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :span="6">
-                  <el-form-item
-                    label="标签规则"
-                    prop="instrumentModel.labelRule"
-                  >
-                    <el-select
-                      v-model="form.instrumentModel.labelRule"
-                      clearable
-                      @change="handleLabelRule"
-                      class="w100"
-                    >
-                      <el-option label="通用" :value="1"></el-option>
-                      <el-option label="图片" :value="2"></el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-
-                <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
-                  <el-form-item
-                    label="标签图片"
-                    prop="instrumentModel.labelRuleImg"
-                    :rules="isCheckConfigItem({ message: '标签图片' })"
-                  >
-                    <el-upload-sortable
-                      v-model="form.instrumentModel.labelRuleImg"
-                      :imgW="80"
-                      :imgH="80"
-                      :isLimit="1"
-                      :max="1"
-                    />
-                  </el-form-item>
-                </el-col>
               </template>
+              <el-col :span="6">
+                <el-form-item label="标签规则" prop="instrumentModel.labelRule">
+                  <el-select
+                    v-model="form.instrumentModel.labelRule"
+                    clearable
+                    @change="handleLabelRule"
+                    class="w100"
+                  >
+                    <el-option label="通用" :value="1"></el-option>
+                    <el-option label="图片" :value="2"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
+                <el-form-item
+                  label="标签图片"
+                  prop="instrumentModel.labelRuleImg"
+                  :rules="isCheckConfigItem({ message: '标签图片' })"
+                >
+                  <el-upload-sortable
+                    v-model="form.instrumentModel.labelRuleImg"
+                    :imgW="80"
+                    :imgH="80"
+                    :isLimit="1"
+                    :max="1"
+                  />
+                </el-form-item>
+              </el-col>
             </el-row>
           </fieldset>
-          <template v-if="form.isSts === 1">
+          <template>
             <fieldset class="margin-top">
               <legend class="text-green">控制器、按键配置区</legend>
               <el-row :gutter="10">
@@ -1585,7 +1582,7 @@
           <el-button
             v-if="form.id && !isCopyProduct"
             type="primary"
-            @click="submitForm"
+            @click="submitForm('form')"
             :loading="isSubmitLoading"
           >
             修改
@@ -1606,9 +1603,8 @@
       append-to-body
     >
       <el-form
-        ref="form"
+        ref="finalForm"
         :model="form"
-        :rules="rules"
         label-width="150px"
         @submit.native.prevent
       >
@@ -1637,7 +1633,7 @@
         <el-button
           type="primary"
           :loading="isSubmitLoading"
-          @click="submitForm"
+          @click="submitForm('finalForm')"
         >
           确 定
         </el-button>
@@ -1763,15 +1759,6 @@ export default {
         1: "5V",
       },
       // 表单校验
-      rules: {
-        name: [
-          {
-            required: false,
-            message: "仪表型号不能为空",
-            trigger: "blur",
-          },
-        ],
-      },
       formRules: {
         "instrumentModel.backlightBrightness": [
           {
@@ -1856,16 +1843,11 @@ export default {
         this.getList();
       }
     },
-    open(val) {
-      if (!val) {
-        this.rules.name[0].required = false;
+    "form.instrumentModel.labelRuleImg"(labelRuleImg) {
+      if (labelRuleImg) {
+        this.clearValidateItem("form", "instrumentModel.labelRuleImg");
       }
     },
-    'form.instrumentModel.labelRuleImg'(labelRuleImg) {
-      if(labelRuleImg) {
-        this.clearValidateItem("form", "instrumentModel.labelRuleImg")
-      }
-    }
   },
   created() {
     this.echoWheelDiameter();
@@ -2133,7 +2115,6 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.form.categoryId && (this.open = true);
-          this.rules.name[0].required = true;
         }
       });
     },
@@ -2236,59 +2217,59 @@ export default {
       } = this.form.instrumentModel;
 
       const instrumentModel = {
-        backlightBrightness,
-        sleepTime,
-        voltage,
-        undervoltage,
-        powerGear,
-        assistStartMagnetNumber,
+        backlightBrightness: Number(backlightBrightness),
+        sleepTime: Number(sleepTime),
+        voltage: Number(voltage),
+        undervoltage: Number(undervoltage),
+        powerGear: Number(powerGear),
+        assistStartMagnetNumber: String(assistStartMagnetNumber),
         assistPercentage: String(assistPercentage),
-        currentlimiting,
-        assistLimit,
-        showWheelsize,
-        slowStart,
-        wheelDiameter,
-        perimeter,
-        unit,
-        agreement,
-        power,
-        speedSteel,
-        batteryVoltageChangeTime,
-        smoothLevel,
-        allLineErrTimeOut,
-        ebikeName,
-        carModel,
-        defaultGear,
-        logo,
-        startupPasswd,
-        highMenuPasswd,
-        menuPasswd: highMenuPasswd,
-        motorSys,
-        batteryCap,
-        highSpeedBuzzerRemind,
+        currentlimiting: Number(currentlimiting),
+        assistLimit: String(assistLimit),
+        showWheelsize: String(showWheelsize),
+        slowStart: String(slowStart),
+        wheelDiameter: Number(wheelDiameter),
+        perimeter: Number(perimeter),
+        unit: Number(unit),
+        agreement: Number(agreement),
+        power: String(power),
+        speedSteel: Number(speedSteel),
+        batteryVoltageChangeTime: String(batteryVoltageChangeTime),
+        smoothLevel: String(smoothLevel),
+        allLineErrTimeOut: String(allLineErrTimeOut),
+        ebikeName: Number(ebikeName),
+        carModel: String(carModel),
+        defaultGear: String(defaultGear),
+        logo: String(logo),
+        startupPasswd: String(startupPasswd),
+        highMenuPasswd: String(highMenuPasswd),
+        menuPasswd: String(highMenuPasswd),
+        motorSys: String(motorSys),
+        batteryCap: Number(batteryCap),
+        highSpeedBuzzerRemind: String(highSpeedBuzzerRemind),
         // autoShutdownTime,
-        tiresSize,
-        bluetooth,
-        driveAssist,
-        factoryReset,
-        rotateHandle,
-        buzzerSwitch,
-        cruise,
-        turnOnPasswd,
-        menuPassword,
-        rotateHandleSpeedLimit,
-        assist,
-        serialLevel: serialLevelLog,
+        tiresSize: String(tiresSize),
+        bluetooth: Number(bluetooth),
+        driveAssist: Number(driveAssist),
+        factoryReset: Number(factoryReset),
+        rotateHandle: Number(rotateHandle),
+        buzzerSwitch: Number(buzzerSwitch),
+        cruise: Number(cruise),
+        turnOnPasswd: Number(turnOnPasswd),
+        menuPassword: Number(menuPassword),
+        rotateHandleSpeedLimit: Number(rotateHandleSpeedLimit),
+        assist: Number(assist),
+        serialLevel: Number(serialLevelLog),
       };
 
       const data = {
-        instrumentModel
+        instrumentModel,
       };
       return JSON.stringify(data);
     },
     /** 提交按钮 */
-    submitForm: function () {
-      this.$refs["form"].validate((valid) => {
+    submitForm(forName) {
+      this.$refs[forName].validate((valid) => {
         if (valid) {
           if (!this.isEditCopy) {
             this.isSubmitLoading = true;
@@ -2309,7 +2290,18 @@ export default {
               pcbaSn,
               sysProtocol,
               labelRule,
-              labelRuleImg
+              labelRuleImg,
+              controlConnect,
+              controlHead,
+              notControllerJointString,
+              keyType,
+              keyLinkType,
+              modelEndHead,
+              keyEndHead,
+              keyLineLen,
+              keyImgUrl,
+              powerLogo,
+              specification,
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2325,6 +2317,18 @@ export default {
             this.form.instrumentModel.sysProtocol = sysProtocol;
             this.form.instrumentModel.labelRule = labelRule;
             this.form.instrumentModel.labelRuleImg = labelRuleImg;
+            this.form.instrumentModel.controlConnect = controlConnect;
+            this.form.instrumentModel.controlHead = controlHead;
+            this.form.instrumentModel.notControllerJointString =
+              notControllerJointString;
+            this.form.instrumentModel.keyType = keyType;
+            this.form.instrumentModel.keyLinkType = keyLinkType;
+            this.form.instrumentModel.modelEndHead = modelEndHead;
+            this.form.instrumentModel.keyEndHead = keyEndHead;
+            this.form.instrumentModel.keyLineLen = keyLineLen;
+            this.form.instrumentModel.keyImgUrl = keyImgUrl;
+            this.form.instrumentModel.powerLogo = powerLogo;
+            this.form.instrumentModel.specification = specification;
 
             this.form.jsonStr = "";
           } else {
@@ -2399,9 +2403,8 @@ export default {
     },
     // 标签规则
     handleLabelRule(labelRule) {
-      if(labelRule === 1) 
-      this.form.instrumentModel.labelRuleImg = "";
-    }
+      if (labelRule === 1) this.form.instrumentModel.labelRuleImg = "";
+    },
   },
 };
 </script>
@@ -2438,5 +2441,14 @@ export default {
   left: 0;
   right: 0;
   bottom: 30px;
+}
+
+/deep/ input[aria-hidden="true"] {
+  display: none !important;
+}
+
+/deep/.el-radio:focus:not(.is-focus):not(:active):not(.is-disabled)
+  .el-radio__inner {
+  box-shadow: none !important;
 }
 </style>

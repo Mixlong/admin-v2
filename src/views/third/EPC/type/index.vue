@@ -21,17 +21,11 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
-          v-hasPermi="['third:epc:type:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          size="mini"
-          v-hasPermi="['third:epc:type:reset']"
-          @click="resetQuery"
-        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>
@@ -105,7 +99,7 @@
             @click="handleUpdate(scope.row)"
           />
 
-          <Tooltip 
+          <Tooltip
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
@@ -191,7 +185,9 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="isSubLoading" @click="submitForm"
+          >确 定</el-button
+        >
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -239,6 +235,7 @@ export default {
   name: "EpcType",
   data() {
     return {
+      isSubLoading: false,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -419,22 +416,31 @@ export default {
             this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
           });
 
+          this.isSubLoading = true;
           if (this.form.id !== undefined) {
-            editType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            editType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubLoading = false;
+              });
           } else {
-            addType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            addType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("新增成功");
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubLoading = false;
+              });
           }
         }
       });

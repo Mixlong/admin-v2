@@ -20,75 +20,18 @@
       >
         <el-row :gutter="30" class="margin-bottom-xs">
           <el-col :span="4">
-            <el-form-item prop="salesOrderNo" class="sales-order-no">
-              <template v-slot:label>
-                <span class="flex justify-between w100">
-                  <span>客户采购单号</span>
-                  <span v-show="form.customerName"
-                    >客户名称: {{ form.customerName }}</span
-                  >
-                </span>
-              </template>
+            <el-form-item label="客户名称" prop="customerName">
               <select-loadMore
-                style="width: 100%"
-                v-model="form.salesOrderNo"
-                :data="salesOrderNoData.data"
-                :page="salesOrderNoData.page"
-                :hasMore="salesOrderNoData.more"
-                dictLabel="salesOrderNo"
-                :moreParams="true"
-                :disabled="!!form.id || isOrderFlag"
-                :request="getOrderList"
-                @getChange="getOrderData"
-                v-slot="{ proOption }"
-                placeholder="请选择客户采购单号"
-              >
-                <template>
-                  <span style="float: left">
-                    {{ proOption.customerName }}
-                  </span>
-                  <span style="float: right; color: #8492a6; font-size: 13px">
-                    {{ proOption.salesOrderNo }}
-                  </span>
-                </template>
-              </select-loadMore>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="发货单号" prop="orderNumber">
-              <el-input
-                v-model="form.orderNumber"
-                clearable
-                placeholder="请输入发货单号"
+                v-model="form.customerName"
+                :data="customerNameData.data"
+                :page="customerNameData.page"
+                :hasMore="customerNameData.more"
+                dictLabel="name"
+                dictValue="name"
+                :request="getCustomerNameList"
+                @getChange="handleResetConsignee"
+                class="w100"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="发货数量" prop="shippingNumber">
-              <el-input-number
-                v-model="form.shippingNumber"
-                controls-position="right"
-                :min="1"
-                :precision="0"
-                style="width: 100%"
-              ></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="运输方式" prop="transportMode">
-              <el-select
-                v-model="form.transportMode"
-                filterable
-                allow-create
-                clearable
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="item in deliveryType"
-                  :label="item.dictLabel"
-                  :value="item.dictValue"
-                ></el-option>
-              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="4">
@@ -110,7 +53,7 @@
                     {{ proOption.consignee }}
                   </span>
                   <el-tooltip
-                    class="item"
+                    class="item margin-left-lg"
                     effect="dark"
                     :content="proOption.address"
                     placement="right"
@@ -128,6 +71,37 @@
               <el-input v-model="form.phone" clearable readonly />
             </el-form-item>
           </el-col>
+          <el-col :span="4">
+            <el-form-item label="计划发货时间" prop="shippingTime">
+              <el-date-picker
+                v-model="form.shippingTime"
+                type="date"
+                clearable
+                placeholder="请选择"
+                value-format="timestamp"
+                :picker-options="pickerOptions"
+                class="w100"
+              />
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="4">
+            <el-form-item label="运输方式" prop="transportMode">
+              <el-select
+                v-model="form.transportMode"
+                filterable
+                allow-create
+                clearable
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in deliveryType"
+                  :label="item.dictLabel"
+                  :value="item.dictValue"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
           <el-col>
             <el-form-item label="收货地址" prop="address">
               <el-input v-model="form.address" type="textarea" readonly />
@@ -139,7 +113,7 @@
                 <span>客户订单</span>
                 <el-button
                   v-show="
-                    form.salesOrderNo &&
+                    form.customerName &&
                     (!form.id || form.status === 1 || form.status === 3)
                   "
                   type="primary"
@@ -152,7 +126,7 @@
               </div>
               <el-table :data="form.list" border :height="500">
                 <el-table-column
-                  label="客户订单号"
+                  label="客户采购单号"
                   prop="customerOrderNo"
                   align="center"
                 >
@@ -161,11 +135,11 @@
                     v-NoData="row.customerOrderNo"
                   ></span>
                 </el-table-column>
-                <el-table-column
-                  label="送货单号"
-                  prop="oddNumbers"
-                  align="center"
-                >
+                <el-table-column prop="oddNumbers" align="center">
+                  <template v-slot:header>
+                    <span class="text-red">*</span>
+                    送货单号
+                  </template>
                   <template slot-scope="scope">
                     <el-input
                       v-model.lazy.trim="scope.row.oddNumbers"
@@ -174,36 +148,18 @@
                     ></el-input>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  label="计划发货数量"
-                  prop="shippingNumber"
-                  align="center"
-                >
+                <el-table-column prop="shippingNumber" align="center">
+                  <template v-slot:header>
+                    <span class="text-red">*</span>
+                    计划发货数量
+                  </template>
                   <template slot-scope="scope">
                     <el-input-number
                       v-model="scope.row.shippingNumber"
-                      :min="1"
+                      :min="0"
+                      :precision="0"
                       style="width: 100%"
                     ></el-input-number>
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="计划发货时间"
-                  prop="shippingTime"
-                  align="center"
-                >
-                  <template slot-scope="scope">
-                    <el-date-picker
-                      v-model="scope.row.shippingTime"
-                      align="right"
-                      type="date"
-                      clearable
-                      placeholder="请选择"
-                      value-format="timestamp"
-                      :picker-options="pickerOptions"
-                      format="yyyy-MM-dd"
-                      style="width: 100%;"
-                    />
                   </template>
                 </el-table-column>
                 <el-table-column label="备注" prop="remark" align="center">
@@ -235,9 +191,9 @@
 </template>
 
 <script>
-import { orderList } from "@/api/order";
 import { addDelivery, updateDelivery, deliveryAddress } from "@/api/delivery";
 import SelectMoreOrder from "./selectMoreOrder.vue";
+import { getCustomerList } from "@/api/order";
 
 export default {
   props: [
@@ -257,15 +213,23 @@ export default {
       isDrawerShow: false,
       title: "",
       // 表单参数
-      form: {},
-      // 迪太订单号
-      salesOrderNoData: {
+      form: {
+        list: [],
+        consignee: "",
+        phone: "",
+        address: "",
+        shippingTime: "",
+        transportMode: "",
+        customerName: "",
+      },
+      // 发货地址
+      addressData: {
         data: [],
         page: 1,
         more: true,
       },
-      // 发货地址
-      addressData: {
+      // 客户名称
+      customerNameData: {
         data: [],
         page: 1,
         more: true,
@@ -277,38 +241,21 @@ export default {
       customerOrderData: {},
       // 表单校验
       rules: {
+        customerName: [
+          { required: true, message: "请选择客户名称", trigger: "change" },
+        ],
         salesOrderNo: [
           { required: true, message: "请输入迪太订单号", trigger: "change" },
         ],
-        orderNumber: [
-          { required: true, message: "请输入发货单号", trigger: "blur" },
-        ],
-        shippingNumber: [
-          {
-            required: true,
-            message: "请输入发货数量",
-            trigger: ["blur", "change"],
-          },
+        shippingTime: [
+          { required: true, message: "请选择发货时间", trigger: "change" },
         ],
         consignee: [
           { required: true, message: "请输入收货人", trigger: "change" },
         ],
-        // phone: [
-        //   { required: false, message: "请输入手机号码", trigger: "blur" },
-        //   {
-        //     pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-        //     message: "请输入正确的手机号码",
-        //     trigger: "blur",
-        //   },
-        // ],
         transportMode: [
           { required: true, message: "请输入运输方式", trigger: "change" },
         ],
-        // address: [
-        //   { required: false, message: "请输入收货地址", trigger: "blur" },
-        // ],
-        isReceipt: [{ required: true, message: "请选择", trigger: "change" }],
-        // file: [{ required: true, message: "请上传附件", trigger: "change" }],
       },
       pickerOptions: {
         disabledDate(time) {
@@ -347,80 +294,55 @@ export default {
     dialogVisible(show) {
       if (show) {
         this.getDeliveryType();
-      }
-      if (show && this.isOrderFlag) {
-        this.form.salesOrderNo = this.salesOrderNo;
-        this.form.shippingNumber = this.orderQuantity;
 
-        this.getOrderList({ keyword: this.salesOrderNo }).then(() => {
-          const params = this.salesOrderNoData.data[0];
-          this.getOrderData(JSON.stringify(params));
-        });
+        // if (this.isOrderFlag) {
+        //   this.form.salesOrderNo = this.salesOrderNo;
+        //   this.form.shippingNumber = this.orderQuantity;
+        // }
       }
     },
   },
   methods: {
+    // 客户名称
+    getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.customerNameData.data = [
+              ...this.customerNameData.data,
+              ...list,
+            ];
+          } else {
+            this.customerNameData.data = list;
+          }
+          this.customerNameData.more = pageNum * pageSize < total;
+          this.customerNameData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    handleResetConsignee() {
+      this.addressData.data = [];
+      this.form.consignee = "";
+      this.form.phone = "";
+      this.form.address = "";
+    },
     // 运输方式
     getDeliveryType() {
       this.getDicts("sys_delivery_type").then((res) => {
         this.deliveryType = res.data;
       });
     },
-    // 迪太订单号
-    getOrderList({ page = 1, more = false, keyword = "" } = {}) {
-      return new Promise((resolve) => {
-        orderList({
-          p: page,
-          salesOrderNo: keyword,
-        }).then((res) => {
-          const { list, total, pageNum, pageSize } = res.data;
-          if (more) {
-            this.salesOrderNoData.data = [
-              ...this.salesOrderNoData.data,
-              ...list,
-            ];
-          } else {
-            this.salesOrderNoData.data = list;
-          }
-          this.salesOrderNoData.more = pageNum * pageSize < total;
-          this.salesOrderNoData.page = pageNum;
-          resolve();
-        });
-      });
-    },
-    getOrderData(params) {
-      if (!params) {
-        this.form.customerName = "";
-        this.form.salesOrderNo = "";
-        this.form.customerOrderNo = "";
-        this.form.categoryName = "";
-        this.form.computerName = "";
-        this.form.orderId = "";
-        this.form.shippingNumber = "";
-        return;
-      }
-      const {
-        customerName,
-        salesOrderNo,
-        customerOrderNo,
-        categoryName,
-        computerName,
-        orderQuantity,
-        id,
-      } = JSON.parse(params);
-      this.form.customerName = customerName;
-      this.form.salesOrderNo = salesOrderNo;
-      this.form.customerOrderNo = customerOrderNo;
-      this.form.categoryName = categoryName;
-      this.form.computerName = computerName;
-      this.form.shippingNumber = orderQuantity;
-      this.form.orderId = id;
-    },
     getDeliveryAddress({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
         deliveryAddress({
           p: page,
-          consignee: keyword
+          consignee: keyword,
+          customerName: this.form.customerName,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
@@ -453,6 +375,12 @@ export default {
     reset() {
       this.form = {
         list: [],
+        consignee: "",
+        phone: "",
+        address: "",
+        shippingTime: "",
+        transportMode: "",
+        customerName: "",
       };
       this.resetForm("form");
     },
@@ -465,13 +393,21 @@ export default {
         orderId,
         list,
       };
-      console.log("handleMoreOrder", this.customerOrderData);
     },
     // 多订单数据
-    getMoreOrder(data) {
-      this.moreOrderData = data;
+    getMoreOrder(moreOrderData) {
+      this.form.list = this.indMatchingAndNewItems(
+        this.customerOrderData.list,
+        moreOrderData,
+        "orderId",
+        "id"
+      );
 
-      this.form.list = this.indMatchingAndNewItems(this.customerOrderData.list, this.moreOrderData, 'orderId', 'id');
+      // 将原始第一项改为默认项
+      if (moreOrderData.length > 1) {
+        const { orderId: firstOrderId } = this.customerOrderData.list[0];
+        this.handleSetDefaultItem(firstOrderId);
+      }
     },
     indMatchingAndNewItems(a, b, keyA, keyB) {
       // 创建以a数组的keyA属性为键的映射
@@ -495,19 +431,78 @@ export default {
             customerOrderNo: itemB.customerOrderNo,
             orderId: itemB.id,
             shippingNumber: itemB.orderQuantity,
-            shippingTime: itemB.sellTime
-          }
+            shippingTime: itemB.sellTime,
+            ...itemB,
+          };
           result.push(data);
         }
       });
 
       return result;
     },
+    handleSetDefaultItem(firstOrderId) {
+      const orderData = [];
+
+      this.form.list.forEach((item) => {
+        if (item.orderId === firstOrderId) {
+          orderData.unshift(item);
+        } else {
+          orderData.push(item);
+        }
+      });
+
+      this.form.list = orderData;
+    },
+    checkDeliverOrderData(data, param) {
+      const flag = data.some((item) => this.Is_Empty(item[param]));
+      return flag;
+    },
+
+    setCustomerFirstOrder(firstOrderData, param) {
+      param.orderNumber = firstOrderData.oddNumbers;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           let param = JSON.parse(JSON.stringify(this.form));
+
+          const { list } = param;
+          if (!list.length) {
+            this.msgWarning("请选择客户订单");
+            return;
+          }
+
+          if (this.checkDeliverOrderData(list, "oddNumbers")) {
+            this.msgWarning("送货单号不能为空");
+            return;
+          }
+
+          if (this.checkDeliverOrderData(list, "shippingNumber")) {
+            this.msgWarning("计划发货数量不能为空");
+            return;
+          }
+
+          // 默认客户订单第一项为主单
+          const {
+            salesOrderNo,
+            customerOrderNo,
+            categoryName,
+            computerName,
+            id,
+            oddNumbers,
+            shippingNumber,
+          } = list[0];
+
+          param.salesOrderNo = salesOrderNo;
+          param.customerOrderNo = customerOrderNo;
+          param.categoryName = categoryName;
+          param.computerName = computerName;
+          param.orderId = id;
+          param.orderNumber = oddNumbers;
+          param.shippingNumber = shippingNumber;
+
+          param.list = list.map(({ id, ...paramsData }) => paramsData);
 
           if (param.id) {
             updateDelivery(param).then((response) => {
@@ -532,10 +527,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-.sales-order-no {
-  /deep/ .el-form-item__label {
-    display: flex;
-  }
-}
-</style>

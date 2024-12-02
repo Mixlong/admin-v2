@@ -85,7 +85,7 @@
         prop="planTime"
         label="计划完成时间"
         align="center"
-        width="90"
+        width="120"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.planTime, "{y}-{m}-{d}") }}
@@ -97,7 +97,7 @@
         prop="completeTime"
         label="实际完成时间"
         align="center"
-        width="90"
+        width="120"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.completeTime, "{y}-{m}-{d}") }}
@@ -130,7 +130,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="nickName" label="责任人" align="center" width="80">
+      <el-table-column prop="nickName" label="责任人" align="center" width="120">
         <template slot-scope="scope">
           <el-tag>
             {{ scope.row.nickName }}

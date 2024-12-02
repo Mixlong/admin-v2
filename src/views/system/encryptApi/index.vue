@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form
+    <!-- <el-form
       :model="queryParams"
       ref="queryForm"
       :inline="true"
@@ -28,21 +28,20 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button icon="el-icon-search" size="mini" @click="handleQuery">
+        <el-button icon="el-icon-search" type="primary"  @click="handleQuery">
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+        <el-button icon="el-icon-refresh" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>
-    </el-form>
+    </el-form> -->
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
           type="primary"
           icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['system:encryptApi:add']"
         >
@@ -64,7 +63,7 @@
     >
       <el-table-column label="授权key" align="center" prop="key" />
       <el-table-column label="偏移量" align="center" prop="offset" />
-      <el-table-column
+      <!-- <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
@@ -73,7 +72,7 @@
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         label="操作"
         align="center"
@@ -106,19 +105,18 @@
       :close-on-click-modal="false"
       :title="title"
       :visible.sync="open"
-      width="710px"
+      width="500px"
       append-to-body
+      center
     >
       <el-form
         ref="form"
         :model="form"
         :rules="rules"
-        class="form-data-inline"
-        inline
-        label-width="80px"
+        label-position="top"
       >
         <el-form-item label="授权key" prop="key">
-          <el-input v-model="form.configName" placeholder="请输入授权key" />
+          <el-input v-model="form.key" placeholder="请输入授权key" />
         </el-form-item>
         <el-form-item label="偏移量" prop="offset">
           <el-input v-model="form.offset" placeholder="请输入偏移量" />
@@ -169,7 +167,10 @@ export default {
         offset: undefined,
       },
       // 表单参数
-      form: {},
+      form: {
+        key: "",
+        offset: ""
+      },
       // 表单校验
       rules: {
         key: [{ required: true, message: "授权key不能为空", trigger: "blur" }],
@@ -186,9 +187,11 @@ export default {
     /** 查询参数列表 */
     getList() {
       this.loading = true;
-      apiKeyList(this.queryParams).then((response) => {
-        this.configList = response.rows;
-        this.total = response.total;
+      apiKeyList(this.queryParams).then((res) => {
+        const { list, total } = res.data;
+        this.configList = list;
+        this.total = total;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -200,8 +203,8 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        key: undefined,
-        offset: undefined,
+        key: "",
+        offset: "",
       };
       this.resetForm("form");
     },
@@ -231,18 +234,16 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const configId = row.configId || this.ids;
-      getConfig(configId).then((response) => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改接口加密";
-      });
+
+      this.form = Object.assign({}, row);
+      this.open = true;
+      this.title = "修改接口加密";
     },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.form.configId != undefined) {
+          if (this.form.id !== undefined) {
             updateKeyApi(this.form).then(() => {
               this.msgSuccess("修改成功");
               this.open = false;
@@ -257,48 +258,7 @@ export default {
           }
         }
       });
-    },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const configIds = row.configId || this.ids;
-      this.$confirm(
-        '是否确认删除参数编号为"' + configIds + '"的数据项?',
-        "警告",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        }
-      )
-        .then(function () {
-          return delConfig(configIds);
-        })
-        .then(() => {
-          this.getList();
-          this.msgSuccess("删除成功");
-        });
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      const queryParams = this.queryParams;
-      this.$confirm("是否确认导出所有参数数据项?", "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(function () {
-          return exportConfig(queryParams);
-        })
-        .then((response) => {
-          this.download(response.msg);
-        });
-    },
-    /** 清理缓存按钮操作 */
-    handleClearCache() {
-      clearCache().then((response) => {
-        this.msgSuccess("清理成功");
-      });
-    },
+    }
   },
 };
 </script>

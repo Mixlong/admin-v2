@@ -21,7 +21,6 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
-          v-hasPermi="['third:cad:type:query']"
           @click="handleQuery"
         >
           搜索
@@ -29,7 +28,6 @@
         <el-button
           icon="el-icon-refresh"
           size="mini"
-          v-hasPermi="['third:cad:type:reset']"
           @click="resetQuery"
         >
           重置

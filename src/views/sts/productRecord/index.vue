@@ -198,7 +198,7 @@
       </el-table-column>
       <el-table-column label="气密性测试" align="center" width="90">
         <template slot-scope="scope">
-          <el-button type="text" @click="seeGasDetail(scope.row.sn)">
+          <el-button type="text" @click="seeGasDetail(scope.row.sn)" :disabled="!scope.row.sn">
             查看
           </el-button>
         </template>
@@ -249,61 +249,158 @@
     <el-dialog
       title="气密性测试"
       :visible.sync="isGasDetailShow"
-      width="1000px"
+      width="50%"
       center
       append-to-body
       top="1vh"
+      :close-on-click-modal="false"
     >
-      <el-table :data="gasDetail" bordered height="450">
+      <el-table
+        ref="gasTabRef"
+        :data="gasDetail"
+        border
+        height="600"
+        @expand-change="handleExpandChange"
+      >
+        <el-table-column type="expand" fixed>
+          <div slot-scope="{ row }">
+            <template v-if="row.tightnessJson">
+              <p class="margin-left">
+                <span>
+                  <b>防水测试标准：</b> {{ waterproofingTestStandard }}
+                </span>
+                <span class="margin-left-lg">
+                  <b>备注：</b> {{ gasCopnfigRemark }}
+                </span>
+              </p>
+              <el-row :gutter="10" class="gas-config-box">
+                <el-col :span="7">
+                  <el-card shadow="nerver" class="el-card-box">
+                    <div slot="header">
+                      <span>测试时间参数(S)</span>
+                    </div>
+                    <div
+                      class="flex align-center justify-between"
+                      v-for="(item, index) in testTimeData"
+                      :key="index"
+                    >
+                      <el-tag
+                        color="#00aadc"
+                        effect="dark"
+                        size="medium"
+                        style="border: none; display: flex; align-items: center"
+                      >
+                        {{ item.label }}
+                      </el-tag>
+                      <el-input
+                        v-model="item.value"
+                        readonly
+                        style="width: 120px"
+                      />
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="10">
+                  <el-card shadow="nerver" class="el-card-box">
+                    <div slot="header">
+                      <span>测试压力参数</span>
+                    </div>
+                    <div
+                      class="flex align-center justify-between"
+                      v-for="(item, index) in testPressureData"
+                      :key="index"
+                    >
+                      <el-tag
+                        color="#00aadc"
+                        effect="dark"
+                        size="medium"
+                        style="border: none; display: flex; align-items: center"
+                      >
+                        {{ item.label }}
+                      </el-tag>
+                      <div class="flex align-center space-between">
+                        <el-input v-model="item.value" readonly />
+                        <div class="unit-box">{{ item.unit }}</div>
+                      </div>
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="7" class="test-front-end-box">
+                  <el-card shadow="nerver" class="el-card-box">
+                    <div slot="header">
+                      <span>测试前外部输出状态(S)</span>
+                    </div>
+                    <div
+                      class="flex align-center justify-between"
+                      v-for="(item, index) in testFrongData"
+                      :key="index"
+                    >
+                      <el-tag
+                        type="warning"
+                        effect="dark"
+                        size="medium"
+                        style="width: 70px; text-align: center"
+                      >
+                        {{ item.label }}
+                      </el-tag>
+                      <el-input
+                        v-model="item.value"
+                        readonly
+                        style="width: 120px"
+                      />
+                    </div>
+                  </el-card>
+                  <el-card shadow="nerver" class="el-card-box">
+                    <div slot="header">
+                      <span>测试后外部输出状态(S)</span>
+                    </div>
+                    <div
+                      class="flex align-center justify-between"
+                      v-for="(item, index) in testEndData"
+                      :key="index"
+                    >
+                      <el-tag
+                        type="success"
+                        effect="dark"
+                        size="medium"
+                        style="width: 70px; text-align: center"
+                      >
+                        {{ item.label }}
+                      </el-tag>
+                      <el-input
+                        v-model="item.value"
+                        readonly
+                        style="width: 120px"
+                      />
+                    </div>
+                  </el-card>
+                </el-col>
+              </el-row>
+            </template>
+            <template v-else>
+              <el-empty description="暂无数据"></el-empty>
+            </template>
+          </div>
+        </el-table-column>
         <el-table-column label="迪太SN" prop="dtSn" align="center" />
         <el-table-column
-          label="气压校准值"
-          prop="calibrationPa"
+          label="测试压力(KPa)"
+          prop="testPressure"
           align="center"
         />
+        <el-table-column label="小泄漏(KPa)" prop="leakValue" align="center" />
         <el-table-column
-          label="气压校准"
-          prop="standardPa"
+          label="耗时"
+          prop="consumeTime"
           align="center"
-          width="80"
-        />
-        <el-table-column
-          label="气压波动范围"
-          prop="volatilityRange"
-          align="center"
-          width="110"
-        />
-        <el-table-column
-          label="充气时间"
-          prop="inflateTime"
-          align="center"
-          width="80"
+          sortable
         >
           <span
             slot-scope="{ row }"
-            v-NoData="formattedTime(row.inflateTime)"
+            v-NoData="formattedTime({ time: row.consumeTime, timeType: 'ms' })"
           />
         </el-table-column>
-        <el-table-column
-          label="平衡时间"
-          prop="balanceTime"
-          align="center"
-          width="80"
-        >
-          <span
-            slot-scope="{ row }"
-            v-NoData="formattedTime(row.balanceTime)"
-          />
-        </el-table-column>
-        <el-table-column
-          label="测试时间"
-          prop="testTime"
-          align="center"
-          width="80"
-        >
-          <span slot-scope="{ row }" v-NoData="formattedTime(row.testTime)" />
-        </el-table-column>
-        <el-table-column label="测试时间戳" prop="time" align="center" sortable>
+        <el-table-column label="测试时间" prop="time" align="center" sortable>
           <span slot-scope="{ row }" v-NoData="parseTime(row.time)" />
         </el-table-column>
         <el-table-column
@@ -386,6 +483,10 @@ export default {
     return {
       isStsDetailShow: false,
       isGasDetailShow: false,
+      // 防水测试标准
+      waterproofingTestStandard: "",
+      // 备注
+      gasCopnfigRemark: "",
       form: {},
       // 遮罩层
       loading: true,
@@ -396,6 +497,141 @@ export default {
       testDetail: [],
       stsDetail: [],
       gasDetail: [],
+      testTimeData: [
+        {
+          label: "充气时间",
+          value: undefined,
+          key: "inflationTime",
+        },
+        {
+          label: "稳压时间",
+          value: undefined,
+          key: "stablePressureTime",
+        },
+        {
+          label: "测试时间",
+          value: undefined,
+          key: "testTime",
+        },
+        {
+          label: "放气时间",
+          value: undefined,
+          key: "deflationTime",
+        },
+        {
+          label: "定量进气",
+          value: undefined,
+          key: "quantitativeInflationTime",
+        },
+        // {
+        //   label: "分压时间",
+        //   value: undefined,
+        //   key: "PartialPressureTime",
+        // },
+        // {
+        //   label: "下一程序",
+        //   value: undefined,
+        //   key: "NextProcedure",
+        // },
+      ],
+      testPressureData: [
+        {
+          label: "进气压力",
+          value: undefined,
+          unit: "KPa",
+          key: "intakePressure",
+        },
+        {
+          label: "进气上限",
+          value: undefined,
+          unit: "KPa",
+          key: "upperIntakeLimit",
+        },
+        {
+          label: "进气下限",
+          value: undefined,
+          unit: "KPa",
+          key: "lowerIntakeLimit",
+        },
+        {
+          label: "泄漏上限",
+          value: undefined,
+          unit: "KPa",
+          key: "upperLeakageLimit",
+        },
+        {
+          label: "泄漏下限",
+          value: undefined,
+          unit: "KPa",
+          key: "lowerLeakageLimit",
+        },
+        // {
+        //   label: "泄漏偏移",
+        //   value: undefined,
+        //   unit: "Pa",
+        //   key: "LeakageMigration",
+        // },
+        // {
+        //   label: "大漏上限",
+        //   value: undefined,
+        //   key: "LargeLeakLimit",
+        // },
+        // {
+        //   label: "大漏下限",
+        //   value: undefined,
+        //   key: "LargeLeakLowLimite",
+        // },
+        // {
+        //   label: "工件容积",
+        //   value: undefined,
+        //   unit: "ml",
+        //   key: "workVolume",
+        // },
+      ],
+      testFrongData: [
+        {
+          label: "延时1",
+          value: undefined,
+          key: "beforeTestOutputDelay1",
+        },
+        // {
+        //   label: "延时2",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay2",
+        // },
+        // {
+        //   label: "延时3",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay3",
+        // },
+        // {
+        //   label: "延时4",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay4",
+        // },
+      ],
+      testEndData: [
+        {
+          label: "延时1",
+          value: undefined,
+          key: "afterTestOutputDelay1",
+        },
+        // {
+        //   label: "延时2",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay2",
+        // },
+        // {
+        //   label: "延时3",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay3",
+        // },
+        // {
+        //   label: "延时4",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay4",
+        // },
+      ],
       orderData: {
         data: [],
         page: 1,
@@ -427,6 +663,16 @@ export default {
       },
     };
   },
+  // watch: {
+  //   isGasDetailShow(show) {
+  //     console.log("show", show)
+  //     if(!show && this.gasDetail.length) {
+  //       this.gasDetail.forEach(row => {
+  //         this.$refs.gasTabRef.toggleRowExpansion(row, false);
+  //       })
+  //     }
+  //   }
+  // },
   created() {
     const { type, categoryId, status, model } = this.$route.query;
     this.queryParams.type = type ?? "";
@@ -444,6 +690,173 @@ export default {
     this.handleSearchPage();
   },
   methods: {
+    setConfigDefaultVal() {
+      this.testTimeData = [
+        {
+          label: "充气时间",
+          value: undefined,
+          key: "inflationTime",
+        },
+        {
+          label: "稳压时间",
+          value: undefined,
+          key: "stablePressureTime",
+        },
+        {
+          label: "测试时间",
+          value: undefined,
+          key: "testTime",
+        },
+        {
+          label: "放气时间",
+          value: undefined,
+          key: "deflationTime",
+        },
+        {
+          label: "定量进气",
+          value: undefined,
+          key: "quantitativeInflationTime",
+        },
+        // {
+        //   label: "分压时间",
+        //   value: undefined,
+        //   key: "PartialPressureTime",
+        // },
+        // {
+        //   label: "下一程序",
+        //   value: undefined,
+        //   key: "NextProcedure",
+        // },
+      ];
+
+      this.testPressureData = [
+        {
+          label: "进气压力",
+          value: undefined,
+          unit: "KPa",
+          key: "intakePressure",
+        },
+        {
+          label: "进气上限",
+          value: undefined,
+          unit: "KPa",
+          key: "upperIntakeLimit",
+        },
+        {
+          label: "进气下限",
+          value: undefined,
+          unit: "KPa",
+          key: "lowerIntakeLimit",
+        },
+        {
+          label: "泄漏上限",
+          value: undefined,
+          unit: "Pa",
+          key: "upperLeakageLimit",
+        },
+        {
+          label: "泄漏下限",
+          value: undefined,
+          unit: "Pa",
+          key: "lowerLeakageLimit",
+        },
+        // {
+        //   label: "泄漏偏移",
+        //   value: undefined,
+        //   unit: "Pa",
+        //   key: "LeakageMigration",
+        // },
+        // {
+        //   label: "大漏上限",
+        //   value: undefined,
+        //   key: "LargeLeakLimit",
+        // },
+        // {
+        //   label: "大漏下限",
+        //   value: undefined,
+        //   key: "LargeLeakLowLimite",
+        // },
+        // {
+        //   label: "工件容积",
+        //   value: undefined,
+        //   unit: "ml",
+        //   key: "workVolume",
+        // },
+      ];
+
+      this.testFrongData = [
+        {
+          label: "延时1",
+          value: undefined,
+          key: "beforeTestOutputDelay1",
+        },
+        // {
+        //   label: "延时2",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay2",
+        // },
+        // {
+        //   label: "延时3",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay3",
+        // },
+        // {
+        //   label: "延时4",
+        //   value: undefined,
+        //   key: "beforeTestOutputDelay4",
+        // },
+      ];
+
+      this.testEndData = [
+        {
+          label: "延时1",
+          value: undefined,
+          key: "afterTestOutputDelay1",
+        },
+        // {
+        //   label: "延时2",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay2",
+        // },
+        // {
+        //   label: "延时3",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay3",
+        // },
+        // {
+        //   label: "延时4",
+        //   value: undefined,
+        //   key: "afterTestOutputDelay4",
+        // },
+      ];
+    },
+    setGasConfigParams(json) {
+      const jsonData = JSON.parse(json);
+
+      const { waterproofingTestStandard, remark } = jsonData;
+      this.waterproofingTestStandard = waterproofingTestStandard;
+      this.gasCopnfigRemark = remark;
+
+      const gasConfigList = [
+        "testTimeData",
+        "testPressureData",
+        "testFrongData",
+        "testEndData",
+      ];
+
+      gasConfigList.forEach((name) => {
+        this[name].forEach((item) => {
+          if (jsonData[item.key] || jsonData[item.key] === 0) {
+            item.value = jsonData[item.key];
+          }
+        });
+      });
+    },
+    handleExpandChange(row) {
+      if (row.tightnessJson) {
+        this.setGasConfigParams(row.tightnessJson);
+      }
+    },
     handleSearchPage() {
       const { boxNo } = this.$route.params;
       const { recordId } = this.$route.query;
@@ -558,3 +971,42 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.gas-config-box {
+  /* height: 440px; */
+  height: 240px;
+  margin-bottom: 20px;
+  .el-col {
+    height: 100%;
+    .el-card-box {
+      height: 100%;
+      /deep/ .el-card__header {
+        background: #00aaaa;
+        color: #fff;
+        text-align: center;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      /deep/ .el-card__body {
+        padding: 10px;
+        height: calc(100% - 40px);
+        display: grid;
+        /* align-content: space-between; */
+      }
+    }
+  }
+
+  .test-front-end-box {
+    display: grid;
+    row-gap: 10px;
+  }
+
+  .unit-box {
+    width: 30px;
+    text-align: left;
+    margin-left: 5px;
+  }
+}
+</style>

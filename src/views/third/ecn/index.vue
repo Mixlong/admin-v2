@@ -150,7 +150,7 @@
       </el-table-column>
       <el-table-column
         label="申请人"
-        prop="createBy"
+        prop="applicant"
         align="center"
         width="100"
       />
@@ -167,7 +167,7 @@
           <div class="flex flex-direction table-options-col">
             <Tooltip
               v-hasPermi="['ecn:update']"
-              v-show="row.secondState !== 1"
+              v-show="row.secondState !== 1 && row.applicant === nickName"
               icon="el-icon-edit"
               content="编辑"
               @click="handleUpdate(row)"
@@ -360,6 +360,7 @@
           /> -->
 
             <Tooltip
+              v-show="row.applicant === nickName"
               v-hasPermi="['ecn:delete']"
               icon="el-icon-delete"
               :class="['text-red']"

@@ -40,7 +40,6 @@
       </el-form-item>
       <el-form-item>
         <el-button
-          v-hasPermi="['sop:search:btn']"
           type="primary"
           icon="el-icon-search"
           @click="handleQuery"
@@ -49,7 +48,6 @@
         </el-button>
         <el-button
           icon="el-icon-refresh"
-          v-hasPermi="['sop:search:reset']"
           @click="resetQuery"
         >
           重置

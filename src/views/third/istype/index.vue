@@ -54,7 +54,6 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
-          v-hasPermi="['third:isType:query']"
           @click="handleQuery"
         >
           搜索
@@ -62,7 +61,6 @@
         <el-button
           icon="el-icon-refresh"
           size="mini"
-          v-hasPermi="['third:isType:reset']"
           @click="resetQuery"
         >
           重置

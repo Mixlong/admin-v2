@@ -1506,3 +1506,8 @@ fieldset {
     margin-left: 0 !important;
   }
 }
+
+// 隐藏元素
+input[aria-hidden=true] {
+  display: none !important;
+}

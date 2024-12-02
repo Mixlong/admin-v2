@@ -43,14 +43,12 @@
         <el-button
           type="primary"
           icon="el-icon-search"
-          v-hasPermi="['third:productFamily:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
         <el-button
           icon="el-icon-refresh"
-          v-hasPermi="['third:productFamily:reset']"
           @click="resetQuery"
         >
           重置

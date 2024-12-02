@@ -6,9 +6,9 @@
           v-model="queryParams.returnDate"
           type="date"
           clearable
-          placeholder="请选择客诉日期"
           value-format="yyyy-MM-dd"
           style="width: 140px"
+          placeholder="请选择"
         />
       </el-form-item>
       <el-form-item label="客户名称" prop="customerName">
@@ -17,8 +17,8 @@
           clearable
           style="width: 140px"
           multiple
+          placeholder="请选择"
           :fetch-suggestions="querySearchAsync"
-          placeholder="请选择客户名称"
         ></el-autocomplete>
       </el-form-item>
       <el-form-item label="品类" prop="categoryName">
@@ -29,7 +29,6 @@
           v-model="queryParams.categoryName"
           style="width: 140px"
           @change="changeCategory"
-          placeholder="请选择品类"
         >
           <el-option
             v-for="dict in dictList"
@@ -47,7 +46,6 @@
           clearable
           style="width: 140px"
           v-model="queryParams.computerName"
-          placeholder="请选择型号"
           :remote-method="getComputerNameList"
         >
           <el-option
@@ -61,17 +59,13 @@
       <el-form-item label="产品SN" prop="sn">
         <el-input
           v-model.trim="queryParams.sn"
-          placeholder="请输入产品SN"
+          placeholder="请输入"
           clearable
+          style="width: 140px"
         />
       </el-form-item>
       <el-form-item label="问题状态" prop="status">
-        <el-select
-          v-model="queryParams.status"
-          style="width: 120px"
-          clearable
-          placeholder="请选择问题状态"
-        >
+        <el-select v-model="queryParams.status" style="width: 120px" clearable>
           <el-option label="OPEN" value="0" />
           <el-option label="CLOSE" value="1" />
         </el-select>
@@ -82,7 +76,6 @@
           filterable
           style="width: 120px"
           clearable
-          placeholder="请选择处理进展"
           @change="handleQuery"
         >
           <el-option
@@ -93,12 +86,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
+
+      <div class="fr">
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
+      </div>
+
       <el-row
         :gutter="20"
         type="flex"
@@ -147,8 +142,14 @@
         </el-col>
       </el-row>
     </el-form>
-    
+
+    <el-alert
+      title="表格可通过按住Ctrl + 鼠标左键左右拖动"
+      type="success"
+      show-icon
+    ></el-alert>
     <el-table
+      id="drag_table"
       ref="afterSaleRef"
       class="afterSaleBox"
       v-loading="loading"
@@ -165,6 +166,7 @@
         width="55"
         :reserve-selection="true"
         align="center"
+        fixed
       />
       <el-table-column
         label="客诉日期"
@@ -175,6 +177,7 @@
         :filters="getFiltersData('returnDate')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        fixed
       />
       <el-table-column
         label="问题状态"
@@ -190,6 +193,7 @@
         "
         :filter-method="filterHandler"
         filter-placement="bottom"
+        fixed
       >
         <template slot-scope="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
@@ -200,11 +204,12 @@
         label="不良仪表去向"
         prop="direction"
         align="center"
-        width="115"
+        width="120"
         column-key="direction"
         :filters="handleDataFilter(modelDirList)"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        fixed
       >
         <template slot-scope="{ row }">
           <el-tag :type="directionListClass(modelDirList, row.direction)">
@@ -220,6 +225,7 @@
         :filters="getFiltersData('sn')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       >
         <template slot-scope="{ row }">
           <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
@@ -233,6 +239,7 @@
         :filters="getFiltersData('customerName')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       />
       <el-table-column
         label="品类"
@@ -242,6 +249,7 @@
         :filters="getFiltersData('categoryName')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       />
       <el-table-column
         label="型号"
@@ -251,6 +259,7 @@
         :filters="getFiltersData('computerName')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
@@ -262,13 +271,13 @@
         :filters="getFiltersData('result')"
         :filter-method="filterHandler"
         filter-placement="bottom"
-        show-overflow-tooltip
+        width="120"
       />
       <el-table-column
         label="客退清单"
         prop="inventory"
         align="center"
-        min-width="110"
+        min-width="120"
       >
         <template slot-scope="{ row }">
           <div class="inventory-box">
@@ -289,12 +298,27 @@
         :filters="getFiltersData('returnParty')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       />
+      <el-table-column
+        label="复测结果"
+        prop="retestResult"
+        align="center"
+        column-key="retestResult"
+        :filters="handleDataFilter(againCheckResultData)"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+        width="120"
+      >
+        <template slot-scope="{ row }">
+          {{ againCheckResultData[row.retestResult] }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="处理进展"
         prop="state"
         align="center"
-        width="90"
+        width="120"
         column-key="state"
         :filters="handleDataFilter(stateList)"
         :filter-method="filterHandler"
@@ -314,7 +338,7 @@
         label="处理人"
         prop="handleName"
         align="center"
-        width="80"
+        width="120"
         column-key="handleName"
         :filters="getFiltersData('handleName')"
         :filter-method="filterHandler"
@@ -332,7 +356,7 @@
         label="是否异常"
         prop="isProblem"
         align="center"
-        width="90"
+        width="120"
         column-key="isProblem"
         :filters="
           handleDataFilter({
@@ -356,6 +380,7 @@
         :filters="getFiltersData('rootMatter')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       >
         <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
       </el-table-column>
@@ -367,13 +392,14 @@
         :filters="handleDataFilter(rootClassify)"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        width="120"
       >
         <span
           slot-scope="scope"
           v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="160">
+      <el-table-column label="操作" align="center" width="160" fixed="right">
         <template slot-scope="{ row }">
           <div class="flex justify-center align-center">
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">
@@ -463,29 +489,29 @@
                 处理
               </el-button>
             </el-tooltip>
-            <el-dropdown size="mini" class="margin-left-xs">
-              <span class="el-dropdown-link">
+            <el-dropdown size="mini" class="margin-left-xs" trigger="click" placement="bottom">
+              <span class="el-dropdown-link pointer">
                 <span class="text-green" style="font-size: 12px">更多操作</span
                 ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
-                  <el-button type="text" @click="handleDetail(row)">
+                  <el-button class="w100" type="text" @click="handleDetail(row)">
                     详情
                   </el-button>
                 </el-dropdown-item>
                 <el-dropdown-item>
-                  <el-button type="text" @click="handleDelete(row)">
+                  <el-button class="w100" type="text" @click="handleDelete(row)">
                     删除
                   </el-button>
                 </el-dropdown-item>
                 <el-dropdown-item v-if="row.video">
-                  <el-button type="text" @click="urlDownload(row.video)">
+                  <el-button class="w100" type="text" @click="urlDownload(row.video)">
                     视频下载
                   </el-button>
                 </el-dropdown-item>
                 <el-dropdown-item v-if="!Is_Empty(row.rootMatter)">
-                  <el-button type="text" @click="handleClose(row)">
+                  <el-button class="w100" type="text" @click="handleClose(row)">
                     {{ isStatusTxt(row.status) }}
                   </el-button>
                 </el-dropdown-item>
@@ -555,10 +581,12 @@ import { mapGetters } from "vuex";
 import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
 import commonData from "@/mixins/commonData";
+import { dragTableFn } from "@/mixins/common";
+import globalData from './mixins/global'
 
 export default {
   name: "AfterSale",
-  mixins: [commonData],
+  mixins: [commonData, dragTableFn, globalData],
   components: {
     FlipDown,
     AddSale: () => import("./components/addSale"),
@@ -760,7 +788,7 @@ export default {
       return (key) => {
         let newList = [];
         let filterList = [];
-        this.brandList.forEach((item) => {
+        this.brandList?.forEach((item) => {
           if (!this.Is_Empty(item[key]) && !filterList.includes(item[key])) {
             filterList.push(item[key]);
             newList.push({
@@ -878,9 +906,11 @@ export default {
         ...this.queryParams,
         my: this.isWaitDispose ? "" : this.nickName,
       };
-      afterList(dataInfo).then((response) => {
-        this.brandList = response.data.list;
-        this.total = response.data.total;
+      afterList(dataInfo).then((res) => {
+        const { list, total } = res.data;
+        this.brandList = list;
+        this.total = total;;
+      }).finally(() => {
         this.loading = false;
       });
     },

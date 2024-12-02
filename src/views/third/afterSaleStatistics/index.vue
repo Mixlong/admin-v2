@@ -4,28 +4,27 @@
       <el-form-item label="客户名称" prop="customerId">
         <select-loadMore
           v-model="queryParams.customerId"
-          style="width: 100%"
+          style="width: 140px"
           :data="customerData.data"
           :page="customerData.page"
           :hasMore="customerData.more"
           dictLabel="name"
           dictValue="id"
           :request="getCustomerList"
-          placeholder="请选择客户名称"
         >
         </select-loadMore>
       </el-form-item>
-      <el-form-item label="品类" prop="categoryId">
+      <el-form-item label="品类" prop="categoryName">
         <select-loadMore
-          v-model="queryParams.categoryId"
-          style="width: 100%"
+          v-model="queryParams.categoryName"
+          style="width: 140px"
           :data="categoryData.data"
           :page="categoryData.page"
           :hasMore="categoryData.more"
           dictLabel="name"
-          dictValue="id"
+          :moreParams="true"
           :request="getCategoryList"
-          placeholder="请选择产品品类"
+          @getChange="getCategoryId"
         >
         </select-loadMore>
       </el-form-item>
@@ -33,16 +32,33 @@
       <el-form-item label="不良类型" prop="result">
         <select-loadMore
           v-model="queryParams.result"
-          style="width: 100%"
+          style="width: 140px"
           :data="afterSaleData.data"
           :page="afterSaleData.page"
           :hasMore="afterSaleData.more"
           dictLabel="result"
           dictValue="result"
           :request="getAfterSaleList"
-          placeholder="请选择不良类型"
         >
         </select-loadMore>
+      </el-form-item>
+
+      <el-form-item label="订单状态" prop="status">
+        <el-select v-model="queryParams.status" clearable style="width: 140px">
+          <el-option label="开启" value="0"></el-option>
+          <el-option label="关闭" value="1"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="年份" prop="year">
+        <el-date-picker
+          v-model="queryParams.year"
+          type="year"
+          style="width: 140px"
+          placeholder="请选择"
+          format="yyyy"
+          value-format="yyyy"
+        />
       </el-form-item>
 
       <el-form-item>
@@ -87,6 +103,11 @@
             </el-date-picker>
           </el-col> -->
         </el-row>
+        <el-alert
+          title="数据表格可通过鼠标滚动切换数据"
+          type="success"
+          show-icon
+        />
         <el-row type="flex" :gutter="20">
           <el-col :span="8">
             <!-- 问题根因状态 -->
@@ -229,11 +250,9 @@
           </template>
         </el-row>
       </template>
+
       <template v-else>
-        <search-chart
-          :chartOption="searchChartOption"
-          height="450px"
-        ></search-chart>
+        <search-chart :chartOption="searchChartOption" height="700px" />
       </template>
     </div>
   </div>
@@ -324,7 +343,10 @@ export default {
       queryParams: {
         customerId: undefined,
         categoryId: undefined,
+        categoryName: undefined,
         result: undefined,
+        status: undefined,
+        year: this.moment().format("YYYY"),
       },
       defaultTime: ["00:00:00", "23:59:59"],
       afterStatusDate: [],
@@ -373,6 +395,8 @@ export default {
       if (customerId) {
         this.queryParams.categoryId = "";
         this.categoryData.data = [];
+
+        this.getFirstCategory();
       }
     },
   },
@@ -401,13 +425,13 @@ export default {
   },
   methods: {
     handleQuery() {
-      const paramsLen = Object.values(this.queryParams).filter(
-        (item) => item !== undefined && item !== ""
-      ).length;
+      // const paramsLen = Object.values(this.queryParams).filter(
+      //   (item) => item !== undefined && item !== ""
+      // ).length;
 
-      if (paramsLen < 2) {
-        return this.msgError("至少选择两个过滤条件");
-      }
+      // if (paramsLen < 2) {
+      //   return this.msgError("至少选择两个过滤条件");
+      // }
 
       this.resetChartData(this.searchChartOption);
 
@@ -456,6 +480,7 @@ export default {
         2: "工厂处理中",
         3: "已发客户",
         4: "已报废",
+        5: '返工入库'
       };
 
       let badMeterData = computerList.map(({ name, num }) => {
@@ -491,7 +516,10 @@ export default {
         let dateRange = [];
         if (this.afterBadDate?.length) {
           const [startTime, endTime] = this.afterBadDate;
-          dateRange = [Math.round(startTime / 1000), Math.round((endTime / 1000))];
+          dateRange = [
+            Math.round(startTime / 1000),
+            Math.round(endTime / 1000),
+          ];
         }
 
         const { data } = await afterBadList(
@@ -546,7 +574,10 @@ export default {
         let dateRange = [];
         if (this.afterTopDate?.length) {
           const [startTime, endTime] = this.afterTopDate;
-          dateRange = [Math.round((startTime / 1000)), Math.round((endTime / 1000))];
+          dateRange = [
+            Math.round(startTime / 1000),
+            Math.round(endTime / 1000),
+          ];
         }
 
         const { data } = await afterTopList(
@@ -654,6 +685,16 @@ export default {
         });
       });
     },
+    getCategoryId(info) {
+      if (!info) {
+        this.queryParams.categoryId = "";
+        this.queryParams.categoryName = "";
+        return;
+      }
+      const { id, name } = JSON.parse(info);
+      this.queryParams.categoryId = id;
+      this.queryParams.categoryName = name;
+    },
     getAfterSaleList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
         afterResultList({
@@ -670,6 +711,17 @@ export default {
           this.afterSaleData.page = pageNum;
           resolve();
         });
+      });
+    },
+    getFirstCategory() {
+      const { customerId } = this.queryParams;
+      afterCategoryList({
+        customerId,
+      }).then((res) => {
+        const { list } = res.data;
+        const { id, name } = list[0] ?? {};
+        this.queryParams.categoryName = name;
+        this.queryParams.categoryId = id;
       });
     },
     handleCreatePageLoading() {

@@ -351,7 +351,6 @@ export default {
     };
   },
   created() {
-    console.log(this.$router,this.$route)
     const dictId = this.$route.params && this.$route.params.dictId;
     this.getType(dictId);
     this.getTypeList();

@@ -38,8 +38,15 @@ export function extend(source) {
  * @param {时间戳类型} timeType  秒数 - 's' ,  毫秒数 - 'ms'
  * @returns
  */
-export function formattedTime(time, pattern = "HH:mm:ss", timeType = 's') {
-  return moment().startOf('day').add(time, timeType).format(pattern);
+export function formattedTime({ time, pattern = "HH:mm:ss", timeType = 's' } = {}) {
+  try {
+    if(is_Empty(time)) {
+      return '- - -';
+    }
+    return moment().startOf('day').add(time, timeType).format(pattern); 
+  } catch (error) {
+    console.error(error);
+  }
 }
 // 日期格式化
 export function parseTime(time, pattern) {

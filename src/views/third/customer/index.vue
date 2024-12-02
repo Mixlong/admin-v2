@@ -8,29 +8,19 @@
       @submit.native.prevent
     >
       <el-form-item label="客户" prop="name">
-        <el-input
+        <el-autocomplete
           v-model="queryParams.name"
-          placeholder="请输入客户名称"
           clearable
-          @keyup.enter.native="handleQuery"
-        />
+          placeholder="请输入客户"
+          :fetch-suggestions="querySearchAsync"
+          @select="handleQuery"
+        ></el-autocomplete>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          v-hasPermi="['third:customer:query']"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          v-hasPermi="['third:customer:reset']"
-          @click="resetQuery"
-        >
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
     </el-form>
 
@@ -78,12 +68,19 @@
         align="center"
         class-name="small-padding fixed-width"
       >
-        <template slot-scope="scope">
+        <template slot-scope="{ row }">
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
             v-hasPermi="['third:customer:update']"
-            @click="handleUpdate(scope.row)"
+            @click="handleUpdate(row)"
+          />
+
+          <Tooltip
+            icon="el-icon-document"
+            content="客户地址"
+            v-hasPermi="['third:customer:address']"
+            @click="handleNameToPage('CustomerAddress', { name: row.name })"
           />
         </template>
       </el-table-column>
@@ -140,6 +137,7 @@ import {
   authCustomer,
   getCustomerList,
 } from "@/api/order";
+import { listCustomer } from "@/api/third/sample";
 
 export default {
   name: "Customer",
@@ -234,6 +232,18 @@ export default {
       this.form = Object.assign({}, row);
       this.open = true;
       this.title = "修改客户";
+    },
+    /** 客户数据 */
+    querySearchAsync(queryString, cb) {
+      listCustomer({ key: queryString || "" }).then((res) => {
+        cb(
+          res.data.map((item) => {
+            return {
+              value: item.name,
+            };
+          })
+        );
+      });
     },
     /** 提交按钮 */
     submitForm: function () {

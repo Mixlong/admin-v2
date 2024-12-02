@@ -112,19 +112,29 @@
       <el-table-column label="整机SN" prop="sn" align="center">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
+      <el-table-column label="箱号" prop="boxNo" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
+      </el-table-column>
       <el-table-column label="测试环节" prop="processName" align="center" />
       <el-table-column label="判断结果" prop="result" align="center">
         <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
       </el-table-column>
-      <el-table-column label="测试设备SN" prop="equipSn" align="center" />
+      <el-table-column label="测试设备SN" prop="cpuId" align="center">
+        <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
+      </el-table-column>  
+      <el-table-column label="测试时长" prop="time" align="center">
+        <template slot-scope="{ row }">
+          {{ formattedTime({ time: row.time, timeType: 'ms'  }) }}
+        </template>
+      </el-table-column>
       <el-table-column label="测试时间" prop="testTime" align="center">
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试详情" align="center">
+      <el-table-column label="测试详情" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>

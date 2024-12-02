@@ -25,7 +25,6 @@
         <el-button
           type="cyan"
           icon="el-icon-search"
-          v-hasPermi="['third:totalChipType:query']"
           @click="handleQuery"
         >
           搜索
@@ -33,7 +32,6 @@
         <el-button
           icon="el-icon-refresh"
           size="mini"
-          v-hasPermi="['third:totalChipType:reset']"
           @click="resetQuery"
         >
           重置

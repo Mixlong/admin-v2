@@ -21,12 +21,11 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
-          v-hasPermi="['third:ids:type:query']"
           @click="handleQuery"
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" v-hasPermi="['third:ids:type:reset']" @click="resetQuery">
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>

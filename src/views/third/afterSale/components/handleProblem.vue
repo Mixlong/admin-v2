@@ -159,7 +159,7 @@
           />
           <span class="margin-left-sm">min</span>
         </el-form-item>
-        <el-form-item label="物料损耗：" required>
+        <el-form-item label="物料损耗：">
           <el-row
             type="flex"
             justify="space-between"
@@ -167,9 +167,9 @@
             v-for="(item, index) in form.materialLossList"
             :key="index"
           >
-            <el-col :span="22">
-              <el-row type="flex">
-                <el-col :span="8">
+            <el-col :span="20">
+              <el-row type="flex" :gutter="10">
+                <el-col :span="9">
                   <el-form-item
                     label=""
                     :prop="`materialLossList[${index}].materialName`"
@@ -177,13 +177,12 @@
                   >
                     <el-input
                       v-model="item.materialName"
-                      style="width: 90%"
                       clearable
                       placeholder="请输入物料名称"
                     />
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="9">
                   <el-form-item
                     label=""
                     :prop="`materialLossList[${index}].materialCode`"
@@ -191,13 +190,12 @@
                   >
                     <el-input
                       v-model="item.materialCode"
-                      style="width: 90%"
                       clearable
                       placeholder="请输入物料编码"
                     />
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item
                     label=""
                     :prop="`materialLossList[${index}].materialNum`"
@@ -205,7 +203,6 @@
                   >
                     <el-input-number
                       v-model="item.materialNum"
-                      style="width: 150px"
                       :min="1"
                       :precision="0"
                       placeholder="请输入物料数量"
@@ -214,15 +211,16 @@
                 </el-col>
               </el-row>
             </el-col>
-            <el-col :span="2">
-              <el-button
-                v-if="index !== 0"
-                type="danger"
-                icon="el-icon-minus"
-                circle
-                style="height: 28px"
-                @click="removeMaterialData(item)"
-              />
+            <el-col :span="4">
+              <div class="text-right">
+                <el-button
+                  v-if="index !== 0"
+                  type="danger"
+                  icon="el-icon-minus"
+                  circle
+                  @click="removeMaterialData(item)"
+                />
+              </div>
             </el-col>
           </el-row>
           <el-button
@@ -307,26 +305,26 @@ export default {
           { required: true, message: "请选择维修是否收费", trigger: "change" },
         ],
         handleResult: [
-          { required: true, message: "请输入处理结果", trigger: "blur" },
+          { required: false, message: "请输入处理结果", trigger: "blur" },
         ],
         warehousingDesc: [
           { required: true, message: "请输入入库描述", trigger: "blur" },
         ],
         serviceTime: [
           {
-            required: true,
+            required: false,
             message: "请输入维修工时",
             trigger: ["change", "blur"],
           },
         ],
         materialName: [
-          { required: true, message: "请输入物料名称", trigger: "blur" },
+          { required: false, message: "请输入物料名称", trigger: "blur" },
         ],
         materialCode: [
-          { required: true, message: "请输入物料编码", trigger: "blur" },
+          { required: false, message: "请输入物料编码", trigger: "blur" },
         ],
         materialNum: [
-          { required: true, message: "请输入物料数量", trigger: "change" },
+          { required: false, message: "请输入物料数量", trigger: "change" },
         ],
       },
     };
@@ -443,5 +441,3 @@ export default {
   },
 };
 </script>
-
-<style></style>
