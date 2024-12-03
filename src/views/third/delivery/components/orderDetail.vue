@@ -233,7 +233,6 @@ export default {
     getDetail(id) {
       deliveryDetail(id).then((res) => {
         this.form = res.data;
-        console.log("this.form", this.form);
       });
     },
     cellClassName({ row, column, rowIndex, columnIndex }) {

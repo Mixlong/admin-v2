@@ -193,7 +193,10 @@ const CategoryMixin = {
             // 默认选择第一个
             this.queryParams.categoryId = this.dictList[0]?.id;
 
-            this.getList();
+            if (!this.isNoComputerFlag) {
+              this.getList();
+            }
+
             resolve(res.data);
           });
         } catch (error) {

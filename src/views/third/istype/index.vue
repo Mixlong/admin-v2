@@ -687,7 +687,6 @@ export default {
     handleUpdate(row) {
       this.reset();
       this.form = Object.assign({}, row);
-      console.log(this.form);
       this.open = true;
       this.title = "编辑外发文件";
     },

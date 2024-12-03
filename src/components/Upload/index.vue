@@ -98,7 +98,6 @@ export default {
       );
     },
     removeUpload(response, file, fileList) {
-      console.log('remove', file)
       this.handleReturnData(file);
       // this.$emit("removeUpload", response, file, fileList);
     },

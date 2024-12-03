@@ -623,8 +623,6 @@ export default {
       ).name;
 
       this.form.list[index].categoryName = categoryName;
-
-      console.log(this.form.list);
     },
     close() {
       this.$emit("update:visible", false);
@@ -651,7 +649,6 @@ export default {
       });
     },
     getSampleName(info) {
-      console.log(JSON.parse(info));
       if (!info) {
         this.form.list[this.currentSampleIndex].sampleId = "";
         return;
