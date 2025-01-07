@@ -75,9 +75,9 @@
       :data="brandList"
       :height="tableHeight()"
     >
-      <el-table-column label="操作" align="center" width="90" fixed>
+      <el-table-column label="操作" align="center" width="100" fixed>
         <template slot-scope="{ row }">
-          <div class="flex flex-direction">
+          <div class="flex justify-between">
             <!-- 初审 -->
             <Tooltip
               v-if="row.state === 0"
@@ -87,6 +87,7 @@
               v-hasPermi="['config:overview:first:check']"
               @click="handleAuthChange(row, 1)"
             />
+
             <!-- 终审 -->
             <Tooltip
               v-if="row.state === 1"
@@ -96,6 +97,7 @@
               v-hasPermi="['config:overview:final:check']"
               @click="handleAuthChange(row, 2)"
             />
+
             <Tooltip
               class="margin-0"
               icon="el-icon-position"
@@ -108,6 +110,7 @@
                 })
               "
             />
+
             <!-- 配置详情 -->
             <Tooltip
               class="margin-0"
@@ -116,22 +119,40 @@
               @click="handleOpenDetail(row)"
             />
 
-            <template v-if="row.state === 0">
-              <el-tag type="danger">未审核</el-tag>
-            </template>
-            <template v-if="row.state === 1">
-              <el-tag type="success">初审通过</el-tag>
-            </template>
-            <template v-if="row.state === 2">
-              <el-tag type="info">初审未通过</el-tag>
-            </template>
-            <template v-if="row.state === 3">
-              <el-tag type="success">终审通过</el-tag>
-            </template>
-            <template v-if="row.state === 4">
-              <el-tag type="info">终审未通过</el-tag>
-            </template>
+            <!-- 包装信息 -->
+            <Tooltip
+              v-show="row.packagingInfo"
+              class="margin-0"
+              icon="el-icon-document"
+              content="包装信息"
+              @click="handleSeePackagingInfo(row)"
+            />
           </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="审核状态"
+        prop="state"
+        align="center"
+        width="90"
+        fixed
+      >
+        <template v-slot="{ row }">
+          <template v-if="row.state === 0">
+            <el-tag type="danger">未审核</el-tag>
+          </template>
+          <template v-if="row.state === 1">
+            <el-tag type="success">初审通过</el-tag>
+          </template>
+          <template v-if="row.state === 2">
+            <el-tag type="info">初审未通过</el-tag>
+          </template>
+          <template v-if="row.state === 3">
+            <el-tag type="success">终审通过</el-tag>
+          </template>
+          <template v-if="row.state === 4">
+            <el-tag type="info">终审未通过</el-tag>
+          </template>
         </template>
       </el-table-column>
       <el-table-column
@@ -308,6 +329,7 @@
           v-NoData="dicts_protocol_list[row.sysProtocol]"
         />
       </el-table-column>
+
       <el-table-column
         label="通讯方式"
         prop="serialLevel"
@@ -416,7 +438,7 @@
         />
       </el-table-column>
       <el-table-column
-        label="协议"
+        label="配置协议"
         prop="agreement"
         align="center"
         width="120"
@@ -429,6 +451,12 @@
           v-NoData="dicts_agreement[scope.row.agreement]"
         />
       </el-table-column>
+      <el-table-column
+        label="实际协议"
+        prop="showAgreement"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="测速磁钢数"
         prop="speedSteel"
@@ -463,7 +491,7 @@
         <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
       </el-table-column>
       <el-table-column
-        label="轮径"
+        label="配置轮径"
         prop="wheelDiameter"
         align="center"
         width="120"
@@ -476,6 +504,12 @@
           v-NoData="wheelDiameterData[scope.row.wheelDiameter]"
         ></span>
       </el-table-column>
+      <el-table-column
+        label="实际轮径"
+        prop="showWheelDiameter"
+        align="center"
+        width="120"
+      />
       <el-table-column
         label="周长(mm)"
         prop="perimeter"
@@ -986,6 +1020,20 @@
         <span slot-scope="scope" v-NoData="scope.row.highMenuPasswd"></span>
       </el-table-column>
       <el-table-column
+        label="有无高级菜单"
+        prop="isHighMenuPassword"
+        align="center"
+        width="130"
+      >
+        <el-tag
+          v-if="isShow(row.isHighMenuPassword)"
+          slot-scope="{ row }"
+          :type="row.isHighMenuPassword === 0 ? 'success' : 'danger'"
+        >
+          {{ row.isHighMenuPassword === 0 ? "YES" : "NO" }}
+        </el-tag>
+      </el-table-column>
+      <el-table-column
         label="电机功率(W)"
         prop="motorSys"
         align="center"
@@ -1090,16 +1138,16 @@
         <el-descriptions-item label="背光亮度">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span
                 v-NoData="
                   backlightBrightnessList[deployData.backlightBrightness]
                 "
               ></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
-              <span class="text-red" v-NoData="deployData.backlightBrightness"></span>
+              <span class="text-red" v-NoData="deployData.backlightBrightness">
+              </span>
             </div>
           </div>
         </el-descriptions-item>
@@ -1109,10 +1157,9 @@
         <el-descriptions-item label="车名" v-if="!isSample">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.ebikeName"></span>
             </div>
@@ -1127,10 +1174,11 @@
         <el-descriptions-item label="轮径">
           <div class="flex justify-between">
             <div>
-              展示值：
-              <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
+              <span
+                v-NoData="wheelDiameterData[deployData.wheelDiameter]"
+              ></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.wheelDiameter"></span>
             </div>
@@ -1142,10 +1190,9 @@
         <el-descriptions-item label="蓝牙">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.bluetooth === 1 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.bluetooth"></span>
             </div>
@@ -1169,10 +1216,9 @@
         <el-descriptions-item label="显示单位">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span v-NoData="dicts_unit[deployData.unit]"></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.unit"></span>
             </div>
@@ -1181,10 +1227,9 @@
         <el-descriptions-item label="Logo界面">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span v-NoData="dicts_logo[deployData.logo]"></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.logo"></span>
             </div>
@@ -1193,10 +1238,9 @@
         <el-descriptions-item label="恢复出厂设置" v-if="!isSample">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.factoryReset"></span>
             </div>
@@ -1208,10 +1252,9 @@
         <el-descriptions-item label="协议">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span v-NoData="dicts_agreement[deployData.agreement]"></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.agreement"></span>
             </div>
@@ -1223,10 +1266,9 @@
         <el-descriptions-item label="转把分档" v-if="isKm5s">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.rotateHandle"></span>
             </div>
@@ -1238,10 +1280,9 @@
         <el-descriptions-item label="电量计算方式">
           <div class="flex justify-between">
             <div>
-              展示值：
               <span v-NoData="dicts_power[deployData.power]"></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.power"></span>
             </div>
@@ -1253,10 +1294,9 @@
         <el-descriptions-item label="蜂鸣器开关" v-if="!isSample">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.buzzerSwitch === 0 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.buzzerSwitch"></span>
             </div>
@@ -1274,10 +1314,9 @@
         <el-descriptions-item label="定速巡航功能">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.cruise === 0 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.cruise"></span>
             </div>
@@ -1295,10 +1334,9 @@
         <el-descriptions-item label="开机密码">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.turnOnPasswd === 0 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.turnOnPasswd"></span>
             </div>
@@ -1316,10 +1354,9 @@
         <el-descriptions-item label="菜单密码">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.menuPassword === 0 ? "YES" : "NO" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.menuPassword"></span>
             </div>
@@ -1334,34 +1371,39 @@
         <el-descriptions-item label="串口通讯电平">
           <div class="flex justify-between">
             <div>
-              展示值：
-              <span v-NoData="serialLevelLogData[deployData.serialLevelLog]"></span>
+              <span
+                v-NoData="serialLevelLogData[deployData.serialLevelLog]"
+              ></span>
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
-              <span class="text-red" v-NoData="deployData.serialLevelLog"></span>
+              <span
+                class="text-red"
+                v-NoData="deployData.serialLevelLog"
+              ></span>
             </div>
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="转把限速" v-if="isKm5s">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
-              <span class="text-red" v-NoData="deployData.rotateHandleSpeedLimit"></span>
+              <span
+                class="text-red"
+                v-NoData="deployData.rotateHandleSpeedLimit"
+              ></span>
             </div>
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="助力正反" v-if="isKm5s">
           <div class="flex justify-between">
             <div>
-              展示值：
               {{ deployData.assist === 0 ? "助力正" : "助力反" }}
             </div>
-            <div>
+            <div v-show="!isSample">
               实际值：
               <span class="text-red" v-NoData="deployData.assist"></span>
             </div>
@@ -1375,6 +1417,8 @@
       :isParamsCompareShow.sync="isParamsCompareShow"
       :dictList="dictList"
     />
+
+    <PackagingInfo ref="packInfoRef" />
   </div>
 </template>
 
@@ -1392,6 +1436,7 @@ export default {
   components: {
     CategoryComputer: () => import("@/components/CategoryComputer"),
     ParamsCompare,
+    PackagingInfo: () => import("./components/packagingInfo"),
   },
   data() {
     return {
@@ -1621,6 +1666,11 @@ export default {
     },
     handleParamsCompare() {
       this.isParamsCompareShow = true;
+    },
+    // 查看包装信息
+    handleSeePackagingInfo(row) {
+      this.$refs.packInfoRef.isDialogVisible = true;
+      this.$refs.packInfoRef.packagingInfo = row.packagingInfo ?? "";
     },
   },
 };

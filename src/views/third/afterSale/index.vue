@@ -1,6 +1,20 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
+      <el-form-item label="日期类型" prop="type">
+        <el-select
+          v-model="queryParams.type"
+          filterable
+          clearable
+          style="width: 110px"
+        >
+          <el-option
+            v-for="(label, value) in typeDateList"
+            :label="label"
+            :value="value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="客诉日期" prop="returnDate">
         <el-date-picker
           v-model="queryParams.returnDate"
@@ -87,26 +101,24 @@
         </el-select>
       </el-form-item>
 
-      <div class="fr">
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-      </div>
-
       <el-row
         :gutter="20"
         type="flex"
         align="middle"
-        justify="start"
-        class="fr mt5 mb5"
+        justify="space=between"
+        class="mt5 mb5"
       >
-        <el-col :span="1.5">
-          <el-button class="fr" type="danger" @click="clearFilter">
+        <el-col>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        </el-col>
+
+        <el-col class="flex justify-end">
+          <el-button type="danger" @click="clearFilter">
             清除所有过滤器
           </el-button>
-        </el-col>
-        <el-col :span="1.5">
           <el-button
             type="success"
             icon="el-icon-download"
@@ -114,8 +126,7 @@
           >
             批量导出
           </el-button>
-        </el-col>
-        <!-- <el-col :span="1.5">
+          <!-- <el-col :span="1.5">
           <el-button
             type="success"
             icon="el-icon-download"
@@ -124,18 +135,15 @@
             全部导出
           </el-button>
         </el-col> -->
-        <el-col :span="1.5">
+
           <el-button type="warning" @click="handleTypeIn"> 批量修改 </el-button>
-        </el-col>
-        <el-col :span="1.5">
+
           <el-button type="info" @click="handleDeal"> 批量处理 </el-button>
-        </el-col>
-        <el-col :span="1.5">
+
           <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
             {{ isWaitOrAllTxt }}
           </el-button>
-        </el-col>
-        <el-col :span="1.5">
+
           <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
             新增
           </el-button>
@@ -154,7 +162,7 @@
       class="afterSaleBox"
       v-loading="loading"
       :data="brandList"
-      :height="tableHeight()"
+      :height="tableHeight(-50)"
       @cell-click="cellClick"
       :cell-style="cellStyle"
       row-key="id"
@@ -177,6 +185,13 @@
         :filters="getFiltersData('returnDate')"
         :filter-method="filterHandler"
         filter-placement="bottom"
+        fixed
+      />
+      <el-table-column
+        label="处理时效(h)"
+        prop="handleHour"
+        align="center"
+        width="100"
         fixed
       />
       <el-table-column
@@ -489,24 +504,41 @@
                 处理
               </el-button>
             </el-tooltip>
-            <el-dropdown size="mini" class="margin-left-xs" trigger="click" placement="bottom">
+            <el-dropdown
+              size="mini"
+              class="margin-left-xs"
+              trigger="click"
+              placement="bottom"
+            >
               <span class="el-dropdown-link pointer">
                 <span class="text-green" style="font-size: 12px">更多操作</span
                 ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
-                  <el-button class="w100" type="text" @click="handleDetail(row)">
+                  <el-button
+                    class="w100"
+                    type="text"
+                    @click="handleDetail(row)"
+                  >
                     详情
                   </el-button>
                 </el-dropdown-item>
                 <el-dropdown-item>
-                  <el-button class="w100" type="text" @click="handleDelete(row)">
+                  <el-button
+                    class="w100"
+                    type="text"
+                    @click="handleDelete(row)"
+                  >
                     删除
                   </el-button>
                 </el-dropdown-item>
                 <el-dropdown-item v-if="row.video">
-                  <el-button class="w100" type="text" @click="urlDownload(row.video)">
+                  <el-button
+                    class="w100"
+                    type="text"
+                    @click="urlDownload(row.video)"
+                  >
                     视频下载
                   </el-button>
                 </el-dropdown-item>
@@ -582,7 +614,7 @@ import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
 import commonData from "@/mixins/commonData";
 import { dragTableFn } from "@/mixins/common";
-import globalData from './mixins/global'
+import globalData from "./mixins/global";
 
 export default {
   name: "AfterSale",
@@ -637,6 +669,11 @@ export default {
       multipleList: [],
       // 批量处理ID
       multipleDealIds: [],
+      typeDateList: {
+        1: "年",
+        2: "月",
+        3: "日",
+      },
       // 处理进展
       stateList: {
         1: "处理类型",
@@ -906,13 +943,15 @@ export default {
         ...this.queryParams,
         my: this.isWaitDispose ? "" : this.nickName,
       };
-      afterList(dataInfo).then((res) => {
-        const { list, total } = res.data;
-        this.brandList = list;
-        this.total = total;;
-      }).finally(() => {
-        this.loading = false;
-      });
+      afterList(dataInfo)
+        .then((res) => {
+          const { list, total } = res.data;
+          this.brandList = list;
+          this.total = total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     // 新增
     handleAdd() {

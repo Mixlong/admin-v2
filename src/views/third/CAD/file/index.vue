@@ -488,6 +488,7 @@ export default {
           "config_tools",
           "pack_file",
           "update_file",
+          "maintenance_file"
         ];
 
         return typeList.includes(type);

@@ -57,3 +57,12 @@ export function homeProduction(params) {
     params
   })
 }
+
+// 生产计划状态修改
+export function homeProductionStatus(data) {
+  return request({
+    url: '/home/production/status',
+    method: 'post',
+    data
+  })
+}

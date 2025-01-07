@@ -196,13 +196,6 @@
       >
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
-      <!-- <el-table-column label="气密性测试" align="center" width="90">
-        <template slot-scope="scope">
-          <el-button type="text" @click="seeGasDetail(scope.row.sn)" :disabled="!scope.row.sn">
-            查看
-          </el-button>
-        </template>
-      </el-table-column> -->
       <el-table-column label="版本信息" align="center" width="85">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row.id)">

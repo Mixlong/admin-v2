@@ -131,6 +131,25 @@
           </select-loadMore>
         </el-form-item>
 
+        <el-form-item label="批次号" prop="batchNo">
+          <el-input
+            v-model.trim="form.batchNo"
+            placeholder="请输入批次号"
+            clearable
+            style="width: 65%"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="批次数量" prop="batchNum">
+          <el-input-number
+            v-model="form.batchNum"
+            controls-position="right"
+            :min="1"
+            :precision="0"
+            style="width: 65%"
+          ></el-input-number>
+        </el-form-item>
+
         <el-form-item label="生产日期:" prop="date">
           <el-date-picker
             v-model="form.date"
@@ -210,6 +229,7 @@ import { schemeTypeList } from "@/api/system/skipType";
 import tinymce from "@/views/components/Editor";
 import { orderList } from "@/api/order";
 import { orderWorkList } from "@/api/third/prodPlant";
+import { min } from "lodash";
 
 export default {
   name: "planScheduleUpdate",
@@ -240,6 +260,8 @@ export default {
         schemeVersion: "",
         dateRange: [],
         num: "",
+        batchNo: "",
+        batchNum: 1,
       },
       // 订单数据
       orderData: {
@@ -296,6 +318,12 @@ export default {
         ],
         excelUrl: [
           { required: true, message: "请上传资料清单", trigger: "change" },
+        ],
+        batchNo: [
+          { required: false, message: "请输入批次号", trigger: "change" },
+        ],
+        batchNum: [
+          { required: false, message: "请输入批次数量", trigger: "change" },
         ],
       },
     };
@@ -436,6 +464,8 @@ export default {
         schemeVersion: "",
         dateRange: [],
         num: "",
+        batchNo: "",
+        batchNum: 1,
       };
       this.resetForm("form");
     },
@@ -463,7 +493,7 @@ export default {
             this.$emit("getData");
           }
         })
-        .catch(() => {
+        .finally(() => {
           this.isBtnLoading = false;
         });
     },
@@ -494,7 +524,7 @@ export default {
                 .then(({ value }) => {
                   this.onUpdateOrder({ msg: value, ...this.form });
                 })
-                .catch(() => {
+                .finally(() => {
                   this.isBtnLoading = false;
                 });
             } else {
@@ -508,9 +538,6 @@ export default {
                   this.dialogVisible = false;
                   this.$emit("getData");
                 }
-              })
-              .then(() => {
-                this.isBtnLoading = false;
               })
               .finally(() => {
                 this.isBtnLoading = false;

@@ -59,3 +59,19 @@ export function dictUserList() {
         method: 'get'
     });
 }
+
+// 根据品类id获取型号
+export function listModelDict (id) {
+  return request ({
+    url: '/computer/dict/list/' + id,
+    method: 'get'
+  });
+}
+
+// 根据品类名称获取型号
+export function listModelNameDict (name) {
+    return request ({
+      url: '/computer/category/name/' + name,
+      method: 'get'
+    });
+  }

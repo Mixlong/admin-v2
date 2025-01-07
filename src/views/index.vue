@@ -1,21 +1,44 @@
 <template>
   <div class="dashboard-editor-container font14 app-container">
     <el-row :gutter="10">
-      <el-col :xs="24" :sm="24" :lg="8">
+      <el-col :xs="24" :sm="24" :lg="14">
         <el-card shadow="nerver" class="production-box">
           <h3 class="text-center">生产计划表</h3>
           <div class="text-right margin-top-lg" v-if="checkRole(['PMC'])">
             <el-button
               type="primary"
+              size="mini"
               @click="$router.push('/www/planSchedule')"
             >
               去排产
             </el-button>
+            <el-button
+              type="success"
+              size="mini"
+              @click="getHomeProductionAll"
+            >
+              刷新
+            </el-button>
           </div>
-          <div v-loading="isLoading">
+          <div v-loading="isLoading" class="margin-top-lg">
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <b class="padding-left-lg">日期</b>
+              </el-col>
+              <el-col :span="4" class="text-center">
+                <b>客户确认状态</b>
+              </el-col>
+              <el-col :span="4" class="text-center">
+                <b>测试状态</b>
+              </el-col>
+              <el-col :span="4" class="text-center">
+                <b>许可状态</b>
+              </el-col>
+            </el-row>
+
             <div
               ref="productionRef"
-              class="margin-top-lg production-list overflow-y"
+              class="production-list overflow-y margin-top-xs"
             >
               <el-steps direction="vertical">
                 <el-step
@@ -32,30 +55,161 @@
                       (<span class="today-txt">今日</span>)
                     </span>
                   </div>
-                  <div
-                    slot="description"
-                    class="margin-top-xs margin-bottom-xs"
-                  >
+                  <div slot="description" class="prod-order-box">
                     <template v-if="isListDataLen(listData)">
-                      <div
-                        class="text-blue margin-bottom-xs plan-title pointer"
+                      <el-row
+                        :gutter="20"
                         v-for="(item, index) in listData"
                         :key="index"
-                        @click="
-                          $router.push({
-                            name: 'PlanSchedule',
-                            params: { listId: item.id },
-                          })
-                        "
                       >
-                        {{ item.computerName }}
-                        在{{ item.address }}
-                        {{ item.process }}
-                        {{ item.num }} pcs
-                      </div>
+                        <el-col :span="24">
+                          <el-col :span="12">
+                            <div
+                              :class="['text-blue', 'plan-title', { 'pointer': checkRole(['PMC']) }]"
+                              @click="toPlanSchedule(item)"
+                            >
+                              {{ item.computerName }}
+                              在{{ item.address }}
+                              {{ item.process }}
+                              {{ item.num }} pcs
+                            </div>
+                          </el-col>
+                          <el-col :span="4" class="text-center">
+                            <el-dropdown trigger="click" style="width: 100%">
+                              <el-button
+                                :type="
+                                  item.customerStatus === 0
+                                    ? 'danger'
+                                    : 'primary'
+                                "
+                                size="mini"
+                                plain
+                                style="width: 100%"
+                              >
+                                {{
+                                  isStatusText(
+                                    item.customerStatus,
+                                    item.customerDate
+                                  )
+                                }}
+                                <i
+                                  class="el-icon-arrow-down el-icon--right"
+                                ></i>
+                              </el-button>
+                              <el-dropdown-menu
+                                slot="dropdown"
+                                v-if="checkRole(['product'])"
+                              >
+                                <el-dropdown-item
+                                  @click.native="handleCustomerStatus(0, item)"
+                                >
+                                  未确认
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                  @click.native="handleCustomerStatus(1, item)"
+                                >
+                                  已确认
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                  @click.native="handleSelDate(1, item)"
+                                >
+                                  选择日期
+                                </el-dropdown-item>
+                                <!-- <el-dropdown-item>
+                                  <el-popover
+                                    placement="right"
+                                    width="400"
+                                    trigger="hover"
+                                  >
+                                    <el-date-picker
+                                      v-model="item.customerDate"
+                                      type="date"
+                                      placeholder="选择日期"
+                                      value-format="timestamp"
+                                    >
+                                    </el-date-picker>
+                                    <template #reference>
+                                      <span>选择日期</span>
+                                    </template>
+                                  </el-popover>
+                                </el-dropdown-item> -->
+
+                                <!-- <el-dropdown-item
+                                  v-for="(label, value) in customerStatusTextList"
+                                  :command="value"
+                                >
+                                  {{ label }}
+                                </el-dropdown-item> -->
+                              </el-dropdown-menu>
+                            </el-dropdown>
+                          </el-col>
+                          <el-col :span="4" class="text-center">
+                            <el-dropdown trigger="click" style="width: 100%">
+                              <el-button
+                                :type="
+                                  item.testStatus === 0 ? 'danger' : 'primary'
+                                "
+                                size="mini"
+                                plain
+                                style="width: 100%"
+                              >
+                                {{
+                                  isStatusText(item.testStatus, item.testDate)
+                                }}
+                                <i
+                                  class="el-icon-arrow-down el-icon--right"
+                                ></i>
+                              </el-button>
+                              <el-dropdown-menu
+                                slot="dropdown"
+                                v-if="checkRole(['test'])"
+                              >
+                                <el-dropdown-item
+                                  @click.native="handleTestStatus(0, item)"
+                                >
+                                  未确认
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                  @click.native="handleTestStatus(1, item)"
+                                >
+                                  已确认
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                  @click.native="handleSelDate(2, item)"
+                                >
+                                  选择日期
+                                </el-dropdown-item>
+                              </el-dropdown-menu>
+                            </el-dropdown>
+                          </el-col>
+                          <el-col :span="4" class="text-center">
+                            <el-button
+                              v-show="item.isLicense === 1"
+                              type="primary"
+                              size="mini"
+                              plain
+                              style="margin: 0; width: 100%"
+                            >
+                              已许可
+                            </el-button>
+                            <el-button
+                              v-show="item.isLicense !== 1"
+                              type="danger"
+                              size="mini"
+                              plain
+                              style="margin: 0; width: 100%"
+                            >
+                              未许可
+                            </el-button>
+                          </el-col>
+                        </el-col>
+                        <el-col :span="24">
+                          <el-divider></el-divider>
+                        </el-col>
+                      </el-row>
                     </template>
                     <template v-else>
-                      <span class="text-black no-plan">暂无计划</span>
+                      <div class="text-black no-plan margin-top-xs margin-bottom-xs">暂无计划</div>
                     </template>
                   </div>
                 </el-step>
@@ -64,7 +218,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="24" :lg="16">
+      <el-col :xs="24" :sm="24" :lg="10">
         <el-card shadow="always" class="production-box">
           <el-row class="margin-bottom-xs">
             <el-col :offset="8" :span="8" class="text-center">重点事项 </el-col>
@@ -144,6 +298,28 @@
       :rowUpdate="rowUpdate"
     /> -->
     <!-- <AddLog :visible.sync="openAddLog" :logRow="logRow" /> -->
+
+    <el-dialog
+      :title="isTitle"
+      :visible.sync="dialogVisible"
+      width="350px"
+      top="2vh"
+      center
+    >
+      <el-date-picker
+        v-model="dateTime"
+        type="date"
+        placeholder="选择日期"
+        value-format="timestamp"
+        :picker-options="pickerOptions"
+        style="width: 100%"
+      >
+      </el-date-picker>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit"> 确 定 </el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -153,7 +329,7 @@ import Log from "@/views/third/emphasis/components/log";
 import Update from "@/views/third/emphasis/components/update";
 import AddLog from "@/views/third/emphasis/components/addLog";
 import { emphasisList, emphasisDel } from "@/api/third/emphasis";
-import { homeProduction } from "@/api/home/index";
+import { homeProduction, homeProductionStatus } from "@/api/home/index";
 import { memberDictUser } from "@/api/system/user";
 import { mapGetters } from "vuex";
 
@@ -167,6 +343,11 @@ export default {
   },
   data() {
     return {
+      isTitle: "",
+      dialogVisible: false,
+      dateTime: "",
+      currentSelTimeType: null,
+      currentSelData: {},
       isLoading: false,
       homeEmphasisList: [],
       pmDictListOptions: [],
@@ -189,6 +370,11 @@ export default {
           value: 4,
         },
       ],
+      customerStatusTextList: {
+        0: "未确认",
+        1: "已确认",
+        2: "选择日期",
+      },
       productionList: {},
       openLog: false,
       openUpdate: false,
@@ -196,6 +382,11 @@ export default {
       logRow: {},
       rowUpdate: {},
       checked: false,
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() <= Date.now() - 24 * 3600 * 1000;
+        },
+      },
     };
   },
   computed: {
@@ -229,6 +420,33 @@ export default {
       let win = document.documentElement.clientHeight;
       return win - 150;
     },
+    // 客户确认状态选择值
+    isStatusText() {
+      return (status, date) => {
+        switch (status) {
+          case 0:
+            return "未确认";
+          case 1:
+            return "已确认";
+          case 2:
+            const finishedTime = this.moment.unix(date).format("MM/DD");
+            return `预计${finishedTime}完成`;
+          default:
+            return "请选择";
+        }
+      };
+    },
+    // 测试状态选择值
+    // isTestStatusText() {
+    //   return (status) => {
+    //     switch (status) {
+    //       case 0:
+    //         return "未完成";
+    //       case 1:
+    //         return "已完成";
+    //     }
+    //   };
+    // },
   },
   created() {
     this.getHomeProductionAll();
@@ -244,8 +462,8 @@ export default {
     });
   },
   methods: {
-    getHomeProductionAll() {
-      this.isLoading = true;
+    getHomeProductionAll(isUpdate = true) {
+      isUpdate && (this.isLoading = true);
       const data = Promise.all([
         homeProduction({ type: 1 }),
         homeProduction({ type: 2 }),
@@ -258,19 +476,23 @@ export default {
             ...res[1].data,
             ...res[2].data,
           };
-          this.isLoading = false;
-          const dateArr = Object.keys(this.productionList);
-          dateArr.forEach((date) => {
-            if (this.isToday(date)) {
-              this.$nextTick(() => {
-                const todayItemOffsetTop =
-                  document.getElementsByClassName("todayItemRef")[0].offsetTop;
-                this.$refs.productionRef.scrollTop = todayItemOffsetTop;
-              });
-            } else {
-              this.$refs.productionRef.scrollTop = 0;
-            }
-          });
+
+          if (isUpdate) {
+            this.isLoading = false;
+            const dateArr = Object.keys(this.productionList);
+            dateArr.forEach((date) => {
+              if (this.isToday(date)) {
+                this.$nextTick(() => {
+                  const todayItemOffsetTop =
+                    document.getElementsByClassName("todayItemRef")[0]
+                      .offsetTop;
+                  this.$refs.productionRef.scrollTop = todayItemOffsetTop - 40;
+                });
+              } else {
+                this.$refs.productionRef.scrollTop = 0;
+              }
+            });
+          }
         })
         .catch(() => {
           this.isLoading = false;
@@ -279,7 +501,6 @@ export default {
     getList() {
       // 暂时先去掉（接口已换）  2023/4/12
       //重点事项
-
       // emphasisList().then((res) => {
       //   let { data } = res;
       //   if (checked) {
@@ -355,7 +576,6 @@ export default {
         },
       });
     },
-
     handleLogAdd(row) {
       this.logRow = row;
       this.openAddLog = true;
@@ -424,6 +644,99 @@ export default {
           this.msgSuccess("删除成功");
         });
     },
+
+    // 客户确认状态
+    handleCustomerStatus(customerStatus, data) {
+      let { customerDate, id, testDate, testStatus } = data;
+      customerDate =
+        customerDate && String(customerDate).length === 13
+          ? Math.floor(customerDate / 1000)
+          : "";
+
+      homeProductionStatus({
+        customerDate,
+        customerStatus,
+        schedulingId: id,
+        testDate,
+        testStatus,
+      })
+        .then((res) => {
+          console.log(res);
+          this.getHomeProductionAll(false);
+        })
+        .finally(() => {
+          this.dialogVisible = false;
+        });
+    },
+
+    // 测试确认状态
+    handleTestStatus(testStatus, data) {
+      let { customerDate, id, testDate, customerStatus } = data;
+      testDate =
+        testDate && String(testDate).length === 13
+          ? Math.floor(testDate / 1000)
+          : "";
+
+      homeProductionStatus({
+        customerDate,
+        customerStatus,
+        schedulingId: id,
+        testDate,
+        testStatus,
+      })
+        .then((res) => {
+          console.log(res);
+          this.getHomeProductionAll(false);
+        })
+        .finally(() => {
+          this.dialogVisible = false;
+        });
+    },
+
+    // 客户确认选择日期
+    handleSelDate(type, data) {
+      this.currentSelTimeType = type;
+      this.currentSelData = Object.assign({}, data);
+
+      this.isTitle = type === 1 ? "客户确认日期" : "测试确认日期";
+      this.dialogVisible = true;
+      this.dateTime = "";
+
+      if (type === 1 && data.customerDate) {
+        this.dateTime = data.customerDate * 1000;
+      }
+
+      if (type === 2 && data.testDate) {
+        this.dateTime = data.testDate * 1000;
+      }
+    },
+    handleSubmit() {
+      if (!this.dateTime) {
+        this.msgWarning("请选择日期");
+        return;
+      }
+
+      if (this.currentSelTimeType === 1) {
+        const data = { ...this.currentSelData, customerDate: this.dateTime };
+        this.handleCustomerStatus(2, data);
+      }
+
+      if (this.currentSelTimeType === 2) {
+        const data = { ...this.currentSelData, testDate: this.dateTime };
+        this.handleTestStatus(2, data);
+      }
+    },
+
+    toPlanSchedule(item) {
+      if(!this.checkRole(['PMC'])) {
+        return
+      }
+
+      this.$router.push({
+        name: "PlanSchedule",
+        params: { listId: item.id },
+      });
+    },
   },
 };
 </script>
@@ -433,6 +746,28 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.prod-order-box {
+  .el-row {
+    .el-col {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s ease;
+      padding: 4px;
+      border-radius: 6px;
+      box-sizing: border-box;
+      &:hover {
+        background: #f5f5f5;
+      }
+
+      .el-divider {
+        margin: 4px 0;
+        background: #f1f1f1;
+      }
+    }
+  }
 }
 
 .dashboard-editor-container {
@@ -446,7 +781,7 @@ export default {
     box-sizing: border-box;
 
     .production-list {
-      max-height: calc(100vh - 200px);
+      max-height: calc(100vh - 310px);
 
       /* 
         修改步骤条圆圈样式
@@ -464,6 +799,10 @@ export default {
           width: 12px;
           height: 12px;
         }
+      }
+
+      .el-step__description {
+        padding-right: 0;
       }
 
       .plan-title,

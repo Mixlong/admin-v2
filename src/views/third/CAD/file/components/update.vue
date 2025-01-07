@@ -181,8 +181,7 @@
                   v-model="form.url"
                   :css="{ width: '100%' }"
                   :isOnePic="1"
-                  :accept="isFileType"
-                >
+                  :accept="isFileType"                 >
                   <div>
                     <el-button size="small" type="primary">点击上传</el-button>
                   </div>

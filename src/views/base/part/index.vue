@@ -25,6 +25,14 @@
         >
         </el-input>
       </el-form-item>
+      <el-form-item label="批次号" prop="batchNo">
+        <el-input
+          v-model.trim="queryParams.batchNo"
+          clearable
+          placeholder="请输入批次号"
+        >
+        </el-input>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -111,7 +119,9 @@ export default {
       queryParams: {
         p: 1,
         l: 50,
-        key: undefined,
+        key: '',
+        batchNo: '',
+
       },
       // 表单参数
       form: {},

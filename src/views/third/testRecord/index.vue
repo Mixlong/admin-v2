@@ -562,6 +562,7 @@ export default {
         sn: "",
         processName: "",
         result: "",
+        recordId: "",
       },
       contentStyle: {
         paddingTop: "20px",
@@ -584,7 +585,7 @@ export default {
   watch: {
     $route: {
       handler(route) {
-        if(route.name !== 'StsTestResult') return;
+        if (route.name !== "StsTestResult") return;
         const { params, query } = route;
 
         const { type, categoryId, status, model } = query;
@@ -670,11 +671,18 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.categoryId = "";
-      this.queryParams.recordId = "";
-      this.queryParams.sn = "";
+      this.queryParams = {
+        p: 1,
+        l: 20,
+        categoryName: "",
+        computerName: "",
+        pcbaSn: "",
+        sn: "",
+        processName: "",
+        result: "",
+        recordId: "",
+      };
 
-      console.log("this.queryParams", this.queryParams);
       this.resetForm("queryForm");
       this.handleQuery();
     },

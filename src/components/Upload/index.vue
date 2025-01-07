@@ -8,6 +8,7 @@
     :on-remove="removeUpload"
     :on-exceed="handleExceed"
     :before-upload="beforeUpload"
+    :on-change="handleChange"
     :file-list="fileList"
     :drag="drag"
     :limit="limit"
@@ -15,8 +16,9 @@
     :multiple="multiple"
     :list-type="listType"
     :accept="accept"
+    :show-file-list="showFileList"
   >
-    <slot></slot>
+    <slot v-bind:uploadStatus="isUploadStatus"></slot>
   </el-upload>
 </template>
 
@@ -32,7 +34,10 @@ export default {
     css: "",
     listType: "",
     pclass: "",
-    showFileList: "",
+    showFileList: {
+      type: Boolean,
+      default: true,
+    },
     accept: "",
     disabled: {
       type: Boolean,
@@ -42,6 +47,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isExceedTip: {
+      type: Boolean,
+      default: true
+    }
     // accept: {
     //   default: "image/jpeg, image/gif, image/png,image/bmp",
     // },
@@ -49,13 +58,14 @@ export default {
   data() {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
-      fileList: []
+      fileList: [],
+      isUploadStatus: 0, // 文件上传状态  0：点击上传 1： 上传中
     };
   },
   watch: {
     value(value) {
       this.transImgVal(value);
-    }
+    },
   },
   mounted() {
     let value = this.value;
@@ -80,17 +90,19 @@ export default {
         this.msgError("上传的文件名称不能包含‘+’字符");
         return false;
       }
-      // this.$emit("beforeUpload", file);
+
+      this.isUploadStatus = 1;
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
         this.$refs.upload.clearFiles();
       }
 
+      this.isUploadStatus = 0;
       this.handleReturnData(this.limit === 1 ? [file] : fileList);
-      // this.$emit("uploadSuccess", response, file, fileList);
     },
     handleExceed(files, fileList) {
+      if(!this.isExceedTip) return;
       this.msgWarning(
         `当前限制选择 ${this.limit} 个文件，本次选择了 ${
           files.length
@@ -99,7 +111,6 @@ export default {
     },
     removeUpload(response, file, fileList) {
       this.handleReturnData(file);
-      // this.$emit("removeUpload", response, file, fileList);
     },
     handleReturnData(file) {
       if (file.every((item) => item.status === "success")) {
@@ -113,6 +124,9 @@ export default {
 
         this.$emit("input", currentFill.toString());
       }
+    },
+    handleChange(file, fileList) {
+      this.fileList = fileList.slice(-1); 
     }
   },
 };

@@ -249,6 +249,7 @@
         align="center"
         prop="createTime"
         width="120"
+        sortable
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}

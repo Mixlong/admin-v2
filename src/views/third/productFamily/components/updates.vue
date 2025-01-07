@@ -472,6 +472,20 @@
                   />
                 </el-form-item>
               </el-col>
+
+              <el-col>
+                <el-form-item
+                  label="包装信息"
+                  prop="instrumentModel.packagingInfo"
+                >
+                  <tinymce
+                    v-if="dialogVisible"
+                    v-model="form.instrumentModel.packagingInfo"
+                    placeholder="请输入"
+                    height="250"
+                  ></tinymce>
+                </el-form-item>
+              </el-col>
             </el-row>
           </fieldset>
           <template>
@@ -954,6 +968,22 @@
                   placeholder="显示轮径"
                 />
               </el-form-item>
+
+              <el-form-item
+                label="车轮宽度"
+                prop="instrumentModel.tiresSize"
+                :rules="
+                  isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })
+                "
+              >
+                <el-input
+                  v-model="form.instrumentModel.tiresSize"
+                  v-minMaxValue="{ min: 0 }"
+                  oninput="value=value.replace(/[^\d]/g, '')"
+                  placeholder="请输入车轮宽度"
+                  clearable
+                />
+              </el-form-item>
             </el-col>
 
             <el-col :span="6">
@@ -988,13 +1018,13 @@
               </el-form-item>
 
               <el-form-item
-                label="轮径(inch)"
+                label="配置轮径(inch)"
                 prop="instrumentModel.wheelDiameter"
-                :rules="isCheckConfigItem({ message: '轮径' })"
+                :rules="isCheckConfigItem({ message: '配置轮径' })"
               >
                 <el-select
                   v-model="form.instrumentModel.wheelDiameter"
-                  placeholder="请选择轮径"
+                  placeholder="请选择配置轮径"
                   filterable
                   class="w100"
                   clearable
@@ -1014,6 +1044,28 @@
                       <b>实际值：</b>
                       {{ key }}
                     </span>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item
+                label="实际轮径(inch)"
+                prop="instrumentModel.showWheelDiameter"
+                :rules="isCheckConfigItem({ message: '实际轮径' })"
+              >
+                <el-select
+                  v-model="form.instrumentModel.showWheelDiameter"
+                  placeholder="请选择实际轮径"
+                  filterable
+                  class="w100"
+                  clearable
+                >
+                  <el-option
+                    v-for="(value, key) in wheelDiameterData"
+                    :key="key"
+                    :label="value"
+                    :value="value"
+                  >
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -1058,13 +1110,13 @@
               </el-form-item>
 
               <el-form-item
-                label="协议"
+                label="配置协议"
                 prop="instrumentModel.agreement"
-                :rules="isCheckConfigItem({ message: '协议' })"
+                :rules="isCheckConfigItem({ message: '配置协议' })"
               >
                 <el-select
                   v-model="form.instrumentModel.agreement"
-                  placeholder="请选择协议"
+                  placeholder="请选择配置协议"
                   class="w100"
                   clearable
                   @change="onChangeAgreement"
@@ -1083,6 +1135,27 @@
                       <b>实际值：</b>
                       {{ item.dictValue }}
                     </span>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item
+                label="实际协议"
+                prop="instrumentModel.showAgreement"
+                :rules="isCheckConfigItem({ message: '实际协议' })"
+              >
+                <el-select
+                  v-model="form.instrumentModel.showAgreement"
+                  placeholder="请选择实际协议"
+                  class="w100"
+                  clearable
+                >
+                  <el-option
+                    v-for="item in dicts_agreement"
+                    :key="item.dictValue"
+                    :label="item.dictLabel"
+                    :value="item.dictLabel"
+                  >
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -1190,36 +1263,6 @@
                 >
                   <el-option
                     v-for="item in smoothLevelData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                label="总线故障超时时间(s)"
-                prop="instrumentModel.allLineErrTimeOut"
-                :rules="isCheckConfigItem({ message: '总线故障超时时间' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.allLineErrTimeOut"
-                  placeholder="请选择总线故障超时时间"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in allLineErrTimeOutData"
                     :key="item"
                     :label="item"
                     :value="String(item)"
@@ -1444,24 +1487,39 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+
+              <el-form-item
+                label="总线故障超时时间(s)"
+                prop="instrumentModel.allLineErrTimeOut"
+                :rules="isCheckConfigItem({ message: '总线故障超时时间' })"
+              >
+                <el-select
+                  v-model="form.instrumentModel.allLineErrTimeOut"
+                  placeholder="请选择总线故障超时时间"
+                  filterable
+                  class="w100"
+                  clearable
+                >
+                  <el-option
+                    v-for="item in allLineErrTimeOutData"
+                    :key="item"
+                    :label="item"
+                    :value="String(item)"
+                  >
+                    <span style="float: left">
+                      <b>展示值：</b>
+                      {{ item }}
+                    </span>
+                    <span style="float: right">
+                      <b>实际值：</b>
+                      {{ item }}
+                    </span>
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-col>
 
             <el-col :span="6">
-              <el-form-item
-                label="车轮宽度"
-                prop="instrumentModel.tiresSize"
-                :rules="
-                  isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  v-model="form.instrumentModel.tiresSize"
-                  v-minMaxValue="{ min: 0 }"
-                  oninput="value=value.replace(/[^\d]/g, '')"
-                  placeholder="请输入车轮宽度"
-                  clearable
-                />
-              </el-form-item>
               <el-form-item
                 label="蓝牙"
                 prop="instrumentModel.bluetooth"
@@ -1538,6 +1596,19 @@
                 :rules="isCheckConfigItem({ message: '菜单密码' })"
               >
                 <el-radio-group v-model="form.instrumentModel.menuPassword">
+                  <el-radio :label="0"> YES </el-radio>
+                  <el-radio :label="1"> NO </el-radio>
+                </el-radio-group>
+              </el-form-item>
+
+              <el-form-item
+                label="有无高级菜单"
+                prop="instrumentModel.isHighMenuPassword"
+                :rules="isCheckConfigItem({ message: '高级菜单' })"
+              >
+                <el-radio-group
+                  v-model="form.instrumentModel.isHighMenuPassword"
+                >
                   <el-radio :label="0"> YES </el-radio>
                   <el-radio :label="1"> NO </el-radio>
                 </el-radio-group>
@@ -1654,6 +1725,7 @@ import { getCustomerList } from "@/api/order";
 import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import tinymce from "@/views/components/Editor";
 
 export default {
   mixins: [mixin, commonData],
@@ -1826,6 +1898,7 @@ export default {
   },
   components: {
     ElUploadSortable,
+    tinymce,
   },
   computed: {
     isCheckConfigItem() {
@@ -2028,6 +2101,10 @@ export default {
         sn: "",
         pcbaSn: "",
         instrumentModel: {
+          packagingInfo: "",
+          showWheelDiameter: null,
+          showAgreement: null,
+          isHighMenuPassword: null,
           labelRule: null,
           labelRuleImg: null,
           sn: null,
@@ -2302,6 +2379,7 @@ export default {
               keyImgUrl,
               powerLogo,
               specification,
+              packagingInfo,
             } = this.form.instrumentModel;
             this.form.instrumentModel = {};
             this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
@@ -2329,6 +2407,7 @@ export default {
             this.form.instrumentModel.keyImgUrl = keyImgUrl;
             this.form.instrumentModel.powerLogo = powerLogo;
             this.form.instrumentModel.specification = specification;
+            this.form.instrumentModel.packagingInfo = packagingInfo;
 
             this.form.jsonStr = "";
           } else {

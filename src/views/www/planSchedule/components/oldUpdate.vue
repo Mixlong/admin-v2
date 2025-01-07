@@ -109,6 +109,24 @@
           placeholder="请输入客户订单号"
         />
       </el-form-item>
+      <el-form-item label="批次号" prop="batchNo">
+        <el-input
+          v-model.trim="form.batchNo"
+          placeholder="请输入批次号"
+          clearable
+          style="width: 65%"
+        ></el-input>
+      </el-form-item>
+
+      <el-form-item label="批次数量" prop="batchNum">
+        <el-input-number
+          v-model="form.batchNum"
+          controls-position="right"
+          :min="1"
+          :precision="0"
+          style="width: 65%"
+        ></el-input-number>
+      </el-form-item>
       <el-form-item label="生产地点:" prop="address">
         <el-radio-group v-model="form.address">
           <el-radio
@@ -237,6 +255,8 @@ export default {
         schemeVersion: "",
         dateRange: [],
         num: "",
+        batchNo: "",
+        batchNum: 1,
       },
       defaultTime: this.moment().format("HH:mm:ss"),
       // 表单校验
@@ -269,6 +289,12 @@ export default {
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
         num: [{ required: true, validator: checkScheduleNum, trigger: "blur" }],
+        batchNo: [
+          { required: false, message: "请输入批次号", trigger: "change" },
+        ],
+        batchNum: [
+          { required: false, message: "请输入批次数量", trigger: "change" },
+        ],
       },
     };
   },
@@ -340,6 +366,8 @@ export default {
         schemeVersion: "",
         dateRange: [],
         num: "",
+        batchNo: "",
+        batchNum: 1,
       };
       this.resetForm("form");
     },
@@ -363,7 +391,7 @@ export default {
                   this.$parent.getList();
                 }
               })
-              .then(() => {
+              .finally(() => {
                 this.isBtnLoading = false;
               });
           } else {
@@ -375,7 +403,7 @@ export default {
                   this.$parent.getList();
                 }
               })
-              .then(() => {
+              .finally(() => {
                 this.isBtnLoading = false;
               });
           }
