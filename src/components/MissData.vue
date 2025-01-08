@@ -30,7 +30,14 @@
     </el-card>
 
     <div slot="reference">
-      <ColumnState :state="row.map[currentIndex]" />
+      <!-- <ColumnState :state="row.map[currentIndex]" /> -->
+      <div>
+        <span v-if="row.map[currentIndex] === 0" class="font-black">待上传</span>
+        <span v-if="row.map[currentIndex] === 1" class="font-black">待审核</span>
+        <span v-if="row.map[currentIndex] === 2" class="font-black">待终审</span>
+        <span v-if="row.map[currentIndex] === 3" class="font-black">未通过</span>
+        <i v-if="row.map[currentIndex] === 4" class="el-icon-check font16 font-correct"></i>
+      </div>
     </div>
   </el-popover>
 </template>
@@ -54,8 +61,8 @@ export default {
     },
   },
   components: {
-    ColumnState: () => import("./columnState"),
-  }
+    // ColumnState: () => import("./columnState"),
+  },
 };
 </script>
 

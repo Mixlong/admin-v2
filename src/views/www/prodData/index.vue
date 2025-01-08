@@ -96,7 +96,7 @@
       v-loading="loading"
       :data="tableData"
       :height="isTestTabHeight"
-      @cell-click="onCellClick"
+      @cell-dblclick="onCellClick"
       :cell-class-name="getCellClassName"
     >
       <el-table-column

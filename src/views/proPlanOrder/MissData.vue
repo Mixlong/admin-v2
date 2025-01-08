@@ -55,7 +55,7 @@ export default {
   },
   components: {
     ColumnState: () => import("./columnState"),
-  }
+  },
 };
 </script>
 
