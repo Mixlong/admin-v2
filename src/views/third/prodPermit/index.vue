@@ -144,11 +144,9 @@ import {
   computerLogList,
 } from "@/api/third/testApi";
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
-import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "ProdPermit",
-  mixins: [CategoryMixin],
   data() {
     return {
       // 遮罩层
@@ -158,6 +156,7 @@ export default {
       // 任务变更
       isTask: false,
       taskForm: {},
+      dictList: [],
       // 型号
       computerOptions: [],
       // 操作日志
@@ -171,7 +170,47 @@ export default {
       },
     };
   },
+  watch: {
+    $route: {
+      async handler(route) {
+        if (route.name === "ProdPermit") {
+          this.queryParams.categoryId = ''
+          this.queryParams.computerId = ''
+
+          const { categoryId, computerId } = route?.params;
+
+          if (categoryId && computerId) {
+            this.dictList = await this.getCategoryData();
+            this.queryParams.categoryId = categoryId;
+            this.getComputerData();
+            this.queryParams.computerId = computerId;
+
+            this.handleQuery();
+          } else {
+            this.dictList = await this.getCategoryData();
+            // 默认选择第一个
+            this.queryParams.categoryId = this.dictList[0]?.id;
+            this.getComputerData();
+
+            this.handleQuery();
+          }
+        }
+      },
+      immediate: true
+    },
+  },
   methods: {
+    getCategoryData() {
+      return new Promise((resolve, reject) => {
+        try {
+          categoryComputerDict().then((res) => {
+            resolve(res.data);
+          });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
     // 型号
     getComputerData() {
       if (this.queryParams.categoryId && this.dictList.length) {
@@ -186,11 +225,13 @@ export default {
         computerNameList({
           name,
           categoryId: this.queryParams.categoryId,
-        }).then((res) => {
-          this.computerOptions = res.data;
-        }).finally(() => {
-          this.isCLoading = false;
         })
+          .then((res) => {
+            this.computerOptions = res.data;
+          })
+          .finally(() => {
+            this.isCLoading = false;
+          });
       } else {
         this.computerOptions = [];
       }

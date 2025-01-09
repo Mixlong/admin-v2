@@ -1,21 +1,65 @@
 <template>
   <div>
-    <div class="flex justify-between align-center">
-      <span></span>
+    <div class="flex justify-between align-center margin-bottom-xs">
       <h3 class="text-center">生产计划表</h3>
-      <div class="text-right" v-if="checkRole(['PMC'])">
-        <el-button
-          type="primary"
-          size="mini"
-          @click="$router.push('/www/planSchedule')"
+      <el-form
+        ref="queryForm"
+        :model="queryParams"
+        inline
+        class="flex align-center"
+      >
+        <el-form-item label="型号" prop="computerId" style="margin-bottom: 0">
+          <el-select
+            v-model="queryParams.computerId"
+            :loading="isCLoading"
+            filterable
+            remote
+            clearable
+            :remote-method="getComputerNameList"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          label="许可状态"
+          prop="isLicense"
+          style="margin-bottom: 0"
         >
-          去排产
-        </el-button>
-        <el-button type="success" size="mini" @click="getHomeProductionAll">
-          刷新
-        </el-button>
-      </div>
+          <el-select v-model="queryParams.isLicense">
+            <el-option label="未许可" :value="0"></el-option>
+            <el-option label="已许可" :value="1"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期" prop="date" style="margin-bottom: 0">
+          <el-date-picker
+            v-model="queryParams.date"
+            type="date"
+            clearable
+            value-format="yyyy-MM-dd"
+          />
+        </el-form-item>
+        <el-form-item style="margin-bottom: 0">
+          <el-button type="success" size="mini" @click="getHomeProductionAll">
+            搜索
+          </el-button>
+          <el-button size="mini" @click="resetQuery">重置</el-button>
+          <el-button
+            v-if="checkRole(['PMC'])"
+            type="primary"
+            size="mini"
+            @click="$router.push('/www/planSchedule')"
+          >
+            去排产
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
+
     <el-table
       classs="plan-order-table"
       ref="planOrderRef"
@@ -23,6 +67,7 @@
       :data="productionList"
       :height="isTestTabHeight"
       @cell-dblclick="onDbClick"
+      @cell-click="onCellClick"
       :cell-class-name="getCellClassName"
       :row-class-name="tableRowClassName"
     >
@@ -33,7 +78,10 @@
       </el-table-column>
       <el-table-column prop="computerName" label="型号" align="center">
         <template slot-scope="{ row }">
-          <span v-if="row.computerName" style="text-decoration: underline;">
+          <span
+            v-if="row.computerName"
+            style="text-decoration: underline #d45757"
+          >
             {{ row.computerName }}
           </span>
           <span v-else>- - -</span>
@@ -63,7 +111,7 @@
           prop="pucsStatus"
           label="JS脚本"
           align="center"
-          width="100"
+          width="120"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -80,7 +128,7 @@
           prop="hardStatus"
           label="硬件资料"
           align="center"
-          width="100"
+          width="120"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -97,7 +145,7 @@
           prop="softStatus"
           label="软件资料"
           align="center"
-          width="100"
+          width="120"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -116,7 +164,7 @@
           prop="configStatus"
           label="配置文件"
           align="center"
-          width="100"
+          width="120"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -133,7 +181,7 @@
           prop="testStatus"
           label="测试上位机"
           align="center"
-          width="100"
+          width="120"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -145,23 +193,6 @@
             <template v-else> - - - </template>
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          prop="snStatus"
-          label="SN规则"
-          align="center"
-          width="100"
-        >
-          <template slot-scope="{ row }">
-            <miss-data
-              v-if="row.mapFile[6].length"
-              :row="row"
-              currentDataName="SN规则"
-              :currentIndex="6"
-            ></miss-data>
-
-            <template v-else> - - - </template>
-          </template>
-        </el-table-column> -->
       </el-table-column>
       <el-table-column
         prop="customerStatus"
@@ -172,28 +203,30 @@
         <template v-slot="{ row, $index }">
           <el-dropdown trigger="click" style="width: 100%">
             <el-button
-              :type="row.customerStatus === 0 ? 'danger' : 'primary'"
+              :type="typeStatus(row.customerStatus)"
               size="mini"
               plain
               style="width: 100%; font-size: 11px"
               :disabled="!row.num"
             >
               {{ isStatusText(row.customerStatus, row.customerDate) }}
-              <i class="el-icon-arrow-down el-icon--right" v-if="checkRole(['product']) && row.num > 0"></i>
+              <i
+                class="el-icon-arrow-down el-icon--right"
+                v-if="checkRole(['product']) && row.num > 0"
+              ></i>
             </el-button>
-            <el-dropdown-menu
-              slot="dropdown"
-              :disabled="checkRole(['product']) && row.num > 0"
-            >
-              <el-dropdown-item @click.native="handleCustomerStatus(0, row)">
-                未确认
-              </el-dropdown-item>
-              <el-dropdown-item @click.native="handleCustomerStatus(1, row)">
-                已确认
-              </el-dropdown-item>
-              <el-dropdown-item @click.native="handleSelDate(1, row)">
-                选择日期
-              </el-dropdown-item>
+            <el-dropdown-menu slot="dropdown">
+              <template v-if="checkRole(['product'])">
+                <el-dropdown-item @click.native="handleCustomerStatus(0, row)">
+                  未确认
+                </el-dropdown-item>
+                <el-dropdown-item @click.native="handleCustomerStatus(1, row)">
+                  已确认
+                </el-dropdown-item>
+                <el-dropdown-item @click.native="handleSelDate(1, row)">
+                  选择日期
+                </el-dropdown-item>
+              </template>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -208,28 +241,30 @@
         <template v-slot="{ row, $index }">
           <el-dropdown trigger="click" style="width: 100%">
             <el-button
-              :type="row.testStatus === 0 ? 'danger' : 'primary'"
+              :type="typeStatus(row.testStatus)"
               size="mini"
               plain
               style="width: 100%; font-size: 11px"
               :disabled="!row.num"
             >
               {{ isStatusText(row.testStatus, row.testDate) }}
-              <i class="el-icon-arrow-down el-icon--right" v-if="checkRole(['test']) && row.num > 0"></i>
+              <i
+                class="el-icon-arrow-down el-icon--right"
+                v-if="checkRole(['test']) && row.num > 0"
+              ></i>
             </el-button>
-            <el-dropdown-menu
-              slot="dropdown"
-              v-if="checkRole(['test']) && row.num > 0"
-            >
-              <el-dropdown-item @click.native="handleTestStatus(0, row)">
-                未确认
-              </el-dropdown-item>
-              <el-dropdown-item @click.native="handleTestStatus(1, row)">
-                已确认
-              </el-dropdown-item>
-              <el-dropdown-item @click.native="handleSelDate(2, row)">
-                选择日期
-              </el-dropdown-item>
+            <el-dropdown-menu slot="dropdown">
+              <template v-if="checkRole(['test'])">
+                <el-dropdown-item @click.native="handleTestStatus(0, row)">
+                  未确认
+                </el-dropdown-item>
+                <el-dropdown-item @click.native="handleTestStatus(1, row)">
+                  已确认
+                </el-dropdown-item>
+                <el-dropdown-item @click.native="handleSelDate(2, row)">
+                  选择日期
+                </el-dropdown-item>
+              </template>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -241,7 +276,7 @@
         width="140"
       >
         <template v-slot="{ row, $index }">
-          <el-tag v-if="row.isLicense === 1" type="primary" style="width: 100%; color: #07a707">
+          <el-tag v-if="row.isLicense === 1" type="success" style="width: 100%">
             已许可
           </el-tag>
           <el-tag v-if="row.isLicense !== 1" type="danger" style="width: 100%">
@@ -277,12 +312,14 @@
 
 <script>
 import { homeProduction, homeProductionStatus } from "@/api/home/index";
+import { computerNameList } from "@/api/third/fileConfig";
 
 export default {
   name: "proPlanOrder",
   data() {
     return {
       isLoading: true,
+      isCLoading: false,
       isTitle: "",
       dialogVisible: false,
       dateTime: "",
@@ -290,6 +327,12 @@ export default {
       currentSelData: {},
       dateRange: [],
       productionList: [],
+      computerOptions: [],
+      queryParams: {
+        computerId: "",
+        isLicense: "",
+        date: "",
+      },
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() <= Date.now() - 24 * 3600 * 1000;
@@ -304,7 +347,8 @@ export default {
     isToday() {
       return (date) => {
         return (
-          this.moment(date).format("YYYY-MM-DD") === this.moment().format("YYYY-MM-DD")
+          this.moment(date).format("YYYY-MM-DD") ===
+          this.moment().format("YYYY-MM-DD")
         );
       };
     },
@@ -367,17 +411,48 @@ export default {
         }
       };
     },
+    typeStatus() {
+      return (status) => {
+        switch (status) {
+          case 0:
+            return "danger";
+          case 1:
+            return "success";
+          default:
+            return "primary";
+        }
+      };
+    },
   },
   created() {
     this.getHomeProductionAll();
   },
   methods: {
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = true;
+        computerNameList({ name })
+          .then((res) => {
+            this.computerOptions = res.data;
+            this.isCLoading = false;
+          })
+          .catch(() => {
+            this.isCLoading = false;
+          });
+      } else {
+        this.computerOptions = [];
+      }
+    },
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.getHomeProductionAll();
+    },
     getHomeProductionAll(isUpdate = true) {
       isUpdate && (this.isLoading = true);
       const data = Promise.all([
-        homeProduction({ type: 1 }),
-        homeProduction({ type: 2 }),
-        homeProduction({ type: 4 }),
+        homeProduction({ type: 1, ...this.queryParams }),
+        homeProduction({ type: 2, ...this.queryParams }),
+        homeProduction({ type: 4, ...this.queryParams }),
       ]);
       data
         .then((res) => {
@@ -532,20 +607,28 @@ export default {
       }
     },
     toPlanSchedule(item) {
-      if (!this.checkRole(["PMC"]) || !item.computerName) {
+      const { categoryId, computerId } = item;
+      if (!this.checkRole(["factory"]) || !categoryId || !computerId) {
         return;
       }
 
       this.$router.push({
-        name: "PlanSchedule",
-        params: { listId: item.id },
+        name: "ProdPermit",
+        params: {
+          categoryId,
+          computerId,
+        },
       });
+    },
+    onCellClick(row, column) {
+      switch (column?.label) {
+        case "型号":
+          this.toPlanSchedule(row);
+          break;
+      }
     },
     onDbClick(row, column, cell, event) {
       switch (column?.label) {
-        // case "PCBA资料":
-        //   this.onCellStateClick(row);
-        //   break;
         case "JS脚本":
           this.onCellStateClick(row, row.map[1], row?.mapFile[1]?.length);
           break;
@@ -561,24 +644,6 @@ export default {
         case "测试上位机":
           this.onCellStateClick(row, row.map[5], row?.mapFile[5]?.length);
           break;
-        case "STS系统":
-          this.onCellStateClick(row);
-          break;
-        case "SN规则":
-          this.onCellStateClick(row, row.map[6], row?.mapFile[6]?.length);
-          break;
-        case "期望日期":
-          row.result !== "OK" && this.onShowDia(row, 1);
-          break;
-        // case "备注":
-        //   this.onShowDia(row, 2);
-        //   break;
-        case "责任人":
-          row.result !== "OK" && this.onShowDia(row, 3);
-          break;
-        case "结果":
-          this.onShowDia(row, 4);
-          break;
       }
     },
     tableRowClassName({ row, rowIndex }) {
@@ -589,9 +654,7 @@ export default {
       const { label } = column;
       switch (label) {
         case "型号":
-          return computerName ? "pointer" : "";
-        // case "PCBA资料":
-        //   return this.getDataState(PCBAState);
+          return computerName && this.checkRole(["factory"]) ? "pointer" : "";
         case "JS脚本":
           return this.getDataState(map[1], mapFile[1]?.length);
         case "硬件资料":
@@ -602,17 +665,6 @@ export default {
           return this.getDataState(map[4], mapFile[4]?.length);
         case "测试上位机":
           return this.getDataState(map[5], mapFile[5]?.length);
-        // case "STS系统":
-        //   return this.getDataState(stsState);
-        case "SN规则":
-          return this.getDataState(map[6], mapFile[6]?.length);
-        case "期望日期":
-          return this.hopeDateStyle(hopeDate, result);
-        // case "备注":
-        case "责任人":
-          return `${result === "OK" ? "" : "pointer"}`;
-        case "结果":
-          return `${this.bgResultStyle(result)} pointer`;
       }
     },
     getDataState(state, fileLen) {
