@@ -258,7 +258,6 @@
       <el-table-column label="操作" align="center" width="150">
         <div class="flex" slot-scope="{ row }">
           <div class="flex flex-direction align-start">
-            <!-- :disabled="isDisabled(row.date)" -->
             <el-button
               v-if="row.salesOrderNo"
               v-hasPermi="['www:planSchedule:update']"
@@ -640,7 +639,7 @@ export default {
     },
   },
   beforeRouteEnter(to, from, next) {
-    next(async vm => {
+    next(async (vm) => {
       await vm.getCategoryComputerData();
       vm.getCacheParamsFn(to?.params);
     });
@@ -886,13 +885,12 @@ export default {
     handleUpdate(row) {
       this.title = "编辑计划";
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign(
-        {},
-        { ...row, dateRange: [row.startTime, row.endTime] }
-      );
+      this.$refs.compUpdate.form = Object.assign({}, row);
+
+      const { id, ...data } = row;
+      this.$refs.compUpdate.orderData = [{ ...data }];
       this.$refs.compUpdate.cloneForm = Object.assign({}, row);
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.getOrderDetail(row.salesOrderNo);
     },
     handleOldUpdate(row) {
       this.title = "编辑计划";

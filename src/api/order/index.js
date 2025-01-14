@@ -185,3 +185,13 @@ export function orderAuth(id) {
     method: 'get'
   })
 }
+
+
+// 订单列表
+export function orderManagementList(params) {
+  return request({
+    url: '/order/management/order/list',
+    method: 'get',
+    params,
+  });
+}

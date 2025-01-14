@@ -35,14 +35,6 @@
             <el-option label="已许可" :value="1"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="日期" prop="date" style="margin-bottom: 0">
-          <el-date-picker
-            v-model="queryParams.date"
-            type="date"
-            clearable
-            value-format="yyyy-MM-dd"
-          />
-        </el-form-item>
         <el-form-item style="margin-bottom: 0">
           <el-button type="success" size="mini" @click="getHomeProductionAll">
             搜索
@@ -88,14 +80,6 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="address"
-        label="生产地点"
-        align="center"
-        width="120"
-      >
-        <span slot-scope="scope" v-NoData="scope.row.address"></span>
-      </el-table-column>
-      <el-table-column
         prop="process"
         label="生产阶段"
         align="center"
@@ -105,6 +89,14 @@
       </el-table-column>
       <el-table-column prop="num" label="生产数量" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.num"></span>
+      </el-table-column>
+      <el-table-column
+        prop="address"
+        label="生产地点"
+        align="center"
+        width="120"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.address"></span>
       </el-table-column>
       <el-table-column label="SMT资料" align="center">
         <el-table-column
@@ -201,34 +193,42 @@
         width="140"
       >
         <template v-slot="{ row, $index }">
-          <el-dropdown trigger="click" style="width: 100%">
-            <el-button
-              :type="typeStatus(row.customerStatus)"
-              size="mini"
-              plain
-              style="width: 100%; font-size: 11px"
-              :disabled="!row.num"
-            >
-              {{ isStatusText(row.customerStatus, row.customerDate) }}
-              <i
-                class="el-icon-arrow-down el-icon--right"
-                v-if="checkRole(['product']) && row.num > 0"
-              ></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <template v-if="checkRole(['product'])">
-                <el-dropdown-item @click.native="handleCustomerStatus(0, row)">
-                  未确认
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="handleCustomerStatus(1, row)">
-                  已确认
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="handleSelDate(1, row)">
-                  选择日期
-                </el-dropdown-item>
-              </template>
-            </el-dropdown-menu>
-          </el-dropdown>
+          <template v-if="row.id">
+            <el-dropdown trigger="click" style="width: 100%">
+              <el-button
+                :type="typeStatus(row.customerStatus)"
+                size="mini"
+                plain
+                style="width: 100%; font-size: 11px"
+              >
+                {{ isStatusText(row.customerStatus, row.customerDate) }}
+                <i
+                  class="el-icon-arrow-down el-icon--right"
+                  v-if="checkRole(['product']) && row.num > 0"
+                ></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <template v-if="checkRole(['product'])">
+                  <el-dropdown-item
+                    @click.native="handleCustomerStatus(0, row)"
+                  >
+                    未确认
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    @click.native="handleCustomerStatus(1, row)"
+                  >
+                    已确认
+                  </el-dropdown-item>
+                  <el-dropdown-item @click.native="handleSelDate(1, row)">
+                    选择日期
+                  </el-dropdown-item>
+                </template>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+          <template v-else>
+            <span>- - -</span>
+          </template>
         </template>
       </el-table-column>
 
@@ -239,49 +239,139 @@
         width="140"
       >
         <template v-slot="{ row, $index }">
-          <el-dropdown trigger="click" style="width: 100%">
-            <el-button
-              :type="typeStatus(row.testStatus)"
-              size="mini"
-              plain
-              style="width: 100%; font-size: 11px"
-              :disabled="!row.num"
-            >
-              {{ isStatusText(row.testStatus, row.testDate) }}
-              <i
-                class="el-icon-arrow-down el-icon--right"
-                v-if="checkRole(['test']) && row.num > 0"
-              ></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <template v-if="checkRole(['test'])">
-                <el-dropdown-item @click.native="handleTestStatus(0, row)">
-                  未确认
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="handleTestStatus(1, row)">
-                  已确认
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="handleSelDate(2, row)">
-                  选择日期
-                </el-dropdown-item>
-              </template>
-            </el-dropdown-menu>
-          </el-dropdown>
+          <template v-if="row.id">
+            <el-dropdown trigger="click" style="width: 100%">
+              <el-button
+                :type="typeStatus(row.testStatus)"
+                size="mini"
+                plain
+                style="width: 100%; font-size: 11px"
+              >
+                {{ isStatusText(row.testStatus, row.testDate) }}
+                <i
+                  class="el-icon-arrow-down el-icon--right"
+                  v-if="checkRole(['test']) && row.num > 0"
+                ></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <template v-if="checkRole(['test'])">
+                  <el-dropdown-item @click.native="handleTestStatus(0, row)">
+                    未确认
+                  </el-dropdown-item>
+                  <el-dropdown-item @click.native="handleTestStatus(1, row)">
+                    已确认
+                  </el-dropdown-item>
+                  <el-dropdown-item @click.native="handleSelDate(2, row)">
+                    选择日期
+                  </el-dropdown-item>
+                </template>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+          <template v-else>
+            <span>- - -</span>
+          </template>
         </template>
       </el-table-column>
       <el-table-column
         prop="isLicense"
         label="许可状态"
         align="center"
-        width="140"
+        width="100"
       >
         <template v-slot="{ row, $index }">
-          <el-tag v-if="row.isLicense === 1" type="success" style="width: 100%">
-            已许可
-          </el-tag>
-          <el-tag v-if="row.isLicense !== 1" type="danger" style="width: 100%">
-            未许可
-          </el-tag>
+          <template v-if="row.id">
+            <div class="flex justify-center align-center">
+              <img
+                v-if="row.isLicense === 1"
+                src="./imgs/green.png"
+                alt="已许可"
+                title="已许可"
+              />
+              <img
+                v-if="row.isLicense !== 1"
+                src="./imgs/red.png"
+                alt="未许可"
+                title="未许可"
+              />
+            </div>
+          </template>
+          <template v-else>
+            <span>- - -</span>
+          </template>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="isLicense"
+        label="任务令"
+        align="center"
+        width="100"
+      >
+        <template v-slot="{ row }">
+          <div
+            v-if="row.id"
+            class="flex justify-center align-center"
+            @click="handleQrCode(row)"
+          >
+            <svg
+              t="1736758692229"
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="4424"
+              width="30"
+              height="30"
+            >
+              <path
+                d="M149.897707 387.566843l154.232099 0c49.484303 0 89.577425-40.093122 89.577425-89.577425L393.707231 143.757319C393.707231 94.273016 353.614109 54.179894 304.491005 54.179894L149.897707 54.179894c-49.484303 0-89.577425 40.093122-89.577425 89.577425l0 154.232099C60.320282 347.473721 100.774603 387.566843 149.897707 387.566843zM136.533333 143.757319c0-7.223986 6.140388-13.364374 13.364374-13.364374l154.232099 0c7.223986 0 13.364374 6.140388 13.364374 13.364374l0 154.232099c0 7.223986-6.140388 13.364374-13.364374 13.364374L149.897707 311.353792c-7.223986 0-13.364374-6.140388-13.364374-13.364374L136.533333 143.757319z"
+                fill="#575B66"
+                p-id="4425"
+              ></path>
+              <path
+                d="M304.491005 628.486772 149.897707 628.486772c-49.484303 0-89.577425 40.093122-89.577425 89.577425l0 154.232099c0 49.484303 40.093122 89.577425 89.577425 89.577425l154.232099 0c49.484303 0 89.577425-40.093122 89.577425-89.577425l0-154.232099C393.707231 668.579894 353.614109 628.486772 304.491005 628.486772zM317.49418 872.296296c0 7.223986-6.140388 13.364374-13.364374 13.364374L149.897707 885.66067c-7.223986 0-13.364374-6.140388-13.364374-13.364374l0-154.232099c0-7.223986 6.140388-13.364374 13.364374-13.364374l154.232099 0c7.223986 0 13.364374 6.140388 13.364374 13.364374L317.49418 872.296296z"
+                fill="#575B66"
+                p-id="4426"
+              ></path>
+              <path
+                d="M878.797884 54.179894l-154.232099 0c-49.484303 0-89.577425 40.093122-89.577425 89.577425l0 154.232099c0 49.484303 40.093122 89.577425 89.577425 89.577425l154.232099 0c49.484303 0 89.577425-40.093122 89.577425-89.577425L968.375309 143.757319C968.014109 94.273016 927.920988 54.179894 878.797884 54.179894zM891.801058 297.989418c0 7.223986-6.140388 13.364374-13.364374 13.364374l-154.232099 0c-7.223986 0-13.364374-6.140388-13.364374-13.364374L710.840212 143.757319c0-7.223986 6.140388-13.364374 13.364374-13.364374l154.232099 0c7.223986 0 13.364374 6.140388 13.364374 13.364374L891.801058 297.989418z"
+                fill="#575B66"
+                p-id="4427"
+              ></path>
+              <path
+                d="M673.997884 552.273721c19.865961 0 36.119929-15.892769 35.75873-36.119929 0-19.865961-15.892769-36.119929-36.119929-36.119929l-126.058554 0L547.578131 338.443739c0-19.865961-15.892769-36.119929-36.119929-35.75873-19.865961 0-36.119929 15.892769-36.119929 36.119929L475.338272 480.395062 96.440212 480.395062c-19.865961 0-36.119929 15.892769-36.119929 36.119929 0 19.865961 15.892769 36.119929 36.119929 36.119929l379.620459 0 0 169.04127c0 19.865961 15.892769 36.119929 36.119929 36.119929s36.119929-15.892769 36.119929-36.119929l0-169.04127L673.997884 552.634921z"
+                fill="#575B66"
+                p-id="4428"
+              ></path>
+              <path
+                d="M932.255379 552.273721c19.865961 0 36.119929-15.892769 35.75873-36.119929 0-19.865961-15.892769-36.119929-36.119929-36.119929l-79.825044 0c-19.865961 0-36.119929 15.892769-36.119929 36.119929 0 19.865961 15.892769 36.119929 36.119929 36.119929L932.255379 552.273721z"
+                fill="#575B66"
+                p-id="4429"
+              ></path>
+              <path
+                d="M511.8194 166.874074c19.865961 0 36.119929-15.892769 36.119929-36.119929L547.93933 88.855026c0-19.865961-15.892769-36.119929-36.119929-35.75873-19.865961 0-36.119929 15.892769-36.119929 36.119929l0 41.899118C476.06067 150.620106 491.953439 166.874074 511.8194 166.874074z"
+                fill="#575B66"
+                p-id="4430"
+              ></path>
+              <path
+                d="M511.8194 849.179541c-19.865961 0-36.119929 15.892769-36.119929 36.119929l0 41.899118c0 19.865961 15.892769 36.119929 36.119929 36.119929s36.119929-15.892769 36.119929-36.119929l0-42.260317C547.93933 865.07231 531.685362 849.179541 511.8194 849.179541z"
+                fill="#575B66"
+                p-id="4431"
+              ></path>
+              <path
+                d="M892.884656 871.573898c0 7.223986-6.140388 13.003175-13.003175 13.003175l-38.648325 0 0 75.129453 38.648325 0c48.761905 0 88.493827-39.731922 88.493827-88.493827l0-43.705115-75.129453 0L893.245855 871.573898z"
+                fill="#575B66"
+                p-id="4432"
+              ></path>
+              <path
+                d="M879.520282 631.015168l-152.426102 0c-48.761905 0-88.493827 39.731922-88.493827 88.493827l0 152.426102c0 48.761905 39.731922 88.493827 88.493827 88.493827l38.648325 0L765.742504 884.938272l-38.648325 0c-7.223986 0-13.003175-6.140388-13.003175-13.003175l0-152.426102c0-7.223986 6.140388-13.003175 13.003175-13.003175l152.426102 0c7.223986 0 13.003175 6.140388 13.003175 13.003175l0 33.591534L968.014109 753.100529l0-33.591534C968.014109 670.74709 928.282187 631.015168 879.520282 631.015168z"
+                fill="#575B66"
+                p-id="4433"
+              ></path>
+            </svg>
+          </div>
+
+          <span v-else>- - -</span>
         </template>
       </el-table-column>
     </el-table>
@@ -307,12 +397,34 @@
         <el-button type="primary" @click="handleSubmit"> 确 定 </el-button>
       </span>
     </el-dialog>
+
+    <!-- 任务令 -->
+    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
+      <el-card shadow="nerver">
+        <div class="flex flex-direction padding-bottom-xs" style="row-gap: 10px">
+          <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
+          <span class="flex align-center">
+            产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
+          </span>
+          <span class="flex align-center">
+            芯片版本：<el-tag>{{ qrCodeObj.chipVersion }}</el-tag>
+          </span>
+          <span class="flex align-center">
+            客户订单号：<el-tag>{{ qrCodeObj.orderNo }}</el-tag>
+          </span>
+          <span class="flex align-center">
+            生产数量：<el-tag>{{ qrCodeObj.num }}</el-tag>
+          </span>
+        </div>
+      </el-card>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { homeProduction, homeProductionStatus } from "@/api/home/index";
 import { computerNameList } from "@/api/third/fileConfig";
+import VueQr from "vue-qr";
 
 export default {
   name: "proPlanOrder",
@@ -320,6 +432,8 @@ export default {
     return {
       isLoading: true,
       isCLoading: false,
+      isQrCode: false,
+      qrCodeObj: {},
       isTitle: "",
       dialogVisible: false,
       dateTime: "",
@@ -330,8 +444,7 @@ export default {
       computerOptions: [],
       queryParams: {
         computerId: "",
-        isLicense: "",
-        date: "",
+        isLicense: ""
       },
       pickerOptions: {
         disabledDate(time) {
@@ -341,6 +454,7 @@ export default {
     };
   },
   components: {
+    VueQr,
     MissData: () => import("./MissData.vue"),
   },
   computed: {
@@ -449,18 +563,9 @@ export default {
     },
     getHomeProductionAll(isUpdate = true) {
       isUpdate && (this.isLoading = true);
-      const data = Promise.all([
-        homeProduction({ type: 1, ...this.queryParams }),
-        homeProduction({ type: 2, ...this.queryParams }),
-        homeProduction({ type: 4, ...this.queryParams }),
-      ]);
-      data
+      homeProduction({ ...this.queryParams })
         .then((res) => {
-          const totalData = {
-            ...res[0].data,
-            ...res[1].data,
-            ...res[2].data,
-          };
+          const totalData = res.data;
 
           this.productionList = this.handleTransData(totalData);
 
@@ -665,22 +770,23 @@ export default {
           return this.getDataState(map[4], mapFile[4]?.length);
         case "测试上位机":
           return this.getDataState(map[5], mapFile[5]?.length);
+        case "任务令":  return row.qrCode ? 'pointer' : '';  
       }
     },
     getDataState(state, fileLen) {
       if (!fileLen) return null;
       switch (state) {
         case 0: // 待上传
-          return "bg-danger pointer";
         case 1: // 待审核
-          return "bg-yellow pointer";
         case 2: // 测试审核通过
-          return "bg-primary pointer";
         case 3: // 未通过
-          return "bg-warning pointer";
-        case 4: // 审核通过
-          return "bg-success";
+          return "pointer";
       }
+    },
+    // 查看任务令
+    handleQrCode(row) {
+      this.isQrCode = true;
+      this.qrCodeObj = row;
     },
   },
 };
@@ -720,5 +826,15 @@ export default {
 }
 .font-correct {
   color: #007b74;
+}
+
+.plan-order-table {
+  .el-table__body {
+    .el-table__row {
+      .el-table__cell {
+        padding: 4px 0 !important;
+      }
+    }
+  }
 }
 </style>

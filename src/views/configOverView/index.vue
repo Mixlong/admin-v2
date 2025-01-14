@@ -344,6 +344,52 @@
           v-NoData="serialLevelData[row.serialLevel]"
         />
       </el-table-column>
+
+      <!-- <el-table-column
+        label="串口波特率"
+        prop="serialLevel"
+        align="center"
+        width="120"
+        column-key="serialLevel"
+        :filters="handleDataFilter(serialLevelData)"
+        :filter-method="filterHandler"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="serialLevelData[row.serialLevel]"
+        />
+      </el-table-column> -->
+
+      <!-- <el-table-column
+        label="CAN波特率"
+        prop="serialLevel"
+        align="center"
+        width="120"
+        column-key="serialLevel"
+        :filters="handleDataFilter(serialLevelData)"
+        :filter-method="filterHandler"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="serialLevelData[row.serialLevel]"
+        />
+      </el-table-column> -->
+
+      <!-- <el-table-column
+        label="帧类型"
+        prop="serialLevel"
+        align="center"
+        width="120"
+        column-key="serialLevel"
+        :filters="handleDataFilter(serialLevelData)"
+        :filter-method="filterHandler"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="serialLevelData[row.serialLevel]"
+        />
+      </el-table-column> -->
+
       <el-table-column
         label="按键型号"
         prop="keyType"

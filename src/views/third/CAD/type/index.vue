@@ -396,6 +396,7 @@ export default {
       this.title = "添加文件属性";
     },
     handleUpdate(row) {
+      console.log('row', row)
       this.reset();
       this.form = Object.assign({}, row);
 
