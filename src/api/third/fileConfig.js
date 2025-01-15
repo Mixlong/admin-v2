@@ -235,7 +235,6 @@ export function categoryNameList({ name, categoryName }) {
 
 
 // 送样软件数据管理
-
 export function sampleSoftList(params) {
   return request({
     url: "/sample/soft/config/list",

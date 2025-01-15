@@ -345,50 +345,50 @@
         />
       </el-table-column>
 
-      <!-- <el-table-column
+      <el-table-column
         label="串口波特率"
-        prop="serialLevel"
+        prop="baudRate"
         align="center"
         width="120"
-        column-key="serialLevel"
-        :filters="handleDataFilter(serialLevelData)"
+        column-key="baudRate"
+        :filters="handleDataFilter(baudRateList)"
         :filter-method="filterHandler"
       >
         <span
           slot-scope="{ row }"
-          v-NoData="serialLevelData[row.serialLevel]"
+          v-NoData="baudRateList[row.baudRate]"
         />
-      </el-table-column> -->
+      </el-table-column>
 
-      <!-- <el-table-column
+      <el-table-column
         label="CAN波特率"
-        prop="serialLevel"
+        prop="canRate"
         align="center"
         width="120"
-        column-key="serialLevel"
-        :filters="handleDataFilter(serialLevelData)"
+        column-key="canRate"
+        :filters="handleDataFilter(canRateList)"
         :filter-method="filterHandler"
       >
         <span
           slot-scope="{ row }"
-          v-NoData="serialLevelData[row.serialLevel]"
+          v-NoData="canRateList[row.canRate]"
         />
-      </el-table-column> -->
+      </el-table-column>
 
-      <!-- <el-table-column
+      <el-table-column
         label="帧类型"
-        prop="serialLevel"
+        prop="msgType"
         align="center"
         width="120"
-        column-key="serialLevel"
-        :filters="handleDataFilter(serialLevelData)"
+        column-key="msgType"
+        :filters="handleDataFilter(msgTypeData)"
         :filter-method="filterHandler"
       >
         <span
           slot-scope="{ row }"
-          v-NoData="serialLevelData[row.serialLevel]"
+          v-NoData="msgTypeData[row.msgType]"
         />
-      </el-table-column> -->
+      </el-table-column>
 
       <el-table-column
         label="按键型号"
@@ -1517,6 +1517,15 @@ export default {
         1: "通用",
         2: "图片",
       },
+      // uart波特率
+      baudRateList: {},
+      // can波特率
+      canRateList: {},
+      // 帧类型
+      msgTypeData: {
+        0: '标准帧',
+        1: '扩展帧'
+      },
       // 客户名称
       customerNameData: {
         data: [],
@@ -1583,6 +1592,10 @@ export default {
   created() {
     // 车把尺寸
     this.getConfigDicts("handleBar_size", "handlebarSizeData");
+    // uart波特率
+    this.getConfigDicts("uart_baud_rate", "baudRateList");
+    // can波特率
+    this.getConfigDicts("can_baud_rate", "canRateList");
     this.getList();
   },
   activated() {

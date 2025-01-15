@@ -4,11 +4,10 @@
       <el-form-item label="所属品类" prop="categoryName">
         <el-select
           v-model="queryParams.categoryName"
-          @change="changeCategory"
           filterable
-          allow-create
           clearable
           placeholder="请选择品类"
+          @change="getList"
         >
           <el-option
             v-for="dict in dictList"
@@ -39,7 +38,7 @@
           clearable
           :fetch-suggestions="querySearchAsync"
           placeholder="请选择客户"
-          @change="handleQuery"
+          @change="getList"
         />
       </el-form-item>
       <el-form-item label="属性" prop="typeName">
@@ -376,35 +375,25 @@ export default {
       };
     },
   },
-  created() {
-    const { number } = this.$route.params;
-    this.queryParams.number = number;
-  },
-  activated(){
-    const { number } = this.$route.params;
-    this.queryParams.number = number;
+  watch: {
+    $route: {
+      handler(routePage) {
+        if (routePage.name === "CadFileConfig") {
+          const { number } = routePage.params;
+
+          if (number) {
+            this.queryParams.number = number;
+          }
+
+          this.handleQuery();
+        }
+      },
+      immediate: true,
+    },
   },
   mounted() {
     categoryComputerDict().then((response) => {
       this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
-
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
-      this.getList();
     });
   },
   methods: {
@@ -461,11 +450,6 @@ export default {
       if (row.computerStatus) {
         return "disabled";
       }
-    },
-    changeCategory(val) {
-      if (!val) return;
-      this.queryParams.computerId = "";
-      this.getList();
     },
     checkSelectable(row) {
       if (row.computerStatus) {
@@ -594,7 +578,7 @@ export default {
     handleUpdate(row, isBatchSync) {
       // shit 改不动了
       this.$refs.compUpdate.reset();
-      
+
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row
