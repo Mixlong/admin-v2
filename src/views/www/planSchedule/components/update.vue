@@ -483,10 +483,10 @@ export default {
           if (data.id) {
             const { batchNo, batchNum, num } = this.orderData[0];
 
-            if (!batchNo) {
-              this.msgWarning("批次号不能为空");
-              return;
-            }
+            // if (!batchNo) {
+            //   this.msgWarning("批次号不能为空");
+            //   return;
+            // }
 
             if (!batchNum) {
               this.msgWarning("批次数量不能为空");
@@ -527,10 +527,10 @@ export default {
               return this.msgWarning("请选择客户订单");
             }
 
-            if (this.checkDeliverOrderData(this.selOrderData, "batchNo")) {
-              this.msgWarning("批次号不能为空");
-              return;
-            }
+            // if (this.checkDeliverOrderData(this.selOrderData, "batchNo")) {
+            //   this.msgWarning("批次号不能为空");
+            //   return;
+            // }
 
             if (this.checkDeliverOrderData(this.selOrderData, "batchNum")) {
               this.msgWarning("批次数量不能为空");

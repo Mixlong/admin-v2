@@ -79,6 +79,9 @@
           <span v-else>- - -</span>
         </template>
       </el-table-column>
+      <el-table-column prop="customerOrderNo" label="客户订单号" align="center">
+        <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
+      </el-table-column>
       <el-table-column
         prop="process"
         label="生产阶段"
@@ -103,7 +106,7 @@
           prop="pucsStatus"
           label="JS脚本"
           align="center"
-          width="120"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -120,7 +123,7 @@
           prop="hardStatus"
           label="硬件资料"
           align="center"
-          width="120"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -137,7 +140,7 @@
           prop="softStatus"
           label="软件资料"
           align="center"
-          width="120"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -156,7 +159,7 @@
           prop="configStatus"
           label="配置文件"
           align="center"
-          width="120"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -173,7 +176,7 @@
           prop="testStatus"
           label="测试上位机"
           align="center"
-          width="120"
+          width="100"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -410,7 +413,7 @@
             芯片版本：<el-tag>{{ qrCodeObj.chipVersion }}</el-tag>
           </span>
           <span class="flex align-center">
-            客户订单号：<el-tag>{{ qrCodeObj.orderNo }}</el-tag>
+            客户订单号：<el-tag>{{ qrCodeObj.customerOrderNo }}</el-tag>
           </span>
           <span class="flex align-center">
             生产数量：<el-tag>{{ qrCodeObj.num }}</el-tag>

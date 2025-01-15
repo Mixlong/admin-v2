@@ -151,12 +151,15 @@
         label="产品品类"
         align="center"
         prop="categoryName"
-        width="100"
+        width="120"
       />
-      <el-table-column label="产品型号" align="center" prop="computerName" />
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column label="排产单号" align="center" prop="no" />
-      <el-table-column label="订单编号" align="center" prop="orderCode" />
+      <el-table-column label="产品型号" align="center" prop="computerName" width="120" />
+      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" width="120" />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="排产单号" align="center" prop="no" width="120" />
+      <el-table-column label="订单编号" align="center" prop="orderCode" width="150" />
       <el-table-column
         label="生产地点"
         align="center"
@@ -255,7 +258,7 @@
           {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150">
+      <el-table-column label="操作" align="center" width="150" fixed="right">
         <div class="flex" slot-scope="{ row }">
           <div class="flex flex-direction align-start">
             <el-button
@@ -397,14 +400,20 @@
       <el-card shadow="hover">
         <div class="flex flex-direction" style="row-gap: 10px">
           <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
-          <span>
+          <span class="flex align-center">
             产品品类：<el-tag>{{ qrCodeObj.categoryName }}</el-tag>
           </span>
-          <span>
+          <span class="flex align-center">
             产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
           </span>
-          <span>
+          <span class="flex align-center">
             芯片版本：<el-tag>{{ qrCodeObj.soChipVersion }}</el-tag>
+          </span>
+          <span class="flex align-center" v-show="qrCodeObj.customerOrderNo">
+            客户订单号：<el-tag>{{ qrCodeObj.customerOrderNo }}</el-tag>
+          </span>
+          <span class="flex align-center">
+            生产数量：<el-tag>{{ qrCodeObj.num }}</el-tag>
           </span>
         </div>
       </el-card>
