@@ -1,10 +1,11 @@
 import Vue from "vue";
 import Router from "vue-router";
-
 Vue.use(Router);
 
 /* Layout */
 import Layout from "@/layout";
+import StaticRoutes from "./static-routes"
+
 
 /**
  * Note: 路由配置项
@@ -188,7 +189,7 @@ export const constantRoutes = [
         meta: { title: "流程详情", activeMenu: "/work/own" },
       },
     ],
-  },
+  }
 ];
 
 /**
@@ -226,5 +227,8 @@ export default new Router({
       return { x: 0, y: 0 };
     }
   },
-  routes: constantRoutes,
+  routes: [
+    ...constantRoutes,
+    ...StaticRoutes
+  ],
 });

@@ -42,7 +42,7 @@
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
-      <el-table-column label="状态" prop="" align="center">
+      <el-table-column label="状态" prop="status" align="center">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"

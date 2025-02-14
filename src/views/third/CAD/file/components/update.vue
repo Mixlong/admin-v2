@@ -8,7 +8,7 @@
     :visible.sync="dialogVisible"
     :width="isDigWidth"
     append-to-body
-    :top="boleConfig ? '5vh' : '15vh'"
+    top="-5vh"
     center
   >
     <el-form ref="form" :model="form" :rules="rules" label-position="top">
@@ -77,11 +77,20 @@
                 @change="resetValidForm"
                 class="w100"
               >
-                <el-option label="PC上位机" :value="1"></el-option>
+                <el-option
+                  v-if="form.type !== 'simulate_script_file'"
+                  label="PC上位机"
+                  :value="1"
+                ></el-option>
                 <template v-if="isStsType(form.type)">
                   <el-option label="STS网页" :value="2"></el-option>
                   <el-option label="STS程序脚本" :value="3"></el-option>
                 </template>
+                <el-option
+                  v-if="form.type === 'simulate_script_file'"
+                  label="模拟脚本"
+                  :value="4"
+                ></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -181,10 +190,8 @@
                   v-model="form.url"
                   :css="{ width: '100%' }"
                   :isOnePic="1"
-                  :accept="isFileType"                 >
-                  <div>
-                    <el-button size="small" type="primary">点击上传</el-button>
-                  </div>
+                  :accept="isFileType"
+                >
                 </DrUpload>
               </el-form-item>
             </el-col>
@@ -269,11 +276,68 @@
                 :isOnePic="1"
                 accept=".js"
               >
-                <div>
-                  <el-button size="small" type="primary">点击上传</el-button>
-                </div>
               </DrUpload>
             </el-form-item>
+          </template>
+
+          <!-- 模拟脚本 -->
+          <template v-if="form.dataType === 4">
+            <el-col>
+              <el-form-item
+                label="模拟脚本"
+                prop="content"
+                :rules="[
+                  {
+                    required: form.dataType === 4,
+                    message: '请选择模拟脚本',
+                    trigger: 'change',
+                  },
+                ]"
+              >
+                <select-loadMore
+                  v-model="form.content"
+                  :data="simulateScriptData.data"
+                  :page="simulateScriptData.page"
+                  :hasMore="simulateScriptData.more"
+                  :moreParams="true"
+                  dictLabel="agreementName"
+                  dictValue="agreementName"
+                  :request="getSimulateScriptList"
+                  @getChange="getSimulateScript"
+                  placeholder="请选择模拟脚本文件"
+                  style="width: 100%"
+                  v-slot="{ proOption }"
+                >
+                  <template>
+                    <el-row type="flex" justify="between">
+                      <el-col :span="8">
+                        <span>
+                          <b>协议名称：</b>{{ proOption.agreementName }}
+                        </span>
+                      </el-col>
+                      <el-col :span="8">
+                        <span>
+                          <b>协议版本：</b>{{ proOption.agreementVersion }}
+                        </span>
+                      </el-col>
+                      <el-col :span="8">
+                        <span> <b>备注：</b>{{ proOption.remark }} </span>
+                      </el-col>
+                    </el-row>
+                  </template>
+                </select-loadMore>
+              </el-form-item>
+            </el-col>
+            <!-- <el-col>
+              <el-form-item label="模拟脚本描述" prop="content">
+                <el-input
+                  v-model="form.content"
+                  type="textarea"
+                  :autosize="{ minRows: 1, maxRows: 8 }"
+                  placeholder="请输入模拟脚本描述"
+                />
+              </el-form-item>
+            </el-col> -->
           </template>
         </el-row>
       </template>
@@ -483,6 +547,8 @@ import {
 } from "@/api/third/fileConfig";
 import { listComputer } from "@/api/third/version";
 import { stsWebList } from "@/api/third/testApi";
+import { scriptList } from "@/api/third/simulateScript";
+
 export default {
   inheritAttrs: false,
   props: ["dictList", "isStsType"],
@@ -626,6 +692,11 @@ export default {
         more: true,
       },
       stsData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      simulateScriptData: {
         data: [],
         page: 1,
         more: true,
@@ -841,6 +912,39 @@ export default {
       this.form.webId = id;
       this.form.webVersion = version;
       this.form.stsContent = version;
+    },
+    // 模拟脚本
+    getSimulateScriptList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        scriptList({
+          p: page,
+          agreementName: keyword,
+          status: 0,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.simulateScriptData.data = [
+              ...this.simulateScriptData.data,
+              ...list,
+            ];
+          } else {
+            this.simulateScriptData.data = list;
+          }
+          this.simulateScriptData.more = pageNum * pageSize < total;
+          this.simulateScriptData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getSimulateScript(info) {
+      if (!info) {
+        this.form.webVersion = "";
+        return;
+      }
+      const { agreementName, agreementVersion, id, file } = JSON.parse(info);
+      this.form.url = id;
+      this.form.content = `${agreementName } - ${agreementVersion}`
+      this.form.file = file;
     },
     cancel() {
       this.dialogVisible = false;

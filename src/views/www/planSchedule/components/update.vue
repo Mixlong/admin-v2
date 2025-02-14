@@ -100,11 +100,12 @@
 
         <el-form-item label="客户订单信息:" required>
           <el-table
+            ref="customerOrderRef"
             :data="orderData"
             border
             row-key="id"
             :height="tableHeight(-50)"
-            class="margin-top-sm margin-bottom-sm"
+            class="margin-bottom-sm"
             @selection-change="handleSelectionChange"
           >
             <el-table-column
@@ -434,6 +435,9 @@ export default {
       this.orderData = [];
       this.selOrderData = [];
       this.resetForm("form");
+      this.$nextTick(() => {
+        this.$refs.customerOrderRef.clearSelection();
+      })
     },
     onAlertReason(params) {
       const { salesOrderNo, date, process, address } = params;
@@ -482,11 +486,6 @@ export default {
 
           if (data.id) {
             const { batchNo, batchNum, num } = this.orderData[0];
-
-            // if (!batchNo) {
-            //   this.msgWarning("批次号不能为空");
-            //   return;
-            // }
 
             if (!batchNum) {
               this.msgWarning("批次数量不能为空");
@@ -556,7 +555,7 @@ export default {
             schedulingCreate(data)
               .then((res) => {
                 if (res.code === 200) {
-                  this.msgSuccess("新增成功");
+                  this.msgSuccess("创建成功");
                   this.dialogVisible = false;
                   this.$emit("getData");
                 }

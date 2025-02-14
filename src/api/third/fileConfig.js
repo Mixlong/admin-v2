@@ -341,3 +341,12 @@ export function stsProductRecordExport(params) {
     params,
   });
 }
+
+// 批量同步文件
+export function fileBatchSyncConfig(data) {
+  return request({
+    url: '/file/batch/sync/config',
+    method: 'put',
+    data
+  })
+}

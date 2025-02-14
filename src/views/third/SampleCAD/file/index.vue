@@ -98,8 +98,13 @@
       </el-table-column>
       <el-table-column label="客户" prop="customerName" align="center" />
       <el-table-column label="属性" prop="typeName" align="center" />
-      <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }" v-NoData="row.content"></span>
+      <el-table-column label="属性描述" prop="content" align="center" width="220">
+        <template slot-scope="{ row }">
+          <span v-if="row.type === 'simulate_script_file'" class="text-green">
+            协议名称： {{ row.content }}
+          </span>
+          <span v-else v-NoData="row.content"></span>
+        </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="updateBy">
         <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
@@ -169,19 +174,30 @@
             ></el-button>
           </el-tooltip>
 
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
-            content="下载"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
+          <!-- 模拟脚本文件 -->
+          <template v-if="scope.row.type === 'simulate_script_file' && scope.row.file">
+            <Tooltip
+              icon="el-icon-download"
+              class="text-orange"
+              :content="`下载${scope.row.content}脚本`"
+              @click="zipFile(scope.row.file)"
             />
-          </el-tooltip>
+          </template>
+          <template v-else>
+            <el-tooltip
+              v-if="isDownloadUrl(scope.row)"
+              class="item font16"
+              effect="dark"
+              content="下载"
+              placement="top-end"
+            >
+              <svg-icon
+                icon-class="xiazai"
+                class-name="card-panel-icon pointer margin-left-xs"
+                @click="zipFile(scope.row.url)"
+              />
+            </el-tooltip>
+          </template>
 
           <Tooltip
             icon="el-icon-refresh-right"

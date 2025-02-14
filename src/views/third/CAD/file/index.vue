@@ -9,7 +9,7 @@
           allow-create
           clearable
           placeholder="请选择品类"
-          style="width: 160px"
+          style="width: 140px"
           @change="changeCategory"
         >
           <el-option
@@ -29,7 +29,7 @@
           clearable
           placeholder="请选择仪表型号"
           :remote-method="getComputerNameList"
-          style="width: 160px"
+          style="width: 140px"
           @change="getList"
         >
           <el-option
@@ -40,12 +40,20 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="ERP编码" prop="erp">
+        <el-input
+          v-model="queryParams.erp"
+          placeholder="请输入"
+          clearable
+          @keyup.enter.native="getList"
+          style="width: 140px"
+        />
+      </el-form-item>
       <el-form-item label="审核状态" prop="status">
         <el-select
-          style="width: 140px"
+          style="width: 100px"
           clearable
           v-model="queryParams.status"
-          placeholder="请选择审核状态"
           @change="getList"
         >
           <el-option
@@ -58,10 +66,9 @@
       </el-form-item>
       <el-form-item label="产品状态" prop="computerStatus">
         <el-select
-          style="width: 140px"
-          clearable
           v-model="queryParams.computerStatus"
-          placeholder="请选择产品状态"
+          style="width: 100px"
+          clearable
           @change="getList"
         >
           <el-option
@@ -73,30 +80,11 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item label="ERP编码" prop="erp">
-        <el-input
-          v-model="queryParams.erp"
-          placeholder="请输入ERP编码"
-          clearable
-          @keyup.enter.native="getList"
-          style="width: 140px"
-        />
-      </el-form-item>
-
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          @click="resetQuery"
-        >
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button
           type="warning"
           v-if="checkRole(['f_test'])"
@@ -115,10 +103,17 @@
         </el-button>
         <el-button
           v-hasPermi="['third:cad:missionOrder']"
-          type="warning"
+          type="success"
           @click="onCreateTaskCode"
         >
           任务令
+        </el-button>
+        <el-button
+          v-hasPermi="['third:cad:fileBatchConfig']"
+          type="danger"
+          @click="handleFileBatchSyncConfig"
+        >
+          同步文件
         </el-button>
         <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
           @click="handleResetCheck">重置审核</el-button> -->
@@ -185,6 +180,11 @@
           <!-- STS程序脚本 -->
           <span v-if="row.dataType === 3" class="text-green">
             STS脚本： {{ row.jsContent }}
+          </span>
+
+          <!-- 模拟脚本 -->
+          <span v-if="row.dataType === 4" class="text-green">
+            协议名称： {{ row.content }}
           </span>
         </template>
       </el-table-column>
@@ -271,14 +271,27 @@
             @click="zipFile(scope.row.jsFile)"
           />
 
-          <Tooltip
-            icon="el-icon-download"
-            class="text-orange"
-            :content="`下载${scope.row.typeName}`"
-            v-hasPermi="['third:cad:downloadFile']"
-            v-if="isDownloadUrl(scope.row)"
-            @click="zipFile(scope.row.url)"
-          />
+          <!-- 模拟脚本文件 -->
+          <template
+            v-if="scope.row.type === 'simulate_script_file' && scope.row.file"
+          >
+            <Tooltip
+              icon="el-icon-download"
+              class="text-orange"
+              :content="`下载${scope.row.content}脚本`"
+              @click="zipFile(scope.row.file)"
+            />
+          </template>
+          <template v-else>
+            <Tooltip
+              v-if="isDownloadUrl(scope.row)"
+              icon="el-icon-download"
+              class="text-orange"
+              :content="`下载${scope.row.typeName}`"
+              v-hasPermi="['third:cad:downloadFile']"
+              @click="zipFile(scope.row.url)"
+            />
+          </template>
 
           <Tooltip
             icon="el-icon-refresh-right"
@@ -376,6 +389,9 @@
       :visible.sync="isTaskCodeFlag"
       :createTaskData="createTaskData"
     ></task-code>
+
+    <!-- 批量同步文件 -->
+    <BatchSyncConfig ref="batchSyncConfigRef"> </BatchSyncConfig>
   </div>
 </template>
 
@@ -393,12 +409,14 @@ import {
 import { commonStatusList } from "@/utils/commonData";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
+import BatchSyncConfig from "./components/batchSyncConfig.vue";
 
 export default {
   name: "FileConfig",
   components: {
     CompUpdate,
     TaskCode: () => import("./components/taskCode"),
+    BatchSyncConfig,
   },
   data() {
     return {
@@ -488,7 +506,7 @@ export default {
           "config_tools",
           "pack_file",
           "update_file",
-          "maintenance_file"
+          "maintenance_file",
         ];
 
         return typeList.includes(type);
@@ -500,10 +518,10 @@ export default {
   },
   watch: {
     authDialogVisible(bool) {
-      if(!bool) {
+      if (!bool) {
         this.isBatchType = undefined;
       }
-    }
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -587,7 +605,7 @@ export default {
       if (row.computerStatus) {
         return false;
       } else if (
-        (this.checkRole(['f_test']) && row.status === 1) ||
+        (this.checkRole(["f_test"]) && row.status === 1) ||
         (this.checkRole(["fo_test"]) && row.status === 4)
       ) {
         return true;
@@ -837,6 +855,10 @@ export default {
       } else {
         this.computerOptions = [];
       }
+    },
+    // 批量同步文件
+    handleFileBatchSyncConfig() {
+      this.$refs.batchSyncConfigRef.dialogVisible = true;
     },
   },
 };

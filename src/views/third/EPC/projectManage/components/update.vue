@@ -7,6 +7,7 @@
     append-to-body
     width="700px"
     top="15vh"
+    center
   >
     <el-form ref="form" :model="form" :rules="rules" label-width="110px" inline>
       <template v-if="typeName !== 'content'">
@@ -76,7 +77,7 @@
             v-if="dialogVisible"
             v-model="form.content"
             placeholder="请输入属性描述"
-            height="350"
+            height="250"
           />
           <a id="download" href="" style="display: none"></a>
         </div>
@@ -180,6 +181,7 @@ export default {
         url: "",
         content: "",
         tightnessJson: "",
+        configId: "",
       },
       sopData: {
         data: [],
@@ -279,6 +281,7 @@ export default {
         url: "",
         content: "",
         tightnessJson: "",
+        configId: "",
       };
       this.gasData.data = [];
       this.resetForm("form");
@@ -369,11 +372,13 @@ export default {
       if (!info) {
         this.form.url = "";
         this.form.tightnessJson = "";
+        this.form.configId = "";
         return;
       }
-      const { remark, json } = JSON.parse(info);
+      const { remark, json, id } = JSON.parse(info);
       this.form.url = remark;
       this.form.tightnessJson = json;
+      this.form.configId = id;
     },
     /** 提交按钮 */
     submitForm: function () {

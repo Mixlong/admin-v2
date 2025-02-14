@@ -5,10 +5,10 @@
     class="my-upload-demo style-upload"
     :action="actionUrl"
     :on-success="uploadSuccess"
+    :on-error="uploadError"
     :on-remove="removeUpload"
     :on-exceed="handleExceed"
     :before-upload="beforeUpload"
-    :on-change="handleChange"
     :file-list="fileList"
     :drag="drag"
     :limit="limit"
@@ -18,7 +18,11 @@
     :accept="accept"
     :show-file-list="showFileList"
   >
-    <slot v-bind:uploadStatus="isUploadStatus"></slot>
+    <slot>
+      <el-button size="mini" type="primary">
+        {{ isUploadStatus === 1 ? "上传中..." : "上传文件" }}
+      </el-button>
+    </slot>
   </el-upload>
 </template>
 
@@ -49,8 +53,8 @@ export default {
     },
     isExceedTip: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
     // accept: {
     //   default: "image/jpeg, image/gif, image/png,image/bmp",
     // },
@@ -86,12 +90,27 @@ export default {
       });
     },
     beforeUpload(file) {
+      this.isUploadStatus = 1;
       if (file?.name.indexOf("+") !== -1) {
         this.msgError("上传的文件名称不能包含‘+’字符");
+        this.isUploadStatus = 0;
         return false;
       }
 
-      this.isUploadStatus = 1;
+      const getFileExtension = (filename) => {
+        // 使用正则表达式匹配文件后缀
+        const match = filename.match(/\.[^.]+$/);
+
+        // 如果匹配成功，返回后缀；否则返回空字符串
+        return match ? match[0] : "";
+      };
+
+
+      if (this.accept && !this.accept.includes(getFileExtension(file?.name))) {
+        this.msgError("上传的文件格式不对");
+        this.isUploadStatus = 0;
+        return false;
+      }
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
@@ -99,10 +118,15 @@ export default {
       }
 
       this.isUploadStatus = 0;
+      this.msgSuccess("上传成功");
       this.handleReturnData(this.limit === 1 ? [file] : fileList);
     },
+    uploadError() {
+      this.isUploadStatus = 0;
+      this.msgError("上传失败");
+    },
     handleExceed(files, fileList) {
-      if(!this.isExceedTip) return;
+      if (!this.isExceedTip) return;
       this.msgWarning(
         `当前限制选择 ${this.limit} 个文件，本次选择了 ${
           files.length
@@ -125,9 +149,6 @@ export default {
         this.$emit("input", currentFill.toString());
       }
     },
-    handleChange(file, fileList) {
-      this.fileList = fileList.slice(-1); 
-    }
   },
 };
 </script>

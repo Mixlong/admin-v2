@@ -5,6 +5,7 @@
 import reqUrl from "@/utils/requestUrl";
 import { saveAs } from "file-saver";
 import moment from "moment";
+import { Loading } from "element-ui";
 
 const baseURL = reqUrl;
 /**
@@ -40,10 +41,10 @@ export function extend(source) {
  */
 export function formattedTime({ time, pattern = "HH:mm:ss", timeType = 's' } = {}) {
   try {
-    if(is_Empty(time)) {
+    if (is_Empty(time)) {
       return '- - -';
     }
-    return moment().startOf('day').add(time, timeType).format(pattern); 
+    return moment().startOf('day').add(time, timeType).format(pattern);
   } catch (error) {
     console.error(error);
   }
@@ -180,32 +181,30 @@ export function downloadFile({
   aFn,
   queryParams,
 } = {}) {
+  let downloadLoadingInstance = null;
+  
   this.$confirm(title, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(() => {
+      downloadLoadingInstance = Loading.service({
+        text: "正在导出数据，请稍候",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+
       return aFn(queryParams);
     })
     .then((response) => {
       const fileName = response.msg;
 
-      const url =
-        baseURL +
-        "/common/download?fileName=" +
-        encodeURI(fileName) +
-        "&delete=" +
-        true;
-
       this.download(fileName);
-
-      // fetch(url).then(res => {
-      //   return res.blob()
-      // }).then(res => {
-      //   saveAs(res)
-      // })
-    });
+      downloadLoadingInstance.close()
+    }).catch(() => {
+      downloadLoadingInstance.close()
+    })
 }
 
 // 删除按钮

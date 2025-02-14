@@ -415,6 +415,14 @@ export function modelConfigList(params) {
   });
 }
 
+// 临时配置信息
+export function modelTempConfigList(computerName) {
+  return request({
+    url: `/model/config/temp/${computerName}`,
+    method: "get"
+  });
+}
+
 // 审核
 export function modelConfigState(data) {
   return request({
@@ -512,6 +520,33 @@ export function gasConfigDelete(data) {
   return request({
     url: "/tightness/config/delete",
     method: "delete",
+    data,
+  });
+}
+
+// 导出
+export function ConfigExport(data) {
+  return request({
+    url: "/computer/export",
+    method: "post",
+    data,
+  });
+}
+
+// 根据品类查询型号配置情况
+export function gasBulkConfigList(params) {
+  return request({
+    url: "/tightness/config/computer/config/list",
+    method: "get",
+    params
+  })
+}
+
+// 批量导入气密性配置
+export function gasBulkConfigAuth(data) {
+  return request({
+    url: "/tightness/config/import/config",
+    method: "put",
     data,
   });
 }

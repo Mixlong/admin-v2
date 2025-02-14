@@ -36,7 +36,8 @@
               v-model="form.baseModel"
               :disabled="isDisabled"
               multiple
-              collapse-tags
+              filterable
+              allow-create
               placeholder="请选择产品品类"
               style="width: 100%"
             >

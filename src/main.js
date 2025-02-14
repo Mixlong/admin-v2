@@ -13,6 +13,8 @@ import '@/assets/styles/ruoyi.scss'; // ruoyi css
 import 'normalize.css/normalize.css'; // a modern alternative to CSS resets
 import "viewerjs/dist/viewer.css";
 import 'intro.js/introjs.css';
+// 引入样式
+import "vue-easytable/libs/theme-default/index.css";
 
 import '@/assets/icons'; // icon
 import '@/permission'; // permission control
@@ -39,7 +41,7 @@ Vue.prototype.msgWarning = function (msg) {
   this.$message.warning(msg);
 };
 
-Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'small', zIndex: 3000 };
+Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'mini', zIndex: 3000 };
 Vue.config.productionTip = false;
 
 Vue.use(plugins)

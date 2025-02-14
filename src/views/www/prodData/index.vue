@@ -7,8 +7,8 @@
             v-model="queryParams.customerName"
             clearable
             :fetch-suggestions="querySearchAsync"
-            placeholder="请选择客户"
-            style="width: 150px"
+            placeholder="请选择"
+            style="width: 130px"
           />
         </el-form-item>
         <el-form-item label="所属品类" prop="categoryId">
@@ -18,8 +18,7 @@
             filterable
             allow-create
             clearable
-            placeholder="请选择品类"
-            style="width: 150px"
+            style="width: 130px"
           >
             <el-option
               v-for="dict in dictList"
@@ -36,9 +35,8 @@
             remote
             clearable
             v-model="queryParams.computerId"
-            placeholder="请选择仪表型号"
             :remote-method="getComputerNameList"
-            style="width: 150px"
+            style="width: 130px"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -51,8 +49,7 @@
         <el-form-item label="生产阶段" prop="process">
           <el-select
             v-model="queryParams.process"
-            placeholder="请选择生产阶段"
-            style="width: 120px"
+            style="width: 100px"
             clearable
           >
             <el-option label="SMT" value="SMT"></el-option>
@@ -62,12 +59,21 @@
         <el-form-item label="结果" prop="result">
           <el-select
             v-model="queryParams.result"
-            placeholder="请选择"
             clearable
-            style="width: 120px"
+            style="width: 100px"
           >
             <el-option label="OK" value="OK"></el-option>
             <el-option label="NG" value="NG"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="许可状态" prop="isLicense">
+          <el-select
+            v-model="queryParams.isLicense"
+            clearable
+            style="width: 100px"
+          >
+            <el-option label="未许可" value="0"></el-option>
+            <el-option label="已许可" value="1"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="计划日期">
@@ -153,6 +159,18 @@
         width="120"
         fixed
       />
+      <el-table-column
+        prop="isLicense"
+        label="许可状态"
+        align="center"
+        width="80"
+        fixed
+      >
+        <template v-slot="{ row }">
+          <el-tag v-if="row.isLicense === 1" type="success">已许可</el-tag>
+          <el-tag v-if="row.isLicense === 0" type="danger">未许可</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="SMT资料" align="center">
         <el-table-column
           prop="pucsStatus"
@@ -441,6 +459,7 @@ export default {
         computerId: "",
         process: "",
         result: "",
+        isLicense: "",
       },
     };
   },

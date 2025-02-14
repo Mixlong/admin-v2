@@ -45,6 +45,9 @@
       <el-descriptions-item label="发货时间">
         <span v-NoData="parseTime(form.shippingTime, '{y}-{m}-{d}')"></span>
       </el-descriptions-item>
+      <el-descriptions-item label="发货地址">
+        <span v-NoData="form.address"></span>
+      </el-descriptions-item>
     </el-descriptions>
 
     <el-card

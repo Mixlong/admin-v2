@@ -14,8 +14,8 @@
             allow-create
             clearable
             @change="changeCategory"
-            placeholder="请选择所属品类"
             style="width: 140px"
+            placeholder="请选择"
           >
             <el-option
               v-for="dict in dictList"
@@ -32,7 +32,6 @@
             filterable
             remote
             clearable
-            placeholder="请选择仪表型号"
             @change="getList"
             :remote-method="getComputerNameList"
             style="width: 140px"
@@ -48,26 +47,25 @@
         <el-form-item label="迪太订单号" prop="salesOrderNo">
           <el-input
             v-model.trim="queryParams.salesOrderNo"
-            placeholder="请输入迪太订单号"
             clearable
             @keyup.native.enter="handleQuery"
             style="width: 140px"
+            placeholder="请选择"
           />
         </el-form-item>
         <el-form-item label="排产单号" prop="no">
           <el-input
             v-model.trim="queryParams.no"
-            placeholder="请输入排产单号"
             clearable
             @keyup.native.enter="handleQuery"
             style="width: 140px"
+            placeholder="请选择"
           />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
           <el-select
             v-model="queryParams.productStatus"
             clearable
-            placeholder="请选择排产状态"
             style="width: 100px"
           >
             <el-option
@@ -95,7 +93,6 @@
             type="primary"
             icon="el-icon-search"
             size="mini"
-            v-hasPermi="['www:planSchedule:query']"
             @click="handleQuery"
           >
             搜 索
@@ -103,7 +100,6 @@
           <el-button
             icon="el-icon-refresh"
             size="mini"
-            v-hasPermi="['www:planSchedule:reset']"
             @click="resetQuery"
           >
             重 置
@@ -151,15 +147,30 @@
         label="产品品类"
         align="center"
         prop="categoryName"
-        width="120"
+        width="100"
       />
-      <el-table-column label="产品型号" align="center" prop="computerName" width="120" />
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" width="120" />
-      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" width="120">
+      <el-table-column
+        label="产品型号"
+        align="center"
+        prop="computerName"
+        width="100"
+      />
+      <el-table-column
+        label="迪太订单号"
+        align="center"
+        prop="salesOrderNo"
+        width="100"
+      />
+      <el-table-column
+        label="客户订单号"
+        align="center"
+        prop="customerOrderNo"
+        width="100"
+      >
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="排产单号" align="center" prop="no" width="120" />
-      <el-table-column label="订单编号" align="center" prop="orderCode" width="150" />
+      <el-table-column label="排产单号" align="center" prop="no" width="100" />
+      <el-table-column label="订单编号" align="center" prop="orderCode" />
       <el-table-column
         label="生产地点"
         align="center"
@@ -206,164 +217,116 @@
         label="订单数量"
         align="center"
         prop="orderQuantity"
-        width="90"
+        width="85"
       />
-      <el-table-column
-        label="资料状态"
-        align="center"
-        prop="dataState"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <p v-if="isDataAll(scope.row)" class="text-green">全部已配齐</p>
-          <template v-else>
-            <p
-              v-if="scope.row.softList !== null"
-              :class="dataStateColor(isDataLen(scope.row.softList))"
-            >
-              <!-- 软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }} -->
-              软件
-            </p>
-            <p
-              v-if="scope.row.hardList !== null"
-              :class="dataStateColor(isDataLen(scope.row.hardList))"
-            >
-              <!-- 硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }} -->
-              硬件
-            </p>
-            <p
-              v-if="scope.row.projectList !== null"
-              :class="dataStateColor(isDataLen(scope.row.projectList))"
-            >
-              <!-- 工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }} -->
-              工程
-            </p>
-          </template>
-        </template>
-      </el-table-column>
       <el-table-column
         label="排产人"
         align="center"
         prop="createBy"
-        width="90"
+        width="85"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
-        width="120"
-        sortable
+        width="90"
       >
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
+          <span>
+            {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
+          </span>
+          <br>
+          <span>
+            {{ parseTime(row.createTime, "{h}:{i}") }}
+          </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150" fixed="right">
-        <div class="flex" slot-scope="{ row }">
-          <div class="flex flex-direction align-start">
-            <el-button
-              v-if="row.salesOrderNo"
-              v-hasPermi="['www:planSchedule:update']"
-              :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
-              type="text"
-              @click="handleUpdate(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              v-if="!row.salesOrderNo"
-              v-hasPermi="['www:planSchedule:oldUpdate']"
-              :class="[
-                isDisabled(row.date) ? 'text-gray' : 'text-blue',
-                'mlZero',
-              ]"
-              type="text"
-              @click="handleOldUpdate(row)"
-            >
-              编辑(旧)
-            </el-button>
-            <el-button
-              class="text-red mlZero"
-              type="text"
-              v-hasPermi="['www:planSchedule:delete']"
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
-            <el-button
-              v-show="row.qrCode"
-              class="mlZero"
-              type="text"
-              v-hasPermi="['www:planSchedule:taskOrder']"
-              @click="handleQrCode(row)"
-            >
-              任务令
-            </el-button>
-            <el-button
-              type="text"
-              class="mlZero"
-              v-hasPermi="['www:planSchedule:log']"
-              @click="onEditLog(row.id)"
-            >
-              日志
-            </el-button>
-          </div>
-          <div class="flex flex-direction align-start margin-left-xs">
-            <el-button
-              class="mlZero"
-              type="text"
-              v-hasPermi="['www:planSchedule:create:prodData']"
-              @click="handleCreateFile(row.id)"
-            >
-              生成生产资料
-            </el-button>
-            <template v-if="row.fileZip">
-              <el-button
-                class="mlZero"
-                type="text"
-                v-hasPermi="['www:planSchedule:download:prodData']"
-                @click="zipFile(row.fileZip)"
-              >
-                下载生产资料
-              </el-button>
+      <el-table-column label="操作" align="center" width="180" fixed="right">
+        <div class="flex align-center justify-between" slot-scope="{ row }">
+          <el-button
+            v-if="row.salesOrderNo"
+            v-hasPermi="['www:planSchedule:update']"
+            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
+            type="text"
+            @click="handleUpdate(row)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            v-if="!row.salesOrderNo"
+            v-hasPermi="['www:planSchedule:oldUpdate']"
+            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
+            type="text"
+            @click="handleOldUpdate(row)"
+          >
+            编辑(旧)
+          </el-button>
+          <el-button
+            class="mlZero"
+            v-show="row.qrCode"
+            type="text"
+            v-hasPermi="['www:planSchedule:taskOrder']"
+            @click="handleQrCode(row)"
+          >
+            任务令
+          </el-button>
+          <el-dropdown>
+            <span class="el-dropdown-link text-blue font12">
+              更多操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
 
-              <el-button
-                class="mlZero"
-                type="text"
-                v-hasPermi="['www:planSchedule:create:seeData']"
-                @click="getProSecDetail(row.id)"
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-hasPermi="['www:planSchedule:delete']"
+                @click.native="handleDelete(row)"
               >
-                生成预览资料
-              </el-button>
+                删除
+              </el-dropdown-item>
+              <el-dropdown-item
+                v-hasPermi="['www:planSchedule:log']"
+                @click.native="onEditLog(row.id)"
+              >
+                日志
+              </el-dropdown-item>
+              <el-dropdown-item
+                v-hasPermi="['www:planSchedule:create:prodData']"
+                @click.native="handleCreateFile(row.id)"
+              >
+                生成生产资料
+              </el-dropdown-item>
 
-              <template v-if="row.excelUrl">
-                <el-button
-                  class="mlZero"
-                  type="text"
-                  v-hasPermi="['www:planSchedule:download:fileData']"
-                  @click="zipFile(row.excelUrl)"
+              <template v-if="row.fileZip">
+                <el-dropdown-item
+                  v-hasPermi="['www:planSchedule:download:prodData']"
+                  @click.native="zipFile(row.fileZip)"
                 >
-                  下载资料清单
-                </el-button>
-                <!-- <el-button
-                v-if="row.excelUrl"
-                class="mlZero"
-                type="text"
-                @click="ReadOfficeFile(row.excelUrl)"
-              >
-                预览资料清单
-              </el-button> -->
-                <el-button
-                  class="mlZero"
-                  type="text"
-                  v-hasPermi="['www:planSchedule:send:prod']"
-                  @click="handleProd(row.id)"
+                  下载生产资料
+                </el-dropdown-item>
+
+                <el-dropdown-item
+                  v-hasPermi="['www:planSchedule:create:seeData']"
+                  @click="getProSecDetail(row.id)"
                 >
-                  外发生产
-                </el-button>
+                  生成预览资料
+                </el-dropdown-item>
+
+                <template v-if="row.excelUrl">
+                  <el-dropdown-item
+                    v-hasPermi="['www:planSchedule:download:fileData']"
+                    @click="zipFile(row.excelUrl)"
+                  >
+                    下载资料清单
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    v-hasPermi="['www:planSchedule:send:prod']"
+                    @click="handleProd(row.id)"
+                  >
+                    外发生产
+                  </el-dropdown-item>
+                </template>
               </template>
-            </template>
-          </div>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </el-table-column>
     </el-table>

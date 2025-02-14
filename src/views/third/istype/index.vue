@@ -397,20 +397,16 @@
                   </template>
                 </el-table-column>
 
-                <el-table-column label="操作" align="center" width="140px">
+                <el-table-column label="操作" align="center" width="160px">
                   <template v-slot="{ row, $index }">
                     <div class="flex justify-between">
                       <DrUpload
                         v-if="form.type === '3'"
                         v-model="row.file"
-                        v-slot="{ uploadStatus }"
                         :showFileList="false"
                         :isExceedTip="false"
                         :accept="acceptType($index)"
                       >
-                        <el-button type="primary" size="mini">
-                          {{ uploadStatus === 1 ? "上传中..." : "上传" }}
-                        </el-button>
                       </DrUpload>
 
                       <el-button

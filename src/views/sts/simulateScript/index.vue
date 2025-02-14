@@ -1,20 +1,26 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="所属品类" prop="categoryName">
-        <el-select v-model="queryParams.categoryName" filterable clearable>
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
+      <el-form-item label="协议名称" prop="agreementName">
+        <el-input
+          v-model.trim.lazy="queryParams.agreementName"
+          clearable
+          size="mini"
+          placeholder="请输入"
+        />
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" clearable>
-          <el-option label="启用" :value="0"></el-option>
-          <el-option label="禁用" :value="1"></el-option>
+      <el-form-item label="协议版本" prop="agreementVersion">
+        <el-input
+          v-model.trim="queryParams.agreementVersion"
+          clearable
+          size="mini"
+          placeholder="请输入"
+        />
+      </el-form-item>
+      <el-form-item label="启用状态" prop="status">
+        <el-select v-model="queryParams.status" clearable size="mini">
+          <el-option label="启用" value="0" />
+          <el-option label="禁用" value="1" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -32,12 +38,12 @@
       </el-form-item>
 
       <el-button
+        v-if="checkRole(['test', 'admin'])"
         type="primary"
         icon="el-icon-plus"
         size="mini"
         @click="handleAdd"
         class="fr"
-        v-hasPermi="['gasConfig:add:btn']"
       >
         新增
       </el-button>
@@ -49,14 +55,30 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
+      <el-table-column label="协议名称" prop="agreementName" align="center" />
       <el-table-column
-        label="品类"
-        prop="categoryName"
+        label="协议版本"
+        prop="agreementVersion"
         align="center"
-        width="200"
       />
-      <el-table-column label="备注" prop="remark" align="center" />
-      <el-table-column label="状态" align="center" width="140">
+      <el-table-column label="脚本文件" prop="file" align="center">
+        <template slot-scope="scope">
+          <el-link @click="urlDownload(scope.row.file)">
+            {{ transFileUrl(scope.row.file) }}
+          </el-link>
+        </template>
+      </el-table-column>
+      <el-table-column label="脚本更新日志" prop="remark" align="center" width="120">
+        <template slot-scope="scope">
+          <el-button type="text" @click="handleSeeScriptLog(scope.row.id)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column label="备注" prop="remark" align="center" width="120">
+        <template slot-scope="scope">
+          <el-button type="text" :disabled="!scope.row.remark" @click="handleSeeRemark(scope.row.remark)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -67,56 +89,29 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="创建|修改人"
+        label="创建人"
         prop="createBy"
         align="center"
-        width="140"
-      >
-        <span
-          slot-scope="{ row }"
-          v-NoData="row.updateBy || row.createBy"
-        ></span>
-      </el-table-column>
+        width="120"
+      />
       <el-table-column
-        label="创建|修改时间"
+        label="创建时间"
         prop="createTime"
         align="center"
         width="150"
       >
-        <template slot-scope="{ row }">
-          {{ parseTime(row.updateTime || row.createTime) }}
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-
       <el-table-column label="操作" align="center" width="120">
-        <template slot-scope="{ row }">
+        <template slot-scope="scope">
           <Tooltip
+            v-if="checkRole(['test', 'admin'])"
             icon="el-icon-edit"
             content="编辑"
-            @click="handleUpdate(row)"
-            v-hasPermi="['gasConfig:edit:btn']"
+            @click="handleUpdate(scope.row)"
           />
-
-          <Tooltip
-            icon="el-icon-setting"
-            content="同步配置"
-            @click="handleBulkImport(row)"
-            v-hasPermi="['gasConfig:edit:bulkImport']"
-          />
-
-          <el-popconfirm
-            title="确定要删除吗？"
-            @confirm="handleDelete(row)"
-            v-hasPermi="['gasConfig:delete:btn']"
-          >
-            <Tooltip
-              style="margin: 0 10px"
-              slot="reference"
-              icon="el-icon-delete"
-              :className="['text-red']"
-              content="删除"
-            />
-          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -129,38 +124,24 @@
       @pagination="getList"
     />
 
-    <CompUpdate
-      ref="compUpdate"
-      :visible.sync="dialogVisible"
-      :title="title"
-      :dictList="dictList"
-    />
-
-    <!-- 同步配置 -->
-    <BulkImportGasConfig
-      ref="bulkImportGasRef"
-      :visible.sync="dialogBulkImportVisible"
-      :title="bulkImportTitle"
-      width="800px"
-    />
+    <CompUpdate ref="compUpdate" :visible.sync="dialogVisible" :title="title" />
+    <ScriptLog ref="scriptLogRef" :visible.sync="isScriptLog" title="脚本更新日志" />
+    <RemarkInfo ref="remarkInfoRef"></RemarkInfo>
   </div>
 </template>
 
 <script>
-import {
-  gasConfigList,
-  gasConfigAuth,
-  gasConfigDelete,
-} from "@/api/third/testApi";
+import { scriptList, scriptAuth } from "@/api/third/simulateScript";
 import { commonStatusList } from "@/utils/commonData";
-import { categoryComputerDict } from "@/api/third/fileConfig";
-import BulkImportGasConfig from "./components/bulkImportGasConfig.vue";
+import ScriptLog from "./components/scriptLog.vue";
+import RemarkInfo from "./components/remarkInfo.vue";
 
 export default {
-  name: "StsDevice",
+  name: "SimulateScript",
   components: {
     CompUpdate: () => import("./components/update"),
-    BulkImportGasConfig,
+    ScriptLog,
+    RemarkInfo
   },
   data() {
     return {
@@ -170,37 +151,36 @@ export default {
       // 遮罩层
       loading: false,
       dialogVisible: false,
+      isScriptLog: false,
       title: "",
-      dialogBulkImportVisible: false,
-      bulkImportTitle: "",
       // 总条数
       total: 0,
-      dictList: [],
       list: [],
+      // 芯片版本
+      cidOptions: [],
+      // 测试协议
+      testAgreementList: [],
       // 查询参数
       queryParams: {
         p: 1,
         l: 10,
-        categoryName: "",
+        agreementName: "",
+        agreementVersion: "",
+        status: "",
       },
     };
   },
   created() {
-    categoryComputerDict().then((res) => {
-      this.dictList = res.data;
-    });
-
     this.getList();
   },
   methods: {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      gasConfigList(this.queryParams)
-        .then((res) => {
-          const { list, total } = res.data;
-          this.list = list;
-          this.total = total;
+      scriptList(this.queryParams)
+        .then((response) => {
+          this.list = response.data.list;
+          this.total = response.data.total;
         })
         .finally(() => {
           this.loading = false;
@@ -209,30 +189,13 @@ export default {
     handleAdd() {
       this.dialogVisible = true;
       this.$refs.compUpdate.reset();
-      this.title = "新增气密性参数";
+      this.title = "新增模拟脚本";
     },
     handleUpdate(row) {
       this.dialogVisible = true;
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.form = Object.assign({}, row);
-      this.title = "修改气密性参数";
-    },
-    handleBulkImport(row) {
-      const { categoryId, id, categoryName, remark } = row;
-
-      this.dialogBulkImportVisible = true;
-      this.bulkImportTitle = `${categoryName} 同步配置(${remark})`;
-      this.$refs.bulkImportGasRef.queryParams.categoryId = categoryId;
-      this.$refs.bulkImportGasRef.queryParams.id = id;
-      this.$refs.bulkImportGasRef.queryParams.p = 1;
-      this.$refs.bulkImportGasRef.getList();
-    },
-    // 删除
-    handleDelete(row) {
-      gasConfigDelete([row.id]).then(() => {
-        this.getList();
-        this.msgSuccess("删除成功");
-      });
+      this.title = "修改模拟脚本";
     },
     handleStatus(row) {
       let text = row.status ? "禁用" : "启用";
@@ -242,7 +205,7 @@ export default {
         type: "warning",
       })
         .then(function () {
-          return gasConfigAuth([{ id: row.id, status: row.status }]);
+          return scriptAuth([{ id: row.id, status: row.status }]);
         })
         .then(() => {
           this.msgSuccess(text + "成功");
@@ -251,7 +214,16 @@ export default {
           row.status = row.status ? 0 : 1;
         });
     },
+    handleSeeScriptLog(scriptId) {
+      this.isScriptLog = true;
 
+      this.$refs.scriptLogRef.queryParams.scriptId = scriptId;
+      this.$refs.scriptLogRef.getList()
+    },
+    handleSeeRemark(remark) {
+      this.$refs.remarkInfoRef.dialogVisible = true;
+      this.$refs.remarkInfoRef.remark = remark;
+    }, 
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
