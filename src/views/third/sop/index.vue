@@ -94,7 +94,7 @@
         width="150"
       />
       <el-table-column label="描述" prop="desc" align="center" />
-      <el-table-column label="审核状态" prop="model" align="center" width="150">
+      <el-table-column label="审核状态" prop="model" align="center" width="100">
         <template slot-scope="{ row }">
           <span v-if="row.state === 0" class="text-cyan">待审核</span>
           <span v-if="row.state === 1" class="text-green">审核通过</span>
@@ -105,13 +105,14 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="150"
+        width="100"
+        show-overflow-tooltip
       />
       <el-table-column
         label="更新时间"
         prop="updateTime"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.updateTime || row.createTime) }}

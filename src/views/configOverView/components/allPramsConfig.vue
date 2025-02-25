@@ -203,8 +203,8 @@
         >
           <template slot-scope="{ row }">
             <preview-img
-              width="60px"
-              height="60px"
+              width="45px"
+              height="45px"
               :isDisBadge="false"
               :url="row.specification"
             />
@@ -444,7 +444,7 @@
           width="120"
         >
           <template slot-scope="{ row }">
-            <preview-img width="60px" height="60px" :url="row.keyImgUrl" />
+            <preview-img width="45px" height="45px" :url="row.keyImgUrl" />
           </template>
         </el-table-column>
         <el-table-column
@@ -454,7 +454,7 @@
           width="120"
         >
           <template slot-scope="{ row }">
-            <preview-img width="60px" height="60px" :url="row.powerLogo" />
+            <preview-img width="45px" height="45px" :url="row.powerLogo" />
           </template>
         </el-table-column>
         <el-table-column
@@ -475,7 +475,7 @@
           width="120"
         >
           <template slot-scope="{ row }">
-            <preview-img width="60px" height="60px" :url="row.labelRuleImg" />
+            <preview-img width="45px" height="45px" :url="row.labelRuleImg" />
           </template>
         </el-table-column>
         <el-table-column

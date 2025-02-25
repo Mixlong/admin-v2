@@ -97,11 +97,7 @@
           >
             搜 索
           </el-button>
-          <el-button
-            icon="el-icon-refresh"
-            size="mini"
-            @click="resetQuery"
-          >
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
             重 置
           </el-button>
         </el-form-item>
@@ -112,7 +108,6 @@
         <el-button
           type="primary"
           icon="el-icon-plus"
-          size="mini"
           v-hasPermi="['www:planSchedule:add']"
           @click="handleAdd"
         >
@@ -120,12 +115,11 @@
         </el-button>
         <el-button
           v-hasPermi="['www:planSchedule:oldAdd']"
-          type="primary"
+          type="danger"
           icon="el-icon-plus"
-          size="mini"
           @click="handleOldAdd"
         >
-          新 增（旧）
+          新 增(旧)
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
@@ -153,24 +147,34 @@
         label="产品型号"
         align="center"
         prop="computerName"
-        width="100"
+        min-width="150"
       />
       <el-table-column
         label="迪太订单号"
         align="center"
         prop="salesOrderNo"
-        width="100"
+        min-width="150"
       />
       <el-table-column
         label="客户订单号"
         align="center"
         prop="customerOrderNo"
-        width="100"
+        min-width="150"
       >
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="排产单号" align="center" prop="no" width="100" />
-      <el-table-column label="订单编号" align="center" prop="orderCode" />
+      <el-table-column
+        label="排产单号"
+        align="center"
+        prop="no"
+        min-width="150"
+      />
+      <el-table-column
+        label="订单编号"
+        align="center"
+        prop="orderCode"
+        min-width="150"
+      />
       <el-table-column
         label="生产地点"
         align="center"
@@ -179,9 +183,11 @@
       />
       <el-table-column label="生产日期" align="center" prop="date" width="90">
         <template slot-scope="{ row }">
-          {{ parseTime(row.date, "{y}-{m}-{d}") }}
-          <br />
-          <span class="text-red" v-show="isDisabled(row.date)">（已过期）</span>
+          <span
+            v-NoData="parseTime(row.date, '{y}-{m}-{d}')"
+            :class="{ 'text-red': isDisabled(row.date) }"
+            :title="isDisabled(row.date) ? '已过期' : ''"
+          ></span>
         </template>
       </el-table-column>
       <el-table-column
@@ -229,15 +235,11 @@
         label="创建时间"
         align="center"
         prop="createTime"
-        width="90"
+        width="150"
       >
         <template slot-scope="{ row }">
           <span>
-            {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
-          </span>
-          <br>
-          <span>
-            {{ parseTime(row.createTime, "{h}:{i}") }}
+            {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
           </span>
         </template>
       </el-table-column>
@@ -359,25 +361,42 @@
     />
 
     <!-- 任务令 -->
-    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
+    <el-dialog
+      title="任务令"
+      :visible.sync="isQrCode"
+      width="500px"
+      center
+      top="-10vh"
+    >
       <el-card shadow="hover">
-        <div class="flex flex-direction" style="row-gap: 10px">
-          <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
-          <span class="flex align-center">
-            产品品类：<el-tag>{{ qrCodeObj.categoryName }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            芯片版本：<el-tag>{{ qrCodeObj.soChipVersion }}</el-tag>
-          </span>
-          <span class="flex align-center" v-show="qrCodeObj.customerOrderNo">
-            客户订单号：<el-tag>{{ qrCodeObj.customerOrderNo }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            生产数量：<el-tag>{{ qrCodeObj.num }}</el-tag>
-          </span>
+        <div class="text-center">
+          <vue-qr
+            class="margin-bottom"
+            :text="qrCodeObj.qrCode"
+            :size="250"
+            :margin="10"
+          ></vue-qr>
+
+          <el-descriptions direction="vertical" :column="4" border>
+            <el-descriptions-item label="产品品类">
+              <span v-NoData="qrCodeObj.categoryName"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="产品型号">
+              <span v-NoData="qrCodeObj.computerName"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="芯片版本">
+              <span v-NoData="qrCodeObj.soChipVersion"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="客户订单号">
+              <span v-NoData="qrCodeObj.customerOrderNo"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="生产数量">
+              <span v-NoData="qrCodeObj.num"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="备注" :span="3">
+              <span v-NoData="qrCodeObj.remark"></span>
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
       </el-card>
     </el-dialog>
@@ -504,7 +523,7 @@ export default {
       // 显示搜索条件
       showSearch: true,
       // 遮罩层
-      loading: false,
+      loading: true,
       // 缺失资料状态弹窗
       isDataShow: false,
       isCLoading: false,
@@ -841,8 +860,9 @@ export default {
       ).then((response) => {
         this.list = response.data.list;
         this.total = response.data.total;
+      }).finally(() => {
         this.loading = false;
-      });
+      })
     },
     handleAdd() {
       this.title = "新增计划";

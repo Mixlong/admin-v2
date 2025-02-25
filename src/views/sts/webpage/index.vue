@@ -72,18 +72,18 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="测试工序" prop="processesName" align="center" />
-      <el-table-column label="版本号" prop="version" align="center" />
-      <el-table-column label="文件包" prop="file" align="center">
+      <el-table-column label="品类" prop="categoryName" align="center" width="120" show-overflow-tooltip />
+      <el-table-column label="测试工序" prop="processesName" align="center" width="120" show-overflow-tooltip />
+      <el-table-column label="版本号" prop="version" align="center" show-overflow-tooltip />
+      <el-table-column label="文件包" prop="file" align="center" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-link @click="urlDownload(scope.row.file)">
           {{transFileUrl(scope.row.file)}}
           </el-link>
         </template>
       </el-table-column>
-      <el-table-column label="备注" prop="remark" align="center" />
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="备注" prop="remark" align="center" show-overflow-tooltip />
+      <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -97,19 +97,20 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="140"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"

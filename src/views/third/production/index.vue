@@ -99,12 +99,14 @@
       </el-button>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-    >
-      <el-table-column label="序号" width="58" type="index" align="center">
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()">
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
@@ -113,40 +115,77 @@
         label="品类"
         prop="category"
         align="center"
+        width="140"
+        show-overflow-tooltip
+        fixed="left"
       />
-      <el-table-column label="型号" prop="model" align="center" />
-      <el-table-column label="SN" prop="sn" align="center" />
-      <el-table-column label="箱号" prop="boxNo" align="center" />
-      <el-table-column label="订单号" prop="order" align="center" />
+      <el-table-column
+        label="型号"
+        prop="model"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+        fixed="left"
+      />
+      <el-table-column
+        label="SN"
+        prop="sn"
+        align="center"
+        width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="箱号"
+        prop="boxNo"
+        align="center"
+        width="170"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="订单号"
+        prop="order"
+        align="center"
+        width="160"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="装箱时间"
         prop="packageTime"
         align="center"
+        width="140"
       />
       <el-table-column label="版本号" align="center">
         <el-table-column
           label="HW 版本号"
           prop="hwVersion"
           align="center"
+          width="180"
+          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           label="BOOT 版本号"
           prop="bootVersion"
           align="center"
+          width="200"
+          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           label="UI 版本号"
           prop="uiVersion"
           align="center"
+          width="200"
+          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           label="APP 版本号"
           prop="appVersion"
           align="center"
+          width="200"
+          show-overflow-tooltip
         ></el-table-column>
       </el-table-column>
       <el-table-column label="测试环节" align="center">
-        <el-table-column label="FCT" align="center" width="80">
+        <el-table-column label="FCT" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -155,7 +194,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="IQC" align="center" width="80">
+        <el-table-column label="IQC" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -164,7 +203,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="FQC" align="center" width="80">
+        <el-table-column label="FQC" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -173,7 +212,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="防水" align="center" width="80">
+        <el-table-column label="防水" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -191,7 +230,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="老化" align="center" width="80">
+        <el-table-column label="老化" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -200,7 +239,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="OQC" align="center" width="80">
+        <el-table-column label="OQC" align="center" width="70">
           <el-button
             slot-scope="scope"
             type="text"
@@ -247,7 +286,7 @@ import {
   oqcList,
   undoneList,
   waterProofList,
-  producExporttList
+  producExporttList,
 } from "@/api/third/fileConfig";
 
 import CompUpdate from "./components/update";

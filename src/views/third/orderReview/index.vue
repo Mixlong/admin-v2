@@ -8,18 +8,11 @@
         v-show="showSearch"
       >
         <el-form-item label="客户名称" prop="customerName">
-          <!-- <el-autocomplete
-            v-model="queryParams.customerName"
-            clearable
-            placeholder="请输入"
-            :fetch-suggestions="querySearchAsync"
-            @select="handleQuery"
-          ></el-autocomplete> -->
           <el-input
             v-model.trim="queryParams.customerName"
             clearable
             @keyup.native.enter="handleQuery"
-            placeholder="请选择"
+            placeholder="请输入"
           />
         </el-form-item>
 
@@ -28,7 +21,16 @@
             v-model.trim="queryParams.customerOrderNo"
             clearable
             @keyup.native.enter="handleQuery"
-            placeholder="请选择"
+            placeholder="请输入"
+          />
+        </el-form-item>
+
+        <el-form-item label="型号名称" prop="computerName">
+          <el-input
+            v-model.trim="queryParams.computerName"
+            clearable
+            @keyup.native.enter="handleQuery"
+            placeholder="请输入"
           />
         </el-form-item>
 
@@ -89,28 +91,65 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName" />
-      <el-table-column label="客户订单号" align="center" prop="customerName" />
-      <el-table-column label="下单日期" align="center" prop="orderDate">
+      <el-table-column
+        label="客户名称"
+        align="center"
+        prop="customerName"
+        width="100"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="客户订单号"
+        align="center"
+        prop="customerOrderNo"
+        width="150"
+        show-overflow-tooltip
+      />
+      <el-table-column label="型号名称" align="center" min-width="140">
+        <template slot-scope="{ row }">
+          {{ isComputerList(row.list) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="下单日期"
+        align="center"
+        prop="orderDate"
+        width="100"
+      >
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.orderDate, '{y}-{m}-{d}')"></span>
         </template>
       </el-table-column>
-      <el-table-column label="期望日期" align="center" prop="expectedDate">
+      <el-table-column
+        label="期望日期"
+        align="center"
+        prop="expectedDate"
+        width="100"
+      >
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.expectedDate, '{y}-{m}-{d}')"></span>
         </template>
       </el-table-column>
-      <el-table-column label="订单类型" align="center" prop="orderType">
+      <el-table-column
+        label="订单类型"
+        align="center"
+        prop="orderType"
+        width="90"
+      >
         <template slot-scope="{ row }">
           <el-tag v-if="row.orderType === 0" type="primary">首次订单</el-tag>
           <el-tag v-if="row.orderType === 1" type="success">新增订单</el-tag>
           <el-tag v-if="row.orderType === 2" type="warning">其他</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="图片" align="center" prop="file">
+      <el-table-column label="图片" align="center" prop="file" width="80">
         <template slot-scope="{ row }">
-          <preview-img :url="row.file" :srcList="[row.file]" />
+          <preview-img
+            :url="row.file"
+            :srcList="[row.file]"
+            width="45px"
+            height="45px"
+          />
         </template>
       </el-table-column>
       <el-table-column
@@ -118,6 +157,7 @@
         align="center"
         prop="remark"
         min-width="200"
+        show-overflow-tooltip
       >
         <template slot-scope="{ row }">
           <span v-NoData="row.remark"></span>
@@ -128,19 +168,15 @@
         align="center"
         prop="createTime"
         sortable
-        width="120"
+        width="130"
       >
         <template slot-scope="{ row }">
           <span>
-            {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
-          </span>
-          <br />
-          <span>
-            {{ parseTime(row.createTime, "{h}:{i}") }}
+            {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="130">
+      <el-table-column label="操作" align="center" width="130" fixed="right">
         <template slot-scope="{ row }">
           <Tooltip
             icon="el-icon-edit"
@@ -196,7 +232,7 @@
 <script>
 import { judgeOrderList, judgeDeleteOrder } from "@/api/third/orderReview.js";
 import OrderReviewCreateUpdate from "./orderReviewCreateUpdate.vue";
-import { resultList } from "./JsonData";
+import { resultList as resultListData } from "./JsonData";
 
 export default {
   name: "OrderReview",
@@ -219,9 +255,20 @@ export default {
         l: 20,
         customerName: "",
         customerOrderNo: "",
+        computerName: "",
         orderType: "",
       },
     };
+  },
+  computed: {
+    isComputerList() {
+      return (list) => {
+        if (list.length) {
+          const computerData = list.map((item) => item.computerName);
+          return computerData.join("，");
+        }
+      };
+    },
   },
   created() {
     this.getList();
@@ -238,18 +285,6 @@ export default {
         .finally(() => {
           this.loading = false;
         });
-    },
-    /** 客户数据 */
-    querySearchAsync(queryString, cb) {
-      listCustomer({ key: queryString || "" }).then((res) => {
-        cb(
-          res.data.map((item) => {
-            return {
-              value: item.name,
-            };
-          })
-        );
-      });
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -277,13 +312,12 @@ export default {
             remark: "",
           },
         ],
-        resultList,
+        resultList: this.lodash.cloneDeep(resultListData),
       };
     },
     handleUpdate(row) {
       const { orderExcelJson, id } = row;
       this.$refs.orderReviewRef.dialogVisible = true;
-      console.log(JSON.parse(orderExcelJson));
       this.$refs.orderReviewRef.form = {
         id,
         ...JSON.parse(orderExcelJson),
@@ -292,7 +326,6 @@ export default {
     handleReview(row) {
       const { orderExcelJson, id } = row;
       this.$refs.orderReviewRef.dialogVisible = true;
-      console.log(JSON.parse(orderExcelJson));
       this.$refs.orderReviewRef.isReadonly = true;
       this.$refs.orderReviewRef.form = {
         id,
@@ -301,7 +334,7 @@ export default {
     },
     // 删除
     handleDelete(row) {
-      judgeDeleteOrder([row.id]).then(() => {
+      judgeDeleteOrder(row.id).then(() => {
         this.getList();
         this.msgSuccess("删除成功");
       });

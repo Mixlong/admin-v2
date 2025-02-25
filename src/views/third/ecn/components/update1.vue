@@ -92,7 +92,6 @@
               placeholder="请选择初审人员"
               filterable
               clearable
-              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in firstAuditorData"
@@ -143,13 +142,14 @@
                       collapse-tags
                       style="width: 180px"
                       @change="handleChangeBuyerData"
-                      :disabled="!!form.id"
+                      @remove-tag="handleRemoveTagBuyerData"
                     >
                       <el-option
                         v-for="item in buyerData"
                         :label="item.personnel"
                         :value="item.personnel"
                         :key="item.id"
+                        :disabled="item.disabled"
                       ></el-option>
                     </el-select>
                   </el-form-item>
@@ -195,7 +195,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in QAData"
@@ -246,7 +245,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in productData"
@@ -297,7 +295,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in engineerData"
@@ -348,7 +345,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in researchData"
@@ -399,7 +395,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in warehouseData"
@@ -471,7 +466,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in marketerData"
@@ -538,7 +532,6 @@
               placeholder="请选择PMC终审人员"
               filterable
               clearable
-              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in pmcData"
@@ -560,7 +553,6 @@
               placeholder="请选择最终审核人员"
               filterable
               clearable
-              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in finalJudgmentData"
@@ -825,7 +817,7 @@ export default {
             this.firstAuditorData = list;
             break;
           case 2:
-            this.buyerData = list;
+            this.buyerData = this.handleSetCheckList(list, 2);
             break;
           case 3:
             this.QAData = list;
@@ -853,6 +845,32 @@ export default {
             break;
         }
       });
+    },
+    handleSetCheckList(data, field) {
+      const copyData = cloneDeep(data);
+      const { id, list } = this.form;
+      if (id) {
+        // 编辑
+        const selectedData = list.filter(
+          (item) => item.field === field && item.state !== 0
+        );
+        copyData.forEach((item) => {
+          selectedData.forEach((cItem) => {
+            item.disabled = item.personnel === cItem.fieldName;
+          });
+        });
+
+        console.log("copyData", copyData);
+        return copyData;
+      } else {
+        // 新增
+        return data.map((item) => {
+          return {
+            ...item,
+            disabled: false,
+          };
+        });
+      }
     },
     // 表单重置
     reset() {
@@ -901,23 +919,28 @@ export default {
 
       return original;
     },
+    // 采购人员
     handleChangeBuyerData(selBuyerData) {
-      if (this.form.id && selBuyerData.length) {
-        const existData = this.form.list.filter((item) => item.field === 2);
-        selBuyerData.forEach((name) => {
-          existData.forEach((item) => {
-            if (name !== item.fieldName) {
-              this.form.list.push({
-                field: 2,
-                fieldName: name,
-                programme: this.form.buyerTxt,
-              });
-            }
-          });
-        });
-      }
+      console.log('selBuyerData', selBuyerData)
+      // if (this.form.id && selBuyerData.length) {
+      //   const existData = this.form.list.filter((item) => item.field === 2);
+      //   selBuyerData.forEach((name) => {
+      //     existData.forEach((item) => {
+      //       if (name !== item.fieldName) {
+      //         this.form.list.push({
+      //           field: 2,
+      //           fieldName: name,
+      //           programme: this.form.buyerTxt,
+      //         });
+      //       }
+      //     });
+      //   });
+      // }
 
-      console.log(this.form.list);
+      // console.log(this.form.list);
+    },
+    handleRemoveTagBuyerData(removeTag) {
+      console.log('removeTag', removeTag)
     },
     /** 提交按钮 */
     submitForm: function () {

@@ -85,24 +85,20 @@
         prop="planTime"
         label="计划完成时间"
         align="center"
-        width="120"
+        width="140"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.planTime, "{y}-{m}-{d}") }}
-          <br />
-          {{ parseTime(scope.row.planTime, "{h}:{i}:{s}") }}
+          {{ parseTime(scope.row.planTime, "{y}-{m}-{d} {h}:{i}:{s}") }}
         </template>
       </el-table-column>
       <el-table-column
         prop="completeTime"
         label="实际完成时间"
         align="center"
-        width="120"
+        width="140"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.completeTime, "{y}-{m}-{d}") }}
-          <br />
-          {{ parseTime(scope.row.completeTime, "{h}:{i}:{s}") }}
+          {{ parseTime(scope.row.completeTime, "{y}-{m}-{d} {h}:{i}:{s}") }}
         </template>
       </el-table-column>
       <el-table-column prop="state" label="完成状态" align="center" width="80">
@@ -165,15 +161,13 @@
         prop="createTime"
         label="创建时间"
         align="center"
-        width="90"
+        width="140"
       >
         <template slot-scope="scope">
-          {{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}
-          <br />
-          {{ parseTime(scope.row.createTime, "{h}:{i}:{s}") }}
+          {{ parseTime(scope.row.createTime, "{y}-{m}-{d} {h}:{i}:{s}") }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="60">
+      <el-table-column label="操作" align="center" width="60" fixed="right">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
             <template v-if="scope.row.state === 0">

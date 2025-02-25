@@ -105,6 +105,7 @@
         align="center"
         prop="name"
         width="150"
+        show-overflow-tooltip
       />
       <el-table-column
         label="装备型号"
@@ -112,8 +113,9 @@
         prop="type"
         width="150"
         :formatter="fnFactoryType"
+        show-overflow-tooltip
       />
-      <el-table-column label="装备ID" align="center" prop="cpuId" />
+      <el-table-column label="装备ID" align="center" prop="cpuId" show-overflow-tooltip />
       <el-table-column
         label="部署工厂"
         align="center"
@@ -121,7 +123,7 @@
         width="120"
         :formatter="fnFactoryName"
       />
-      <el-table-column label="本地IP" align="center" prop="domainIp" />
+      <el-table-column label="本地IP" align="center" prop="domainIp" width="100" />
       <el-table-column
         label="在测工序"
         align="center"
@@ -135,7 +137,7 @@
         :formatter="fnDutName"
         width="100"
       />
-      <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column label="备注" align="center" prop="remark" show-overflow-tooltip />
       <el-table-column label="状态" align="center" width="120">
         <template slot-scope="scope">
           <span :class="[scope.row.status == 0 ? 'text-green' : 'text-red']">
@@ -183,6 +185,8 @@
         header-align="center"
         class-name="small-padding fixed-width"
         align="center"
+        fixed="right"
+        width="160"
       >
         <template slot-scope="scope">
           <el-tooltip

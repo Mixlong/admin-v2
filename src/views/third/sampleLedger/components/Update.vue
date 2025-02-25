@@ -6,6 +6,7 @@
     width="1000px"
     append-to-body
     :close-on-click-modal="false"
+    top="2vh"
   >
     <el-form
       ref="form"

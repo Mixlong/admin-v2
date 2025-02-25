@@ -92,13 +92,13 @@
         :reserve-selection="true"
         :selectable="checkSelectable"
       />
-      <el-table-column label="品类" prop="category" align="center" />
-      <el-table-column label="送样单号" prop="number" align="center">
+      <el-table-column label="品类" prop="category" align="center" width="120" show-overflow-tooltip />
+      <el-table-column label="送样单号" prop="number" align="center" width="140" show-overflow-tooltip>
         <span slot-scope="{ row }" v-NoData="row.number"></span>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" />
-      <el-table-column label="属性" prop="typeName" align="center" />
-      <el-table-column label="属性描述" prop="content" align="center" width="220">
+      <el-table-column label="客户" prop="customerName" align="center" width="120" show-overflow-tooltip />
+      <el-table-column label="属性" prop="typeName" align="center" width="250" show-overflow-tooltip />
+      <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <span v-if="row.type === 'simulate_script_file'" class="text-green">
             协议名称： {{ row.content }}
@@ -106,7 +106,7 @@
           <span v-else v-NoData="row.content"></span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="updateBy">
+      <el-table-column label="创建人" align="center" prop="updateBy" width="100" show-overflow-tooltip>
         <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="140">
@@ -116,7 +116,7 @@
         label="产品状态"
         prop="computerStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.computerStatus)">
@@ -124,7 +124,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="100">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}

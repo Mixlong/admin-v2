@@ -58,8 +58,7 @@ export function judgeEditOrder(data) {
 
 export function judgeDeleteOrder(data) {
     return request({
-        url: '/judge/order/delete',
+        url: '/judge/order/del',
         method: 'delete',
-        data
     });
 }

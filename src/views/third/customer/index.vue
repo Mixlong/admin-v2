@@ -38,7 +38,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :data="customerList" :height="tableHeight()">
+    <el-table v-loading="loading" border :data="customerList" :height="tableHeight()">
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />

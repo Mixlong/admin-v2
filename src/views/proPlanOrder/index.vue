@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="flex justify-between align-center margin-bottom-xs">
-      <h3 class="text-center">生产计划表</h3>
+      <div class="flex">
+        <h3 class="text-center margin-right">生产计划表</h3>
+        <check-status-legend />
+      </div>
       <el-form
         ref="queryForm"
         :model="queryParams"
@@ -63,7 +66,7 @@
       :cell-class-name="getCellClassName"
       :row-class-name="tableRowClassName"
     >
-      <el-table-column prop="date" label="日期" align="center" width="120">
+      <el-table-column prop="date" label="日期" align="center" width="90">
         <template slot-scope="{ row }">
           {{ parseTime(row.date, "{y}-{m}-{d}") }}
         </template>
@@ -86,18 +89,18 @@
         prop="process"
         label="生产阶段"
         align="center"
-        width="120"
+        width="90"
       >
         <span slot-scope="scope" v-NoData="scope.row.process"></span>
       </el-table-column>
-      <el-table-column prop="num" label="生产数量" align="center" width="120">
+      <el-table-column prop="num" label="生产数量" align="center" width="90">
         <span slot-scope="scope" v-NoData="scope.row.num"></span>
       </el-table-column>
       <el-table-column
         prop="address"
         label="生产地点"
         align="center"
-        width="120"
+        width="90"
       >
         <span slot-scope="scope" v-NoData="scope.row.address"></span>
       </el-table-column>
@@ -106,7 +109,7 @@
           prop="pucsStatus"
           label="JS脚本"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -123,7 +126,7 @@
           prop="hardStatus"
           label="硬件资料"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -140,7 +143,7 @@
           prop="softStatus"
           label="软件资料"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -159,7 +162,7 @@
           prop="configStatus"
           label="配置文件"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -176,7 +179,7 @@
           prop="testStatus"
           label="测试上位机"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -280,7 +283,7 @@
         prop="isLicense"
         label="许可状态"
         align="center"
-        width="100"
+        width="90"
       >
         <template v-slot="{ row, $index }">
           <template v-if="row.id">
@@ -290,12 +293,16 @@
                 src="./imgs/green.png"
                 alt="已许可"
                 title="已许可"
+                width="16px"
+                height="16px"
               />
               <img
                 v-if="row.isLicense !== 1"
                 src="./imgs/red.png"
                 alt="未许可"
                 title="未许可"
+                width="16px"
+                height="16px"
               />
             </div>
           </template>
@@ -304,11 +311,12 @@
           </template>
         </template>
       </el-table-column>
+
       <el-table-column
         prop="isLicense"
         label="任务令"
         align="center"
-        width="100"
+        width="90"
       >
         <template v-slot="{ row }">
           <div
@@ -323,8 +331,8 @@
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
               p-id="4424"
-              width="30"
-              height="30"
+              width="20"
+              height="20"
             >
               <path
                 d="M149.897707 387.566843l154.232099 0c49.484303 0 89.577425-40.093122 89.577425-89.577425L393.707231 143.757319C393.707231 94.273016 353.614109 54.179894 304.491005 54.179894L149.897707 54.179894c-49.484303 0-89.577425 40.093122-89.577425 89.577425l0 154.232099C60.320282 347.473721 100.774603 387.566843 149.897707 387.566843zM136.533333 143.757319c0-7.223986 6.140388-13.364374 13.364374-13.364374l154.232099 0c7.223986 0 13.364374 6.140388 13.364374 13.364374l0 154.232099c0 7.223986-6.140388 13.364374-13.364374 13.364374L149.897707 311.353792c-7.223986 0-13.364374-6.140388-13.364374-13.364374L136.533333 143.757319z"
@@ -402,22 +410,39 @@
     </el-dialog>
 
     <!-- 任务令 -->
-    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
-      <el-card shadow="nerver">
-        <div class="flex flex-direction padding-bottom-xs" style="row-gap: 10px">
-          <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
-          <span class="flex align-center">
-            产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            芯片版本：<el-tag>{{ qrCodeObj.chipVersion }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            客户订单号：<el-tag>{{ qrCodeObj.customerOrderNo }}</el-tag>
-          </span>
-          <span class="flex align-center">
-            生产数量：<el-tag>{{ qrCodeObj.num }}</el-tag>
-          </span>
+    <el-dialog
+      title="任务令"
+      :visible.sync="isQrCode"
+      width="500px"
+      center
+      top="-5vh"
+    >
+      <el-card shadow="hover">
+        <div class="text-center">
+          <vue-qr
+            class="margin-bottom-xs"
+            :text="qrCodeObj.qrCode"
+            :size="250"
+            :margin="10"
+          ></vue-qr>
+
+          <el-descriptions direction="vertical" :column="4" border>
+            <el-descriptions-item label="产品型号">
+              <span v-NoData="qrCodeObj.computerName"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="芯片版本">
+              <span v-NoData="qrCodeObj.chipVersion"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="客户订单号">
+              <span v-NoData="qrCodeObj.customerOrderNo"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="生产数量">
+              <span v-NoData="qrCodeObj.num"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="备注" :span="4">
+              <span v-NoData="qrCodeObj.remark"></span>
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
       </el-card>
     </el-dialog>
@@ -428,6 +453,7 @@
 import { homeProduction, homeProductionStatus } from "@/api/home/index";
 import { computerNameList } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
+import CheckStatusLegend from "./checkStatusLegend.vue";
 
 export default {
   name: "proPlanOrder",
@@ -447,7 +473,7 @@ export default {
       computerOptions: [],
       queryParams: {
         computerId: "",
-        isLicense: ""
+        isLicense: "",
       },
       pickerOptions: {
         disabledDate(time) {
@@ -459,6 +485,7 @@ export default {
   components: {
     VueQr,
     MissData: () => import("./MissData.vue"),
+    CheckStatusLegend
   },
   computed: {
     isToday() {
@@ -773,7 +800,8 @@ export default {
           return this.getDataState(map[4], mapFile[4]?.length);
         case "测试上位机":
           return this.getDataState(map[5], mapFile[5]?.length);
-        case "任务令":  return row.qrCode ? 'pointer' : '';  
+        case "任务令":
+          return row.qrCode ? "pointer" : "";
       }
     },
     getDataState(state, fileLen) {

@@ -96,6 +96,12 @@
               </el-select>
             </el-form-item>
           </el-col>
+
+          <el-col :span="4">
+            <el-form-item label="备注:" prop="remark">
+              <el-input v-model="form.remark" clearable placeholder="请输入"></el-input>
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-form-item label="客户订单信息:" required>
@@ -431,6 +437,7 @@ export default {
         batchNo: "",
         batchNum: 1,
         list: [],
+        remark: ""
       };
       this.orderData = [];
       this.selOrderData = [];

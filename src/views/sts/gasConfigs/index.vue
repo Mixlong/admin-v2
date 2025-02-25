@@ -56,7 +56,7 @@
         width="200"
       />
       <el-table-column label="备注" prop="remark" align="center" />
-      <el-table-column label="状态" align="center" width="140">
+      <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -71,6 +71,7 @@
         prop="createBy"
         align="center"
         width="140"
+        show-overflow-tooltip
       >
         <span
           slot-scope="{ row }"
@@ -82,6 +83,7 @@
         prop="createTime"
         align="center"
         width="150"
+        show-overflow-tooltip
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.updateTime || row.createTime) }}

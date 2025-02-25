@@ -58,36 +58,69 @@
       border
     >
       <el-table-column label="序号" width="58" type="index" align="center" />
-      <el-table-column label="SN" prop="sn" align="center" />
-      <el-table-column label="DT SN" prop="dtSn" align="center" width="100" />
-      <el-table-column label="Model" prop="model" align="center" />
+      <el-table-column
+        label="SN"
+        prop="sn"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="DT SN"
+        prop="dtSn"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="Model"
+        prop="model"
+        align="center"
+        width="100"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="Manufacturer"
         prop="manufacturer"
         align="center"
+        width="140"
+        show-overflow-tooltip
       />
-      <el-table-column label="Batch No" prop="batchNo" align="center" />
+      <el-table-column
+        label="Batch No"
+        prop="batchNo"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="Batch Qty"
         prop="batchQty"
         align="center"
-        width="90"
+        width="100"
+        show-overflow-tooltip
       />
-      <el-table-column label="Version" prop="version" align="center" />
-      <el-table-column label="Spec" prop="spec" align="center" width="300" />
+      <el-table-column
+        label="Version"
+        prop="version"
+        align="center"
+        width="100"
+        show-overflow-tooltip
+      />
+      <el-table-column label="Spec" prop="spec" align="center" width="300" show-overflow-tooltip />
       <el-table-column label="Other" prop="other" align="center" width="80" />
-      <el-table-column label="Box Sn" prop="boxSn" align="center" />
+      <el-table-column label="Box Sn" prop="boxSn" align="center" width="140" show-overflow-tooltip />
       <el-table-column
         label="Line Sn"
         prop="lineSn"
         align="center"
         width="80"
       />
-      <el-table-column label="HardwareVer" prop="hardwareVer" align="center" />
-      <el-table-column label="AppVer" prop="appVer" align="center" />
-      <el-table-column label="BootVer" prop="bootVer" align="center" />
-      <el-table-column label="UiVer" prop="uiVer" align="center" />
-      <el-table-column label="创建时间" align="center" prop="createTime" />
+      <el-table-column label="HardwareVer" prop="hardwareVer" align="center" width="140" show-overflow-tooltip />
+      <el-table-column label="AppVer" prop="appVer" align="center" width="140" show-overflow-tooltip />
+      <el-table-column label="BootVer" prop="bootVer" align="center" width="140" show-overflow-tooltip />
+      <el-table-column label="UiVer" prop="uiVer" align="center" width="140" show-overflow-tooltip />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="140" sortable  />
     </el-table>
 
     <pagination
@@ -119,9 +152,8 @@ export default {
       queryParams: {
         p: 1,
         l: 50,
-        key: '',
-        batchNo: '',
-
+        key: "",
+        batchNo: "",
       },
       // 表单参数
       form: {},

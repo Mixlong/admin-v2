@@ -77,28 +77,59 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="装备类型" align="center" prop="name" />
-      <el-table-column label="装备型号" align="center" prop="code" />
-      <el-table-column label="模块名称" align="center" prop="moduleName" />
+      <el-table-column
+        label="装备类型"
+        align="center"
+        prop="name"
+        width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="装备型号"
+        align="center"
+        prop="code"
+        width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="模块名称"
+        align="center"
+        prop="moduleName"
+        width="140"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="覆盖范围"
         align="center"
         prop="updateCondition"
         :formatter="fnUpdateCondition"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="版本号"
         align="center"
         prop="versionName"
-        width="100"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="版本序号"
         align="center"
         prop="versionCode"
-        width="100"
+        width="90"
+        show-overflow-tooltip
       />
-      <el-table-column label="版本描叙" align="center" prop="explains" />
+      <el-table-column
+        label="版本描叙"
+        align="center"
+        prop="explains"
+        show-overflow-tooltip
+      >
+        <template v-slot="{ row }">
+          <span v-NoData="row.explains"></span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="强制升级"
         align="center"
@@ -106,7 +137,9 @@
         width="80"
       >
         <template slot-scope="scope">
-          {{ scope.row.forceUpdate == 1 ? "是" : "否" }}
+          <el-tag :type="scope.row.forceUpdate == 1 ? 'success' : 'danger'">
+            {{ scope.row.forceUpdate == 1 ? "是" : "否" }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" width="80">
@@ -119,8 +152,20 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime">
+      <el-table-column
+        label="创建人"
+        align="center"
+        prop="createBy"
+        width="90"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="创建时间"
+        align="center"
+        prop="createTime"
+        width="140px"
+        sortable
+      >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
@@ -130,6 +175,7 @@
         align="center"
         width="100"
         class-name="small-padding fixed-width"
+        fixed="right"
       >
         <template slot-scope="scope">
           <Tooltip
@@ -180,7 +226,7 @@ import {
 } from "@/api/pucs/soft";
 import CompUpdate from "./components/update";
 export default {
-  name: 'Software',
+  name: "Software",
   components: {
     CompUpdate,
   },

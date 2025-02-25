@@ -118,17 +118,17 @@
         label="产品品类"
         prop="name"
         align="center"
-        width="80"
+        width="120"
         show-overflow-tooltip
       />
       <el-table-column
         label="产品型号"
         prop="computerName"
         align="center"
-        width="80"
+        width="120"
         show-overflow-tooltip
       />
-      <el-table-column label="ERP编码" prop="code" align="center" width="120" />
+      <el-table-column label="ERP编码" prop="code" align="center" width="120" show-overflow-tooltip />
       <el-table-column
         label="配置信息"
         prop="code"

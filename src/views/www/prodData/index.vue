@@ -109,7 +109,7 @@
         prop="date"
         label="计划日期"
         align="center"
-        width="120"
+        width="100"
         fixed
         sortable
       >
@@ -135,6 +135,7 @@
         width="100"
         align="center"
         fixed
+        show-overflow-tooltip
       >
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
@@ -144,20 +145,23 @@
         align="center"
         width="100"
         fixed
+        show-overflow-tooltip
       />
       <el-table-column
         prop="computerName"
         label="型号"
         align="center"
         fixed
-        min-width="140"
+        width="140"
+        show-overflow-tooltip
       />
       <el-table-column
         prop="process"
         label="生产阶段"
         align="center"
-        width="120"
+        width="80"
         fixed
+        show-overflow-tooltip
       />
       <el-table-column
         prop="isLicense"
@@ -176,7 +180,7 @@
           prop="pucsStatus"
           label="JS脚本"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -193,7 +197,7 @@
           prop="hardStatus"
           label="硬件资料"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -210,7 +214,7 @@
           prop="softStatus"
           label="软件资料"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -229,7 +233,7 @@
           prop="configStatus"
           label="配置文件"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -272,7 +276,7 @@
           prop="snStatus"
           label="SN规则"
           align="center"
-          width="100"
+          width="90"
         >
           <template slot-scope="{ row }">
             <miss-data
@@ -314,11 +318,18 @@
         prop="personLiable"
         label="责任人"
         align="center"
-        width="140"
+        width="100"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.personLiable"></span>
       </el-table-column>
-      <el-table-column prop="result" label="结果" align="center" width="120">
+      <el-table-column
+        prop="result"
+        label="结果"
+        align="center"
+        width="100"
+        show-overflow-tooltip
+      >
         <span slot-scope="{ row }" v-NoData="row.result"> </span>
       </el-table-column>
       <!-- <el-table-column

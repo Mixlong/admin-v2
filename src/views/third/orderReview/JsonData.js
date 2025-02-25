@@ -3,10 +3,11 @@ const resultList = [
     {
         departmentName: "市场",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "订单规格描述是否清晰",
-        moduleType: 1, // 1： radio，  2： input
+        moduleType: 1, // 1： radio，  2： input， 3：选择 + input
         nickName: "", // 责任人,
         rowSpan: 10,
         list: [
@@ -26,17 +27,18 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "较上次量产相比",
-        moduleType: 1, // 1： radio，  2： input
+        moduleType: 1, // 1： radio，  2： input， 3：选择 + input
         list: [
             {
                 label: "有变更",
                 value: 0,
             },
             {
-                label: "无变更",
+                label: "首次生产",
                 value: 1,
             },
             {
@@ -47,6 +49,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "交货时间是否可调整",
@@ -68,7 +71,8 @@ const resultList = [
     },
     {
         selectValue: "",
-        view: "",
+        inputValue: "",
+        view: `送样版本：\nHW：\nBOOT：\nAPP：\nUI：`,
         completeTime: "",
         name: "样品&产前样是否确认",
         moduleType: 1, // 1： radio，  2： input
@@ -89,6 +93,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "线材（中控线&按键线）",
@@ -106,6 +111,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "送货单模板要求",
@@ -115,10 +121,15 @@ const resultList = [
                 label: "迪太模板",
                 value: 0,
             },
+            {
+                label: "客户指定",
+                value: 1,
+            },
         ],
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "箱唛模板要求",
@@ -136,6 +147,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "标签要求",
@@ -153,6 +165,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "出厂检验报告",
@@ -170,6 +183,7 @@ const resultList = [
     },
     {
         selectValue: "", // 选择的值
+        inputValue: "",
         view: "", // 评审意见
         completeTime: "",
         name: "其它注意事项",
@@ -180,6 +194,7 @@ const resultList = [
     {
         departmentName: "产品经理",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "订单需求总表",
@@ -199,6 +214,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "型号配置总表",
@@ -216,6 +232,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "迪太云型号创建",
@@ -236,6 +253,7 @@ const resultList = [
     {
         departmentName: "硬件",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "打板&贴片资料",
@@ -259,6 +277,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "硬件BOM",
@@ -280,6 +299,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "可生产版本：",
@@ -287,16 +307,41 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "其它注意事项",
         moduleType: 2, // 1： radio，  2： input
     },
 
+    // 软件
+    {
+        departmentName: "软件",
+        selectValue: "",
+        inputValue: "",
+        view: "",
+        completeTime: "",
+        name: "是否有遗留事项",
+        moduleType: 3, // 1： radio，  2： input
+        nickName: "", // 责任人,
+        rowSpan: 1,
+        list: [
+            {
+                label: "有",
+                value: 0,
+            },
+            {
+                label: "无",
+                value: 1,
+            },
+        ],
+    },
+
     // 结构
     {
         departmentName: "结构",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "产品规格图纸",
@@ -320,6 +365,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "中控线加工图纸",
@@ -342,6 +388,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "按键线加工图纸",
@@ -364,6 +411,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "结构BOM",
@@ -386,6 +434,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "模具状态",
@@ -404,6 +453,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "试产问题",
@@ -422,6 +472,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "其它注意事项",
@@ -432,6 +483,7 @@ const resultList = [
     {
         departmentName: "ERP",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "销售BOM",
@@ -458,10 +510,11 @@ const resultList = [
     {
         departmentName: "装备",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
-        name: "FCT测试架（PUCS",
-        moduleType: 1, // 1： radio，  2： input
+        name: "FCT测试架",
+        moduleType: 2, // 1： radio，  2： input
         nickName: "", // 责任人,
         rowSpan: 1,
         list: [
@@ -478,8 +531,9 @@ const resultList = [
 
     // 计划
     {
-        departmentName: "装备",
+        departmentName: "计划",
         selectValue: "",
+        inputValue: "定于（）月 （） 日 提供物料需求计划给采购部",
         view: "",
         completeTime: "",
         name: "物料需求计划评估",
@@ -492,6 +546,7 @@ const resultList = [
     {
         departmentName: "生产",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "生产设备&夹具评估",
@@ -511,6 +566,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "生产工艺评估",
@@ -528,6 +584,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "测试工具评估（串口&老化线）",
@@ -545,6 +602,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "其他注意事项",
@@ -555,6 +613,7 @@ const resultList = [
     {
         departmentName: "品质",
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "检验标准",
@@ -574,6 +633,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "检验方案",
@@ -591,6 +651,7 @@ const resultList = [
     },
     {
         selectValue: "",
+        inputValue: "",
         view: "",
         completeTime: "",
         name: "其他注意事项",

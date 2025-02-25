@@ -76,24 +76,27 @@
         prop="deliveryUser"
         align="center"
         width="100"
+        show-overflow-tooltip
       />
       <el-table-column
         label="出货时间"
         prop="deliveryTime"
         align="center"
-        width="100"
+        width="140"
       />
       <el-table-column
         label="收货人"
         prop="consignees"
         align="center"
-        width="130"
+        width="100"
+        show-overflow-tooltip
       />
       <el-table-column
         label="收货人电话"
         prop="consigneesPhone"
         align="center"
-        width="130"
+        width="120"
+        show-overflow-tooltip
       />
       <el-table-column
         label="收货人地址	"
@@ -119,19 +122,21 @@
         label="主机SN号	"
         prop="masterSn"
         align="center"
-        width="100"
+        width="120"
+        show-overflow-tooltip
       />
       <el-table-column
         label="从机SN号	"
         prop="slaveSn"
         align="center"
-        width="100"
+        width="120"
+        show-overflow-tooltip
       />
       <el-table-column
-        label="搭配宝个数	"
+        label="搭配宝个数"
         prop="typeName"
         align="center"
-        width="80"
+        width="100"
       >
         <template slot-scope="scope">
           {{ scope.row.palList.length }}

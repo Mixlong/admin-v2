@@ -45,10 +45,10 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="报告标题" prop="title" align="center" />
-      <el-table-column label="测试对象" prop="target" align="center" />
-      <el-table-column label="测试范围" prop="range" align="center" />
-      <el-table-column label="风险" prop="risk" align="center" />
+      <el-table-column label="报告标题" prop="title" align="center" show-overflow-tooltip />
+      <el-table-column label="测试对象" prop="target" align="center" show-overflow-tooltip />
+      <el-table-column label="测试范围" prop="range" align="center" show-overflow-tooltip />
+      <el-table-column label="风险" prop="risk" align="center" show-overflow-tooltip />
       <el-table-column label="测试时间" align="center" width="200">
         <template slot-scope="{ row }">
           <span class="text-green">
@@ -57,7 +57,7 @@
           <span class="text-red">结束时间：{{ parseTime(row.endTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -71,13 +71,14 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="140"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}

@@ -287,6 +287,7 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
+        show-overflow-tooltip="true"
       />
       <el-table-column
         label="客退清单"
@@ -314,6 +315,7 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
+        show-overflow-tooltip="true"
       />
       <el-table-column
         label="复测结果"
@@ -324,6 +326,7 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
+        show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
           {{ againCheckResultData[row.retestResult] }}

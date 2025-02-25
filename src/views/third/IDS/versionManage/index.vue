@@ -120,19 +120,22 @@
         label="品类"
         prop="categoryName"
         align="center"
-        width="150"
+        width="130"
+        show-overflow-tooltip
       />
       <el-table-column
         label="版本号"
         prop="versionName"
         align="center"
         width="180"
+        show-overflow-tooltip
       />
       <el-table-column
         label="属性"
         prop="typeName"
         align="center"
-        width="150"
+        width="160"
+        show-overflow-tooltip
       />
       <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="scope" v-NoData="scope.row.content"></span>
@@ -141,7 +144,7 @@
         label="产品状态"
         prop="categoryStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.categoryStatus)">
@@ -149,7 +152,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="100">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -160,7 +163,8 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="120"
+        width="100"
+        show-overflow-tooltip
       >
         <span
           slot-scope="scope"
@@ -172,6 +176,7 @@
         align="center"
         prop="createTime"
         width="140"
+        sortable
       >
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
       </el-table-column>

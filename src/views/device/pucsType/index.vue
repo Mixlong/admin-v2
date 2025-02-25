@@ -74,7 +74,7 @@
       />
       <el-table-column label="外观照片" align="center" prop="icon" width="150">
         <template slot-scope="scope">
-          <preview-img :url="scope.row.icon" :srcList="[`${scope.row.icon}`]" />
+          <preview-img :url="scope.row.icon" :srcList="[`${scope.row.icon}`]" width="45px" height="45px" />
         </template>
       </el-table-column>
       <el-table-column label="配置明细" align="center">
@@ -96,7 +96,7 @@
           </el-descriptions>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="100">
+      <el-table-column label="状态" align="center" width="80">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status ? 'success' : 'danger'">
             {{ scope.row.status ? "禁用" : "正常" }}
@@ -114,28 +114,27 @@
         prop="createTime"
         align="center"
         width="140"
+        sortable
       />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="150"
+        width="100"
       >
         <template slot-scope="scope">
-          <el-button
-            type="warning"
-            size="small"
+          <Tooltip
+            icon="el-icon-edit"
+            content="编辑"
             @click="handleUpdate(scope.row)"
-          >
-            编辑
-          </el-button>
-          <el-button
-            type="danger"
-            size="small"
+          />
+
+          <Tooltip
+            class="text-red"
+            icon="el-icon-delete"
+            content="删除"
             @click="handleDelete(scope.row)"
-          >
-            删除
-          </el-button>
+          />
         </template>
       </el-table-column>
     </el-table>

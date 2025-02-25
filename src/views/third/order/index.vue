@@ -140,30 +140,31 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :height="tableHeight()" :data="list">
+    <el-table v-loading="loading" :height="tableHeight()" border :data="list">
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName">
+      <el-table-column label="客户名称" align="center" prop="customerName" width="120" show-overflow-tooltip>
         <span slot-scope="{ row }" v-NoData="row.customerName"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column label="客户订单号" align="center" prop="customerOrderNo">
+      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" width="140" show-overflow-tooltip />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" width="160" show-overflow-tooltip>
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="品类" align="center" prop="categoryName">
+      <el-table-column label="品类" align="center" prop="categoryName" width="120" show-overflow-tooltip >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
-      <el-table-column label="型号" align="center" prop="computerName">
+      <el-table-column label="型号" align="center" prop="computerName" width="140" show-overflow-tooltip>
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
       <el-table-column
         label="BOM编码"
         align="center"
         prop="bomCode"
-        width="100"
+        width="130"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.bomCode"></span>
       </el-table-column>
@@ -171,7 +172,8 @@
         label="芯片版本"
         align="center"
         prop="chipVersion"
-        width="100"
+        width="90"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.chipVersion"></span>
       </el-table-column>
@@ -214,18 +216,20 @@
         label="创建人"
         align="center"
         prop="createBy"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         width="140"
+        sortable
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="210">
+      <el-table-column label="操作" align="center" width="210" fixed="right">
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button

@@ -106,35 +106,80 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="整机SN" prop="sn" align="center">
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="型号"
+        prop="computerName"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="PCBA SN"
+        prop="pcbaSn"
+        align="center"
+        width="190"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="整机SN"
+        prop="sn"
+        align="center"
+        width="250"
+        show-overflow-tooltip
+      >
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center">
+      <el-table-column label="箱号" prop="boxNo" align="center" width="240">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
       </el-table-column>
-      <el-table-column label="测试环节" prop="processName" align="center" />
-      <el-table-column label="判断结果" prop="result" align="center">
+      <el-table-column
+        label="测试环节"
+        prop="processName"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="判断结果"
+        prop="result"
+        align="center"
+        width="100"
+      >
         <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
       </el-table-column>
-      <el-table-column label="测试设备SN" prop="cpuId" align="center">
+      <el-table-column
+        label="测试设备SN"
+        prop="cpuId"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      >
         <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
       </el-table-column>
-      <el-table-column label="测试时长" prop="time" align="center">
+      <el-table-column label="测试时长" prop="time" align="center" width="100">
         <template slot-scope="{ row }">
           {{ formattedTime({ time: row.time, timeType: "ms" }) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试时间" prop="testTime" align="center">
+      <el-table-column
+        label="测试时间"
+        prop="testTime"
+        align="center"
+        width="140"
+      >
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试详情" align="center" width="100">
+      <el-table-column label="测试详情" align="center" width="100" fixed="right">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>
@@ -588,6 +633,7 @@ export default {
         if (route.name !== "StsTestResult") return;
         const { params, query } = route;
 
+        console.log(route);
         const { type, categoryId, status, model } = query;
         this.queryParams.type = type ?? "";
         this.queryParams.categoryId = categoryId ?? "";
@@ -667,6 +713,8 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
+      this.queryParams.recordId = "";
+
       this.getList();
     },
     /** 重置按钮操作 */

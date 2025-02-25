@@ -137,12 +137,12 @@
             <div class="flex align-center justify-between check-box">
               <div>{{ row.secondPerson }}</div>
 
-              <el-tag type="warning" v-if="row.secondState === 0"
-                >待审核</el-tag
-              >
-              <el-tag type="success" v-if="row.secondState === 1"
-                >已审核</el-tag
-              >
+              <el-tag type="warning" v-if="row.secondState === 0">
+                待审核
+              </el-tag>
+              <el-tag type="success" v-if="row.secondState === 1">
+                已审核
+              </el-tag>
               <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
             </div>
           </div>
@@ -199,9 +199,9 @@
                 "
                 class="text-orange"
                 icon="el-icon-coordinate"
-                :content="`待 （${item.fieldName}） ${
-                  item.state === 2 ? '重新' : ''
-                }会审`"
+                :content="`待（${TriageList[item.field]}）--（${
+                  item.fieldName
+                }） ${item.state === 2 ? '重新' : ''}会审`"
                 @click="handleAuthFlag(item, 2)"
               />
 
@@ -215,7 +215,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销采购会审"
+                :content="`撤销（采购）-（${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -228,7 +228,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销品质会审"
+                :content="`撤销（品质）- （${item.fieldName}）会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -236,12 +236,12 @@
                 v-show="
                   item.fieldName === nickName &&
                   item.state === 1 &&
-                  item.field === 4 && 
+                  item.field === 4 &&
                   isFinalStateFlag(row)
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销生产会审"
+                :content="`撤销（生产）- （${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -254,7 +254,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销工程会审"
+                :content="`撤销（工程）- （${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -267,7 +267,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销研发会审"
+                :content="`撤销（研发）- （${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -280,7 +280,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销仓库会审"
+                :content="`撤销（仓库）- （${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
@@ -293,7 +293,7 @@
                 "
                 class="text-grey"
                 icon="el-icon-circle-check"
-                content="撤销市场会审"
+                :content="`撤销（市场）-（${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
             </span>
@@ -359,14 +359,19 @@
             @click="handleExport(row)"
           /> -->
 
-            <Tooltip
+            <el-popconfirm
               v-show="row.applicant === nickName"
+              title="确定要删除吗？"
+              @confirm="handleDelete(row)"
               v-hasPermi="['ecn:delete']"
-              icon="el-icon-delete"
-              :class="['text-red']"
-              content="删除"
-              @click="handleDelete(row)"
-            />
+            >
+              <Tooltip
+                slot="reference"
+                icon="el-icon-delete"
+                :className="['text-red']"
+                content="删除"
+              />
+            </el-popconfirm>
 
             <Tooltip
               v-if="row.file"
@@ -387,11 +392,13 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
+
     <CompUpdate
       ref="compUpdate"
       :classifyList="classifyList"
       :involveUnitList="involveUnitList"
     />
+
     <CompDetail
       ref="compDetail"
       :classifyList="classifyList"
@@ -769,13 +776,15 @@ import CompUpdate from "./components/update";
 import CompDetail from "./components/detail";
 import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
-// import introJs from "intro.js";
+import { cloneDeep } from "lodash";
+import CompUpdate1 from "./components/update1";
 
 export default {
   name: "Ecn",
   components: {
     CompUpdate,
     CompDetail,
+    CompUpdate1
   },
   data() {
     return {
@@ -1102,34 +1111,34 @@ export default {
     handleUpdate(row, showName, title) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
-      let params = Object.assign({}, row);
+      let params = cloneDeep(row);
 
       params.list.forEach((item, index) => {
-        if (index === 0) {
-          params.selBuyerData = item.fieldName;
+        if (item.field === 2) {
+          params.selBuyerData = this.handleGetFieldName(params.list, 2);
           params.buyerTxt = item.programme;
-        } else if (index === 1) {
-          params.selQAData = item.fieldName;
+        } else if (item.field === 3) {
+          params.selQAData = this.handleGetFieldName(params.list, 3);
           params.QADataTxt = item.programme;
-        } else if (index === 2) {
-          params.selProductData = item.fieldName;
+        } else if (item.field === 4) {
+          params.selProductData = this.handleGetFieldName(params.list, 4);
           params.productDataTxt = item.programme;
-        } else if (index === 3) {
-          params.selEngineerData = item.fieldName;
+        } else if (item.field === 5) {
+          params.selEngineerData = this.handleGetFieldName(params.list, 5);
           params.engineerDataTxt = item.programme;
-        } else if (index === 4) {
-          params.selResearchData = item.fieldName;
+        } else if (item.field === 6) {
+          params.selResearchData = this.handleGetFieldName(params.list, 6);
           params.researchDataTxt = item.programme;
-        } else if (index === 5) {
-          params.selWarehouseData = item.fieldName;
+        } else if (item.field === 7) {
+          params.selWarehouseData = this.handleGetFieldName(params.list, 7);
           params.warehouseDataTxt = item.programme;
           params.finishedHandleTxt = item.treatment;
-        } else if (index === 6) {
-          params.selMarketerData = item.fieldName;
+        } else if (item.field === 8) {
+          params.selMarketerData = this.handleGetFieldName(params.list, 8);
           params.marketerDataTxt = item.programme;
           params.noMarketerDataTxt = item.treatment;
-        } else if (index === 7) {
-          params.selPmcData = item.fieldName;
+        } else if (item.field === 9) {
+          params.selPmcData = this.handleGetFieldName(params.list, 9);
           params.pmcDataTxt = item.programme;
         }
       });
@@ -1138,6 +1147,11 @@ export default {
       this.$refs.compUpdate.form = params;
       this.$refs.compUpdate.showName = showName;
       this.$refs.compUpdate.title = title == undefined ? "修改ECN" : title;
+    },
+    handleGetFieldName(paramsList, field) {
+      return paramsList
+        .filter((item) => item.field == field)
+        .map((item) => item.fieldName);
     },
     cellClick(row, column, cell, event) {
       switch (column.label) {
@@ -1163,18 +1177,10 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$confirm("是否确认删除?", "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(function () {
-          return bomAuth([{ id: row.id, status: 1 }]);
-        })
-        .then(() => {
-          this.getList();
-          this.msgSuccess("删除成功");
-        });
+      bomAuth([{ id: row.id, status: 1 }]).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      });
     },
 
     handleExport(row) {

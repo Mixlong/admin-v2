@@ -164,8 +164,8 @@
       </el-table-column>
       <el-table-column label="客户名称" prop="customerName" align="center" />
       <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="送样单号" prop="sampleName" align="center" />
-      <el-table-column label="产品SN" prop="sn" align="center">
+      <el-table-column label="送样单号" prop="sampleName" align="center" width="180" show-overflow-tooltip="true" />
+      <el-table-column label="产品SN" prop="sn" align="center" width="220" show-overflow-tooltip="true">
         <template slot-scope="{ row }">
           <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
         </template>
@@ -174,7 +174,6 @@
         label="客诉现象"
         prop="result"
         align="center"
-        show-overflow-tooltip
       />
       <el-table-column label="处理进展" prop="model" align="center" width="80">
         <template slot-scope="{ row }">
@@ -209,13 +208,13 @@
       <el-table-column label="问题根因" prop="rootMatter" align="center">
         <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
       </el-table-column>
-      <el-table-column label="根因分类" prop="rootMatterType" align="center">
+      <el-table-column label="根因分类" prop="rootMatterType" align="center" show-overflow-tooltip>
         <span
           slot-scope="scope"
           v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="190">
+      <el-table-column label="操作" align="center" width="190" fixed="right">
         <template slot-scope="{ row }">
           <div class="flex justify-center align-center">
             <el-button class="text-blue" type="text" @click="handleUpdate(row)">

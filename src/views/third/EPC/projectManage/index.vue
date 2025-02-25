@@ -125,7 +125,8 @@
         label="属性"
         prop="typeName"
         align="center"
-        width="150"
+        width="160"
+        show-overflow-tooltip
       />
       <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="{ row }" v-html="row.content"></span>
@@ -134,7 +135,7 @@
         label="产品状态"
         prop="categoryStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.categoryStatus)">
@@ -142,7 +143,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -153,14 +154,15 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="120"
+        width="90"
+        show-overflow-tooltip
       >
         <span
           slot-scope="scope"
           v-NoData="scope.row.createBy || scope.row.updateBy"
         ></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140">
+      <el-table-column label="创建时间" align="center" width="140" sortable>
         <span slot-scope="scope" v-NoData="scope.row.createTime"></span>
       </el-table-column>
       <el-table-column
@@ -283,8 +285,7 @@
             type="primary"
             @click="
               handleStatusChange(
-                checkRole(['admin']) &&
-                  (auth.status === 4 || isBatchType === 2)
+                checkRole(['admin']) && (auth.status === 4 || isBatchType === 2)
                   ? 2
                   : 4
               )
@@ -377,10 +378,7 @@ export default {
     },
     isSResetCheck() {
       return ({ computerStatus, status }) => {
-        return (
-          !computerStatus &&
-          (status === 2 || status === 4)
-        );
+        return !computerStatus && (status === 2 || status === 4);
       };
     },
     isDownloadUrl() {

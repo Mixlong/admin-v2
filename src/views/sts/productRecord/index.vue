@@ -115,30 +115,30 @@
       :cell-class-name="cellClassName"
       border
     >
-      <el-table-column label="序号" width="58" type="index" align="center">
+      <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="整机SN" prop="sn" align="center">
+      <el-table-column label="品类" prop="categoryName" align="center" width="120" show-overflow-tooltip fixed="left" />
+      <el-table-column label="型号" prop="computerName" align="center" width="180" show-overflow-tooltip fixed="left" />
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="200" show-overflow-tooltip />
+      <el-table-column label="整机SN" prop="sn" align="center" width="250" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="客户订单号" prop="customerOrderNo" align="center">
+      <el-table-column label="客户订单号" prop="customerOrderNo" align="center" width="140" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" prop="salesOrderNo" align="center">
+      <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" width="140" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
       </el-table-column>
-      <el-table-column label="蓝牙地址" prop="mac" align="center">
+      <el-table-column label="蓝牙地址" prop="mac" align="center" width="120" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.mac"></span>
       </el-table-column>
-      <el-table-column label="生产地点" prop="factory" align="center">
+      <el-table-column label="生产地点" prop="factory" align="center" width="100" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.factory"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center">
+      <el-table-column label="箱号" prop="boxNo" align="center" width="260">
         <template slot-scope="{ row }">
           <el-tooltip
             effect="dark"
@@ -165,7 +165,7 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="工单号" prop="orderCode" align="center">
+      <el-table-column label="工单号" prop="orderCode" align="center" width="160" show-overflow-tooltip>
         <template slot-scope="{ row }">
           <el-tooltip
             effect="dark"
@@ -193,17 +193,18 @@
         prop="packingTime"
         align="center"
         sortable
+        width="140"
       >
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
       </el-table-column>
-      <el-table-column label="版本信息" align="center" width="85">
+      <el-table-column label="版本信息" align="center" width="90" fixed="right">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row.id)">
             查看
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="配件信息" align="center" width="85">
+      <el-table-column label="配件信息" align="center" width="90" fixed="right">
         <template slot-scope="{ row }">
           <el-button
             type="text"
@@ -213,7 +214,7 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="测试信息" align="center" width="85">
+      <el-table-column label="测试信息" align="center" width="90" fixed="right">
         <template slot-scope="{ row }">
           <el-button
             type="text"

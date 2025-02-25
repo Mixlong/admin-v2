@@ -151,18 +151,20 @@
         label="品类"
         prop="category"
         align="center"
-        width="150"
+        width="130"
+        show-overflow-tooltip
       />
       <el-table-column
         label="型号"
         prop="computer"
         align="center"
-        width="150"
+        width="130"
+        show-overflow-tooltip
       />
-      <el-table-column label="ERP编码" prop="erp" align="center" width="130">
+      <el-table-column label="ERP编码" prop="erp" align="center" width="130" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.erp"></span>
       </el-table-column>
-      <el-table-column label="属性" prop="typeName" align="center" />
+      <el-table-column label="属性" prop="typeName" align="center" show-overflow-tooltip />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <!-- PC上位机 -->
@@ -192,7 +194,7 @@
         label="产品状态"
         prop="computerStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.computerStatus)">
@@ -200,7 +202,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -211,14 +213,15 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="120"
+        width="90"
+        show-overflow-tooltip
       >
         <span
           slot-scope="scope"
           v-NoData="scope.row.createBy || scope.row.updateBy"
         ></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140">
+      <el-table-column label="创建时间" align="center" width="140" sortable>
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
       </el-table-column>
       <el-table-column
@@ -226,6 +229,7 @@
         align="center"
         width="150"
         class-name="small-padding fixed-width"
+        fixed="right"
       >
         <template slot-scope="scope">
           <Tooltip

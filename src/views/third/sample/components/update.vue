@@ -34,7 +34,6 @@
           >
             <el-select
               v-model="form.baseModel"
-              :disabled="isDisabled"
               multiple
               filterable
               allow-create

@@ -10,7 +10,7 @@
   >
     <el-form
       ref="form"
-      label-position="left"
+      label-position="right"
       :model="form"
       :rules="rules"
       label-width="100px"
@@ -20,11 +20,11 @@
       <el-form-item label="产品品类:" prop="categoryId">
         <el-select
           v-model="form.categoryId"
-          style="width: 65%"
           placeholder="请选择产品品类"
           clearable
           filterable
           @change="getComputerId"
+          style="width: 100%"
         >
           <el-option
             v-for="dict in dictList"
@@ -37,10 +37,10 @@
       <el-form-item label="产品型号:" prop="computerId">
         <el-select
           v-model="form.computerId"
-          style="width: 65%"
           placeholder="请选择产品型号"
           clearable
           filterable
+          style="width: 100%"
         >
           <el-option
             v-for="dict in modelList"
@@ -53,10 +53,10 @@
       <el-form-item label="芯片版本:" prop="chipVersion">
         <el-select
           v-model="form.chipVersion"
-          style="width: 65%"
           placeholder="请选择芯片版本"
           clearable
           filterable
+          style="width: 100%"
         >
           <el-option
             v-for="dict in chipList"
@@ -72,6 +72,7 @@
             v-for="(item, index) in operationList"
             :key="index"
             :label="item.dictLabel"
+            border
           >
             {{ item.dictLabel }}
           </el-radio>
@@ -80,24 +81,24 @@
       <el-form-item label="生产日期:" prop="date">
         <el-date-picker
           v-model="form.date"
-          style="width: 65%"
           type="date"
           :default-time="defaultTime"
           value-format="timestamp"
           placeholder="请选择生产日期"
           @change="selDate"
+          style="width: 100%"
         >
         </el-date-picker>
       </el-form-item>
       <el-form-item label="出货日期:" prop="sellDate">
         <el-date-picker
           v-model="form.sellDate"
-          style="width: 65%"
           type="date"
           :default-time="defaultTime"
           value-format="timestamp"
           placeholder="请选择出货日期"
           @change="selDate"
+          style="width: 100%"
         >
         </el-date-picker>
       </el-form-item>
@@ -105,7 +106,6 @@
         <el-input
           v-model.number="form.orderNo"
           clearable
-          style="width: 65%"
           placeholder="请输入客户订单号"
         />
       </el-form-item>
@@ -114,7 +114,6 @@
           v-model.trim="form.batchNo"
           placeholder="请输入批次号"
           clearable
-          style="width: 65%"
         ></el-input>
       </el-form-item>
 
@@ -124,7 +123,7 @@
           controls-position="right"
           :min="1"
           :precision="0"
-          style="width: 65%"
+          style="width: 100%"
         ></el-input-number>
       </el-form-item>
       <el-form-item label="生产地点:" prop="address">
@@ -133,6 +132,7 @@
             v-for="(item, index) in productAddressList"
             :key="index"
             :label="item.dictLabel"
+            border
           >
             {{ item.dictLabel }}
           </el-radio>
@@ -141,7 +141,6 @@
       <template v-if="form.process === 'SMT'">
         <el-form-item label="有效期:" prop="dateRange">
           <el-date-picker
-            style="width: 65%"
             v-model="form.dateRange"
             value-format="timestamp"
             type="datetimerange"
@@ -153,14 +152,16 @@
         </el-form-item>
       </template>
       <el-form-item label="数量:" prop="num">
-        <el-input
-          v-model.number="form.num"
-          clearable
-          style="width: 65%"
-          placeholder="请输入数量"
-        >
+        <el-input v-model.number="form.num" clearable placeholder="请输入数量">
           <template slot="append">pcs</template>
         </el-input>
+      </el-form-item>
+      <el-form-item label="备注:" prop="remark">
+        <el-input
+          v-model="form.remark"
+          clearable
+          placeholder="请输入"
+        ></el-input>
       </el-form-item>
       <el-form-item
         label="配置信息："
@@ -368,6 +369,7 @@ export default {
         num: "",
         batchNo: "",
         batchNum: 1,
+        remark: "",
       };
       this.resetForm("form");
     },

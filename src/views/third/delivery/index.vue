@@ -134,13 +134,14 @@
       type="success"
       show-icon
     ></el-alert>
-    
+
     <el-table
       ref="expandTableRef"
       id="drag_table"
       v-loading="loading"
       :height="tableHeight()"
       :data="dataList"
+      border
     >
       <el-table-column type="expand" fixed>
         <div slot-scope="{ row }">
@@ -161,6 +162,7 @@
                 label="客户名称"
                 align="center"
                 prop="customerName"
+                show-overflow-tooltip
               >
                 <span slot-scope="{ row }" v-NoData="row.customerName"></span>
               </el-table-column>
@@ -219,12 +221,14 @@
         align="center"
         prop="salesOrderNo"
         width="140"
+        show-overflow-tooltip
       />
       <el-table-column
         label="客户订单号"
         align="center"
         prop="customerOrderNo"
         width="150"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
@@ -233,6 +237,7 @@
         align="center"
         prop="categoryName"
         width="120"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
@@ -241,6 +246,7 @@
         align="center"
         prop="computerName"
         width="120"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
@@ -249,6 +255,7 @@
         align="center"
         prop="transportMode"
         width="100"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.transportMode"></span>
       </el-table-column>
@@ -256,7 +263,8 @@
         label="发货单号"
         align="center"
         prop="orderNumber"
-        width="120"
+        width="140"
+        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.orderNumber"></span>
       </el-table-column>
@@ -268,8 +276,8 @@
       >
         <template slot-scope="{ row }">
           <preview-img
-            width="60px"
-            height="60px"
+            width="45px"
+            height="45px"
             :isDisBadge="false"
             :url="row.shippingPicture"
           />
@@ -333,11 +341,8 @@
         <template slot-scope="{ row }">
           <div v-show="!Is_Empty(row.updateTime || row.createTime)">
             <div>
-              {{ parseTime(row.updateTime || row.createTime, "{y}-{m}-{d}") }}
+              {{ parseTime(row.updateTime || row.createTime, "{y}-{m}-{d} {h}:{i}:{s}") }}
             </div>
-            <span>{{
-              parseTime(row.updateTime || row.createTime, "{h}:{i}:{s}")
-            }}</span>
           </div>
           <div v-show="Is_Empty(row.updateTime || row.createTime)">- - -</div>
         </template>

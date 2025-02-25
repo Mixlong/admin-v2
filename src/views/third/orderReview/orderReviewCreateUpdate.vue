@@ -11,7 +11,7 @@
         <th class="labelW custom-cell">客户名称</th>
         <td class="full-td-box">
           <el-input
-            v-model.trim.lazy="form.customerOrderNo"
+            v-model.trim.lazy="form.customerName"
             class="full-input"
             :readonly="isReadonly"
           ></el-input>
@@ -20,7 +20,7 @@
         <th class="labelW custom-cell">客户订单号</th>
         <td class="full-td-box">
           <el-input
-            v-model.trim.lazy="form.customerName"
+            v-model.trim.lazy="form.customerOrderNo"
             class="full-input"
             :readonly="isReadonly"
           ></el-input>
@@ -215,7 +215,7 @@
             {{ scope.row.name }}
           </template>
         </el-table-column>
-        <el-table-column align="left">
+        <el-table-column align="left" class-name="review-project-box">
           <template slot-scope="scope">
             <template v-if="scope.row.moduleType === 1">
               <el-radio-group
@@ -230,20 +230,54 @@
             </template>
             <template v-if="scope.row.moduleType === 2">
               <div class="flex align-center">
-                <b
+                <!-- <b
                   class="text-blue margin-right-xs"
                   style="white-space: nowrap"
                 >
                   请描述:
-                </b>
+                </b> -->
                 <el-input
-                  v-model="scope.row.selectValue"
+                  v-model="scope.row.inputValue"
                   size="mini"
                   type="textarea"
                   autosize
                   :readonly="isReadonly"
+                  placeholder="请描述"
                 ></el-input>
               </div>
+            </template>
+            <template v-if="scope.row.moduleType === 3">
+              <el-row
+                :gutter="20"
+                type="flex"
+                justify="space-between"
+                align="middle"
+              >
+                <el-col :span="6">
+                  <el-radio-group
+                    v-model="scope.row.selectValue"
+                    size="mini"
+                    :disabled="isReadonly"
+                  >
+                    <el-radio
+                      v-for="cItem in scope.row.list"
+                      :label="cItem.value"
+                    >
+                      {{ cItem.label }}
+                    </el-radio>
+                  </el-radio-group>
+                </el-col>
+                <el-col :span="18">
+                  <el-input
+                    v-model="scope.row.inputValue"
+                    size="mini"
+                    type="textarea"
+                    autosize
+                    :readonly="isReadonly"
+                    placeholder="请描述"
+                  ></el-input>
+                </el-col>
+              </el-row>
             </template>
           </template>
         </el-table-column>
@@ -336,7 +370,6 @@
 
 <script>
 import { judgeOrderCreate, judgeOrderEdit } from "@/api/third/orderReview.js";
-import { resultList } from "./JsonData";
 
 export default {
   data() {
@@ -348,25 +381,7 @@ export default {
       isSubLoading: false,
       isFullTextarea: null,
       textareaStyles: {}, // 用于存储每个 textarea 的样式
-      form: {
-        customerName: "",
-        customerOrderNo: "",
-        orderDate: "",
-        expectedDate: "",
-        orderType: null,
-        list: [
-          {
-            computerName: "",
-            description: "",
-            num: "",
-            material: "",
-            remark: "",
-          },
-        ],
-        resultList,
-        remark: "",
-        file: "",
-      },
+      form: {},
     };
   },
   watch: {
@@ -445,12 +460,11 @@ export default {
     saveEdit(index, field) {
       this.editingIndex = null;
       this.editingField = null;
-      console.log(`保存编辑：第${index + 1}行，字段${field}`);
     },
     submitForm() {
       const {
-        customerOrderNo,
         customerName,
+        customerOrderNo,
         orderDate,
         expectedDate,
         orderType,
@@ -459,11 +473,11 @@ export default {
         remark,
         file,
       } = this.form;
-      if (!customerOrderNo) {
+      if (!customerName) {
         return this.msgWarning("客户名称不能为空");
       }
 
-      if (!customerName) {
+      if (!customerOrderNo) {
         return this.msgWarning("客户订单号不能为空");
       }
 
@@ -554,7 +568,6 @@ export default {
     padding: 0 !important;
     .cell {
       padding: 0;
-
       .input-container {
         position: absolute;
         top: 0;
@@ -576,6 +589,25 @@ export default {
         }
       }
 
+      /* textarea */
+      .el-textarea {
+        .el-textarea__inner {
+          min-height: 35px !important;
+          resize: none;
+          border-color: transparent;
+          transition: border-color 0.3s;
+
+          &:focus {
+            border-color: #409eff !important;
+          }
+        }
+      }
+    }
+  }
+
+  .review-project-box {
+    padding: 0;
+    .cell {
       /* textarea */
       .el-textarea__inner {
         min-height: 35px !important;

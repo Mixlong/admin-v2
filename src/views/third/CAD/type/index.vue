@@ -55,16 +55,16 @@
       :height="tableHeight()"
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
-      <el-table-column label="键" prop="key" align="center" width="140" />
-      <el-table-column label="值" prop="value" align="center" width="140" />
-      <el-table-column label="上传文件" align="center" width="140">
+      <el-table-column label="键" prop="key" align="center" width="140" show-overflow-tooltip />
+      <el-table-column label="值" prop="value" align="center" width="160" show-overflow-tooltip />
+      <el-table-column label="上传文件" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="scope.row.up === 1 ? 'success' : 'danger'">
             {{ scope.row.up === 1 ? "是" : "否" }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort" align="center" width="140" />
+      <el-table-column label="排序" prop="sort" align="center" width="100" />
       <el-table-column label="可见性" align="center">
         <template slot-scope="scope">
           <el-tag
@@ -80,13 +80,14 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="140"
+        width="100"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         width="140"
+        sortable
       />
       <el-table-column
         label="操作"

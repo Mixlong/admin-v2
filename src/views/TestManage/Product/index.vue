@@ -58,11 +58,12 @@
         label="模块名称"
         prop="productType"
         align="center"
-        width="250"
+        width="200"
+        show-overflow-tooltip
       />
       <el-table-column label="描述" prop="desc" align="center"  />
-      <el-table-column label="排序序号" prop="sort" align="center" width="120" />
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="排序序号" prop="sort" align="center" width="100" />
+      <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -76,19 +77,21 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="120"
+        width="100"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
+        sortable
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"

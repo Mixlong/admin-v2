@@ -45,7 +45,7 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" width="120" />
+      <el-table-column label="客户" prop="customerName" align="center" width="120" show-overflow-tooltip />
       <el-table-column label="产品型号" prop="computerName" align="center">
         <template slot-scope="{ row }">
           <template v-if="row.computerName">
@@ -60,10 +60,10 @@
           <template v-else>---</template>
         </template>
       </el-table-column>
-      <el-table-column label="模块" prop="typeName" align="center" width="120" />
-      <el-table-column label="测试项" prop="content" align="center" />
-      <el-table-column label="预期结果" prop="result" align="center" />
-      <el-table-column label="BUG内容（失败原因）" prop="msg" align="center" />
+      <el-table-column label="模块" prop="typeName" align="center" width="120" show-overflow-tooltip />
+      <el-table-column label="测试项" prop="content" align="center" show-overflow-tooltip />
+      <el-table-column label="预期结果" prop="result" align="center" show-overflow-tooltip />
+      <el-table-column label="BUG内容（失败原因）" prop="msg" align="center" show-overflow-tooltip />
       <el-table-column label="回归周期(天)" prop="solveNum" align="center" width="120" />
       <el-table-column label="新增/解决时间" align="center" width="140">
         <template slot-scope="{ row }">
@@ -75,7 +75,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="是否已修复" prop="status" align="center" width="100">
+      <el-table-column label="是否已修复" prop="status" align="center" width="100" fixed="right">
         <template slot-scope="{ row }">
           <el-tag v-if="row.status === 1" type="success">已修复</el-tag>
           <el-tag v-if="row.status === 2" type="danger">未修复</el-tag>

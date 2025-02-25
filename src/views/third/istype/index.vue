@@ -8,7 +8,6 @@
     >
       <el-form-item label="客户名称" prop="customerName">
         <el-autocomplete
-          size="small"
           clearable
           v-model="queryParams.customerName"
           :fetch-suggestions="querySearchAsync"
@@ -80,7 +79,7 @@
           重置
         </el-button>
       </el-form-item>
-      <el-row :gutter="10" class="fr mt5">
+      <el-row :gutter="10" class="fr">
         <el-col :span="1.5">
           <el-button
             type="primary"
@@ -107,31 +106,32 @@
         label="外发客户"
         prop="customerName"
         align="center"
-        width="120"
+        width="100"
+        show-overflow-tooltip
       />
-      <el-table-column
-        label="产品品类"
-        prop="categoryName"
-        align="center"
-      />
-      <el-table-column
-        label="产品型号"
-        prop="computerName"
-        align="center"
-      />
+      <el-table-column label="产品品类" prop="categoryName" align="center" />
+      <el-table-column label="产品型号" prop="computerName" align="center" />
       <el-table-column
         label="送样单号"
         prop="number"
         align="center"
         width="160"
+        show-overflow-tooltip
       />
       <el-table-column
         label="属性"
         prop="typeName"
         align="center"
         width="160"
+        show-overflow-tooltip
       />
-      <el-table-column label="描述" prop="orderDesc" align="center" min-width="150" />
+      <el-table-column
+        label="描述"
+        prop="orderDesc"
+        align="center"
+        min-width="150"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="文件类型"
         prop="orderDesc"
@@ -144,7 +144,7 @@
           <el-tag v-if="row.type === '3'">其他</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="下载口令" align="center" width="120">
+      <el-table-column label="下载口令" align="center" width="110">
         <template slot-scope="{ row }" v-if="row.downloadPassword">
           <el-tooltip
             effect="dark"
@@ -160,7 +160,7 @@
         label="有效期至"
         prop="expiryDate"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="{ row }">
           <div v-if="row.status && !timeOut(row.expiryDate)">
@@ -178,7 +178,8 @@
         label="创建人"
         align="center"
         prop="createName"
-        width="120"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="审核状态"
@@ -206,47 +207,34 @@
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="150"
+        width="120"
       >
         <template slot-scope="{ row }">
-          <el-button
+          <Tooltip
             v-show="row.isEditAndForbid"
             v-hasPermi="['third:isType:update']"
-            type="text"
+            icon="el-icon-edit"
+            content="编辑"
             @click="handleUpdate(row)"
-          >
-            编辑
-          </el-button>
+          />
 
-          <el-button
-            v-show="row.isState"
-            type="text"
+          <Tooltip
             class="text-green"
+            v-show="row.isState"
             v-hasPermi="['third:isType:check']"
+            icon="el-icon-s-check"
+            content="审核"
             @click="onCheck(row)"
-          >
-            审核
-          </el-button>
+          />
 
-          <!-- <el-button
-            type="text"
-            class="text-orange"
-            v-show="row.file"
-            v-hasPermi="['third:isType:download']"
-            @click="urlDownload(row.file)"
-          >
-            下载
-          </el-button> -->
-
-          <el-button
+          <Tooltip
+            :class="[row.status ? 'text-red' : 'text-green']"
             v-show="row.isEditAndForbid"
             v-hasPermi="['third:isType:statusCheck']"
-            type="text"
-            :class="[row.status ? 'text-red' : 'text-green']"
+            icon="el-icon-folder-checked"
+            :content="row.status ? '禁用' : '启用'"
             @click="onDisable(row)"
-          >
-            {{ row.status ? "禁用" : "启用" }}
-          </el-button>
+          />
         </template>
       </el-table-column>
     </el-table>

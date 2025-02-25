@@ -73,12 +73,12 @@
           <el-button type="text" @click="handleSeeScriptLog(scope.row.id)">查看</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="备注" prop="remark" align="center" width="120">
+      <el-table-column label="备注" prop="remark" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" :disabled="!scope.row.remark" @click="handleSeeRemark(scope.row.remark)">查看</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -93,12 +93,13 @@
         prop="createBy"
         align="center"
         width="120"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
