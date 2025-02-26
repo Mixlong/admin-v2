@@ -56,9 +56,9 @@ export function judgeEditOrder(data) {
     });
 }
 
-export function judgeDeleteOrder(data) {
+export function judgeDeleteOrder(delId) {
     return request({
-        url: '/judge/order/del',
+        url: '/judge/order/del/' + delId,
         method: 'delete',
     });
 }

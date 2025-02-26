@@ -393,7 +393,7 @@
       @pagination="getList"
     />
 
-    <CompUpdate
+    <CompUpdate1
       ref="compUpdate"
       :classifyList="classifyList"
       :involveUnitList="involveUnitList"
@@ -962,26 +962,6 @@ export default {
     this.getTreeselect();
   },
   async mounted() {
-    // const intro = introJs();
-    // this.$nextTick(() => {
-    //   intro
-    //     .setOptions({
-    //       steps: [
-    //         {
-    //           title: "Welcome",
-    //           intro: "ECN审核流程管理 👋",
-    //         },
-    //         {
-    //           title: "操作区域",
-    //           intro: "审核流程可以撤销重新审核",
-    //           element: document.querySelector(".el-table__fixed-right"),
-    //         },
-    //       ],
-    //       dontShowAgain: true,
-    //     })
-    //     .start();
-    // });
-
     await this.getDicts("ecn_classify_name").then((res) => {
       this.classifyList = res.data;
     });

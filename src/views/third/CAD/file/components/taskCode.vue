@@ -6,7 +6,7 @@
     width="650px"
     append-to-body
     center
-    top="2vh"
+    top="-10vh"
     :close-on-click-modal="false"
     @close="close"
   >
@@ -86,9 +86,11 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-card shadow="hover" v-if="qrCode" class="text-center">
-      <vue-qr :text="qrCode" :size="250"></vue-qr>
-    </el-card>
+    <transition name="fade">
+      <el-card shadow="hover" v-if="qrCode" class="text-center">
+        <vue-qr :text="qrCode" :size="250"></vue-qr>
+      </el-card>
+    </transition>
     <div slot="footer" class="dialog-footer">
       <el-button
         :disabled="isCreateDis"

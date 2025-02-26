@@ -51,6 +51,9 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="MAC" prop="mac">
+        <mac-input v-model="queryParams.mac"  style="width: 140px"></mac-input>
+      </el-form-item>
       <el-form-item label="测试环节" prop="processName">
         <el-select
           v-model="queryParams.processName"
@@ -81,14 +84,6 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button
-          class="float-right"
-          type="warning"
-          icon="el-icon-download"
-          @click="handleExport"
-        >
-          导 出
-        </el-button>
       </el-form-item>
     </el-form>
 
@@ -98,7 +93,13 @@
       :height="tableHeight()"
       border
     >
-      <el-table-column label="序号" width="58" type="index" align="center">
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
@@ -108,46 +109,72 @@
         prop="categoryName"
         align="center"
         width="120"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="型号"
         prop="computerName"
         align="center"
         width="140"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="PCBA SN"
         prop="pcbaSn"
         align="center"
-        width="190"
-        show-overflow-tooltip
+        width="140"
       />
-      <el-table-column
-        label="整机SN"
-        prop="sn"
-        align="center"
-        width="250"
-        show-overflow-tooltip
-      >
+      <el-table-column label="整机SN" prop="sn" align="center" width="140">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center" width="240">
+      <el-table-column label="箱号" prop="boxNo" align="center" width="140">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
+      </el-table-column>
+      <el-table-column
+        label="正产/返工"
+        prop="isRework"
+        align="center"
+        width="100"
+      >
+        <template v-slot="{ row }">
+          <el-tag v-if="row.isRework === 0" type="success">正常生产</el-tag>
+          <el-tag v-if="row.isRework === 1" type="danger">返工</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="MAC" prop="mac" align="center" width="160">
+        <span slot-scope="scope" v-NoData="scope.row.mac"></span>
+      </el-table-column>
+      <el-table-column
+        label="APP版本"
+        prop="appVersion"
+        align="center"
+        width="230"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.appVersion"></span>
+      </el-table-column>
+      <el-table-column
+        label="BOOT版本"
+        prop="bootVersion"
+        align="center"
+        width="200"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.bootVersion"></span>
+      </el-table-column>
+      <el-table-column
+        label="hw版本号"
+        prop="hwVersion"
+        align="center"
+        width="200"
+      >
+        <span slot-scope="scope" v-NoData="scope.row.hwVersion"></span>
       </el-table-column>
       <el-table-column
         label="测试环节"
         prop="processName"
         align="center"
-        width="100"
+        width="90"
       />
-      <el-table-column
-        label="判断结果"
-        prop="result"
-        align="center"
-        width="100"
-      >
+      <el-table-column label="判断结果" prop="result" align="center" width="90">
         <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
@@ -156,12 +183,12 @@
         label="测试设备SN"
         prop="cpuId"
         align="center"
-        width="120"
+        width="100"
         show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
       </el-table-column>
-      <el-table-column label="测试时长" prop="time" align="center" width="100">
+      <el-table-column label="测试时长" prop="time" align="center" width="90">
         <template slot-scope="{ row }">
           {{ formattedTime({ time: row.time, timeType: "ms" }) }}
         </template>
@@ -170,13 +197,19 @@
         label="测试时间"
         prop="testTime"
         align="center"
+        sortable
         width="140"
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试详情" align="center" width="100" fixed="right">
+      <el-table-column
+        label="测试详情"
+        align="center"
+        width="90"
+        fixed="right"
+      >
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>
@@ -421,13 +454,13 @@
     </el-dialog>
   </div>
 </template>
-
-<script>
-import { stsTestList, stsTestExport } from "@/api/third/testApi";
+  
+  <script>
+import { testModelRecordList } from "@/api/third/testApi";
 import { CategoryMixin } from "@/mixins/common";
 
 export default {
-  name: "StsTestResult",
+  name: "TestModelRecord",
   mixins: [CategoryMixin],
   data() {
     return {
@@ -602,9 +635,9 @@ export default {
         computerName: "",
         pcbaSn: "",
         sn: "",
+        mac: "",
         processName: "",
         result: "",
-        recordId: "",
       },
       contentStyle: {
         paddingTop: "20px",
@@ -624,36 +657,18 @@ export default {
       };
     },
   },
-  watch: {
-    $route: {
-      handler(route) {
-        if (route.name !== "StsTestResult") return;
-        const { params, query } = route;
-        const { type, categoryId, status, model } = query;
-        this.queryParams.type = type ?? "";
-        this.queryParams.categoryId = categoryId ?? "";
-        this.queryParams.status = status ?? "";
-        this.queryParams.computerId = model ?? "";
-
-        const { sn, recordId } = params;
-        this.queryParams.sn = sn;
-        this.queryParams.recordId = recordId;
-
-        this.getList();
-      },
-      immediate: true,
-    },
-  },
   created() {
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
+
+    this.getList();
   },
   methods: {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      stsTestList(this.queryParams).then((response) => {
+      testModelRecordList(this.queryParams).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -708,46 +723,17 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
-      this.queryParams.recordId = "";
-
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams = {
-        p: 1,
-        l: 20,
-        categoryName: "",
-        computerName: "",
-        pcbaSn: "",
-        sn: "",
-        processName: "",
-        result: "",
-        recordId: "",
-      };
-
       this.resetForm("queryForm");
       this.handleQuery();
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      const queryParams = this.queryParams;
-      this.$confirm("是否确认导出测试记录数据项?", "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(function () {
-          return stsTestExport(queryParams);
-        })
-        .then((response) => {
-          this.download(response.msg);
-        });
     },
   },
 };
 </script>
-<style lang="scss" scoped>
+  <style lang="scss" scoped>
 .gas-config-box {
   /* height: 440px; */
   height: 240px;

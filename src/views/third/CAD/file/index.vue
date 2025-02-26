@@ -101,13 +101,21 @@
         >
           批量终审
         </el-button>
-        <el-button
+        <el-dropdown
+          class="margin-left-xs margin-right-xs"
+          szie="mini"
+          split-button
           v-hasPermi="['third:cad:missionOrder']"
           type="success"
+          trigger="click"
           @click="onCreateTaskCode"
+          @command="handleToTestRecord"
         >
           任务令
-        </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="A">测试记录</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
         <el-button
           v-hasPermi="['third:cad:fileBatchConfig']"
           type="danger"
@@ -161,10 +169,21 @@
         width="130"
         show-overflow-tooltip
       />
-      <el-table-column label="ERP编码" prop="erp" align="center" width="130" show-overflow-tooltip>
+      <el-table-column
+        label="ERP编码"
+        prop="erp"
+        align="center"
+        width="130"
+        show-overflow-tooltip
+      >
         <span slot-scope="scope" v-NoData="scope.row.erp"></span>
       </el-table-column>
-      <el-table-column label="属性" prop="typeName" align="center" show-overflow-tooltip />
+      <el-table-column
+        label="属性"
+        prop="typeName"
+        align="center"
+        show-overflow-tooltip
+      />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <!-- PC上位机 -->
@@ -580,6 +599,11 @@ export default {
         categoryId: this.queryParams.categoryId,
         computerId: this.queryParams.computerId,
       };
+    },
+    handleToTestRecord(command) {
+      if(command === "A") {
+        this.handleNameToPage('TestModelRecord')
+      }
     },
     /** 查询品牌列表 */
     getList() {

@@ -17,6 +17,7 @@ import DictData from "@/components/DictData";
 import VueDraggableResizable from "vue-draggable-resizable";
 // optionally import default styles
 import "vue-draggable-resizable/dist/VueDraggableResizable.css";
+import MacInput from "@/components/MacInput";
 
 // 全局组件挂载
 const globalComponents = [
@@ -30,7 +31,8 @@ const globalComponents = [
   ElUploadSortable,
   ModelCategory,
   ScreenFull,
-  VueDraggableResizable
+  VueDraggableResizable,
+  MacInput
 ];
 const install = (Vue) => {
     globalComponents.forEach(item => {

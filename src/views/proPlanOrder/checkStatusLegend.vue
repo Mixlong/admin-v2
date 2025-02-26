@@ -3,26 +3,25 @@
     <tr>
       <td>
         <img src="./imgs/blue.png" width="16px" height="16px" />
+        <span>待上传</span>
       </td>
+
       <td>
         <img src="./imgs/yellow.png" width="16px" height="16px" />
+        <span>待初审</span>
       </td>
       <td>
         <img src="./imgs/orange.png" width="16px" height="16px" />
+        <span>待终审</span>
       </td>
       <td>
         <img src="./imgs/red.png" width="16px" height="16px" />
+        <span>未通过</span>
       </td>
       <td>
         <img src="./imgs/green.png" width="16px" height="16px" />
+        <span>已审核</span>
       </td>
-    </tr>
-    <tr>
-      <td>待上传</td>
-      <td>待初审</td>
-      <td>待终审</td>
-      <td>未通过</td>
-      <td>已审核</td>
     </tr>
   </table>
 </template>
@@ -37,8 +36,16 @@ export default {};
 
         td {
             text-align: center;
-            padding: 2px;
-            border: 1px solid #808a80; 
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+
+            &:last-child {
+                margin-right: 0; 
+            }
+            img {
+              margin-right: 2px;
+            }
         }
     }
 </style>

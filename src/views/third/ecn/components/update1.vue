@@ -92,6 +92,7 @@
               placeholder="请选择初审人员"
               filterable
               clearable
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in firstAuditorData"
@@ -141,8 +142,6 @@
                       multiple
                       collapse-tags
                       style="width: 180px"
-                      @change="handleChangeBuyerData"
-                      @remove-tag="handleRemoveTagBuyerData"
                     >
                       <el-option
                         v-for="item in buyerData"
@@ -532,6 +531,7 @@
               placeholder="请选择PMC终审人员"
               filterable
               clearable
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in pmcData"
@@ -553,6 +553,7 @@
               placeholder="请选择最终审核人员"
               filterable
               clearable
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in finalJudgmentData"
@@ -820,22 +821,22 @@ export default {
             this.buyerData = this.handleSetCheckList(list, 2);
             break;
           case 3:
-            this.QAData = list;
+            this.QAData = this.handleSetCheckList(list, 3);
             break;
           case 4:
-            this.productData = list;
+            this.productData = this.handleSetCheckList(list, 4);
             break;
           case 5:
-            this.engineerData = list;
+            this.engineerData = this.handleSetCheckList(list, 5);
             break;
           case 6:
-            this.researchData = list;
+            this.researchData = this.handleSetCheckList(list, 6);
             break;
           case 7:
-            this.warehouseData = list;
+            this.warehouseData = this.handleSetCheckList(list, 7);
             break;
           case 8:
-            this.marketerData = list;
+            this.marketerData = this.handleSetCheckList(list, 8);
             break;
           case 9:
             this.finalJudgmentData = list;
@@ -860,7 +861,6 @@ export default {
           });
         });
 
-        console.log("copyData", copyData);
         return copyData;
       } else {
         // 新增
@@ -900,47 +900,163 @@ export default {
       };
       this.resetForm("form");
     },
-    mergeArrays(original, additional) {
-      // 创建一个映射，以快速查找 original 数组中的元素
-      const originalMap = new Map(original.map((item) => [item.field, item]));
+    handleAddJointPeople(paramCopyData) {
+      const newList = [];
 
-      // 遍历 additional 数组
-      additional.forEach((item) => {
-        // 检查 item 是否存在于 originalMap 中
-        if (originalMap.has(item.field)) {
-          // 如果存在，更新 original 数组中的对应元素
-          const index = original.findIndex((o) => o.field === item.field);
-          original[index] = { ...original[index], ...item };
-        } else {
-          // 如果不存在，添加到 original 数组的末尾
-          original.push(item);
-        }
+      if (paramCopyData.selBuyerData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selBuyerData, 2, {
+          programme: paramCopyData.buyerTxt,
+        });
+      }
+
+      if (paramCopyData.selQAData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selQAData, 3, {
+          programme: paramCopyData.QADataTxt,
+        });
+      }
+
+      if (paramCopyData.selProductData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selProductData, 4, {
+          programme: paramCopyData.productDataTxt,
+        });
+      }
+
+      if (paramCopyData.selEngineerData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selEngineerData, 5, {
+          programme: paramCopyData.engineerDataTxt,
+        });
+      }
+
+      if (paramCopyData.selResearchData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selResearchData, 6, {
+          programme: paramCopyData.researchDataTxt,
+        });
+      }
+
+      if (paramCopyData.selWarehouseData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selWarehouseData, 7, {
+          programme: paramCopyData.warehouseDataTxt,
+          treatment: paramCopyData.finishedHandleTxt,
+        });
+      }
+
+      if (paramCopyData.selMarketerData.length) {
+        this.handleAddEachJointPeople(newList, paramCopyData.selMarketerData, 8, {
+          programme: paramCopyData.marketerDataTxt,
+          treatment: paramCopyData.noMarketerDataTxt,
+        });
+      }
+
+      return newList;
+    },
+    handleAddEachJointPeople(newList, checkPeopleData, field, params) {
+      checkPeopleData.forEach((name) => {
+        newList.push({
+          field,
+          fieldName: name,
+          ...params,
+        });
       });
-
-      return original;
     },
-    // 采购人员
-    handleChangeBuyerData(selBuyerData) {
-      console.log('selBuyerData', selBuyerData)
-      // if (this.form.id && selBuyerData.length) {
-      //   const existData = this.form.list.filter((item) => item.field === 2);
-      //   selBuyerData.forEach((name) => {
-      //     existData.forEach((item) => {
-      //       if (name !== item.fieldName) {
-      //         this.form.list.push({
-      //           field: 2,
-      //           fieldName: name,
-      //           programme: this.form.buyerTxt,
-      //         });
-      //       }
-      //     });
-      //   });
-      // }
+    handleEditJointPeople(paramCopyData) {
+      if (paramCopyData.list.length) {
+        const newList = [];
 
-      // console.log(this.form.list);
+        if (paramCopyData.selBuyerData.length) {
+          this.handleEditEachJointPeople(newList, paramCopyData.selBuyerData, 2, {
+            programme: paramCopyData.buyerTxt,
+          });
+        }
+
+        if (paramCopyData.selQAData.length) {
+          this.handleEditEachJointPeople(newList, paramCopyData.selQAData, 3, {
+            programme: paramCopyData.QADataTxt,
+          });
+        }
+
+        if (paramCopyData.selProductData.length) {
+          this.handleEditEachJointPeople(
+            newList,
+            paramCopyData.selProductData,
+            4,
+            {
+              programme: paramCopyData.productDataTxt,
+            }
+          );
+        }
+
+        if (paramCopyData.selEngineerData.length) {
+          this.handleEditEachJointPeople(
+            newList,
+            paramCopyData.selEngineerData,
+            5,
+            {
+              programme: paramCopyData.engineerDataTxt,
+            }
+          );
+        }
+
+        if (paramCopyData.selResearchData.length) {
+          this.handleEditEachJointPeople(
+            newList,
+            paramCopyData.selResearchData,
+            6,
+            {
+              programme: paramCopyData.researchDataTxt,
+            }
+          );
+        }
+
+        if (paramCopyData.selWarehouseData.length) {
+          this.handleEditEachJointPeople(
+            newList,
+            paramCopyData.selWarehouseData,
+            7,
+            {
+              programme: paramCopyData.warehouseDataTxt,
+              treatment: paramCopyData.finishedHandleTxt,
+            }
+          );
+        }
+
+        if (paramCopyData.selMarketerData.length) {
+          this.handleEditEachJointPeople(
+            newList,
+            paramCopyData.selMarketerData,
+            8,
+            {
+              programme: paramCopyData.marketerDataTxt,
+              treatment: paramCopyData.noMarketerDataTxt,
+            }
+          );
+        }
+        return newList;
+      }
     },
-    handleRemoveTagBuyerData(removeTag) {
-      console.log('removeTag', removeTag)
+    handleEditEachJointPeople(newList, checkPeopleData, field, params) {
+      const { list: editListData } = this.form;
+
+      editListData.forEach(item => {
+        if(checkPeopleData.includes(item.fieldName)) {
+          newList.push({
+            ...item,
+            ...params,
+          }); 
+        }
+      })
+
+      const existingFieldNames = editListData.map(item => item.fieldName);
+      checkPeopleData.forEach((name) => {
+        if (!existingFieldNames.includes(name)) {
+          newList.push({
+            field,
+            fieldName: name,
+           ...params,
+          });
+        } 
+      })
+
+      return newList;
     },
     /** 提交按钮 */
     submitForm: function () {
@@ -949,219 +1065,14 @@ export default {
           let param = cloneDeep(this.form);
 
           if (param.id) {
-            if (param.list.length) {
-              const list = [];
-
-              // if(param.selBuyerData.length) {
-              //   const existData = param.list.filter((item) => item.field === 2);
-
-              //   param.selBuyerData.forEach((name) => {
-              //     existData.forEach((item) => {
-              //       if (name !== item.fieldName) {
-              //         list.push({
-              //           field: 2,
-              //           fieldName: name,
-              //           programme: param.buyerTxt,
-              //         });
-              //       } else {
-              //         list.push({
-              //           ...item,
-              //           programme: param.buyerTxt,
-              //         });
-              //       }
-              //     });
-              //   });
-              // }
-
-              // console.log(param.list);
-
-              // return;
-              param.list.forEach((item, index) => {
-                if (item.field === 2) {
-                  if (param.selBuyerData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selBuyerData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.buyerTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 3) {
-                  if (param.selQAData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selQAData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.QADataTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 4) {
-                  if (param.selProductData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selProductData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.productDataTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 5) {
-                  if (param.selEngineerData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selEngineerData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.engineerDataTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 6) {
-                  if (param.selResearchData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selResearchData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.researchDataTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 7) {
-                  if (param.selWarehouseData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selWarehouseData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.warehouseDataTxt,
-                        treatment: param.finishedHandleTxt,
-                      });
-                    });
-                  }
-                }
-
-                if (item.field === 8) {
-                  if (param.selMarketerData.length) {
-                    const { id, ...itemData } = item;
-
-                    param.selMarketerData.forEach((name) => {
-                      list.push({
-                        ...itemData,
-                        fieldName: name,
-                        programme: param.marketerDataTxt,
-                        treatment: param.noMarketerDataTxt,
-                      });
-                    });
-                  }
-                }
-              });
-
-              param.list = list;
-            }
+            const list = this.handleEditJointPeople(param);
+            param.list = list;
           } else {
-            const list = [];
-
-            if (param.selBuyerData.length) {
-              param.selBuyerData.forEach((name) => {
-                list.push({
-                  field: 2,
-                  fieldName: name,
-                  programme: param.buyerTxt,
-                });
-              });
-            }
-
-            if (param.selQAData.length) {
-              param.selQAData.forEach((name) => {
-                list.push({
-                  field: 3,
-                  fieldName: name,
-                  programme: param.QADataTxt,
-                });
-              });
-            }
-
-            if (param.selProductData.length) {
-              param.selProductData.forEach((name) => {
-                list.push({
-                  field: 4,
-                  fieldName: name,
-                  programme: param.productDataTxt,
-                });
-              });
-            }
-
-            if (param.selEngineerData.length) {
-              param.selEngineerData.forEach((name) => {
-                list.push({
-                  field: 5,
-                  fieldName: name,
-                  programme: param.engineerDataTxt,
-                });
-              });
-            }
-
-            if (param.selResearchData.length) {
-              param.selResearchData.forEach((name) => {
-                list.push({
-                  field: 6,
-                  fieldName: name,
-                  programme: param.researchDataTxt,
-                });
-              });
-            }
-
-            if (param.selWarehouseData.length) {
-              param.selWarehouseData.forEach((name) => {
-                list.push({
-                  field: 7,
-                  fieldName: name,
-                  programme: param.warehouseDataTxt,
-                  treatment: param.finishedHandleTxt,
-                });
-              });
-            }
-
-            if (param.selMarketerData.length) {
-              param.selMarketerData.forEach((name) => {
-                list.push({
-                  field: 8,
-                  fieldName: name,
-                  programme: param.marketerDataTxt,
-                  treatment: param.noMarketerDataTxt,
-                });
-              });
-            }
-
+            const list = this.handleAddJointPeople(param);
             param.list = list;
           }
 
           param.changeCause = param.changeCause.toString();
-
-          console.log(param.list);
-
           if (param.id) {
             bomUpdate(param).then((response) => {
               if (response.code === 200) {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex justify-between align-center margin-bottom-xs">
-      <div class="flex">
+      <div class="flex align-center">
         <h3 class="text-center margin-right">生产计划表</h3>
         <check-status-legend />
       </div>

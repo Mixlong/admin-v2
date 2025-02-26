@@ -550,3 +550,12 @@ export function gasBulkConfigAuth(data) {
     data,
   });
 }
+
+// 测试任务令 --- 测试记录
+export function testModelRecordList(params) {
+  return request({
+    url: "/test/sts/list",
+    method: "get",
+    params
+  })
+}
