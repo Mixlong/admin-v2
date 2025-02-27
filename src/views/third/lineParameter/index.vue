@@ -100,7 +100,6 @@
           prop="erpCode"
           align="center"
           width="100"
-          show-overflow-tooltip
         />
         <el-table-column label="规格" align="center" prop="standards">
           <template slot-scope="scope">
@@ -112,28 +111,24 @@
           prop="product"
           align="center"
           width="100"
-          show-overflow-tooltip
         />
         <el-table-column
           label="线缆"
           prop="lineCore"
           align="center"
           width="90"
-          show-overflow-tooltip
         />
         <el-table-column
           label="防水头型号"
           prop="headModel"
           align="center"
           width="90"
-          show-overflow-tooltip
         />
         <el-table-column
           label="线长MM(不含头)"
           prop="lineLength"
           align="center"
           width="80"
-          show-overflow-tooltip
         />
       </el-table-column>
       <el-table-column label="库存数据信息" align="center">
@@ -156,7 +151,6 @@
           prop="customerName"
           align="center"
           width="80"
-          show-overflow-tooltip
         />
         <el-table-column
           label="存放位置"
@@ -239,7 +233,7 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 
 export default {
-  name: 'LineParameter',
+  name: "LineParameter",
   components: {
     Log,
     Return,

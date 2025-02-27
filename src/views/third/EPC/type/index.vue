@@ -51,8 +51,8 @@
       :height="tableHeight()"
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
-      <el-table-column label="键" prop="key" align="center" width="140" show-overflow-tooltip />
-      <el-table-column label="值" prop="value" align="center" width="160" show-overflow-tooltip />
+      <el-table-column label="键" prop="key" align="center" width="140" />
+      <el-table-column label="值" prop="value" align="center" width="160" />
       <el-table-column label="上传文件" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="scope.row.up === 1 ? 'success' : 'danger'">
@@ -83,7 +83,7 @@
         align="center"
         prop="createTime"
         sortable
-        width="140"
+        width="150"
       />
       <el-table-column
         label="操作"

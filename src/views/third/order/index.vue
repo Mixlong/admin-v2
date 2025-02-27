@@ -7,7 +7,11 @@
         :inline="true"
         v-show="showSearch"
       >
-        <el-form-item label="客户名称" prop="customerName" class="customer-name">
+        <el-form-item
+          label="客户名称"
+          prop="customerName"
+          class="customer-name"
+        >
           <select-loadMore
             style="width: 100%"
             v-model="queryParams.customerName"
@@ -109,17 +113,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button
-            type="primary"
-            icon="el-icon-search"
-            @click="handleQuery"
-          >
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
             搜索
           </el-button>
-          <el-button
-            icon="el-icon-refresh"
-            @click="resetQuery"
-          >
+          <el-button icon="el-icon-refresh" @click="resetQuery">
             重置
           </el-button>
         </el-form-item>
@@ -141,22 +138,50 @@
     </el-row>
 
     <el-table v-loading="loading" :height="tableHeight()" border :data="list">
-      <el-table-column label="序号" width="58" type="index" align="center">
+      <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName" width="120" show-overflow-tooltip>
+      <el-table-column
+        label="客户名称"
+        align="center"
+        prop="customerName"
+        width="120"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.customerName"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" width="140" show-overflow-tooltip />
-      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" width="160" show-overflow-tooltip>
+      <el-table-column
+        label="迪太订单号"
+        align="center"
+        prop="salesOrderNo"
+        width="140"
+        fixed="left"
+      />
+      <el-table-column
+        label="客户订单号"
+        align="center"
+        prop="customerOrderNo"
+        width="160"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="品类" align="center" prop="categoryName" width="120" show-overflow-tooltip >
+      <el-table-column
+        label="品类"
+        align="center"
+        prop="categoryName"
+        width="120"
+      >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
-      <el-table-column label="型号" align="center" prop="computerName" width="140" show-overflow-tooltip>
+      <el-table-column
+        label="型号"
+        align="center"
+        prop="computerName"
+        width="140"
+      >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
       <el-table-column
@@ -164,7 +189,6 @@
         align="center"
         prop="bomCode"
         width="130"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.bomCode"></span>
       </el-table-column>
@@ -173,7 +197,6 @@
         align="center"
         prop="chipVersion"
         width="90"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.chipVersion"></span>
       </el-table-column>
@@ -216,7 +239,6 @@
         label="创建人"
         align="center"
         prop="createBy"
-        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"

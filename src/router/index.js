@@ -219,7 +219,6 @@ export const constantRoutes = [
 
 export default new Router({
   mode: "history", // 去掉url中的#
-  // scrollBehavior: () => ({ y: 0 }),
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;

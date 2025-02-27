@@ -98,7 +98,13 @@
       :height="tableHeight()"
       border
     >
-      <el-table-column label="序号" width="58" type="index" align="center">
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
@@ -108,29 +114,22 @@
         prop="categoryName"
         align="center"
         width="120"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="型号"
         prop="computerName"
         align="center"
         width="140"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="PCBA SN"
         prop="pcbaSn"
         align="center"
         width="190"
-        show-overflow-tooltip
       />
-      <el-table-column
-        label="整机SN"
-        prop="sn"
-        align="center"
-        width="250"
-        show-overflow-tooltip
-      >
+      <el-table-column label="整机SN" prop="sn" align="center" width="250">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
       <el-table-column label="箱号" prop="boxNo" align="center" width="240">
@@ -157,7 +156,6 @@
         prop="cpuId"
         align="center"
         width="120"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
       </el-table-column>
@@ -170,13 +168,19 @@
         label="测试时间"
         prop="testTime"
         align="center"
-        width="140"
+        width="150"
+        sortable
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试详情" align="center" width="100" fixed="right">
+      <el-table-column
+        label="测试详情"
+        align="center"
+        width="100"
+        fixed="right"
+      >
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>

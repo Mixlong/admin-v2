@@ -160,30 +160,17 @@
         prop="category"
         align="center"
         width="130"
-        show-overflow-tooltip
       />
       <el-table-column
         label="型号"
         prop="computer"
         align="center"
         width="130"
-        show-overflow-tooltip
       />
-      <el-table-column
-        label="ERP编码"
-        prop="erp"
-        align="center"
-        width="130"
-        show-overflow-tooltip
-      >
+      <el-table-column label="ERP编码" prop="erp" align="center" width="130">
         <span slot-scope="scope" v-NoData="scope.row.erp"></span>
       </el-table-column>
-      <el-table-column
-        label="属性"
-        prop="typeName"
-        align="center"
-        show-overflow-tooltip
-      />
+      <el-table-column label="属性" prop="typeName" align="center" />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <!-- PC上位机 -->
@@ -228,19 +215,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="90"
-        show-overflow-tooltip
-      >
+      <el-table-column label="创建人" align="center" prop="createBy" width="90">
         <span
           slot-scope="scope"
           v-NoData="scope.row.createBy || scope.row.updateBy"
         ></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140" sortable>
+      <el-table-column label="创建时间" align="center" width="150" sortable>
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
       </el-table-column>
       <el-table-column
@@ -601,8 +582,8 @@ export default {
       };
     },
     handleToTestRecord(command) {
-      if(command === "A") {
-        this.handleNameToPage('TestModelRecord')
+      if (command === "A") {
+        this.handleNameToPage("testModelRecord");
       }
     },
     /** 查询品牌列表 */

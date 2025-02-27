@@ -107,7 +107,6 @@
         prop="customerName"
         align="center"
         width="100"
-        show-overflow-tooltip
       />
       <el-table-column label="产品品类" prop="categoryName" align="center" />
       <el-table-column label="产品型号" prop="computerName" align="center" />
@@ -116,21 +115,18 @@
         prop="number"
         align="center"
         width="160"
-        show-overflow-tooltip
       />
       <el-table-column
         label="属性"
         prop="typeName"
         align="center"
         width="160"
-        show-overflow-tooltip
       />
       <el-table-column
         label="描述"
         prop="orderDesc"
         align="center"
         min-width="150"
-        show-overflow-tooltip
       />
       <el-table-column
         label="文件类型"
@@ -179,7 +175,6 @@
         align="center"
         prop="createName"
         width="90"
-        show-overflow-tooltip
       />
       <el-table-column
         label="审核状态"
@@ -189,8 +184,8 @@
       >
         <template slot-scope="{ row }">
           <div v-if="!row.testState">
-            <p class="text-blue">{{ row.testUserName }}(测试)</p>
-            待审核
+            <div class="text-blue">{{ row.testUserName }}(测试)</div>
+            <span class="text-red">待审核</span>
           </div>
           <!-- <div v-if="row.testState && !row.pmState">
             <p class="text-blue">{{ row.pmUserName }}(产品经理)</p>

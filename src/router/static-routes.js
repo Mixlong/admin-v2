@@ -15,5 +15,20 @@ export default [
                 }
             }
         ]
+    },
+    {
+        path: '/CAD',
+        component: Layout,
+        hidden: true,
+        children: [
+            {
+                path: 'testModelRecord',
+                component: () => import('@/views/third/CAD/testModelRecord'),
+                name: 'testModelRecord',
+                meta: {
+                    title: '测试记录'
+                }
+            }
+        ]
     }
 ]

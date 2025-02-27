@@ -115,27 +115,65 @@
       :cell-class-name="cellClassName"
       border
     >
-      <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" width="120" show-overflow-tooltip fixed="left" />
-      <el-table-column label="型号" prop="computerName" align="center" width="180" show-overflow-tooltip fixed="left" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="200" show-overflow-tooltip />
-      <el-table-column label="整机SN" prop="sn" align="center" width="250" show-overflow-tooltip>
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="120"
+        fixed="left"
+      />
+      <el-table-column
+        label="型号"
+        prop="computerName"
+        align="center"
+        width="180"
+        fixed="left"
+      />
+      <el-table-column
+        label="PCBA SN"
+        prop="pcbaSn"
+        align="center"
+        width="200"
+      />
+      <el-table-column label="整机SN" prop="sn" align="center" width="250">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="客户订单号" prop="customerOrderNo" align="center" width="140" show-overflow-tooltip>
+      <el-table-column
+        label="客户订单号"
+        prop="customerOrderNo"
+        align="center"
+        width="140"
+      >
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" width="140" show-overflow-tooltip>
+      <el-table-column
+        label="迪太订单号"
+        prop="salesOrderNo"
+        align="center"
+        width="140"
+      >
         <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
       </el-table-column>
-      <el-table-column label="蓝牙地址" prop="mac" align="center" width="120" show-overflow-tooltip>
+      <el-table-column label="蓝牙地址" prop="mac" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.mac"></span>
       </el-table-column>
-      <el-table-column label="生产地点" prop="factory" align="center" width="100" show-overflow-tooltip>
+      <el-table-column
+        label="生产地点"
+        prop="factory"
+        align="center"
+        width="100"
+      >
         <span slot-scope="scope" v-NoData="scope.row.factory"></span>
       </el-table-column>
       <el-table-column label="箱号" prop="boxNo" align="center" width="260">
@@ -165,7 +203,12 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="工单号" prop="orderCode" align="center" width="160" show-overflow-tooltip>
+      <el-table-column
+        label="工单号"
+        prop="orderCode"
+        align="center"
+        width="160"
+      >
         <template slot-scope="{ row }">
           <el-tooltip
             effect="dark"
@@ -338,7 +381,7 @@ export default {
   watch: {
     $route: {
       handler(route) {
-        if(route.name !== 'ProductRecord') return;
+        if (route.name !== "ProductRecord") return;
         const { params, query } = route;
 
         const { type, categoryId, status, model, recordId } = query;

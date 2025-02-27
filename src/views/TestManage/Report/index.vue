@@ -45,10 +45,10 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="报告标题" prop="title" align="center" show-overflow-tooltip />
-      <el-table-column label="测试对象" prop="target" align="center" show-overflow-tooltip />
-      <el-table-column label="测试范围" prop="range" align="center" show-overflow-tooltip />
-      <el-table-column label="风险" prop="risk" align="center" show-overflow-tooltip />
+      <el-table-column label="报告标题" prop="title" align="center" />
+      <el-table-column label="测试对象" prop="target" align="center" />
+      <el-table-column label="测试范围" prop="range" align="center" />
+      <el-table-column label="风险" prop="risk" align="center" />
       <el-table-column label="测试时间" align="center" width="200">
         <template slot-scope="{ row }">
           <span class="text-green">
@@ -72,7 +72,6 @@
         prop="createBy"
         align="center"
         width="90"
-        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
@@ -137,7 +136,7 @@ import { reportList, reportAuth, reportExcel } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 
 export default {
-  name: 'Report',
+  name: "Report",
   components: {
     CompUpdate: () => import("./components/update"),
   },

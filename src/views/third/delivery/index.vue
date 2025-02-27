@@ -9,7 +9,7 @@
       >
         <el-form-item label="客户名称" prop="customerName">
           <select-loadMore
-            style="width: 100%"
+            style="width: 120px"
             v-model="queryParams.customerName"
             :data="customerData.data"
             :page="customerData.page"
@@ -17,23 +17,25 @@
             dictLabel="name"
             dictValue="name"
             :request="getCustomerList"
-            placeholder="请选择客户名称"
+            placeholder="请选择"
           />
         </el-form-item>
         <el-form-item label="迪太订单号" prop="salesOrderNo">
           <el-input
             v-model="queryParams.salesOrderNo"
             filterable
-            placeholder="请输入迪太订单号"
+            placeholder="请输入"
             clearable
+            style="width: 120px"
           />
         </el-form-item>
         <el-form-item label="客户订单号" prop="customerOrderNo">
           <el-input
             v-model="queryParams.customerOrderNo"
             filterable
-            placeholder="请输入客户订单号"
+            placeholder="请输入"
             clearable
+            style="width: 120px"
           />
         </el-form-item>
         <el-form-item label="所属品类" prop="categoryName">
@@ -44,8 +46,8 @@
             clearable
             :loading="isCateLoading"
             loading-text
-            placeholder="请选择所属品类"
             @change="changeCategory"
+            style="width: 120px"
           >
             <el-option
               v-for="dict in dictList"
@@ -61,8 +63,8 @@
             remote
             clearable
             v-model="queryParams.computerName"
-            placeholder="请选择仪表型号"
             :remote-method="getComputerNameList"
+            style="width: 120px"
           >
             <el-option
               v-for="dict in computerOptions"
@@ -81,6 +83,7 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             @change="handleQuery"
+            style="width: 240px"
           />
         </el-form-item>
         <!-- <el-form-item label="发货状态" prop="status">
@@ -162,7 +165,6 @@
                 label="客户名称"
                 align="center"
                 prop="customerName"
-                show-overflow-tooltip
               >
                 <span slot-scope="{ row }" v-NoData="row.customerName"></span>
               </el-table-column>
@@ -221,14 +223,12 @@
         align="center"
         prop="salesOrderNo"
         width="140"
-        show-overflow-tooltip
       />
       <el-table-column
         label="客户订单号"
         align="center"
         prop="customerOrderNo"
         width="150"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
@@ -237,7 +237,6 @@
         align="center"
         prop="categoryName"
         width="120"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
@@ -246,7 +245,6 @@
         align="center"
         prop="computerName"
         width="120"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
@@ -255,7 +253,6 @@
         align="center"
         prop="transportMode"
         width="100"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.transportMode"></span>
       </el-table-column>
@@ -264,7 +261,6 @@
         align="center"
         prop="orderNumber"
         width="140"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.orderNumber"></span>
       </el-table-column>
@@ -341,7 +337,12 @@
         <template slot-scope="{ row }">
           <div v-show="!Is_Empty(row.updateTime || row.createTime)">
             <div>
-              {{ parseTime(row.updateTime || row.createTime, "{y}-{m}-{d} {h}:{i}:{s}") }}
+              {{
+                parseTime(
+                  row.updateTime || row.createTime,
+                  "{y}-{m}-{d} {h}:{i}:{s}"
+                )
+              }}
             </div>
           </div>
           <div v-show="Is_Empty(row.updateTime || row.createTime)">- - -</div>

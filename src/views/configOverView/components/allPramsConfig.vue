@@ -239,7 +239,6 @@
           prop="desc"
           align="center"
           width="120"
-          show-overflow-tooltip
         >
           <span slot-scope="scope" v-NoData="scope.row.desc"></span>
         </el-table-column>

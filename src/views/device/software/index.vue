@@ -71,8 +71,19 @@
       border
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" width="58" type="index" align="center">
+      <el-table-column
+        type="selection"
+        width="55"
+        align="center"
+        fixed="left"
+      />
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
@@ -82,21 +93,21 @@
         align="center"
         prop="name"
         width="180"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="装备型号"
         align="center"
         prop="code"
         width="180"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="模块名称"
         align="center"
         prop="moduleName"
         width="140"
-        show-overflow-tooltip
+        fixed="left"
       />
       <el-table-column
         label="覆盖范围"
@@ -104,28 +115,20 @@
         prop="updateCondition"
         :formatter="fnUpdateCondition"
         width="90"
-        show-overflow-tooltip
       />
       <el-table-column
         label="版本号"
         align="center"
         prop="versionName"
         width="90"
-        show-overflow-tooltip
       />
       <el-table-column
         label="版本序号"
         align="center"
         prop="versionCode"
         width="90"
-        show-overflow-tooltip
       />
-      <el-table-column
-        label="版本描叙"
-        align="center"
-        prop="explains"
-        show-overflow-tooltip
-      >
+      <el-table-column label="版本描叙" align="center" prop="explains" min-width="250">
         <template v-slot="{ row }">
           <span v-NoData="row.explains"></span>
         </template>
@@ -157,13 +160,12 @@
         align="center"
         prop="createBy"
         width="90"
-        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
-        width="140px"
+        width="150"
         sortable
       >
         <template slot-scope="scope">

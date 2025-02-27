@@ -68,7 +68,7 @@
       :data="homeEmphasisLists"
       border
     >
-      <el-table-column prop="item" label="事项" align="center" width="160" />
+      <el-table-column prop="item" label="事项" align="center" width="160" fixed="left" />
       <el-table-column
         prop="content"
         label="具体工作内容及要求"
@@ -161,7 +161,8 @@
         prop="createTime"
         label="创建时间"
         align="center"
-        width="140"
+        width="150"
+        sortable
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime, "{y}-{m}-{d} {h}:{i}:{s}") }}

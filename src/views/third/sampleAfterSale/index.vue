@@ -142,20 +142,22 @@
         width="55"
         :reserve-selection="true"
         align="center"
+        fixed="left"
       />
       <el-table-column
         label="客诉日期"
         prop="returnDate"
         align="center"
         width="90"
+        fixed="left"
       />
-      <el-table-column label="问题状态" prop="status" align="center" width="80">
+      <el-table-column label="问题状态" prop="status" align="center" width="80" fixed="left">
         <template slot-scope="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
           <el-tag v-else type="success">CLOSE</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="不良仪表去向" prop="direction" align="center">
+      <el-table-column label="不良仪表去向" prop="direction" align="center" width="120" fixed="left">
         <template slot-scope="{ row }">
           <el-tag :type="directionListClass(modelDirList, row.direction)">
             {{ directionLabel(modelDirList, row.direction) }}
@@ -163,18 +165,19 @@
         </template>
       </el-table-column>
       <el-table-column label="客户名称" prop="customerName" align="center" />
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="送样单号" prop="sampleName" align="center" width="180" show-overflow-tooltip="true" />
-      <el-table-column label="产品SN" prop="sn" align="center" width="220" show-overflow-tooltip="true">
+      <el-table-column label="品类" prop="categoryName" align="center" width="100" />
+      <el-table-column
+        label="送样单号"
+        prop="sampleName"
+        align="center"
+        width="180"
+      />
+      <el-table-column label="产品SN" prop="sn" align="center" width="220">
         <template slot-scope="{ row }">
           <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
         </template>
       </el-table-column>
-      <el-table-column
-        label="客诉现象"
-        prop="result"
-        align="center"
-      />
+      <el-table-column label="客诉现象" prop="result" align="center" min-width="200" />
       <el-table-column label="处理进展" prop="model" align="center" width="80">
         <template slot-scope="{ row }">
           <span v-if="row.state === 1" class="text-red">现象复测</span>
@@ -205,10 +208,15 @@
           <el-tag v-else type="danger">否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="问题根因" prop="rootMatter" align="center">
+      <el-table-column label="问题根因" prop="rootMatter" align="center" min-width="200">
         <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
       </el-table-column>
-      <el-table-column label="根因分类" prop="rootMatterType" align="center" show-overflow-tooltip>
+      <el-table-column
+        label="根因分类"
+        prop="rootMatterType"
+        align="center"
+        show-overflow-tooltip
+      >
         <span
           slot-scope="scope"
           v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"

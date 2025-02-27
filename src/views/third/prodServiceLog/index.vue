@@ -119,16 +119,61 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="日期" prop="createTime" align="center" width="140" />
-      <el-table-column label="品类" prop="categoryName" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="转入线别 " prop="lineNum" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="180" show-overflow-tooltip />
-      <el-table-column label="不良标签" prop="badLabel" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="实际不良原因" prop="badResult" align="center" show-overflow-tooltip />
-      <el-table-column label="维修方法" prop="serviceMethod" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="维修结果" prop="serviceResult" align="center"  width="100" show-overflow-tooltip/>
-      <el-table-column label="产品去向" prop="destination" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="维修员" prop="createBy" align="center" width="100" show-overflow-tooltip />
+      <el-table-column
+        label="日期"
+        prop="createTime"
+        align="center"
+        width="140"
+      />
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="转入线别"
+        prop="lineNum"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="PCBA SN"
+        prop="pcbaSn"
+        align="center"
+        width="180"
+      />
+      <el-table-column
+        label="不良标签"
+        prop="badLabel"
+        align="center"
+        width="100"
+      />
+      <el-table-column label="实际不良原因" prop="badResult" align="center" />
+      <el-table-column
+        label="维修方法"
+        prop="serviceMethod"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="维修结果"
+        prop="serviceResult"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="产品去向"
+        prop="destination"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="维修员"
+        prop="createBy"
+        align="center"
+        width="100"
+      />
       <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <Tooltip

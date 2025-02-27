@@ -62,19 +62,22 @@
         label="装备类型"
         align="center"
         prop="name"
-        width="150"
-        show-overflow-tooltip
+        width="200"
       />
       <el-table-column
-        label="装备型号" 
+        label="装备型号"
         align="center"
         prop="code"
-        width="150"
-        show-overflow-tooltip 
+        width="200"
       />
-      <el-table-column label="外观照片" align="center" prop="icon" width="150">
+      <el-table-column label="外观照片" align="center" prop="icon" width="90">
         <template slot-scope="scope">
-          <preview-img :url="scope.row.icon" :srcList="[`${scope.row.icon}`]" width="45px" height="45px" />
+          <preview-img
+            :url="scope.row.icon"
+            :srcList="[`${scope.row.icon}`]"
+            width="45px"
+            height="45px"
+          />
         </template>
       </el-table-column>
       <el-table-column label="配置明细" align="center">
@@ -157,7 +160,7 @@ import CompUpdate from "./components/update";
 import requestUrl from "@/utils/requestUrl";
 import { getToken } from "@/utils/auth";
 export default {
-  name: 'PucsType',
+  name: "PucsType",
   components: {
     CompUpdate,
   },

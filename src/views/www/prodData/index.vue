@@ -135,7 +135,6 @@
         width="100"
         align="center"
         fixed
-        show-overflow-tooltip
       >
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
@@ -145,7 +144,6 @@
         align="center"
         width="100"
         fixed
-        show-overflow-tooltip
       />
       <el-table-column
         prop="computerName"
@@ -153,7 +151,6 @@
         align="center"
         fixed
         width="140"
-        show-overflow-tooltip
       />
       <el-table-column
         prop="process"
@@ -161,7 +158,6 @@
         align="center"
         width="80"
         fixed
-        show-overflow-tooltip
       />
       <el-table-column
         prop="isLicense"
@@ -319,17 +315,10 @@
         label="责任人"
         align="center"
         width="100"
-        show-overflow-tooltip
       >
         <span slot-scope="{ row }" v-NoData="row.personLiable"></span>
       </el-table-column>
-      <el-table-column
-        prop="result"
-        label="结果"
-        align="center"
-        width="100"
-        show-overflow-tooltip
-      >
+      <el-table-column prop="result" label="结果" align="center" width="100">
         <span slot-scope="{ row }" v-NoData="row.result"> </span>
       </el-table-column>
       <!-- <el-table-column

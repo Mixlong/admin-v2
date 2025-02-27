@@ -92,12 +92,34 @@
         :reserve-selection="true"
         :selectable="checkSelectable"
       />
-      <el-table-column label="品类" prop="category" align="center" width="120" show-overflow-tooltip />
-      <el-table-column label="送样单号" prop="number" align="center" width="140" show-overflow-tooltip>
+      <el-table-column
+        label="品类"
+        prop="category"
+        align="center"
+        width="120"
+        fixed="left"
+      />
+      <el-table-column
+        label="送样单号"
+        prop="number"
+        align="center"
+        width="160"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.number"></span>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" width="120" show-overflow-tooltip />
-      <el-table-column label="属性" prop="typeName" align="center" width="250" show-overflow-tooltip />
+      <el-table-column
+        label="客户"
+        prop="customerName"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="属性"
+        prop="typeName"
+        align="center"
+        width="250"
+      />
       <el-table-column label="属性描述" prop="content" align="center">
         <template slot-scope="{ row }">
           <span v-if="row.type === 'simulate_script_file'" class="text-green">
@@ -106,7 +128,12 @@
           <span v-else v-NoData="row.content"></span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="updateBy" width="100" show-overflow-tooltip>
+      <el-table-column
+        label="创建人"
+        align="center"
+        prop="updateBy"
+        width="100"
+      >
         <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="140">
@@ -136,6 +163,7 @@
         align="center"
         width="120"
         class-name="small-padding fixed-width"
+        fixed="right"
       >
         <template slot-scope="scope">
           <Tooltip
@@ -175,7 +203,9 @@
           </el-tooltip>
 
           <!-- 模拟脚本文件 -->
-          <template v-if="scope.row.type === 'simulate_script_file' && scope.row.file">
+          <template
+            v-if="scope.row.type === 'simulate_script_file' && scope.row.file"
+          >
             <Tooltip
               icon="el-icon-download"
               class="text-orange"

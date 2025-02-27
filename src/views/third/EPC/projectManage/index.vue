@@ -126,7 +126,6 @@
         prop="typeName"
         align="center"
         width="160"
-        show-overflow-tooltip
       />
       <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="{ row }" v-html="row.content"></span>
@@ -150,19 +149,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="90"
-        show-overflow-tooltip
-      >
+      <el-table-column label="创建人" align="center" prop="createBy" width="90">
         <span
           slot-scope="scope"
           v-NoData="scope.row.createBy || scope.row.updateBy"
         ></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140" sortable>
+      <el-table-column label="创建时间" align="center" width="150" sortable>
         <span slot-scope="scope" v-NoData="scope.row.createTime"></span>
       </el-table-column>
       <el-table-column
