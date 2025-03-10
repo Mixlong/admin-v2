@@ -40,19 +40,10 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          @click="resetQuery"
-        >
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
       <el-button
         class="fr"
@@ -114,16 +105,37 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-hasPermi="['third:productFamily:update']"
+            v-hasPermi="['sampleThird:productFamily:update']"
             @click="handleUpdate(scope.row)"
           />
-          <Tooltip
-            icon="el-icon-delete"
-            :className="['text-red']"
-            content="删除"
-            v-hasPermi="['third:productFamily:delete']"
-            @click="handleDelete(scope.row)"
-          />
+
+          <el-popconfirm
+            title="确定要删除吗？"
+            @confirm="handleDelete(scope.row)"
+          >
+            <Tooltip
+              style="margin: 0 5px"
+              icon="el-icon-delete"
+              slot="reference"
+              :className="['text-red']"
+              content="删除"
+              v-hasPermi="['sampleThird:productFamily:delete']"
+            />
+          </el-popconfirm>
+
+          <el-popconfirm
+            title="确定要转生产吗？"
+             v-hasPermi="['sampleThird:productFamily:product']"
+            @confirm="handleProd(scope.row.id)"
+            v-if="scope.row.status === 0"
+          >
+            <Tooltip
+              style="margin: 0 5px"
+              icon="el-icon-box"
+              slot="reference"
+              content="转生产"
+            />
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -142,16 +154,17 @@
 
 <script>
 import {
-  listComputer,
-  detailComputer,
-  authComputer,
-  changeStatus,
-} from "@/api/third/computer";
-import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
+  sampleListComputer,
+  detailSampleComputer,
+  authSampleComputer,
+  changeSampleStatus,
+  sampleToProduct,
+} from "@/api/third/sampleProductFamily";
+import { categorySampleComputerDict, computerNameList } from "@/api/third/sampleFileConfig";
 import CompUpdate from "./components/updates";
 
 export default {
-  name: "ProductFamily",
+  name: "SampleProductFamily",
   components: {
     CompUpdate,
   },
@@ -203,7 +216,6 @@ export default {
         this.queryParams.computerId = computerId;
       } else {
         this.queryParams.key = this.dictList[0].id; // 默认取第一项
-
         this.computerOptions = this.dictList[0].computerList;
       }
     },
@@ -221,7 +233,7 @@ export default {
     getTypeCategory() {
       return new Promise((resolve, reject) => {
         try {
-          categoryComputerDict().then((res) => {
+          categorySampleComputerDict().then((res) => {
             resolve(res.data);
           });
         } catch (error) {
@@ -254,7 +266,7 @@ export default {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      listComputer(this.queryParams)
+      sampleListComputer(this.queryParams)
         .then((response) => {
           this.list = response.data.list;
           this.total = response.data.total;
@@ -272,8 +284,8 @@ export default {
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
-      
-      detailComputer(row.id).then((res) => {
+
+      detailSampleComputer(row.id).then((res) => {
         let { data } = res;
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
         this.$refs.compUpdate.dialogVisible = true;
@@ -347,7 +359,7 @@ export default {
         type: "warning",
       })
         .then(function () {
-          return changeStatus({ id: row.id, status: row.status });
+          return changeSampleStatus({ id: row.id, status: row.status });
         })
         .then(() => {
           this.msgSuccess(text + "成功");
@@ -376,11 +388,17 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.HandleDelete({
-        title: '是否确认删除产品型号为"' + row.name + '"的数据项?',
-        delFn: authComputer,
-        data: { id: row.id, status: 1 },
-        cb: this.getList,
+      authSampleComputer({ id: row.id, status: 1 }).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      })
+    },
+    handleProd(computerId) {
+      sampleToProduct({
+        computerId,
+      }).then(() => {
+        this.getList();
+        this.msgSuccess("操作成功");
       });
     },
   },
@@ -412,6 +430,7 @@ export default {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
   .position-abs {
     position: absolute;
     right: -120px;

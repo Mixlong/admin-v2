@@ -107,7 +107,7 @@
   
 <script>
 import { getOrderProcess } from "@/api/order";
-import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
+import { categorySampleComputerDict, computerNameList } from "@/api/third/sampleFileConfig";
 import VueQr from "vue-qr";
 
 export default {
@@ -171,7 +171,7 @@ export default {
   },
   methods: {
     async handleEchoData() {
-      const result = await categoryComputerDict();
+      const result = await categorySampleComputerDict();
       this.dictList = result.data;
 
       if (this.createTaskData.categoryId) {
@@ -224,7 +224,7 @@ export default {
         if (valid) {
           const { category, computer, processId, chipVersion } = this.form;
           const random = Math.floor(+new Date() / 1000);
-          this.qrCode = `SMT:category=${category}_stsTest?computer=${computer}?processId=${processId}?random=${random}?chipVersion=${chipVersion}?type=product`;
+          this.qrCode = `SMT:category=${category}_stsTest?computer=${computer}?processId=${processId}?random=${random}?chipVersion=${chipVersion}?type=sample`;
         }
       });
     },

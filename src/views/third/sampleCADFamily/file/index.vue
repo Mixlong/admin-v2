@@ -3,80 +3,29 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
-        <el-select
-          v-model="queryParams.categoryId"
-          filterable
-          allow-create
-          clearable
-          placeholder="请选择品类"
-          style="width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.categoryId" filterable allow-create clearable placeholder="请选择品类"
+          style="width: 140px" @change="changeCategory">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          v-model="queryParams.computerId"
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          placeholder="请选择仪表型号"
-          :remote-method="getComputerNameList"
-          style="width: 140px"
-          @change="getList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
+        <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+          placeholder="请选择仪表型号" :remote-method="getComputerNameList" style="width: 140px" @change="getList">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
         </el-select>
       </el-form-item>
       <el-form-item label="ERP编码" prop="erp">
-        <el-input
-          v-model="queryParams.erp"
-          placeholder="请输入"
-          clearable
-          @keyup.enter.native="getList"
-          style="width: 140px"
-        />
+        <el-input v-model="queryParams.erp" placeholder="请输入" clearable @keyup.enter.native="getList"
+          style="width: 140px" />
       </el-form-item>
       <el-form-item label="审核状态" prop="status">
-        <el-select
-          style="width: 100px"
-          clearable
-          v-model="queryParams.status"
-          @change="getList"
-        >
-          <el-option
-            v-for="(value, key) in statusOptions"
-            :key="key"
-            :label="value"
-            :value="key"
-          />
+        <el-select style="width: 100px" clearable v-model="queryParams.status" @change="getList">
+          <el-option v-for="(value, key) in statusOptions" :key="key" :label="value" :value="key" />
         </el-select>
       </el-form-item>
       <el-form-item label="产品状态" prop="computerStatus">
-        <el-select
-          v-model="queryParams.computerStatus"
-          style="width: 100px"
-          clearable
-          @change="getList"
-        >
-          <el-option
-            v-for="(value, key) in commonStatusList"
-            :key="key"
-            :label="value"
-            :value="key"
-          />
+        <el-select v-model="queryParams.computerStatus" style="width: 100px" clearable @change="getList">
+          <el-option v-for="(value, key) in commonStatusList" :key="key" :label="value" :value="key" />
         </el-select>
       </el-form-item>
 
@@ -85,42 +34,18 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button
-          type="warning"
-          v-if="checkRole(['f_test'])"
-          v-hasPermi="['third:cad:batchFirstCheck']"
-          @click="handleAuthBatchChange(1)"
-        >
+        <el-button type="warning" v-if="checkRole(['f_test'])" v-hasPermi="['sampleThird:cad:batchFirstCheck']"
+          @click="handleAuthBatchChange(1)">
           批量初审
         </el-button>
-        <el-button
-          type="warning"
-          v-if="checkRole(['fo_test'])"
-          v-hasPermi="['third:cad:batchFinalCheck']"
-          @click="handleAuthBatchChange(2)"
-        >
+        <el-button type="warning" v-if="checkRole(['fo_test'])" v-hasPermi="['sampleThird:cad:batchFinalCheck']"
+          @click="handleAuthBatchChange(2)">
           批量终审
         </el-button>
-        <el-dropdown
-          class="margin-left-xs margin-right-xs"
-          size="mini"
-          split-button
-          v-hasPermi="['third:cad:missionOrder']"
-          type="success"
-          trigger="click"
-          @click="onCreateTaskCode"
-          @command="handleToTestRecord"
-        >
+        <el-button type="success" v-hasPermi="['sampleThird:cad:missionOrder']" @click="onCreateTaskCode">
           任务令
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="A">测试记录</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-        <el-button
-          v-hasPermi="['third:cad:fileBatchConfig']"
-          type="danger"
-          @click="handleFileBatchSyncConfig"
-        >
+        </el-button>
+        <el-button v-hasPermi="['sampleThird:cad:fileBatchConfig']" type="danger" @click="handleFileBatchSyncConfig">
           同步文件
         </el-button>
         <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
@@ -137,36 +62,13 @@
         {{ fileConfigSnData.pcbaSn || "- - -" }}
       </span>
     </div>
-    <el-table
-      ref="multipleTableRef"
-      v-loading="loading"
-      :data="brandList"
-      :row-key="getRowKeys"
-      :height="tableHeight(35)"
-      :row-class-name="tableRowClassName"
-      @selection-change="handleSelectionChange"
-      border
-    >
-      <el-table-column
-        type="selection"
-        width="55"
-        align="center"
-        :reserve-selection="true"
-        :selectable="checkSelectable"
-      />
+    <el-table ref="multipleTableRef" v-loading="loading" :data="brandList" :row-key="getRowKeys"
+      :height="tableHeight(35)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
+      <el-table-column type="selection" width="55" align="center" :reserve-selection="true"
+        :selectable="checkSelectable" />
       <el-table-column label="序号" width="58" type="index" align="center" />
-      <el-table-column
-        label="品类"
-        prop="category"
-        align="center"
-        width="130"
-      />
-      <el-table-column
-        label="型号"
-        prop="computer"
-        align="center"
-        width="130"
-      />
+      <el-table-column label="品类" prop="category" align="center" width="130" />
+      <el-table-column label="型号" prop="computer" align="center" width="130" />
       <el-table-column label="ERP编码" prop="erp" align="center" width="130">
         <span slot-scope="scope" v-NoData="scope.row.erp"></span>
       </el-table-column>
@@ -179,9 +81,7 @@
           </template>
 
           <!-- STS网页 -->
-          <span
-            v-if="isStsType(row.type) && row.stsContent && row.dataType === 2"
-          >
+          <span v-if="isStsType(row.type) && row.stsContent && row.dataType === 2">
             STS: {{ row.stsContent }}
           </span>
 
@@ -196,12 +96,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品状态"
-        prop="computerStatus"
-        align="center"
-        width="90"
-      >
+      <el-table-column label="产品状态" prop="computerStatus" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.computerStatus)">
             {{ row.computerStatus ? "禁用" : "启用" }}
@@ -216,171 +111,77 @@
         </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" width="90">
-        <span
-          slot-scope="scope"
-          v-NoData="scope.row.createBy || scope.row.updateBy"
-        ></span>
+        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="150" sortable>
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
       </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        width="150"
-        class-name="small-padding fixed-width"
-        fixed="right"
-      >
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width" fixed="right">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:cad:edit']"
-            @click="handleUpdate(scope.row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['sampleThird:cad:edit']" @click="handleUpdate(scope.row)" />
 
-          <Tooltip
-            icon="el-icon-coordinate"
-            class="text-orange"
-            content="初审"
-            v-hasPermi="['third:cad:firstCheck']"
-            v-if="scope.row.status == 1 && checkRole(['f_test'])"
-            @click="handleAuthChange(scope.row, 1)"
-          />
+          <Tooltip icon="el-icon-coordinate" class="text-orange" content="初审" v-hasPermi="['sampleThird:cad:firstCheck']"
+            v-if="scope.row.status == 1 && checkRole(['f_test'])" @click="handleAuthChange(scope.row, 1)" />
 
-          <Tooltip
-            icon="el-icon-coordinate"
-            class="text-orange"
-            content="终审"
-            v-hasPermi="['third:cad:finalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
-            @click="handleAuthChange(scope.row, 4)"
-          />
+          <Tooltip icon="el-icon-coordinate" class="text-orange" content="终审" v-hasPermi="['sampleThird:cad:finalCheck']"
+            v-if="scope.row.status == 4 && checkRole(['fo_test'])" @click="handleAuthChange(scope.row, 4)" />
 
-          <Tooltip
-            icon="el-icon-circle-check"
-            class="text-orange"
-            content="重置审核"
-            v-hasPermi="['third:cad:resetCheck']"
-            v-if="isSResetCheck(scope.row)"
-            @click="handleResetCheck(scope.row)"
-          />
+          <Tooltip icon="el-icon-circle-check" class="text-orange" content="重置审核" v-hasPermi="['sampleThird:cad:resetCheck']"
+            v-if="isSResetCheck(scope.row)" @click="handleResetCheck(scope.row)" />
 
-          <Tooltip
-            icon="el-icon-download"
-            class="text-orange"
-            content="下载STS脚本"
-            v-hasPermi="['third:cad:downloadSts']"
-            v-if="scope.row.jsFile"
-            @click="zipFile(scope.row.jsFile)"
-          />
+          <Tooltip icon="el-icon-download" class="text-orange" content="下载STS脚本" v-hasPermi="['sampleThird:cad:downloadSts']"
+            v-if="scope.row.jsFile" @click="zipFile(scope.row.jsFile)" />
 
           <!-- 模拟脚本文件 -->
-          <template
-            v-if="scope.row.type === 'simulate_script_file' && scope.row.file"
-          >
-            <Tooltip
-              icon="el-icon-download"
-              class="text-orange"
-              :content="`下载${scope.row.content}脚本`"
-              @click="zipFile(scope.row.file)"
-            />
+          <template v-if="scope.row.type === 'simulate_script_file' && scope.row.file">
+            <Tooltip icon="el-icon-download" class="text-orange" :content="`下载${scope.row.content}脚本`"
+              @click="zipFile(scope.row.file)" />
           </template>
           <template v-else>
-            <Tooltip
-              v-if="isDownloadUrl(scope.row)"
-              icon="el-icon-download"
-              class="text-orange"
-              :content="`下载${scope.row.typeName}`"
-              v-hasPermi="['third:cad:downloadFile']"
-              @click="zipFile(scope.row.url)"
-            />
+            <Tooltip v-if="isDownloadUrl(scope.row)" icon="el-icon-download" class="text-orange"
+              :content="`下载${scope.row.typeName}`" v-hasPermi="['sampleThird:cad:downloadFile']"
+              @click="zipFile(scope.row.url)" />
           </template>
 
-          <Tooltip
-            icon="el-icon-refresh-right"
-            content="初审撤回"
-            v-hasPermi="['third:cad:resetFinalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['f_test'])"
-            @click="handleRevocation(scope.row)"
-          />
+          <Tooltip icon="el-icon-refresh-right" content="初审撤回" v-hasPermi="['sampleThird:cad:resetFinalCheck']"
+            v-if="scope.row.status == 4 && checkRole(['f_test'])" @click="handleRevocation(scope.row)" />
 
-          <Tooltip
-            icon="el-icon-refresh-right"
-            content="终审撤回"
-            v-hasPermi="['third:cad:resetChecked']"
-            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
-            @click="handleRevocation(scope.row)"
-          />
+          <Tooltip icon="el-icon-refresh-right" content="终审撤回" v-hasPermi="['sampleThird:cad:resetChecked']"
+            v-if="scope.row.status == 2 && checkRole(['fo_test'])" @click="handleRevocation(scope.row)" />
 
           <!-- 批量同步 -->
-          <Tooltip
-            v-hasPermi="['third:cad:batch']"
-            icon="el-icon-s-claim"
-            content="批量同步"
-            @click="handleUpdate(scope.row, (isBatchSync = true))"
-          />
+          <Tooltip v-hasPermi="['sampleThird:cad:batch']" icon="el-icon-s-claim" content="批量同步"
+            @click="handleUpdate(scope.row, (isBatchSync = true))" />
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-if="total > 0"
-      :total="total"
-      :ls="[20, 50, 100, 300, 500]"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-if="total > 0" :total="total" :ls="[20, 50, 100, 300, 500]" :page.sync="queryParams.p"
+      :limit.sync="queryParams.l" @pagination="getList" />
 
-    <el-dialog
-      title="请确认是否通过"
-      :visible.sync="authDialogVisible"
-      width="40%"
-      center
-      :close-on-click-modal="false"
-    >
+    <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="40%" center :close-on-click-modal="false">
       <el-form ref="form" :model="auth" class="form-data" :inline="false">
         <el-form-item class="auth" label="拒审原因">
-          <el-input
-            class="width-100-style"
-            type="textarea"
-            :autosize="{ minRows: 4, maxRows: 8 }"
-            v-model="auth.why"
-            placeholder="不通过则需要输入原因"
-          />
+          <el-input class="width-100-style" type="textarea" :autosize="{ minRows: 4, maxRows: 8 }" v-model="auth.why"
+            placeholder="不通过则需要输入原因" />
         </el-form-item>
         <el-form-item label="批量同步" v-if="auth.id">
-          <el-select
-            ref="select"
-            v-model="auth.idList"
-            multiple
-            class="similar-style width-100-style"
-            placeholder=""
-          >
-            <el-option
-              :disabled="disabledName == dict.computer"
-              v-for="dict in similarList"
-              :key="dict.id"
-              :label="dict.computer"
-              :value="dict.id"
-            >
+          <el-select ref="select" v-model="auth.idList" multiple class="similar-style width-100-style" placeholder="">
+            <el-option :disabled="disabledName == dict.computer" v-for="dict in similarList" :key="dict.id"
+              :label="dict.computer" :value="dict.id">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item class="auth">
           <el-button @click="handleStatusChange(3)">不通过</el-button>
-          <el-button
-            type="primary"
-            @click="
-              handleStatusChange(
-                checkRole(['fo_test']) &&
-                  (auth.status === 4 || isBatchType === 2)
-                  ? 2
-                  : 4
-              )
-            "
-          >
+          <el-button type="primary" @click="
+            handleStatusChange(
+              checkRole(['fo_test']) &&
+                (auth.status === 4 || isBatchType === 2)
+                ? 2
+                : 4
+            )
+            ">
             通过
           </el-button>
         </el-form-item>
@@ -389,10 +190,7 @@
     <CompUpdate ref="compUpdate" :dictList="dictList" :isStsType="isStsType" />
 
     <!-- 任务令 -->
-    <task-code
-      :visible.sync="isTaskCodeFlag"
-      :createTaskData="createTaskData"
-    ></task-code>
+    <task-code :visible.sync="isTaskCodeFlag" :createTaskData="createTaskData"></task-code>
 
     <!-- 批量同步文件 -->
     <BatchSyncConfig ref="batchSyncConfigRef"> </BatchSyncConfig>
@@ -401,22 +199,22 @@
 
 <script>
 import {
-  listFileConfig,
-  authFileConfig,
-  resetFileConfig,
-  categoryComputerDict,
-  computerDictList,
-  fileCancel,
+  listSampleFileConfig,
+  authSampleFileConfig,
+  resetSampleFileConfig,
+  categorySampleComputerDict,
+  computerSampleDictList,
+  fileSampleCancel,
   computerNameList,
-  fileConfigSn,
-} from "@/api/third/fileConfig";
+  fileSampleConfigSn,
+} from "@/api/third/sampleFileConfig";
 import { commonStatusList } from "@/utils/commonData";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 import BatchSyncConfig from "./components/batchSyncConfig.vue";
 
 export default {
-  name: "FileConfig",
+  name: "sampleCADFamily",
   components: {
     CompUpdate,
     TaskCode: () => import("./components/taskCode"),
@@ -537,7 +335,7 @@ export default {
     async getFileConfigSn() {
       const { categoryId, computerId } = this.queryParams;
       if (categoryId && computerId) {
-        const result = await fileConfigSn({
+        const result = await fileSampleConfigSn({
           categoryId,
           computerId,
         });
@@ -546,7 +344,7 @@ export default {
       }
     },
     getCategoryData() {
-      categoryComputerDict().then((response) => {
+      categorySampleComputerDict().then((response) => {
         this.dictList = response.data;
 
         this.getPathData();
@@ -581,15 +379,10 @@ export default {
         computerId: this.queryParams.computerId,
       };
     },
-    handleToTestRecord(command) {
-      if (command === "A") {
-        this.handleNameToPage("testModelRecord");
-      }
-    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
-      listFileConfig(this.queryParams).then((response) => {
+      listSampleFileConfig(this.queryParams).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -621,7 +414,6 @@ export default {
       }
     },
     handleAuthChange(row, status) {
-      if (this.handleProPermit(row.isLicense)) return;
       this.auth = {};
 
       this.auth.why = "";
@@ -634,7 +426,7 @@ export default {
       this.$refs.compUpdate
         .changeCategory2(row.categoryId)
         .then((computerFormOptions) => {
-          computerDictList({
+          computerSampleDictList({
             categoryId: row.categoryId,
             type: row.type,
             status,
@@ -665,8 +457,6 @@ export default {
     },
     // 重置审核
     handleResetCheck(row) {
-      if (this.handleProPermit(row.isLicense)) return;
-
       let data = null;
       if (this.multiple) {
         data = [{ id: row.id }];
@@ -681,7 +471,7 @@ export default {
         type: "warning",
       })
         .then(function () {
-          return resetFileConfig(data);
+          return resetSampleFileConfig(data);
         })
         .then(() => {
           this.getList();
@@ -730,7 +520,7 @@ export default {
         }
       }
 
-      authFileConfig(data).then((response) => {
+      authSampleFileConfig(data).then((response) => {
         let { code } = response;
         if (code == 200) {
           this.authDialogVisible = false;
@@ -773,13 +563,6 @@ export default {
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
-    //生产许可判断
-    handleProPermit(permitStatus) {
-      if (permitStatus === 1) {
-        this.msgWarning("当前项“生产许可”已打开, 不能操作！");
-        return true;
-      }
-    },
     // 蓝牙地址转化
     handleBleVersionlist(copyRow) {
       let bleVersionList = [{ bleName: "" }];
@@ -793,8 +576,6 @@ export default {
       return bleVersionList;
     },
     handleUpdate(row, isBatchSync) {
-      if (!isBatchSync && this.handleProPermit(row.isLicense)) return;
-
       let copyRow = JSON.parse(JSON.stringify(row));
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
@@ -834,15 +615,13 @@ export default {
       this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
     },
     handleRevocation(row) {
-      if (this.handleProPermit(row.isLicense)) return;
-
       this.$confirm("确认要撤销审核吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       })
         .then(function () {
-          return fileCancel({ id: row.id });
+          return fileSampleCancel({ id: row.id });
         })
         .then(() => {
           this.getList();
@@ -881,14 +660,17 @@ export default {
 .width-100-style {
   width: 100%;
 }
+
 .file_config_Sn_box {
   background: #f0f9eb;
   padding: 8px 16px;
   border-radius: 4px;
+
   b {
     color: #67c23a;
   }
 }
+
 /* .Cad-option-box {
   column-gap: 10px;
   .el-button {

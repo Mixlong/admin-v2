@@ -76,7 +76,6 @@
       style="width: 100%"
       border
       :header-cell-class-name="headerCellClassNameOrderInfo"
-      @cell-dblclick="handleCellDblclick"
     >
       <el-table-column label="具体订单信息" align="center">
         <el-table-column
@@ -106,7 +105,7 @@
           label="规格描述"
           prop="description"
           align="center"
-          class-name="full-cell"
+          class-name="full-textarea-cell"
         >
           <template slot-scope="scope">
             <el-input
@@ -154,12 +153,14 @@
           label="备注"
           prop="remark"
           align="center"
-          class-name="full-cell"
+          class-name="full-textarea-cell"
         >
           <template slot-scope="scope">
             <div class="input-container">
               <el-input
-                v-model.trim.lazy="scope.row.remark"
+                v-model="scope.row.remark"
+                type="textarea"
+                autosize
                 class="full-size-input"
                 :readonly="isReadonly"
               ></el-input>
@@ -223,7 +224,13 @@
                 size="mini"
                 :disabled="isReadonly"
               >
-                <el-radio v-for="cItem in scope.row.list" :label="cItem.value">
+                <el-radio
+                  v-for="cItem in scope.row.list"
+                  :label="cItem.value"
+                  @dblclick.native.prevent="
+                    handleRadioDblClick(scope.row, cItem)
+                  "
+                >
                   {{ cItem.label }}
                 </el-radio>
               </el-radio-group>
@@ -262,6 +269,9 @@
                     <el-radio
                       v-for="cItem in scope.row.list"
                       :label="cItem.value"
+                      @dblclick.native.prevent="
+                        handleRadioDblClick(scope.row, cItem)
+                      "
                     >
                       {{ cItem.label }}
                     </el-radio>
@@ -375,8 +385,6 @@ export default {
   data() {
     return {
       isReadonly: false,
-      editingIndex: null,
-      editingField: null,
       dialogVisible: false,
       isSubLoading: false,
       isFullTextarea: null,
@@ -446,20 +454,10 @@ export default {
       }
       return "";
     },
-    handleCellDblclick(row, column, cell, event) {
-      this.editingIndex = row.$index;
-      this.editingField = column.property;
-    },
-    isEditing(index, field) {
-      return this.editingIndex === index && this.editingField === field;
-    },
-    editCell(index, field) {
-      this.editingIndex = index;
-      this.editingField = field;
-    },
-    saveEdit(index, field) {
-      this.editingIndex = null;
-      this.editingField = null;
+    handleRadioDblClick(rowData, cItem) {
+      if (rowData.selectValue === cItem.value) {
+        rowData.selectValue = "";
+      }
     },
     submitForm() {
       const {
@@ -548,6 +546,7 @@ export default {
 
 .full-td-box {
   padding: 0;
+
   .full-input {
     .el-input__inner,
     .el-date-editor {
@@ -555,7 +554,9 @@ export default {
       height: 36px;
       box-sizing: border-box;
       text-align: center;
-      transition: border-color 0.3s; /* 平滑过渡效果 */
+      transition: border-color 0.3s;
+
+      /* 平滑过渡效果 */
       &:focus {
         border-color: #409eff !important;
       }
@@ -566,21 +567,26 @@ export default {
 .order-full-table {
   .full-cell {
     padding: 0 !important;
+
     .cell {
       padding: 0;
+
       .input-container {
         position: absolute;
         top: 0;
         bottom: 0;
         width: 100%;
         height: 100%;
+
         .full-size-input {
           height: 100%;
+
           .el-input__inner {
             height: 100% !important;
             text-align: center;
             border-color: transparent;
-            transition: border-color 0.3s; /* 平滑过渡效果 */
+            transition: border-color 0.3s;
+            /* 平滑过渡效果 */
 
             &:focus {
               border-color: #409eff !important;
@@ -605,8 +611,17 @@ export default {
     }
   }
 
+  .full-textarea-cell {
+    padding: 0;
+
+    .cell {
+      padding: 0;
+    }
+  }
+
   .review-project-box {
     padding: 0;
+
     .cell {
       /* textarea */
       .el-textarea__inner {
@@ -642,9 +657,11 @@ export default {
     .labelW {
       width: 100px;
     }
+
     .padding-zero {
       padding: 0;
     }
+
     th,
     td {
       font-size: 1em;
@@ -658,16 +675,20 @@ export default {
 
   /* 修改禁用状态下且选中的样式 */
   /deep/ .el-radio.is-disabled.is-checked .el-radio__inner {
-    border-color: #409eff !important; /* 修改禁用且选中状态下的边框颜色 */
-    background-color: #409eff !important; /* 修改禁用且选中状态下的背景颜色 */
+    border-color: #409eff !important;
+    /* 修改禁用且选中状态下的边框颜色 */
+    background-color: #409eff !important;
+    /* 修改禁用且选中状态下的背景颜色 */
   }
 
   /deep/ .el-radio.is-disabled.is-checked .el-radio__inner::after {
-    background-color: #fff !important; /* 修改禁用且选中状态下的选中点颜色 */
+    background-color: #fff !important;
+    /* 修改禁用且选中状态下的选中点颜色 */
   }
 
   /deep/ .el-radio.is-disabled.is-checked .el-radio__label {
-    color: #409eff !important; /* 修改禁用且选中状态下的文字颜色 */
+    color: #409eff !important;
+    /* 修改禁用且选中状态下的文字颜色 */
   }
 }
 </style>

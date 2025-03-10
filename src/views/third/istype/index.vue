@@ -344,6 +344,26 @@
             </el-form-item>
           </el-col>
 
+          <el-col :span="12">
+            <el-form-item label="通讯方式" prop="serialLevel">
+              <el-select
+                v-model="form.serialLevel"
+                filterable
+                clearable
+                placeholder="请选择"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="(item, index) in dicts_communication_type"
+                  :key="index"
+                  :label="item.dictLabel"
+                  :value="item.dictValue"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
           <el-col>
             <el-form-item label="文件类型" prop="type">
               <el-radio-group
@@ -579,6 +599,16 @@ export default {
         page: 1,
         more: true,
       },
+      dicts_communication_type: [
+        {
+          dictLabel: "UART",
+          dictValue: 0,
+        },
+        {
+          dictLabel: "CAN",
+          dictValue: 2,
+        },
+      ],
       // 查询参数
       queryParams: {
         p: 1,
@@ -600,6 +630,7 @@ export default {
         type: "",
         list: [],
         testUserId: "",
+        serialLevel: 0
       },
       // 表单校验
       rules: {
@@ -617,6 +648,9 @@ export default {
         ],
         expiryDate: [
           { required: true, message: "有效期不能为空", trigger: "change" },
+        ],
+        serialLevel: [
+          { required: true, message: "通讯方式不能为空", trigger: "change" },
         ],
         type: [
           { required: true, message: "文件类型不能为空", trigger: "change" },
@@ -841,6 +875,7 @@ export default {
         type: "3",
         list: fileData,
         testUserId: "",
+        serialLevel: 0
       };
       this.resetForm("form");
     },
