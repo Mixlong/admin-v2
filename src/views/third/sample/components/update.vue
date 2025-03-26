@@ -28,25 +28,14 @@
         </el-col>
         <el-col :span="showName ? 24 : 6">
           <el-form-item
-            label="产品品类"
-            prop="baseModel"
-            v-if="!showName || showName == 'baseModel'"
+            label="需求类型"
+            prop="type"
+            label-width="82px"
+            v-if="!showName || showName == 'type'"
           >
-            <el-select
-              v-model="form.baseModel"
-              multiple
-              filterable
-              allow-create
-              placeholder="请选择产品品类"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in modelList"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name"
-              >
-              </el-option>
+            <el-select v-model="form.type" clearable style="width: 100%">
+              <el-option label="品类" :value="0"> </el-option>
+              <el-option label="型号" :value="1"> </el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -204,6 +193,107 @@
               placeholder="请输入UI版本号"
             ></el-input>
           </el-form-item>
+        </el-col>
+      </el-row>
+
+      <!-- 品类、型号 -->
+      <el-row class="margin-bottom" :gutter="15">
+        <el-col :span="showName ? 24 : 6" v-if="form.type === 0">
+          <el-form-item
+            label="产品品类"
+            prop="baseModel"
+            v-if="!showName || showName == 'baseModel'"
+          >
+            <el-select
+              v-model="form.baseModel"
+              multiple
+              filterable
+              allow-create
+              placeholder="请选择产品品类"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in modelList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col v-if="form.type === 1">
+          <el-table :data="form.sampleInfoList" border max-height="250"  v-if="!showName || showName == 'sampleInfoList'">
+            <el-table-column prop="categoryName" label="品类">
+              <el-form-item
+                slot-scope="scope"
+                :prop="`sampleInfoList[${scope.$index}].categoryName`"
+                :rules="rules.categoryName"
+              >
+                <el-select
+                  v-model="scope.row.categoryName"
+                  filterable
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择"
+                  @change="onChangeCategoryName(scope.$index)"
+                >
+                  <el-option
+                    v-for="dict in modelList"
+                    :key="dict.id"
+                    :label="dict.name"
+                    :value="dict.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-table-column>
+            <el-table-column prop="computerName" label="型号">
+              <el-form-item
+                slot-scope="scope"
+                :prop="`sampleInfoList[${scope.$index}].computerName`"
+                :rules="rules.computerName"
+              >
+                <el-select
+                  v-model="scope.row.computerName"
+                  filterable
+                  clearable
+                  @focus="changeCategory(scope.$index)"
+                  style="width: 100%"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="dict in computerNameList"
+                    :key="dict.model"
+                    :label="dict.name"
+                    :value="dict.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-table-column>
+            <el-table-column width="100" align="center">
+              <template slot="header" slot-scope="scope">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  icon="el-icon-plus"
+                  @click="onAddItem"
+                ></el-button>
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  type="danger"
+                  size="mini"
+                  :disabled="form.sampleInfoList.length === 1"
+                  plain
+                  icon="el-icon-minus"
+                  @click="onRemoveItem(scope.row)"
+                >
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-col>
       </el-row>
 
@@ -483,7 +573,9 @@ import {
   sampleUpdate,
   sampleNumberList,
   sampleNumber,
+  sampleCategoryName,
 } from "@/api/third/sample";
+
 import tinymce from "@/views/components/Editor";
 import { typeCategory } from "@/api/third/category";
 import { dictUserList } from "@/api/third/isType";
@@ -507,6 +599,7 @@ export default {
       dialogVisible: false,
       showName: "",
       modelList: [],
+      computerNameList: [],
       saleList: [],
       // 表单参数
       form: {},
@@ -520,6 +613,9 @@ export default {
       rules: {
         customerName: [
           { required: true, message: "请输入客户名称", trigger: "blur" },
+        ],
+        type: [
+          { required: true, message: "请选择需求类型", trigger: "change" },
         ],
         baseModel: [
           {
@@ -562,6 +658,12 @@ export default {
         ],
         uiVersion: [
           { required: false, message: "请输入UI版本号", trigger: "blur" },
+        ],
+        categoryName: [
+          { required: true, message: "请选择", trigger: "change" },
+        ],
+        computerName: [
+          { required: true, message: "请选择", trigger: "change" },
         ],
       },
       active: -1,
@@ -644,17 +746,17 @@ export default {
         this.active = val.state;
       }
     },
-    active(num) {
-      if (num >= 4) {
-        this.rules.bootVersion[0].required = true;
-        this.rules.appVersion[0].required = true;
-        this.rules.uiVersion[0].required = true;
-      } else {
-        this.rules.bootVersion[0].required = false;
-        this.rules.appVersion[0].required = false;
-        this.rules.uiVersion[0].required = false;
-      }
-    },
+    // active(num) {
+    //   if (num >= 4) {
+    //     this.rules.bootVersion[0].required = true;
+    //     this.rules.appVersion[0].required = true;
+    //     this.rules.uiVersion[0].required = true;
+    //   } else {
+    //     this.rules.bootVersion[0].required = false;
+    //     this.rules.appVersion[0].required = false;
+    //     this.rules.uiVersion[0].required = false;
+    //   }
+    // },
   },
   mounted() {
     this.getDictUserList();
@@ -663,6 +765,34 @@ export default {
     });
   },
   methods: {
+    onChangeCategoryName(index) {
+      this.form.sampleInfoList[index].computerName = "";
+    },
+    changeCategory(index) {
+      const { categoryName } = this.form.sampleInfoList[index];
+
+      if (categoryName) {
+        sampleCategoryName({
+          categoryName,
+        }).then((res) => {
+          this.computerNameList = res.data;
+        });
+      } else {
+        this.computerNameList = [];
+      }
+    },
+    onAddItem() {
+      this.form.sampleInfoList.push({
+        categoryName: "",
+        computerName: "",
+      });
+    },
+    onRemoveItem(item) {
+      const index = this.form.sampleInfoList.indexOf(item);
+      if (index !== -1) {
+        this.form.sampleInfoList.splice(index, 1);
+      }
+    },
     async onCreateSampleNumber() {
       this.isCreateNumber = true;
       const { data } = await sampleNumber();
@@ -712,7 +842,14 @@ export default {
     reset() {
       this.form = {
         url: "",
+        type: 0,
         baseModel: [],
+        sampleInfoList: [
+          {
+            categoryName: "",
+            computerName: "",
+          },
+        ],
       };
       this.resetForm("form");
     },
@@ -758,8 +895,16 @@ export default {
               });
           } else {
             if (this.isCopyFlag) {
-              const { id, ...newParams } = params;
+              const { id, sampleInfoList, ...newParams } = params;
               params = newParams;
+              const sampleInfoListArr = sampleInfoList.map((item) => {
+                return {
+                  categoryName: item.categoryName,
+                  computerName: item.computerName,
+                }; 
+              })
+
+              params.sampleInfoList = sampleInfoListArr;
             }
             sampleAdd(params)
               .then((response) => {

@@ -2,49 +2,20 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="产品品类" prop="categoryId">
-        <el-select
-          v-model="queryParams.categoryId"
-          filterable
-          clearable
-          placeholder="请选择产品品类"
-          @change="queryParams.computerId = ''"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.categoryId" filterable clearable placeholder="请选择产品品类"
+          @change="queryParams.computerId = ''">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          v-model="queryParams.computerId"
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          placeholder="请选择仪表型号"
-          @change="getList"
-          @focus="getComputerData"
-          :remote-method="getComputerNameList"
-          style="width: 160px"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
+        <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+          placeholder="请选择仪表型号" @change="getList" @focus="getComputerData" :remote-method="getComputerNameList"
+          style="width: 160px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
@@ -59,60 +30,38 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品型号"
-        prop="name"
-        align="center"
-        width="150"
-      />
+      <el-table-column label="产品型号" prop="name" align="center" width="150" />
       <el-table-column label="描述" prop="desc" align="center" />
-      <el-table-column label="许可状态" align="center" width="100">
-        <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.isLicense"
-            :active-value="1"
-            :inactive-value="0"
-            @change="handleStatus(scope.row)"
-          />
+      <el-table-column label="许可状态" align="center" width="120">
+        <template slot-scope="{ row }">
+          <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click">
+            {{ row.isLicense === 0 ? "未许可" : "已许可" }}
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-if="row.isLicense === 1"  @click.native="handleStatus(0, row)">取消许可</el-dropdown-item>
+              <template v-if="row.isLicense === 0">
+                <el-dropdown-item  @click.native="handleStatus(1, row)">许可</el-dropdown-item>
+                <el-dropdown-item  @click.native="handleStatus(2, row)">强制许可</el-dropdown-item>
+              </template>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
-      <el-table-column
-        label="操作人"
-        prop="createBy"
-        align="center"
-        width="100"
-        show-overflow-tooltip
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="140"
-      >
+      <el-table-column label="操作人" prop="createBy" align="center" width="100" show-overflow-tooltip />
+      <el-table-column label="创建时间" prop="createTime" align="center" width="140">
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-tickets"
-            content="操作记录"
-            @click="handleLog(scope.row.id)"
-          />
+          <Tooltip icon="el-icon-tickets" content="操作记录" @click="handleLog(scope.row.id)" />
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 操作记录 -->
     <el-dialog title="操作记录" center :visible.sync="isTask">
-      <el-table
-        v-loading="loading"
-        :data="logList"
-        top="1vh"
-        border
-        height="500"
-      >
+      <el-table v-loading="loading" :data="logList" top="1vh" border height="500">
         <el-table-column label="序号" width="58" type="index" align="center">
           <template slot-scope="scope">
             {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -121,18 +70,8 @@
         <el-table-column label="文件名称" prop="typeName" align="center" />
         <el-table-column label="文件key" prop="type" align="center" />
         <el-table-column label="操作内容" prop="msg" align="center" />
-        <el-table-column
-          label="操作人"
-          prop="operationName"
-          align="center"
-          width="150"
-        />
-        <el-table-column
-          label="创建时间"
-          prop="operationTime"
-          align="center"
-          width="180"
-        />
+        <el-table-column label="操作人" prop="operationName" align="center" width="150" />
+        <el-table-column label="创建时间" prop="operationTime" align="center" width="180" />
       </el-table>
     </el-dialog>
   </div>
@@ -175,8 +114,8 @@ export default {
     $route: {
       async handler(route) {
         if (route.name === "ProdPermit") {
-          this.queryParams.categoryId = ''
-          this.queryParams.computerId = ''
+          this.queryParams.categoryId = "";
+          this.queryParams.computerId = "";
 
           const { categoryId, computerId } = route?.params;
 
@@ -197,7 +136,7 @@ export default {
           }
         }
       },
-      immediate: true
+      immediate: true,
     },
   },
   methods: {
@@ -249,8 +188,17 @@ export default {
         });
     },
     // 启用、禁用
-    handleStatus(row) {
-      let text = row.isLicense ? "许可" : "不许可";
+    handleStatus(isLicense, row) {
+      let text;
+
+      const licenseData = {
+        0: "取消许可",
+        1: "许可",
+        2: "强制许可",
+      }
+
+      text = licenseData[isLicense];
+
       this.$confirm("确认要" + `“${text}”` + "吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -259,15 +207,19 @@ export default {
         .then(function () {
           return computerUpdate({
             id: row.id,
-            isLicense: row.isLicense,
+            isLicense
           });
         })
-        .then(() => {
-          this.msgSuccess("操作成功");
+        .then((res) => {
+          if(res.data === 1) {
+            this.msgSuccess("操作成功");
+            this.getList();
+          } else {
+            this.msgError("配置总览未审核");
+          }
+        }).catch(() => {
+          
         })
-        .catch(function () {
-          row.isLicense = row.isLicense ? 0 : 1;
-        });
     },
     /** 搜索按钮操作 */
     handleQuery() {

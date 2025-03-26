@@ -15,6 +15,8 @@ import VueMeta from 'vue-meta'
 import VueEasytable from "vue-easytable";
 // 测试
 import ellipsisPlugings from "@/directive/commonDirective/myDirectives";
+import dataV from '@jiaminghi/data-view'
+import VueSeamlessScroll from 'vue-seamless-scroll';
 
 Vue.use(ellipsisPlugings);
 Vue.use(Print);
@@ -32,3 +34,5 @@ Vue.use(VueViewer, {
     zIndex: 9999
   },
 });
+Vue.use(dataV);
+Vue.use(VueSeamlessScroll);

@@ -26,14 +26,18 @@
         />
       </el-form-item>
       <el-form-item label="客户名称" prop="customerName">
-        <el-autocomplete
+        <select-loadMore
           v-model="queryParams.customerName"
-          clearable
           style="width: 140px"
-          multiple
-          placeholder="请选择"
-          :fetch-suggestions="querySearchAsync"
-        ></el-autocomplete>
+          :data="customerNameData.data"
+          :page="customerNameData.page"
+          :hasMore="customerNameData.more"
+          dictLabel="name"
+          dictValue="name"
+          :request="getCustomerNameList"
+          placeholder="请选择客户名称"
+        >
+        </select-loadMore>
       </el-form-item>
       <el-form-item label="品类" prop="categoryName">
         <el-select
@@ -287,7 +291,6 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
-        show-overflow-tooltip="true"
       />
       <el-table-column
         label="客退清单"
@@ -315,7 +318,6 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
-        show-overflow-tooltip="true"
       />
       <el-table-column
         label="复测结果"
@@ -326,7 +328,6 @@
         :filter-method="filterHandler"
         filter-placement="bottom"
         width="120"
-        show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
           {{ againCheckResultData[row.retestResult] }}
@@ -618,6 +619,7 @@ import FlipDown from "vue-flip-down";
 import commonData from "@/mixins/commonData";
 import { dragTableFn } from "@/mixins/common";
 import globalData from "./mixins/global";
+import { getCustomerList } from "@/api/order";
 
 export default {
   name: "AfterSale",
@@ -672,6 +674,12 @@ export default {
       multipleList: [],
       // 批量处理ID
       multipleDealIds: [],
+      // 客户数据
+      customerNameData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       typeDateList: {
         1: "年",
         2: "月",
@@ -1114,6 +1122,28 @@ export default {
     /** 清除所有过滤器  */
     clearFilter() {
       this.$refs.afterSaleRef.clearFilter();
+    },
+    /** 客户名称列表 */
+    getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.customerNameData.data = [
+              ...this.customerNameData.data,
+              ...list,
+            ];
+          } else {
+            this.customerNameData.data = list;
+          }
+          this.customerNameData.more = pageNum * pageSize < total;
+          this.customerNameData.page = pageNum;
+          resolve();
+        });
+      });
     },
   },
 };

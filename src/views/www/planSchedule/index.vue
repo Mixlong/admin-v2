@@ -290,6 +290,9 @@
               >
                 日志
               </el-dropdown-item>
+              <el-dropdown-item @click.native="onBoxInfo(row.id)">
+                箱子信息
+              </el-dropdown-item>
               <el-dropdown-item
                 v-hasPermi="['www:planSchedule:create:prodData']"
                 @click.native="handleCreateFile(row.id)"
@@ -485,6 +488,62 @@
       </div>
     </el-dialog>
 
+    <!-- 箱子信息 -->
+    <el-dialog
+      title="箱子信息"
+      :visible.sync="isBoxInfoShow"
+      center
+      :close-on-click-modal="false"
+    >
+      <el-table
+        border
+        v-loading="isBoxInfoLoading"
+        :height="450"
+        :data="boxInfoData"
+      >
+        <el-table-column label="序号" width="60" type="index" align="center">
+          <template slot-scope="scope">
+            {{
+              (boxInfoQueryParams.p - 1) * boxInfoQueryParams.l +
+              scope.$index +
+              1
+            }}
+          </template>
+        </el-table-column>
+        <el-table-column label="设备名称" align="center" prop="equipName" />
+        <el-table-column label="箱号" align="center" prop="boxNo" />
+        <el-table-column label="箱子序号" align="center" prop="no" />
+        <el-table-column label="应装数量" align="center" prop="num" />
+        <el-table-column label="箱子重量" align="center" prop="weight" />
+        <el-table-column label="是否尾箱" align="center" prop="isEnd">
+          <template slot-scope="{ row }">
+            <el-tag v-if="row.isEnd === 1" type="success"> 是 </el-tag>
+            <el-tag v-else type="info"> 否 </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="创建时间"
+          align="center"
+          prop="createTime"
+          width="150"
+        >
+          <template slot-scope="{ row }">
+            <span>
+              {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
+            </span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination
+        v-show="boxInfoTotal > 0"
+        :total="boxInfoTotal"
+        :page.sync="boxInfoQueryParams.p"
+        :limit.sync="boxInfoQueryParams.l"
+        @pagination="getBoxInfoData"
+      />
+    </el-dialog>
+
     <edit-log ref="editLogRef" />
   </div>
 </template>
@@ -496,6 +555,7 @@ import {
   createDataFile,
   sendProd,
   proSecDetail,
+  boxInfoList
 } from "@/api/www/planSchedule";
 import { listComputer, computerName } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
@@ -559,6 +619,16 @@ export default {
         startDate: "",
         endDate: "",
         operation: "",
+      },
+      isBoxInfoLoading: false,
+      isBoxInfoShow: false,
+      boxInfoData: [],
+      boxInfoTotal: 0,
+      schedulingId: "",
+      boxInfoQueryParams: {
+        p: 1,
+        l: 10,
+        id: ""
       },
     };
   },
@@ -857,12 +927,14 @@ export default {
           begin: "startDate",
           end: "endDate",
         })
-      ).then((response) => {
-        this.list = response.data.list;
-        this.total = response.data.total;
-      }).finally(() => {
-        this.loading = false;
-      })
+      )
+        .then((response) => {
+          this.list = response.data.list;
+          this.total = response.data.total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     handleAdd() {
       this.title = "新增计划";
@@ -992,6 +1064,24 @@ export default {
       this.$refs.editLogRef.dialogVisible = true;
       this.$refs.editLogRef.getList(id);
     },
+    // 详细信息
+    onBoxInfo(id) {
+      this.isBoxInfoShow = true;
+      this.schedulingId = id;
+
+      this.boxInfoQueryParams.id = id;
+      this.getBoxInfoData();
+    },
+    getBoxInfoData() {
+      this.isBoxInfoLoading = true;
+
+      boxInfoList(this.boxInfoQueryParams).then((res) => {
+        this.boxInfoData = res.data.list;
+        this.boxInfoTotal = res.data.total;
+      }).finally(() => {
+        this.isBoxInfoLoading = false;
+      })
+    }
   },
 };
 </script>

@@ -239,6 +239,7 @@ export default {
       this.loading = true;
       listCategory(this.queryParams)
         .then((response) => {
+          console.log(response)
           this.categoryList = response.data.list;
           this.total = response.data.total;
         })

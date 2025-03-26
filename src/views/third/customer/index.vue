@@ -8,13 +8,17 @@
       @submit.native.prevent
     >
       <el-form-item label="客户" prop="name">
-        <el-autocomplete
+        <select-loadMore
           v-model="queryParams.name"
-          clearable
-          placeholder="请输入客户"
-          :fetch-suggestions="querySearchAsync"
-          @select="handleQuery"
-        ></el-autocomplete>
+          :data="customerData.data"
+          :page="customerData.page"
+          :hasMore="customerData.more"
+          dictLabel="name"
+          dictValue="name"
+          :request="getCustomerData"
+          placeholder="请选择客户名称"
+        >
+        </select-loadMore>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
@@ -38,7 +42,12 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" border :data="customerList" :height="tableHeight()">
+    <el-table
+      v-loading="loading"
+      border
+      :data="customerList"
+      :height="tableHeight()"
+    >
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
@@ -161,6 +170,11 @@ export default {
         l: 50,
         name: undefined,
       },
+      customerData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       // 表单参数
       form: {},
       // 表单校验
@@ -184,6 +198,26 @@ export default {
         this.customerList = list;
         this.total = total;
         this.loading = false;
+      });
+    },
+    getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          list.filter((item) => item.status === 0);
+
+          if (more) {
+            this.customerData.data = [...this.customerData.data, ...list];
+          } else {
+            this.customerData.data = list;
+          }
+          this.customerData.more = pageNum * pageSize < total;
+          this.customerData.page = pageNum;
+          resolve();
+        });
       });
     },
     // 用户状态修改
@@ -232,18 +266,6 @@ export default {
       this.form = Object.assign({}, row);
       this.open = true;
       this.title = "修改客户";
-    },
-    /** 客户数据 */
-    querySearchAsync(queryString, cb) {
-      listCustomer({ key: queryString || "" }).then((res) => {
-        cb(
-          res.data.map((item) => {
-            return {
-              value: item.name,
-            };
-          })
-        );
-      });
     },
     /** 提交按钮 */
     submitForm: function () {

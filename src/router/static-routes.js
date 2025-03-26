@@ -30,5 +30,12 @@ export default [
                 }
             }
         ]
+    },
+    {
+        path: '/smartScreen',
+        component: () => import('@/views/smartScreen/index'),
+        meta: {
+            title: '智慧大屏'
+        }
     }
 ]

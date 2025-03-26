@@ -137,12 +137,14 @@
           label="客供物料"
           prop="material"
           align="center"
-          class-name="full-cell"
+          class-name="full-textarea-cell"
         >
           <template slot-scope="scope">
             <div class="input-container">
               <el-input
-                v-model.trim.lazy="scope.row.material"
+                v-model="scope.row.material"
+                type="textarea"
+                autosize
                 class="full-size-input"
                 :readonly="isReadonly"
               ></el-input>
@@ -361,7 +363,7 @@
             v-model="form.file"
             :imgW="150"
             :imgH="98"
-            :max="1"
+            :max="10"
             accept="image/jpeg, image/gif, image/png"
             :isDisabled="isReadonly"
           />

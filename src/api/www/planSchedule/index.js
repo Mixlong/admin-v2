@@ -88,6 +88,13 @@ export function proSecDetail(id) {
   })
 }
 
-
+// 根据任务令id获取箱子信息
+export function boxInfoList(params) {
+  return request({
+    url: "/production/scheduling/box/list",
+    method: 'get',
+    params
+  }) 
+}
 
 

@@ -105,7 +105,7 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-hasPermi="['sampleThird:productFamily:update']"
+            v-hasPermi="['third:productFamily:update']"
             @click="handleUpdate(scope.row)"
           />
 
@@ -119,7 +119,7 @@
               slot="reference"
               :className="['text-red']"
               content="删除"
-              v-hasPermi="['sampleThird:productFamily:delete']"
+            v-hasPermi="['third:productFamily:delete']"
             />
           </el-popconfirm>
 

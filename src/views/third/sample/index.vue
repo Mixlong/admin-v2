@@ -177,17 +177,27 @@
         v-if="columns[0].visible"
       >
         <template slot-scope="{ row }">
-          <p v-if="row.number">送样单号: {{ row.number }}</p>
-          <p>客户：{{ row.customerName }}</p>
-          <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
+          <div v-if="row.number">送样单号: {{ row.number }}</div>
+          <div>客户：{{ row.customerName }}</div>
+          <template v-if="row.type === 0 || row.type === null">
+            <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
             产品品类：
-            <el-tag style="margin: 5px 0 0 0" size="small">{{ tag }}</el-tag>
+            <el-tag style="margin: 5px 0 0 0" size="mini">{{ tag }}</el-tag>
           </div>
-          <p>数量：{{ row.sendNum }}</p>
-          <p v-show="row.harkVersion">硬件版本号：{{ row.harkVersion }}</p>
-          <p v-show="row.bootVersion">Boot版本号：{{ row.bootVersion }}</p>
-          <p v-show="row.appVersion">APP版本号：{{ row.appVersion }}</p>
-          <p v-show="row.uiVersion">UI版本号：{{ row.uiVersion }}</p>
+          </template>
+
+          <template v-if="row.type === 1">
+            <div class="tag-box" :key="item.id" v-for="item in row.sampleInfoList">
+            产品型号：
+            <el-tag style="margin: 5px 0 0 0" size="mini">{{ item.computerName  }}</el-tag>
+            </div>
+          </template>  
+
+          <div>数量：{{ row.sendNum }}</div>
+          <div v-show="row.harkVersion">硬件版本号：{{ row.harkVersion }}</div>
+          <div v-show="row.bootVersion">Boot版本号：{{ row.bootVersion }}</div>
+          <div v-show="row.appVersion">APP版本号：{{ row.appVersion }}</div>
+          <div v-show="row.uiVersion">UI版本号：{{ row.uiVersion }}</div>
         </template>
       </el-table-column>
 
@@ -545,6 +555,7 @@ import Verify from "vue2-verify";
 import { pmList } from "@/utils/commonData";
 import TypeInSn from "./components/typeInSn.vue";
 import { dragTableFn } from "@/mixins/common";
+import { cloneDeep } from "lodash";
 
 export default {
   name: "Sample",
@@ -1006,6 +1017,8 @@ export default {
       let params = {};
       params.state = type;
       params.id = row.id;
+      this.$refs.compUpdate.isCopyFlag = false;
+
       if (type === 6) {
         this.handleUpdate(row, "actualTime");
         this.$refs.compUpdate.isType = type;
@@ -1046,7 +1059,8 @@ export default {
       this.handleUpdate(row);
     },
     handleUpdate(row, name) {
-      let currentData = Object.assign({}, row);
+      let currentData = cloneDeep(row);
+      currentData.type = currentData.type ?? 0;
       if (name === "progress" && currentData.progress === null) {
         currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>

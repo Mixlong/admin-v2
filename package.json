@@ -12,6 +12,7 @@
     "start": "npm run dev"
   },
   "dependencies": {
+    "@jiaminghi/data-view": "^2.10.0",
     "@riophae/vue-treeselect": "0.4.0",
     "@toast-ui/editor": "^2.2.0",
     "@toast-ui/editor-plugin-color-syntax": "^1.0.1",
@@ -64,6 +65,7 @@
     "vue-qr": "^4.0.9",
     "vue-router": "3.0.2",
     "vue-scroll": "^2.1.13",
+    "vue-seamless-scroll": "^1.1.23",
     "vue-splitpane": "1.0.4",
     "vue-xlsx": "^0.2.1",
     "vue2-verify": "^1.1.5",

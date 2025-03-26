@@ -101,7 +101,7 @@
                 class="text-orange"
                 icon="el-icon-coordinate"
                 content="待初审"
-                v-hasPermi="['sampleConfig:overview:first:check']"
+                v-hasPermi="['config:overview:first:check']"
                 @click="handleAuthChange(row, 1)"
               />
   
@@ -111,7 +111,7 @@
                 class="text-orange"
                 icon="el-icon-coordinate"
                 content="待终审"
-                v-hasPermi="['sampleConfig:overview:final:check']"
+                v-hasPermi="['config:overview:final:check']"
                 @click="handleAuthChange(row, 2)"
               />
   
@@ -119,7 +119,7 @@
                 class="margin-0"
                 icon="el-icon-position"
                 content="送样族谱"
-                v-hasPermi="['sampleProduct:configOverView:btn']"
+                v-hasPermi="['product:configOverView:btn']"
                 @click="
                   handleNameToPage('SampleProductFamily', {
                     categoryId: row.categoryId,

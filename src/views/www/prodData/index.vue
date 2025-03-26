@@ -171,6 +171,21 @@
           <el-tag v-if="row.isLicense === 0" type="danger">未许可</el-tag>
         </template>
       </el-table-column>
+      <el-table-column
+        prop="configStatus"
+        label="配置状态"
+        align="center"
+        width="100"
+        fixed
+      >
+        <template v-slot="{ row }">
+          <el-tag v-if="row.configStatus === 0" type="warning">待审核</el-tag>
+          <el-tag v-if="row.configStatus === 1" type="success">初审通过</el-tag>
+          <el-tag v-if="row.configStatus === 2" type="danger">初审未通过</el-tag>
+          <el-tag v-if="row.configStatus === 3" type="success">终审通过</el-tag>
+          <el-tag v-if="row.configStatus === 4" type="danger">终审未通过</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="SMT资料" align="center">
         <el-table-column
           prop="pucsStatus"

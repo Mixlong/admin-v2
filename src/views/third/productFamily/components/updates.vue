@@ -1753,8 +1753,6 @@ export default {
         callback(new Error("请输入数字值"));
       } else if (+value < 0) {
         callback("休眠时间不能小于0");
-      } else if (+value > 10) {
-        callback("休眠时间不能大于10");
       } else {
         callback();
       }

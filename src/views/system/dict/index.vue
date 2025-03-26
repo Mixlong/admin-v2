@@ -150,7 +150,7 @@
       >
         <template slot-scope="scope">
           <router-link
-            :to="'/dict/type/data/' + scope.row.dictId"
+            :to="`/dict/type/data/${scope.row.dictId}?isUpload=${scope.row.isUpload}`"
             class="link-type"
           >
             <span>{{ scope.row.dictType }}</span>
@@ -245,6 +245,17 @@
             >
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="上传文件" prop="isUpload">
+          <el-radio-group v-model="form.isUpload">
+            <el-radio
+              v-for="dict in uploadOptions"
+              :key="dict.dictValue"
+              :label="dict.dictValue"
+              >
+              {{ dict.dictLabel }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="备注" prop="remark" class="form-textarea">
           <el-input
             v-model="form.remark"
@@ -296,6 +307,15 @@ export default {
       open: false,
       // 状态数据字典
       statusOptions: [],
+      uploadOptions: [{
+        dictLabel: "否",
+        dictValue: 0
+      },
+      {
+        dictLabel: "是",
+        dictValue: 1
+      }
+    ],
       // 日期范围
       dateRange: [],
       // 查询参数
@@ -353,6 +373,7 @@ export default {
         dictName: undefined,
         dictType: undefined,
         status: "0",
+        isUpload: 0,
         remark: undefined,
       };
       this.resetForm("form");

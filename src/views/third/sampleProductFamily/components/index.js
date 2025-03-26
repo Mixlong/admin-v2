@@ -245,7 +245,7 @@ export default {
         6: "AUTO",
       },
       //   休眠时间
-      sleepTimeList: [...Array(11)].map((v, i) => i),
+      sleepTimeList: [...Array(101)].map((v, i) => i),
       //   系统电压
       dicts_voltage: [24, 36, 48, 52, 60, 72],
       //   助力档位数

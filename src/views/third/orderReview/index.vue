@@ -96,14 +96,12 @@
         align="center"
         prop="customerName"
         width="100"
-        show-overflow-tooltip
       />
       <el-table-column
         label="客户订单号"
         align="center"
         prop="customerOrderNo"
         width="150"
-        show-overflow-tooltip
       />
       <el-table-column label="型号名称" align="center" min-width="140">
         <template slot-scope="{ row }">
@@ -149,6 +147,7 @@
             :srcList="[row.file]"
             width="45px"
             height="45px"
+            :isDisBadge="false"
           />
         </template>
       </el-table-column>
@@ -157,7 +156,6 @@
         align="center"
         prop="remark"
         min-width="200"
-        show-overflow-tooltip
       >
         <template slot-scope="{ row }">
           <span v-NoData="row.remark"></span>

@@ -214,7 +214,7 @@ export function resetSampleBatchSync(data) {
 // 仪表型号
 export function computerNameList({ name, categoryId }) {
   return request({
-    url: `computer/name/${name}`,
+    url: `/sample/computer/name/${name}`,
     method: 'get',
     params: {
       categoryId
