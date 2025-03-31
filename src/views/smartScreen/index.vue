@@ -1,87 +1,125 @@
 <template>
-  <dv-full-screen-container>
-    <div class="smart-screen-container">
-      <div class="header">
-        <div class="logo">
-          <img
-            class="logo-icon"
-            src="~@/assets/image/screen/power_logo.png"
-            alt="logo"
-          />
+  <div class="smart-screen-container" id="screen">
+    <div class="header">
+      <div class="logo">
+        <img
+          class="logo-icon"
+          src="~@/assets/image/screen/power_logo.png"
+          alt="logo"
+        />
+      </div>
+      <div class="main-title">迪太科技生产智慧大屏</div>
+      <div class="header-right">
+        <span class="current-time">
+          {{ currentTime }}
+        </span>
+        <span class="line"></span>
+        <span class="currentDate">{{ currentDate }}</span>
+        <span>{{ currentWeekday }}</span>
+      </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="main-content-box">
+      <div class="content-left">
+        <div class="content-left-top">
+          <div
+            class="content--top-item"
+            v-for="(item, index) in todayInfoData"
+            :key="index"
+          >
+            <div class="main-title">
+              {{ item.title }}
+            </div>
+            <div class="main-content">
+              <div class="progress-box">
+                <!-- <el-progress
+                  class="el-progress--circle-box"
+                  type="circle"
+                  :percentage="item.progress"
+                  :width="89"
+                  :stroke-width="10"
+                  color="#00E8B5"
+                  text-color="#fff"
+                  define-back-color="#F6FFFC"
+                ></el-progress> -->
+
+                <Progress class="progress-bar">
+                  <span class="text-white">{{ item.progress }}%</span>
+                </Progress>
+              </div>
+              <div class="main-right-box">
+                <div class="top">
+                  <img
+                    src="~@/assets/image/screen/XMLID-flud.png"
+                    alt="XMLID-flud"
+                  />
+                  <span class="current-count">{{ item.value }}</span>
+                  <span class="sub-title">{{ item.subTitle }}</span>
+                </div>
+                <div class="bottom">
+                  <span class="sub-title">总数量</span>
+                  <span class="total-count">{{ item.total }}</span>
+                  <img
+                    src="~@/assets/image/screen/XMLID.png"
+                    alt="XMLID-flud"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="main-title">迪太科技生产智慧大屏</div>
-        <div class="header-right">
-          <span class="current-time">
-            {{ currentTime }}
-          </span>
-          <span class="line"></span>
-          <span class="currentDate">{{ currentDate }}</span>
-          <span>{{ currentWeekday }}</span>
+        <div class="content-left-bottom">
+          <div class="header-box">
+            <div class="header-bg-box">
+              <div class="main-title">生产实况</div>
+            </div>
+          </div>
+          <div class="production-plant-box">
+            <production-plant
+              :tableData="productionSituationData"
+            ></production-plant>
+          </div>
         </div>
       </div>
 
-      <!-- 内容区域 -->
-      <div class="main-content-box">
-        <div class="content-left">
-          <div class="content-left-top">
-            <div
-              class="content--top-item"
-              v-for="(item, index) in todayInfoData"
-              :key="index"
-            >
-              <div class="main-title">
-                {{ item.title }}
-              </div>
-              <div class="main-content">
-                <div class="progress-box">
-                  <el-progress
-                    type="circle"
-                    :percentage="item.progress"
-                    :width="89"
-                    :stroke-width="10"
-                    color="#00E8B5"
-                    text-color="#fff"
-                    define-back-color="#F6FFFC"
-                  ></el-progress>
-                </div>
-                <div class="main-right-box">
-                  <div class="top">
-                    <img
-                      src="~@/assets/image/screen/XMLID-flud.png"
-                      alt="XMLID-flud"
-                    />
-                    <span class="current-count">{{ item.value }}</span>
-                    <span class="sub-title">{{ item.subTitle }}</span>
-                  </div>
-                  <div class="bottom">
-                    <span class="sub-title">总数量</span>
-                    <span class="total-count">{{ item.total }}</span>
-                    <img
-                      src="~@/assets/image/screen/XMLID.png"
-                      alt="XMLID-flud"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="content-left-bottom">
-            <div class="header-box">
-              <div class="header-bg-box">
-                <div class="main-title">生产实况</div>
-              </div>
-            </div>
-            <!-- <dv-border-box-11 title="生产实况" :color="['#196E96']"> -->
-            <div class="production-plant-box">
-              <production-plant></production-plant>
-            </div>
-            <!-- </dv-border-box-11> -->
-          </div>
+      <div class="content-right">
+        <div class="production-alarm-box">
+          <CommonData title="生产报警">
+            <template #content>
+              <AlarmTable :tableData="alarmData" />
+              <van-notice-bar
+                v-if="alarmData.length"
+                class="notice-bar-box"
+                scrollable
+                left-icon="volume"
+                background="rgba(255,56,107,0.25)"
+              >
+                <span class="notice-box" v-for="item in noticeData">
+                  <span class="orderNo">{{ item.orderNo }}</span>
+                  <span class="timeout-period">({{ item.time }}),</span>
+                </span>
+              </van-notice-bar>
+            </template>
+          </CommonData>
         </div>
-        <div class="content-right"></div>
+        <div class="production-alarm-box">
+          <CommonData title="生产资料准备情况">
+            <template #content>
+              <PreparationMeansProduction :tableData="preparationData" />
+            </template>
+          </CommonData>
+        </div>
+        <div class="production-alarm-box">
+          <CommonData title="良率趋势图">
+            <template #content>
+              <el-empty description="后续迭代" :image-size="80"></el-empty>
+            </template>
+          </CommonData>
+        </div>
       </div>
     </div>
-  </dv-full-screen-container>
+  </div>
 </template>
 
 <script>
@@ -90,15 +128,32 @@ import {
   getScreenProductionMeans,
 } from "@/api/smartScreen";
 import productionPlant from "./components/productionPlant.vue";
+import CommonData from "./components/commonData.vue";
+import AlarmTable from "./components/alarmTable.vue";
+import PreparationMeansProduction from "./components/preparationMeansProduction.vue";
+import Progress from "./components/progress.vue";
+import { NoticeBar } from "vant";
+import screenfull from "screenfull";
+import autofit from "autofit.js";
 
 export default {
-  components: { productionPlant },
+  components: {
+    productionPlant,
+    CommonData,
+    [NoticeBar.name]: NoticeBar,
+    AlarmTable,
+    PreparationMeansProduction,
+    Progress,
+  },
   name: "smartScreen",
   data() {
     return {
       currentTime: "--",
       currentDate: "--",
       currentWeekday: "--",
+      productionSituationData: [], // 生产实况
+      alarmData: [], // 生产报警
+      preparationData: [], // 生产资料准备情况
       todayInfoData: [
         {
           title: "今日直通运行情况",
@@ -122,17 +177,34 @@ export default {
           progress: 0,
         },
       ],
+      noticeData: [
+        { orderNo: "1234567890", time: "2024-08-10 10:00:00" },
+        { orderNo: "1234567890", time: "2024-08-10 10:00:00" },
+      ],
       headerTimer: null,
+      pageDataTimer: null,
     };
   },
   created() {
+    this.getHeaderTime();
+    this.getTodayInfo();
+
     this.headerTimer = setInterval(() => {
       this.getHeaderTime();
     }, 1000);
-    this.getTodayInfo();
+    this.pageDataTimer = setInterval(() => {
+      this.getTodayInfo();
+    }, 10 * 1000);
+  },
+  mounted() {
+    autofit.init({
+      el: "#screen",
+    });
+    screenfull.request();
   },
   destroyed() {
     clearInterval(this.headerTimer);
+    clearInterval(this.pageDataTimer);
   },
   methods: {
     getHeaderTime() {
@@ -143,29 +215,47 @@ export default {
 
     getTodayInfo() {
       getScreenTodayProgress().then((res) => {
-        console.log(res);
         const { data } = res;
         this.todayInfoData[0].value = data.throughCompleteNum;
         this.todayInfoData[0].total = data.throughTotalNum;
         if (data.throughTotalNum) {
-          this.todayInfoData[0].progress =
-            data.throughCompleteNum / data.throughTotalNum;
+          this.todayInfoData[0].progress = this.toPercentage(
+            data.throughCompleteNum / data.throughTotalNum
+          );
         }
 
         this.todayInfoData[1].value = data.productCompleteNum;
         this.todayInfoData[1].total = data.productNum;
         if (data.productNum) {
-          this.todayInfoData[1].progress =
-            data.productCompleteNum / data.productNum;
+          this.todayInfoData[1].progress = this.toPercentage(
+            data.productCompleteNum / data.productNum
+          );
         }
 
         this.todayInfoData[2].value = data.preparationCompleteNum;
         this.todayInfoData[2].total = data.preparationTotalNum;
         if (data.preparationTotalNum) {
-          this.todayInfoData[2].progress =
-            data.preparationCompleteNum / data.preparationTotalNum;
+          this.todayInfoData[2].progress = this.toPercentage(
+            data.preparationCompleteNum / data.preparationTotalNum
+          );
         }
+
+        this.productionSituationData = data.list;
       });
+
+      getScreenProductionMeans().then((res) => {
+        this.preparationData = res.data;
+      });
+    },
+    toPercentage(value) {
+      const percentage = (value * 100).toFixed(1);
+      if (percentage === "0.0") {
+        return 0;
+      } else if (percentage === "100.0") {
+        return 100;
+      } else {
+        return percentage;
+      }
     },
   },
 };
@@ -180,8 +270,6 @@ export default {
   background-size: 100% 100%;
   padding: 8px;
   box-sizing: border-box;
-  display: grid;
-  grid-template-rows: 63px 1fr;
 
   .header {
     display: grid;
@@ -294,9 +382,18 @@ export default {
               border: 1px solid rgba(31, 198, 255, 0.32);
               border-radius: 50%;
               box-sizing: border-box;
+              margin-right: 32px;
+
+              .el-progress--circle-box {
+                /deep/ .el-progress__text {
+                  font-size: 16px !important;
+                  font-weight: bold;
+                }
+              }
             }
 
             .main-right-box {
+              flex: 1;
               display: grid;
               row-gap: 7px;
               .top {
@@ -305,7 +402,7 @@ export default {
                 align-items: center;
                 padding: 0 14px;
                 box-sizing: border-box;
-                width: 182px;
+                width: 100%;
                 height: 50px;
                 background: url(~@/assets/image/screen/Rectangle-bottom.png)
                   no-repeat center center;
@@ -332,7 +429,7 @@ export default {
                 align-items: center;
                 padding: 0 14px;
                 box-sizing: border-box;
-                width: 182px;
+                width: 100%;
                 height: 50px;
                 background: url(~@/assets/image/screen/Rectangle-top.png)
                   no-repeat center center;
@@ -390,8 +487,8 @@ export default {
               bottom: -5px;
               width: 144px;
               height: 6px;
-              background: url(~@/assets/image/screen/Rectangle_angle.png) no-repeat
-                center center;
+              background: url(~@/assets/image/screen/Rectangle_angle.png)
+                no-repeat center center;
               background-size: 100% 100%;
             }
 
@@ -411,8 +508,30 @@ export default {
     }
 
     .content-right {
-
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+      row-gap: 24px;
     }
+  }
+
+  .notice-bar-box {
+    height: 44px;
+    .notice-box {
+      font-size: 20px;
+      color: #ff0041;
+
+      .orderNo {
+        color: #fff;
+        margin-right: 5px;
+      }
+    }
+  }
+
+  .progress-bar {
+    width: 95px;
+    height: 95px;
+    font-size: 14px;
+    font-weight: bold;
   }
 }
 </style>

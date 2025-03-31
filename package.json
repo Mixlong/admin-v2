@@ -12,12 +12,12 @@
     "start": "npm run dev"
   },
   "dependencies": {
-    "@jiaminghi/data-view": "^2.10.0",
     "@riophae/vue-treeselect": "0.4.0",
     "@toast-ui/editor": "^2.2.0",
     "@toast-ui/editor-plugin-color-syntax": "^1.0.1",
     "@wangeditor/editor": "^5.1.0",
     "@wangeditor/editor-for-vue": "^1.0.1",
+    "autofit.js": "^3.2.4",
     "axios": "^0.18.1",
     "babel-plugin-import": "^1.13.3",
     "bpmn-js-token-simulation": "0.10.0",
