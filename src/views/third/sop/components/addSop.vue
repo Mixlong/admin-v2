@@ -15,7 +15,7 @@
       ref="form"
       :model="form"
       :rules="rules"
-      label-width="100px"
+      label-width="120px"
       label-position="left"
     >
       <el-row :gutter="24" class="form-header-section">
@@ -61,22 +61,16 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-divider content-position="left">
-        <div class="section-header">
-          <i class="el-icon-document section-icon"></i>
-          <span class="section-title">工位文件管理</span>
-        </div>
-      </el-divider>
       <el-row class="workspace-files">
         <el-form-item
           label="添加工位文件："
           required
-          label-width="120px"
+          label-width="140px"
           class="add-file-sticky"
         >
           <div class="upload-section">
             <div class="file-upload-area">
-              <el-button
+              <!-- <el-button
                 class="save-btn"
                 v-if="form.list.length < 100"
                 type="primary"
@@ -84,14 +78,14 @@
                 circle
                 size="medium"
                 @click="onAddStationFile"
-              />
+              /> -->
               <el-button
                 class="save-btn upload-btn"
                 type="primary"
                 size="medium"
                 @click="handlePdfUpload"
               >
-                <i class="el-icon-upload el-icon--left"></i> 上传文件 *(只支持PDF)
+                <i class="el-icon-upload el-icon--left"></i> 上传PDF
               </el-button>
               <input
                 ref="pdfFileInput"
@@ -134,9 +128,6 @@
                   align="middle"
                   class="file_list_box"
                 >
-                  <el-col :span="1" class="text-center move-tag mover">
-                    <i class="el-icon-menu"></i>
-                  </el-col>
                   <el-col :span="3">
                     <el-form-item
                       label=""
@@ -168,6 +159,11 @@
                         :imgW="100"
                         :imgH="100"
                         class="enhanced-upload"
+                        :rowId="index"
+                        @drag-start="handleDragStart($event, index)"
+                        @drag-end="handleDragEnd"
+                        @image-drop="handleImageDrop($event, index)"
+                        @cross-row-drop="handleCrossRowDrop"
                       />
                     </el-form-item>
                   </el-col>
@@ -183,16 +179,11 @@
                           clearable
                           placeholder="请输入工位文件描述"
                           style="width: 100%"
+                          @blur="onSaveItem(item)"
                         />
                       </el-form-item>
                       <!-- 保存 -->
                         <div class="action-buttons">
-                          <el-button
-                            type="primary"
-                            size="small"
-                            class="action-btn"
-                            @click="onSaveItem(item)"
-                          >保存</el-button>
                           <!-- 复制 -->
                           <el-button
                             type="warning"
@@ -200,11 +191,18 @@
                             class="action-btn"
                             @click="onCopyItem(index)"
                           >复制</el-button>
+                          <el-button
+                            type="danger"
+                            v-if="index !== 0"
+                            size="small"
+                            class="action-btn"
+                               @click="removeSopData(item)"
+                          >删除</el-button>
                         </div>
                   </el-col>
                 </el-row>
               </el-col>
-              <el-col :span="1" class="text-center">
+              <!-- <el-col :span="1" class="text-center">
                 <el-button
                   v-if="index !== 0"
                   type="danger"
@@ -213,7 +211,7 @@
                   class="delete-btn"
                   @click="removeSopData(item)"
                 />
-              </el-col>
+              </el-col> -->
             </el-row>
           </transition-group>
         </draggable>
@@ -251,6 +249,9 @@ export default {
     return {
       currentPdfIndex: -1, // 当前处理PDF的索引
       drag: false,
+      dragSourceIndex: -1, // 拖拽源行索引
+      dragImageIndex: -1, // 拖拽图片索引
+      dragOverIndex: -1, // 拖拽目标行索引
       actionUrl: reqUrl + "/oss/batch-upload",
       // 提交loading
       isSubLoading: false,
@@ -372,8 +373,256 @@ export default {
     onCopyItem(index) {
       const item = { ...this.form.list[index], id: "" };
       this.form.list.splice(index + 1, 0, item);
-
-      // this.onSetStationBoxRef();
+    },
+    /** 处理图片拖拽开始 */
+    handleDragStart(data, rowIndex) {
+      console.log('开始拖拽，源行索引:', rowIndex, '图片索引:', data.index);
+      
+      // 清除可能残留的拖拽样式
+      document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+      });
+      
+      // 记录拖拽源信息
+      this.dragSourceIndex = rowIndex;
+      this.dragImageIndex = data.index;
+      
+      // 将拖拽信息保存到全局属性，以确保跨组件传递可靠
+      window._sopDragInfo = {
+        sourceIndex: rowIndex,
+        imageIndex: data.index
+      };
+      
+      // 添加全局样式类来显示正在拖拽状态
+      document.body.classList.add('sop-dragging');
+    },
+    
+    /** 处理图片拖拽结束 */
+    handleDragEnd(evt) {
+      console.log('拖拽结束');
+      
+      // 清除所有拖拽相关样式
+      document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+      });
+      
+      // 移除拖拽状态类
+      document.body.classList.remove('sop-dragging');
+      
+      // 不主动清除全局拖拽信息，等待拖放事件触发后处理
+    },
+    
+    /** 处理跨行拖拽 - 简化版 */
+    handleCrossRowDrop(data) {
+      console.log('跨行拖拽事件触发', data);
+      
+      try {
+        // 安全获取行索引
+        const sourceRowId = parseInt(data.sourceRowId);
+        const targetRowId = parseInt(data.targetRowId);
+        
+        // 检查行索引是否有效
+        if (isNaN(sourceRowId) || isNaN(targetRowId) || 
+            sourceRowId < 0 || sourceRowId >= this.form.list.length || 
+            targetRowId < 0 || targetRowId >= this.form.list.length) {
+          console.error('无效的行索引');
+          return;
+        }
+        
+        // 获取源行和目标行
+        const sourceRow = this.form.list[sourceRowId];
+        const targetRow = this.form.list[targetRowId];
+        
+        // 安全检查
+        if (!sourceRow || !targetRow) {
+          console.error('无效的行数据');
+          return;
+        }
+        
+        // 获取拖拽的图片数据
+        let draggedImage = '';
+        if (data.event && data.event.dataTransfer) {
+          try {
+            const dragData = data.event.dataTransfer.getData('text/plain');
+            const sourceData = JSON.parse(dragData);
+            if (sourceData && sourceData.image) {
+              draggedImage = sourceData.image;
+            }
+          } catch(e) {
+            console.error('解析拖拽数据出错', e);
+          }
+        }
+        
+        if (!draggedImage) {
+          console.error('无法获取拖拽图片数据');
+          return;
+        }
+        
+        // 直接将图片添加到目标行
+        let targetImages = targetRow.file ? targetRow.file.split(',') : [];
+        targetImages.push(draggedImage);
+        targetRow.file = targetImages.join(',');
+        
+        console.log('已将图片添加到行:', targetRowId);
+        
+        // 更新视图
+        this.$forceUpdate();
+      } catch(e) {
+        console.error('处理跨行拖拽错误:', e);
+      }
+    },
+    
+    /** 处理图片放置 */
+    handleImageDrop(data, targetRowIndex) {
+      console.log('图片放置事件', data, targetRowIndex);
+      
+      // 检查是否是同行内拖拽
+      if (data.samelist === true) {
+        console.log('同行拖拽，已由组件内部处理');
+        return;
+      }
+      
+      // 如果是跨组件拖拽，直接使用fromUid和toUid来确定行索引
+      if (data.fromUid !== undefined && data.toUid !== undefined) {
+        console.log('跨组件拖拽检测，fromUid:', data.fromUid, 'toUid:', data.toUid);
+        
+        // 尝试根据元素UID找到对应的行索引
+        const rowElems = document.querySelectorAll('.upload-queue');
+        let sourceRowIndex = -1;
+        let targetRowIndex = -1;
+        
+        // 遍历查找组件实例的UID匹配
+        rowElems.forEach((el, idx) => {
+          const vueInstance = el.__vue__;
+          if (vueInstance && vueInstance._uid === data.fromUid) {
+            sourceRowIndex = idx;
+          }
+          if (vueInstance && vueInstance._uid === data.toUid) {
+            targetRowIndex = idx;
+          }
+        });
+        
+        if (sourceRowIndex !== -1 && targetRowIndex !== -1) {
+          console.log('找到对应行：源行', sourceRowIndex, '目标行', targetRowIndex);
+          data.sourceIndex = sourceRowIndex;
+          data.targetIndex = targetRowIndex;
+        }
+      }
+      
+      // 如果没有全局拖拽信息，尝试今data中提取
+      if (!window._sopDragInfo) {
+        if (data && data.image) {
+          // 可能是原生HTML5拖拽的情况
+          console.log('使用原生拖拽数据', data);
+          const dragImage = data.image;
+          
+          // 先在所有行中找到含有这个图片URL的行
+          let dragSourceIndex = -1;
+          let dragImageIndex = -1;
+          
+          for (let i = 0; i < this.form.list.length; i++) {
+            const rowImages = this.form.list[i].file ? this.form.list[i].file.split(',') : [];
+            const imgIndex = rowImages.indexOf(dragImage);
+            if (imgIndex !== -1) {
+              dragSourceIndex = i;
+              dragImageIndex = imgIndex;
+              break;
+            }
+          }
+          
+          if (dragSourceIndex !== -1 && dragImageIndex !== -1) {
+            console.log('找到源图片在行:', dragSourceIndex, '索引:', dragImageIndex);
+          } else {
+            console.log('无法找到源图片');
+            return;
+          }
+          
+          // 创建一个拥有最小所需信息的对象
+          window._sopDragInfo = {
+            sourceIndex: dragSourceIndex,
+            imageIndex: dragImageIndex,
+            image: dragImage
+          };
+        } else {
+          console.log('没有找到拖拽信息');
+          return;
+        }
+      }
+      
+      const dragSourceIndex = window._sopDragInfo.sourceIndex;
+      const dragImageIndex = window._sopDragInfo.imageIndex;
+      
+      console.log('放置到行:', targetRowIndex, '从行:', dragSourceIndex);
+      
+      // 如果是同一行内的拖拽，组件内部已处理
+      if (dragSourceIndex === targetRowIndex) {
+        console.log('同行拖拽，已在组件内部处理');
+        window._sopDragInfo = null; // 清除全局信息
+        return;
+      }
+      
+      // 获取源行和目标行
+      const sourceRow = this.form.list[dragSourceIndex];
+      const targetRow = this.form.list[targetRowIndex];
+      
+      // 如果源或目标不存在，则退出
+      if (!sourceRow || !targetRow) {
+        console.log('源或目标行不存在');
+        window._sopDragInfo = null; // 清除全局信息
+        return;
+      }
+      
+      try {
+        // 源行的图片列表
+        const sourceImages = sourceRow.file ? sourceRow.file.split(',') : [];
+        
+        // 如果源行没有图片或索引无效，则退出
+        if (sourceImages.length === 0 || dragImageIndex >= sourceImages.length) {
+          console.log('源图片或索引无效');
+          window._sopDragInfo = null; // 清除全局信息
+          return;
+        }
+        
+        // 获取要移动的图片URL
+        const imageToMove = sourceImages[dragImageIndex];
+        console.log('移动图片:', imageToMove);
+        
+        // 从源行图片列表中删除
+        sourceImages.splice(dragImageIndex, 1);
+        sourceRow.file = sourceImages.join(',');
+        
+        // 添加到目标行图片列表
+        const targetImages = targetRow.file ? targetRow.file.split(',') : [];
+        
+        // 如果有指定目标位置，则插入，否则添加到末尾
+        if (data.targetIndex !== undefined) {
+          targetImages.splice(data.targetIndex, 0, imageToMove);
+        } else {
+          targetImages.push(imageToMove);
+        }
+        
+        targetRow.file = targetImages.join(',');
+        console.log('更新后的目标行图片:', targetRow.file);
+        
+        // 移动后执行保存
+        this.onSaveItem(sourceRow);
+        this.onSaveItem(targetRow);
+      } catch (e) {
+        console.error('拖拽处理错误', e);
+      } finally {
+        // 清除全局拖拽信息
+        window._sopDragInfo = null;
+        this.dragSourceIndex = -1;
+        this.dragImageIndex = -1;
+        this.dragOverIndex = -1;
+        
+        // 移除所有拖拽样式
+        document.body.classList.remove('sop-dragging');
+        document.querySelectorAll('.drag-over,.dragging').forEach(el => {
+          el.classList.remove('drag-over');
+          el.classList.remove('dragging');
+        });
+      }
     },
     checkListItem() {
       let arr = [];
@@ -594,8 +843,6 @@ export default {
 
   .file_list_box {
     box-sizing: border-box;
-    border-bottom: 1px solid #ebeef5;
-    padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 10px;
     transition: all 0.3s;
@@ -603,8 +850,7 @@ export default {
     
     &:hover {
       background-color: #f8f9fc;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-      border-bottom: 1px solid #e0e6ed;
+      // box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
     }
     
     &:before {
@@ -663,14 +909,8 @@ export default {
   }
   
   .upload-section {
-    margin: 5px 0 15px;
-    padding: 18px;
-    background: linear-gradient(145deg, #f5f7fa, #ffffff);
     border-radius: 10px;
-    border: 1px dashed #d9d9d9;
-    transition: all 0.3s;
     position: relative;
-    
     &:before {
       content: '';
       position: absolute;
@@ -682,16 +922,6 @@ export default {
       border-radius: 10px 10px 0 0;
       opacity: 0;
       transition: opacity 0.3s;
-    }
-    
-    &:hover {
-      border-color: #409EFF;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      transform: translateY(-2px);
-      
-      &:before {
-        opacity: 1;
-      }
     }
   }
   
@@ -820,7 +1050,7 @@ export default {
     background-color: #ffffff;
     transition: all 0.3s;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
     position: relative;
     overflow: hidden;
