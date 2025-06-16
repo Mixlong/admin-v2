@@ -1,13 +1,13 @@
 <template>
   <div class="app-container ecn-box">
-    <el-form :model="queryParams" ref="queryForm" label-width="100px" inline>
+    <el-form :model="queryParams" ref="queryForm" :inline="true" size="small" class="search-form">
       <el-form-item label="ECR/N编号" prop="ecn">
         <el-input
           v-model.trim="queryParams.ecn"
           placeholder="请输入ECR/N编号"
           clearable
           @keyup.enter.native="handleQuery"
-          style="width: 100%"
+          style="width: 200px"
         ></el-input>
       </el-form-item>
 
@@ -17,7 +17,7 @@
           placeholder="请输入项目名称"
           clearable
           @keyup.enter.native="handleQuery"
-          style="width: 100%"
+          style="width: 200px"
         ></el-input>
       </el-form-item>
 
@@ -27,39 +27,29 @@
           placeholder="请输入产品代号"
           clearable
           @keyup.enter.native="handleQuery"
-          style="width: 100%"
+          style="width: 200px"
         ></el-input>
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
 
-      <el-row :gutter="20" class="fr flex align-center margin-bottom-xs">
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            icon="el-icon-user-solid"
-            v-hasPermi="['ECN:People:Add']"
-            @click="handleAddPeople"
-          >
-            人员管理
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-            v-hasPermi="['ecn:add']"
-            type="primary"
-            icon="el-icon-plus"
-            @click="handleAdd"
-          >
-            新增
-          </el-button>
-        </el-col>
-      </el-row>
+      <div class="operation-btns">
+        <el-button
+          type="primary"
+          icon="el-icon-user-solid"
+          v-hasPermi="['ECN:People:Add']"
+          @click="handleAddPeople"
+        >人员管理</el-button>
+        <el-button
+          v-hasPermi="['ecn:add']"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+        >新增</el-button>
+      </div>
     </el-form>
 
     <el-table
@@ -75,16 +65,17 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="ECR/N编号" prop="ecn" align="center" />
-      <el-table-column label="项目名称" prop="projectName" align="center" />
-      <el-table-column label="产品代号" prop="productCode" align="center" />
+      <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175"/>
+      <el-table-column label="项目名称" prop="projectName" align="center"width="140" />
+      <el-table-column label="产品代号" prop="productCode" align="center" width="140" />
       <el-table-column
         label="申请部门"
         prop="reqUnit"
         align="center"
         :formatter="reqUnitFormatter"
+        width="80"
       />
-      <el-table-column label="初审状态" prop="firstState" align="center">
+      <el-table-column label="初审状态" prop="firstState" align="center" width="110">
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
           <el-tag type="success" v-if="row.firstState === 1">已审核</el-tag>
@@ -98,14 +89,16 @@
         label="会审状态"
         prop="changeContent"
         align="center"
-        width="200"
+    
+      
       >
         <template slot-scope="{ row }">
-          <div style="display: grid; row-gap: 5px">
+          <div style="display: flex; row-gap: 5px;flex-wrap: wrap;" >
             <div
               v-for="item in row.list"
               :key="item.id"
-              class="flex align-center check-box"
+              class=" align-center check-bo"
+              style="flex-basis:50%;display: flex;padding:0 5px;"
             >
               <div class="flex-sub text-left">
                 {{ TriageList[item.field] }}
@@ -123,7 +116,7 @@
         label="终审状态"
         prop="secondState"
         align="center"
-        width="200"
+        width="170"
       >
         <template slot-scope="{ row }">
           <div style="display: grid; row-gap: 5px">
@@ -149,7 +142,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="系统变更人员" prop="systemPerson" align="center">
+      <el-table-column label="系统变更人员" prop="systemPerson" align="center" width="120">
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="row.systemState === 0">待变更</el-tag>
           <el-tag type="success" v-if="row.systemState === 1">已变更</el-tag>
@@ -162,14 +155,14 @@
         label="申请人"
         prop="applicant"
         align="center"
-        width="100"
+        width="85"
       />
       <el-table-column
         label="申请时间"
         prop="createTime"
         align="center"
         sortable
-        width="120"
+        width="100"
       >
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="80">
@@ -1646,8 +1639,56 @@ export default {
   }
 
   .check-box {
-    border-bottom: 1px solid #eee8e8;
+    // border-bottom: 1px solid #eee8e8;
     padding: 5px 0;
+  }
+}
+
+.search-form {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 10px;
+
+    .el-form-item__label {
+      color: #606266;
+      font-weight: 500;
+    }
+
+    .el-input__inner {
+      border-radius: 4px;
+      transition: all 0.3s;
+
+      &:hover, &:focus {
+        border-color: #409EFF;
+      }
+    }
+  }
+
+  .operation-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+
+    .el-button {
+      padding: 8px 15px;
+      font-weight: 500;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    }
   }
 }
 </style>
