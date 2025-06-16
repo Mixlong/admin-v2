@@ -1645,11 +1645,9 @@ export default {
 }
 
 .search-form {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   padding: 15px;
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
