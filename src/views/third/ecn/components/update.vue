@@ -22,7 +22,7 @@
         >
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="ECN编号" prop="ecn">
+              <el-form-item label="ECR/N编号" prop="ecn">
                 <el-input
                   v-model="form.ecn"
                   placeholder="请输入ECN编号"
@@ -1138,6 +1138,7 @@ export default {
           param.changeCause = param.changeCause.toString();
 
           console.log(param.list);
+          return
 
           if (param.id) {
             bomUpdate(param).then((response) => {

@@ -22,10 +22,10 @@
         >
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="ECN编号" prop="ecn">
+              <el-form-item label="ECR/N编号" prop="ecn">
                 <el-input
                   v-model="form.ecn"
-                  placeholder="请输入ECN编号"
+                  placeholder="请输入ECR/N编号"
                   readonly
                   clearable
                 />
@@ -563,7 +563,27 @@
               ></el-option>
             </el-select>
           </el-form-item>
-
+          <el-form-item
+            label="系统变更人员"
+            label-width="110px"
+            prop="systemPerson"
+            class="margin-bottom-xs"
+          >
+            <el-select
+              v-model="form.systemPerson"
+              placeholder="请选择系统变更人员"
+              filterable
+              clearable
+              :disabled="!!form.id"
+            >
+              <el-option
+                v-for="item in systemChangeData"
+                :label="item.personnel"
+                :value="item.personnel"
+                :key="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
           <div class="flex margin-bottom-xs">
             <el-form-item label="导入方式" prop="importType">
               <el-radio-group v-model="form.importType" class="grid_column_two">
@@ -704,6 +724,8 @@ export default {
         marketerDataTxt: "",
         noMarketerDataTxt: "",
       },
+      // 最终审核人员
+      systemChangeData: [],
       // 初审人员
       firstAuditorData: [],
       // 终审人员
@@ -726,7 +748,7 @@ export default {
       pmcData: [],
       // 表单校验
       rules: {
-        ecn: [{ required: true, message: "请输入ECN编号", trigger: "blur" }],
+        ecn: [{ required: true, message: "请输入ECR/N编号", trigger: "blur" }],
         projectName: [
           { required: true, message: "请输入项目名称", trigger: "blur" },
         ],
@@ -744,6 +766,9 @@ export default {
         ],
         secondPerson: [
           { required: true, message: "请选择最终审核人员", trigger: "change" },
+        ],
+        systemPerson: [
+          { required: true, message: "请选择系统变更人员", trigger: "change" },
         ],
         reqUnit: [
           {
@@ -781,6 +806,7 @@ export default {
         this.getPeopleList(8);
         this.getPeopleList(9);
         this.getPeopleList(10);
+        this.getPeopleList(11);
       }
     },
     "form.reqUnit"(reqUnit) {
@@ -844,6 +870,9 @@ export default {
           case 10:
             this.pmcData = list;
             break;
+          case 11:
+            this.systemChangeData = list;
+            
         }
       });
     },

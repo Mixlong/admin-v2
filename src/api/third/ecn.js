@@ -90,3 +90,10 @@ export function ecnSecondState(data) {
     data,
   });
 }
+export function ecnSystemState(data) {
+  return request({
+    url: "/bom/system/state",
+    method: "put",
+    data,
+  });
+}

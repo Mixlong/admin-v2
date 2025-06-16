@@ -211,6 +211,18 @@
           </template>
         </el-table-column>
         <el-table-column
+          label="是否配置"
+          prop="isStat"
+          align="center"
+          width="120"
+          fixed
+        >
+          <template slot-scope="{ row }">
+            <el-tag type="success" v-if="row.isSts == 1" >是</el-tag>
+            <el-tag type="danger" v-else >否</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="客户"
           prop="customerName"
           align="center"

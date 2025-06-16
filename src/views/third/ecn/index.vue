@@ -1,10 +1,10 @@
 <template>
   <div class="app-container ecn-box">
     <el-form :model="queryParams" ref="queryForm" label-width="100px" inline>
-      <el-form-item label="ECN编号" prop="ecn">
+      <el-form-item label="ECR/N编号" prop="ecn">
         <el-input
           v-model.trim="queryParams.ecn"
-          placeholder="请输入ECN编号"
+          placeholder="请输入ECR/N编号"
           clearable
           @keyup.enter.native="handleQuery"
           style="width: 100%"
@@ -75,7 +75,7 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="ECN编号" prop="ecn" align="center" />
+      <el-table-column label="ECR/N编号" prop="ecn" align="center" />
       <el-table-column label="项目名称" prop="projectName" align="center" />
       <el-table-column label="产品代号" prop="productCode" align="center" />
       <el-table-column
@@ -93,6 +93,7 @@
           <div style="margin-top: 5px">审核人：{{ row.firstPerson }}</div>
         </template>
       </el-table-column>
+ 
       <el-table-column
         label="会审状态"
         prop="changeContent"
@@ -146,6 +147,15 @@
               <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
             </div>
           </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="系统变更人员" prop="systemPerson" align="center">
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="row.systemState === 0">待变更</el-tag>
+          <el-tag type="success" v-if="row.systemState === 1">已变更</el-tag>
+          <el-tag type="danger" v-if="row.systemState === 2">已驳回</el-tag>
+
+          <div style="margin-top: 5px">审核人：{{ row.systemPerson }}</div>
         </template>
       </el-table-column>
       <el-table-column
@@ -318,6 +328,13 @@
               content="撤销PMC终审"
               @click="handleResetCheck(row, 4)"
             />
+            <Tooltip
+              v-show="row.systemPerson === nickName && row.thirdState ===1  && row.secondState === 1 && row.systemState !== 0"
+              class="text-grey"
+              icon="el-icon-circle-check"
+              content="撤销系统变更审核"
+              @click="handleResetCheck(row, 5)"
+            />
 
             <!-- 最终审核 -->
             <Tooltip
@@ -331,6 +348,18 @@
               icon="el-icon-coordinate"
               :content="`待 （${row.secondPerson}） 终审`"
               @click="handleAuthFlag(row, 3)"
+            />
+            <Tooltip
+            v-show="
+                row.systemPerson === nickName &&
+                row.systemState !== 1 &&
+                row.secondState === 1 &&
+                row.thirdState === 1
+              "
+              class="text-green"
+            icon="el-icon-coordinate"
+              content="系统变更审核"
+              @click="handleAuthFlag(row, 5)"
             />
 
             <Tooltip
@@ -634,6 +663,24 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item label="系统变更 ：" prop="systemChangeData">
+                <el-select
+                  class="w100"
+                  v-model="peopleManageForm.systemChangeData"
+                  filterable
+                  multiple
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="(item, index) in pmDictListOptions"
+                    :key="index"
+                    :label="item.userName"
+                    :value="item.userName"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form-item>
           </el-form>
         </el-col>
@@ -770,6 +817,7 @@ import {
   ecnPmcState,
   ecnPersonEdit,
   ecnPersonList,
+  ecnSystemState
 } from "@/api/third/ecn";
 import { dictUserList } from "@/api/system/user";
 import CompUpdate from "./components/update";
@@ -837,6 +885,7 @@ export default {
         marketerData: [],
         pmcData: [],
         finalJudgmentData: [],
+        systemChangeData: [],
       },
       // 会审人员
       TriageList: {
@@ -917,6 +966,13 @@ export default {
           {
             required: true,
             message: "请选择终审人员",
+            trigger: "change",
+          },
+        ],
+        systemChangeData: [
+          {
+            required: true,
+            message: "请选择系统变更人员",
             trigger: "change",
           },
         ],
@@ -1004,7 +1060,7 @@ export default {
     handleAdd() {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.title = "添加ECN";
+      this.$refs.compUpdate.title = "添加ECR/N";
       this.$refs.compUpdate.form.ecn = this.generateDTString();
     },
     /** 搜索按钮操作 */
@@ -1047,6 +1103,7 @@ export default {
         this.getPeopleList(8),
         this.getPeopleList(9),
         this.getPeopleList(10),
+        this.getPeopleList(11),
       ];
       Promise.all(requestList).then((res) => {
         const [
@@ -1060,6 +1117,7 @@ export default {
           marketerData,
           finalJudgmentData,
           pmcData,
+          systemChangeData,
         ] = res;
 
         this.peopleManageForm = {
@@ -1073,6 +1131,7 @@ export default {
           marketerData,
           finalJudgmentData,
           pmcData,
+          systemChangeData,
         };
       });
     },
@@ -1267,6 +1326,7 @@ export default {
             marketerData,
             pmcData,
             finalJudgmentData,
+            systemChangeData
           } = this.peopleManageForm;
 
           const setPeopleList = (data, type) => {
@@ -1289,6 +1349,7 @@ export default {
             ...setPeopleList(marketerData, 8),
             ...setPeopleList(finalJudgmentData, 9),
             ...setPeopleList(pmcData, 10),
+            ...setPeopleList(systemChangeData, 11),
           ];
 
           ecnPersonEdit(list).then((res) => {
@@ -1340,6 +1401,14 @@ export default {
           state: row.thirdState || 1,
           remark: row.thirdRemark,
           result: row.thirdResult,
+        };
+      }
+
+      if (isAuthFlag === 5) {
+        this.authForm = {
+          state: row.systemState || 1,
+          remark: row.systemRemark,
+          result: row.systemResult,
         };
       }
     },
@@ -1424,6 +1493,25 @@ export default {
               }
             });
           }
+
+          // 最终系统审核
+          if (flag === 5) {
+            const data = {
+              id: row.id,
+              remark: row.thirdRemark,
+              result: row.thirdResult,
+              state: 0,
+            };
+
+            ecnSystemState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+          
         })
         .catch(() => {});
     },
@@ -1494,6 +1582,20 @@ export default {
             };
 
             ecnPmcState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+          if (this.isAuthFlag === 5) {
+            const data = {
+              id: this.isAuthAlterData.id,
+              ...this.authForm,
+            };
+
+            ecnSystemState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();

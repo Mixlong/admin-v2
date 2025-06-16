@@ -478,12 +478,7 @@
                   label="包装信息"
                   prop="instrumentModel.packagingInfo"
                 >
-                  <tinymce
-                    v-if="dialogVisible"
-                    v-model="form.instrumentModel.packagingInfo"
-                    placeholder="请输入"
-                    height="250"
-                  ></tinymce>
+                  <modelInfoTable ref="modelInfoTable" :data="form.instrumentModel.packagingInfo" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1726,9 +1721,10 @@ import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
-
+import modelInfoTable from "./modelInfoTable";
 export default {
   mixins: [mixin, commonData],
+ 
   data() {
     // 背光亮度
     const validateBacklightBrightness = (rule, value, callback) => {
@@ -1805,6 +1801,7 @@ export default {
       }
     };
     return {
+      modelInfoTable:null,
       isSubmitLoading: false,
       isCopyProduct: false,
       isEditCopy: false,
@@ -1893,10 +1890,6 @@ export default {
       // 通讯协议
       sysProtocolList: [],
     };
-  },
-  components: {
-    ElUploadSortable,
-    tinymce,
   },
   computed: {
     isCheckConfigItem() {
@@ -2406,14 +2399,15 @@ export default {
             this.form.instrumentModel.powerLogo = powerLogo;
             this.form.instrumentModel.specification = specification;
             this.form.instrumentModel.packagingInfo = packagingInfo;
-
             this.form.jsonStr = "";
           } else {
             // STS
             const configJsonString = this.configToJsonString();
             this.form.jsonStr = configJsonString;
+            console.log("🚀 ~ file: updates.vue:2419 ~  this.form:",  this.form)
           }
-
+          this.form.instrumentModel.packagingInfo = this.$refs.modelInfoTable.exportSelectedJson()
+          console.log( this.form)
           if (this.form.id && !this.isCopyProduct) {
             this.handleSubmitEdit();
           } else {
@@ -2482,6 +2476,11 @@ export default {
     handleLabelRule(labelRule) {
       if (labelRule === 1) this.form.instrumentModel.labelRuleImg = "";
     },
+  },
+  components: {
+    ElUploadSortable,
+    tinymce,
+    modelInfoTable
   },
 };
 </script>

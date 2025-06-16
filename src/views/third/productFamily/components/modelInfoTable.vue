@@ -1,47 +1,51 @@
-<template>
-  <el-dialog title="包装信息" :visible.sync="isDialogVisible" width="50%" center :close-on-click-modal="false"
-    append-to-body>
-    <div class="package-info-box">
-      <el-table :data="tableData" border style="width: 100%">
-        <el-table-column label="检查项" width="180">
+  <template>
+    <div class="product-packaging-info">
+      <el-table :data="tableData" :key="tableKey" style="width: 100%">
+        <el-table-column prop="checkItem.label" label="包装作业检查项目" align="center" width="200"></el-table-column>
+        <el-table-column label="作业内容" align="center">
           <template slot-scope="scope">
-            {{ scope.row.checkItem.label }}
+            <el-select v-model="scope.row.content" placeholder="请选择" style="width:300px"
+              @change="handleChange(scope.row)">
+              <el-option v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
+                :label="item.label" :value="item.id" />
+            </el-select>
+
           </template>
         </el-table-column>
-        <el-table-column label="内容" width="280">
+        <el-table-column label="详情/附件" align="center">
           <template slot-scope="scope">
-            <template v-if="isHttpLink(scope.row.content)">
-              <a href="javascript:void(0)" @click="handleDownload(scope.row.content)" class="download-link">下载链接</a>
-            </template>
-            <template v-else>
-              {{ getContentLabel(scope.row) }}
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="详情"  >
-          <template slot-scope="scope">
-            <template v-if="isHttpLink(scope.row.details)">
-              <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
-            </template>
-            <template v-else>
-              {{ scope.row.details || '无' }}
-            </template>
+            <div
+              v-if="(scope.row.checkItem.id === 'accessoryPackingRequirements' || scope.row.checkItem.id === 'boxMarkRequirements') && scope.row.content === 'customerSpecified'">
+              <MyUpload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
+                v-model="scope.row.details" :multiple="false" :limit="1">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+              </MyUpload>
+            </div>
+            <div v-else>
+              <el-input type="textarea" v-model="scope.row.details"></el-input>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
-  </el-dialog>
-</template>
+  </template>
 
 <script>
-import { urlDownload } from "@/utils";
+import MyUpload from '@/components/MyUpload/index'; // 请根据实际路径调整
 
 export default {
+  components: { MyUpload },
+  props: {
+    data: {
+      type: [Array, String],
+      default: () => []
+    }
+  },
   data() {
     return {
-      isDialogVisible: false,
-      packagingInfo: "",
-      tableData: [],
+      tableKey: Date.now(), // 用于强制刷新表格
+      // 默认的完整数据结构模板
       defaultTableData: [
         {
           checkItem: { id: 'bracketScrewInstallation', label: '支架螺丝安装' },
@@ -90,10 +94,14 @@ export default {
           ],
         },
       ],
+      tableData: []
     };
   },
+  mounted() {
+    this.initializeTableData();
+  },
   watch: {
-    packagingInfo: {
+    data: {
       handler(newVal) {
         this.initializeTableData();
       },
@@ -104,15 +112,12 @@ export default {
   methods: {
     // 初始化表格数据
     initializeTableData() {
-      let processedData = this.packagingInfo;
-      if (!this.packagingInfo) {
-        this.tableData = [];
-        return;
-      }
+      let processedData = this.data;
+
       // 如果传入的是字符串，先尝试解析为数组
-      if (typeof this.packagingInfo === 'string' && this.packagingInfo.trim()) {
+      if (typeof this.data === 'string' && this.data.trim()) {
         try {
-          processedData = JSON.parse(this.packagingInfo);
+          processedData = JSON.parse(this.data);
         } catch (error) {
           console.warn('Failed to parse data string:', error);
           processedData = [];
@@ -151,40 +156,32 @@ export default {
 
     },
 
-    // 处理下载链接点击
-    handleDownload(url) {
-      urlDownload(url);
+    exportSelectedJson() {
+      const formattedData = this.tableData.map(row => {
+        return {
+          checkItemId: row.checkItem.id,
+          contentId: row.content,
+          details: row.details
+        };
+      });
+      return JSON.stringify(formattedData);
     },
 
-    // 判断是否为HTTP链接
-    isHttpLink(text) {
-      if (!text) return false;
-      return text.toLowerCase().startsWith('http://') || text.toLowerCase().startsWith('https://');
-    },
+    handleChange(row) {
+      row.details = '';
+    }
 
-    // 根据content id获取对应的label
-    getContentLabel(row) {
-      const option = row.contentOptions.find(opt => opt.id === row.content);
-      return option ? option.label : row.content;
-    },
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.package-info-box {
-  max-height: 500px;
-  overflow: hidden;
-  overflow-y: auto;
-  padding: 10px;
+.product-packaging-info {
+  padding: 20px;
 
-  .download-link {
-    color: #409EFF;
-    text-decoration: none;
-    
-    &:hover {
-      text-decoration: underline;
-    }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
   }
 }
 </style>

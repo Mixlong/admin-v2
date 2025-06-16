@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# SSH脚本：本地构建并打包dist目录，传输到远程服务器部署
+# 项目名：FILECONF-UI
+# 作者：Cascade
+# 日期：$(date +%Y-%m-%d)
+
+set -e  # 遇到错误立即退出
+
+# 服务器配置
+SERVER="8.130.48.231"
+PASSWORD="Jert2qpWDk&P"
+REMOTE_PATH="/home/test/dty/web"
+PROJECT_NAME="FILECONF-UI"
+LOCAL_PROJECT_PATH="/Users/dragons/Desktop/project/FILECONF-UI"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+ZIP_FILE="dist_${TIMESTAMP}.zip"
+
+echo "========================================="
+echo "开始执行项目构建和部署脚本"
+echo "时间: $(date)"
+echo "========================================="
+
+# 切换到项目目录
+cd "$LOCAL_PROJECT_PATH"
+echo "✓ 切换到项目目录: $LOCAL_PROJECT_PATH"
+
+# 本地构建项目
+echo "🏗️ 正在本地构建项目 (开发环境)..."
+npm run build:dev
+
+if [ $? -eq 0 ]; then
+    echo "✅ 本地构建完成"
+    
+    # 检查dist目录是否存在
+    if [ -d "dist" ]; then
+        echo "📁 构建产物目录："
+        ls -la dist/ | head -5
+        echo "..."
+    else
+        echo "❌ 未找到dist目录，构建可能失败"
+        exit 1
+    fi
+else
+    echo "❌ 本地构建失败，停止执行"
+    exit 1
+fi
+
+# 创建dist的ZIP压缩包
+echo "📦 正在打包dist目录..."
+cd dist
+zip -r "../$ZIP_FILE" .
+cd ..
+
+echo "✓ dist目录打包完成: $ZIP_FILE"
+
+# 检查ZIP文件大小
+FILE_SIZE=$(du -h "$ZIP_FILE" | cut -f1)
+echo "📁 压缩包大小: $FILE_SIZE"
+
+# 先删除远程服务器上的dist目录
+echo "🗑️ 正在删除远程服务器上的旧dist目录..."
+if command -v sshpass >/dev/null 2>&1; then
+    sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no root@"$SERVER" "rm -rf $REMOTE_PATH/dist"
+    echo "✓ 远程旧dist目录已删除"
+else
+    echo "❌ 错误: 未安装sshpass工具"
+    echo "请运行: brew install sshpass"
+    exit 1
+fi
+
+# 使用sshpass和scp传输文件到远程服务器
+echo "🚀 正在传输文件到服务器..."
+if command -v sshpass >/dev/null 2>&1; then
+    sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no "$ZIP_FILE" root@"$SERVER":"$REMOTE_PATH/"
+    echo "✓ 文件传输完成"
+else
+    echo "❌ 错误: 未安装sshpass工具"
+    echo "请运行: brew install sshpass"
+    echo "或者手动传输文件:"
+    echo "scp $ZIP_FILE root@$SERVER:$REMOTE_PATH/"
+    exit 1
+fi
+
+# SSH到远程服务器，解压新dist
+echo "📂 正在远程服务器部署..."
+sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no root@"$SERVER" << EOF
+    cd "$REMOTE_PATH"
+    echo "当前目录: \$(pwd)"
+    
+    # 解压新的dist文件
+    if [ -f "$ZIP_FILE" ]; then
+        echo "📦 开始解压 $ZIP_FILE 到 dist 目录..."
+        mkdir -p dist
+        unzip -o "$ZIP_FILE" -d "dist/"
+        echo "✓ 解压完成到目录: dist/"
+        
+        # 显示dist目录内容
+        echo "✅ 新的dist目录内容:"
+        ls -la "dist/" | head -10
+        
+        # 删除ZIP文件以节省空间
+        rm "$ZIP_FILE"
+        echo "🗑️ 已删除压缩包"
+        
+    else
+        echo "❌ 错误: 未找到文件 $ZIP_FILE"
+        exit 1
+    fi
+EOF
+
+echo "✅ 所有操作完成！"
+echo "========================================="
+echo "项目已成功部署到服务器："
+echo "服务器: $SERVER"
+echo "部署路径: $REMOTE_PATH/dist/"
+echo "构建方式: 本地构建 (npm run build:dev)"
+echo "部署时间: $(date)"
+echo "========================================="
+
+# 清理本地ZIP文件
+read -p "是否删除本地压缩包 $ZIP_FILE? (y/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    rm "$ZIP_FILE"
+    echo "✓ 已删除本地压缩包"
+fi
+
+echo "🎉 部署完成！dist目录已更新到最新版本！"
