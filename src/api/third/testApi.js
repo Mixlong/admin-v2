@@ -379,34 +379,70 @@ export function fileConverter(data) {
   });
 }
 
-// 生产许可
+/**
+ * 产品许可
+ */
+
 export function computerLicenseList(params) {
   return request({
     url: "/computer/license/list",
     method: "get",
-    params
+    params,
   });
 }
 
-// 禁用、启用
 export function computerUpdate(data) {
   return request({
-    url: "/computer/license/update",
-    method: "put",
-    data
+    url: "/computer/update",
+    method: "post",
+    data,
   });
 }
 
-// 操作记录
 export function computerLogList(params) {
   return request({
     url: "/computer/log/list",
     method: "get",
-    params
+    params,
   });
 }
 
-// 配置总览
+/**
+ * 历史问题管理
+ */
+
+// This section will be removed as it's moved to issuesApi.js
+/*
+// 创建问题点 POST /issues/save
+export function addHistoryIssue(data) {
+  return request({
+    url: "/issues/save",
+    method: "post",
+    data,
+  });
+}
+
+// 处理问题点 POST /issues/process
+export function handleHistoryIssue(data) {
+  return request({
+    url: "/issues/process",
+    method: "post",
+    data,
+  });
+}
+
+// 根据型号id获取问题点 GET /issues/{computerId}
+export function getHistoryIssuesListByComputerId(params) {
+  return request({
+    url: `/issues/${params.computerId}`,
+    method: "get",
+  });
+}
+*/
+
+/**
+ * 配置总览
+ */
 export function modelConfigList(params) {
   return request({
     url: "/model/config/list",

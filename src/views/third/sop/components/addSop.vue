@@ -246,19 +246,19 @@ export default {
       //     return this.msgError("请填入必要信息");
       //   }
       // }
-      this.$refs["form"].validate((valid) => {
-        if (valid) {
-          if (this.form.id) {
-            sopUpdate(this.form).then(() => {
-              this.msgSuccess("保存成功");
-            });
-          } else {
-            sopSave(this.form).then(() => {
-              this.msgSuccess("保存成功");
-            });
-          }
-        }
-      })
+      // this.$refs["form"].validate((valid) => {
+      //   if (valid) {
+      //     if (this.form.id) {
+      //       sopUpdate(this.form).then(() => {
+      //         this.msgSuccess("保存成功");
+      //       });
+      //     } else {
+      //       sopSave(this.form).then(() => {
+      //         this.msgSuccess("保存成功");
+      //       });
+      //     }
+      //   }
+      // })
     },
     /** 复制 */
     onCopyItem(index) {

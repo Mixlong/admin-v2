@@ -2,97 +2,42 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="产品品类" prop="categoryId">
-        <el-select
-          v-model="queryParams.categoryId"
-          filterable
-          allow-create
-          clearable
-          style="width: 140px"
-          placeholder="请选择产品品类"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.categoryId" filterable allow-create clearable style="width: 140px"
+          placeholder="请选择产品品类">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="审核状态" prop="state">
-        <el-select
-          v-model="queryParams.state"
-          style="width: 140px"
-          clearable
-          placeholder="请选择审核状态"
-        >
+        <el-select v-model="queryParams.state" style="width: 140px" clearable placeholder="请选择审核状态">
           <el-option label="待审核" value="0" />
           <el-option label="审核通过" value="1" />
           <el-option label="审核拒绝" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="版本号" prop="versionCode">
-        <el-input
-          v-model.trim="queryParams.versionCode"
-          clearable
-          style="width: 140px"
-          placeholder="请选择版本号"
-        ></el-input>
+        <el-input v-model.trim="queryParams.versionCode" clearable style="width: 140px" placeholder="请选择版本号"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          @click="resetQuery"
-        >
+        <el-button icon="el-icon-refresh" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>
-      <el-row
-        :gutter="20"
-        type="flex"
-        align="middle"
-        justify="start"
-        class="fr mt5"
-      >
+      <el-row :gutter="20" type="flex" align="middle" justify="start" class="fr mt5">
         <el-col :span="1.5">
-          <el-button
-            v-hasPermi="['sop:add:btn']"
-            type="primary"
-            icon="el-icon-plus"
-            @click="handleAdd"
-          >
+          <el-button v-hasPermi="['sop:add:btn']" type="primary" icon="el-icon-plus" @click="handleAdd">
             新增
           </el-button>
         </el-col>
       </el-row>
     </el-form>
 
-    <el-table
-      class="afterSaleBox"
-      :row-class-name="rowName"
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-    >
-      <el-table-column
-        label="品类"
-        prop="categoryName"
-        align="center"
-        width="150"
-      />
-      <el-table-column
-        label="版本号"
-        prop="versionCode"
-        align="center"
-        width="150"
-      />
+    <el-table class="afterSaleBox" :row-class-name="rowName" v-loading="loading" :data="brandList"
+      :height="tableHeight()" border>
+      <el-table-column label="品类" prop="categoryName" align="center" width="150" />
+      <el-table-column label="版本号" prop="versionCode" align="center" width="150" />
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="审核状态" prop="model" align="center" width="100">
         <template slot-scope="{ row }">
@@ -101,19 +46,8 @@
           <span v-if="row.state === 2" class="text-red">审核拒绝</span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        prop="createBy"
-        align="center"
-        width="100"
-        show-overflow-tooltip
-      />
-      <el-table-column
-        label="更新时间"
-        prop="updateTime"
-        align="center"
-        width="140"
-      >
+      <el-table-column label="创建人" prop="createBy" align="center" width="100" show-overflow-tooltip />
+      <el-table-column label="更新时间" prop="updateTime" align="center" width="140">
         <template slot-scope="{ row }">
           {{ parseTime(row.updateTime || row.createTime) }}
         </template>
@@ -121,37 +55,17 @@
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
           <div class="flex justify-center">
-            <el-button
-              v-if="row.state === 0"
-              v-hasPermi="['sop:check:btn']"
-              class="text-orange"
-              type="text"
-              @click="handleCheck(row)"
-            >
+            <el-button v-if="row.state === 0" v-hasPermi="['sop:check:btn']" class="text-orange" type="text"
+              @click="handleCheck(row)">
               审核
             </el-button>
-            <el-button
-              v-hasPermi="['sop:detail:btn']"
-              class="text-green"
-              type="text"
-              @click="handleDetail(row)"
-            >
+            <el-button v-hasPermi="['sop:detail:btn']" class="text-green" type="text" @click="handleDetail(row)">
               查看
             </el-button>
-            <el-button
-              v-hasPermi="['sop:update:btn']"
-              class="text-blue"
-              type="text"
-              @click="handleUpdate(row)"
-            >
+            <el-button v-hasPermi="['sop:update:btn']" class="text-blue" type="text" @click="handleUpdate(row)">
               编辑
             </el-button>
-            <el-button
-              v-hasPermi="['sop:delete:btn']"
-              class="text-red"
-              type="text"
-              @click="handleDelete(row)"
-            >
+            <el-button v-hasPermi="['sop:delete:btn']" class="text-red" type="text" @click="handleDelete(row)">
               删除
             </el-button>
           </div>
@@ -159,20 +73,11 @@
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <!-- 新增、修改 -->
-    <add-sop
-      ref="isAddSopRef"
-      :visible.sync="isSopAddDia"
-      :dictList="dictList"
-    />
+    <add-sop ref="isAddSopRef" :visible.sync="isSopAddDia" :dictList="dictList" />
 
     <!-- 详情 -->
     <sop-detail ref="isSopDetailRef" :visible.sync="isSopDetailDia" />
@@ -265,8 +170,10 @@ export default {
         confirmButtonText: "通 过",
         cancelButtonText: "驳 回",
         type: "warning",
+        distinguishCancelAndClose: true,
       })
-        .then(() => {
+        .then((res) => {
+          console.log("🚀 ~ file: index.vue:270 ~ res:", res)
           loading = this.$loading({
             lock: true,
             text: "正在处理中...",
@@ -280,19 +187,23 @@ export default {
             this.msgSuccess("操作成功");
           });
         })
-        .catch(() => {
+        .catch((res) => {
           loading = this.$loading({
             lock: true,
             text: "正在处理中...",
             spinner: "el-icon-loading",
             background: "rgba(0, 0, 0, 0.7)",
           });
+          loading.close();
+          if (res == 'cancel') {
 
-          sopState({ id: row.id, state: 2 }).then(() => {
-            loading.close();
-            this.getList();
-            this.msgSuccess("操作成功");
-          });
+
+            sopState({ id: row.id, state: 2 }).then(() => {
+              loading.close();
+              this.getList();
+              this.msgSuccess("操作成功");
+            });
+          }
         });
     },
     // 新增
