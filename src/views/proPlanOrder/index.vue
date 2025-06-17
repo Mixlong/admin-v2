@@ -132,7 +132,7 @@
           </div>
         </template>
       </el-table-column> -->
-      <el-table-column label="滞后流程" align="center">
+      <!-- <el-table-column label="滞后流程" align="center">
         <el-table-column prop="address" label="环节" align="center" width="80">
           <template slot-scope="{ row }">
             <template v-if="row.personStatus && row.personStatus.length">
@@ -141,7 +141,7 @@
             <template v-else>暂无</template>
           </template>
         </el-table-column>
-        <!-- <el-table-column prop="address" label="责任人" align="center" width="80">
+        <el-table-column prop="address" label="责任人" align="center" width="80">
           <template slot-scope="{ row }">
 
           </template>
@@ -150,8 +150,8 @@
           <template slot-scope="{ row }">
 
           </template>
-        </el-table-column> -->
-      </el-table-column>
+        </el-table-column>
+      </el-table-column> -->
 
 
       <!-- <el-table-column v-if="isSeeStatus" label="产前样状态" align="center">
@@ -1263,14 +1263,8 @@ export default {
       });
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-      // 合并规则：如果当前行索引是0，并且当前列索引是8，就合并三列
-      if (columnIndex >= 7) {
-        if (columnIndex === 7) {
-          return [1, 3]; // 合并一列，三行
-        } else if (columnIndex === 8 || columnIndex === 9) {
-          return [0, 0]; // 隐藏被合并的单元格
-        }
-      }
+      // 合并规则：由于滞后流程只有一个子列（环节），不需要合并
+      // 如果后续有其他需要合并的列，可以在这里添加逻辑
       return [1, 1]; // 默认不合并
     },
     // 责任人
