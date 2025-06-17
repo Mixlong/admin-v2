@@ -48,8 +48,8 @@ export default {
       // 默认的完整数据结构模板
       defaultTableData: [
         {
-          checkItem: { id: 'bracketScrewInstallation', label: '支架螺丝安装' },
-          content: { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
+          checkItem: { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
+          content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
@@ -59,7 +59,7 @@ export default {
         },
         {
           checkItem: { id: 'accessoryPackingRequirements', label: '附件装箱要求' },
-          content: { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
+          content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
@@ -68,7 +68,7 @@ export default {
         },
         {
           checkItem: { id: 'packagingRequirementsCardboardWaterproofBag', label: '包装要求 (卡板、防水袋)' },
-          content: { id: 'accordingToBOM', label: '依据BOM' },
+          content: 'accordingToBOM', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'accordingToBOM', label: '依据BOM' },
@@ -77,16 +77,16 @@ export default {
         },
         {
           checkItem: { id: 'boxMarkRequirements', label: '箱唛要求' },
-          content: { id: 'customerSpecified', label: '客户指定' },
+          content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
+            { id: 'ditaiTemplate', label: '迪太模板' },
             { id: 'customerSpecified', label: '客户指定' },
-            { id: 'ditaiTemplate', label: '迪太模板' }
           ],
         },
         {
           checkItem: { id: 'inspectionReportRequirements', label: '检验报告要求' },
-          content: { id: 'ditaiTemplate', label: '迪太模板' },
+          content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
@@ -141,6 +141,19 @@ export default {
         // 没有数据，使用默认数据
         this.tableData = JSON.parse(JSON.stringify(this.defaultTableData));
       }
+      
+      // 确保每行的content都默认选择第一个选项
+      this.ensureDefaultContentSelection();
+      console.log("🚀 ~ initializeTableData ~ this.tableData:", this.tableData)
+    },
+    
+    // 确保每行的content都默认选择第一个选项
+    ensureDefaultContentSelection() {
+      this.tableData.forEach(row => {
+        if (!row.content && row.contentOptions && row.contentOptions.length > 0) {
+          row.content = row.contentOptions[0].id;
+        }
+      });
     },
 
     // 将简化格式的数据转换为完整的表格数据格式
@@ -149,11 +162,10 @@ export default {
         const matchingData = simpleData.find(item => item.checkItemId === template.checkItem.id);
         return {
           ...template,
-          content: matchingData?.contentId || template.contentOptions[0].id,
+          content: matchingData?.contentId || template.contentOptions[0].id, // 默认选择第一个选项
           details: matchingData?.details || ''
         };
       });
-
     },
 
     exportSelectedJson() {

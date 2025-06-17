@@ -5,8 +5,8 @@
         <check-status-legend class="margin-right-xs" />
 
         <!-- <el-form-item label=""> -->
-        <el-checkbox v-model="queryParams.myLag" true-label="1" false-label="0" @change="getList">我的滞后</el-checkbox>
-        <el-checkbox v-model="queryParams.myTodo" true-label="1" false-label="0" @change="getList">我的待完成</el-checkbox>
+        <!-- <el-checkbox v-model="queryParams.myLag" true-label="1" false-label="0" @change="getList">我的滞后</el-checkbox>
+        <el-checkbox v-model="queryParams.myTodo" true-label="1" false-label="0" @change="getList">我的待完成</el-checkbox> -->
         <!-- </el-form-item> -->
       </div>
 
@@ -141,7 +141,7 @@
             <template v-else>暂无</template>
           </template>
         </el-table-column>
-        <el-table-column prop="address" label="责任人" align="center" width="80">
+        <!-- <el-table-column prop="address" label="责任人" align="center" width="80">
           <template slot-scope="{ row }">
 
           </template>
@@ -150,11 +150,11 @@
           <template slot-scope="{ row }">
 
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table-column>
 
 
-      <el-table-column v-if="isSeeStatus" label="产前样状态" align="center">
+      <!-- <el-table-column v-if="isSeeStatus" label="产前样状态" align="center">
         <el-table-column prop="pucsStatus" label="是否寄出" align="center" width="80">
           <template v-slot="{ row, $index }">
             <div class="flex align-center justify-center">
@@ -210,7 +210,7 @@
             </div>
           </template>
         </el-table-column>
-      </el-table-column>
+      </el-table-column> -->
 
       <el-table-column v-if="isSeeStatus" prop="pucsStatus" label="配置总览" align="center" width="80">
         <template slot-scope="{ row }">
@@ -458,7 +458,8 @@
     </el-table>
 
     <div class="flex justify-between align-center">
-      <el-checkbox v-model="isSeeStatus" @change="changeSeeStatus">完成状态</el-checkbox>
+      <!-- <el-checkbox v-model="isSeeStatus" @change="changeSeeStatus">完成状态</el-checkbox> -->
+      <div></div>
       <pagination :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l" @pagination="getList" />
     </div>
 
