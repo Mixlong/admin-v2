@@ -1,5 +1,5 @@
 <template>
-  <el-popover placement="bottom" width="450" trigger="click" :disabled="row.map[currentIndex] === 1">
+  <el-popover placement="bottom" width="450" trigger="click" :disabled="state === 1">
     <el-card class="box-card" shadow="nerver">
       <div slot="header" class="clearfix flex justify-between">
         <div class="flex flex-sub">
@@ -7,13 +7,13 @@
         </div>
 
         <div>
-          <span class="margin-right-xss"> 品类：{{ row.categoryName }} </span>
-          <span> 型号：{{ row.computerName }} </span>
+          <span class="margin-right-xss"> 品类：{{ categoryName }} </span>
+          <span> 型号：{{ computerName }} </span>
         </div>
       </div>
       <div class="missTag">
         <div
-          v-for="(item, index) in row.mapFile[currentIndex]"
+          v-for="(item, index) in checkData"
           :key="index"
           class="flex justify-between align-center"
         >
@@ -30,31 +30,41 @@
     </el-card>
 
     <div slot="reference">
-      <ColumnState :state="row.map[currentIndex]" />
+      <ColumnCheckState :state="state" />
     </div>
   </el-popover>
 </template>
 
 <script>
+import ColumnCheckState from './columnCheckState.vue';
+
 export default {
   props: {
+    categoryName: {
+      type: String,
+      default: "",
+    },
+    computerName: {
+      type: String,
+      default: "",
+    },
     currentDataName: {
       type: String,
       required: true,
       default: "",
     },
-    currentIndex: {
+    state: {
       type: Number,
       required: true,
+      default: 0 
     },
-    row: {
-      type: Object,
-      required: true,
-      default: () => {},
+    checkData: {
+      type: Array,
+      default: () => [],
     },
   },
   components: {
-    ColumnState: () => import("./columnState"),
+    ColumnCheckState
   },
 };
 </script>

@@ -97,4 +97,11 @@ export function boxInfoList(params) {
   }) 
 }
 
-
+// mua配置
+export function setMuaConfig(data) {
+  return request({
+    url: "/production/scheduling/config",
+    method: 'post',
+    data
+  }) 
+}

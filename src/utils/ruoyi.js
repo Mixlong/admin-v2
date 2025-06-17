@@ -147,7 +147,8 @@ export function selectDictLabel(datas, value) {
   //   }
   // });
   // return actions.join("");
-  return datas.find(item => item.dictValue === String(value))?.dictLabel;
+  console.log(datas, value, datas.find(item => item.dictValue === String(value))?.dictLabel)
+  return datas.find(item => +item.dictValue === +value)?.dictLabel;
 }
 
 // 回显数据字典（字符串数组）

@@ -1,70 +1,35 @@
 <template>
-    <div>
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
-        <el-form-item label="所属品类" prop="categoryId">
-          <el-select
-            v-model="queryParams.categoryId"
-            @change="changeCategory"
-            filterable
-            allow-create
-            clearable
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="仪表型号" prop="computerId">
-          <el-select
-            v-model="queryParams.computerId"
-            :loading="isCLoading"
-            filterable
-            remote
-            clearable
-            @change="getList"
-            :remote-method="getComputerNameList"
-          >
-            <el-option
-              v-for="dict in computerOptions"
-              :key="dict.model"
-              :label="dict.name"
-              :value="dict.model"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="客户名称" prop="customerName">
-          <select-loadMore
-            v-model="queryParams.customerName"
-            :data="customerNameData.data"
-            :page="customerNameData.page"
-            :hasMore="customerNameData.more"
-            dictLabel="name"
-            dictValue="name"
-            :request="getCustomerNameList"
-          />
-        </el-form-item>
-  
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-            搜索
-          </el-button>
-          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-          <el-button type="danger" @click="clearFilter">
-            清除所有过滤器
-          </el-button>
-          <el-button
-            class="float-right"
-            type="warning"
-            icon="el-icon-download"
-            @click="handleExport"
-          >
-            导 出
-          </el-button>
-        </el-form-item>
-        <!-- <el-button class="fr" icon="el-icon-plus" @click="handleParamsCompare">
+  <div>
+    <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form-item label="所属品类" prop="categoryId">
+        <el-select v-model="queryParams.categoryId" @change="changeCategory" filterable allow-create clearable>
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="仪表型号" prop="computerId">
+        <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable @change="getList"
+          :remote-method="getComputerNameList">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="客户名称" prop="customerName">
+        <select-loadMore v-model="queryParams.customerName" :data="customerNameData.data" :page="customerNameData.page"
+          :hasMore="customerNameData.more" dictLabel="name" dictValue="name" :request="getCustomerNameList" />
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        <el-button type="danger" @click="clearFilter">
+          清除所有过滤器
+        </el-button>
+        <el-button class="float-right" type="warning" icon="el-icon-download" @click="handleExport">
+          导 出
+        </el-button>
+      </el-form-item>
+      <!-- <el-button class="fr" icon="el-icon-plus" @click="handleParamsCompare">
           对比
         </el-button> -->
       </el-form>

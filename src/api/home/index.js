@@ -66,3 +66,57 @@ export function homeProductionStatus(data) {
     data
   })
 }
+
+// 产品型号责任人
+export function responsibleList(params) {
+  return request({
+    url: '/responsible/list',
+    method: 'get',
+    params
+  })
+}
+
+// 编辑产品型号责任人
+export function responsibleEdit(data) {
+  return request({
+    url: '/responsible/edit',
+    method: 'put',
+    data
+  })
+}
+
+// 生产计划状态修改
+export function prodScheduleUpdate(data) {
+  return request({
+    url: '/production/scheduling/update/material',
+    method: 'put',
+    data
+  })
+}
+
+// 修改人员管理
+export function responsibleUpdate(data) {
+  return request({
+    url: '/production/personnel/edit',
+    method: 'put',
+    data
+  })
+}
+
+// 获取对应人员
+export function responsiblePersonnel(params) {
+  return request({
+    url: '/production/personnel/map',
+    method: 'get',
+    params
+  })
+}
+
+// 人员管理
+export function responsiblePersonnelList(params) {
+  return request({
+    url: '/production/personnel/list',
+    method: 'get',
+    params
+  })
+}

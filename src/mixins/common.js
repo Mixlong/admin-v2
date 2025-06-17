@@ -1,5 +1,6 @@
 import _, { method } from "lodash";
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
+
 
 const commonJs = {
   data() {
@@ -209,9 +210,50 @@ const CategoryMixin = {
       this.queryParams.computerName = "";
       this.computerOptions = this.dictList.filter(
         (item) => item.name === categoryName
-      )[0].computerList;
+      )[0]?.computerList;
     },
   },
 };
 
-export { commonJs, dragTable, CategoryMixin, dragTableFn };
+const categoryComputerDictMixins = {
+  methods: {
+    getCategoryData() {
+      return new Promise((resolve, reject) => {
+        try {
+          categoryComputerDict().then((res) => {
+            resolve(res.data);
+          });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    // 型号
+    getComputerData() {
+      if (this.queryParams.categoryId && this.dictList.length) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.id === this.queryParams.categoryId
+        )[0]?.computerList;
+      }
+    },
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = true;
+        computerNameList({
+          name,
+          categoryId: this.queryParams.categoryId,
+        })
+          .then((res) => {
+            this.computerOptions = res.data;
+          })
+          .finally(() => {
+            this.isCLoading = false;
+          });
+      } else {
+        this.computerOptions = [];
+      }
+    },
+  }
+}
+
+export { commonJs, dragTable, CategoryMixin, dragTableFn, categoryComputerDictMixins };

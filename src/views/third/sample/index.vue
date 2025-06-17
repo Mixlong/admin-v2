@@ -1,89 +1,47 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      v-show="showSearch"
-      :inline="true"
-    >
+    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" :inline="true">
       <el-form-item label="客户" prop="key">
-        <el-autocomplete
-          v-model="queryParams.key"
-          clearable
-          placeholder="请输入客户"
-          :fetch-suggestions="querySearchAsync"
-          @select="handleQuery"
-          style="width: 140px"
-        ></el-autocomplete>
+        <el-autocomplete v-model="queryParams.key" clearable placeholder="请输入客户" :fetch-suggestions="querySearchAsync"
+          @select="handleQuery" style="width: 140px">
+          <template slot-scope="{ item }">
+            <el-tooltip :content="item.value" placement="right">
+              <div class="autocomplete-item" :title="item.value">
+                {{ item.value }}
+              </div>
+            </el-tooltip>
+          </template>
+        </el-autocomplete>
       </el-form-item>
       <el-form-item label="产品型号" prop="baseModel">
-        <el-input
-          v-model="queryParams.baseModel"
-          clearable
-          placeholder="请输入产品型号"
-          @keyup.enter.native="handleQuery"
-          style="width: 140px"
-        >
+        <el-input v-model="queryParams.baseModel" clearable placeholder="请输入产品型号" @keyup.enter.native="handleQuery"
+          style="width: 140px">
         </el-input>
       </el-form-item>
       <el-form-item label="SN" prop="sn">
-        <el-input
-          v-model="queryParams.sn"
-          clearable
-          placeholder="请输入需求"
-          @keyup.enter.native="handleQuery"
-          style="width: 140px"
-        >
+        <el-input v-model="queryParams.sn" clearable placeholder="请输入需求" @keyup.enter.native="handleQuery"
+          style="width: 140px">
         </el-input>
       </el-form-item>
       <el-form-item label="需求" prop="demand">
-        <el-input
-          clearable
-          v-model="queryParams.demand"
-          placeholder="请输入需求"
-          @keyup.enter.native="handleQuery"
-          style="width: 140px"
-        >
+        <el-input clearable v-model="queryParams.demand" placeholder="请输入需求" @keyup.enter.native="handleQuery"
+          style="width: 140px">
         </el-input>
       </el-form-item>
       <el-form-item label="状态" prop="searchState">
-        <el-select
-          style="width: 130px"
-          clearable
-          v-model="queryParams.searchState"
-          placeholder="请选择状态"
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="(item, key) in pmList"
-            :key="key"
-            :label="item"
-            :value="key"
-          >
+        <el-select style="width: 130px" clearable v-model="queryParams.searchState" placeholder="请选择状态"
+          @change="handleQuery">
+          <el-option v-for="(item, key) in pmList" :key="key" :label="item" :value="key">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="送样时间" prop="sendTime">
-        <el-date-picker
-          ref="datePicker"
-          clearable
-          v-model="queryParams.sendTime"
-          type="date"
-          placeholder="选择日期时间"
-          format="yyyy-MM-dd"
-          value-format="yyyy-MM-dd"
-          @change="handleQuery"
-          style="width: 140px"
-        >
+        <el-date-picker ref="datePicker" clearable v-model="queryParams.sendTime" type="date" placeholder="选择日期时间"
+          format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="handleQuery" style="width: 140px">
         </el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
@@ -92,21 +50,10 @@
       </el-form-item>
     </el-form>
 
-    <el-row
-      :gutter="15"
-      class="margin-bottom-xs"
-      type="flex"
-      justify="space-between"
-      align="middle"
-    >
+    <el-row :gutter="15" class="margin-bottom-xs" type="flex" justify="space-between" align="middle">
       <div class="flex align-center">
         <el-col :span="1.5">
-          <el-checkbox
-            v-model="queryParams.myself"
-            @change="handleQuery"
-            false-label="0"
-            true-label="1"
-          >
+          <el-checkbox v-model="queryParams.myself" @change="handleQuery" false-label="0" true-label="1">
             查看我的
           </el-checkbox>
         </el-col>
@@ -124,74 +71,45 @@
           </el-badge>
         </el-col>
         <el-col :span="1.5">
-          <el-button
-            v-hasPermi="['third:sample:export']"
-            part="warning"
-            icon="el-icon-download"
-            size="mini"
-            @click="handleExport"
-          >
+          <el-button v-hasPermi="['third:sample:export']" part="warning" icon="el-icon-download" size="mini"
+            @click="handleExport">
             导出
           </el-button>
         </el-col>
 
         <el-col :span="1.5">
-          <el-button
-            v-hasPermi="['third:sample:add']"
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            @click="handleAdd"
-          >
+          <el-button v-hasPermi="['third:sample:add']" type="primary" icon="el-icon-plus" size="mini"
+            @click="handleAdd">
             新增
           </el-button>
         </el-col>
 
-        <right-toolbar
-          :showSearch.sync="showSearch"
-          @queryTable="getList"
-          :columns="columns"
-        ></right-toolbar>
+        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
       </div>
     </el-row>
 
     <!--       ref="tableRef"
       class="table-scrollContainer"  -->
 
-    <el-table
-      id="drag_table"
-      v-loading="loading"
-      :data="brandList"
-      :row-class-name="rowName"
-      :height="tableHeight()"
-      :cell-class-name="cellClassName"
-      @cell-dblclick="cellClick"
-      border
-    >
-      <el-table-column
-        label="基本信息"
-        align="left"
-        header-align="center"
-        width="220"
-        fixed
-        v-if="columns[0].visible"
-      >
+    <el-table id="drag_table" v-loading="loading" :data="brandList" :row-class-name="rowName" :height="tableHeight()"
+      :cell-class-name="cellClassName" @cell-dblclick="cellClick" border>
+      <el-table-column label="基本信息" align="left" header-align="center" width="220" fixed v-if="columns[0].visible">
         <template slot-scope="{ row }">
           <div v-if="row.number">送样单号: {{ row.number }}</div>
           <div>客户：{{ row.customerName }}</div>
           <template v-if="row.type === 0 || row.type === null">
             <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
-            产品品类：
-            <el-tag style="margin: 5px 0 0 0" size="mini">{{ tag }}</el-tag>
-          </div>
+              产品品类：
+              <el-tag style="margin: 5px 0 0 0" size="mini">{{ tag }}</el-tag>
+            </div>
           </template>
 
           <template v-if="row.type === 1">
             <div class="tag-box" :key="item.id" v-for="item in row.sampleInfoList">
-            产品型号：
-            <el-tag style="margin: 5px 0 0 0" size="mini">{{ item.computerName  }}</el-tag>
+              产品型号：
+              <el-tag style="margin: 5px 0 0 0" size="mini">{{ item.computerName }}</el-tag>
             </div>
-          </template>  
+          </template>
 
           <div>数量：{{ row.sendNum }}</div>
           <div v-show="row.harkVersion">硬件版本号：{{ row.harkVersion }}</div>
@@ -201,47 +119,25 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="详细需求"
-        prop="demand"
-        align="center"
-        width="350"
-        v-if="columns[1].visible"
-      >
+      <el-table-column label="详细需求" prop="demand" align="center" width="350" v-if="columns[1].visible">
         <template slot-scope="{ row }">
-          <div
-            v-show="!Is_Empty(row.demand)"
-            class="text-left"
-            v-html="row.demand"
-          ></div>
+          <div v-show="!Is_Empty(row.demand)" class="text-left" v-html="row.demand"></div>
           <el-tag v-show="Is_Empty(row.demand)" type="danger">
             暂无数据
           </el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="配置需求表"
-        width="150"
-        align="center"
-        v-if="columns[2].visible"
-      >
+      <el-table-column label="配置需求表" width="150" align="center" v-if="columns[2].visible">
         <template slot-scope="{ row }">
-          <el-link
-            v-show="row.demandObject"
-            type="primary"
-            @click="toGoodPage(row)"
-          >
+          <el-link v-show="row.demandObject" type="primary" @click="toGoodPage(row)">
             样品需求单
           </el-link>
           <el-tag v-show="Is_Empty(row.checklist)" type="danger">
             暂无数据
           </el-tag>
-          <div
-            v-for="(item, index) in checkListArr(row.checklist)"
-            :key="index"
-            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']"
-          >
+          <div v-for="(item, index) in checkListArr(row.checklist)" :key="index"
+            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
             <preview-img :url="item" :srcList="[item]" />
             <p style="white-space: break-spaces; color: blue; margin-top: 2px">
               {{ transImg(item) }}
@@ -250,41 +146,20 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="当前进展"
-        prop="progress"
-        align="center"
-        width="350"
-        v-if="columns[3].visible"
-      >
+      <el-table-column label="当前进展" prop="progress" align="center" width="350" v-if="columns[3].visible">
         <template slot-scope="{ row }">
-          <div
-            v-show="!Is_Empty(row.progress)"
-            class="text-left"
-            v-html="row.progress"
-          ></div>
+          <div v-show="!Is_Empty(row.progress)" class="text-left" v-html="row.progress"></div>
           <el-tag v-show="Is_Empty(row.progress)" type="danger">
             暂无数据
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="SN号"
-        prop="progress"
-        align="center"
-        width="250"
-        v-if="columns[4].visible"
-      >
+      <el-table-column label="SN号" prop="progress" align="center" width="250" v-if="columns[4].visible">
         <template slot-scope="{ row }">
           <div v-for="item in row.list">{{ item }}</div>
         </template>
       </el-table-column>
-      <el-table-column
-        label="责任人&状态"
-        align="center"
-        width="100"
-        v-if="columns[5].visible"
-      >
+      <el-table-column label="责任人&状态" align="center" width="100" v-if="columns[5].visible">
         <template slot-scope="{ row }">
           <span :class="[auditProcessTitleColor[row.state]]">
             {{ auditProcessTitleData[row.state] }}
@@ -292,35 +167,18 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="时间管理"
-        align="center"
-        prop="sendTime"
-        width="170"
-        v-if="columns[6].visible"
-      >
+      <el-table-column label="时间管理" align="center" prop="sendTime" width="170" v-if="columns[6].visible">
         <template slot-scope="scope">
           <template v-if="scope.row.state !== 6">
             <div class="text-shadow mb5 text-left">
               下单时间: {{ scope.row.orderTime }}
             </div>
-            <div
-              class="text-shadow mb5 text-left"
-              :class="[difference(scope.row.sendTime)]"
-            >
+            <div class="text-shadow mb5 text-left" :class="[difference(scope.row.sendTime)]">
               计划送样时间: {{ scope.row.sendTime }}
             </div>
-            <div
-              class="flex justify-center align-center"
-              style="transform: scale(0.8)"
-            >
-              <FlipDown
-                :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()"
-                :type="4"
-                :theme="1"
-                :timeUnit="['天', ':', ':']"
-                class="flip-down-style text-center"
-              />
+            <div class="flex justify-center align-center" style="transform: scale(0.8)">
+              <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
+                :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
             </div>
           </template>
 
@@ -328,10 +186,7 @@
             <div class="text-shadow mb5 text-left">
               下单时间: {{ scope.row.orderTime }}
             </div>
-            <div
-              class="text-shadow mb5 text-left"
-              :class="[difference(scope.row.actualTime)]"
-            >
+            <div class="text-shadow mb5 text-left" :class="[difference(scope.row.actualTime)]">
               实际送样时间: {{ scope.row.actualTime }}
             </div>
             <div class="text-left">用时天数: {{ scope.row.dateDiff }}</div>
@@ -339,18 +194,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="评审表"
-        width="150"
-        align="center"
-        v-if="columns[7].visible"
-      >
+      <el-table-column label="评审表" width="150" align="center" v-if="columns[7].visible">
         <template slot-scope="{ row }">
-          <div
-            v-for="(item, index) in checkListArr(row.reviewer)"
-            :key="index"
-            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']"
-          >
+          <div v-for="(item, index) in checkListArr(row.reviewer)" :key="index"
+            :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
             <preview-img :url="item" :srcList="[item]" />
             <p style="white-space: break-spaces; color: blue; margin-top: 2px">
               {{ transImg(item) }}
@@ -359,171 +206,67 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        label="操作"
-        align="center"
-        width="80"
-        fixed="right"
-        v-if="columns[8].visible"
-      >
+      <el-table-column label="操作" align="center" width="80" fixed="right" v-if="columns[8].visible">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
             <div v-hasPermi="['third:sample:check']">
-              <Tooltip
-                v-if="scope.row.state === item.state"
-                v-for="item in authData"
-                :key="item.value"
-                class="mlZero"
-                icon="el-icon-check"
-                :content="item.content"
-                @click="handleAuthChange(scope.row, item.value)"
-              />
+              <Tooltip v-if="scope.row.state === item.state" v-for="item in authData" :key="item.value" class="mlZero"
+                icon="el-icon-check" :content="item.content" @click="handleAuthChange(scope.row, item.value)" />
             </div>
 
-            <Tooltip
-              v-hasPermi="['third:sample:edit']"
-              class="mlZero"
-              icon="el-icon-edit"
-              content="编辑"
-              @click="handleSampleUpdate(scope.row)"
-            />
+            <Tooltip v-hasPermi="['third:sample:edit']" class="mlZero" icon="el-icon-edit" content="编辑"
+              @click="handleSampleUpdate(scope.row)" />
 
-            <Tooltip
-              v-hasPermi="['third:sample:copy']"
-              class="mlZero"
-              icon="el-icon-copy-document"
-              content="复制"
-              @click="handleCopy(scope.row)"
-            />
+            <Tooltip v-hasPermi="['third:sample:copy']" class="mlZero" icon="el-icon-copy-document" content="复制"
+              @click="handleCopy(scope.row)" />
 
-            <Tooltip
-              v-hasPermi="['third:sample:delete']"
-              class="mlZero"
-              icon="el-icon-delete"
-              :className="['text-red']"
-              content="删除"
-              @click="handleDelete(scope.row)"
-            />
+            <Tooltip v-hasPermi="['third:sample:delete']" class="mlZero" icon="el-icon-delete" :className="['text-red']"
+              content="删除" @click="handleDelete(scope.row)" />
 
-            <Tooltip
-              v-hasPermi="['third:sample:download']"
-              v-show="scope.row.attachment"
-              class="mlZero"
-              icon="el-icon-download"
-              :className="['text-green']"
-              content="附件下载"
-              @click="handleDownload(scope.row)"
-            />
+            <Tooltip v-hasPermi="['third:sample:download']" v-show="scope.row.attachment" class="mlZero"
+              icon="el-icon-download" :className="['text-green']" content="附件下载" @click="handleDownload(scope.row)" />
 
-            <Tooltip
-              v-hasPermi="['third:sample:software']"
-              class="mlZero"
-              icon="el-icon-position"
-              content="软件发布"
+            <Tooltip v-hasPermi="['third:sample:software']" class="mlZero" icon="el-icon-position" content="软件发布"
               @click="
                 handleNameToPage('CadFileConfig', { number: scope.row.number })
-              "
-            />
+                " />
 
-            <Tooltip
-              v-hasPermi="['third:sample:toProduct']"
-              v-if="scope.row.state == 6"
-              class="mlZero"
-              icon="el-icon-box"
-              content="转生产"
-              @click="handleProd(scope.row)"
-            />
+            <Tooltip v-hasPermi="['third:sample:toProduct']" v-if="scope.row.state == 6" class="mlZero"
+              icon="el-icon-box" content="转生产" @click="handleProd(scope.row)" />
 
-            <Tooltip
-              class="mlZero"
-              icon="el-icon-full-screen"
-              content="录入SN"
-              @click="handleScanSn(scope.row)"
-            />
+            <Tooltip class="mlZero" icon="el-icon-full-screen" content="录入SN" @click="handleScanSn(scope.row)" />
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <el-dialog
-      :close-on-click-modal="false"
-      title="请确认是否删除"
-      :visible.sync="open"
-      width="310px"
-    >
+    <el-dialog :close-on-click-modal="false" title="请确认是否删除" :visible.sync="open" width="310px">
       <div class="padding-bottom-xl custom-code">
-        <Verify
-          v-if="open"
-          :codeLength="4"
-          @success="codeSuccess"
-          @error="codeError"
-          :type="1"
-          height="40px"
-        ></Verify>
+        <Verify v-if="open" :codeLength="4" @success="codeSuccess" @error="codeError" :type="1" height="40px"></Verify>
       </div>
     </el-dialog>
 
     <!-- 转生产 -->
-    <el-dialog
-      title="样品转生产"
-      :visible.sync="isSampleProd"
-      width="400px"
-      center
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="formProd"
-        :model="formProd"
-        :rules="prodRules"
-        label-width="80px"
-      >
+    <el-dialog title="样品转生产" :visible.sync="isSampleProd" width="400px" center :close-on-click-modal="false">
+      <el-form ref="formProd" :model="formProd" :rules="prodRules" label-width="80px">
         <el-form-item label="转产品类" prop="categoryName">
-          <el-select
-            v-model="formProd.categoryName"
-            clearable
-            placeholder="请选择转产品类"
-            style="width: 100%"
-            @change="getSampleCategoryName"
-          >
-            <el-option
-              v-for="item in sampleProdData.baseModel"
-              :key="item"
-              :label="item"
-              :value="item"
-            ></el-option>
+          <el-select v-model="formProd.categoryName" clearable placeholder="请选择转产品类" style="width: 100%"
+            @change="getSampleCategoryName">
+            <el-option v-for="item in sampleProdData.baseModel" :key="item" :label="item" :value="item"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="转产型号" prop="computerName">
-          <el-select
-            v-model="formProd.computerName"
-            filterable
-            clearable
-            placeholder="请选择转产型号"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in computerNameList"
-              :key="item.name"
-              :label="item.name"
-              :value="item.name"
-            ></el-option>
+          <el-select v-model="formProd.computerName" filterable clearable placeholder="请选择转产型号" style="width: 100%">
+            <el-option v-for="item in computerNameList" :key="item.name" :label="item.name"
+              :value="item.name"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button
-          :loading="isProdLoading"
-          type="primary"
-          @click="submitProdForm"
-        >
+        <el-button :loading="isProdLoading" type="primary" @click="submitProdForm">
           确 定
         </el-button>
         <el-button @click="resetProdForm('formProd')">取 消</el-button>
@@ -935,7 +678,7 @@ export default {
           } else if (j === "sendTime") {
             let name =
               new Date(v["sendTime"]).getTime() < new Date().getTime() &&
-              v["state"] != 5
+                v["state"] != 5
                 ? "\n已逾期"
                 : "";
             if (name) {
@@ -1145,7 +888,7 @@ export default {
           method: "get",
           url,
           responseType: "arraybuffer",
-          onDownloadProgress: function (progressEvent) {},
+          onDownloadProgress: function (progressEvent) { },
         })
           .then((data) => {
             resolve(data.data);
