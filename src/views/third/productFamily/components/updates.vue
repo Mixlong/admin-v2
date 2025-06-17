@@ -478,7 +478,7 @@
                   label="包装信息"
                   prop="instrumentModel.packagingInfo"
                 >
-                  <modelInfoTable ref="modelInfoTable" :data="form.instrumentModel.packagingInfo" />
+                  <modelInfoTable ref="modelInfoTable" v-if="dialogVisible" :data="form.instrumentModel.packagingInfo" />
                 </el-form-item>
               </el-col>
             </el-row>
