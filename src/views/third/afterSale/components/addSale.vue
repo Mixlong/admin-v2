@@ -95,6 +95,26 @@
                 />
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="跟进人" prop="follow">
+                <el-select
+                  v-model="form.follow"
+                  filterable
+                  allow-create
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择跟进人"
+                >
+                  <el-option
+                   v-for="(item, p) in roleList('afterSale')"
+                    :key="p"
+                    :label="item.dictLabel"
+                    :value="item.dictValue"
+                  />
+  
+                </el-select>
+              </el-form-item>
+            </el-col>
           </el-row>
         </el-col>
         <el-col :span="11">
@@ -178,6 +198,30 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="改善措施" prop="measures">
+                <el-select
+                  v-model="form.measures"
+                  filterable
+                  allow-create
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择改善措施"
+                >
+                  <el-option
+                    :key="1"
+                    label="临时"
+                    :value="1"
+                  />
+                  <el-option
+                    :key="2"
+                    label="长期"
+                    :value="2"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            
             <!-- <el-col v-if="isStatus">
               <el-form-item label="关闭问题" prop="status">
                 <el-switch

@@ -391,11 +391,12 @@ export function computerLicenseList(params) {
   });
 }
 
+// 禁用、启用
 export function computerUpdate(data) {
   return request({
-    url: "/computer/update",
-    method: "post",
-    data,
+    url: "/computer/license/update",
+    method: "put",
+    data
   });
 }
 
