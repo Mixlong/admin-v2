@@ -16,11 +16,24 @@
           <template slot-scope="scope">
             <div
               v-if="(scope.row.checkItem.id === 'accessoryPackingRequirements' || scope.row.checkItem.id === 'boxMarkRequirements') && scope.row.content === 'customerSpecified'">
-              <MyUpload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
+              <!-- <MyUpload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
                 v-model="scope.row.details" :multiple="false" :limit="1">
                 <el-button size="small" type="primary">点击上传</el-button>
                 <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-              </MyUpload>
+              </MyUpload> -->
+                  <DrUpload
+             v-model="scope.row.details"
+              :limit="1"
+              :isOnePic="1"
+              class="flex-direction align-start"
+            >
+              <div class="text-left">
+                <el-button type="primary" size="small">
+                  上传
+                  <i class="el-icon-upload el-icon--right"></i>
+                </el-button>
+              </div>
+            </DrUpload>
             </div>
             <div v-else>
               <el-input type="textarea" v-model="scope.row.details"></el-input>
@@ -32,10 +45,8 @@
   </template>
 
 <script>
-import MyUpload from '@/components/MyUpload/index'; // 请根据实际路径调整
 
 export default {
-  components: { MyUpload },
   props: {
     data: {
       type: [Array, String],

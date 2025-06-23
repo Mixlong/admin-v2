@@ -75,7 +75,7 @@
         :formatter="reqUnitFormatter"
         width="80"
       />
-      <el-table-column label="初审状态" prop="firstState" align="center" width="110">
+      <el-table-column label="初审状态" prop="firstState" align="center" width="120">
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
           <el-tag type="success" v-if="row.firstState === 1">已审核</el-tag>

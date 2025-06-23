@@ -22,8 +22,7 @@
 </template>
 
 <script>
-const uploadUrl = process.env.VUE_APP_UPLOAD_URL;
-
+import reqUrl from "@/utils/requestUrl";
 export default {
   name: "MyUpload",
   props: {
@@ -50,7 +49,7 @@ export default {
   },
   data() {
     return {
-      actionUrl: uploadUrl + "/oss/batch-upload",
+      actionUrl: reqUrl + "/oss/batch-upload",
       fileList: [],
     };
   },

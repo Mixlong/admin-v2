@@ -299,7 +299,9 @@ export function recordVersionList(params) {
 // 配件信息
 export function partList(params) {
   return request({
-    url: '/info/part/list',
+    // url: '/info/part/list',
+    url: '/materials/list',
+
     method: 'get',
     params
   })

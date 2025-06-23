@@ -42,20 +42,14 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="配置名称" prop="type">
-        <el-select
-          v-model="queryParams.type"
-          placeholder="请选择配置名称"
+      <el-form-item label="工单号" prop="orderCode">
+        <el-input
+          v-model="queryParams.orderCode"
+          placeholder="请选择工单号"
           clearable
-          style="max-width: 140px"
-        >
-          <el-option
-            v-for="dict in partsList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictValue"
-          />
-        </el-select>
+          style="max-width: 130px"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
@@ -78,9 +72,8 @@
       </el-table-column>
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
+      <el-table-column label="工单号" prop="orderCode" align="center" />
       <el-table-column label="整机 SN" prop="sn" align="center" />
-      <el-table-column label="配件名称" prop="type" align="center" />
       <el-table-column label="批次号" prop="no" align="center" />
       <el-table-column
         label="创建时间"

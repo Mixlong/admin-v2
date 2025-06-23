@@ -106,7 +106,7 @@
                   placeholder="请选择跟进人"
                 >
                   <el-option
-                   v-for="(item, p) in roleList('afterSale')"
+                   v-for="(item, p) in roleList('after_sales_follow')"
                     :key="p"
                     :label="item.dictLabel"
                     :value="item.dictValue"

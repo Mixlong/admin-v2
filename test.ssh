@@ -27,7 +27,7 @@ echo "✓ 切换到项目目录: $LOCAL_PROJECT_PATH"
 
 # 本地构建项目
 echo "🏗️ 正在本地构建项目 (开发环境)..."
-npm run build:dev
+npm run build:test
 
 if [ $? -eq 0 ]; then
     echo "✅ 本地构建完成"
