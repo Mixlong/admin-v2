@@ -99,7 +99,6 @@
               <el-form-item label="跟进人" prop="follow">
                 <el-select
                   v-model="form.follow"
-                  filterable
                   allow-create
                   clearable
                   style="width: 100%"
@@ -202,7 +201,6 @@
               <el-form-item label="改善措施" prop="measures">
                 <el-select
                   v-model="form.measures"
-                  filterable
                   allow-create
                   clearable
                   style="width: 100%"
