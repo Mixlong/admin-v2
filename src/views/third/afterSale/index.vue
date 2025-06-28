@@ -399,16 +399,6 @@
       >
       </el-table-column>
       <el-table-column
-        label="改善措施"
-        prop="followName"
-        align="center"
-        width="120"
-      >
-        <template slot-scope="{ row }">
-          <el-tag :type="row.measures==1?'info':'primary'">{{ row.measures==1?'临时':'长期'}}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
         label="问题根因"
         prop="rootMatter"
         align="center"

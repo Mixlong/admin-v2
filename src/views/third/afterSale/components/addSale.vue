@@ -199,24 +199,14 @@
             </el-col>
             <el-col>
               <el-form-item label="改善措施" prop="measures">
-                <el-select
+                <el-input
+                  type="textarea"
                   v-model="form.measures"
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择改善措施"
-                >
-                  <el-option
-                    :key="1"
-                    label="临时"
-                    :value="1"
-                  />
-                  <el-option
-                    :key="2"
-                    label="长期"
-                    :value="2"
-                  />
-                </el-select>
+                  placeholder="请输入改善措施"
+                  :rows="4"
+                  maxlength="500"
+                  show-word-limit
+                />
               </el-form-item>
             </el-col>
             

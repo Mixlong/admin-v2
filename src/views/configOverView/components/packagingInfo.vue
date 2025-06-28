@@ -10,15 +10,14 @@
         </el-table-column>
         <el-table-column label="内容" width="280">
           <template slot-scope="scope">
-            <template v-if="isHttpLink(scope.row.content)">
-              <a href="javascript:void(0)" @click="handleDownload(scope.row.content)" class="download-link">下载链接</a>
-            </template>
-            <template v-else>
-              {{ getContentLabel(scope.row) }}
-            </template>
+   
+                <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
+                v-if="scope.row.content === item.id"
+                  >{{ item.label }}</span>
+           
           </template>
         </el-table-column>
-        <el-table-column label="详情"  >
+        <el-table-column label="详情">
           <template slot-scope="scope">
             <template v-if="isHttpLink(scope.row.details)">
               <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
@@ -44,8 +43,8 @@ export default {
       tableData: [],
       defaultTableData: [
         {
-          checkItem: { id: 'bracketScrewInstallation', label: '支架螺丝安装' },
-          content: { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
+          checkItem: { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
+          content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
@@ -55,7 +54,7 @@ export default {
         },
         {
           checkItem: { id: 'accessoryPackingRequirements', label: '附件装箱要求' },
-          content: { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
+          content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
@@ -64,7 +63,7 @@ export default {
         },
         {
           checkItem: { id: 'packagingRequirementsCardboardWaterproofBag', label: '包装要求 (卡板、防水袋)' },
-          content: { id: 'accordingToBOM', label: '依据BOM' },
+          content: 'accordingToBOM', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'accordingToBOM', label: '依据BOM' },
@@ -73,16 +72,16 @@ export default {
         },
         {
           checkItem: { id: 'boxMarkRequirements', label: '箱唛要求' },
-          content: { id: 'customerSpecified', label: '客户指定' },
+          content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
+            { id: 'ditaiTemplate', label: '迪太模板' },
             { id: 'customerSpecified', label: '客户指定' },
-            { id: 'ditaiTemplate', label: '迪太模板' }
           ],
         },
         {
           checkItem: { id: 'inspectionReportRequirements', label: '检验报告要求' },
-          content: { id: 'ditaiTemplate', label: '迪太模板' },
+          content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
@@ -90,7 +89,7 @@ export default {
           ],
         },
       ],
-    };
+    }
   },
   watch: {
     packagingInfo: {
@@ -104,7 +103,7 @@ export default {
   methods: {
     // 初始化表格数据
     initializeTableData() {
-      let processedData = this.packagingInfo;
+      let processedData ;
       if (!this.packagingInfo) {
         this.tableData = [];
         return;
@@ -114,7 +113,6 @@ export default {
         try {
           processedData = JSON.parse(this.packagingInfo);
         } catch (error) {
-          console.warn('Failed to parse data string:', error);
           processedData = [];
         }
       }
@@ -127,30 +125,32 @@ export default {
           this.tableData = this.convertSimpleDataToTableData(processedData);
         } else if (firstItem.checkItem && firstItem.content) {
           // 完整格式，直接深拷贝使用
+          console.log("🚀 ~ file: packagingInfo.vue:155 ~ 直接深拷贝使用:", 直接深拷贝使用)
           this.tableData = JSON.parse(JSON.stringify(processedData));
         } else {
           // 格式不对，使用默认数据
+          console.log("🚀 ~ file: packagingInfo.vue:158 ~ 式不对:", 式不对)
           this.tableData = JSON.parse(JSON.stringify(this.defaultTableData));
         }
       } else {
         // 没有数据，使用默认数据
+        console.log("🚀 ~ file: packagingInfo.vue:165 ~ 默认数据:", 默认数据)
         this.tableData = JSON.parse(JSON.stringify(this.defaultTableData));
       }
+      console.log("🚀 ~ file: packagingInfo.vue:138 ~  this.tableData :", this.tableData)
     },
 
     // 将简化格式的数据转换为完整的表格数据格式
     convertSimpleDataToTableData(simpleData) {
-      return this.defaultTableData.map(template => {
-        const matchingData = simpleData.find(item => item.checkItemId === template.checkItem.id);
-        return {
-          ...template,
-          content: matchingData?.contentId || template.contentOptions[0].id,
-          details: matchingData?.details || ''
-        };
-      });
-
+      console.log("🚀 ~ file: packagingInfo.vue:172 ~ simpleData:", simpleData)
+      for (let i = 0; i < simpleData.length; i++) {
+        const element = simpleData[i];
+        console.log("🚀 ~ file: packagingInfo.vue:174 ~ element:", element)
+        this.defaultTableData[i].content = element.contentId;
+        this.defaultTableData[i].details = element.details;
+      }
+      return this.defaultTableData
     },
-
     // 处理下载链接点击
     handleDownload(url) {
       urlDownload(url);
@@ -181,7 +181,7 @@ export default {
   .download-link {
     color: #409EFF;
     text-decoration: none;
-    
+
     &:hover {
       text-decoration: underline;
     }
