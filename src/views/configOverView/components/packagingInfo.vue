@@ -43,7 +43,7 @@ export default {
       tableData: [],
       defaultTableData: [
         {
-          checkItem: { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
+          checkItem: { id: 'ditaiStandardNoLockAttachment', label: '支架螺丝安装要求' },
           content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
