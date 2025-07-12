@@ -74,7 +74,7 @@
       <el-table-column label="型号" prop="computerName" align="center" />
       <el-table-column label="工单号" prop="orderCode" align="center" />
       <el-table-column label="整机 SN" prop="sn" align="center" />
-      <el-table-column label="批次号" prop="no" align="center" />
+      <el-table-column label="批次号" prop="batchNumber" align="center" />
       <el-table-column
         label="创建时间"
         prop="createTime"
