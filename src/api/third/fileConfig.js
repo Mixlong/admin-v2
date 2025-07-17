@@ -307,6 +307,15 @@ export function partList(params) {
   })
 }
 
+// 导出配件记录
+export function partExport(params) {
+  return request({
+    url: '/materials/export',
+    method: 'get',
+    params
+  })
+}
+
 // 测试记录
 export function testList(params) {
   return request({

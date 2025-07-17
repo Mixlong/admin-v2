@@ -54,7 +54,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
-          <div class="flex justify-center">
+          <div class=" ">
             <el-button v-if="row.state === 0" v-hasPermi="['sop:check:btn']" class="text-orange" type="text"
               @click="handleCheck(row)">
               审核
@@ -67,6 +67,9 @@
             </el-button>
             <el-button v-hasPermi="['sop:delete:btn']" class="text-red" type="text" @click="handleDelete(row)">
               删除
+            </el-button>
+            <el-button  v-if="row.historyFile" class="text-blue" type="text" @click="handleHistory(row)">
+              历史文件
             </el-button>
           </div>
         </template>
@@ -81,6 +84,30 @@
 
     <!-- 详情 -->
     <sop-detail ref="isSopDetailRef" :visible.sync="isSopDetailDia" />
+
+    <!-- 历史文件弹出框 -->
+    <el-dialog title="历史文件" :visible.sync="historyFileDialogVisible" width="1000px" append-to-body top="10vh">
+      <el-table :data="historyFileList" border>
+        <el-table-column prop="name" label="文件名" min-width="200" align="center">
+          <template slot-scope="scope">
+            <span>{{ scope.row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="url" label="文件地址" min-width="300" align="center">
+          <template slot-scope="scope">
+            <el-link :href="scope.row.url" target="_blank" type="primary">{{ scope.row.url }}</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="time" label="上传时间" min-width="180" align="center">
+          <template slot-scope="scope">
+            <span>{{ scope.row.time }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="historyFileDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -107,6 +134,10 @@ export default {
       isSopAddDia: false,
       // 详情弹窗
       isSopDetailDia: false,
+      // 历史文件弹窗
+      historyFileDialogVisible: false,
+      // 历史文件列表
+      historyFileList: [],
       // 待处理 、 全部
       isWaitDispose: true,
       // 总条数
@@ -213,7 +244,9 @@ export default {
     // 修改
     handleUpdate(row) {
       this.isSopAddDia = true;
-      this.$refs.isAddSopRef.form = JSON.parse(JSON.stringify(row));
+      this.$nextTick(() => {
+        this.$refs.isAddSopRef.setFormData(JSON.parse(JSON.stringify(row)));
+      });
     },
     // 详情
     handleDetail(row) {
@@ -256,6 +289,13 @@ export default {
       if (row.state === 2) {
         return "reject-row";
       }
+    },
+    // 查看历史文件
+    handleHistory(row) {
+        if (row.historyFile) {
+          this.historyFileList =  JSON.parse(row.historyFile);;
+        this.historyFileDialogVisible = true;
+        }
     },
   },
 };

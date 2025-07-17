@@ -24,6 +24,9 @@
           </el-form-item>
         </el-col>
       </el-row>
+      <el-form-item label="上传历史文件" prop="versionCode" label-width="140px">
+        <DrUpload v-model="form.historyFile" :useObjectFormat="true" />
+      </el-form-item>
       <el-row class="workspace-files">
         <el-form-item label="添加工位文件：" required label-width="140px" class="add-file-sticky">
           <div class="upload-section">
@@ -43,14 +46,16 @@
 
                 <i class="el-icon-upload el-icon--left"></i> 上传PDF
               </el-button>
+              
               <input ref="pdfFileInput" type="file" accept="application/pdf" style="display: none"
                 @change="onPdfFileSelected">
             </div>
           </div>
         </el-form-item>
-        <draggable v-model="form.list" animation="1000" handle=".mover" @start="drag = true" @end="drag = false">
-          <transition-group name="fade-transform-sop" tag="div" ref="stationBoxRef" class="station_box" 
-            v-loading="isSubLoading" element-loading-text="处理中..." element-loading-spinner="el-icon-loading">
+
+        <div ref="stationBoxRef" class="station_box" v-loading="isSubLoading" element-loading-text="处理中..."
+          element-loading-spinner="el-icon-loading">
+          <transition-group name="fade-transform-sop" tag="div">
             <el-row type="flex" justify="space-between" align="middle" :gutter="5" v-for="(item, index) in form.list"
               :key="index">
               <!-- <el-col :span="1" class="text-center">
@@ -67,10 +72,36 @@
                   <el-col :span="14">
                     <el-form-item label="" label-width="0" :prop="`list[${index}].file`" :rules="rules.file"
                       :style="{ marginBottom: item.file ? 0 : '18px' }" class="custom-upload-item">
-                      <el-upload-sortable v-model="item.file" :action="actionUrl" :imgW="100" :imgH="100"
-                        class="enhanced-upload" :rowId="index" @drag-start="handleDragStart($event, index)"
-                        @drag-end="handleDragEnd" @image-drop="handleImageDrop($event, index)"
-                        @cross-row-drop="handleCrossRowDrop" />
+                      <!-- 使用 draggable 包装每个上传组件，实现跨行拖拽 -->
+                      <div class="file-list-container">
+                        <draggable :list="getFileList(item.file)" 
+                        :group="{ name: 'images', pull: true, put: true }" 
+                         :item-key="getItemKey" animation="300"
+                          ghost-class="sortable-ghost" chosen-class="sortable-chosen" drag-class="sortable-drag"
+                          @start="onDragStart($event, index)" @end="onDragEnd" @change="onFileListChange($event, index)"
+                          class="draggable-container">
+                          <div class="file-item" :key="element.id"
+                            v-for="(element, fileIndex) in getFileList(item.file)">
+                            <img :src="element.url" :alt="element.name" class="file-preview" />
+                            <div class="file-info">
+                            </div>
+                            <div class="file-actions">
+                              <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                                @click="removeFile(index, fileIndex)" />
+                            </div>
+                          </div>
+                          <div style="width: 100%;height: 98px;flex:1;" v-if="getFileList(item.file).length === 0"></div>
+                        </draggable>
+                        <!-- 上传按钮 -->
+                        <el-upload :action="actionUrl" :show-file-list="false"
+                       :accept="accept"
+                          :on-success="(response) => onUploadSuccess(response, index)" :before-upload="beforeUpload"
+                          class="upload-trigger">
+                          <div class="upload-button">
+                            <i class="el-icon-plus"></i>
+                          </div>
+                        </el-upload>
+                      </div>
                     </el-form-item>
                   </el-col>
                   <el-col :span="8">
@@ -83,7 +114,7 @@
                       <!-- 复制 -->
                       <el-button type="warning" size="small" class="action-btn"
                         @click="onCopyItem(index)">复制</el-button>
-                      <el-button type="danger" v-if="index !== 0" size="small" class="action-btn"
+                      <el-button type="danger" size="small" class="action-btn"
                         @click="removeSopData(item)">删除</el-button>
                     </div>
                   </el-col>
@@ -101,7 +132,7 @@
               </el-col> -->
             </el-row>
           </transition-group>
-        </draggable>
+        </div>
       </el-row>
     </el-form>
     <div slot="footer" class="dialog-footer form-actions">
@@ -119,6 +150,7 @@ import axios from "axios";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import reqUrl from "@/utils/requestUrl";
 import draggable from "vuedraggable";
+import _ from "lodash";
 
 export default {
   components: {
@@ -140,6 +172,7 @@ export default {
       dragImageIndex: -1, // 拖拽图片索引
       dragOverIndex: -1, // 拖拽目标行索引
       actionUrl: reqUrl + "/oss/batch-upload",
+      accept: "image/*",
       // 提交loading
       isSubLoading: false,
       // 表单参数
@@ -147,6 +180,7 @@ export default {
         categoryId: "",
         versionCode: "",
         desc: "",
+        historyFile: [], // 历史文件对象数组格式
         list: [
           {
             indexNum: undefined,
@@ -204,6 +238,7 @@ export default {
         categoryId: "",
         versionCode: "",
         desc: "",
+        historyFile: [],
         list: [
           {
             indexNum: undefined,
@@ -265,256 +300,106 @@ export default {
       const item = { ...this.form.list[index], id: "" };
       this.form.list.splice(index + 1, 0, item);
     },
-    /** 处理图片拖拽开始 */
-    handleDragStart(data, rowIndex) {
-      console.log('开始拖拽，源行索引:', rowIndex, '图片索引:', data.index);
+    /** 获取文件列表 - 将字符串转换为对象数组 */
+    getFileList(fileString) {
+      if (!fileString) return [];
+      const urls = fileString.split(',').filter(url => url.trim());
+      return urls.map((url, index) => ({
+        id: `${Date.now()}_${index}`,
+        url: url.trim(),
+        name: url.split('/').pop() || `文件${index + 1}`
+      }));
+    },
 
-      // 清除可能残留的拖拽样式
-      document.querySelectorAll('.drag-over').forEach(el => {
-        el.classList.remove('drag-over');
-      });
+    /** 获取项目唯一键 */
+    getItemKey(item) {
+      return item.id;
+    },
 
-      // 记录拖拽源信息
+    /** 拖拽开始事件 */
+    onDragStart(evt, rowIndex) {
+      console.log('开始拖拽，行索引:', rowIndex);
       this.dragSourceIndex = rowIndex;
-      this.dragImageIndex = data.index;
-
-      // 将拖拽信息保存到全局属性，以确保跨组件传递可靠
-      window._sopDragInfo = {
-        sourceIndex: rowIndex,
-        imageIndex: data.index
-      };
-
-      // 添加全局样式类来显示正在拖拽状态
-      document.body.classList.add('sop-dragging');
     },
 
-    /** 处理图片拖拽结束 */
-    handleDragEnd(evt) {
+    /** 拖拽结束事件 */
+    onDragEnd(evt) {
       console.log('拖拽结束');
-
-      // 清除所有拖拽相关样式
-      document.querySelectorAll('.drag-over').forEach(el => {
-        el.classList.remove('drag-over');
-      });
-
-      // 移除拖拽状态类
-      document.body.classList.remove('sop-dragging');
-
-      // 不主动清除全局拖拽信息，等待拖放事件触发后处理
+      this.dragSourceIndex = -1;
     },
 
-    /** 处理跨行拖拽 - 简化版 */
-    handleCrossRowDrop(data) {
-      console.log('跨行拖拽事件触发', data);
+    /** 文件列表变化事件 */
+    onFileListChange(evt, rowIndex) {
+      console.log('文件列表变化:', evt, '行索引:', rowIndex);
 
-      try {
-        // 安全获取行索引
-        const sourceRowId = parseInt(data.sourceRowId);
-        const targetRowId = parseInt(data.targetRowId);
+      // 更新对应行的文件字符串
+      const fileList = this.getFileList(this.form.list[rowIndex].file);
+      const urls = fileList.map(file => file.url);
+      this.form.list[rowIndex].file = urls.join(',');
 
-        // 检查行索引是否有效
-        if (isNaN(sourceRowId) || isNaN(targetRowId) ||
-          sourceRowId < 0 || sourceRowId >= this.form.list.length ||
-          targetRowId < 0 || targetRowId >= this.form.list.length) {
-          console.error('无效的行索引');
-          return;
-        }
+      // 如果是添加操作，更新文件列表
+      if (evt.added) {
+        const newUrls = [...urls, evt.added.element.url];
+        this.form.list[rowIndex].file = newUrls.join(',');
+      }
 
-        // 获取源行和目标行
-        const sourceRow = this.form.list[sourceRowId];
-        const targetRow = this.form.list[targetRowId];
+      // 如果是移除操作，从文件列表中删除
+      if (evt.removed) {
+        const filteredUrls = urls.filter(url => url !== evt.removed.element.url);
+        this.form.list[rowIndex].file = filteredUrls.join(',');
+      }
 
-        // 安全检查
-        if (!sourceRow || !targetRow) {
-          console.error('无效的行数据');
-          return;
-        }
-
-        // 获取拖拽的图片数据
-        let draggedImage = '';
-        if (data.event && data.event.dataTransfer) {
-          try {
-            const dragData = data.event.dataTransfer.getData('text/plain');
-            const sourceData = JSON.parse(dragData);
-            if (sourceData && sourceData.image) {
-              draggedImage = sourceData.image;
-            }
-          } catch (e) {
-            console.error('解析拖拽数据出错', e);
-          }
-        }
-
-        if (!draggedImage) {
-          console.error('无法获取拖拽图片数据');
-          return;
-        }
-
-        // 直接将图片添加到目标行
-        let targetImages = targetRow.file ? targetRow.file.split(',') : [];
-        targetImages.push(draggedImage);
-        targetRow.file = targetImages.join(',');
-
-        console.log('已将图片添加到行:', targetRowId);
-
-        // 更新视图
-        this.$forceUpdate();
-      } catch (e) {
-        console.error('处理跨行拖拽错误:', e);
+      // 如果是移动操作，重新排序
+      if (evt.moved) {
+        const reorderedUrls = fileList.map(file => file.url);
+        this.form.list[rowIndex].file = reorderedUrls.join(',');
       }
     },
 
-    /** 处理图片放置 */
-    handleImageDrop(data, targetRowIndex) {
-      console.log('图片放置事件', data, targetRowIndex);
+    /** 移除文件 */
+    removeFile(rowIndex, fileIndex) {
+      const fileList = this.getFileList(this.form.list[rowIndex].file);
+      fileList.splice(fileIndex, 1);
+      const urls = fileList.map(file => file.url);
+      this.form.list[rowIndex].file = urls.join(',');
+    },
 
-      // 检查是否是同行内拖拽
-      if (data.samelist === true) {
-        console.log('同行拖拽，已由组件内部处理');
-        return;
-      }
+    /** 上传成功处理 */
+    onUploadSuccess(response, rowIndex) {
+      if (response.code === 200 && response.data) {
+        const currentFiles = this.form.list[rowIndex].file;
+        const newUrl = response.data[0].url;
 
-      // 如果是跨组件拖拽，直接使用fromUid和toUid来确定行索引
-      if (data.fromUid !== undefined && data.toUid !== undefined) {
-        console.log('跨组件拖拽检测，fromUid:', data.fromUid, 'toUid:', data.toUid);
-
-        // 尝试根据元素UID找到对应的行索引
-        const rowElems = document.querySelectorAll('.upload-queue');
-        let sourceRowIndex = -1;
-        let targetRowIndex = -1;
-
-        // 遍历查找组件实例的UID匹配
-        rowElems.forEach((el, idx) => {
-          const vueInstance = el.__vue__;
-          if (vueInstance && vueInstance._uid === data.fromUid) {
-            sourceRowIndex = idx;
-          }
-          if (vueInstance && vueInstance._uid === data.toUid) {
-            targetRowIndex = idx;
-          }
-        });
-
-        if (sourceRowIndex !== -1 && targetRowIndex !== -1) {
-          console.log('找到对应行：源行', sourceRowIndex, '目标行', targetRowIndex);
-          data.sourceIndex = sourceRowIndex;
-          data.targetIndex = targetRowIndex;
-        }
-      }
-
-      // 如果没有全局拖拽信息，尝试今data中提取
-      if (!window._sopDragInfo) {
-        if (data && data.image) {
-          // 可能是原生HTML5拖拽的情况
-          console.log('使用原生拖拽数据', data);
-          const dragImage = data.image;
-
-          // 先在所有行中找到含有这个图片URL的行
-          let dragSourceIndex = -1;
-          let dragImageIndex = -1;
-
-          for (let i = 0; i < this.form.list.length; i++) {
-            const rowImages = this.form.list[i].file ? this.form.list[i].file.split(',') : [];
-            const imgIndex = rowImages.indexOf(dragImage);
-            if (imgIndex !== -1) {
-              dragSourceIndex = i;
-              dragImageIndex = imgIndex;
-              break;
-            }
-          }
-
-          if (dragSourceIndex !== -1 && dragImageIndex !== -1) {
-            console.log('找到源图片在行:', dragSourceIndex, '索引:', dragImageIndex);
-          } else {
-            console.log('无法找到源图片');
-            return;
-          }
-
-          // 创建一个拥有最小所需信息的对象
-          window._sopDragInfo = {
-            sourceIndex: dragSourceIndex,
-            imageIndex: dragImageIndex,
-            image: dragImage
-          };
+        if (currentFiles) {
+          this.form.list[rowIndex].file = currentFiles + ',' + newUrl;
         } else {
-          console.log('没有找到拖拽信息');
-          return;
-        }
-      }
-
-      const dragSourceIndex = window._sopDragInfo.sourceIndex;
-      const dragImageIndex = window._sopDragInfo.imageIndex;
-
-      console.log('放置到行:', targetRowIndex, '从行:', dragSourceIndex);
-
-      // 如果是同一行内的拖拽，组件内部已处理
-      if (dragSourceIndex === targetRowIndex) {
-        console.log('同行拖拽，已在组件内部处理');
-        window._sopDragInfo = null; // 清除全局信息
-        return;
-      }
-
-      // 获取源行和目标行
-      const sourceRow = this.form.list[dragSourceIndex];
-      const targetRow = this.form.list[targetRowIndex];
-
-      // 如果源或目标不存在，则退出
-      if (!sourceRow || !targetRow) {
-        console.log('源或目标行不存在');
-        window._sopDragInfo = null; // 清除全局信息
-        return;
-      }
-
-      try {
-        // 源行的图片列表
-        const sourceImages = sourceRow.file ? sourceRow.file.split(',') : [];
-
-        // 如果源行没有图片或索引无效，则退出
-        if (sourceImages.length === 0 || dragImageIndex >= sourceImages.length) {
-          console.log('源图片或索引无效');
-          window._sopDragInfo = null; // 清除全局信息
-          return;
+          this.form.list[rowIndex].file = newUrl;
         }
 
-        // 获取要移动的图片URL
-        const imageToMove = sourceImages[dragImageIndex];
-        console.log('移动图片:', imageToMove);
-
-        // 从源行图片列表中删除
-        sourceImages.splice(dragImageIndex, 1);
-        sourceRow.file = sourceImages.join(',');
-
-        // 添加到目标行图片列表
-        const targetImages = targetRow.file ? targetRow.file.split(',') : [];
-
-        // 如果有指定目标位置，则插入，否则添加到末尾
-        if (data.targetIndex !== undefined) {
-          targetImages.splice(data.targetIndex, 0, imageToMove);
-        } else {
-          targetImages.push(imageToMove);
-        }
-
-        targetRow.file = targetImages.join(',');
-        console.log('更新后的目标行图片:', targetRow.file);
-
-        // 移动后执行保存
-        this.onSaveItem(sourceRow);
-        this.onSaveItem(targetRow);
-      } catch (e) {
-        console.error('拖拽处理错误', e);
-      } finally {
-        // 清除全局拖拽信息
-        window._sopDragInfo = null;
-        this.dragSourceIndex = -1;
-        this.dragImageIndex = -1;
-        this.dragOverIndex = -1;
-
-        // 移除所有拖拽样式
-        document.body.classList.remove('sop-dragging');
-        document.querySelectorAll('.drag-over,.dragging').forEach(el => {
-          el.classList.remove('drag-over');
-          el.classList.remove('dragging');
-        });
+        this.msgSuccess('文件上传成功');
+      } else {
+        this.msgError('文件上传失败');
       }
     },
+
+    /** 上传前验证 */
+    beforeUpload(file) {
+      const isImage = file.type.indexOf('image/') === 0;
+      const isLt10M = file.size / 1024 / 1024 < 10;
+
+      if (!isImage) {
+        this.msgError('只能上传图片文件!');
+        return false;
+      }
+      if (!isLt10M) {
+        this.msgError('上传文件大小不能超过 10MB!');
+        return false;
+      }
+      return true;
+    },
+
+  
+
     checkListItem() {
       let arr = [];
       for (const { indexNum } of this.form.list) {
@@ -552,60 +437,7 @@ export default {
           'Content-Type': 'multipart/form-data',
         }
       }).then(response => {
-        const { data } = response;
-        if (data.code === 200 && data.data) {
-          // 将获取的OSS图片URL数组添加到表单项中
-          if (Array.isArray(data.data)) {
-            // 查找当前最大序号
-            let maxIndexNum = 0;
-            this.form.list.forEach(item => {
-              if (item.indexNum && parseInt(item.indexNum) > maxIndexNum) {
-                maxIndexNum = parseInt(item.indexNum);
-              }
-            });
-
-            // 处理PDF转换得到的图片
-            data.data.forEach((imageData, idx) => {
-              // 查找空项或添加新项
-              const emptyIndex = this.form.list.findIndex(item => !item.file);
-              if (emptyIndex !== -1) {
-                // 更新空项
-                this.form.list[emptyIndex].file = imageData.url;
-                // 如果序号未定义，则自动设置序号
-                if (!this.form.list[emptyIndex].indexNum) {
-                  this.form.list[emptyIndex].indexNum = maxIndexNum + idx + 1;
-                }
-              } else {
-                // 如果没有空项，则添加新项，并设置自增序号
-                this.form.list.push({
-                  indexNum: maxIndexNum + idx + 1, // 从最大序号+1开始
-                  file: imageData.url,
-                  remark: ''
-                });
-              }
-            });
-            // 更新站位盒子引用
-            this.onSetStationBoxRef();
-            this.msgSuccess('PDF转换成功');
-          } else {
-            // 处理单个URL的情况
-            const emptyIndex = this.form.list.findIndex(item => !item.file);
-            if (emptyIndex !== -1) {
-              this.form.list[emptyIndex].file = data.data;
-            } else {
-              // 如果没有空项，则添加新项
-              this.form.list.push({
-                indexNum: undefined,
-                file: data.data,
-                remark: ''
-              });
-              this.onSetStationBoxRef();
-            }
-            this.msgSuccess('PDF转换成功');
-          }
-        } else {
-          this.msgError(data.msg || 'PDF转换失败');
-        }
+        this.processPdfResponse(response.data);
       }).catch(error => {
         console.error('PDF转换失败:', error);
         this.msgError('PDF转换上传失败，请重试');
@@ -615,14 +447,92 @@ export default {
         this.$refs.pdfFileInput.value = '';
       });
     },
+
+    /** 处理PDF转换响应数据 */
+    processPdfResponse(data) {
+      if (data.code === 200 && data.data) {
+        // 将获取的OSS图片URL数组添加到表单项中
+        if (Array.isArray(data.data)) {
+          // 查找当前最大序号
+          let maxIndexNum = 0;
+          this.form.list.forEach(item => {
+            if (item.indexNum && parseInt(item.indexNum) > maxIndexNum) {
+              maxIndexNum = parseInt(item.indexNum);
+            }
+          });
+
+          // 处理PDF转换得到的图片
+          data.data.forEach((imageData, idx) => {
+            // 清理URL中的反引号和空格
+            let cleanUrl = imageData.url;
+            if (typeof cleanUrl === 'string') {
+              cleanUrl = cleanUrl.replace(/`/g, '').trim();
+            }
+
+            // 查找空项或添加新项
+            const emptyIndex = this.form.list.findIndex(item => !item.file);
+            if (emptyIndex !== -1) {
+              // 更新空项
+              this.form.list[emptyIndex].file = cleanUrl;
+              // 如果序号未定义，则自动设置序号
+              if (!this.form.list[emptyIndex].indexNum) {
+                this.form.list[emptyIndex].indexNum = maxIndexNum + idx + 1;
+              }
+            } else {
+              // 如果没有空项，则添加新项，并设置自增序号
+              this.form.list.push({
+                indexNum: maxIndexNum + idx + 1, // 从最大序号+1开始
+                file: cleanUrl,
+                remark: ''
+              });
+            }
+          });
+          // 更新站位盒子引用
+          this.onSetStationBoxRef();
+          this.msgSuccess('PDF转换成功');
+        } else {
+          // 处理单个URL的情况
+          let cleanUrl = data.data;
+          if (typeof cleanUrl === 'string') {
+            cleanUrl = cleanUrl.replace(/`/g, '').trim();
+          }
+
+          const emptyIndex = this.form.list.findIndex(item => !item.file);
+          if (emptyIndex !== -1) {
+            this.form.list[emptyIndex].file = cleanUrl;
+          } else {
+            // 如果没有空项，则添加新项
+            this.form.list.push({
+              indexNum: undefined,
+              file: cleanUrl,
+              remark: ''
+            });
+            this.onSetStationBoxRef();
+          }
+          this.msgSuccess('PDF转换成功');
+        }
+      } else {
+        this.msgError(data.msg || 'PDF转换失败');
+      }
+    },
+ 
     /** 提交按钮 */
     submitForm: function () {
       if (this.checkListItem()) return;
+
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.isSubLoading = true;
+
+          // 深拷贝表单数据
+          const submitData = _.cloneDeep(this.form);
+
+          // 将 historyFile 对象数组转换为原格式字符串
+          if (submitData.historyFile && Array.isArray(submitData.historyFile)) {
+            submitData.historyFile = JSON.stringify(submitData.historyFile)
+          }
           if (this.form.id) {
-            sopUpdate(this.form)
+            sopUpdate(submitData)
               .then(() => {
                 this.msgSuccess("修改成功");
                 this.$parent.getList();
@@ -632,7 +542,7 @@ export default {
                 this.close();
               });
           } else {
-            sopSave(this.form)
+            sopSave(submitData)
               .then(() => {
                 this.msgSuccess("创建成功");
                 this.$parent.getList();
@@ -644,6 +554,15 @@ export default {
           }
         }
       });
+    },
+
+    /** 编辑时数据回显 */
+    setFormData(data) {
+      let formData = { ...data };
+      console.log("🚀 ~ setFormData ~  formData.historyFile:", formData.historyFile)
+      formData.historyFile = formData.historyFile ? JSON.parse(formData.historyFile) : [];
+      console.log("🚀 ~ setFormData ~ formData.historyFile:", formData.historyFile)
+      this.form = formData;
     },
   },
 };
@@ -935,6 +854,11 @@ export default {
   .custom-upload-item {
     margin: 10px 0;
     transition: all 0.3s;
+    .file-list-container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
   }
 
   .enhanced-upload {
@@ -1020,6 +944,120 @@ export default {
 
     &::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // 拖拽相关样式
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background: #fff;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+    cursor: move;
+
+    &:hover {
+      border-color: #409eff;
+      box-shadow: 0 2px 8px rgba(64, 158, 255, 0.15);
+    }
+
+    &.sortable-ghost {
+      opacity: 0.5;
+      background: #f5f7fa;
+    }
+
+    &.sortable-chosen {
+      border-color: #409eff;
+      box-shadow: 0 2px 12px rgba(64, 158, 255, 0.3);
+    }
+
+    &.sortable-drag {
+      opacity: 0.8;
+      transform: rotate(5deg);
+    }
+  }
+
+  .file-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid #e4e7ed;
+  }
+
+  .file-info {
+    flex: 1;
+    min-width: 0;
+
+    .file-name {
+      font-size: 14px;
+      color: #303133;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-url {
+      font-size: 12px;
+      color: #909399;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .file-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .draggable-container {
+    min-height: 60px;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.3s;
+    display: flex;
+    gap: 20px;
+    flex:1;
+    flex-wrap: wrap;
+    &.drag-over {
+      border-color: #409eff;
+      background: rgba(64, 158, 255, 0.05);
+    }
+  }
+
+  .upload-button {
+    width: 100%;
+    height: 60px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    background: #fafafa;
+    color: #909399;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    min-height:58px;
+    min-width:58px;
+    box-sizing: border-box;
+    &:hover {
+      border-color: #409eff;
+      color: #409eff;
+      background: rgba(64, 158, 255, 0.05);
+    }
+
+    .el-icon {
+      font-size: 20px;
     }
   }
 }

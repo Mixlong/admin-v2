@@ -56,6 +56,9 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button type="success" icon="el-icon-download" @click="handleExport">
+          导出
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -73,6 +76,7 @@
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
       <el-table-column label="工单号" prop="orderCode" align="center" />
+      <el-table-column label="工单类型" prop="typeName" align="center" />
       <el-table-column label="整机 SN" prop="sn" align="center" />
       <el-table-column label="批次号" prop="batchNumber" align="center" />
       <el-table-column
@@ -94,7 +98,7 @@
 </template>
 
 <script>
-import { categoryComputerDict, partList } from "@/api/third/fileConfig";
+import { categoryComputerDict, partList, partExport } from "@/api/third/fileConfig";
 
 export default {
   name: "Parts",
@@ -117,6 +121,8 @@ export default {
         categoryName: "",
         computerName: "",
         sn: "",
+        orderCode: "",
+        batchNumber: "",
         type: "",
       },
     };
@@ -194,6 +200,20 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.$modal.confirm('是否确认导出所有配件记录数据项?').then(() => {
+        this.loading = true;
+        return partExport(this.queryParams);
+      }).then(response => {
+        if (response.code === 200 && response.msg) {
+           this.download(response.msg);
+        }
+        this.loading = false;
+      }).catch(() => {
+        this.loading = false;
+      });
+    }
   },
 };
 </script>

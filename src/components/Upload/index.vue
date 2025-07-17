@@ -55,9 +55,14 @@ export default {
       type: Boolean,
       default: true,
     },
-    // accept: {
-    //   default: "image/jpeg, image/gif, image/png,image/bmp",
-    // },
+    accept: {
+      default: "image/jpeg, image/gif, image/png,image/bmp",
+    },
+    // 是否使用对象数组格式 {name, url, time}
+    useObjectFormat: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -77,16 +82,44 @@ export default {
   },
   methods: {
     transImgVal(value) {
-      value = value ?? "";
-      let fileList = value.split(",").map((item) => {
-        return {
-          name: item.slice(item.lastIndexOf("/") + 1),
-          url: item,
-        };
-      });
+      if (!value) {
+        this.fileList = [];
+        return;
+      }
+
+      let fileList = [];
+      
+      if (this.useObjectFormat) {
+        // 处理对象数组格式 [{name, url, time}]
+        if (Array.isArray(value)) {
+          fileList = value.map((item) => {
+            return {
+              name: item.name || item.url?.slice(item.url.lastIndexOf("/") + 1) || "未知文件",
+              url: item.url,
+              time: item.time || new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }),
+            };
+          });
+        }
+      } else {
+        // 处理字符串数组格式 "url1,url2,url3"
+        const urlString = Array.isArray(value) ? value.join(",") : value;
+        fileList = urlString.split(",").map((item) => {
+          return {
+            name: item.slice(item.lastIndexOf("/") + 1),
+            url: item,
+          };
+        });
+      }
 
       this.fileList = fileList.filter((item) => {
-        return item.url != "";
+        return item.url && item.url !== "";
       });
     },
     beforeUpload(file) {
@@ -106,11 +139,7 @@ export default {
       };
 
 
-      if (this.accept && !this.accept.includes(getFileExtension(file?.name))) {
-        this.msgError("上传的文件格式不对");
-        this.isUploadStatus = 0;
-        return false;
-      }
+ 
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
@@ -134,19 +163,37 @@ export default {
       );
     },
     removeUpload(response, file, fileList) {
-      this.handleReturnData(file);
+      this.handleReturnData(fileList);
     },
     handleReturnData(file) {
       if (file.every((item) => item.status === "success")) {
         let currentFill = file.map((item) => {
-          if (item.response) {
-            return item.response.data[0].url;
+          const url = item.response ? item.response.data[0].url : item.url;
+          const name = item.name || url.slice(url.lastIndexOf("/") + 1);
+          
+          if (this.useObjectFormat) {
+            return {
+              name: name,
+              url: url,
+              time: new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }),
+            };
           } else {
-            return item.url;
+            return url;
           }
         });
 
-        this.$emit("input", currentFill.toString());
+        if (this.useObjectFormat) {
+          this.$emit("input", currentFill);
+        } else {
+          this.$emit("input", currentFill.toString());
+        }
       }
     },
   },
