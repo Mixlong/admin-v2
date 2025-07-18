@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
+      <el-select
+      v-model="queryParams.categoryName"
           placeholder="请选择品类"
           clearable
           style="max-width: 140px"
@@ -33,62 +33,60 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="整机SN" prop="sn">
-        <el-input
-          v-model="queryParams.sn"
-          placeholder="请输入整机SN"
-          clearable
-          style="max-width: 130px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
       <el-form-item label="工单号" prop="orderCode">
         <el-input
           v-model="queryParams.orderCode"
-          placeholder="请选择工单号"
+          placeholder="请输入工单号"
           clearable
-          style="max-width: 130px"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="批次号" prop="batchNumber">
+        <el-input
+          v-model="queryParams.batchNumber"
+          placeholder="请输入批次号"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="排产单号" prop="schedulingId">
+        <el-input
+          v-model="queryParams.schedulingId"
+          placeholder="请输入排产单号"
+          clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button type="success" icon="el-icon-download" @click="handleExport">
-          导出
-        </el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['third:materialHouse:export']"
+        >导出</el-button>
       </el-form-item>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-    >
-      <el-table-column label="序号" width="58" type="index" align="center">
+    <el-table v-loading="loading" :data="materialHouseList">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="品类" align="center" prop="categoryName" />
+      <el-table-column label="型号" align="center" prop="computerName" />
+      <el-table-column label="工单号" align="center" prop="orderCode" />
+      <el-table-column label="批次号" align="center" prop="batchNumber" />
+      <el-table-column label="排产单号" align="center" prop="schedulingId" />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="工单号" prop="orderCode" align="center" />
-      <el-table-column label="工单类型" prop="typeName" align="center" />
-      <el-table-column label="整机 SN" prop="sn" align="center" />
-      <el-table-column label="批次号" prop="batchNumber" align="center" />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="135"
-      />
     </el-table>
 
     <pagination
-      v-if="total > 0"
+      v-show="total>0"
       :total="total"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
@@ -98,57 +96,42 @@
 </template>
 
 <script>
-import { categoryComputerDict, partList, partExport } from "@/api/third/fileConfig";
-
+import { materialHouseList, materialHouseExport } from "@/api/third/materialHouse";
+import { categoryComputerDict, } from "@/api/third/fileConfig";
 export default {
-  name: "Parts",
+  name: "MaterialHouse",
   data() {
     return {
-      ditailShow: false,
-      form: {},
       // 遮罩层
       loading: true,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
       // 总条数
       total: 0,
+      // 出库料记录表格数据
+      materialHouseList: [],
       dictList: [],
-      brandList: [],
-      partsList: [],
       computerOptions: [],
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
-        categoryName: "",
-        computerName: "",
-        sn: "",
-        orderCode: "",
-        batchNumber: "",
-        type: "",
-      },
+        l: 10,
+        categoryName: null,
+        computerName: null,
+        orderCode: null,
+        batchNumber: null,
+        schedulingId: null
+      }
     };
   },
-  watch: {
-    queryParams: {
-      handler(newVal) {
-        if (newVal) {
-          this.getList();
-        }
-      },
-      deep: true,
-      immediate: true
-    },
-  },
   created() {
-    this.getDicts("sys_parts_name").then((res) => {
-      this.partsList = res.data;
-    });
-  },
-  activated() {
-    const { recordId, sn } = this.$route.query;
-    this.queryParams.recordId = recordId;
-    this.queryParams.sn = sn;
-  },
-  mounted() {
+    this.getList();
     categoryComputerDict().then((response) => {
       this.dictList = response.data;
       let type = this.$route.query.type;
@@ -171,11 +154,11 @@ export default {
     });
   },
   methods: {
-    /** 查询品牌列表 */
+    /** 查询出库料记录列表 */
     getList() {
       this.loading = true;
-      partList(this.queryParams).then((response) => {
-        this.brandList = response.data.list;
+      materialHouseList(this.queryParams).then(response => {
+        this.materialHouseList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
       });
@@ -195,25 +178,31 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.recordId = "";
-      this.queryParams.sn = "";
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length!==1
+      this.multiple = !selection.length
+    },
     /** 导出按钮操作 */
     handleExport() {
-      this.$modal.confirm('是否确认导出所有配件记录数据项?').then(() => {
+      this.$modal.confirm('是否确认导出所有出库料记录数据项?').then(() => {
         this.loading = true;
-        return partExport(this.queryParams);
+        return materialHouseExport(this.queryParams);
       }).then(response => {
         if (response.code === 200 && response.msg) {
-           this.download(response.msg);
+              this.download(response.msg);
+        } else {
+          this.$message.error('导出失败');
         }
         this.loading = false;
       }).catch(() => {
         this.loading = false;
       });
     }
-  },
+  }
 };
 </script>

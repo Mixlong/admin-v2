@@ -2,38 +2,15 @@
   <div>
     <div class="mask" v-show="isShowSelect" @click="isShowSelect = !isShowSelect"></div>
     <el-popover placement="bottom-start" :width="width" trigger="manual" v-model="isShowSelect" @hide="popoverHide">
-      <el-select
-        slot="reference"
-        ref="select"
-        :size="size"
-        v-model="selectedData"
-        :multiple="multiple"
-        :clearable="clearable"
-        :collapse-tags="collapseTags"
-        @click.native="isShowSelect = !isShowSelect"
-        @remove-tag="removeSelectedNodes"
-        @clear="removeSelectedNode"
-        @change="changeSelectedNodes"
-        class="tree-select"
-      >
+      <el-select slot="reference" ref="select" :size="size" v-model="selectedData" :multiple="multiple"
+        :clearable="clearable" :collapse-tags="collapseTags" @click.native="isShowSelect = !isShowSelect"
+        @remove-tag="removeSelectedNodes" @clear="removeSelectedNode" @change="changeSelectedNodes" class="tree-select">
         <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
-      <el-tree
-        class="common-tree"
-        ref="tree"
-        :style="`width: 100%; ${height}px`"
-        :data="data"
-        :props="defaultProps"
-        :show-checkbox="multiple"
-        :node-key="nodeKey"
-        :check-strictly="checkStrictly"
-        default-expand-all
-        :expand-on-click-node="false"
-        :check-on-click-node="multiple"
-        :highlight-current="true"
-        @node-click="handleNodeClick"
-        @check-change="handleCheckChange"
-      />
+      <el-tree class="common-tree" ref="tree" :style="`width: 100%; ${height}px`" :data="data" :props="defaultProps"
+        :show-checkbox="multiple" :node-key="nodeKey" :check-strictly="checkStrictly" default-expand-all
+        :expand-on-click-node="false" :check-on-click-node="multiple" :highlight-current="true"
+        @node-click="handleNodeClick" @check-change="handleCheckChange" />
     </el-popover>
   </div>
 </template>

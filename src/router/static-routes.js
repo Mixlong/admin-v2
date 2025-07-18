@@ -37,5 +37,20 @@ export default [
         meta: {
             title: '智慧大屏'
         }
+    },
+    {
+        path: '/bomChange',
+        component: Layout,
+        hidden: true,
+        children: [
+            {
+                path: '',
+                component: () => import('@/views/third/bomChange/index'),
+                name: 'BomChange',
+                meta: {
+                    title: '订单BOM变更'
+                }
+            }
+        ]
     }
 ]

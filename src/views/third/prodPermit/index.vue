@@ -227,7 +227,7 @@ export default {
       },
 
       isHistoricalIssuesListDialogVisible: false,
-      historicalIssuesList: [],
+    historicalIssuesList: [],
       currentComputerIdForIssues: null,
     };
   },
