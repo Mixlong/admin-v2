@@ -17,6 +17,7 @@ import DictData from "@/components/DictData";
 import VueDraggableResizable from "vue-draggable-resizable";
 // optionally import default styles
 import "vue-draggable-resizable/dist/VueDraggableResizable.css";
+import MacInput from "@/components/MacInput";
 
 // 全局组件挂载
 const globalComponents = [
@@ -30,25 +31,13 @@ const globalComponents = [
   ElUploadSortable,
   ModelCategory,
   ScreenFull,
-  VueDraggableResizable
+  VueDraggableResizable,
+  MacInput
 ];
 const install = (Vue) => {
     globalComponents.forEach(item => {
         Vue.component(item.name, item)
     })
 };
-
-// Vue.component("Pagination", Pagination);
-// Vue.component("RightToolbar", RightToolbar);
-// Vue.component("DrUpload", DrUpload);
-// Vue.component("Tooltip", Tooltip);
-// Vue.component("ModalStyle", ModalStyle);
-// Vue.component("preview-img", PreviewImg);
-// Vue.component("ElUploadSortable", ElUploadSortable);
-// Vue.component("select-loadMore", SelectLoadMore);
-// Vue.component("DictTag", DictTag);
-// Vue.component("vue-draggable-resizable", VueDraggableResizable);
-// Vue.component("ModelCategory", ModelCategory);
-// Vue.component("ScreenFull", ScreenFull);
 DictData.install();
 export default install;

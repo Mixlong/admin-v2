@@ -95,6 +95,25 @@
                 />
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="跟进人" prop="follow">
+                <el-select
+                  v-model="form.follow"
+                  allow-create
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择跟进人"
+                >
+                  <el-option
+                   v-for="(item, p) in roleList('after_sales_follow')"
+                    :key="p"
+                    :label="item.dictLabel"
+                    :value="item.dictValue"
+                  />
+  
+                </el-select>
+              </el-form-item>
+            </el-col>
           </el-row>
         </el-col>
         <el-col :span="11">
@@ -178,6 +197,19 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="改善措施" prop="measures">
+                <el-input
+                  type="textarea"
+                  v-model="form.measures"
+                  placeholder="请输入改善措施"
+                  :rows="4"
+                  maxlength="500"
+                  show-word-limit
+                />
+              </el-form-item>
+            </el-col>
+            
             <!-- <el-col v-if="isStatus">
               <el-form-item label="关闭问题" prop="status">
                 <el-switch
@@ -807,7 +839,7 @@ export default {
       this.computerIdIndex = index;
       if (categoryId) {
         const data = this.categoryList.filter((item) => item.id === categoryId);
-        this.computerOptions = data[0].computerList;
+        this.computerOptions = data[0]?.computerList;
       } else {
         this.computerOptions = [];
       }

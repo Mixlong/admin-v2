@@ -7,6 +7,7 @@
     append-to-body
     width="700px"
     top="15vh"
+    center
   >
     <el-form ref="form" :model="form" :rules="rules" label-width="110px" inline>
       <template v-if="typeName !== 'content'">
@@ -50,7 +51,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="form.type === 'sop'" label="关联SOP" prop="versionCode">
+        <el-form-item
+          v-if="form.type === 'sop'"
+          label="关联SOP"
+          prop="versionCode"
+        >
           <select-loadMore
             v-model="form.versionCode"
             style="width: 100%"
@@ -72,7 +77,7 @@
             v-if="dialogVisible"
             v-model="form.content"
             placeholder="请输入属性描述"
-            height="350"
+            height="250"
           />
           <a id="download" href="" style="display: none"></a>
         </div>
@@ -89,23 +94,19 @@
               <el-button size="mini" type="primary">上传</el-button>
             </DrUpload>
           </el-form-item>
-
-          <!-- <el-button
-            style="height: 30px"
-            type="primary"
-            size="mini"
-            @click="downloadImg"
-            :loading="isImgLoading"
-          >
-            {{ isImgLoading ? "图片生成中..." : "生成图片" }}
-          </el-button> -->
         </div>
       </template>
 
       <el-form-item
         label="文件"
         prop="url"
-        v-if="form.up == 1 && typeName !== 'content' && form.type !== 'sop'"
+        v-if="
+          form.up == 1 &&
+          typeName !== 'content' &&
+          form.type !== 'sop' &&
+          form.type !== 'waterproof_test'
+        "
+        :rules="[{ required: true, message: '请上传文件', trigger: 'change' }]"
         style="width: 100%"
       >
         <DrUpload
@@ -118,6 +119,33 @@
             <el-button size="small" type="primary">上传</el-button>
           </div>
         </DrUpload>
+      </el-form-item>
+
+      <el-form-item
+        label="气密性配置"
+        prop="url"
+        v-if="
+          form.up == 1 &&
+          typeName !== 'content' &&
+          form.type === 'waterproof_test'
+        "
+        :rules="[
+          { required: true, message: '请选择气密性配置项', trigger: 'change' },
+        ]"
+        style="width: 100%"
+      >
+        <select-loadMore
+          v-model="form.url"
+          :data="gasData.data"
+          :page="gasData.page"
+          :hasMore="gasData.more"
+          :moreParams="true"
+          dictLabel="remark"
+          :request="getGasConfigList"
+          @getChange="getGasConfigJson"
+          placeholder="请选择"
+        >
+        </select-loadMore>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -134,8 +162,8 @@ import {
   computerDictList,
 } from "@/api/third/epc/versionManage";
 import { sopList } from "@/api/third/testApi";
+import { gasConfigList } from "@/api/third/testApi";
 import tinymce from "@/views/components/Editor";
-import html2canvas from "html2canvas";
 
 export default {
   props: ["dictList"],
@@ -152,8 +180,16 @@ export default {
       form: {
         url: "",
         content: "",
+        tightnessJson: "",
+        configId: "",
       },
       sopData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      // 客户数据
+      gasData: {
         data: [],
         page: 1,
         more: true,
@@ -173,7 +209,6 @@ export default {
         fileUrl: [
           { required: true, message: "请上传属性描述图片", trigger: "change" },
         ],
-        url: [{ required: true, message: "请上传文件", trigger: "change" }],
       },
       cidOptions: [],
       splitCidOptions: [],
@@ -240,34 +275,15 @@ export default {
     });
   },
   methods: {
-    downloadImg() {
-      this.isImgLoading = true;
-      // setTimeout(() => {
-      this.$nextTick(() => {
-        const _iframe = document.getElementById("detail_box_ifr").contentWindow;
-        const childHtml = _iframe.document.getElementById("tinymce");
-        html2canvas(childHtml, {
-          useCORS: true,
-        }).then((canvas) => {
-          const url = canvas.toDataURL();
-          console.log(url);
-          // this.zipFile(url);
-          document.querySelector("#download").href = url;
-          document.querySelector(
-            "#download"
-          ).download = `属性描述图片-${Date.now()}`;
-          document.querySelector("#download").click();
-          this.isImgLoading = false;
-        });
-      });
-      // }, 2000);
-    },
     // 表单重置
     reset() {
       this.form = {
         url: "",
         content: "",
+        tightnessJson: "",
+        configId: "",
       };
+      this.gasData.data = [];
       this.resetForm("form");
     },
     changeMidValue(val, isChange) {
@@ -290,7 +306,8 @@ export default {
       }
     },
     changeCidValue(val) {
-      this.$forceUpdate();C
+      this.$forceUpdate();
+      C;
     },
     changeCategory2(val) {
       this.form.computerId = "";
@@ -308,15 +325,11 @@ export default {
           p: page,
           versionCode: keyword,
           state: 1,
-          categoryId
+          categoryId,
         }).then((res) => {
-
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
-            this.sopData.data = [
-              ...this.sopData.data,
-              ...list,
-            ];
+            this.sopData.data = [...this.sopData.data, ...list];
           } else {
             this.sopData.data = list;
           }
@@ -334,11 +347,43 @@ export default {
       const { id } = JSON.parse(info);
       this.form.sopId = id;
     },
+    getGasConfigList({ page = 1, more = false, keyword = "" } = {}) {
+      const { categoryId } = this.form;
+
+      return new Promise((resolve) => {
+        gasConfigList({
+          p: page,
+          categoryId: categoryId,
+          status: 0,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.gasData.data = [...this.gasData.data, ...list];
+          } else {
+            this.gasData.data = list;
+          }
+          this.gasData.more = pageNum * pageSize < total;
+          this.gasData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    getGasConfigJson(info) {
+      if (!info) {
+        this.form.url = "";
+        this.form.tightnessJson = "";
+        this.form.configId = "";
+        return;
+      }
+      const { remark, json, id } = JSON.parse(info);
+      this.form.url = remark;
+      this.form.tightnessJson = json;
+      this.form.configId = id;
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.form.status = 0;
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;

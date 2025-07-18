@@ -30,10 +30,18 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="cyan"
+          icon="el-icon-search"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+        <el-button
+          icon="el-icon-refresh"
+          size="mini"
+          @click="resetQuery"
+        >
           重置
         </el-button>
       </el-form-item>
@@ -41,7 +49,12 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          v-hasPermi="['third:chipType:add']"
+          @click="handleAdd"
+        >
           新增
         </el-button>
       </el-col>
@@ -59,7 +72,12 @@
     >
       <el-table-column label="品类" align="center" prop="categoryName" />
       <el-table-column label="芯片类型" align="center" prop="schemeVersion" />
-      <el-table-column label="资料类型" align="center" prop="type" :formatter="onTypeFormatter" />
+      <el-table-column
+        label="资料类型"
+        align="center"
+        prop="type"
+        :formatter="onTypeFormatter"
+      />
       <el-table-column label="创建人" align="center" prop="createBy">
         <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
       </el-table-column>
@@ -78,11 +96,13 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:chipType:update']"
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
             icon="el-icon-reading"
             content="详情"
+            v-hasPermi="['third:chipType:detail']"
             @click="handleDetail(scope.row)"
           />
         </template>
@@ -343,7 +363,7 @@ export default {
       });
     },
     onTypeFormatter(row) {
-      return this.dataTypeList[row.type]
+      return this.dataTypeList[row.type];
     },
     // 表单重置
     reset() {

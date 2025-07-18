@@ -14,6 +14,7 @@ const getters = {
   roles: state => state.user.roles,
   permissions: state => state.user.permissions,
   taskOverdueNum: state => state.user.taskOverdueNum,
-  permission_routes: state => state.permission.routes
+  permission_routes: state => state.permission.routes,
+  isNODE_ENV: () => process.env.NODE_ENV === 'production'
 }
 export default getters

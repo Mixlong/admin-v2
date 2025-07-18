@@ -12,13 +12,13 @@ import '@/assets/styles/index.scss'; // global css
 import '@/assets/styles/ruoyi.scss'; // ruoyi css
 import 'normalize.css/normalize.css'; // a modern alternative to CSS resets
 import "viewerjs/dist/viewer.css";
-
+// 引入样式
+import "vue-easytable/libs/theme-default/index.css";
 import '@/assets/icons'; // icon
 import '@/permission'; // permission control
 
 import '@/utils/sticky';
 import '@/utils/mainOperation/mainDirective'
-// import '@/utils/mainOperation/mainComponent'
 import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
 // import VueNativeSock from 'vue-native-websocket';
@@ -35,7 +35,11 @@ Vue.prototype.msgInfo = function (msg) {
   this.$message.info(msg);
 };
 
-Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'small', zIndex: 3000 };
+Vue.prototype.msgWarning = function (msg) {
+  this.$message.warning(msg);
+};
+
+Vue.prototype.$ELEMENT = { size: Cookies.get('size') || 'mini', zIndex: 3000 };
 Vue.config.productionTip = false;
 
 Vue.use(plugins)

@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    class="ECN-Detail-box Header_Fixed"
+    class="ecn-detail-box Header_Fixed"
     title="ECN详情"
     :visible.sync="dialogVisible"
     append-to-body
@@ -10,8 +10,8 @@
     :close-on-click-modal="false"
   >
     <el-row type="flex" justify="space-between">
-      <el-col :span="2"></el-col>
-      <el-col :span="20">
+      <el-col :xs="0" :span="2"></el-col>
+      <el-col :xs="24" :span="20">
         <el-form
           ref="form"
           :model="form"
@@ -19,25 +19,25 @@
           class="input-width"
           label-position="left"
         >
-          <el-row style="width: 50%">
-            <el-col :md="24" :lg="12">
+          <el-row>
+            <el-col :xs="24" :md="24" :lg="12">
               <el-form-item label="ECN编号:" prop="ecn">
                 {{ form.ecn }}
               </el-form-item>
             </el-col>
-            <el-col :md="24" :lg="12">
+            <el-col :xs="24" :md="24" :lg="12">
               <el-form-item label="项目名称:" prop="projectName">
                 {{ form.projectName }}
               </el-form-item>
             </el-col>
-            <el-col :md="24" :lg="12">
+            <el-col :xs="24" :md="24" :lg="12">
               <el-form-item label="产品代号:" prop="productCode">
                 {{ form.productCode }}
               </el-form-item></el-col
             >
-            <el-col :md="24" :lg="12">
+            <el-col :xs="24" :md="24" :lg="12">
               <el-form-item label="申请部门:" prop="reqUnit">
-                {{ form.reqUnit }}
+                {{ reqUnitFormatter(form.reqUnit) }}
               </el-form-item>
             </el-col>
           </el-row>
@@ -88,7 +88,11 @@
               >
                 {{ form.importTime }}
               </el-form-item>
-              <el-form-item v-show="form.importType === 3 && form.importCondition" label="条件导入内容：" label-width="100">
+              <el-form-item
+                v-show="form.importType === 3 && form.importCondition"
+                label="条件导入内容："
+                label-width="100"
+              >
                 {{ form.importCondition }}
               </el-form-item>
             </el-col>
@@ -147,50 +151,38 @@
             </el-col>
           </el-row>
 
-          <el-descriptions
-            v-if="form.list && form.list.length"
-            class="margin-bottom-sm"
-            title="变更涉及领域:"
-            :column="2"
-            border
-          >
-            <template v-for="item in form.list">
-              <el-descriptions-item
-                label="领域："
-                labelClassName="labelTitleClassName"
-                contentClassName="contentTitleClassName"
-              >
-                <el-tag>{{ TriageList[item.field] }}</el-tag>
-              </el-descriptions-item>
-              <el-descriptions-item
-                v-if="item.field !== 7"
-                :label="`${TriageListTitle[item.field]}:`"
-                labelClassName="labelContentClassName"
-              >
-                {{ item.programme }}
-              </el-descriptions-item>
+          <el-card shadow="never" class="margin-bottom-sm">
+            <div slot="header" class="clearfix">
+              <span>变更涉及领域:</span>
+            </div>
+            <div class="involve_list flex flex-direction" style="row-gap: 16px;">
+              <div v-for="item in form.list" :key="item.field" class="flex align-center" style="column-gap: 60px;">
+                <div>
+                  <b class="margin-right-xs">领域:</b>
+                  <el-tag>{{ TriageList[item.field] }}</el-tag>
+                </div>
 
-              <el-descriptions-item
-                v-if="item.field === 7 && item.programme"
-                label="在库物料处理方案："
-                labelClassName="labelContentClassName"
-              >
-                <div class="store-Seven-box">
-                  <span class="content-left-box">
-                    {{ item.programme }}
-                  </span>
-  
-                  <div
-                    class="content-right-box"
-                    v-if="item.field === 7 && item.treatment"
-                  >
-                    <span>在库成品处理方案：</span>
+                <div class="flex-sub">
+                  <b class="margin-right-xs">{{ `${TriageListTitle[item.field]}:` }}</b>
+                  {{ item.programme }}
+                </div>
+
+                <template v-if="item.field === 7">
+                  <div class="flex-sub">
+                    <b class="margin-right-xs">在库成品处理方案：</b>
                     {{ item.treatment }}
                   </div>
-                </div>
-              </el-descriptions-item>
-            </template>
-          </el-descriptions>
+                </template>
+
+                <template v-if="item.field === 8">
+                  <div class="flex-sub">
+                    <b class="margin-right-xs">未出货产品处理方案：</b>
+                    {{ item.treatment }}
+                  </div>
+                </template>
+              </div>
+            </div>
+          </el-card>
 
           <el-card shadow="never" class="margin-bottom-sm">
             <div slot="header" class="clearfix">
@@ -266,9 +258,44 @@
             </div>
           </el-card>
 
+          <el-card shadow="never" class="margin-bottom-sm">
+            <div slot="header" class="clearfix">
+              <span class="text-green">PMC终审状态</span>
+            </div>
+            <div style="min-height: 50px">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
+                <el-col :span="3">
+                  <span>审核状态：</span>
+
+                  <el-tag type="warning" v-show="form.thirdState === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="form.thirdState === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="form.thirdState === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ form.thirdPerson }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="form.thirdState !== 0">
+                <template v-if="form.thirdState === 1 && form.thirdRemark">
+                  备注： {{ form.thirdRemark }}
+                </template>
+                <template v-if="form.thirdState === 2 && form.thirdResult">
+                  <span class="text-red">拒绝原因：</span>
+                  {{ form.thirdResult }}
+                </template>
+              </el-card>
+            </div>
+          </el-card>
+
           <el-card shadow="never">
             <div slot="header" class="clearfix">
-              <span class="text-green">终审状态</span>
+              <span class="text-green">最终审核状态</span>
             </div>
             <div style="min-height: 50px">
               <el-row class="margin-bottom-sm" type="flex" align="middle">
@@ -302,7 +329,7 @@
           </el-card>
         </el-form>
       </el-col>
-      <el-col :span="2"></el-col>
+      <el-col :xs="0" :span="2"></el-col>
     </el-row>
   </el-dialog>
 </template>
@@ -311,7 +338,7 @@
 import tinymce from "@/views/components/Editor";
 export default {
   components: { tinymce },
-  props: ["classifyList", "involveUnitList"],
+  props: ["classifyList", "involveUnitList", "deptOptions"],
   data() {
     return {
       dialogVisible: false,
@@ -338,54 +365,17 @@ export default {
         6: "涉及更新的文件",
         7: "在库物料处理方案",
         8: "已出货产品处理方案",
-        9: "处理方案",
+        9: "工单内容",
       },
     };
   },
+  computed: {
+    reqUnitFormatter() {
+      return (reqUnit) => {
+        return this.deptOptions.find((item) => item.deptId === +reqUnit)
+          ?.deptName;
+      };
+    },
+  },
 };
 </script>
-<style lang="scss">
-.ECN-Detail-box {
-  .el-descriptions__title {
-    font-weight: normal !important;
-    font-size: 14px !important;
-    color: #606266 !important;
-  }
-
-  .labelTitleClassName,
-  .labelContentClassName {
-    font-weight: bold !important;
-    letter-spacing: 4px !important;
-    text-align: center !important;
-    color: #000 !important;
-  }
-  .labelTitleClassName {
-    width: 100px !important;
-  }
-  .labelContentClassName {
-    width: 200px !important;
-  }
-  .contentTitleClassName {
-    width: 150px !important;
-    text-align: center !important;
-  }
-}
-
-.store-Seven-box {
-  display: flex;
-  .content-left-box {
-    flex: 1;
-  }
-  .content-right-box {
-    flex: 1;
-    span {
-      display: inline-block;
-      color: #000;
-      font-weight: bold;
-      letter-spacing: 4px;
-      background: #fafafa;
-      box-sizing: border-box;
-    }
-  }
-}
-</style>

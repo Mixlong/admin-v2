@@ -1,4 +1,5 @@
 <template>
+  <!-- 工程数据 -->
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
@@ -77,11 +78,18 @@
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button
-          v-if="checkRole(['test', 'admin', 'DATA_MANAGER'])"
           type="warning"
-          @click="handleAuthBatchChange"
+          v-hasPermi="['third:epc:batchFirstCheck']"
+          @click="handleAuthBatchChange(1)"
         >
-          {{ batchCheck }}
+          批量初审
+        </el-button>
+        <el-button
+          type="warning"
+          v-hasPermi="['third:epc:batchFinalCheck']"
+          @click="handleAuthBatchChange(2)"
+        >
+          批量终审
         </el-button>
       </el-form-item>
     </el-form>
@@ -117,20 +125,16 @@
         label="属性"
         prop="typeName"
         align="center"
-        width="150"
+        width="160"
       />
-      <el-table-column
-        label="属性描述"
-        prop="content"
-        align="center"
-      >
+      <el-table-column label="属性描述" prop="content" align="center">
         <span slot-scope="{ row }" v-html="row.content"></span>
       </el-table-column>
       <el-table-column
         label="产品状态"
         prop="categoryStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.categoryStatus)">
@@ -138,23 +142,21 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="105">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        align="center"
-        prop="createBy"
-        width="120"
-      >
-        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
+      <el-table-column label="创建人" align="center" prop="createBy" width="90">
+        <span
+          slot-scope="scope"
+          v-NoData="scope.row.createBy || scope.row.updateBy"
+        ></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="140">
-        <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
+      <el-table-column label="创建时间" align="center" width="150" sortable>
+        <span slot-scope="scope" v-NoData="scope.row.createTime"></span>
       </el-table-column>
       <el-table-column
         label="操作"
@@ -166,77 +168,60 @@
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-if="checkRole(['factory', 'admin'])"
+            v-hasPermi="['third:epc:edit']"
+            v-if="checkRole(['factory'])"
             @click="handleUpdate(scope.row)"
           />
-          <el-tooltip
-            class="item"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-            v-if="scope.row.status == 1 && checkRole(['f_test', 'admin'])"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              type="text"
-              class="text-orange font16"
-              @click="handleAuthChange(scope.row, 1)"
-            ></el-button>
-          </el-tooltip>
 
-          <el-tooltip
-            v-if="scope.row.status == 4 && checkRole(['fo_test', 'admin'])"
-            class="item font16"
-            effect="dark"
-            content="审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-coordinate"
-              class="text-orange"
-              type="text"
-              @click="handleAuthChange(scope.row, 4)"
-            />
-          </el-tooltip>
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="初审"
+            v-hasPermi="['third:epc:firstCheck']"
+            v-if="scope.row.status == 1 && checkRole(['p_state'])"
+            @click="handleAuthChange(scope.row, 1)"
+          />
 
-          <el-tooltip
-            v-if="isSResetCheck(scope.row)"
-            class="item font16"
-            effect="dark"
+          <Tooltip
+            icon="el-icon-coordinate"
+            class="text-orange"
+            content="终审"
+            v-hasPermi="['third:epc:finalCheck']"
+            v-if="scope.row.status == 4"
+            @click="handleAuthChange(scope.row, 4)"
+          />
+
+          <Tooltip
+            icon="el-icon-circle-check"
+            class="text-orange"
             content="重置审核"
-            placement="top-end"
-          >
-            <el-button
-              icon="el-icon-circle-check"
-              type="text"
-              @click="handleResetCheck(scope.row)"
-            ></el-button>
-          </el-tooltip>
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
+            v-hasPermi="['third:epc:resetCheck']"
+            v-if="isSResetCheck(scope.row)"
+            @click="handleResetCheck(scope.row)"
+          />
+
+          <Tooltip
+            icon="el-icon-download"
+            class="text-orange"
             content="下载"
-            placement="top-end"
-          >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
-            />
-          </el-tooltip>
+            v-hasPermi="['third:epc:downloadFile']"
+            v-if="isDownloadUrl(scope.row)"
+            @click="zipFile(scope.row.url)"
+          />
+
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])"
+            content="初审撤回"
+            v-hasPermi="['third:epc:resetFinalCheck']"
+            v-if="scope.row.status == 4 && checkRole(['p_state'])"
             @click="handleRevocation(scope.row.id)"
           />
+
           <Tooltip
             icon="el-icon-refresh-right"
-            content="撤回"
-            class="margin-left-xs"
-            v-if="scope.row.status == 2 && checkRole(['fo_test'])"
+            content="终审撤回"
+            v-hasPermi="['third:epc:resetChecked']"
+            v-if="scope.row.status == 2"
             @click="handleRevocation(scope.row.id)"
           />
         </template>
@@ -262,11 +247,11 @@
       <el-form ref="form" :model="auth" class="form-data" :inline="false">
         <el-form-item class="auth" label="拒审原因">
           <el-input
-            class="width-100-style"
+            v-model="auth.why"
             type="textarea"
             :autosize="{ minRows: 4, maxRows: 8 }"
-            v-model="auth.why"
             placeholder="不通过则需要输入原因"
+            style="width: 100%"
           />
         </el-form-item>
         <el-form-item label="批量同步" v-if="auth.id">
@@ -274,8 +259,8 @@
             ref="select"
             v-model="auth.idList"
             multiple
-            class="similar-style width-100-style"
-            placeholder=""
+            placeholder="请选择"
+            style="width: 100%"
           >
             <el-option
               :disabled="disabledName == dict.computer"
@@ -291,7 +276,13 @@
           <el-button @click="handleStatusChange(3)">不通过</el-button>
           <el-button
             type="primary"
-            @click="handleStatusChange(checkRole(['fo_test', 'admin']) ? 2 : 4)"
+            @click="
+              handleStatusChange(
+                checkRole(['admin']) && (auth.status === 4 || isBatchType === 2)
+                  ? 2
+                  : 4
+              )
+            "
           >
             通过
           </el-button>
@@ -310,9 +301,9 @@ import {
   computerDictList,
   fileCancel,
   fileVersionList,
-  computerNameList,
 } from "@/api/third/epc/versionManage";
 import { commonStatusList } from "@/utils/commonData";
+import { computerNameList } from "@/api/third/fileConfig";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 
@@ -351,7 +342,8 @@ export default {
       computerOptions: [],
       fileTypeList: [],
       fileListCover: [],
-      auth: { id: undefined, why: "", idList: [] },
+      auth: { id: undefined, why: "", idList: [], status: undefined },
+      isBatchType: undefined,
       // 查询参数
       queryParams: {
         p: 1,
@@ -372,13 +364,6 @@ export default {
       statusOptions: (state) => state.commonData.statusOptions,
     }),
     ...mapGetters("commonData", ["isCheckType"]),
-    batchCheck() {
-      if (this.checkRole(["DATA_MANAGER"])) {
-        return "批量终审";
-      } else {
-        return "批量初审";
-      }
-    },
     isComputerStatus() {
       return (status) => {
         return status ? "danger" : "success";
@@ -386,11 +371,7 @@ export default {
     },
     isSResetCheck() {
       return ({ computerStatus, status }) => {
-        return (
-          this.checkRole(["fo_test"]) &&
-          !computerStatus &&
-          (status === 2 || status === 4)
-        );
+        return !computerStatus && (status === 2 || status === 4);
       };
     },
     isDownloadUrl() {
@@ -403,6 +384,13 @@ export default {
             status === 2)
         );
       };
+    },
+  },
+  watch: {
+    authDialogVisible(bool) {
+      if (!bool) {
+        this.isBatchType = undefined;
+      }
     },
   },
   mounted() {
@@ -445,7 +433,9 @@ export default {
     },
     changeCategory(val) {
       if (!val) return;
+      this.queryParams.projectId = "";
       this.queryParams.versionId = "";
+
       this.getList();
       return new Promise((resove) => {
         this.computerOptions = this.dictList.filter(
@@ -460,26 +450,22 @@ export default {
     checkSelectable(row) {
       if (row.computerStatus) {
         return false;
-      } else if (this.checkRole(["DATA_MANAGER"]) && row.status === 4) {
-        return true;
       } else if (
-        !this.checkRole(["DATA_MANAGER", "product"]) &&
-        row.status == 1
-      ) {
-        return true;
-      } else if (
-        this.checkRole(["product"]) &&
-        (row.status === 2 || row.status === 4)
+        this.checkRole(["p_state"]) &&
+        (row.status === 1 || row.status === 4)
       ) {
         return true;
       }
     },
     handleAuthChange(row, status) {
+      this.auth = {};
+
       this.auth.why = "";
       this.authDialogVisible = true;
       this.auth.id = row.id;
       this.auth.why = row.why;
       this.auth.idList = [];
+      this.auth.status = row.status;
       this.checkStatus = status;
       this.$refs.compUpdate
         .changeCategory2(row.categoryId)
@@ -499,14 +485,16 @@ export default {
           });
         });
     },
-    handleAuthBatchChange() {
+    handleAuthBatchChange(type) {
       if (this.ids.length === 0) {
         return this.msgError("请选择批量处理项");
       }
 
       this.auth.why = "";
       this.auth.id = "";
+      this.auth.status = "";
       this.authDialogVisible = true;
+      this.isBatchType = type;
     },
     // 重置审核
     handleResetCheck(row) {
@@ -515,7 +503,7 @@ export default {
         data = [{ id: row.id }];
       } else {
         data = this.ids.map((item) => {
-          return { id: item };
+          return { id: item.id };
         });
       }
       this.$confirm("确认要重置审核吗？", "警告", {
@@ -539,8 +527,22 @@ export default {
       let { ids, auth } = this;
 
       if (auth.id == "") {
+        if (this.isBatchType === 1) {
+          const flag = ids.some((item) => item.status !== 1);
+          if (flag) {
+            this.msgError("批量初审中只能包含待初审项");
+            return;
+          }
+        } else if (this.isBatchType === 2) {
+          const flag = ids.some((item) => item.status !== 4);
+          if (flag) {
+            this.msgError("批量终审中只能包含待终审项");
+            return;
+          }
+        }
+
         data = ids.map((item) => {
-          return { id: item, why: auth.why, status };
+          return { id: item.id, why: auth.why, status };
         });
       } else {
         let { idList } = this.auth;
@@ -595,7 +597,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.id);
+      this.ids = selection;
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
@@ -617,7 +619,6 @@ export default {
       this.$refs.compUpdate.dialogVisible = true;
       this.$refs.compUpdate.title = "修改";
       this.$refs.compUpdate.typeName = typeName;
-      this.title = "修改";
     },
     handleRevocation(id) {
       fileCancel({ id }).then((res) => {
@@ -648,9 +649,5 @@ export default {
 .auth {
   text-align: center;
   margin-bottom: 10px;
-}
-
-.width-100-style {
-  width: 100%;
 }
 </style>

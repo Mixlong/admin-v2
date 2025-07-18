@@ -43,8 +43,16 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+          >搜索</el-button
+        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+          >重置</el-button
+        >
       </el-form-item>
     </el-form>
 
@@ -56,20 +64,33 @@
       border
     >
       <el-table-column label="序号" width="58" type="index" />
-      <el-table-column label="品类" prop="category" :show-overflow-tooltip="true" />
-      <el-table-column label="型号" prop="computer" :show-overflow-tooltip="true" />
-      <el-table-column label="ERP编码" prop="erp" :show-overflow-tooltip="true" />
-      <el-table-column label="属性" prop="typeName" :show-overflow-tooltip="true" />
-      <el-table-column label="属性描述" prop="content" :show-overflow-tooltip="true" />
+      <el-table-column label="品类" prop="category" />
+      <el-table-column label="型号" prop="computer" />
+      <el-table-column label="ERP编码" prop="erp" />
+      <el-table-column label="属性" prop="typeName" />
+      <el-table-column label="属性描述" prop="content" />
       <el-table-column label="创建人" align="center">
-        <template slot-scope="{ row }">{{ row.createBy || row.updateBy }}</template>
+        <template slot-scope="{ row }">{{
+          row.createBy || row.updateBy
+        }}</template>
       </el-table-column>
       <el-table-column label="创建时间" align="center">
-        <template slot-scope="{ row }">{{ row.createTime ? row.createTime : row.updateTime }}</template>
+        <template slot-scope="{ row }">{{
+          row.createTime ? row.createTime : row.updateTime
+        }}</template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180">
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+        width="180"
+      >
         <template slot-scope="scope">
-          <el-button v-show="scope.row.status === 0 && scope.row.url" icon="el-icon-download" size="mini" type="text"
+          <el-button
+            v-show="scope.row.status === 0 && scope.row.url"
+            icon="el-icon-download"
+            size="mini"
+            type="text"
             @click="
               downloadFile(
                 scope.row.url,
@@ -79,32 +100,91 @@
               )
             "
           >
-          下载
-        </el-button>
+            下载
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l" @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.p"
+      :limit.sync="queryParams.l"
+      @pagination="getList"
+    />
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="open" width="540px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="150px" class="form-data" :inline="false">
+    <el-dialog
+      :close-on-click-modal="false"
+      :title="title"
+      :visible.sync="open"
+      width="540px"
+      append-to-body
+    >
+      <el-form
+        ref="form"
+        :model="form"
+        :rules="rules"
+        label-width="150px"
+        class="form-data"
+        :inline="false"
+      >
         <el-form-item label="品类" prop="categoryId">
-          <el-select v-model="form.categoryId" clearable @change="changeCategory2" size="small" style="width: 185px">
-            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id"/>
+          <el-select
+            v-model="form.categoryId"
+            clearable
+            @change="changeCategory2"
+            size="small"
+            style="width: 185px"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="型号" prop="computerModel">
-          <el-select v-model="form.computerModel" clearable size="small" style="width: 185px" @change="$forceUpdate()">
-            <el-option v-for="dict in computerFormOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+          <el-select
+            v-model="form.computerModel"
+            clearable
+            size="small"
+            style="width: 185px"
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in computerFormOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="属性" prop="type">
-          <el-select v-model="form.type" clearable size="small" style="width: 185px" disabled @change="$forceUpdate()">
-            <el-option v-for="dict in fileTypeList" :key="dict.key" :label="dict.value" :value="dict.key" />
+          <el-select
+            v-model="form.type"
+            clearable
+            size="small"
+            style="width: 185px"
+            disabled
+            @change="$forceUpdate()"
+          >
+            <el-option
+              v-for="dict in fileTypeList"
+              :key="dict.key"
+              :label="dict.value"
+              :value="dict.key"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="属性描述" prop="content">
-          <el-input type="textarea" :autosize="{ minRows: 4, maxRows: 8 }" v-model="form.content" placeholder="请输入文件描述" style="width: 185px" />
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            v-model="form.content"
+            placeholder="请输入文件描述"
+            style="width: 185px"
+          />
         </el-form-item>
         <el-form-item label="文件" prop="url">
           <el-upload

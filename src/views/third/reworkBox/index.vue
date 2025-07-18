@@ -35,7 +35,6 @@
       <el-form-item label="产品型号" prop="computerName">
         <el-input
           placeholder="请输入产品型号"
-          size="small"
           clearable
           v-model="queryParams.computerName"
           @keyup.enter.native="handleQuery"
@@ -102,22 +101,25 @@
       <el-table-column
         label="产品品类"
         prop="categoryName"
-        width="150"
+        width="120"
         align="center"
+        show-overflow-tooltip
       />
       <el-table-column
         label="产品型号"
         prop="computerName"
-        width="150"
+        width="140"
         align="center"
+        show-overflow-tooltip
       />
       <el-table-column
         label="订单号"
         prop="orderNo"
-        width="150"
+        width="140"
         align="center"
+        show-overflow-tooltip
       />
-      <el-table-column label="返工箱号" prop="boxNo" align="center">
+      <el-table-column label="返工箱号" prop="boxNo" align="center" width="200">
         <template slot-scope="{ row }">
           <p v-for="item in row.boxNo.split(',')" :key="item">{{ item }}</p>
         </template>
@@ -125,7 +127,7 @@
       <el-table-column
         label="返工数量"
         prop="reworkNum"
-        width="120"
+        width="100"
         align="center"
       />
       <el-table-column
@@ -162,32 +164,54 @@
       >
         <div
           v-show="row.state === 0"
-          class="flex flex-direction"
           slot-scope="{ row }"
         >
-          <el-button
+          <Tooltip
+            v-if="checkRole(['test', 'admin'])"
+            icon="el-icon-edit"
+            content="编辑"
+            @click="handleUpdate({ row, title: '编辑' })"
+          />
+
+          <Tooltip
+            class="text-orange"
+            v-if="checkRole(['test', 'admin'])"
+            icon="el-icon-coordinate"
+            content="审核"
+            @click="handleUpdate({ row, title: '编辑' })"
+          />
+
+          <Tooltip
+            class="text-red"
+            v-if="checkRole(['test', 'admin'])"
+            icon="el-icon-delete"
+            content="删除"
+            @click="onReworkDel(row.id)"
+          />
+
+          <!-- <el-button
             type="text"
             v-if="checkRole(['test', 'admin'])"
-            @click="handleUpdate({ row, title: '编辑' })"
+            @click="handleCheck(row.id)"
           >
             编辑
-          </el-button>
-          <el-button
+          </el-button> -->
+          <!-- <el-button
             class="mlZero"
             type="text"
             v-if="checkRole(['test', 'admin'])"
             @click="handleCheck(row.id)"
           >
             审核
-          </el-button>
-          <el-button
+          </el-button> -->
+          <!-- <el-button
             class="mlZero text-red"
             type="text"
             v-if="checkRole(['test', 'admin'])"
             @click="onReworkDel(row.id)"
           >
             删除
-          </el-button>
+          </el-button> -->
         </div>
       </el-table-column>
     </el-table>
@@ -241,7 +265,7 @@ import Return from "./components/DReturn";
 import Log from "./components/Log";
 
 export default {
-  name: 'ReworkBox',
+  name: "ReworkBox",
   components: {
     Log,
     Return,

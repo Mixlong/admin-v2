@@ -74,10 +74,25 @@ export function ecnFieldState(data) {
     data,
   });
 }
+// PMC终审
+export function ecnPmcState(data) {
+  return request({
+    url: "/bom/pmc/state",
+    method: "put",
+    data
+  });
+}
 // 终审
 export function ecnSecondState(data) {
   return request({
     url: "/bom/second/state",
+    method: "put",
+    data,
+  });
+}
+export function ecnSystemState(data) {
+  return request({
+    url: "/bom/system/state",
     method: "put",
     data,
   });

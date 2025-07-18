@@ -91,6 +91,7 @@ export function addCustomer(data) {
     data
   });
 }
+
 // 修改客户
 export function editCustomer(data) {
   return request({
@@ -185,3 +186,12 @@ export function orderAuth(id) {
   })
 }
 
+
+// 订单列表
+export function orderManagementList(params) {
+  return request({
+    url: '/order/management/order/list',
+    method: 'get',
+    params,
+  });
+}

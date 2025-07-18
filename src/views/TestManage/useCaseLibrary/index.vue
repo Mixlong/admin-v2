@@ -137,11 +137,41 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="所属模块" prop="productName" align="center" />
-      <el-table-column label="用例类型" prop="typeName" align="center" />
-      <el-table-column label="测试项" prop="content" align="center" />
-      <el-table-column label="前置条件" prop="preconditions" align="center" />
-      <el-table-column label="输入与操作" prop="inter" align="center" />
+      <el-table-column
+        label="所属模块"
+        prop="productName"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="用例类型"
+        prop="typeName"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="测试项"
+        prop="content"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="前置条件"
+        prop="preconditions"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="输入与操作"
+        prop="inter"
+        align="center"
+        width="140"
+        show-overflow-tooltip
+      />
       <el-table-column
         label="预期结果"
         prop="result"
@@ -155,7 +185,7 @@
           }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="100">
+      <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -169,19 +199,21 @@
         label="创建人"
         prop="createBy"
         align="center"
-        width="100"
+        width="90"
+        show-overflow-tooltip
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
-        width="150"
+        width="140"
+        sortable
       >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" align="center" width="120" fixed="right">
         <template slot-scope="{ row }">
           <Tooltip
             v-if="checkRole(['test', 'admin'])"
@@ -263,14 +295,14 @@ import {
   taskCaseAuth,
   testCaseState,
   caseUpload,
-  testCaseDelete
+  testCaseDelete,
 } from "@/api/third/testApi";
 import { commonStatusList } from "@/utils/commonData";
 import CommonMinins from "@/views/TestManage/mixins";
 import actionUrl from "@/utils/requestUrl";
 
 export default {
-  name: 'UseCaseLibrary',
+  name: "UseCaseLibrary",
   mixins: [CommonMinins],
   components: {
     CompUpdate: () => import("./components/update"),
@@ -390,25 +422,25 @@ export default {
       this.handleQuery();
     },
     checkSelectable() {
-        return this.checkRole(["test", "admin"]);
+      return this.checkRole(["test", "admin"]);
     },
     /** 批量审核  */
     handleMulityCheck() {
-      if(!this.selectionList.length) {
+      if (!this.selectionList.length) {
         return this.msgError("请选择批量审核项");
       }
 
-      const isState = this.selectionList.some(item => item.state === 1);
-      if(isState) {
+      const isState = this.selectionList.some((item) => item.state === 1);
+      if (isState) {
         return this.msgError("所选项中包含‘已批准’项");
-      } 
-      
+      }
+
       this.handleCheck(this.selectionList, true);
     },
     /** 批量删除  */
     handleMulityDelete() {
-      if(!this.selectionList.length) {
-        return this.msgError("请选择批量删除项")
+      if (!this.selectionList.length) {
+        return this.msgError("请选择批量删除项");
       }
       this.handleDelete(this.selectionList, true);
     },
@@ -457,7 +489,7 @@ export default {
               this.msgSuccess("操作成功");
             });
           }
-        })
+        });
     },
     /** 删除  */
     handleDelete(row, isMultityCheck) {
@@ -481,7 +513,7 @@ export default {
           this.$refs.multipleTable.clearSelection();
           this.getList();
           this.msgSuccess("操作成功");
-        })
+        });
     },
     handleUpload() {
       this.isUploadShow = true;

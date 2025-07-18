@@ -117,7 +117,6 @@ export default {
         value: val,
       });
       this.theme = val;
-      console.log(this.theme);
     },
     saveSetting() {
       this.$modal.loading("正在保存到本地，请稍候...");

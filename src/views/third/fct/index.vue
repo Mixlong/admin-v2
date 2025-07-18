@@ -10,47 +10,39 @@
         <el-input
           v-model="queryParams.sn"
           placeholder="请输入sn"
-          size="small"
+          clearable
         ></el-input>
       </el-form-item>
       <el-form-item label="出货人" prop="deliveryUser">
         <el-input
           v-model="queryParams.deliveryUser"
           placeholder="请输入出货人"
-          size="small"
+          clearable
         ></el-input>
       </el-form-item>
       <el-form-item label="收货人" prop="consignees">
         <el-input
           v-model="queryParams.consignees"
           placeholder="请输入收货人"
-          size="small"
+          clearable
         ></el-input>
       </el-form-item>
       <el-form-item label="出货项" prop="deliveryOption">
         <el-input
           v-model="queryParams.deliveryOption"
           placeholder="请输入出货项"
-          size="small"
+          clearable
         ></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
       <el-button
-        part="warning"
+        type="warning"
         icon="el-icon-download"
-        size="mini"
         @click="handleExport"
         class="fr margin-bottom-xs"
       >
@@ -81,19 +73,19 @@
         label="出货时间"
         prop="deliveryTime"
         align="center"
-        width="100"
+        width="140"
       />
       <el-table-column
         label="收货人"
         prop="consignees"
         align="center"
-        width="130"
+        width="100"
       />
       <el-table-column
         label="收货人电话"
         prop="consigneesPhone"
         align="center"
-        width="130"
+        width="120"
       />
       <el-table-column
         label="收货人地址	"
@@ -119,19 +111,19 @@
         label="主机SN号	"
         prop="masterSn"
         align="center"
-        width="100"
+        width="120"
       />
       <el-table-column
         label="从机SN号	"
         prop="slaveSn"
         align="center"
-        width="100"
+        width="120"
       />
       <el-table-column
-        label="搭配宝个数	"
+        label="搭配宝个数"
         prop="typeName"
         align="center"
-        width="80"
+        width="100"
       >
         <template slot-scope="scope">
           {{ scope.row.palList.length }}
@@ -176,7 +168,7 @@ import CompDetail from "./components/detail";
 import ExportList from "./components/exportList";
 import { mapGetters } from "vuex";
 export default {
-  name: 'Fct',
+  name: "Fct",
   components: {
     CompDetail,
     ExportList,

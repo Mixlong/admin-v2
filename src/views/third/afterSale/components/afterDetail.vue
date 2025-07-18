@@ -22,24 +22,24 @@
       :column="4"
       border
     >
-      <el-descriptions-item label="问题编号">{{
-        detailInfo.reportNum
-      }}</el-descriptions-item>
-      <el-descriptions-item label="产品SN">{{
-        detailInfo.sn
-      }}</el-descriptions-item>
-      <el-descriptions-item label="客退人">{{
-        detailInfo.returnName
-      }}</el-descriptions-item>
-      <el-descriptions-item label="客退物流单号">{{
-        detailInfo.logisticsNo
-      }}</el-descriptions-item>
-      <el-descriptions-item label="迪太接收人">{{
-        detailInfo.receiveName
-      }}</el-descriptions-item>
-      <el-descriptions-item label="客诉现象">{{
-        detailInfo.result
-      }}</el-descriptions-item>
+      <el-descriptions-item label="问题编号">
+        {{ detailInfo.reportNum }}
+      </el-descriptions-item>
+      <el-descriptions-item label="产品SN">
+        {{ detailInfo.sn }}
+      </el-descriptions-item>
+      <el-descriptions-item label="客退人">
+        {{ detailInfo.returnName }}
+      </el-descriptions-item>
+      <el-descriptions-item label="客退物流单号">
+        {{ detailInfo.logisticsNo }}
+      </el-descriptions-item>
+      <el-descriptions-item label="迪太接收人">
+        {{ detailInfo.receiveName }}
+      </el-descriptions-item>
+      <el-descriptions-item label="客诉现象">
+        {{ detailInfo.result }}
+      </el-descriptions-item>
       <el-descriptions-item label="处理进展">
         <span v-if="detailInfo.state == 1" class="text-orange">处理类型</span>
         <span v-if="detailInfo.state == 2" class="text-red">现象复测</span>
@@ -48,15 +48,15 @@
         <span v-if="detailInfo.state == 5" class="text-yellow">维修处理</span>
         <span v-if="detailInfo.state == 6" class="text-green">处理完成</span>
       </el-descriptions-item>
-      <el-descriptions-item label="是否到附件">{{
-        detailInfo.isFreight === 0 ? "是" : "否"
-      }}</el-descriptions-item>
-      <el-descriptions-item label="问题根因" :span="3">{{
-        detailInfo.rootMatter
-      }}</el-descriptions-item>
-      <el-descriptions-item label="根因分类">{{
-        directionLabel(rootClassify, detailInfo.rootMatterType)
-      }}</el-descriptions-item>
+      <el-descriptions-item label="是否到附件">
+        {{ detailInfo.isFreight === 0 ? "是" : "否" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="问题根因" :span="3">
+        {{ detailInfo.rootMatter }}
+      </el-descriptions-item>
+      <el-descriptions-item label="根因分类">
+        {{ directionLabel(rootClassify, detailInfo.rootMatterType) }}
+      </el-descriptions-item>
     </el-descriptions>
 
     <el-descriptions
@@ -68,30 +68,30 @@
       :column="4"
       border
     >
-      <el-descriptions-item label="返回日期">{{
-        isReturnDate
-      }}</el-descriptions-item>
-      <el-descriptions-item label="寄件部门">{{
-        detailInfo.logisticsEntity.mailingDepartment
-      }}</el-descriptions-item>
-      <el-descriptions-item label="寄件人">{{
-        detailInfo.logisticsEntity.sender
-      }}</el-descriptions-item>
-      <el-descriptions-item label="处理周期">{{
-        isTreat
-      }}</el-descriptions-item>
-      <el-descriptions-item label="收件人">{{
-        detailInfo.logisticsEntity.recipient
-      }}</el-descriptions-item>
-      <el-descriptions-item label="联系电话">{{
-        detailInfo.logisticsEntity.phone
-      }}</el-descriptions-item>
-      <el-descriptions-item label="物流付款方式">{{
-        detailInfo.logisticsEntity.isPay === 0 ? "月付" : "到付"
-      }}</el-descriptions-item>
-      <el-descriptions-item label="物流单号">{{
-        detailInfo.logisticsEntity.mailingNumber
-      }}</el-descriptions-item>
+      <el-descriptions-item label="返回日期">
+        {{ isReturnDate }}
+      </el-descriptions-item>
+      <el-descriptions-item label="寄件部门">
+        {{ detailInfo.logisticsEntity.mailingDepartment }}
+      </el-descriptions-item>
+      <el-descriptions-item label="寄件人">
+        {{ detailInfo.logisticsEntity.sender }}
+      </el-descriptions-item>
+      <el-descriptions-item label="处理周期">
+        {{ isTreat }}
+      </el-descriptions-item>
+      <el-descriptions-item label="收件人">
+        {{ detailInfo.logisticsEntity.recipient }}
+      </el-descriptions-item>
+      <el-descriptions-item label="联系电话">
+        {{ detailInfo.logisticsEntity.phone }}
+      </el-descriptions-item>
+      <el-descriptions-item label="物流付款方式">
+        {{ detailInfo.logisticsEntity.isPay === 0 ? "月付" : "到付" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="物流单号">
+        {{ detailInfo.logisticsEntity.mailingNumber }}
+      </el-descriptions-item>
       <el-descriptions-item label="收件地址" :span="3">
         {{ detailInfo.logisticsEntity.address }}
       </el-descriptions-item>
@@ -152,9 +152,15 @@
       :column="1"
       border
     >
-    <el-descriptions-item v-if="detailInfo.retestDesc !== ''" label="问题描述">
-      {{ detailInfo.retestDesc }}
-    </el-descriptions-item>
+      <el-descriptions-item label="复测结果">
+        {{ againCheckResultData[detailInfo.retestResult] }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        v-if="detailInfo.retestDesc !== ''"
+        label="问题描述"
+      >
+        {{ detailInfo.retestDesc }}
+      </el-descriptions-item>
       <el-descriptions-item label="复测图片">
         <preview-img
           width="80px"
@@ -184,8 +190,10 @@
 <script>
 import { afterInfo } from "@/api/third/sale";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import globalData from "../mixins/global";
 
 export default {
+  mixins: [globalData],
   components: {
     ElUploadSortable,
   },
@@ -233,8 +241,8 @@ export default {
       return !(!file && !video && !report);
     },
     isAgainCheckInfo() {
-      const { retestDesc, retestFile, retestVideo } = this.detailInfo;
-      return !(!retestDesc && !retestFile && !retestVideo);
+      const { retestDesc, retestFile, retestVideo, retestResult } = this.detailInfo;
+      return !(!retestDesc && !retestFile && !retestVideo && !retestResult);
     },
     isCustomerShow() {
       return !this.Is_Empty(this.detailInfo.logisticsEntity);
@@ -271,7 +279,6 @@ export default {
 
 <style lang="scss" scoped>
 .after-detail-box {
-
   /deep/ .el-dialog__body {
     max-height: 90vh;
     overflow: hidden;

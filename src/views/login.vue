@@ -107,18 +107,21 @@
             placeholder="请输入验证码"
           ></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item v-if="isNODE_ENV">
           <el-button
             size="small"
             type="primary"
             :disabled="getSmsCodeisWaiting"
             @click="getCodeVal"
-            >{{ codeValTitle }}</el-button
           >
+            {{ codeValTitle }}
+          </el-button>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="isCodeLoading" @click="submitCode">确 定</el-button>
+        <el-button type="primary" :loading="isCodeLoading" @click="submitCode">
+          确 定
+        </el-button>
         <el-button @click="isCodeDiag = false">取 消</el-button>
       </span>
     </el-dialog>
@@ -131,6 +134,7 @@ import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
 import remoteLoad from "@/utils/remoteLoad";
 import { getToken, setToken, removeToken } from "@/utils/auth";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Login",
@@ -172,10 +176,13 @@ export default {
       redirect: undefined,
     };
   },
+  computed: {
+    ...mapGetters(["isNODE_ENV"]),
+  },
   watch: {
     $route: {
       handler: function (route) {
-        this.redirect = route?.query?.redirect
+        this.redirect = route?.query?.redirect;
       },
       immediate: true,
     },
@@ -332,15 +339,17 @@ export default {
           this.codeForm.username = this.loginForm.username;
           this.codeForm.password = this.loginForm.password;
 
-          getSmsVerify(this.codeForm).then((res) => {
-            const { iamKey, iamValue, token, username } = res.data;
-            setToken(token);
-            Cookies.set("iamKeys", iamKey, { expires: 30 });
-            Cookies.set(iamKey, iamValue, { expires: 30 });
-            this.$router.push({ path: this.redirect || "/" });
-          }).finally(() => {
-            this.isCodeLoading = false;
-          })
+          getSmsVerify(this.codeForm)
+            .then((res) => {
+              const { iamKey, iamValue, token, username } = res.data;
+              setToken(token);
+              Cookies.set("iamKeys", iamKey, { expires: 30 });
+              Cookies.set(iamKey, iamValue, { expires: 30 });
+              this.$router.push({ path: this.redirect || "/" });
+            })
+            .finally(() => {
+              this.isCodeLoading = false;
+            });
         }
       });
     },
@@ -388,7 +397,8 @@ export default {
   opacity: 0.95;
   display: flex;
   flex-direction: row;
-  box-shadow: 0 12px 32px 4px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.08);
+  box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.04),
+    0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .left-wrapper {

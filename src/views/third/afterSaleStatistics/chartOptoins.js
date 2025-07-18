@@ -27,6 +27,31 @@ const setBackgroundColor = ({
   };
 };
 
+const axisLabelParams = {
+  interval: 0, // 保证每个标签都显示
+  rich: {
+    normal: {
+      lineHeight: 16, // 设置行高
+      // 可以添加其他样式，如字体大小、颜色等
+    },
+  },
+  formatter: function (value) {
+    var maxLengthPerLine = 5; // 每行显示的最大字符数
+    var maxLines = 2; // 最大显示行数
+    var lines = [];
+    for (var i = 0; i < value.length; i += maxLengthPerLine) {
+      lines.push(value.substring(i, i + maxLengthPerLine));
+    }
+    if (lines.length > maxLines) {
+      // 如果行数超过最大行数，则截取前maxLines行，并在最后一行显示省略号
+      lines = lines.slice(0, maxLines);
+      var lastLineMaxLength = maxLengthPerLine - '...'.length;
+      lines[lines.length - 1] = lines[lines.length - 1].substring(0, lastLineMaxLength) + '...';
+    }
+    return lines.map(line => `{normal|${line}}`).join('\n');
+  }
+}
+
 export default {
   data() {
     return {
@@ -164,15 +189,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -235,6 +260,7 @@ export default {
         grid: {
           left: "9%",
           right: "9%",
+          bottom: '80'
         },
         tooltip: {
           trigger: "axis",
@@ -249,15 +275,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -278,6 +304,7 @@ export default {
             },
             axisLabel: {
               color: "#fff",
+              ...axisLabelParams
             },
           },
         ],
@@ -354,6 +381,7 @@ export default {
         grid: {
           left: "9%",
           right: "9%",
+          bottom: 80
         },
         tooltip: {
           trigger: "axis",
@@ -368,15 +396,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -397,6 +425,7 @@ export default {
             },
             axisLabel: {
               color: "#fff",
+              ...axisLabelParams
             },
           },
         ],
@@ -472,6 +501,7 @@ export default {
         grid: {
           left: "9%",
           right: "9%",
+          bottom: 80
         },
         tooltip: {
           trigger: "axis",
@@ -486,15 +516,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -515,6 +545,7 @@ export default {
             },
             axisLabel: {
               color: "#fff",
+              ...axisLabelParams
             },
           },
         ],
@@ -605,15 +636,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -723,15 +754,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -841,15 +872,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -961,15 +992,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1079,15 +1110,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1197,15 +1228,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1316,15 +1347,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1434,15 +1465,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1552,15 +1583,15 @@ export default {
           {
             show: true,
             start: 0,
-            end: 100,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
           },
           {
             type: "inside",
-            start: 94,
-            end: 100,
+            start: 0,
+            end: 50,
             textStyle: {
               color: "#fff",
             },
@@ -1678,7 +1709,7 @@ export default {
           },
           {
             type: "inside",
-            start: 94,
+            start: 0,
             end: 100,
             textStyle: {
               color: "#fff",
@@ -1694,6 +1725,7 @@ export default {
         grid: {
           left: "5%",
           right: "5%",
+          bottom: '12%'
         },
         xAxis: [
           {
@@ -1705,6 +1737,7 @@ export default {
             },
             axisLabel: {
               color: "#fff",
+              ...axisLabelParams
             },
             axisTick: {
               show: true,
@@ -1740,7 +1773,8 @@ export default {
           {
             name: "累计数量",
             type: "bar",
-            barMaxWidth: 80,
+            barMaxWidth: 70,
+            barCategoryGap: 70, // 设置柱子之间的间距
             label: {
               show: true,
               position: "inside",

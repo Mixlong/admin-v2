@@ -334,3 +334,12 @@ export function sampleImgList() {
     isToken: false
   });
 }
+
+// sn录入
+export function sampleAddSn(data) {
+  return request({
+    url: '/sample/add/sn',
+    method: 'post',
+    data
+  });
+}

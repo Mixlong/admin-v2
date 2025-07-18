@@ -7,7 +7,11 @@
         :inline="true"
         v-show="showSearch"
       >
-        <el-form-item label="客户名称" prop="customerName">
+        <el-form-item
+          label="客户名称"
+          prop="customerName"
+          class="customer-name"
+        >
           <select-loadMore
             style="width: 100%"
             v-model="queryParams.customerName"
@@ -125,7 +129,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleAdd"
-          v-if="checkRole(['ms'])"
+          v-hasPermi="['third:order:add']"
         >
           新增
         </el-button>
@@ -133,34 +137,58 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table
-      v-loading="loading"
-      :height="tableHeight()"
-      :data="list"
-    >
-      <el-table-column label="序号" width="58" type="index" align="center">
+    <el-table v-loading="loading" :height="tableHeight()" border :data="list">
+      <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户名称" align="center" prop="customerName">
+      <el-table-column
+        label="客户名称"
+        align="center"
+        prop="customerName"
+        width="120"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.customerName"></span>
       </el-table-column>
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column label="客户订单号" align="center" prop="customerOrderNo">
+      <el-table-column
+        label="迪太订单号"
+        align="center"
+        prop="salesOrderNo"
+        width="140"
+        fixed="left"
+      />
+      <el-table-column
+        label="客户订单号"
+        align="center"
+        prop="customerOrderNo"
+        width="160"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.customerOrderNo"></span>
       </el-table-column>
-      <el-table-column label="品类" align="center" prop="categoryName">
+      <el-table-column
+        label="品类"
+        align="center"
+        prop="categoryName"
+        width="120"
+      >
         <span slot-scope="{ row }" v-NoData="row.categoryName"></span>
       </el-table-column>
-      <el-table-column label="型号" align="center" prop="computerName">
+      <el-table-column
+        label="型号"
+        align="center"
+        prop="computerName"
+        width="140"
+      >
         <span slot-scope="{ row }" v-NoData="row.computerName"></span>
       </el-table-column>
       <el-table-column
         label="BOM编码"
         align="center"
         prop="bomCode"
-        width="100"
+        width="130"
       >
         <span slot-scope="{ row }" v-NoData="row.bomCode"></span>
       </el-table-column>
@@ -168,7 +196,7 @@
         label="芯片版本"
         align="center"
         prop="chipVersion"
-        width="100"
+        width="90"
       >
         <span slot-scope="{ row }" v-NoData="row.chipVersion"></span>
       </el-table-column>
@@ -180,8 +208,19 @@
       >
         <span slot-scope="{ row }" v-NoData="row.orderQuantity"></span>
       </el-table-column>
+      <el-table-column
+        label="未发货数量"
+        align="center"
+        prop="unshippedNum"
+        width="100"
+      >
+        <span slot-scope="{ row }" v-NoData="row.unshippedNum"></span>
+      </el-table-column>
       <el-table-column label="出货日期" align="center" width="100">
-        <span slot-scope="{ row }" v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"></span>
+        <span
+          slot-scope="{ row }"
+          v-NoData="parseTime(row.sellTime, '{y}-{m}-{d}')"
+        ></span>
       </el-table-column>
       <el-table-column label="订单状态" align="center" width="90">
         <template slot-scope="{ row }">
@@ -206,24 +245,26 @@
         align="center"
         prop="createTime"
         width="140"
+        sortable
       >
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="210">
+      <el-table-column label="操作" align="center" width="210" fixed="right">
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button
-              v-if="!checkRole(['ms'])"
               class="text-green"
               type="text"
+              v-hasPermi="['third:order:prodSchedule:detail']"
               @click="$router.push(`/www/planSchedule?orderId=${row.id}`)"
             >
               排产详情
             </el-button>
+
             <el-button
-              v-if="!checkRole(['ms'])"
+              v-hasPermi="['third:order:prod:record']"
               type="text"
               @click="
                 $router.push(
@@ -233,7 +274,12 @@
             >
               生产记录
             </el-button>
-            <el-button type="text" @click="seeDetail(row.id)">
+
+            <el-button
+              type="text"
+              v-hasPermi="['third:order:detail']"
+              @click="seeDetail(row.id)"
+            >
               订单详情
             </el-button>
           </div>
@@ -241,29 +287,47 @@
             <el-button
               class="text-red"
               type="text"
+              v-hasPermi="['third:order:update']"
               @click="handleUpdate(row.id)"
             >
-              修改
+              编辑
             </el-button>
             <!-- 审核 -->
             <el-button
               type="text"
               @click="onOrderAuth(row.id)"
+              v-hasPermi="['third:order:check']"
               v-show="row.status === 0"
             >
               审核
             </el-button>
+
             <el-button
               class="text-gray"
               type="text"
               @click="onOrderCancel(row.id)"
+              v-hasPermi="['third:order:cancel']"
               v-show="row.status !== 2"
             >
               取消
             </el-button>
-            <el-button type="text" @click="onEditLog(row.id)"> 日志 </el-button>
-            <el-button type="text" @click="rowDbClick(row)">复制</el-button>
+            <el-button
+              type="text"
+              v-hasPermi="['third:order:log']"
+              @click="onEditLog(row.id)"
+            >
+              日志
+            </el-button>
+
             <Tooltip
+              v-hasPermi="['third:order:copy']"
+              icon="el-icon-document-copy"
+              content="复制"
+              @click="rowDbClick(row)"
+            />
+
+            <Tooltip
+              v-hasPermi="['third:order:planSchedule']"
               icon="el-icon-position"
               content="排产管理"
               @click="
@@ -271,7 +335,23 @@
                   categoryId: row.categoryId,
                   computerId: row.computerId,
                   salesOrderNo: row.salesOrderNo,
-                  orderId: row.id
+                  orderId: row.id,
+                })
+              "
+            />
+
+            <Tooltip
+              icon="el-icon-box"
+              content="发货管理"
+              @click="
+                handleNameToPage('Delivery', {
+                  customerName: row.customerName,
+                  salesOrderNo: row.salesOrderNo,
+                  customerOrderNo: row.customerOrderNo,
+                  categoryName: row.categoryName,
+                  computerName: row.computerName,
+                  orderQuantity: row.orderQuantity,
+                  isOrderFlag: true,
                 })
               "
             />
@@ -373,8 +453,12 @@ export default {
       };
     },
   },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.getCategoryComputerDict();
+    });
+  },
   created() {
-    this.getCategoryComputerDict();
     this.getList();
   },
   methods: {
@@ -410,7 +494,7 @@ export default {
       this.getList();
       this.computerOptions = this.dictList.filter(
         (item) => item.name === val
-      )[0].computerList;
+      )[0]?.computerList;
     },
     getComputerNameList(name) {
       if (name) {

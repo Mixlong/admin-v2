@@ -49,27 +49,27 @@
           导出
         </el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
     </el-row>
     <el-table v-loading="loading" :data="roleList" :height="tableHeight()" border
       @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="角色编号" prop="roleId" width="120" align="center" />
-      <el-table-column label="角色名称" prop="roleName" align="center" width="150" />
-      <el-table-column label="权限字符" prop="roleKey" align="center" :show-overflow-tooltip="true" width="150" />
-      <el-table-column label="显示顺序" prop="roleSort" width="100" align="center" />
-      <el-table-column label="状态" align="center" width="100">
+      <el-table-column label="角色编号" prop="roleId" width="120" align="center" v-if="columns[0].visible" />
+      <el-table-column label="角色名称" prop="roleName" align="center" width="150" v-if="columns[1].visible" />
+      <el-table-column label="权限字符" prop="roleKey" align="center" :show-overflow-tooltip="true" width="150" v-if="columns[2].visible" />
+      <el-table-column label="显示顺序" prop="roleSort" width="100" align="center" v-if="columns[3].visible" />
+      <el-table-column label="状态" align="center" width="100" v-if="columns[4].visible">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.status" active-value="0" inactive-value="1"
             @change="handleStatusChange(scope.row)"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180" v-if="columns[5].visible">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" v-if="columns[6].visible">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
             v-hasPermi="['system:role:edit']">修改</el-button>
@@ -256,6 +256,16 @@ export default {
           { required: true, message: "角色顺序不能为空", trigger: "blur" },
         ],
       },
+      // 列表显隐信息
+      columns: [
+        { key: 0, label: '角色编号', visible: true },
+        { key: 1, label: '角色名称', visible: true },
+        { key: 2, label: '权限字符', visible: true },
+        { key: 3, label: '显示顺序', visible: true },
+        { key: 4, label: '状态', visible: true },
+        { key: 5, label: '创建时间', visible: true },
+        { key: 6, label: '操作', visible: true },
+      ]
     };
   },
   created() {

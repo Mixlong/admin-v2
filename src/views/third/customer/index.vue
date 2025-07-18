@@ -8,12 +8,17 @@
       @submit.native.prevent
     >
       <el-form-item label="客户" prop="name">
-        <el-input
+        <select-loadMore
           v-model="queryParams.name"
-          placeholder="请输入客户名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+          :data="customerData.data"
+          :page="customerData.page"
+          :hasMore="customerData.more"
+          dictLabel="name"
+          dictValue="name"
+          :request="getCustomerData"
+          placeholder="请选择客户名称"
+        >
+        </select-loadMore>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
@@ -25,7 +30,12 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          v-hasPermi="['third:customer:add']"
+          @click="handleAdd"
+        >
           新增
         </el-button>
       </el-col>
@@ -34,13 +44,14 @@
 
     <el-table
       v-loading="loading"
+      border
       :data="customerList"
       :height="tableHeight()"
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
-      <el-table-column label="状态" prop="" align="center">
+      <el-table-column label="状态" prop="status" align="center">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -51,7 +62,12 @@
         </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime" sortable>
+      <el-table-column
+        label="创建时间"
+        align="center"
+        prop="createTime"
+        sortable
+      >
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
@@ -61,11 +77,19 @@
         align="center"
         class-name="small-padding fixed-width"
       >
-        <template slot-scope="scope">
+        <template slot-scope="{ row }">
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            @click="handleUpdate(scope.row)"
+            v-hasPermi="['third:customer:update']"
+            @click="handleUpdate(row)"
+          />
+
+          <Tooltip
+            icon="el-icon-document"
+            content="客户地址"
+            v-hasPermi="['third:customer:address']"
+            @click="handleNameToPage('CustomerAddress', { name: row.name })"
           />
         </template>
       </el-table-column>
@@ -122,6 +146,7 @@ import {
   authCustomer,
   getCustomerList,
 } from "@/api/order";
+import { listCustomer } from "@/api/third/sample";
 
 export default {
   name: "Customer",
@@ -144,6 +169,11 @@ export default {
         p: 1,
         l: 50,
         name: undefined,
+      },
+      customerData: {
+        data: [],
+        page: 1,
+        more: true,
       },
       // 表单参数
       form: {},
@@ -168,6 +198,26 @@ export default {
         this.customerList = list;
         this.total = total;
         this.loading = false;
+      });
+    },
+    getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          list.filter((item) => item.status === 0);
+
+          if (more) {
+            this.customerData.data = [...this.customerData.data, ...list];
+          } else {
+            this.customerData.data = list;
+          }
+          this.customerData.more = pageNum * pageSize < total;
+          this.customerData.page = pageNum;
+          resolve();
+        });
       });
     },
     // 用户状态修改

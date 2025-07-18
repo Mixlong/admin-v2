@@ -1,5 +1,5 @@
 <template>
-  <!--   -->
+  <!-- 硬件数据 -->
   <el-dialog
     :close-on-click-modal="false"
     :title="title"
@@ -7,84 +7,79 @@
     :width="isDigWidth"
     append-to-body
     top="15vh"
+    center
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="130px"
-      class="form-data form-data-inline"
-      inline
-    >
+    <el-form ref="form" :model="form" :rules="rules" label-position="top">
       <template v-if="!isBatchSync">
-        <el-form-item label="品类" prop="categoryId">
-          <el-select
-            :disabled="!!form.id"
-            v-model="form.categoryId"
-            clearable
-            @change="changeCategory2"
-            size="small"
-            style="width: 185px"
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="版本号">
-          <el-input
-            v-model.trim="form.versionName"
-            :disabled="!!form.id"
-          ></el-input>
-        </el-form-item>
-
-        <el-form-item label="属性" prop="type">
-          <el-select
-            v-model="form.type"
-            clearable
-            size="small"
-            style="width: 185px"
-            :disabled="!!form.id"
-            @change="$forceUpdate()"
-          >
-            <el-option
-              v-for="dict in fileTypeList"
-              :key="dict.key"
-              :label="dict.value"
-              :value="dict.key"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="属性描述" prop="content">
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 1, maxRows: 8 }"
-            v-model="form.content"
-            placeholder="请输入文件描述"
-          />
-        </el-form-item>
-
-        <el-form-item
-          label="文件"
-          prop="url"
-          v-if="form.up == 1"
-          style="width: 100%"
-        >
-          <DrUpload
-            :limit="1"
-            v-model="form.url"
-            :css="{ width: '100%' }"
-            :isOnePic="1"
-          >
-            <div>
-              <el-button size="small" type="primary">点击上传</el-button>
-            </div>
-          </DrUpload>
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="品类" prop="categoryId">
+              <el-select
+                :disabled="!!form.id"
+                v-model="form.categoryId"
+                clearable
+                @change="changeCategory2"
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in dictList"
+                  :key="dict.id"
+                  :label="dict.name"
+                  :value="dict.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="版本号">
+              <el-input
+                v-model.trim="form.versionName"
+                :disabled="!!form.id"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="属性" prop="type">
+              <el-select
+                v-model="form.type"
+                clearable
+                :disabled="!!form.id"
+                @change="$forceUpdate()"
+                class="w100"
+              >
+                <el-option
+                  v-for="dict in fileTypeList"
+                  :key="dict.key"
+                  :label="dict.value"
+                  :value="dict.key"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="属性描述" prop="content">
+              <el-input
+                v-model="form.content"
+                clearable
+                placeholder="请输入文件描述"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col>
+            <el-form-item v-if="form.up == 1" label="文件" prop="url">
+              <DrUpload
+                :limit="1"
+                v-model="form.url"
+                :css="{ width: '100%' }"
+                :isOnePic="1"
+              >
+                <div>
+                  <el-button size="small" type="primary">点击上传</el-button>
+                </div>
+              </DrUpload>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </template>
 
       <!-- 批量同步 -->
@@ -291,7 +286,6 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.form.status = 0;
           if (this.form.id) {
             delete this.form.createTime;
             delete this.form.updateTime;
@@ -323,11 +317,6 @@ export default {
 </script>
 
 <style lang="scss" scope>
-.style-upload {
-  .el-upload-dragger {
-    width: 100%;
-  }
-}
 .similar-style {
   .el-select__tags {
     cursor: pointer;

@@ -1,22 +1,19 @@
 <template>
   <el-dialog
     class="update_sample"
+    :class="{ fixed_bottom_dialog: !isFixedDialig }"
     :top="showName ? '5vh' : '35vh'"
-    :close-on-click-modal="true"
     :title="title"
     :visible.sync="dialogVisible"
     append-to-body
+    center
     :width="dialogWidth"
+    :close-on-click-modal="false"
+    :fullscreen="!isFixedDialig"
   >
-    <el-form
-      :class="{ 'row-label-style': showName && showName !== 'isVersion' }"
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="110px"
-    >
-      <el-row>
-        <el-col :span="showName ? 24 : 5">
+    <el-form ref="form" :model="form" :rules="rules" label-position="top">
+      <el-row :gutter="15">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             label="客户"
             prop="customerName"
@@ -31,29 +28,18 @@
         </el-col>
         <el-col :span="showName ? 24 : 6">
           <el-form-item
-            label="产品品类"
-            prop="baseModel"
-            v-if="!showName || showName == 'baseModel'"
+            label="需求类型"
+            prop="type"
+            label-width="82px"
+            v-if="!showName || showName == 'type'"
           >
-            <el-select
-              v-model="form.baseModel"
-              :disabled="isDisabled"
-              multiple
-              collapse-tags
-              placeholder="请选择产品品类"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in modelList"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name"
-              >
-              </el-option>
+            <el-select v-model="form.type" clearable style="width: 100%">
+              <el-option label="品类" :value="0"> </el-option>
+              <el-option label="型号" :value="1"> </el-option>
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="showName ? 24 : 5">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             :label="showName ? '' : '计划送样时间'"
             prop="sendTime"
@@ -71,14 +57,13 @@
             </el-date-picker>
           </el-form-item>
         </el-col>
-        <el-col :span="showName ? 24 : 8">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             label="送样单号"
             prop="number"
             v-if="!showName || showName == 'number'"
           >
             <select-loadMore
-              style="width: 262px"
               v-model="form.number"
               :disabled="isDisabled"
               :data="sampleNumberData.data"
@@ -86,6 +71,7 @@
               :hasMore="sampleNumberData.more"
               :request="getSampleNumberList"
               placeholder="请选择送样单号"
+              style="width: 100%"
             />
             <!-- <el-button style="margin-left: 8px;" type="primary" :disabled="isDisabled" :loading="isCreateNumber"
               @click="onCreateSampleNumber">
@@ -94,8 +80,9 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
-        <el-col :span="showName ? 24 : 5">
+
+      <el-row :gutter="15">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             label="数量"
             prop="sendNum"
@@ -128,7 +115,7 @@
             </el-date-picker>
           </el-form-item>
         </el-col>
-        <el-col :span="showName ? 24 : 5">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             label="销售人员"
             prop="salesperson"
@@ -149,10 +136,9 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="showName ? 24 : 8">
+        <el-col :span="showName ? 24 : 6">
           <el-form-item
             :label="showName ? '' : '实际送样时间'"
-            label-width="120px"
             prop="actualTime"
             v-if="!isActural"
           >
@@ -163,14 +149,15 @@
               placeholder="请选择实际送样时间"
               format="yyyy-MM-dd"
               value-format="yyyy-MM-dd"
-              :style="actualTimeWith"
+              style="width: 100%"
             >
             </el-date-picker>
           </el-form-item>
         </el-col>
       </el-row>
+
       <!-- 添加版本号  -->
-      <el-row style="margin: 0 30px" v-show="isShowVersion">
+      <el-row :gutter="15" v-show="isShowVersion">
         <el-col :span="showName ? 24 : 6">
           <el-form-item label="硬件版本号" prop="harkVersion">
             <el-input
@@ -209,22 +196,123 @@
         </el-col>
       </el-row>
 
+      <!-- 品类、型号 -->
+      <el-row class="margin-bottom" :gutter="15">
+        <el-col :span="showName ? 24 : 6" v-if="form.type === 0">
+          <el-form-item
+            label="产品品类"
+            prop="baseModel"
+            v-if="!showName || showName == 'baseModel'"
+          >
+            <el-select
+              v-model="form.baseModel"
+              multiple
+              filterable
+              allow-create
+              placeholder="请选择产品品类"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in modelList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col v-if="form.type === 1">
+          <el-table :data="form.sampleInfoList" border max-height="250"  v-if="!showName || showName == 'sampleInfoList'">
+            <el-table-column prop="categoryName" label="品类">
+              <el-form-item
+                slot-scope="scope"
+                :prop="`sampleInfoList[${scope.$index}].categoryName`"
+                :rules="rules.categoryName"
+              >
+                <el-select
+                  v-model="scope.row.categoryName"
+                  filterable
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择"
+                  @change="onChangeCategoryName(scope.$index)"
+                >
+                  <el-option
+                    v-for="dict in modelList"
+                    :key="dict.id"
+                    :label="dict.name"
+                    :value="dict.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-table-column>
+            <el-table-column prop="computerName" label="型号">
+              <el-form-item
+                slot-scope="scope"
+                :prop="`sampleInfoList[${scope.$index}].computerName`"
+                :rules="rules.computerName"
+              >
+                <el-select
+                  v-model="scope.row.computerName"
+                  filterable
+                  clearable
+                  @focus="changeCategory(scope.$index)"
+                  style="width: 100%"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="dict in computerNameList"
+                    :key="dict.model"
+                    :label="dict.name"
+                    :value="dict.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-table-column>
+            <el-table-column width="100" align="center">
+              <template slot="header" slot-scope="scope">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  icon="el-icon-plus"
+                  @click="onAddItem"
+                ></el-button>
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  type="danger"
+                  size="mini"
+                  :disabled="form.sampleInfoList.length === 1"
+                  plain
+                  icon="el-icon-minus"
+                  @click="onRemoveItem(scope.row)"
+                >
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-col>
+      </el-row>
+
       <el-card
         v-show="!showName"
-        style="padding-top: 30px; margin: 0 30px 10px"
+        style="padding-top: 30px; margin: 0 0 10px"
         class="step-wrap"
-        shadow="hover"
+        shadow="nerver"
       >
         <el-steps :active="active" align-center finish-status="success">
           <el-step>
             <template slot="title">
-              <div class="title-top">产品经理确认</div>
+              <div class="title-top">需求确认中</div>
             </template>
             <template slot="description">
               <div>
                 <div class="wrap-click" @click="stateChange(1)"></div>
               </div>
-              <el-form-item
+              <!-- <el-form-item
                 label=""
                 prop="pm"
                 label-width="0"
@@ -243,18 +331,18 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
             </template>
           </el-step>
           <el-step>
             <template slot="title">
-              <div class="title-top">SE确认</div>
+              <div class="title-top">软件开发中</div>
             </template>
             <template slot="description">
               <div>
                 <div class="wrap-click" @click="stateChange(2)"></div>
               </div>
-              <el-form-item
+              <!-- <el-form-item
                 label=""
                 prop="se"
                 label-width="0"
@@ -273,18 +361,18 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
             </template>
           </el-step>
           <el-step>
             <template slot="title">
-              <div class="title-top">样品加工</div>
+              <div class="title-top">测试中</div>
             </template>
             <template slot="description">
               <div>
                 <div class="wrap-click" @click="stateChange(3)"></div>
               </div>
-              <el-form-item
+              <!-- <el-form-item
                 label=""
                 prop="follow"
                 label-width="0"
@@ -303,18 +391,18 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
             </template>
           </el-step>
           <el-step>
             <template slot="title">
-              <div class="title-top">测试</div>
+              <div class="title-top">组装</div>
             </template>
             <template slot="description">
               <div>
                 <div class="wrap-click" @click="stateChange(4)"></div>
               </div>
-              <el-form-item
+              <!-- <el-form-item
                 label=""
                 prop="test"
                 label-width="0"
@@ -333,18 +421,18 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
             </template>
           </el-step>
           <el-step>
             <template slot="title">
-              <div class="title-top">销售</div>
+              <div class="title-top">评审</div>
             </template>
             <template slot="description">
               <div>
                 <div class="wrap-click" @click="stateChange(5)"></div>
               </div>
-              <el-form-item
+              <!-- <el-form-item
                 label=""
                 prop="sell"
                 label-width="0"
@@ -363,7 +451,7 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
             </template>
           </el-step>
           <el-step>
@@ -379,157 +467,36 @@
         </el-steps>
       </el-card>
 
-      <el-card
-        v-show="showName == 'step'"
-        style="padding-top: 30px; margin: 0 30px 10px"
-        class="step-wrap"
-        shadow="hover"
-      >
-        <el-steps
-          :active="active"
-          :class="{ stepCards: showName == 'step' }"
-          :space="80"
-          direction="vertical"
-          finish-status="success"
-        >
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt1" @click="stateChange(1)">
-                产品经理确认
-              </div>
-              <div class="flex justify-between">
-                <el-select
-                  v-if="!showName || showName == 'pm' || showName == 'step'"
-                  v-model="form.pm"
-                  placeholder="请选择"
-                  style="width: 100px; margin-left: 20px"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('product')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-                <div class="fz-red">
-                  确认客户需求是否在产品已有规格或允许定制范围内
-                </div>
-              </div>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt2" @click="stateChange(2)">
-                SE确认
-              </div>
-              <div class="flex justify-between">
-                <el-select
-                  v-if="!showName || showName == 'se' || showName == 'step'"
-                  v-model="form.se"
-                  placeholder="请选择"
-                  style="width: 100px; margin-left: 20px"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('SE')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-                <div class="fz-red">
-                  确认客户需求是否技术可行，以及是否存在质量和供应风险
-                </div>
-              </div>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt3" @click="stateChange(3)">
-                样品加工
-              </div>
-              <div class="flex justify-between">
-                <el-select
-                  v-if="!showName || showName == 'follow' || showName == 'step'"
-                  v-model="form.follow"
-                  placeholder="请选择"
-                  style="width: 100px; margin-left: 20px"
-                >
-                  <el-option
-                    v-for="(item, index) in roleList('PS')"
-                    :key="index"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-                <div class="fz-red">
-                  根据客户需求和产品设计方案，按照与量产相同的工艺流程进行加工
-                </div>
-              </div>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt4" @click="stateChange(4)">
-                测试
-              </div>
-              <div class="flex justify-between">
-                <el-select
-                  v-if="!showName || showName == 'test' || showName == 'step'"
-                  v-model="form.test"
-                  placeholder="请选择"
-                  style="width: 100px; margin-left: 20px"
-                >
-                  <el-option
-                    v-for="(item, index) in roleList('test')"
-                    :key="index"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-                <div class="fz-red">
-                  根据产品测试用例、客户需求，对样品的功能、可靠性进行全面测试
-                </div>
-              </div>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt5" @click="stateChange(5)">
-                销售
-              </div>
-              <div class="flex justify-between">
-                <el-select
-                  v-if="!showName || showName == 'sell' || showName == 'step'"
-                  v-model="form.sell"
-                  placeholder="请选择"
-                  style="width: 100px; margin-left: 20px"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('sale')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-                <div class="fz-red">
-                  销售人员以客户需求为依据，对样品组交付的样品进行型号、数量、配置‘功能、外观等方面验收
-                </div>
-              </div>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-txt title-txt6" @click="stateChange(6)">
-                完成
-              </div>
-            </template>
+      <el-card v-show="showName == 'step'" shadow="nerver" style="margin: 40px">
+        <h4>流程状态管理</h4>
+        <el-steps :active="active" finish-status="success" simple>
+          <el-step
+            class="pointer"
+            v-for="item in auditProcessData"
+            :key="item.value"
+            :title="item.label"
+            @click.native="stateChange(item.value)"
+          >
           </el-step>
         </el-steps>
+
+        <transition name="fade">
+          <el-col :span="6" v-show="active === 6" class="margin-top">
+            <h4>实际送样时间</h4>
+            <el-form-item label="" prop="actualTime">
+              <el-date-picker
+                ref="datePicker"
+                v-model="form.actualTime"
+                type="date"
+                placeholder="请选择实际送样时间"
+                format="yyyy-MM-dd"
+                value-format="yyyy-MM-dd"
+                style="width: 100%"
+              >
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </transition>
       </el-card>
 
       <el-form-item
@@ -551,25 +518,23 @@
         <el-upload-sortable
           v-model="form.checklist"
           :action="actionUrl"
-          :imgW="98"
-          :imgH="98"
+          :imgW="80"
+          :imgH="80"
         />
       </el-form-item>
       <el-form-item label="评审表：" v-if="!showName">
         <el-upload-sortable
           v-model="form.reviewer"
           :action="actionUrl"
-          :imgW="98"
-          :imgH="98"
+          :imgW="80"
+          :imgH="80"
         />
       </el-form-item>
       <el-form-item
         label="详细需求"
-        label-width="0"
         prop="demand"
         :style="{ width: '100%', maxHeight: !showName ? '526px' : 'auto' }"
         v-if="!showName || showName == 'demand'"
-        class="padding-lr"
         :class="{ 'style-reset': !showName }"
       >
         <tinymce
@@ -583,7 +548,6 @@
       <el-form-item
         label-width="0"
         prop="configVersion"
-        class="padding-lr"
         v-if="!showName || showName == 'attachment'"
       >
         <DrUpload v-model="form.attachment" :limit="1" :isOnePic="1">
@@ -593,13 +557,9 @@
         </DrUpload>
       </el-form-item>
     </el-form>
+
     <div slot="footer" class="dialog-footer">
-      <el-button
-        :loading="isLoading"
-        v-show="showName !== 'step'"
-        type="primary"
-        @click="submitForm"
-      >
+      <el-button :loading="isLoading" type="primary" @click="submitForm">
         确 定
       </el-button>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -613,7 +573,9 @@ import {
   sampleUpdate,
   sampleNumberList,
   sampleNumber,
+  sampleCategoryName,
 } from "@/api/third/sample";
+
 import tinymce from "@/views/components/Editor";
 import { typeCategory } from "@/api/third/category";
 import { dictUserList } from "@/api/third/isType";
@@ -634,10 +596,10 @@ export default {
       isCopyFlag: false,
       isActural: true,
       isType: null,
-      isTop: false,
       dialogVisible: false,
       showName: "",
       modelList: [],
+      computerNameList: [],
       saleList: [],
       // 表单参数
       form: {},
@@ -651,6 +613,9 @@ export default {
       rules: {
         customerName: [
           { required: true, message: "请输入客户名称", trigger: "blur" },
+        ],
+        type: [
+          { required: true, message: "请选择需求类型", trigger: "change" },
         ],
         baseModel: [
           {
@@ -677,11 +642,11 @@ export default {
         salesperson: [
           { required: true, message: "请选择销售人员", trigger: "change" },
         ],
-        follow: [{ required: true, message: "请选择", trigger: "change" }],
-        pm: [{ required: true, message: "请选择", trigger: "change" }],
-        se: [{ required: true, message: "请选择", trigger: "change" }],
-        test: [{ required: true, message: "请选择", trigger: "change" }],
-        sell: [{ required: true, message: "请选择", trigger: "change" }],
+        // follow: [{ required: true, message: "请选择", trigger: "change" }],
+        // pm: [{ required: true, message: "请选择", trigger: "change" }],
+        // se: [{ required: true, message: "请选择", trigger: "change" }],
+        // test: [{ required: true, message: "请选择", trigger: "change" }],
+        // sell: [{ required: true, message: "请选择", trigger: "change" }],
         harkVersion: [
           { required: true, message: "请输入硬件版本号", trigger: "blur" },
         ],
@@ -694,8 +659,40 @@ export default {
         uiVersion: [
           { required: false, message: "请输入UI版本号", trigger: "blur" },
         ],
+        categoryName: [
+          { required: true, message: "请选择", trigger: "change" },
+        ],
+        computerName: [
+          { required: true, message: "请选择", trigger: "change" },
+        ],
       },
       active: -1,
+      auditProcessData: [
+        {
+          label: "需求确认中",
+          value: 1,
+        },
+        {
+          label: "软件开发中",
+          value: 2,
+        },
+        {
+          label: "测试中",
+          value: 3,
+        },
+        {
+          label: "组装",
+          value: 4,
+        },
+        {
+          label: "评审",
+          value: 5,
+        },
+        {
+          label: "完成",
+          value: 6,
+        },
+      ],
     };
   },
   computed: {
@@ -715,17 +712,6 @@ export default {
           return "400px";
         default:
           return "1200px";
-      }
-    },
-    actualTimeWith() {
-      if (this.isType === 6) {
-        return {
-          width: "100%",
-        };
-      } else {
-        return {
-          width: "237px",
-        };
       }
     },
     /* 
@@ -750,6 +736,9 @@ export default {
         );
       };
     },
+    isFixedDialig() {
+      return ["actualTime", "sendTime", "isVersion"].includes(this.showName);
+    },
   },
   watch: {
     form(val) {
@@ -757,20 +746,17 @@ export default {
         this.active = val.state;
       }
     },
-    active(num) {
-      if (num >= 4) {
-        this.rules.bootVersion[0].required = true;
-        this.rules.appVersion[0].required = true;
-        this.rules.uiVersion[0].required = true;
-      } else {
-        this.rules.bootVersion[0].required = false;
-        this.rules.appVersion[0].required = false;
-        this.rules.uiVersion[0].required = false;
-      }
-    },
-  },
-  created() {
-    console.log(this.form);
+    // active(num) {
+    //   if (num >= 4) {
+    //     this.rules.bootVersion[0].required = true;
+    //     this.rules.appVersion[0].required = true;
+    //     this.rules.uiVersion[0].required = true;
+    //   } else {
+    //     this.rules.bootVersion[0].required = false;
+    //     this.rules.appVersion[0].required = false;
+    //     this.rules.uiVersion[0].required = false;
+    //   }
+    // },
   },
   mounted() {
     this.getDictUserList();
@@ -779,6 +765,34 @@ export default {
     });
   },
   methods: {
+    onChangeCategoryName(index) {
+      this.form.sampleInfoList[index].computerName = "";
+    },
+    changeCategory(index) {
+      const { categoryName } = this.form.sampleInfoList[index];
+
+      if (categoryName) {
+        sampleCategoryName({
+          categoryName,
+        }).then((res) => {
+          this.computerNameList = res.data;
+        });
+      } else {
+        this.computerNameList = [];
+      }
+    },
+    onAddItem() {
+      this.form.sampleInfoList.push({
+        categoryName: "",
+        computerName: "",
+      });
+    },
+    onRemoveItem(item) {
+      const index = this.form.sampleInfoList.indexOf(item);
+      if (index !== -1) {
+        this.form.sampleInfoList.splice(index, 1);
+      }
+    },
     async onCreateSampleNumber() {
       this.isCreateNumber = true;
       const { data } = await sampleNumber();
@@ -828,7 +842,14 @@ export default {
     reset() {
       this.form = {
         url: "",
+        type: 0,
         baseModel: [],
+        sampleInfoList: [
+          {
+            categoryName: "",
+            computerName: "",
+          },
+        ],
       };
       this.resetForm("form");
     },
@@ -837,14 +858,10 @@ export default {
       if (this.form.id) {
         this.active =
           data == this.active ? (data == 7 ? data - 2 : data - 1) : data;
-        if (this.showName === "step") {
-          this.submitForm();
-          this.dialogVisible = false;
-        }
       }
     },
     /** 提交按钮 */
-    submitForm: function () {
+    submitForm: function (isCloseDialog = true) {
       this.$refs["form"].validate((valid) => {
         let params = Object.assign({}, this.form);
 
@@ -869,7 +886,7 @@ export default {
                       this.showName === "isVersion" ? "操作成功" : "修改成功"
                     );
                   }
-                  this.dialogVisible = false;
+                  isCloseDialog && (this.dialogVisible = false);
                   this.$parent.getList();
                 }
               })
@@ -878,8 +895,16 @@ export default {
               });
           } else {
             if (this.isCopyFlag) {
-              const { id, ...newParams } = params;
+              const { id, sampleInfoList, ...newParams } = params;
               params = newParams;
+              const sampleInfoListArr = sampleInfoList.map((item) => {
+                return {
+                  categoryName: item.categoryName,
+                  computerName: item.computerName,
+                }; 
+              })
+
+              params.sampleInfoList = sampleInfoListArr;
             }
             sampleAdd(params)
               .then((response) => {
@@ -945,69 +970,6 @@ export default {
       width: 100px !important;
       height: 100px !important;
     }
-  }
-}
-
-.stepCards {
-  .el-step {
-    .el-step__head {
-      width: 108px !important;
-
-      .el-step__icon {
-        width: auto;
-        min-width: 115px;
-        min-height: 40px;
-        white-space: nowrap;
-        border-radius: 20px;
-        padding: 10px;
-        box-sizing: border-box;
-      }
-
-      .el-step__line {
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
-      .el-step__icon-inner {
-        display: none;
-      }
-    }
-
-    .el-step__main {
-      .title-txt {
-        position: absolute;
-        top: 0;
-        z-index: 666;
-        min-height: 40px;
-        white-space: nowrap;
-        border-radius: 20px;
-        padding: 10px;
-        box-sizing: border-box;
-        cursor: pointer;
-      }
-
-      .title-txt1 {
-        left: 0;
-      }
-
-      .title-txt2,
-      .title-txt3 {
-        left: 20px;
-      }
-
-      .title-txt4,
-      .title-txt5,
-      .title-txt6 {
-        left: 30px;
-      }
-    }
-  }
-
-  .fz-red {
-    color: #606266;
-    width: 300px;
-    font-size: 14px;
-    font-weight: normal;
   }
 }
 </style>

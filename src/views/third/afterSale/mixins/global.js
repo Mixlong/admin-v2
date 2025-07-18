@@ -4,22 +4,7 @@ export default {
       // 客退清单
       returnList: [],
       // 现象复测值
-      againCheckResultData: {
-        0: "APP问题",
-        1: "按键问题",
-        2: "大灯故障",
-        3: "故障代码",
-        4: "光敏不良",
-        5: "开关机不良",
-        6: "屏幕问题",
-        7: "软件功能问题",
-        8: "数码管不良",
-        9: "外观不良",
-        10: "外壳不良",
-        11: "线缆不良",
-        12: "未复现",
-        13: "其它问题"
-      },
+      againCheckResultData: {},
       // 分类处理
       classificationData: {
         0: "简单问题，售后维修",
@@ -28,7 +13,10 @@ export default {
       },
     };
   },
-  created() {},
+  created() {
+    // 复测结果
+    this.getConfigDicts('sys_againCheck_result', 'againCheckResultData')
+  },
   methods: {
     async getReturnList() {
       try {
@@ -37,6 +25,6 @@ export default {
       } catch (error) {
         console.error(error);
       }
-    },
-  },
+    }
+  }
 };

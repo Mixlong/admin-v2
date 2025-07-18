@@ -3,12 +3,11 @@
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="品类" prop="categoryId">
         <el-select
-          size="small"
           v-model="queryParams.category"
           @change="changeCategory"
           placeholder="请选择"
           clearable
-          style="max-width: 140px"
+          style="width: 130px"
         >
           <el-option
             v-for="dict in dictList"
@@ -20,9 +19,8 @@
       </el-form-item>
       <el-form-item label="型号" prop="computerId">
         <el-input
-          style="max-width: 130px"
+          style="width: 130px"
           placeholder="请输入型号"
-          size="small"
           clearable
           v-model="queryParams.model"
           @keyup.enter.native="handleQuery"
@@ -32,7 +30,6 @@
         <el-input
           style="max-width: 130px"
           placeholder="请输入型号"
-          size="small"
           clearable
           v-model="queryParams.boxNo"
           @keyup.enter.native="handleQuery"
@@ -42,7 +39,6 @@
         <el-input
           style="max-width: 130px"
           placeholder="请输入型号"
-          size="small"
           clearable
           v-model="queryParams.order"
           @keyup.enter.native="handleQuery"
@@ -54,14 +50,12 @@
           v-model="queryParams.sn"
           placeholder="请输入SN"
           clearable
-          size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item label="时间" prop="erp">
         <el-date-picker
           style="max-width: 300px"
-          size="small"
           v-model="dateRange"
           type="daterange"
           unlink-panels
@@ -75,36 +69,30 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-          重置
-        </el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
 
       <el-button
         class="fr"
         type="warning"
         icon="el-icon-download"
-        size="mini"
         @click="handleExport"
       >
         导出
       </el-button>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-    >
-      <el-table-column label="序号" width="58" type="index" align="center">
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()">
+      <el-table-column
+        label="序号"
+        width="58"
+        type="index"
+        align="center"
+        fixed="left"
+      >
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
@@ -113,40 +101,53 @@
         label="品类"
         prop="category"
         align="center"
+        width="140"
+        fixed="left"
       />
-      <el-table-column label="型号" prop="model" align="center" />
-      <el-table-column label="SN" prop="sn" align="center" />
-      <el-table-column label="箱号" prop="boxNo" align="center" />
-      <el-table-column label="订单号" prop="order" align="center" />
+      <el-table-column
+        label="型号"
+        prop="model"
+        align="center"
+        min-width="160"
+        fixed="left"
+      />
+      <el-table-column label="SN" prop="sn" align="center" min-width="180" />
+      <el-table-column label="箱号" prop="boxNo" align="center" width="160" />
+      <el-table-column label="订单号" prop="order" align="center" width="160" />
       <el-table-column
         label="装箱时间"
         prop="packageTime"
         align="center"
+        width="140"
       />
       <el-table-column label="版本号" align="center">
         <el-table-column
           label="HW 版本号"
           prop="hwVersion"
           align="center"
+          width="180"
         ></el-table-column>
         <el-table-column
           label="BOOT 版本号"
           prop="bootVersion"
           align="center"
+          width="200"
         ></el-table-column>
         <el-table-column
           label="UI 版本号"
           prop="uiVersion"
           align="center"
+          width="200"
         ></el-table-column>
         <el-table-column
           label="APP 版本号"
           prop="appVersion"
           align="center"
+          width="200"
         ></el-table-column>
       </el-table-column>
-      <el-table-column label="测试环节" align="center">
-        <el-table-column label="FCT" align="center" width="80">
+      <el-table-column label="测试环节" align="center" width="500" fixed="right">
+        <el-table-column label="FCT" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -155,7 +156,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="IQC" align="center" width="80">
+        <el-table-column label="IQC" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -164,7 +165,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="FQC" align="center" width="80">
+        <el-table-column label="FQC" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -173,7 +174,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="防水" align="center" width="80">
+        <el-table-column label="防水" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -182,7 +183,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="配置工位" align="center" width="80">
+        <el-table-column label="配置工位" align="center" width="80" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -191,7 +192,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="老化" align="center" width="80">
+        <el-table-column label="老化" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -200,7 +201,7 @@
             查看
           </el-button>
         </el-table-column>
-        <el-table-column label="OQC" align="center" width="80">
+        <el-table-column label="OQC" align="center" width="70" fixed="right">
           <el-button
             slot-scope="scope"
             type="text"
@@ -247,6 +248,7 @@ import {
   oqcList,
   undoneList,
   waterProofList,
+  producExporttList,
 } from "@/api/third/fileConfig";
 
 import CompUpdate from "./components/update";
@@ -551,7 +553,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.downloadFile({
-        aFn: productExportList,
+        aFn: producExporttList,
         queryParams: this.queryParams,
       });
     },

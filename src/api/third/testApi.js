@@ -285,6 +285,17 @@ export function stsTestList(params) {
   });
 }
 
+// 导出
+export function stsTestExport(params) {
+  return request({
+    url: "/test/export",
+    method: "get",
+    params,
+  });
+}
+
+
+
 /***
  * sop管理
  */
@@ -368,12 +379,15 @@ export function fileConverter(data) {
   });
 }
 
-// 生产许可
+/**
+ * 产品许可
+ */
+
 export function computerLicenseList(params) {
   return request({
     url: "/computer/license/list",
     method: "get",
-    params
+    params,
   });
 }
 
@@ -386,21 +400,63 @@ export function computerUpdate(data) {
   });
 }
 
-// 操作记录
 export function computerLogList(params) {
   return request({
     url: "/computer/log/list",
     method: "get",
-    params
+    params,
   });
 }
 
-// 配置总览
+/**
+ * 历史问题管理
+ */
+
+// This section will be removed as it's moved to issuesApi.js
+/*
+// 创建问题点 POST /issues/save
+export function addHistoryIssue(data) {
+  return request({
+    url: "/issues/save",
+    method: "post",
+    data,
+  });
+}
+
+// 处理问题点 POST /issues/process
+export function handleHistoryIssue(data) {
+  return request({
+    url: "/issues/process",
+    method: "post",
+    data,
+  });
+}
+
+// 根据型号id获取问题点 GET /issues/{computerId}
+export function getHistoryIssuesListByComputerId(params) {
+  return request({
+    url: `/issues/${params.computerId}`,
+    method: "get",
+  });
+}
+*/
+
+/**
+ * 配置总览
+ */
 export function modelConfigList(params) {
   return request({
     url: "/model/config/list",
     method: "get",
     params
+  });
+}
+
+// 临时配置信息
+export function modelTempConfigList(computerName) {
+  return request({
+    url: `/model/config/temp/${computerName}`,
+    method: "get"
   });
 }
 
@@ -459,4 +515,84 @@ export function recordDataReport(params) {
   })
 }
 
+/**
+ * 气密性测试配置管理
+ */
+export function gasConfigList(params) {
+  return request({
+    url: "/tightness/config/list",
+    method: "get",
+    params
+  })
+}
 
+// 新增
+export function gasConfigSave(data) {
+  return request({
+    url: "/tightness/config/save",
+    method: "post",
+    data,
+  });
+}
+
+// 修改
+export function gasConfigUpdate(data) {
+  return request({
+    url: "/tightness/config/update",
+    method: "put",
+    data,
+  });
+}
+
+export function gasConfigAuth(data) {
+  return request({
+    url: "/tightness/config/auth",
+    method: "put",
+    data,
+  });
+}
+
+// 删除
+export function gasConfigDelete(data) {
+  return request({
+    url: "/tightness/config/delete",
+    method: "delete",
+    data,
+  });
+}
+
+// 导出
+export function ConfigExport(data) {
+  return request({
+    url: "/computer/export",
+    method: "post",
+    data,
+  });
+}
+
+// 根据品类查询型号配置情况
+export function gasBulkConfigList(params) {
+  return request({
+    url: "/tightness/config/computer/config/list",
+    method: "get",
+    params
+  })
+}
+
+// 批量导入气密性配置
+export function gasBulkConfigAuth(data) {
+  return request({
+    url: "/tightness/config/import/config",
+    method: "put",
+    data,
+  });
+}
+
+// 测试任务令 --- 测试记录
+export function testModelRecordList(params) {
+  return request({
+    url: "/test/sts/list",
+    method: "get",
+    params
+  })
+}

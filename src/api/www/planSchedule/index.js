@@ -1,4 +1,8 @@
+/**
+ * 任务令管理
+ */
 import request from '@/utils/request';
+
 
 // 列表
 export function schedulingList(params) {
@@ -84,6 +88,20 @@ export function proSecDetail(id) {
   })
 }
 
+// 根据任务令id获取箱子信息
+export function boxInfoList(params) {
+  return request({
+    url: "/production/scheduling/box/list",
+    method: 'get',
+    params
+  }) 
+}
 
-
-
+// mua配置
+export function setMuaConfig(data) {
+  return request({
+    url: "/production/scheduling/config",
+    method: 'post',
+    data
+  }) 
+}

@@ -121,7 +121,12 @@
         width="120"
         :formatter="fnFactoryName"
       />
-      <el-table-column label="本地IP" align="center" prop="domainIp" />
+      <el-table-column
+        label="本地IP"
+        align="center"
+        prop="domainIp"
+        width="100"
+      />
       <el-table-column
         label="在测工序"
         align="center"
@@ -136,7 +141,7 @@
         width="100"
       />
       <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <span :class="[scope.row.status == 0 ? 'text-green' : 'text-red']">
             {{ scope.row.status == 0 ? "启用" : "禁用" }}
@@ -180,9 +185,10 @@
       </el-table-column>
       <el-table-column
         label="操作"
-        header-align="center"
         class-name="small-padding fixed-width"
         align="center"
+        width="160"
+        fixed="right"
       >
         <template slot-scope="scope">
           <el-tooltip
@@ -321,7 +327,7 @@ import { listModelDict } from "@/api/third/computer";
 import axios from "axios";
 
 export default {
-  name: 'Pucs',
+  name: "Pucs",
   components: {
     DetailList,
     CompUpdate,

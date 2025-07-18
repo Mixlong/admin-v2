@@ -23,6 +23,29 @@
           @click="refresh()"
         />
       </el-tooltip>
+      <el-tooltip effect="dark" content="显隐列" placement="top" v-if="columns.length">
+        <el-dropdown
+          trigger="click"
+          :hide-on-click="false"
+          style="padding-left: 12px"
+          v-if="showColumnsType === 'checkbox'"
+        >
+          <el-button size="mini" circle icon="el-icon-menu" />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <div v-for="item in columns" :key="item.key">
+                <el-dropdown-item>
+                  <el-checkbox
+                    :checked="item.visible"
+                    @change="checkboxChange($event, item.label)"
+                    :label="item.label"
+                  />
+                </el-dropdown-item>
+              </div>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-tooltip>
     </el-row>
   </div>
 </template>
@@ -37,8 +60,15 @@ export default {
       type: Boolean,
       default: true,
     },
+    columns: {
+      type: Array,
+      default: () => []
+    },
+    showColumnsType: {
+      type: String,
+      default: "checkbox",
+    },
   },
-
   methods: {
     //搜索
     toggleSearch() {
@@ -48,6 +78,9 @@ export default {
     refresh() {
       this.$emit("queryTable");
     },
+    checkboxChange(event, label) {
+      this.columns.filter(item => item.label === label)[0].visible = event;
+    }
   },
 };
 </script>

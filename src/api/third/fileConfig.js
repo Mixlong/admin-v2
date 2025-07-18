@@ -87,6 +87,17 @@ export function productList(params) {
   })
 }
 
+// 导出生产数据列表
+export function producExporttList(params) {
+  return request({
+    url: '/production/export/list',
+    method: 'get',
+    params
+  })
+}
+
+
+
 // 批量导出仪表生产数据
 export function productMultipleExportList(data) {
   return request({
@@ -163,7 +174,7 @@ export function waterProofList(params) {
 // 撤回
 export function fileCancel(data) {
   return request({
-    url: 'file/config/cancel',
+    url: '/file/config/cancel',
     method: 'put',
     data
   })
@@ -177,6 +188,18 @@ export function resetFileConfig(data) {
     data: data
   })
 }
+
+
+// 获取SN信息
+export function fileConfigSn(params) {
+  return request({
+    url: '/file/config/sn',
+    method: 'get',
+    params
+  })
+}
+
+
 
 // 批量同步
 export function resetBatchSync(data) {
@@ -212,7 +235,6 @@ export function categoryNameList({ name, categoryName }) {
 
 
 // 送样软件数据管理
-
 export function sampleSoftList(params) {
   return request({
     url: "/sample/soft/config/list",
@@ -265,10 +287,30 @@ export function recordList(params) {
   })
 }
 
+// 版本信息
+export function recordVersionList(params) {
+  return request({
+    url: '/record/version/list',
+    method: 'get',
+    params
+  })
+}
+
 // 配件信息
 export function partList(params) {
   return request({
-    url: '/info/part/list',
+    // url: '/info/part/list',
+    url: '/materials/list',
+
+    method: 'get',
+    params
+  })
+}
+
+// 导出配件记录
+export function partExport(params) {
+  return request({
+    url: '/materials/export',
     method: 'get',
     params
   })
@@ -290,5 +332,32 @@ export function trackLogList(params) {
     url: '/tracking/list',
     method: 'get',
     params
+  })
+}
+
+// 气密性测试
+export function recordGasList(params) {
+  return request({
+    url: '/record/gas/list',
+    method: 'get',
+    params
+  })
+}
+
+// 导出
+export function stsProductRecordExport(params) {
+  return request({
+    url: "/record/export",
+    method: "get",
+    params,
+  });
+}
+
+// 批量同步文件
+export function fileBatchSyncConfig(data) {
+  return request({
+    url: '/file/batch/sync/config',
+    method: 'put',
+    data
   })
 }

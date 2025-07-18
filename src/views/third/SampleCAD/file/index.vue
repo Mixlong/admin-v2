@@ -4,11 +4,10 @@
       <el-form-item label="所属品类" prop="categoryName">
         <el-select
           v-model="queryParams.categoryName"
-          @change="changeCategory"
           filterable
-          allow-create
           clearable
           placeholder="请选择品类"
+          @change="getList"
         >
           <el-option
             v-for="dict in dictList"
@@ -39,7 +38,7 @@
           clearable
           :fetch-suggestions="querySearchAsync"
           placeholder="请选择客户"
-          @change="handleQuery"
+          @change="getList"
         />
       </el-form-item>
       <el-form-item label="属性" prop="typeName">
@@ -93,16 +92,48 @@
         :reserve-selection="true"
         :selectable="checkSelectable"
       />
-      <el-table-column label="品类" prop="category" align="center" />
-      <el-table-column label="送样单号" prop="number" align="center">
+      <el-table-column
+        label="品类"
+        prop="category"
+        align="center"
+        width="120"
+        fixed="left"
+      />
+      <el-table-column
+        label="送样单号"
+        prop="number"
+        align="center"
+        width="160"
+        fixed="left"
+      >
         <span slot-scope="{ row }" v-NoData="row.number"></span>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" />
-      <el-table-column label="属性" prop="typeName" align="center" />
+      <el-table-column
+        label="客户"
+        prop="customerName"
+        align="center"
+        width="120"
+      />
+      <el-table-column
+        label="属性"
+        prop="typeName"
+        align="center"
+        width="250"
+      />
       <el-table-column label="属性描述" prop="content" align="center">
-        <span slot-scope="{ row }" v-NoData="row.content"></span>
+        <template slot-scope="{ row }">
+          <span v-if="row.type === 'simulate_script_file'" class="text-green">
+            协议名称： {{ row.content }}
+          </span>
+          <span v-else v-NoData="row.content"></span>
+        </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="updateBy">
+      <el-table-column
+        label="创建人"
+        align="center"
+        prop="updateBy"
+        width="100"
+      >
         <span slot-scope="{ row }" v-NoData="row.updateBy"></span>
       </el-table-column>
       <el-table-column label="创建时间" align="center" width="140">
@@ -112,7 +143,7 @@
         label="产品状态"
         prop="computerStatus"
         align="center"
-        width="100"
+        width="90"
       >
         <template slot-scope="{ row }">
           <el-tag :type="isComputerStatus(row.computerStatus)">
@@ -120,7 +151,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="100">
+      <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
             {{ statusOptions[scope.row.status] }}
@@ -132,6 +163,7 @@
         align="center"
         width="120"
         class-name="small-padding fixed-width"
+        fixed="right"
       >
         <template slot-scope="scope">
           <Tooltip
@@ -170,19 +202,32 @@
             ></el-button>
           </el-tooltip>
 
-          <el-tooltip
-            v-if="isDownloadUrl(scope.row)"
-            class="item font16"
-            effect="dark"
-            content="下载"
-            placement="top-end"
+          <!-- 模拟脚本文件 -->
+          <template
+            v-if="scope.row.type === 'simulate_script_file' && scope.row.file"
           >
-            <svg-icon
-              icon-class="xiazai"
-              class-name="card-panel-icon pointer margin-left-xs"
-              @click="zipFile(scope.row.url)"
+            <Tooltip
+              icon="el-icon-download"
+              class="text-orange"
+              :content="`下载${scope.row.content}脚本`"
+              @click="zipFile(scope.row.file)"
             />
-          </el-tooltip>
+          </template>
+          <template v-else>
+            <el-tooltip
+              v-if="isDownloadUrl(scope.row)"
+              class="item font16"
+              effect="dark"
+              content="下载"
+              placement="top-end"
+            >
+              <svg-icon
+                icon-class="xiazai"
+                class-name="card-panel-icon pointer margin-left-xs"
+                @click="zipFile(scope.row.url)"
+              />
+            </el-tooltip>
+          </template>
 
           <Tooltip
             icon="el-icon-refresh-right"
@@ -376,32 +421,25 @@ export default {
       };
     },
   },
-  created() {
-    const { number } = this.$route.params;
-    console.log(this.$route.params);
-    this.queryParams.number = number;
+  watch: {
+    $route: {
+      handler(routePage) {
+        if (routePage.name === "CadFileConfig") {
+          const { number } = routePage.params;
+
+          if (number) {
+            this.queryParams.number = number;
+          }
+
+          this.handleQuery();
+        }
+      },
+      immediate: true,
+    },
   },
   mounted() {
     categoryComputerDict().then((response) => {
       this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
-
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
-      }
-      if (status) {
-        this.queryParams.status = status;
-      }
-      this.getList();
     });
   },
   methods: {
@@ -458,11 +496,6 @@ export default {
       if (row.computerStatus) {
         return "disabled";
       }
-    },
-    changeCategory(val) {
-      if (!val) return;
-      this.queryParams.computerId = "";
-      this.getList();
     },
     checkSelectable(row) {
       if (row.computerStatus) {
@@ -591,7 +624,7 @@ export default {
     handleUpdate(row, isBatchSync) {
       // shit 改不动了
       this.$refs.compUpdate.reset();
-      
+
       this.$refs.compUpdate.form = Object.assign(
         { idList: [], content: "", testInfo: [] },
         row

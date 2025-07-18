@@ -1,4 +1,72 @@
+// 定义动画效果
+@keyframes bounce {
+  from { transform: translateX(-50%) translateY(0); }
+  to { transform: translateX(-50%) translateY(-5px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .upload-queue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin: 0 -5px;
+  
+  // 已上传项目样式
+  .el-upload-list__item {
+    cursor: move !important; // 表示可拖拽
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 5px !important;
+    
+    // 正在拖拽的元素样式
+    &.dragging {
+      opacity: 0.6;
+      transform: scale(0.95);
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    // 悬停目标样式
+    &.drag-over {
+      border: 2px dashed #409EFF !important;
+      transform: scale(1.02);
+      background-color: rgba(64, 158, 255, 0.05);
+    }
+    
+    // 潜在放置目标样式 - 通过全局监测发现的
+    &.potential-drop-target {
+      border: 2px solid #67C23A !important;
+      box-shadow: 0 0 8px rgba(103, 194, 58, 0.5);
+      position: relative;
+      overflow: visible;
+      
+      // 添加指示标志
+      &::before {
+        content: '⬇';
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #67C23A;
+        font-size: 20px;
+        background: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        animation: bounce 0.5s infinite alternate ease-in-out;
+      }
+    }
+  }
+  
   .video-box {
     width: 100%;
     height: 100%;

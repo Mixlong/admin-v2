@@ -42,26 +42,23 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="配置名称" prop="type">
-        <el-select
-          v-model="queryParams.type"
-          placeholder="请选择配置名称"
+      <el-form-item label="工单号" prop="orderCode">
+        <el-input
+          v-model="queryParams.orderCode"
+          placeholder="请选择工单号"
           clearable
-          style="max-width: 140px"
-        >
-          <el-option
-            v-for="dict in partsList"
-            :key="dict.dictCode"
-            :label="dict.dictValue"
-            :value="dict.dictValue"
-          />
-        </el-select>
+          style="max-width: 130px"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        <el-button type="success" icon="el-icon-download" @click="handleExport">
+          导出
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -78,10 +75,10 @@
       </el-table-column>
       <el-table-column label="品类" prop="categoryName" align="center" />
       <el-table-column label="型号" prop="computerName" align="center" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
+      <el-table-column label="工单号" prop="orderCode" align="center" />
+      <el-table-column label="工单类型" prop="typeName" align="center" />
       <el-table-column label="整机 SN" prop="sn" align="center" />
-      <el-table-column label="配件名称" prop="type" align="center" />
-      <el-table-column label="批次号" prop="no" align="center" />
+      <el-table-column label="批次号" prop="batchNumber" align="center" />
       <el-table-column
         label="创建时间"
         prop="createTime"
@@ -101,10 +98,7 @@
 </template>
 
 <script>
-import {
-  categoryComputerDict,
-  partList,
-} from "@/api/third/fileConfig";
+import { categoryComputerDict, partList, partExport } from "@/api/third/fileConfig";
 
 export default {
   name: "Parts",
@@ -127,19 +121,32 @@ export default {
         categoryName: "",
         computerName: "",
         sn: "",
-        type: ""
-      }
+        orderCode: "",
+        batchNumber: "",
+        type: "",
+      },
     };
   },
+  watch: {
+    queryParams: {
+      handler(newVal) {
+        if (newVal) {
+          this.getList();
+        }
+      },
+      deep: true,
+      immediate: true
+    },
+  },
   created() {
-    const { recordId,sn } = this.$route.query;
-    if (recordId) {
-      this.queryParams.recordId = recordId;
-      this.queryParams.sn = sn;
-    }
-    this.getDicts('sys_parts_name').then(res => {
-      this.partsList = res.data
-    })
+    this.getDicts("sys_parts_name").then((res) => {
+      this.partsList = res.data;
+    });
+  },
+  activated() {
+    const { recordId, sn } = this.$route.query;
+    this.queryParams.recordId = recordId;
+    this.queryParams.sn = sn;
   },
   mounted() {
     categoryComputerDict().then((response) => {
@@ -161,7 +168,6 @@ export default {
       if (status) {
         this.queryParams.status = status;
       }
-      this.getList();
     });
   },
   methods: {
@@ -175,10 +181,12 @@ export default {
       });
     },
     changeCategory(categoryName) {
-      if(!categoryName) return;
+      if (!categoryName) return;
       this.queryParams.computerName = "";
       this.getList();
-      this.computerOptions = this.dictList.filter(item => item.name === categoryName)[0].computerList
+      this.computerOptions = this.dictList.filter(
+        (item) => item.name === categoryName
+      )[0].computerList;
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -191,6 +199,20 @@ export default {
       this.queryParams.sn = "";
       this.resetForm("queryForm");
       this.handleQuery();
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.$modal.confirm('是否确认导出所有配件记录数据项?').then(() => {
+        this.loading = true;
+        return partExport(this.queryParams);
+      }).then(response => {
+        if (response.code === 200 && response.msg) {
+           this.download(response.msg);
+        }
+        this.loading = false;
+      }).catch(() => {
+        this.loading = false;
+      });
     }
   },
 };

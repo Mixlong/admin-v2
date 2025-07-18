@@ -80,12 +80,12 @@
       <el-form-item label="创建时间">
         <el-date-picker
           v-model="dateRange"
-          style="width: 185px"
           value-format="yyyy-MM-dd"
           type="daterange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          style="width: 185px"
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -119,17 +119,62 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="日期" prop="createTime" align="center" />
-      <el-table-column label="品类" prop="categoryName" align="center" />
-      <el-table-column label="转入线别 " prop="lineNum" align="center" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="不良标签" prop="badLabel" align="center" />
+      <el-table-column
+        label="日期"
+        prop="createTime"
+        align="center"
+        width="140"
+      />
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="转入线别"
+        prop="lineNum"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="PCBA SN"
+        prop="pcbaSn"
+        align="center"
+        width="180"
+      />
+      <el-table-column
+        label="不良标签"
+        prop="badLabel"
+        align="center"
+        width="100"
+      />
       <el-table-column label="实际不良原因" prop="badResult" align="center" />
-      <el-table-column label="维修方法" prop="serviceMethod" align="center" />
-      <el-table-column label="维修结果" prop="serviceResult" align="center" />
-      <el-table-column label="产品去向" prop="destination" align="center" />
-      <el-table-column label="维修员" prop="createBy" align="center" />
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column
+        label="维修方法"
+        prop="serviceMethod"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="维修结果"
+        prop="serviceResult"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="产品去向"
+        prop="destination"
+        align="center"
+        width="100"
+      />
+      <el-table-column
+        label="维修员"
+        prop="createBy"
+        align="center"
+        width="100"
+      />
+      <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <Tooltip
             icon="el-icon-edit"
@@ -137,6 +182,7 @@
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
+            class="text-red"
             icon="el-icon-delete"
             content="删除"
             @click="handleDelete(scope.row)"
@@ -320,10 +366,11 @@ import {
   recordUpdate,
   recordDelete,
 } from "@/api/third/testApi";
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "ProdServiceLog",
+  mixins: [CategoryMixin],
   data() {
     const checkPcba = (rule, value, callback) => {
       if (this.Is_Empty(value)) {
@@ -349,8 +396,6 @@ export default {
       // 线号
       testLineList: [],
       isDutLoading: false,
-      // 品类
-      dictList: [],
       // 不良标签
       errLabelList: [],
       // 不良原因
@@ -440,11 +485,6 @@ export default {
     },
   },
   created() {
-    // 品类
-    categoryComputerDict().then((res) => {
-      this.dictList = res.data;
-    });
-
     // 线号
     this.getDicts("sts_test_line").then((res) => {
       this.testLineList = res.data;
@@ -466,8 +506,6 @@ export default {
     });
 
     this.getList();
-
-    // this.Enter_Fn(this.submitTaskForm);
   },
   methods: {
     /** 查询品牌列表 */

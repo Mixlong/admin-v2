@@ -30,7 +30,7 @@
               <p>
                 复测结果：{{ againCheckResultData[afterHData.retestResult] }}
               </p>
-              <p>是否问题：{{ afterHData.isProblem === 0 ? "是" : "否" }}</p>
+              <p>是否异常：{{ afterHData.isProblem === 0 ? "是" : "否" }}</p>
             </div>
           </template>
         </el-step>

@@ -25,9 +25,9 @@
         >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
       <el-row :gutter="10" class="fr mt5">
         <el-col :span="1.5">
@@ -35,10 +35,11 @@
             type="primary"
             icon="el-icon-plus"
             size="mini"
+            v-hasPermi="['third:epc:type:add']"
             @click="handleAdd"
-            v-hasPermi="['third:dev:add']"
-            >新增</el-button
           >
+            新增
+          </el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -51,15 +52,15 @@
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="键" prop="key" align="center" width="140" />
-      <el-table-column label="值" prop="value" align="center" width="140" />
-      <el-table-column label="上传文件" align="center" width="140">
+      <el-table-column label="值" prop="value" align="center" width="160" />
+      <el-table-column label="上传文件" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="scope.row.up === 1 ? 'success' : 'danger'">
             {{ scope.row.up === 1 ? "是" : "否" }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort" align="center" width="140" />
+      <el-table-column label="排序" prop="sort" align="center" width="100" />
       <el-table-column label="可见性" align="center">
         <template slot-scope="scope">
           <el-tag
@@ -75,14 +76,14 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="140"
+        width="100"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         sortable
-        width="140"
+        width="150"
       />
       <el-table-column
         label="操作"
@@ -92,17 +93,17 @@
       >
         <template slot-scope="scope">
           <Tooltip
-            v-if="checkPermi(['third:dev:edit']) || checkRole(['admin'])"
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:epc:type:update']"
             @click="handleUpdate(scope.row)"
           />
 
           <Tooltip
-            v-if="checkPermi(['third:dev:auth']) || checkRole(['admin'])"
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:epc:type:delete']"
             @click="handleStatusChange(scope.row)"
           />
         </template>
@@ -171,7 +172,7 @@
           style="width: 100%"
           class="flex checkbox-wrap"
         >
-          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList" >
+          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList">
             <el-checkbox
               v-for="(item, index) in roleTypeDictList"
               :key="index"
@@ -184,7 +185,9 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="isSubLoading" @click="submitForm"
+          >确 定</el-button
+        >
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -232,6 +235,7 @@ export default {
   name: "EpcType",
   data() {
     return {
+      isSubLoading: false,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -412,22 +416,31 @@ export default {
             this.form.typeRoleList.push(this.roleTypeDictMap2[r]);
           });
 
+          this.isSubLoading = true;
           if (this.form.id !== undefined) {
-            editType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            editType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("修改成功");
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubLoading = false;
+              });
           } else {
-            addType(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              }
-            });
+            addType(this.form)
+              .then((response) => {
+                if (response.code === 200) {
+                  this.msgSuccess("新增成功");
+                  this.open = false;
+                  this.getList();
+                }
+              })
+              .finally(() => {
+                this.isSubLoading = false;
+              });
           }
         }
       });

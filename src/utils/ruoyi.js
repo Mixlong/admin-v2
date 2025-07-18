@@ -3,6 +3,9 @@
  * Copyright (c) 2019 ruoyi
  */
 import reqUrl from "@/utils/requestUrl";
+import { saveAs } from "file-saver";
+import moment from "moment";
+import { Loading } from "element-ui";
 
 const baseURL = reqUrl;
 /**
@@ -27,6 +30,24 @@ export function extend(source) {
     target = source;
   }
   return target;
+}
+
+/**
+ *  时间戳秒转化为时分秒
+ * @param {时间戳，默认秒} time
+ * @param {*} pattern
+ * @param {时间戳类型} timeType  秒数 - 's' ,  毫秒数 - 'ms'
+ * @returns
+ */
+export function formattedTime({ time, pattern = "HH:mm:ss", timeType = 's' } = {}) {
+  try {
+    if (is_Empty(time)) {
+      return '- - -';
+    }
+    return moment().startOf('day').add(time, timeType).format(pattern);
+  } catch (error) {
+    console.error(error);
+  }
 }
 // 日期格式化
 export function parseTime(time, pattern) {
@@ -118,14 +139,16 @@ export function addDateRange(
 
 // 回显数据字典
 export function selectDictLabel(datas, value) {
-  var actions = [];
-  Object.keys(datas).some((key) => {
-    if (datas[key].dictValue == "" + value) {
-      actions.push(datas[key].dictLabel);
-      return true;
-    }
-  });
-  return actions.join("");
+  // var actions = [];
+  // Object.keys(datas).some((key) => {
+  //   if (datas[key].dictValue == "" + value) {
+  //     actions.push(datas[key].dictLabel);
+  //     return true;
+  //   }
+  // });
+  // return actions.join("");
+  console.log(datas, value, datas.find(item => item.dictValue === String(value))?.dictLabel)
+  return datas.find(item => +item.dictValue === +value)?.dictLabel;
 }
 
 // 回显数据字典（字符串数组）
@@ -159,28 +182,39 @@ export function downloadFile({
   aFn,
   queryParams,
 } = {}) {
+  let downloadLoadingInstance = null;
+  
   this.$confirm(title, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(() => {
+      downloadLoadingInstance = Loading.service({
+        text: "正在导出数据，请稍候",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+
       return aFn(queryParams);
     })
     .then((response) => {
       const fileName = response.msg;
-      // const url =
-      //   baseURL +
-      //   "/common/download?fileName=" +
-      //   encodeURI(fileName) +
-      //   "&delete=" +
-      //   true;
+
       this.download(fileName);
-    });
+      downloadLoadingInstance.close()
+    }).catch(() => {
+      downloadLoadingInstance.close()
+    })
 }
 
 // 删除按钮
-export function HandleDelete({ title = "是否确认删除该项?", delFn, data, cb } = {}) {
+export function HandleDelete({
+  title = "是否确认删除该项?",
+  delFn,
+  data,
+  cb,
+} = {}) {
   this.$confirm(title, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -192,7 +226,7 @@ export function HandleDelete({ title = "是否确认删除该项?", delFn, data,
     .then(() => {
       cb();
       this.msgSuccess("删除成功");
-    })
+    });
 }
 
 // 字符串格式化(%s )

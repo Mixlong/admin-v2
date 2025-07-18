@@ -103,7 +103,6 @@ service.interceptors.response.use(
 
 // 通用下载方法
 export function download(url, data, filename, config) {
-  console.log("url", url)
   let downloadLoadingInstance = Loading.service({
     text: "正在下载数据，请稍候",
     spinner: "el-icon-loading",

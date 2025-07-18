@@ -74,7 +74,9 @@ export default {
     insertToBody() {
       const elx = this.$refs.rightPanel
       const body = document.querySelector('body')
-      body.insertBefore(elx, body.firstChild)
+      if(body.contains(body.firstChild)) {
+        body.insertBefore(elx, body.firstChild)
+      }
     }
   }
 }

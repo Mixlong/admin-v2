@@ -35,8 +35,8 @@
             type="primary"
             icon="el-icon-plus"
             size="mini"
+            v-hasPermi="['third:ids:type:add']"
             @click="handleAdd"
-            v-hasPermi="['third:dev:add']"
           >
             新增
           </el-button>
@@ -52,15 +52,15 @@
     >
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="键" prop="key" align="center" width="140" />
-      <el-table-column label="值" prop="value" align="center" width="140" />
-      <el-table-column label="上传文件" align="center" width="140">
+      <el-table-column label="值" prop="value" align="center" width="160" />
+      <el-table-column label="上传文件" align="center" width="100">
         <template slot-scope="scope">
           <el-tag :type="scope.row.up === 1 ? 'success' : 'danger'">
             {{ scope.row.up === 1 ? "是" : "否" }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort" align="center" width="140" />
+      <el-table-column label="排序" prop="sort" align="center" width="100" />
       <el-table-column label="可见性" align="center">
         <template slot-scope="scope">
           <el-tag
@@ -76,13 +76,14 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="140"
+        width="100"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         width="140"
+        sortable
       />
       <el-table-column
         label="操作"
@@ -92,14 +93,14 @@
       >
         <template slot-scope="scope">
           <Tooltip
-            v-if="checkPermi(['third:dev:edit']) || checkRole(['admin'])"
+            v-hasPermi="['third:ids:type:update']"
             icon="el-icon-edit"
             content="编辑"
             @click="handleUpdate(scope.row)"
           />
 
           <Tooltip
-            v-if="checkPermi(['third:dev:auth']) || checkRole(['admin'])"
+            v-hasPermi="['third:ids:type:delete']"
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"

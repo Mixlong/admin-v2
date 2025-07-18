@@ -9,7 +9,6 @@
           allow-create
           clearable
           placeholder="请选择品类"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in dictList"
@@ -30,7 +29,6 @@
           placeholder="请选择仪表型号"
           @change="getList()"
           :remote-method="getComputerNameList"
-          style="width: 160px"
         >
           <el-option
             v-for="dict in computerOptions"
@@ -42,16 +40,25 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          @click="handleQuery"
+        >
           搜索
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        <el-button
+          icon="el-icon-refresh"
+          @click="resetQuery"
+        >
+          重置
+        </el-button>
       </el-form-item>
       <el-button
         class="fr"
-        v-if="checkRole(['project_manager', 'admin', 'product'])"
         type="primary"
         icon="el-icon-plus"
+        v-hasPermi="['third:productFamily:add']"
         @click="handleAdd"
       >
         新增
@@ -67,12 +74,12 @@
         label="产品型号"
         prop="name"
         align="center"
-        width="200"
+        width="140"
       />
       <el-table-column label="描述" prop="desc" align="center">
         <span slot-scope="scope" v-NoData="scope.row.desc" />
       </el-table-column>
-      <el-table-column label="状态" align="center" width="120">
+      <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -82,29 +89,39 @@
           ></el-switch>
         </template>
       </el-table-column>
+      <el-table-column label="STS" align="center" width="100">
+        <template slot-scope="{ row }">
+          <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{
+            row.isSts === 1 ? "是" : "否"
+          }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建人"
         prop="createBy"
         align="center"
-        width="120"
+        width="100"
       />
       <el-table-column
         label="创建时间"
         prop="createTime"
         align="center"
         width="140"
+        sortable
       />
       <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:productFamily:update']"
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:productFamily:delete']"
             @click="handleDelete(scope.row)"
           />
         </template>
@@ -171,21 +188,23 @@ export default {
     this.handleFirstLink();
     this.getList();
   },
-  activated() {
+  async activated() {
+    this.dictList = await this.getTypeCategory();
     this.handleCacheLink();
   },
   methods: {
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
-      console.log(this.$route)
       const { categoryId, computerId } = this.$route.params;
 
-      if(categoryId && computerId) {
+      if (categoryId && computerId) {
         this.changeCategory(categoryId);
         this.queryParams.key = categoryId;
         this.queryParams.computerId = computerId;
       } else {
         this.queryParams.key = this.dictList[0].id; // 默认取第一项
+
+        this.computerOptions = this.dictList[0].computerList;
       }
     },
     handleCacheLink() {
@@ -206,7 +225,7 @@ export default {
             resolve(res.data);
           });
         } catch (error) {
-          reject(error)
+          reject(error);
         }
       });
     },
@@ -214,7 +233,9 @@ export default {
     changeCategory(categoryId) {
       this.queryParams.computerId = "";
 
-      this.computerOptions = this.dictList.filter((item) => item.id === categoryId)[0]?.computerList;
+      this.computerOptions = this.dictList.filter(
+        (item) => item.id === categoryId
+      )[0]?.computerList;
     },
     // 型号查询
     getComputerNameList(name) {
@@ -251,10 +272,10 @@ export default {
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
+      
       detailComputer(row.id).then((res) => {
         let { data } = res;
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
-        data.otherOptions = data.otherOptions ? data.otherOptions : {};
         this.$refs.compUpdate.dialogVisible = true;
         this.$refs.compUpdate.disabled = true;
         this.$refs.compUpdate.isCopyProduct = false;
@@ -359,8 +380,8 @@ export default {
         title: '是否确认删除产品型号为"' + row.name + '"的数据项?',
         delFn: authComputer,
         data: { id: row.id, status: 1 },
-        cb: this.getList
-      })
+        cb: this.getList,
+      });
     },
   },
 };

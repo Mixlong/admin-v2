@@ -2,32 +2,27 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="产品品类" prop="categoryId">
-        <el-select
-          v-model="queryParams.categoryId"
-          filterable
-          clearable
-          placeholder="请选择产品品类"
-          class="w100"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.categoryId" filterable clearable placeholder="请选择产品品类"
+          @change="queryParams.computerId = ''">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="仪表型号" prop="computerId">
+        <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+          placeholder="请选择仪表型号" @change="getList" @focus="getComputerData" :remote-method="getComputerNameList"
+          style="width: 160px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
           重 置
+        </el-button>
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddProblem">
+          新增历史问题
         </el-button>
       </el-form-item>
     </el-form>
@@ -38,128 +33,268 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品型号"
-        prop="name"
-        align="center"
-        width="150"
-      />
+      <el-table-column label="产品型号" prop="name" align="center" width="150" />
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="许可状态" align="center" width="120">
-        <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.isLicense"
-            :active-value="1"
-            :inactive-value="0"
-            @change="handleStatus(scope.row)"
-          />
+        <template slot-scope="{ row }">
+          <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click" :style="{backgroundColor:row.isLicense === 0 ? '#ff4949':'#5cb85c',borderRadius:'12px'}">
+            {{ row.isLicense === 0 ? "未许可" : "已许可" }}
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-if="row.isLicense === 1" @click.native="handleStatus(0, row)">取消许可</el-dropdown-item>
+              <template v-if="row.isLicense === 0">
+                <el-dropdown-item @click.native="handleStatus(1, row)">许可</el-dropdown-item>
+                <el-dropdown-item @click.native="handleStatus(2, row)">强制许可</el-dropdown-item>
+              </template>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
-      <el-table-column
-        label="操作人"
-        prop="createBy"
-        align="center"
-        width="150"
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="180"
-      >
+      <el-table-column label="历史问题" align="center" width="240">
+        <template slot-scope="{ row }">
+          <div v-if="row.issuesList && row.issuesList.length > 0" style="text-align: left;height:50px ;overflow-y: scroll;">
+            <div v-for="(issue, index) in row.issuesList" :key="issue.id || index" style="margin-bottom: 5px;">
+              <div>
+                <span style="font-weight: bold;">时间:</span> {{ parseTime(issue.createTime) }}
+              </div>
+              <div>
+                <span style="font-weight: bold;">问题描述:</span> {{ issue.historicalIssues }}
+              </div>
+              <div>
+                <span style="font-weight: bold;">状态:</span>
+                <el-tag :type="issue.status === 1 ? 'success' : 'info'" size="mini">
+                  {{ issue.status === 1 ? '已处理' : '未处理' }}
+                </el-tag>
+
+              </div>
+              <el-divider class="custom-divider" v-if="index < row.issuesList.length - 1" style="margin: 5px 0;"></el-divider>
+            </div>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作人" prop="createBy" align="center" width="100" show-overflow-tooltip />
+      <el-table-column label="创建时间" prop="createTime" align="center" width="140">
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="120">
-        <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-tickets"
-            content="操作记录"
-            @click="handleLog(scope.row.id)"
-          />
+      <el-table-column label="操作" align="center" width="100">
+        <template slot-scope="{row}">
+          <Tooltip icon="el-icon-tickets" content="操作记录" @click="handleLog(row.id)" />
+          <Tooltip icon="el-icon-time" v-if="row.issuesList.length > 0" content="处理历史问题" @click="handleViewHistoricalIssues(row)" />
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- 操作记录 -->
+    <el-dialog
+      title="新增历史问题"
+      :visible.sync="isAddProblemDialogVisible"
+      width="600px"
+      center
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <el-form ref="addProblemFormRef" :model="addProblemForm" label-width="100px" :rules="addProblemRules">
+        <el-form-item label="历史问题点" prop="historicalIssuePoint">
+          <el-input
+            v-model="addProblemForm.historicalIssuePoint"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入历史问题点"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="涉及型号">
+          <div v-for="(model, index) in addProblemForm.involvedModels" :key="index" style="display: flex; margin-bottom: 10px;">
+            <el-select v-model="model.categoryId" filterable clearable placeholder="品类" style="width: 150px; margin-right: 10px;" @change="model.computerId = ''">
+              <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+            </el-select>
+            <el-select v-model="model.computerId" filterable remote clearable placeholder="型号" style="width: 150px;" @focus="getComputerDataForAddProblem(model)" :remote-method="(query) => getComputerNameListForAddProblem(query, model)">
+              <el-option v-for="dict in model.computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+            </el-select>
+            <el-button v-if="addProblemForm.involvedModels.length > 1" type="danger" icon="el-icon-minus" size="mini" circle @click="removeInvolvedModel(index)" style="margin-left: 10px;"></el-button>
+            <el-button v-if="index === addProblemForm.involvedModels.length - 1" type="success" icon="el-icon-plus" size="mini" circle @click="addInvolvedModel" style="margin-left: 10px;"></el-button>
+          </div>
+
+        </el-form-item>
+        <el-form-item label="批量关闭许可" prop="isBatchCloseLicense">
+          <el-switch v-model="addProblemForm.isBatchCloseLicense"></el-switch>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isAddProblemDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitAddProblemForm">提 交</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog
+      title="历史问题列表"
+      :visible.sync="isHistoricalIssuesListDialogVisible"
+      width="1000px"
+      center
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <el-table v-loading="loading" :data="historicalIssuesList" border height="400">
+        <el-table-column label="序号" width="58" type="index" align="center" />
+        <el-table-column label="问题点" prop="historicalIssues" align="center" show-overflow-tooltip />
+        <el-table-column label="创建时间" prop="createTime" align="center" width="150">
+          <template slot-scope="{ row }">
+            {{ parseTime(row.createTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="处理状态" align="center" width="100">
+          <template slot-scope="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="mini">
+              {{ row.status === 1 ? '已处理' : '未处理' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="100">
+          <template slot-scope="{ row }">
+            <el-button
+              v-if="row.status === 0" 
+              type="text"
+              size="mini"
+              @click="submitHandleProblem(row)" 
+            >
+              确认处理完成
+            </el-button>
+            <span v-else>--</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isHistoricalIssuesListDialogVisible = false">关 闭</el-button>
+      </span>
+    </el-dialog>
+
     <el-dialog title="操作记录" center :visible.sync="isTask">
-      <el-table
-        v-loading="loading"
-        :data="logList"
-        top="1vh"
-        border
-        height="500"
-      >
+      <el-table v-loading="loading" :data="logList" top="1vh" border height="500">
         <el-table-column label="序号" width="58" type="index" align="center">
           <template slot-scope="scope">
             {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column
-          label="文件名称"
-          prop="typeName"
-          align="center"
-        />
+        <el-table-column label="文件名称" prop="typeName" align="center" />
         <el-table-column label="文件key" prop="type" align="center" />
         <el-table-column label="操作内容" prop="msg" align="center" />
-        <el-table-column
-          label="操作人"
-          prop="operationName"
-          align="center"
-          width="150"
-        />
-        <el-table-column
-          label="创建时间"
-          prop="operationTime"
-          align="center"
-          width="180"
-        />
+        <el-table-column label="操作人" prop="operationName" align="center" width="150" />
+        <el-table-column label="创建时间" prop="operationTime" align="center" width="180" />
       </el-table>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import { addHistoryIssue, getHistoryIssuesListByComputerId, handleHistoryIssue } from '@/api/third/issuesApi';
 import {
   computerLicenseList,
   computerUpdate,
   computerLogList,
 } from "@/api/third/testApi";
-import { categoryComputerDict } from "@/api/third/fileConfig";
+import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 
 export default {
-  name: 'ProdPermit',
+  name: "ProdPermit",
   data() {
     return {
-      // 遮罩层
       loading: false,
+      isCLoading: false,
       list: [],
-      // 任务变更
       isTask: false,
       taskForm: {},
-      // 品类
       dictList: [],
-      // 操作日志
+      computerOptions: [],
       logList: [],
-      // 查询参数
       queryParams: {
         p: 1,
         l: 10,
         categoryId: "",
+        computerId: "",
       },
+
+      isAddProblemDialogVisible: false,
+      addProblemForm: {
+        historicalIssuePoint: "",
+        involvedModels: [
+          { categoryId: "", computerId: "", computerOptions: [] }
+        ],
+        isBatchCloseLicense: false,
+      },
+      addProblemRules: {
+        historicalIssuePoint: [
+          { required: true, message: "历史问题点不能为空", trigger: "blur" }
+        ],
+      },
+
+      isHistoricalIssuesListDialogVisible: false,
+    historicalIssuesList: [],
+      currentComputerIdForIssues: null,
     };
   },
-  created() {
-    // 品类
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-    });
+  watch: {
+    $route: {
+      async handler(route) {
+        if (route.name === "ProdPermit") {
+          this.queryParams.categoryId = "";
+          this.queryParams.computerId = "";
 
-    this.getList();
+          const { categoryId, computerId } = route?.params;
+
+          if (categoryId && computerId) {
+            this.dictList = await this.getCategoryData();
+            this.queryParams.categoryId = categoryId;
+            this.getComputerData();
+            this.queryParams.computerId = computerId;
+
+            this.handleQuery();
+          } else {
+            this.dictList = await this.getCategoryData();
+            this.queryParams.categoryId = this.dictList[0]?.id;
+            this.getComputerData();
+
+            this.handleQuery();
+          }
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
-    /** 查询品牌列表 */
+    getCategoryData() {
+      return new Promise((resolve, reject) => {
+        try {
+          categoryComputerDict().then((res) => {
+            resolve(res.data);
+          });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    getComputerData() {
+      if (this.queryParams.categoryId && this.dictList.length) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.id === this.queryParams.categoryId
+        )[0].computerList;
+      }
+    },
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = true;
+        computerNameList({
+          name,
+          categoryId: this.queryParams.categoryId,
+        })
+          .then((res) => {
+            this.computerOptions = res.data;
+          })
+          .finally(() => {
+            this.isCLoading = false;
+          });
+      } else {
+        this.computerOptions = [];
+      }
+    },
     getList() {
       this.loading = true;
       computerLicenseList(this.queryParams)
@@ -170,10 +305,18 @@ export default {
           this.loading = false;
         });
     },
-    // 启用、禁用
-    handleStatus(row) {
-      let text = row.isLicense ? "许可" : "不许可";
-      this.$confirm("确认要" + text, "警告", {
+    handleStatus(isLicense, row) {
+      let text;
+
+      const licenseData = {
+        0: "取消许可",
+        1: "许可",
+        2: "强制许可",
+      }
+
+      text = licenseData[isLicense];
+
+      this.$confirm("确认要" + `"${text}"` + "吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
@@ -181,27 +324,29 @@ export default {
         .then(function () {
           return computerUpdate({
             id: row.id,
-            isLicense: row.isLicense,
+            isLicense
           });
         })
-        .then(() => {
-          this.msgSuccess(text + "成功");
+        .then((res) => {
+          if (res.data === 1) {
+            this.msgSuccess("操作成功");
+            this.getList();
+          } else {
+            this.msgError("配置总览未审核");
+          }
+        }).catch(() => {
+
         })
-        .catch(function () {
-          row.isLicense = row.isLicense ? 0 : 1;
-        });
     },
-    /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
       this.getList();
     },
-    /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
+      this.queryParams.categoryId = this.dictList[0]?.id;
       this.handleQuery();
     },
-    // 任务变更
     async handleLog(id) {
       this.isTask = true;
 
@@ -212,6 +357,138 @@ export default {
         console.error(error);
       }
     },
+
+    handleAddProblem() {
+      this.resetForm("addProblemFormRef");
+      this.addProblemForm = {
+        historicalIssuePoint: "",
+        involvedModels: [
+          { categoryId: "", computerId: "", computerOptions: [] }
+        ],
+        isBatchCloseLicense: false,
+      };
+      this.isAddProblemDialogVisible = true;
+    },
+
+    submitAddProblemForm() {
+      this.$refs.addProblemFormRef.validate(valid => {
+        if (valid) {
+          const computerIdsToSend = this.addProblemForm.involvedModels.map(model => 
+            model.computerId
+          ).filter(id => id);
+
+          if (computerIdsToSend.length === 0) {
+            this.msgError("请至少添加一个涉及型号");
+            return;
+          }
+
+          // Check for duplicate model selections
+          const uniqueIds = new Set(computerIdsToSend);
+          if (uniqueIds.size !== computerIdsToSend.length) {
+            this.msgError("涉及型号不能重复");
+            return;
+          }
+
+          const params = {
+            historicalIssues: this.addProblemForm.historicalIssuePoint,
+            computerIds: computerIdsToSend,
+            isCancel: this.addProblemForm.isBatchCloseLicense ? 1 : 0,
+          };
+
+          addHistoryIssue(params).then(res => {
+            this.msgSuccess("新增历史问题成功");
+            this.isAddProblemDialogVisible = false;
+            this.getList();
+          }).catch(err => {
+            console.error("新增历史问题失败", err);
+            this.msgError("新增历史问题失败");
+          });
+        } else {
+          this.msgError("请检查表单填写");
+          return false;
+        }
+      });
+    },
+
+    addInvolvedModel() {
+      const lastModel = this.addProblemForm.involvedModels[this.addProblemForm.involvedModels.length - 1];
+      this.addProblemForm.involvedModels.push({
+        categoryId: lastModel.categoryId,
+        computerId: "",
+        computerOptions: lastModel.computerOptions
+      });
+    },
+
+    removeInvolvedModel(index) {
+      this.addProblemForm.involvedModels.splice(index, 1);
+    },
+
+    getComputerDataForAddProblem(model) {
+      if (model.categoryId && this.dictList.length) {
+        const category = this.dictList.find(item => item.id === model.categoryId);
+        model.computerOptions = category ? category.computerList : [];
+      } else {
+        model.computerOptions = [];
+      }
+    },
+
+    getComputerNameListForAddProblem(name, model) {
+      if (name && model.categoryId) {
+        this.isCLoading = true;
+        computerNameList({
+          name,
+          categoryId: model.categoryId,
+        })
+          .then((res) => {
+            model.computerOptions = res.data;
+          })
+          .finally(() => {
+            this.isCLoading = false;
+          });
+      } else {
+        model.computerOptions = [];
+      }
+    },
+
+    async handleViewHistoricalIssues(row) {
+      this.currentComputerIdForIssues = row.id;
+      this.isHistoricalIssuesListDialogVisible = true;
+      this.loading = true;
+      try {
+        const res = await getHistoryIssuesListByComputerId(row.id); 
+        this.historicalIssuesList = res.data;
+      } catch (error) {
+        console.error("获取历史问题列表失败", error);
+        this.msgError("获取历史问题列表失败");
+        this.historicalIssuesList = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    submitHandleProblem(issueRow) { 
+      this.$confirm("确认该问题已处理完成吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        handleHistoryIssue({ id: issueRow.id }).then(res => { 
+          this.msgSuccess("问题处理成功");
+          this.handleViewHistoricalIssues({ id: this.currentComputerIdForIssues });
+          this.getList();
+        }).catch(err => {
+          console.error("处理历史问题失败", err);
+          this.msgError("处理历史问题失败");
+        });
+      }).catch(() => {
+      });
+    },
   },
 };
 </script>
+<style>
+.custom-divider{
+  margin:5px 0 ;
+} 
+
+</style>

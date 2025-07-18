@@ -245,7 +245,7 @@ export default {
         6: "AUTO",
       },
       //   休眠时间
-      sleepTimeList: [...Array(11)].map((v, i) => i),
+      sleepTimeList: [...Array(100)].map((v, i) => i),
       //   系统电压
       dicts_voltage: [24, 36, 48, 52, 60, 72],
       //   助力档位数
@@ -257,7 +257,7 @@ export default {
       // 助力开始磁钢数
       assistStartMagnetNumberData: [...Array(63)].map((v, i) => i + 2),
       // 助力限速门限
-      assistLimitData: [...Array(90)].map((v, i) => i + 10),
+      assistLimitData: [...Array(256)].map((v, i) => i),
       // 电量变化时间
       batteryVoltageChangeTimeData: [...Array(60)].map((v, i) => i + 1),
       // 速度平滑等级

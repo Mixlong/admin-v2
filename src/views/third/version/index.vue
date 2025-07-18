@@ -18,14 +18,19 @@
       </el-form-item>
       <el-form-item>
         <el-button
-          v-if="checkRole(['project_manager', 'admin', 'product'])"
+          v-hasPermi="['third:hardVersion:add']"
           type="primary"
           icon="el-icon-plus"
           @click="handleAdd"
         >
           新增
         </el-button>
-        <el-button type="primary" @click="getList">刷新</el-button>
+        <el-button
+          type="primary"
+          v-hasPermi="['third:hardVersion:refresh']"
+          @click="getList"
+          >刷新</el-button
+        >
       </el-form-item>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight(38)">
@@ -47,18 +52,25 @@
         </template>
       </el-table-column>
       <el-table-column label="创建人" prop="createBy" align="center" />
-      <el-table-column label="创建时间" prop="createTime" align="center" sortable />
+      <el-table-column
+        label="创建时间"
+        prop="createTime"
+        align="center"
+        sortable
+      />
       <el-table-column label="操作" align="center">
         <template slot-scope="scope">
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
+            v-hasPermi="['third:hardVersion:update']"
             @click="handleUpdate(scope.row)"
           />
           <Tooltip
             icon="el-icon-delete"
             :className="['text-red']"
             content="删除"
+            v-hasPermi="['third:hardVersion:delete']"
             @click="handleDelete(scope.row)"
           />
         </template>
@@ -79,7 +91,6 @@
 <script>
 import { listComputer, authComputer, changeStatus } from "@/api/third/version";
 import { typeCategory } from "@/api/third/category";
-
 import CompUpdate from "./components/update";
 
 export default {
@@ -114,8 +125,10 @@ export default {
       },
     };
   },
-  mounted() {
-    this.getTypeCategory();
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.getTypeCategory();
+    })
   },
   methods: {
     // 获取品类

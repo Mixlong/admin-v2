@@ -1,31 +1,44 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
+    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" :inline="true">
       <el-form-item label="客户" prop="key">
-        <el-autocomplete size="small" clearable v-model="queryParams.key" :fetch-suggestions="querySearchAsync"
-          placeholder="请输入客户" @select="handleQuery"></el-autocomplete>
+        <el-autocomplete v-model="queryParams.key" clearable placeholder="请输入客户" :fetch-suggestions="querySearchAsync"
+          @select="handleQuery" style="width: 140px">
+          <template slot-scope="{ item }">
+            <el-tooltip :content="item.value" placement="right">
+              <div class="autocomplete-item" :title="item.value">
+                {{ item.value }}
+              </div>
+            </el-tooltip>
+          </template>
+        </el-autocomplete>
       </el-form-item>
       <el-form-item label="产品型号" prop="baseModel">
-        <el-input size="small" clearable v-model="queryParams.baseModel" placeholder="请输入产品型号"
-          @keyup.enter.native="handleQuery">
+        <el-input v-model="queryParams.baseModel" clearable placeholder="请输入产品型号" @keyup.enter.native="handleQuery"
+          style="width: 140px">
+        </el-input>
+      </el-form-item>
+      <el-form-item label="SN" prop="sn">
+        <el-input v-model="queryParams.sn" clearable placeholder="请输入需求" @keyup.enter.native="handleQuery"
+          style="width: 140px">
         </el-input>
       </el-form-item>
       <el-form-item label="需求" prop="demand">
-        <el-input size="small" clearable v-model="queryParams.demand" placeholder="请输入需求"
-          @keyup.enter.native="handleQuery">
+        <el-input clearable v-model="queryParams.demand" placeholder="请输入需求" @keyup.enter.native="handleQuery"
+          style="width: 140px">
         </el-input>
       </el-form-item>
-      <el-form-item label="送样时间" prop="sendTime">
-        <el-date-picker ref="datePicker" size="small" clearable v-model="queryParams.sendTime" type="date"
-          placeholder="选择日期时间" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="handleQuery">
-        </el-date-picker>
-      </el-form-item>
       <el-form-item label="状态" prop="searchState">
-        <el-select style="width: 130px" size="small" clearable v-model="queryParams.searchState" placeholder="请选择状态"
+        <el-select style="width: 130px" clearable v-model="queryParams.searchState" placeholder="请选择状态"
           @change="handleQuery">
           <el-option v-for="(item, key) in pmList" :key="key" :label="item" :value="key">
           </el-option>
         </el-select>
+      </el-form-item>
+      <el-form-item label="送样时间" prop="sendTime">
+        <el-date-picker ref="datePicker" clearable v-model="queryParams.sendTime" type="date" placeholder="选择日期时间"
+          format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="handleQuery" style="width: 140px">
+        </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
@@ -35,68 +48,94 @@
           重置
         </el-button>
       </el-form-item>
-      <el-row :gutter="20" type="flex" align="middle" justify="start" class="mt5 mb10" style="width: 300px">
-        <el-col>
+    </el-form>
+
+    <el-row :gutter="15" class="margin-bottom-xs" type="flex" justify="space-between" align="middle">
+      <div class="flex align-center">
+        <el-col :span="1.5">
           <el-checkbox v-model="queryParams.myself" @change="handleQuery" false-label="0" true-label="1">
             查看我的
           </el-checkbox>
         </el-col>
-        <el-col>
-          <el-checkbox v-model="viewParams.state" @change="simpleView">
-            简略信息
-          </el-checkbox>
-        </el-col>
-        <el-col>
+        <el-col :span="1.5">
           <el-checkbox v-model="queryParams.state" @change="handleQuery">
             显示已完成
           </el-checkbox>
         </el-col>
-        <el-col v-if="checkRole(['sale', 'admin'])">
+      </div>
+
+      <div>
+        <el-col v-hasPermi="['third:sample:apply']" :span="1.5">
           <el-badge :value="applyTotal > 0 ? applyTotal : ''" class="item">
             <el-button size="mini" @click="showApply">申请列表</el-button>
           </el-badge>
         </el-col>
-        <el-col>
-          <el-button part="warning" icon="el-icon-download" size="mini" @click="handleExport">
+        <el-col :span="1.5">
+          <el-button v-hasPermi="['third:sample:export']" part="warning" icon="el-icon-download" size="mini"
+            @click="handleExport">
             导出
           </el-button>
         </el-col>
-        <el-col>
-          <el-button v-if="checkRole(['sale', 'admin'])" type="primary" icon="el-icon-plus" size="mini"
+
+        <el-col :span="1.5">
+          <el-button v-hasPermi="['third:sample:add']" type="primary" icon="el-icon-plus" size="mini"
             @click="handleAdd">
             新增
           </el-button>
         </el-col>
-      </el-row>
-    </el-form>
 
-    <el-table :row-class-name="rowName" v-loading="loading" :data="brandList" :height="tableHeight()"
-      :cell-style="cellStyle" @cell-click="cellClick" border>
-      <el-table-column label="基本信息" align="left" header-align="center" width="220">
+        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
+      </div>
+    </el-row>
+
+    <!--       ref="tableRef"
+      class="table-scrollContainer"  -->
+
+    <el-table id="drag_table" v-loading="loading" :data="brandList" :row-class-name="rowName" :height="tableHeight()"
+      :cell-class-name="cellClassName" @cell-dblclick="cellClick" border>
+      <el-table-column label="基本信息" align="left" header-align="center" width="220" fixed v-if="columns[0].visible">
         <template slot-scope="{ row }">
-          <p v-if="row.number">送样单号: {{ row.number }}</p>
-          <p>客户：{{ row.customerName }}</p>
-          <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
-            产品品类：
-            <el-tag style="margin: 5px 0 0 0" size="small">{{ tag }}</el-tag>
-          </div>
-          <p>数量：{{ row.sendNum }}</p>
-          <p v-show="row.harkVersion">硬件版本号：{{ row.harkVersion }}</p>
-          <p v-show="row.bootVersion">Boot版本号：{{ row.bootVersion }}</p>
-          <p v-show="row.appVersion">APP版本号：{{ row.appVersion }}</p>
-          <p v-show="row.uiVersion">UI版本号：{{ row.uiVersion }}</p>
+          <div v-if="row.number">送样单号: {{ row.number }}</div>
+          <div>客户：{{ row.customerName }}</div>
+          <template v-if="row.type === 0 || row.type === null">
+            <div class="tag-box" :key="tag" v-for="tag in row.baseModel">
+              产品品类：
+              <el-tag style="margin: 5px 0 0 0" size="mini">{{ tag }}</el-tag>
+            </div>
+          </template>
+
+          <template v-if="row.type === 1">
+            <div class="tag-box" :key="item.id" v-for="item in row.sampleInfoList">
+              产品型号：
+              <el-tag style="margin: 5px 0 0 0" size="mini">{{ item.computerName }}</el-tag>
+            </div>
+          </template>
+
+          <div>数量：{{ row.sendNum }}</div>
+          <div v-show="row.harkVersion">硬件版本号：{{ row.harkVersion }}</div>
+          <div v-show="row.bootVersion">Boot版本号：{{ row.bootVersion }}</div>
+          <div v-show="row.appVersion">APP版本号：{{ row.appVersion }}</div>
+          <div v-show="row.uiVersion">UI版本号：{{ row.uiVersion }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="详细需求" prop="demand" align="center" v-if="viewParams.simple">
-        <template slot-scope="scope">
-          <div class="text-left" v-html="scope.row.demand"></div>
+
+      <el-table-column label="详细需求" prop="demand" align="center" width="350" v-if="columns[1].visible">
+        <template slot-scope="{ row }">
+          <div v-show="!Is_Empty(row.demand)" class="text-left" v-html="row.demand"></div>
+          <el-tag v-show="Is_Empty(row.demand)" type="danger">
+            暂无数据
+          </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="配置需求表" width="200" align="center">
+
+      <el-table-column label="配置需求表" width="150" align="center" v-if="columns[2].visible">
         <template slot-scope="{ row }">
           <el-link v-show="row.demandObject" type="primary" @click="toGoodPage(row)">
             样品需求单
           </el-link>
+          <el-tag v-show="Is_Empty(row.checklist)" type="danger">
+            暂无数据
+          </el-tag>
           <div v-for="(item, index) in checkListArr(row.checklist)" :key="index"
             :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
             <preview-img :url="item" :srcList="[item]" />
@@ -106,61 +145,56 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="当前进展" prop="progress" align="center" width="300" v-if="viewParams.simple">
-        <template slot-scope="scope">
-          <div class="text-left" v-html="scope.row.progress"></div>
+
+      <el-table-column label="当前进展" prop="progress" align="center" width="350" v-if="columns[3].visible">
+        <template slot-scope="{ row }">
+          <div v-show="!Is_Empty(row.progress)" class="text-left" v-html="row.progress"></div>
+          <el-tag v-show="Is_Empty(row.progress)" type="danger">
+            暂无数据
+          </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="责任人&状态" align="center" width="100">
-        <template slot-scope="scope">
-          <div>
-            <!-- 责任人 -->
-            <span v-if="scope.row.state == 0">
-              {{ principalName(scope.row.pm) }}
-            </span>
-            <span v-if="scope.row.state == 1">
-              {{ principalName(scope.row.se) }}
-            </span>
-            <span v-if="scope.row.state == 2">
-              {{ principalName(scope.row.follow) }}
-            </span>
-            <span v-if="scope.row.state == 3">
-              {{ principalName(scope.row.test) }}
-            </span>
-            <span v-if="scope.row.state == 4">
-              {{ principalName(scope.row.sell) }}
-            </span>
-          </div>
-          <div>
-            <!-- 状态 -->
-            <span v-if="scope.row.state == 0" class="text-blue">产品经理确认中</span>
-            <span v-if="scope.row.state == 1" class="text-green">SE确认中</span>
-            <span v-if="scope.row.state == 2" class="text-gray">样品加工中</span>
-            <span v-if="scope.row.state == 3" class="text-orange">测试中</span>
-            <span v-if="scope.row.state == 4" class="text-yellow">销售<br />验收</span>
-            <span v-if="scope.row.state == 5" class="text-cyan">完成中</span>
-            <span v-if="scope.row.state == 6" class="text-green">已完成</span>
-          </div>
+      <el-table-column label="SN号" prop="progress" align="center" width="250" v-if="columns[4].visible">
+        <template slot-scope="{ row }">
+          <div v-for="item in row.list">{{ item }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="时间管理" align="center" prop="sendTime" width="170">
-        <template slot-scope="scope">
-            <template v-if="scope.row.state !== 6">
-              <div class="text-shadow mb5 text-left">下单时间: {{ scope.row.orderTime }}</div> 
-              <div class="text-shadow mb5 text-left" :class="[difference(scope.row.sendTime)]">计划送样时间: {{ scope.row.sendTime }}</div>
-              <div class="flex justify-center align-center" style="transform: scale(0.8)">
-                <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
-                  :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
-              </div>
-            </template>
-            <template v-else>
-              <div class="text-shadow mb5 text-left">下单时间: {{ scope.row.orderTime }}</div>
-              <div class="text-shadow mb5 text-left" :class="[difference(scope.row.actualTime)]">实际送样时间: {{ scope.row.actualTime }}</div>
-              <div class="text-left">用时天数: {{ scope.row.dateDiff }}</div>
-            </template>
+      <el-table-column label="责任人&状态" align="center" width="100" v-if="columns[5].visible">
+        <template slot-scope="{ row }">
+          <span :class="[auditProcessTitleColor[row.state]]">
+            {{ auditProcessTitleData[row.state] }}
+          </span>
         </template>
       </el-table-column>
-      <el-table-column label="评审表" width="160" align="center">
+
+      <el-table-column label="时间管理" align="center" prop="sendTime" width="170" v-if="columns[6].visible">
+        <template slot-scope="scope">
+          <template v-if="scope.row.state !== 6">
+            <div class="text-shadow mb5 text-left">
+              下单时间: {{ scope.row.orderTime }}
+            </div>
+            <div class="text-shadow mb5 text-left" :class="[difference(scope.row.sendTime)]">
+              计划送样时间: {{ scope.row.sendTime }}
+            </div>
+            <div class="flex justify-center align-center" style="transform: scale(0.8)">
+              <FlipDown :endDate="new Date(scope.row.sendTime + ' 20:00:00').getTime()" :type="4" :theme="1"
+                :timeUnit="['天', ':', ':']" class="flip-down-style text-center" />
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="text-shadow mb5 text-left">
+              下单时间: {{ scope.row.orderTime }}
+            </div>
+            <div class="text-shadow mb5 text-left" :class="[difference(scope.row.actualTime)]">
+              实际送样时间: {{ scope.row.actualTime }}
+            </div>
+            <div class="text-left">用时天数: {{ scope.row.dateDiff }}</div>
+          </template>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="评审表" width="150" align="center" v-if="columns[7].visible">
         <template slot-scope="{ row }">
           <div v-for="(item, index) in checkListArr(row.reviewer)" :key="index"
             :class="['flex', 'flex-direction', 'align-center', 'normal-wrap']">
@@ -171,60 +205,36 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="80">
+
+      <el-table-column label="操作" align="center" width="80" fixed="right" v-if="columns[8].visible">
         <template slot-scope="scope">
           <div class="flex flex-direction align-center">
-            <el-tooltip class="item font16" effect="dark" content="产品经理确认中" placement="top-end" v-if="(checkRole(['admin']) || scope.row.pm == userId) &&
-              scope.row.state == 0
-              ">
-              <el-button icon="el-icon-check" type="text" class="text-green" @click="handleAuthChange(scope.row, 1)">
-              </el-button>
-            </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="SE确认中" placement="top-end" v-if="(checkRole(['admin']) || scope.row.se == userId) &&
-              scope.row.state == 1
-              ">
-              <el-button icon="el-icon-check" type="text" class="text-green" @click="handleAuthChange(scope.row, 2)">
-              </el-button>
-            </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="样品加工" placement="top-end" v-if="(checkRole(['admin']) || scope.row.follow == userId) &&
-              scope.row.state == 2
-              ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 3)"></el-button>
-            </el-tooltip>
-            <el-tooltip class="item font16" effect="dark" content="测试" placement="top-end" v-if="(checkRole(['admin']) || scope.row.test == userId) &&
-              scope.row.state == 3
-              ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green"
-                @click="handleAuthChange(scope.row, 4)"></el-button>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="销售" placement="top-end" v-if="(checkRole(['admin']) || scope.row.sell == userId) &&
-              scope.row.state == 4
-              ">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green font16"
-                @click="handleAuthChange(scope.row, 5)"></el-button>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="完成" placement="top-end"
-              v-if="checkRole(['admin']) && scope.row.state == 5">
-              <el-button size="small" icon="el-icon-check" type="text" class="text-green font16"
-                @click="handleAuthChange(scope.row, 6)"></el-button>
-            </el-tooltip>
+            <div v-hasPermi="['third:sample:check']">
+              <Tooltip v-if="scope.row.state === item.state" v-for="item in authData" :key="item.value" class="mlZero"
+                icon="el-icon-check" :content="item.content" @click="handleAuthChange(scope.row, item.value)" />
+            </div>
 
-            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-edit" content="编辑"
+            <Tooltip v-hasPermi="['third:sample:edit']" class="mlZero" icon="el-icon-edit" content="编辑"
               @click="handleSampleUpdate(scope.row)" />
-            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-copy-document" content="复制"
+
+            <Tooltip v-hasPermi="['third:sample:copy']" class="mlZero" icon="el-icon-copy-document" content="复制"
               @click="handleCopy(scope.row)" />
-            <Tooltip class="mlZero" v-if="checkRole(['sale', 'admin'])" icon="el-icon-delete" :className="['text-red']" content="删除"
-              @click="handleDelete(scope.row)" />
-            <el-tooltip class="item" effect="dark" content="附件" placement="top-end" v-if="scope.row.attachment">
-              <el-button size="small" icon="el-icon-download" type="text" class="text-green font16"
-                @click="handleDownload(scope.row)"></el-button>
-            </el-tooltip>
-            <Tooltip class="mlZero" icon="el-icon-position" content="软件发布"
-              @click="handleNameToPage('CadFileConfig', { number: scope.row.number })"
-               />
-            <Tooltip class="mlZero" v-if="checkRole(['admin']) && scope.row.state == 6" icon="el-icon-box" content="转生产"
-              @click="handleProd(scope.row)" />
+
+            <Tooltip v-hasPermi="['third:sample:delete']" class="mlZero" icon="el-icon-delete" :className="['text-red']"
+              content="删除" @click="handleDelete(scope.row)" />
+
+            <Tooltip v-hasPermi="['third:sample:download']" v-show="scope.row.attachment" class="mlZero"
+              icon="el-icon-download" :className="['text-green']" content="附件下载" @click="handleDownload(scope.row)" />
+
+            <Tooltip v-hasPermi="['third:sample:software']" class="mlZero" icon="el-icon-position" content="软件发布"
+              @click="
+                handleNameToPage('CadFileConfig', { number: scope.row.number })
+                " />
+
+            <Tooltip v-hasPermi="['third:sample:toProduct']" v-if="scope.row.state == 6" class="mlZero"
+              icon="el-icon-box" content="转生产" @click="handleProd(scope.row)" />
+
+            <Tooltip class="mlZero" icon="el-icon-full-screen" content="录入SN" @click="handleScanSn(scope.row)" />
           </div>
         </template>
       </el-table-column>
@@ -232,6 +242,7 @@
 
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
+
     <el-dialog :close-on-click-modal="false" title="请确认是否删除" :visible.sync="open" width="310px">
       <div class="padding-bottom-xl custom-code">
         <Verify v-if="open" :codeLength="4" @success="codeSuccess" @error="codeError" :type="1" height="40px"></Verify>
@@ -239,7 +250,7 @@
     </el-dialog>
 
     <!-- 转生产 -->
-    <el-dialog :close-on-click-modal="false" title="样品转生产" :visible.sync="isSampleProd" width="400px">
+    <el-dialog title="样品转生产" :visible.sync="isSampleProd" width="400px" center :close-on-click-modal="false">
       <el-form ref="formProd" :model="formProd" :rules="prodRules" label-width="80px">
         <el-form-item label="转产品类" prop="categoryName">
           <el-select v-model="formProd.categoryName" clearable placeholder="请选择转产品类" style="width: 100%"
@@ -248,16 +259,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="转产型号" prop="computerName">
-          <el-radio-group v-model="formProd.type" size="mini" style="margin-bottom: 10px;">
-            <el-radio :label="0" border>已有型号</el-radio>
-            <el-radio :label="1" border>新增型号</el-radio>
-          </el-radio-group>
-          <el-select v-if="formProd.type === 0" v-model="formProd.computerName" filterable clearable placeholder="请选择转产型号"
-            style="width: 100%">
+          <el-select v-model="formProd.computerName" filterable clearable placeholder="请选择转产型号" style="width: 100%">
             <el-option v-for="item in computerNameList" :key="item.name" :label="item.name"
               :value="item.name"></el-option>
           </el-select>
-          <el-input v-else v-model="formProd.computerName" clearable placeholder="请输入转产型号"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -270,6 +275,7 @@
 
     <CompUpdate ref="compUpdate" :pmDictListOptions="pmDictListOptions" />
     <CompApply ref="compApply" @applyTotal="applyTotalFn" />
+    <TypeInSn :isSnShow.sync="isSnShow" :sampleId="sampleId" :snData="snList" />
   </div>
 </template>
 
@@ -280,7 +286,7 @@ import {
   sampleState,
   listCustomer,
   sampleCategoryName,
-  sampleConvertProd
+  sampleConvertProd,
 } from "@/api/third/sample";
 import { mapGetters } from "vuex";
 import CompUpdate from "./components/update";
@@ -290,20 +296,29 @@ import { memberDictUser } from "@/api/system/user";
 import FlipDown from "vue-flip-down";
 import Verify from "vue2-verify";
 import { pmList } from "@/utils/commonData";
+import TypeInSn from "./components/typeInSn.vue";
+import { dragTableFn } from "@/mixins/common";
+import { cloneDeep } from "lodash";
 
 export default {
   name: "Sample",
+  mixins: [dragTableFn],
   components: {
     CompUpdate,
     FlipDown,
     Verify,
     CompApply,
+    TypeInSn,
   },
   data() {
     return {
       pmList,
       isSampleProd: false,
       isProdLoading: false,
+      // SN录入弹窗
+      isSnShow: false,
+      sampleId: "",
+      snList: [],
       open: false,
       form: {},
       urls: [],
@@ -316,12 +331,63 @@ export default {
       single: true,
       // 非多个禁用
       multiple: true,
+      // 显示搜索条件
+      showSearch: true,
       // 总条数
       total: 0,
-
       brandList: [],
-
       pmDictListOptions: [],
+      authData: [
+        {
+          state: 0,
+          value: 1,
+          content: "需求确认中",
+        },
+        {
+          state: 1,
+          value: 2,
+          content: "软件开发中",
+        },
+        {
+          state: 2,
+          value: 3,
+          content: "测试中",
+        },
+        {
+          state: 3,
+          value: 4,
+          content: "组装",
+        },
+        {
+          state: 4,
+          value: 5,
+          content: "评审",
+        },
+        {
+          state: 5,
+          value: 6,
+          content: "完成",
+        },
+      ],
+      // 审核流程列表
+      auditProcessTitleData: {
+        0: "需求确认中",
+        1: "软件开发中",
+        2: "测试中",
+        3: "组装",
+        4: "评审",
+        5: "完成中",
+        6: "已完成",
+      },
+      auditProcessTitleColor: {
+        0: "text-blue",
+        1: "text-red",
+        2: "text-gray",
+        3: "text-orange",
+        4: "text-yellow",
+        5: "text-cyan",
+        6: "text-green",
+      },
       // 查询参数
       queryParams: {
         p: 1,
@@ -332,31 +398,40 @@ export default {
         state: true,
         myself: "0",
         sendTime: undefined,
+        sn: null,
       },
       queryParamsApply: {
         p: 1,
         l: 20,
       },
       applyTotal: 0,
-      viewParams: {
-        state: false,
-        simple: true,
-      },
       sampleProdData: {},
       computerNameList: [],
       formProd: {
         categoryName: "",
         computerName: "",
-        type: 0
+        type: 0,
       },
       prodRules: {
         categoryName: [
-          { required: true, message: "请选择转产品类", trigger: "change" }
+          { required: true, message: "请选择转产品类", trigger: "change" },
         ],
         computerName: [
-          { required: true, message: "请选择转产型号", trigger: "change" }
+          { required: true, message: "请选择转产型号", trigger: "change" },
         ],
-      }
+      },
+      // 列表显隐信息
+      columns: [
+        { key: 0, label: "基本信息", visible: true },
+        { key: 1, label: "详细需求", visible: true },
+        { key: 2, label: "配置需求表", visible: true },
+        { key: 3, label: "当前进展", visible: true },
+        { key: 4, label: "SN号", visible: true },
+        { key: 5, label: "责任人&状态", visible: true },
+        { key: 6, label: "时间管理", visible: true },
+        { key: 7, label: "评审表", visible: true },
+        { key: 8, label: "操作", visible: true },
+      ],
     };
   },
   computed: {
@@ -398,6 +473,7 @@ export default {
   methods: {
     // 转生产
     handleProd(row) {
+      this.resetProd();
       this.sampleProdData = row;
       this.computerNameList = [];
       this.isSampleProd = true;
@@ -405,26 +481,40 @@ export default {
     getSampleCategoryName(categoryName) {
       this.computerNameList = [];
       this.formProd.computerName = "";
-      sampleCategoryName({ categoryName }).then(res => {
+      sampleCategoryName({ categoryName }).then((res) => {
         this.computerNameList = res.data;
-      })
+      });
     },
     submitProdForm() {
       this.$refs["formProd"].validate((valid) => {
         if (valid) {
           this.isProdLoading = true;
-          sampleConvertProd({ number: this.sampleProdData.number, ...this.formProd }).then(res => {
-            this.msgSuccess("操作成功");
-            this.isSampleProd = false;
-          }).finally(() => {
-            this.isProdLoading = false;
+
+          sampleConvertProd({
+            number: this.sampleProdData.number,
+            ...this.formProd,
           })
+            .then((res) => {
+              this.msgSuccess("操作成功");
+            })
+            .finally(() => {
+              this.isSampleProd = false;
+              this.isProdLoading = false;
+            });
         }
-      })
+      });
     },
-    resetProdForm(formName) {
+    resetProd() {
+      this.formProd = {
+        categoryName: "",
+        computerName: "",
+        type: 0,
+      };
+      this.resetForm("formProd");
+    },
+    resetProdForm() {
       this.isSampleProd = false;
-      this.$refs[formName].resetFields();
+      this.resetProd();
     },
     toGoodPage(row) {
       window.open(
@@ -670,6 +760,8 @@ export default {
       let params = {};
       params.state = type;
       params.id = row.id;
+      this.$refs.compUpdate.isCopyFlag = false;
+
       if (type === 6) {
         this.handleUpdate(row, "actualTime");
         this.$refs.compUpdate.isType = type;
@@ -694,10 +786,6 @@ export default {
       this.queryParams.p = 1;
       this.getList();
     },
-    /** 简介按钮操作 */
-    simpleView() {
-      this.viewParams.simple = !this.viewParams.simple;
-    },
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
@@ -707,15 +795,16 @@ export default {
     handleCopy(row) {
       this.$refs.compUpdate.isCopyFlag = true;
       const { number, ...rowData } = row;
-      this.handleUpdate(rowData)
+      this.handleUpdate(rowData);
     },
     handleSampleUpdate(row) {
       this.$refs.compUpdate.isCopyFlag = false;
-      this.handleUpdate(row)
+      this.handleUpdate(row);
     },
     handleUpdate(row, name) {
-      let currentData = Object.assign({}, row);
-      if (name === 'progress' && currentData.progress === null) {
+      let currentData = cloneDeep(row);
+      currentData.type = currentData.type ?? 0;
+      if (name === "progress" && currentData.progress === null) {
         currentData.progress = `
           <p><strong>一、备料阶段</strong>：<strong><span style="color: #008000;">【</span><span style="color: #339966;"><span style="color: #008000;">6/29 李博 】</span>已完成备料；</span></strong></p>
           <p>1、PCBA：已有--（V3.2）+（AT芯片）+（RC6621P）&nbsp;&nbsp;&nbsp;</p>
@@ -731,8 +820,8 @@ export default {
           <p><strong>四、测试阶段 ：<span style="color: #008000;">【6/30 陈明彬】</span></strong><span style="color: #008000;">&nbsp;已完成测试；</span></p>
           <p><strong>五、超声阶段：<span style="color: #008000;">【 6/31周荣幸】已完成超声；</span></strong></p>
           <p><strong>六</strong><strong>、验收送样阶段： </strong>&nbsp;</p>
-        `
-      } else if(name === "demand") {
+        `;
+      } else if (name === "demand") {
         this.$refs.compUpdate.isCopyFlag = false;
       }
 
@@ -742,16 +831,27 @@ export default {
       this.$refs.compUpdate.form = currentData;
       this.$refs.compUpdate.showName = name;
       this.$refs.compUpdate.isType = -1;
+
       if (!name) {
         this.$refs.compUpdate.isActural = false;
       } else {
         this.$refs.compUpdate.isActural = true;
       }
+
       if (name === "sendTime" || name === "actualTime") {
-        name === "actualTime" && (title = "请选择实际送样时间");
         this.$refs.compUpdate.datePickerFocus();
       }
-      name === "isVersion" && (title = "版本信息");
+
+      // dialog 标题
+      const dialogTitleList = {
+        demand: "详细需求",
+        progress: "当前进展",
+        step: "责任人&状态",
+        isVersion: "版本信息",
+      };
+
+      title = dialogTitleList[name];
+
       this.$refs.compUpdate.title = name ? title : "送样信息";
     },
     showApply() {
@@ -813,31 +913,16 @@ export default {
      * @param {*} columnIndex
      * @return {*}
      */
-    cellStyle({ row, column, rowIndex, columnIndex }) {
-      let currentName = "";
-      let { state } = row;
-      if (state == 0) {
-        currentName = row.se;
-      } else if (state == 1) {
-        currentName = row.follow;
-      } else if (state == 2) {
-        currentName = row.test;
-      } else if (state == 3) {
-        currentName = row.sell;
-      }
+    cellClassName({ row, column, rowIndex, columnIndex }) {
+      const columnIndexData = [1, 3, 5, 6];
 
       if (
-        (columnIndex == 1 ||
-          columnIndex == 2 ||
-          columnIndex == 3 ||
-          columnIndex == 4 ||
-          columnIndex == 5 ||
-          columnIndex == 6 ||
-          columnIndex == 7) &&
-        (this.checkRole(["sale", "admin"]) ||
-          (this.userId == currentName && column.label == "详细需求"))
+        columnIndexData.includes(columnIndex) &&
+        this.checkPermi(["third:sample:edit"])
       ) {
-        return `cursor: pointer;`;
+        return "pointer";
+      } else {
+        return "";
       }
     },
     /**
@@ -849,63 +934,35 @@ export default {
      * @return {*}
      */
     cellClick(row, column, cell, event) {
-      let currentName = "";
-      let { state } = row;
-      this.$refs.compUpdate.isTop = false;
-      // if (state == 0) {
-      //   currentName = row.se;
-      // } else if (state == 1) {
-      //   currentName = row.follow;
-      // } else if (state == 2) {
-      //   currentName = row.test;
-      // } else if (state == 3) {
-      //   currentName = row.sell;
-      // }
-
-      if (state == 0) {
-        currentName = row.pm;
-      } else if (state == 6) {
-        currentName = row.se;
-      } else if (state == 1) {
-        currentName = row.follow;
-      } else if (state == 2) {
-        currentName = row.test;
-      } else if (state == 3) {
-        currentName = row.sell;
+      console.log(column)
+      if (!this.checkPermi(["third:sample:edit"])) {
+        return;
       }
 
-      if (
-        this.checkRole(["sale", "admin"]) ||
-        (this.userId == currentName && column.label == "详细需求")
-      ) {
-        switch (column.label) {
-          case "客户":
-            this.handleUpdate(row, "customerName");
-            break;
-          case "产品型号":
-            this.handleUpdate(row, "baseModel");
-            break;
-          case "数量":
-            this.handleUpdate(row, "sendNum");
-            break;
-          case "详细需求":
-            this.handleUpdate(row, "demand");
-            break;
-          case "当前进展":
-            this.handleUpdate(row, "progress");
-            break;
-          case "责任人&状态":
-            let name = "step";
-            this.handleUpdate(row, name);
-            break;
-          case "时间管理":
-            this.handleUpdate(row, "sendTime");
-            break;
-          default:
-            break;
-        }
+      switch (column.label) {
+        case "详细需求":
+          this.handleUpdate(row, "demand");
+          break;
+        case "当前进展":
+          this.handleUpdate(row, "progress");
+          break;
+        case "责任人&状态":
+          let name = "step";
+          this.handleUpdate(row, name);
+          break;
+        case "时间管理":
+          this.handleUpdate(row, "sendTime");
+          break;
+        default:
+          break;
       }
     },
+    // 录入SN
+    handleScanSn(row) {
+      this.isSnShow = true;
+      this.sampleId = row.id;
+      this.snList = row.list;
+    }
   },
 };
 </script>
@@ -967,7 +1024,7 @@ export default {
 
 .finish-row td,
 .finish-row:hover td {
-  background-color: rgba(155, 216, 148, 0.3) !important;
+  background-color: rgba(119, 176, 113, 0.3) !important;
 }
 
 .demo-table-expand {
@@ -1000,4 +1057,5 @@ export default {
 .contentOverflow {
   max-height: 450px;
   overflow: auto;
-}</style>
+}
+</style>

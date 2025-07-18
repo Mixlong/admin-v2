@@ -21,7 +21,7 @@
           type="primary"
           icon="el-icon-search"
           size="mini"
-          @click="handleQuery"
+          v-debounce="{ Fn: handleQuery }"
         >
           搜索
         </el-button>
@@ -55,12 +55,12 @@
       <el-table-column label="描述" align="center" prop="desc">
         <span slot-scope="scope" v-NoData="scope.row.desc"></span>
       </el-table-column>
-      <el-table-column label="图片" align="center" width="140">
+      <el-table-column label="图片" align="center" width="100">
         <template slot-scope="{ row }">
-          <preview-img :url="row.img" :srcList="[row.img]" />
+          <preview-img :url="row.img" :srcList="[row.img]" width="40px" height="40px" />
         </template>
       </el-table-column>
-      <el-table-column label="开启送样" align="center" width="140">
+      <el-table-column label="开启送样" align="center" width="100">
         <template slot-scope="{ row }">
           <el-tag :type="row.isSample === '1' ? 'success' : 'danger'">
             {{ row.isSample === "1" ? "是" : "否" }}
@@ -71,14 +71,14 @@
         label="创建人"
         align="center"
         prop="createBy"
-        width="120"
+        width="100"
       />
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         sortable
-        width="180"
+        width="140"
       />
       <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
@@ -150,7 +150,7 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" v-debounce="{ Fn: submitForm }">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -239,6 +239,7 @@ export default {
       this.loading = true;
       listCategory(this.queryParams)
         .then((response) => {
+          console.log(response)
           this.categoryList = response.data.list;
           this.total = response.data.total;
         })

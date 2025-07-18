@@ -10,19 +10,19 @@
     :close-on-click-modal="false"
   >
     <el-row type="flex" justify="space-between">
-      <el-col :span="2"></el-col>
-      <el-col :span="20">
+      <el-col :xs="0" :span="2"></el-col>
+      <el-col :xs="24" :span="20">
         <el-form
           ref="form"
           :model="form"
           :rules="rules"
-          label-width="90px"
+          label-width="85px"
           label-position="left"
           class="input-width"
         >
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="ECN编号" prop="ecn">
+              <el-form-item label="ECR/N编号" prop="ecn">
                 <el-input
                   v-model="form.ecn"
                   placeholder="请输入ECN编号"
@@ -67,7 +67,10 @@
             prop="changeCause"
             class="margin-bottom-xs"
           >
-            <el-checkbox-group v-model="form.changeCause">
+            <el-checkbox-group
+              v-model="form.changeCause"
+              class="grid_column_two"
+            >
               <el-checkbox
                 v-for="(item, index) in classifyList"
                 :label="item.dictValue"
@@ -89,6 +92,7 @@
               placeholder="请选择初审人员"
               filterable
               clearable
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in firstAuditorData"
@@ -101,18 +105,19 @@
 
           <div class="involveUnit-box margin-bottom-xs">
             <p>变更涉及领域</p>
-            <el-row type="flex" style="margin-left: 90px">
+            <el-row type="flex" style="overflow-x: auto">
               <el-col :span="1" class="involveUnit-left">
                 <el-form-item prop="involveUnit" label-width="0">
-                  <el-checkbox-group v-model="form.involveUnit">
-                    <el-checkbox
+                  <div class="each_item_box">
+                    <div
                       v-for="(item, index) in involveUnitList"
                       :label="+item.dictValue"
                       :key="index"
+                      class="each_unit"
                     >
-                      {{ item.dictLabel }}
-                    </el-checkbox>
-                  </el-checkbox-group>
+                      {{ item.dictLabel }}：
+                    </div>
+                  </div>
                 </el-form-item>
               </el-col>
               <el-col :span="23" class="involveUnit-right">
@@ -123,7 +128,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(2),
+                        required: true,
                         message: '请选择采购人员',
                         trigger: 'change',
                       },
@@ -134,8 +139,11 @@
                       placeholder="请选择采购人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(2)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      @change="handleChangeBuyerData"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in buyerData"
@@ -145,16 +153,24 @@
                       ></el-option>
                     </el-select>
                   </el-form-item>
+
                   <el-form-item
                     label="在途物料处理方案："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="buyerTxt"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请输入在途物料处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.buyerTxt"
                       clearable
-                      :disabled="!isRequired(2)"
-                      placeholder="请输入在途物料处理方案"
+                      placeholder="请输入"
+                      style="min-width: 250px"
                     ></el-input>
                   </el-form-item>
                 </div>
@@ -165,7 +181,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(3),
+                        required: true,
                         message: '请选择品质人员',
                         trigger: 'change',
                       },
@@ -176,8 +192,10 @@
                       placeholder="请选择品质人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(3)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in QAData"
@@ -191,12 +209,19 @@
                     label="涉及更新的文件："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="QADataTxt"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.QADataTxt"
                       clearable
-                      :disabled="!isRequired(3)"
-                      placeholder="请输入涉及更新的文件名称"
+                      placeholder="请输入"
+                      style="min-width: 250px"
                     ></el-input>
                   </el-form-item>
                 </div>
@@ -207,7 +232,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(4),
+                        required: true,
                         message: '请选择生产人员',
                         trigger: 'change',
                       },
@@ -218,8 +243,10 @@
                       placeholder="请选择生产人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(4)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in productData"
@@ -233,12 +260,19 @@
                     label="在制产品处理方案："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="productDataTxt"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请输入在制产品处理方案',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.productDataTxt"
                       clearable
-                      :disabled="!isRequired(4)"
-                      placeholder="请输入在制产品处理方案"
+                      placeholder="请输入"
+                      style="min-width: 250px"
                     ></el-input>
                   </el-form-item>
                 </div>
@@ -249,7 +283,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(5),
+                        required: true,
                         message: '请选择工程人员',
                         trigger: 'change',
                       },
@@ -260,8 +294,10 @@
                       placeholder="请选择工程人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(5)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in engineerData"
@@ -275,12 +311,19 @@
                     label="涉及更新的文件："
                     class="iterm-box margin-left-xs flex flex-sub"
                     prop="engineerDataTxt"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.engineerDataTxt"
                       clearable
-                      :disabled="!isRequired(5)"
-                      placeholder="请输入涉及更新的文件名称"
+                      placeholder="请输入"
+                      style="min-width: 250px"
                     ></el-input>
                   </el-form-item>
                 </div>
@@ -291,7 +334,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(6),
+                        required: true,
                         message: '请选择研发人员',
                         trigger: 'change',
                       },
@@ -302,8 +345,10 @@
                       placeholder="请选择研发人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(6)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in researchData"
@@ -317,12 +362,19 @@
                     label="涉及更新的文件："
                     prop="researchDataTxt"
                     class="iterm-box margin-left-xs flex flex-sub"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请输入涉及更新的文件名称',
+                        trigger: 'blur',
+                      },
+                    ]"
                   >
                     <el-input
                       v-model="form.researchDataTxt"
                       clearable
-                      :disabled="!isRequired(6)"
-                      placeholder="请输入涉及更新的文件名称"
+                      placeholder="请输入"
+                      style="min-width: 250px"
                     ></el-input>
                   </el-form-item>
                 </div>
@@ -333,7 +385,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(7),
+                        required: true,
                         message: '请选择仓库人员',
                         trigger: 'change',
                       },
@@ -344,8 +396,10 @@
                       placeholder="请选择仓库人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(7)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in warehouseData"
@@ -360,24 +414,38 @@
                       label="在库物料处理方案："
                       prop="warehouseDataTxt"
                       class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                        {
+                          required: true,
+                          message: '请输入在库物料处理方案',
+                          trigger: 'blur',
+                        },
+                      ]"
                     >
                       <el-input
                         v-model="form.warehouseDataTxt"
                         clearable
-                        :disabled="!isRequired(7)"
-                        placeholder="请输入在库物料处理方案"
+                        placeholder="请输入"
+                        style="min-width: 250px"
                       ></el-input>
                     </el-form-item>
                     <el-form-item
                       label="在库成品处理方案："
                       prop="finishedHandleTxt"
                       class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                        {
+                          required: true,
+                          message: '请输入在库成品处理方案',
+                          trigger: 'blur',
+                        },
+                      ]"
                     >
                       <el-input
                         v-model="form.finishedHandleTxt"
                         clearable
-                        :disabled="!isRequired(7)"
-                        placeholder="请输入在库成品处理方案"
+                        placeholder="请输入"
+                        style="min-width: 250px"
                       ></el-input>
                     </el-form-item>
                   </div>
@@ -389,7 +457,7 @@
                     label-width="0"
                     :rules="[
                       {
-                        required: isRequired(8),
+                        required: true,
                         message: '请选择市场人员',
                         trigger: 'change',
                       },
@@ -400,8 +468,10 @@
                       placeholder="请选择市场人员"
                       filterable
                       clearable
-                      :disabled="!isRequired(8)"
-                      style="width: 150px"
+                      multiple
+                      collapse-tags
+                      style="width: 180px"
+                      :disabled="!!form.id"
                     >
                       <el-option
                         v-for="item in marketerData"
@@ -411,75 +481,86 @@
                       ></el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item
-                    label="已出货产品处理方案："
-                    prop="marketerDataTxt"
-                    class="iterm-box margin-left-xs flex flex-sub"
-                  >
-                    <el-input
-                      v-model="form.marketerDataTxt"
-                      clearable
-                      :disabled="!isRequired(8)"
-                      placeholder="请输入已出货产品处理方案"
-                    ></el-input>
-                  </el-form-item>
-                </div>
-                <!-- PMC -->
-                <div class="flex">
-                  <el-form-item
-                    prop="selPmcData"
-                    label-width="0"
-                    :rules="[
-                      {
-                        required: isRequired(9),
-                        message: '请选择PMC人员',
-                        trigger: 'change',
-                      },
-                    ]"
-                  >
-                    <el-select
-                      v-model="form.selPmcData"
-                      placeholder="请选择PMC人员"
-                      filterable
-                      clearable
-                      :disabled="!isRequired(9)"
-                      style="width: 150px"
+                  <div class="flex flex-direction flex-sub">
+                    <el-form-item
+                      label="未出货产品处理方案："
+                      prop="noMarketerDataTxt"
+                      class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                        {
+                          required: true,
+                          message: '请输入未出货产品处理方案',
+                          trigger: 'blur',
+                        },
+                      ]"
                     >
-                      <el-option
-                        v-for="item in pmcData"
-                        :label="item.personnel"
-                        :value="item.personnel"
-                        :key="item.id"
-                      ></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item
-                    label="处理方案："
-                    prop="pmcDataTxt"
-                    class="iterm-box margin-left-xs flex flex-sub"
-                  >
-                    <el-input
-                      v-model="form.pmcDataTxt"
-                      clearable
-                      :disabled="!isRequired(9)"
-                      placeholder="请输入处理方案"
-                    ></el-input>
-                  </el-form-item>
+                      <el-input
+                        v-model="form.noMarketerDataTxt"
+                        clearable
+                        placeholder="请输入"
+                        style="min-width: 250px"
+                      ></el-input>
+                    </el-form-item>
+
+                    <el-form-item
+                      label="已出货产品处理方案："
+                      prop="marketerDataTxt"
+                      class="iterm-box margin-left-xs flex flex-sub"
+                      :rules="[
+                        {
+                          required: true,
+                          message: '请输入已出货产品处理方案',
+                          trigger: 'blur',
+                        },
+                      ]"
+                    >
+                      <el-input
+                        v-model="form.marketerDataTxt"
+                        clearable
+                        placeholder="请输入"
+                        style="min-width: 250px"
+                      ></el-input>
+                    </el-form-item>
+                  </div>
                 </div>
               </el-col>
             </el-row>
           </div>
 
           <el-form-item
-            label="终审人员"
+            label="PMC终审人员"
+            label-width="110px"
+            prop="thirdPerson"
+            class="margin-bottom-xs"
+          >
+            <el-select
+              v-model="form.thirdPerson"
+              placeholder="请选择PMC终审人员"
+              filterable
+              clearable
+              :disabled="!!form.id"
+            >
+              <el-option
+                v-for="item in pmcData"
+                :label="item.personnel"
+                :value="item.personnel"
+                :key="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item
+            label="最终审核人员"
+            label-width="110px"
             prop="secondPerson"
             class="margin-bottom-xs"
           >
             <el-select
               v-model="form.secondPerson"
-              placeholder="请选择终审人员"
+              placeholder="请选择最终审核人员"
               filterable
               clearable
+              :disabled="!!form.id"
             >
               <el-option
                 v-for="item in finalJudgmentData"
@@ -492,10 +573,10 @@
 
           <div class="flex margin-bottom-xs">
             <el-form-item label="导入方式" prop="importType">
-              <el-radio-group v-model="form.importType">
-                <el-radio :label="1">立即导入</el-radio>
-                <el-radio :label="2"> 自然导入 </el-radio>
-                <el-radio :label="3">条件导入</el-radio>
+              <el-radio-group v-model="form.importType" class="grid_column_two">
+                <el-radio :label="1" border>立即导入</el-radio>
+                <el-radio :label="2" border> 自然导入 </el-radio>
+                <el-radio :label="3" border>条件导入</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item
@@ -579,7 +660,7 @@
           </el-form-item>
         </el-form>
       </el-col>
-      <el-col :span="2"></el-col>
+      <el-col :xs="0" :span="2"></el-col>
     </el-row>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -591,10 +672,10 @@
 <script>
 import { bomAdd, bomUpdate, ecnPersonList } from "@/api/third/ecn";
 import { treeselect, listDept } from "@/api/system/dept";
-
 import tinymce from "@/views/components/Editor";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { cloneDeep } from "lodash";
 
 export default {
   components: { tinymce, Treeselect },
@@ -613,24 +694,22 @@ export default {
         productCode: "",
         reqUnit: undefined,
         changeCause: [],
-        involveUnit: [],
-        selBuyerData: "",
+        selBuyerData: [],
         buyerTxt: "",
-        selQAData: "",
+        selQAData: [],
         QADataTxt: "",
-        selProductData: "",
+        selProductData: [],
         productDataTxt: "",
-        selEngineerData: "",
+        selEngineerData: [],
         engineerDataTxt: "",
-        selResearchData: "",
+        selResearchData: [],
         researchDataTxt: "",
-        selWarehouseData: "",
+        selWarehouseData: [],
         warehouseDataTxt: "",
         finishedHandleTxt: "",
-        selMarketerData: "",
+        selMarketerData: [],
         marketerDataTxt: "",
-        selPmcData: "",
-        pmcDataTxt: "",
+        noMarketerDataTxt: "",
       },
       // 初审人员
       firstAuditorData: [],
@@ -667,8 +746,11 @@ export default {
         firstPerson: [
           { required: true, message: "请选择初审人员", trigger: "change" },
         ],
+        thirdPerson: [
+          { required: true, message: "请选择PMC人员", trigger: "change" },
+        ],
         secondPerson: [
-          { required: true, message: "请选择终审人员", trigger: "change" },
+          { required: true, message: "请选择最终审核人员", trigger: "change" },
         ],
         reqUnit: [
           {
@@ -680,13 +762,15 @@ export default {
         beforeVersion: [
           { required: true, message: "请输入变更前BOM版本", trigger: "blur" },
         ],
+        file: [
+          { required: true, message: "请输入上传附件", trigger: "change" },
+        ],
       },
     };
   },
   computed: {
     isRequired() {
       return (type) => {
-        // this.clearDomainData(type);
         return this.form.involveUnit.includes(type);
       };
     },
@@ -708,6 +792,9 @@ export default {
     },
     "form.reqUnit"(reqUnit) {
       if (reqUnit) this.clearValidateItem("form", "reqUnit");
+    },
+    "form.file"(file) {
+      if (file) this.clearValidateItem("form", "file");
     },
   },
   created() {
@@ -767,35 +854,6 @@ export default {
         }
       });
     },
-    clearDomainData(type) {
-      if (type === 2 && !this.form.involveUnit.includes(type)) {
-        this.form.selBuyerData = "";
-        this.form.buyerTxt = "";
-      } else if (type === 3 && !this.form.involveUnit.includes(type)) {
-        this.form.selQAData = "";
-        this.form.QADataTxt = "";
-      } else if (type === 4 && !this.form.involveUnit.includes(type)) {
-        this.form.selProductData = "";
-        this.form.productDataTxt = "";
-      } else if (type === 5 && !this.form.involveUnit.includes(type)) {
-        this.form.selEngineerData = "";
-        this.form.engineerDataTxt = "";
-      } else if (type === 6 && !this.form.involveUnit.includes(type)) {
-        this.form.researchData = "";
-        this.form.researchDataTxt = "";
-      } else if (type === 7 && !this.form.involveUnit.includes(type)) {
-        this.form.selWarehouseData = "";
-        this.form.warehouseDataTxt = "";
-        this.form.finishedHandleTxt = "";
-      } else if (type === 8 && !this.form.involveUnit.includes(type)) {
-        this.form.selMarketerData = "";
-        this.form.marketerDataTxt = "";
-      } else if (type === 9 && !this.form.involveUnit.includes(type)) {
-        this.form.selPmcData = "";
-        this.form.pmcDataTxt = "";
-      }
-    },
-
     // 表单重置
     reset() {
       this.form = {
@@ -805,24 +863,22 @@ export default {
         productCode: "",
         reqUnit: undefined,
         changeCause: [],
-        involveUnit: [],
-        selBuyerData: "",
+        selBuyerData: [],
         buyerTxt: "",
-        selQAData: "",
+        selQAData: [],
         QADataTxt: "",
-        selProductData: "",
+        selProductData: [],
         productDataTxt: "",
-        selEngineerData: "",
+        selEngineerData: [],
         engineerDataTxt: "",
-        selResearchData: "",
+        selResearchData: [],
         researchDataTxt: "",
-        selWarehouseData: "",
+        selWarehouseData: [],
         warehouseDataTxt: "",
         finishedHandleTxt: "",
-        selMarketerData: "",
+        selMarketerData: [],
         marketerDataTxt: "",
-        selPmcData: "",
-        pmcDataTxt: "",
+        noMarketerDataTxt: "",
       };
       this.resetForm("form");
     },
@@ -845,198 +901,244 @@ export default {
 
       return original;
     },
+    handleChangeBuyerData(selBuyerData) {
+      if (this.form.id && selBuyerData.length) {
+        const existData = this.form.list.filter((item) => item.field === 2);
+        selBuyerData.forEach((name) => {
+          existData.forEach((item) => {
+            if (name !== item.fieldName) {
+              this.form.list.push({
+                field: 2,
+                fieldName: name,
+                programme: this.form.buyerTxt,
+              });
+            }
+          });
+        });
+      }
+
+      console.log(this.form.list);
+    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          let param = JSON.parse(JSON.stringify(this.form));
-
-          if (param.involveUnit.length === 0) {
-            return this.msgError("设计领域最少选择一项");
-          }
+          let param = cloneDeep(this.form);
 
           if (param.id) {
             if (param.list.length) {
               const list = [];
-              const involveUnitList = param.involveUnit;
 
-              param.list.forEach((item) => {
+              // if(param.selBuyerData.length) {
+              //   const existData = param.list.filter((item) => item.field === 2);
+
+              //   param.selBuyerData.forEach((name) => {
+              //     existData.forEach((item) => {
+              //       if (name !== item.fieldName) {
+              //         list.push({
+              //           field: 2,
+              //           fieldName: name,
+              //           programme: param.buyerTxt,
+              //         });
+              //       } else {
+              //         list.push({
+              //           ...item,
+              //           programme: param.buyerTxt,
+              //         });
+              //       }
+              //     });
+              //   });
+              // }
+
+              // console.log(param.list);
+
+              // return;
+              param.list.forEach((item, index) => {
                 if (item.field === 2) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selBuyerData,
-                    programme: param.buyerTxt,
-                  });
-                } else if (item.field === 3) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selQAData,
-                    programme: param.QADataTxt,
-                  });
-                } else if (item.field === 4) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selProductData,
-                    programme: param.productDataTxt,
-                  });
-                } else if (item.field === 5) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selEngineerData,
-                    programme: param.engineerDataTxt,
-                  });
-                } else if (item.field === 6) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selResearchData,
-                    programme: param.researchDataTxt,
-                  });
-                } else if (item.field === 7) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selWarehouseData,
-                    programme: param.warehouseDataTxt,
-                    treatment: param.finishedHandleTxt,
-                  });
-                } else if (item.field === 8) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selMarketerData,
-                    programme: param.marketerDataTxt,
-                  });
-                } else if (item.field === 9) {
-                  list.push({
-                    ...item,
-                    fieldName: param.selPmcData,
-                    programme: param.pmcDataTxt,
-                  });
+                  if (param.selBuyerData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selBuyerData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.buyerTxt,
+                      });
+                    });
+                  }
                 }
-              });
 
-              const newResidueList = [];
-              involveUnitList.forEach((item) => {
-                if (item === 2) {
-                  newResidueList.push({
-                    field: 2,
-                    fieldName: param.selBuyerData,
-                    programme: param.buyerTxt,
-                  });
-                } else if (item === 3) {
-                  newResidueList.push({
-                    field: 3,
-                    fieldName: param.selQAData,
-                    programme: param.QADataTxt,
-                  });
-                } else if (item === 4) {
-                  newResidueList.push({
-                    field: 4,
-                    fieldName: param.selProductData,
-                    programme: param.productDataTxt,
-                  });
-                } else if (item === 5) {
-                  newResidueList.push({
-                    field: 5,
-                    fieldName: param.selEngineerData,
-                    programme: param.engineerDataTxt,
-                  });
-                } else if (item === 6) {
-                  newResidueList.push({
-                    field: 6,
-                    fieldName: param.selResearchData,
-                    programme: param.researchDataTxt,
-                  });
-                } else if (item === 7) {
-                  newResidueList.push({
-                    field: 7,
-                    fieldName: param.selWarehouseData,
-                    programme: param.warehouseDataTxt,
-                    treatment: param.finishedHandleTxt,
-                  });
-                } else if (item === 8) {
-                  newResidueList.push({
-                    field: 8,
-                    fieldName: param.selMarketerData,
-                    programme: param.marketerDataTxt,
-                  });
-                } else if (item === 9) {
-                  newResidueList.push({
-                    field: 9,
-                    fieldName: param.selPmcData,
-                    programme: param.pmcDataTxt,
-                  });
+                if (item.field === 3) {
+                  if (param.selQAData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selQAData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.QADataTxt,
+                      });
+                    });
+                  }
                 }
-              });
 
-              const original = param.list.filter((item) => {
-                return involveUnitList.includes(item.field);
-              });
+                if (item.field === 4) {
+                  if (param.selProductData.length) {
+                    const { id, ...itemData } = item;
 
-              const originalList = this.mergeArrays(original, newResidueList);
+                    param.selProductData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.productDataTxt,
+                      });
+                    });
+                  }
+                }
 
-              param.list = originalList;
-            }
-          } else {
-            if (param.involveUnit.length) {
-              const list = [];
-              param.involveUnit.forEach((item) => {
-                if (item === 2) {
-                  list.push({
-                    field: 2,
-                    fieldName: param.selBuyerData,
-                    programme: param.buyerTxt,
-                  });
-                } else if (item === 3) {
-                  list.push({
-                    field: 3,
-                    fieldName: param.selQAData,
-                    programme: param.QADataTxt,
-                  });
-                } else if (item === 4) {
-                  list.push({
-                    field: 4,
-                    fieldName: param.selProductData,
-                    programme: param.productDataTxt,
-                  });
-                } else if (item === 5) {
-                  list.push({
-                    field: 5,
-                    fieldName: param.selEngineerData,
-                    programme: param.engineerDataTxt,
-                  });
-                } else if (item === 6) {
-                  list.push({
-                    field: 6,
-                    fieldName: param.selResearchData,
-                    programme: param.researchDataTxt,
-                  });
-                } else if (item === 7) {
-                  list.push({
-                    field: 7,
-                    fieldName: param.selWarehouseData,
-                    programme: param.warehouseDataTxt,
-                    treatment: param.finishedHandleTxt,
-                  });
-                } else if (item === 8) {
-                  list.push({
-                    field: 8,
-                    fieldName: param.selMarketerData,
-                    programme: param.marketerDataTxt,
-                  });
-                } else if (item === 9) {
-                  list.push({
-                    field: 9,
-                    fieldName: param.selPmcData,
-                    programme: param.pmcDataTxt,
-                  });
+                if (item.field === 5) {
+                  if (param.selEngineerData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selEngineerData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.engineerDataTxt,
+                      });
+                    });
+                  }
+                }
+
+                if (item.field === 6) {
+                  if (param.selResearchData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selResearchData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.researchDataTxt,
+                      });
+                    });
+                  }
+                }
+
+                if (item.field === 7) {
+                  if (param.selWarehouseData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selWarehouseData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.warehouseDataTxt,
+                        treatment: param.finishedHandleTxt,
+                      });
+                    });
+                  }
+                }
+
+                if (item.field === 8) {
+                  if (param.selMarketerData.length) {
+                    const { id, ...itemData } = item;
+
+                    param.selMarketerData.forEach((name) => {
+                      list.push({
+                        ...itemData,
+                        fieldName: name,
+                        programme: param.marketerDataTxt,
+                        treatment: param.noMarketerDataTxt,
+                      });
+                    });
+                  }
                 }
               });
 
               param.list = list;
             }
+          } else {
+            const list = [];
+
+            if (param.selBuyerData.length) {
+              param.selBuyerData.forEach((name) => {
+                list.push({
+                  field: 2,
+                  fieldName: name,
+                  programme: param.buyerTxt,
+                });
+              });
+            }
+
+            if (param.selQAData.length) {
+              param.selQAData.forEach((name) => {
+                list.push({
+                  field: 3,
+                  fieldName: name,
+                  programme: param.QADataTxt,
+                });
+              });
+            }
+
+            if (param.selProductData.length) {
+              param.selProductData.forEach((name) => {
+                list.push({
+                  field: 4,
+                  fieldName: name,
+                  programme: param.productDataTxt,
+                });
+              });
+            }
+
+            if (param.selEngineerData.length) {
+              param.selEngineerData.forEach((name) => {
+                list.push({
+                  field: 5,
+                  fieldName: name,
+                  programme: param.engineerDataTxt,
+                });
+              });
+            }
+
+            if (param.selResearchData.length) {
+              param.selResearchData.forEach((name) => {
+                list.push({
+                  field: 6,
+                  fieldName: name,
+                  programme: param.researchDataTxt,
+                });
+              });
+            }
+
+            if (param.selWarehouseData.length) {
+              param.selWarehouseData.forEach((name) => {
+                list.push({
+                  field: 7,
+                  fieldName: name,
+                  programme: param.warehouseDataTxt,
+                  treatment: param.finishedHandleTxt,
+                });
+              });
+            }
+
+            if (param.selMarketerData.length) {
+              param.selMarketerData.forEach((name) => {
+                list.push({
+                  field: 8,
+                  fieldName: name,
+                  programme: param.marketerDataTxt,
+                  treatment: param.noMarketerDataTxt,
+                });
+              });
+            }
+
+            param.list = list;
           }
 
           param.changeCause = param.changeCause.toString();
-          param.involveUnit = param.involveUnit.toString();
+
+          console.log(param.list);
+          return
 
           if (param.id) {
             bomUpdate(param).then((response) => {
@@ -1049,7 +1151,7 @@ export default {
           } else {
             bomAdd(param).then((response) => {
               if (response.code === 200) {
-                this.msgSuccess("修改成功");
+                this.msgSuccess("创建成功");
                 this.dialogVisible = false;
                 this.$parent.getList();
               }
@@ -1084,7 +1186,7 @@ export default {
     .iterm-box {
       .el-form-item__label {
         white-space: nowrap;
-        min-width: 135px !important;
+        min-width: 145px !important;
       }
       .el-form-item__content {
         width: 100%;
@@ -1094,12 +1196,15 @@ export default {
 
     .involveUnit-left {
       min-width: 65px;
-      .el-checkbox-group {
+      .each_item_box {
         display: flex;
         flex-direction: column;
         row-gap: 20px;
-        .el-checkbox:nth-last-child(2) {
-          margin-top: 50px;
+        .each_unit {
+          text-align: center;
+          &:nth-last-child(1) {
+            margin-top: 50px;
+          }
         }
       }
     }
@@ -1114,6 +1219,21 @@ export default {
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
       0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
     border-radius: 8px;
+  }
+}
+</style>
+
+<style lang="scss" scoped>
+@media screen and(max-width: 768px) {
+  .grid_column_two {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    .el-checkbox,
+    .el-radio {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
   }
 }
 </style>

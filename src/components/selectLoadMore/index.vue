@@ -74,7 +74,7 @@ export default {
     },
     placeholder: {
       type: String,
-      default: "",
+      default: "请选择",
     },
     moreDictValue: {
       type: Array,
@@ -150,7 +150,8 @@ export default {
       });
     },
     // 选中下拉框没有数据时，自动请求第一页的数据
-    focus() {
+    focus(data) {
+      this.$emit('handleFocus', data);
       if (!this.data.length) {
         this.request({ page: 1 });
       }
@@ -172,6 +173,9 @@ export default {
     },
     getChange(e) {
       this.$emit("getChange", e);
+    },
+    getFoucsData(e) {
+      this.$emit("getFoucsData", e);
     },
   },
 };

@@ -1410,6 +1410,7 @@ ul {
 // 自定义样式
 .el-form-item__error {
   min-width: 150px;
+  text-align: left;
 }
 
 .el-tooltip__popper {
@@ -1487,4 +1488,26 @@ fieldset {
 // 修改message的样式 （层级）
 .messageCustomClass {
   z-index: 6666 !important;
+}
+
+.table-scrollContainer {
+  .el-table__body-wrapper {
+    cursor: grab;
+    user-select: none;
+    .cell {
+      cursor: auto !important;
+      user-select: text !important;
+    }
+  }
+}
+
+.table-options-col {
+  .el-button {
+    margin-left: 0 !important;
+  }
+}
+
+// 隐藏元素
+input[aria-hidden=true] {
+  display: none !important;
 }

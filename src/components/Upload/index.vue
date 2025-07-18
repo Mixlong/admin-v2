@@ -5,35 +5,24 @@
     class="my-upload-demo style-upload"
     :action="actionUrl"
     :on-success="uploadSuccess"
+    :on-error="uploadError"
     :on-remove="removeUpload"
+    :on-exceed="handleExceed"
     :before-upload="beforeUpload"
     :file-list="fileList"
     :drag="drag"
+    :limit="limit"
     :disabled="disabled"
+    :multiple="multiple"
     :list-type="listType"
-    :class="{ hide: fileList.length >= limit }"
-    :show-file-list="showFileList"
     :accept="accept"
+    :show-file-list="showFileList"
   >
-    <!-- <div v-if="!$slots.default" class="all-img">
-      <i class="el-icon-plus avatar-uploader-icon" v-if="limit != 1"></i>
-      <div v-else style="background-color: #fbfdff; height: inherit">
-        <div v-if="fileList.length > 0">
-          <el-image
-            v-for="(item, index) in fileList"
-            :key="index"
-            :src="item.url"
-            fit="cover"
-          >
-            <div slot="placeholder" class="image-slot">
-              <i class="el-icon-loading"></i>
-            </div>
-          </el-image>
-        </div>
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </div>
-    </div> -->
-    <slot></slot>
+    <slot>
+      <el-button size="mini" type="primary">
+        {{ isUploadStatus === 1 ? "上传中..." : "上传文件" }}
+      </el-button>
+    </slot>
   </el-upload>
 </template>
 
@@ -49,20 +38,37 @@ export default {
     css: "",
     listType: "",
     pclass: "",
-    showFileList: "",
+    showFileList: {
+      type: Boolean,
+      default: true,
+    },
     accept: "",
     disabled: {
       type: Boolean,
       default: false,
     },
-    // accept: {
-    //   default: "image/jpeg, image/gif, image/png,image/bmp",
-    // },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
+    isExceedTip: {
+      type: Boolean,
+      default: true,
+    },
+    accept: {
+      default: "image/jpeg, image/gif, image/png,image/bmp",
+    },
+    // 是否使用对象数组格式 {name, url, time}
+    useObjectFormat: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
       fileList: [],
+      isUploadStatus: 0, // 文件上传状态  0：点击上传 1： 上传中
     };
   },
   watch: {
@@ -76,47 +82,119 @@ export default {
   },
   methods: {
     transImgVal(value) {
-      value = value ? value : "";
-      let fileList = value.split(",").map((item) => {
-        return {
-          name: item.slice(item.lastIndexOf("/") + 1),
-          url: item,
-        };
-      });
+      if (!value) {
+        this.fileList = [];
+        return;
+      }
+
+      let fileList = [];
+      
+      if (this.useObjectFormat) {
+        // 处理对象数组格式 [{name, url, time}]
+        if (Array.isArray(value)) {
+          fileList = value.map((item) => {
+            return {
+              name: item.name || item.url?.slice(item.url.lastIndexOf("/") + 1) || "未知文件",
+              url: item.url,
+              time: item.time || new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }),
+            };
+          });
+        }
+      } else {
+        // 处理字符串数组格式 "url1,url2,url3"
+        const urlString = Array.isArray(value) ? value.join(",") : value;
+        fileList = urlString.split(",").map((item) => {
+          return {
+            name: item.slice(item.lastIndexOf("/") + 1),
+            url: item,
+          };
+        });
+      }
+
       this.fileList = fileList.filter((item) => {
-        return item.url != "";
+        return item.url && item.url !== "";
       });
     },
     beforeUpload(file) {
+      this.isUploadStatus = 1;
       if (file?.name.indexOf("+") !== -1) {
         this.msgError("上传的文件名称不能包含‘+’字符");
+        this.isUploadStatus = 0;
         return false;
       }
-      this.$emit("beforeUpload", file);
+
+      const getFileExtension = (filename) => {
+        // 使用正则表达式匹配文件后缀
+        const match = filename.match(/\.[^.]+$/);
+
+        // 如果匹配成功，返回后缀；否则返回空字符串
+        return match ? match[0] : "";
+      };
+
+
+ 
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
         this.$refs.upload.clearFiles();
       }
-      this.handleReturnData(this.limit == 1 ? [file] : fileList);
-      this.$emit("uploadSuccess", response, file, fileList);
+
+      this.isUploadStatus = 0;
+      this.msgSuccess("上传成功");
+      this.handleReturnData(this.limit === 1 ? [file] : fileList);
+    },
+    uploadError() {
+      this.isUploadStatus = 0;
+      this.msgError("上传失败");
+    },
+    handleExceed(files, fileList) {
+      if (!this.isExceedTip) return;
+      this.msgWarning(
+        `当前限制选择 ${this.limit} 个文件，本次选择了 ${
+          files.length
+        } 个文件，共选择了 ${files.length + fileList.length} 个文件`
+      );
     },
     removeUpload(response, file, fileList) {
-      this.handleReturnData(file);
-      this.$emit("removeUpload", response, file, fileList);
+      this.handleReturnData(fileList);
     },
     handleReturnData(file) {
-      let currentFill = file.map((item) => {
-        if (item.response) {
-          return item.response.data[0].url;
+      if (file.every((item) => item.status === "success")) {
+        let currentFill = file.map((item) => {
+          const url = item.response ? item.response.data[0].url : item.url;
+          const name = item.name || url.slice(url.lastIndexOf("/") + 1);
+          
+          if (this.useObjectFormat) {
+            return {
+              name: name,
+              url: url,
+              time: new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }),
+            };
+          } else {
+            return url;
+          }
+        });
+
+        if (this.useObjectFormat) {
+          this.$emit("input", currentFill);
         } else {
-          return item.url;
+          this.$emit("input", currentFill.toString());
         }
-      });
-      this.$emit("input", currentFill.toString());
-    },
-    clickInput() {
-      this.$refs["upload"].$children[0].$refs.input.click();
+      }
     },
   },
 };

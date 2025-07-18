@@ -1,102 +1,38 @@
 <template>
   <div class="app-container">
     <transition name="fade-transform-tb">
-      <el-form
-        :model="queryParams"
-        ref="queryForm"
-        :inline="true"
-        v-show="showSearch"
-      >
+      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
         <el-form-item label="所属品类" prop="categoryId">
-          <el-select
-            v-model="queryParams.categoryId"
-            filterable
-            allow-create
-            clearable
-            @change="changeCategory"
-            placeholder="请选择所属品类"
-            style="width: 140px"
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.id"
-            />
+          <el-select v-model="queryParams.categoryId" filterable allow-create clearable @change="changeCategory"
+            style="width: 140px" placeholder="请选择">
+            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="仪表型号" prop="computerId">
-          <el-select
-            v-model="queryParams.computerId"
-            :loading="isCLoading"
-            filterable
-            remote
-            clearable
-            placeholder="请选择仪表型号"
-            @change="getList"
-            :remote-method="getComputerNameList"
-            style="width: 140px"
-          >
-            <el-option
-              v-for="dict in computerOptions"
-              :key="dict.model"
-              :label="dict.name"
-              :value="dict.model"
-            />
+          <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+            @change="getList" :remote-method="getComputerNameList" style="width: 140px">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
           </el-select>
         </el-form-item>
         <el-form-item label="迪太订单号" prop="salesOrderNo">
-          <el-input
-            v-model.trim="queryParams.salesOrderNo"
-            placeholder="请输入迪太订单号"
-            clearable
-            @keyup.native.enter="handleQuery"
-            style="width: 140px"
-          />
+          <el-input v-model.trim="queryParams.salesOrderNo" clearable @keyup.native.enter="handleQuery"
+            style="width: 140px" placeholder="请选择" />
         </el-form-item>
         <el-form-item label="排产单号" prop="no">
-          <el-input
-            v-model.trim="queryParams.no"
-            placeholder="请输入排产单号"
-            clearable
-            @keyup.native.enter="handleQuery"
-            style="width: 140px"
-          />
+          <el-input v-model.trim="queryParams.no" clearable @keyup.native.enter="handleQuery" style="width: 140px"
+            placeholder="请选择" />
         </el-form-item>
         <el-form-item label="排产状态" prop="productStatus">
-          <el-select
-            v-model="queryParams.productStatus"
-            clearable
-            placeholder="请选择排产状态"
-            style="width: 100px"
-          >
-            <el-option
-              v-for="(value, key) in productStatusList"
-              :key="key"
-              :label="value"
-              :value="+key"
-            />
+          <el-select v-model="queryParams.productStatus" clearable style="width: 100px">
+            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
           </el-select>
         </el-form-item>
         <el-form-item label="生产日期">
-          <el-date-picker
-            v-model="dateRange"
-            style="width: 250px"
-            value-format="timestamp"
-            type="daterange"
-            range-separator="-"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            @change="handleQuery"
-          ></el-date-picker>
+          <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
+            range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button
-            type="primary"
-            icon="el-icon-search"
-            size="mini"
-            @click="handleQuery"
-          >
+          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
             搜 索
           </el-button>
           <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
@@ -107,349 +43,214 @@
     </transition>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-        >
+        <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd">
           新 增
         </el-button>
-        <el-button
-          v-hasPermi="['planSchedule:add:old']"
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleOldAdd"
-        >
-          新 增（旧）
+        <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd">
+          新 增(旧)
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
     </el-row>
-    <el-table
-      border
-      v-loading="loading"
-      :height="tableHeight()"
-      :data="list"
-      :cell-class-name="cellClassName"
-      @cell-click="cellClick"
-    >
+
+    <el-table border v-loading="loading" :height="tableHeight()" :data="list" :cell-class-name="cellClassName"
+      @cell-click="cellClick">
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品品类"
-        align="center"
-        prop="categoryName"
-        width="100"
-      />
-      <el-table-column label="产品型号" align="center" prop="computerName" />
-      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" />
-      <el-table-column label="排产单号" align="center" prop="no" />
-      <el-table-column
-        label="生产地点"
-        align="center"
-        prop="address"
-        width="90"
-      />
+      <el-table-column label="产品品类" align="center" prop="categoryName" width="100" />
+      <el-table-column label="产品型号" align="center" prop="computerName" min-width="150" />
+      <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" min-width="150" />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" min-width="150">
+        <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="排产单号" align="center" prop="no" min-width="150" />
+      <el-table-column label="订单编号" align="center" prop="orderCode" min-width="150" />
+      <el-table-column label="生产地点" align="center" prop="address" width="90" />
       <el-table-column label="生产日期" align="center" prop="date" width="90">
         <template slot-scope="{ row }">
-          {{ parseTime(row.date, "{y}-{m}-{d}") }}
-          <br />
-          <span class="text-red" v-show="isDisabled(row.date)">（已过期）</span>
+          <span v-NoData="parseTime(row.date, '{y}-{m}-{d}')" :class="{ 'text-red': isDisabled(row.date) }"
+            :title="isDisabled(row.date) ? '已过期' : ''"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="生产流程"
-        align="center"
-        prop="process"
-        width="80"
-      />
-      <el-table-column
-        label="方案版本"
-        align="center"
-        prop="soChipVersion"
-        width="80"
-      />
+      <el-table-column label="生产流程" align="center" prop="process" width="80" />
+      <el-table-column label="方案版本" align="center" prop="soChipVersion" width="80" />
       <el-table-column label="排产数量" align="center" prop="num" width="90" />
-      <el-table-column
-        label="排产状态"
-        align="center"
-        prop="productStatus"
-        width="80"
-      >
+      <el-table-column label="排产状态" align="center" prop="productStatus" width="85">
         <template slot-scope="{ row }">
-          <el-tag
-            v-if="row.productStatus !== null"
-            size="mini"
-            :type="tagType(row.productStatus)"
-          >
+          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
             {{ productStatusList[row.productStatus] }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="订单数量"
-        align="center"
-        prop="orderQuantity"
-        width="90"
-      />
-      <el-table-column
-        label="资料状态"
-        align="center"
-        prop="dataState"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <p v-if="isDataAll(scope.row)" class="text-green">全部已配齐</p>
-          <template v-else>
-            <p
-              v-if="scope.row.softList !== null"
-              :class="dataStateColor(isDataLen(scope.row.softList))"
-            >
-              <!-- 软件{{ isDataAlltxt(isDataLen(scope.row.softList)) }} -->
-              软件
-            </p>
-            <p
-              v-if="scope.row.hardList !== null"
-              :class="dataStateColor(isDataLen(scope.row.hardList))"
-            >
-              <!-- 硬件{{ isDataAlltxt(isDataLen(scope.row.hardList)) }} -->
-              硬件
-            </p>
-            <p
-              v-if="scope.row.projectList !== null"
-              :class="dataStateColor(isDataLen(scope.row.projectList))"
-            >
-              <!-- 工程{{ isDataAlltxt(isDataLen(scope.row.projectList)) }} -->
-              工程
-            </p>
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="排产人"
-        align="center"
-        prop="createBy"
-        width="90"
-      />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        width="120"
-      >
+      <el-table-column label="订单数量" align="center" prop="orderQuantity" width="85" />
+      <el-table-column label="排产人" align="center" prop="createBy" width="85" />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="150">
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
+          <span>
+            {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
+          </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150">
-        <div class="flex" slot-scope="{ row }">
-          <div class="flex flex-direction align-start">
-            <!-- :disabled="isDisabled(row.date)" -->
-            <el-button
-              v-if="row.salesOrderNo"
-              :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']"
-              type="text"
-              @click="handleUpdate(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              v-if="!row.salesOrderNo"
-              :class="[
-                isDisabled(row.date) ? 'text-gray' : 'text-blue',
-                'mlZero',
-              ]"
-              type="text"
-              @click="handleOldUpdate(row)"
-            >
-              编辑(旧)
-            </el-button>
-            <el-button
-              class="text-red mlZero"
-              type="text"
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
-            <el-button
-              v-show="row.qrCode"
-              class="mlZero"
-              type="text"
-              @click="handleQrCode(row)"
-            >
-              任务令
-            </el-button>
-            <el-button type="text" class="mlZero" @click="onEditLog(row.id)">
-              日志
-            </el-button>
-          </div>
-          <div class="flex flex-direction align-start margin-left-xs">
-            <el-button
-              class="mlZero"
-              type="text"
-              @click="handleCreateFile(row.id)"
-            >
-              生成生产资料
-            </el-button>
-            <template v-if="row.fileZip">
-              <el-button
-                class="mlZero"
-                type="text"
-                @click="zipFile(row.fileZip)"
-              >
-                下载生产资料
-              </el-button>
+      <el-table-column label="操作" align="center" width="180" fixed="right">
+        <div class="flex align-center justify-between" slot-scope="{ row }">
+          <el-button v-if="row.salesOrderNo" v-hasPermi="['www:planSchedule:update']"
+            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']" type="text" @click="handleUpdate(row)">
+            编辑
+          </el-button>
+          <el-button v-if="!row.salesOrderNo" v-hasPermi="['www:planSchedule:oldUpdate']"
+            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']" type="text" @click="handleOldUpdate(row)">
+            编辑(旧)
+          </el-button>
+          <el-button class="mlZero" v-show="row.qrCode" type="text" v-hasPermi="['www:planSchedule:taskOrder']"
+            @click="handleQrCode(row)">
+            任务令
+          </el-button>
+          <el-dropdown>
+            <span class="el-dropdown-link text-blue font12">
+              更多操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
 
-              <el-button
-                class="mlZero"
-                type="text"
-                @click="getProSecDetail(row.id)"
-              >
-                生成预览资料
-              </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-if="row.productStatus !== 2" v-hasPermi="['www:planSchedule:delete']" @click.native="handleDelete(row)">
+                删除
+              </el-dropdown-item>
+              <el-dropdown-item v-hasPermi="['www:planSchedule:log']" @click.native="onEditLog(row.id)">
+                日志
+              </el-dropdown-item>
+              <el-dropdown-item v-if="row.productStatus === 0" v-hasPermi="['www:planSchedule:editProdEnd']" @click.native="onEditProdStatusEnd(row)">
+                生产完结
+              </el-dropdown-item>
+              <el-dropdown-item v-hasPermi="['www:planSchedule:codeSet']" @click.native="onSetCodeConfig(row)">
+                任务令配置
+              </el-dropdown-item>
+              <el-dropdown-item @click.native="onBoxInfo(row.id)">
+                箱子信息
+              </el-dropdown-item>
+              <el-dropdown-item v-hasPermi="['www:planSchedule:create:prodData']"
+                @click.native="handleCreateFile(row.id)">
+                生成生产资料
+              </el-dropdown-item>
 
-              <template v-if="row.excelUrl">
-                <el-button
-                  class="mlZero"
-                  type="text"
-                  @click="zipFile(row.excelUrl)"
-                >
-                  下载资料清单
-                </el-button>
-                <!-- <el-button
-                v-if="row.excelUrl"
-                class="mlZero"
-                type="text"
-                @click="ReadOfficeFile(row.excelUrl)"
-              >
-                预览资料清单
-              </el-button> -->
-                <el-button
-                  class="mlZero"
-                  type="text"
-                  @click="handleProd(row.id)"
-                >
-                  外发生产
-                </el-button>
+              <template v-if="row.fileZip">
+                <el-dropdown-item v-hasPermi="['www:planSchedule:download:prodData']"
+                  @click.native="zipFile(row.fileZip)">
+                  下载生产资料
+                </el-dropdown-item>
+
+                <el-dropdown-item v-hasPermi="['www:planSchedule:create:seeData']" @click="getProSecDetail(row.id)">
+                  生成预览资料
+                </el-dropdown-item>
+
+                <template v-if="row.excelUrl">
+                  <el-dropdown-item v-hasPermi="['www:planSchedule:download:fileData']" @click="zipFile(row.excelUrl)">
+                    下载资料清单
+                  </el-dropdown-item>
+                  <el-dropdown-item v-hasPermi="['www:planSchedule:send:prod']" @click="handleProd(row.id)">
+                    外发生产
+                  </el-dropdown-item>
+                </template>
               </template>
-            </template>
-          </div>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <CompUpdate
-      ref="compUpdate"
-      :title="title"
-      :dictList="dictList"
-      :modelList="modelList"
-      :operationList="operationList"
-      :isExcelFile.sync="isExcelFile"
-      @getData="getList"
-    />
+    <CompUpdate ref="compUpdate" :title="title" :dictList="dictList" :modelList="modelList"
+      :operationList="operationList" :isExcelFile.sync="isExcelFile" @getData="getList" />
 
-    <old-comUpdate
-      ref="oldCompUpdate"
-      :title="title"
-      :dictList="dictList"
-      :modelList="modelList"
-      :operationList="operationList"
-      @getData="getList"
-    />
+    <old-comUpdate ref="oldCompUpdate" :title="title" :dictList="dictList" :modelList="modelList"
+      :operationList="operationList" @getData="getList" />
 
     <!-- 任务令 -->
-    <el-dialog title="任务令" :visible.sync="isQrCode" width="350px" center>
-      <el-card shadow="hover">
-        <div class="flex flex-direction">
-          <vue-qr :text="qrCodeObj.qrCode" :size="200"></vue-qr>
-          <span class="margin-bottom-xs">
-            产品品类：<el-tag>{{ qrCodeObj.categoryName }}</el-tag>
-          </span>
-          <span class="margin-bottom-xs">
-            产品型号：<el-tag>{{ qrCodeObj.computerName }}</el-tag>
-          </span>
-          <span>
-            芯片版本：<el-tag>{{ qrCodeObj.soChipVersion }}</el-tag>
-          </span>
+    <el-dialog title="任务令" :visible.sync="isQrCode" width="600px" center top="-10vh">
+      <el-card shadow="nerver">
+        <div class="text-center">
+          <vue-qr class="margin-bottom" :text="qrCodeObj.qrCode" :size="250" :margin="10"></vue-qr>
+
+          <el-descriptions direction="vertical" :column="4" border>
+            <el-descriptions-item label="产品品类">
+              <span v-NoData="qrCodeObj.categoryName"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="产品型号">
+              <span v-NoData="qrCodeObj.computerName"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="芯片版本">
+              <span v-NoData="qrCodeObj.soChipVersion"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="客户订单号">
+              <span v-NoData="qrCodeObj.customerOrderNo"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="生产数量">
+              <span v-NoData="qrCodeObj.num"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="备注" :span="3">
+              <span v-NoData="qrCodeObj.remark"></span>
+            </el-descriptions-item>
+          </el-descriptions>
+
+          <template v-if="qrCodeObj.configList && qrCodeObj.configList.length > 0">
+            <el-table class="margin-top-xs" :data="qrCodeObj.configList" border max-height="200px">
+              <el-table-column label="配置类型" align="center" width="90px">
+                <template slot-scope="{ row }">
+                  {{ selectDictLabel(configTypeData, row.configType) }}
+                </template>
+              </el-table-column>
+              <el-table-column label="升级项目" align="center">
+                <template slot-scope="{ row }">
+                  {{ analyzeConfig(row.jsonStr, 'upgradeProject') }}
+                </template>
+              </el-table-column>
+              <el-table-column label="供电电压" align="center" width="90px">
+                <template slot-scope="{ row }">
+                  {{ analyzeConfig(row.jsonStr, 'supplyVoltage') }}
+                </template>
+              </el-table-column>
+              <el-table-column label="通讯类型" align="center" width="90px">
+                <template slot-scope="{ row }">
+                  {{ analyzeConfig(row.jsonStr, 'communicationType') }}
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
         </div>
       </el-card>
     </el-dialog>
 
     <!-- 缺失资料状态弹窗 -->
-    <el-dialog
-      title="缺失资料状态"
-      center
-      width="40%"
-      top="-12vh"
-      :visible.sync="isDataShow"
-      :close-on-click-modal="false"
-      class="data-box"
-    >
+    <el-dialog title="缺失资料状态" center width="40%" top="-12vh" :visible.sync="isDataShow" :close-on-click-modal="false"
+      class="data-box">
       <el-descriptions direction="vertical" :column="3" border>
-        <el-descriptions-item
-          label="软件资料"
-          :labelStyle="isLabelStyle"
-          :contentStyle="isContentStyle"
-          content-class-name="overflow-y"
-          v-if="isDataLen(dataInfo.softList)"
-        >
+        <el-descriptions-item label="软件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
+          content-class-name="overflow-y" v-if="isDataLen(dataInfo.softList)">
           <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(item, index) in dataInfo.softList"
-              :key="index"
-            >
+            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.softList"
+              :key="index">
               {{ item.typeValue }}
             </el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item
-          label="硬件资料"
-          :labelStyle="isLabelStyle"
-          :contentStyle="isContentStyle"
-          content-class-name="overflow-y"
-          v-if="isDataLen(dataInfo.hardList)"
-        >
+        <el-descriptions-item label="硬件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
+          content-class-name="overflow-y" v-if="isDataLen(dataInfo.hardList)">
           <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(item, index) in dataInfo.hardList"
-              :key="index"
-            >
+            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.hardList"
+              :key="index">
               {{ item.typeValue }}
             </el-tag>
           </div>
         </el-descriptions-item>
 
-        <el-descriptions-item
-          label="工程资料"
-          :labelStyle="isLabelStyle"
-          :contentStyle="isContentStyle"
-          content-class-name="overflow-y"
-          v-if="isDataLen(dataInfo.projectList)"
-        >
+        <el-descriptions-item label="工程资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
+          content-class-name="overflow-y" v-if="isDataLen(dataInfo.projectList)">
           <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(item, index) in dataInfo.projectList"
-              :key="index"
-            >
+            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.projectList"
+              :key="index">
               {{ item.typeValue }}
             </el-tag>
           </div>
@@ -458,13 +259,7 @@
     </el-dialog>
 
     <!-- 外发生产 -->
-    <el-dialog
-      title="外发生产"
-      :visible.sync="isOutProd"
-      width="500px"
-      center
-      :close-on-click-modal="false"
-    >
+    <el-dialog title="外发生产" :visible.sync="isOutProd" width="500px" center :close-on-click-modal="false">
       <el-card shadow="hover"> 文件 </el-card>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary">确 定</el-button>
@@ -472,7 +267,45 @@
       </div>
     </el-dialog>
 
+    <!-- 箱子信息 -->
+    <el-dialog title="箱子信息" :visible.sync="isBoxInfoShow" center :close-on-click-modal="false">
+      <el-table border v-loading="isBoxInfoLoading" :height="450" :data="boxInfoData">
+        <el-table-column label="序号" width="60" type="index" align="center">
+          <template slot-scope="scope">
+            {{
+              (boxInfoQueryParams.p - 1) * boxInfoQueryParams.l +
+              scope.$index +
+              1
+            }}
+          </template>
+        </el-table-column>
+        <el-table-column label="设备名称" align="center" prop="equipName" />
+        <el-table-column label="箱号" align="center" prop="boxNo" />
+        <el-table-column label="箱子序号" align="center" prop="no" />
+        <el-table-column label="应装数量" align="center" prop="num" />
+        <el-table-column label="箱子重量" align="center" prop="weight" />
+        <el-table-column label="是否尾箱" align="center" prop="isEnd">
+          <template slot-scope="{ row }">
+            <el-tag v-if="row.isEnd === 1" type="success"> 是 </el-tag>
+            <el-tag v-else type="info"> 否 </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createTime" width="150">
+          <template slot-scope="{ row }">
+            <span>
+              {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
+            </span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination v-show="boxInfoTotal > 0" :total="boxInfoTotal" :page.sync="boxInfoQueryParams.p"
+        :limit.sync="boxInfoQueryParams.l" @pagination="getBoxInfoData" />
+    </el-dialog>
+
     <edit-log ref="editLogRef" />
+    <!-- Mua配置 -->
+    <MuaSet ref="muaSetRef" @refresh="getList()" />
   </div>
 </template>
 
@@ -483,25 +316,29 @@ import {
   createDataFile,
   sendProd,
   proSecDetail,
+  boxInfoList,
+  schedulingEdit
 } from "@/api/www/planSchedule";
-import { listComputer, computerName } from "@/api/third/computer";
+import { listComputer } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
 import table2excel from "js-table2excel";
 import XLSX from "xlsx";
 import "./table2excel";
 import reqUrl from "@/utils/requestUrl";
-
-import FileSaver from "file-saver";
 import axios from "axios";
+import { commonData } from "./mixins/common";
 
 export default {
   name: "PlanSchedule",
+  mixins: [commonData],
   components: {
     VueQr,
     CompUpdate: () => import("./components/update.vue"),
     OldComUpdate: () => import("./components/oldUpdate.vue"),
     EditLog: () => import("./components/log.vue"),
+    MuaSet: () => import("./components/muaSet.vue"),
+    MuaSetList: () => import("./components/MuaSetList.vue"),
   },
   data() {
     return {
@@ -534,6 +371,7 @@ export default {
       productStatusList: {
         0: "正常",
         1: "已取消",
+        2: "生产完结",
       },
       // 查询参数
       queryParams: {
@@ -547,6 +385,16 @@ export default {
         endDate: "",
         operation: "",
       },
+      isBoxInfoLoading: false,
+      isBoxInfoShow: false,
+      boxInfoData: [],
+      boxInfoTotal: 0,
+      schedulingId: "",
+      boxInfoQueryParams: {
+        p: 1,
+        l: 10,
+        id: ""
+      }
     };
   },
   computed: {
@@ -606,53 +454,57 @@ export default {
     },
     isContentStyle() {
       return { width: "33.333%", verticalAlign: "top" };
-    },
+    }
   },
   watch: {
     "queryParams.categoryId"(id) {
       if (id) {
-        // this.queryParams.computerId = "";
         this.getlistComputer(id);
       }
     },
+    $route: {
+      handler(route) {
+        if (route.name === "PlanSchedule") {
+          this.queryParams.salesOrderNo = "";
+
+          const { salesOrderNo } = route?.params;
+          if (salesOrderNo) {
+            this.queryParams.salesOrderNo = salesOrderNo;
+            this.handleQuery();
+          }
+        }
+      },
+      immediate: true
+    }
+  },
+  beforeRouteEnter(to, from, next) {
+    next(async (vm) => {
+      await vm.getCategoryComputerData();
+      vm.getCacheParamsFn(to?.params);
+    });
   },
   created() {
-    console.log("初始化1232");
-    const { orderId } = this.$route.query;
-    if (orderId) {
-      this.queryParams.orderId = orderId;
-    }
-
-    const { listId } = this.$route.params;
-    if (listId) {
-      this.queryParams.id = listId;
-    }
-
     this.getOperationList();
   },
-  async activated() {
-    console.log("activated");
-    await this.getCategoryComputerData();
-
-    const { categoryId, computerId, salesOrderNo, orderId } =
-      this.$route.params;
-
-    // 从订单管理跳转到当前页面
-    if (categoryId || computerId || salesOrderNo) {
-      this.queryParams.categoryId = categoryId;
-      this.queryParams.computerId = computerId;
-      this.queryParams.salesOrderNo = salesOrderNo;
-      this.queryParams.orderId = orderId;
-
-      const computerData = this.dictList.filter(
-        (item) => item.id === categoryId
-      );
-      this.computerOptions = computerData[0].computerList;
-    }
-
-    this.getList();
-  },
   methods: {
+    getCacheParamsFn(params) {
+      const { categoryId, computerId, salesOrderNo, orderId } = params;
+
+      // 从订单管理跳转到当前页面
+      if (categoryId || computerId || salesOrderNo) {
+        this.queryParams.categoryId = categoryId;
+        this.queryParams.computerId = computerId;
+        this.queryParams.salesOrderNo = salesOrderNo;
+        this.queryParams.orderId = orderId;
+
+        const computerData = this.dictList.filter(
+          (item) => item.id === categoryId
+        );
+        this.computerOptions = computerData[0].computerList;
+      }
+
+      this.getList();
+    },
     getCategoryComputerData() {
       return new Promise((resolve, reject) => {
         categoryComputerDict().then((res) => {
@@ -813,7 +665,6 @@ export default {
     changeCategory(val) {
       if (!val) return;
       this.queryParams.computerId = "";
-      this.getList();
       return new Promise((resove) => {
         this.computerOptions = this.dictList.filter(
           (item) => item.id === val
@@ -854,11 +705,14 @@ export default {
           begin: "startDate",
           end: "endDate",
         })
-      ).then((response) => {
-        this.list = response.data.list;
-        this.total = response.data.total;
-        this.loading = false;
-      });
+      )
+        .then((response) => {
+          this.list = response.data.list;
+          this.total = response.data.total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     handleAdd() {
       this.title = "新增计划";
@@ -873,13 +727,12 @@ export default {
     handleUpdate(row) {
       this.title = "编辑计划";
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign(
-        {},
-        { ...row, dateRange: [row.startTime, row.endTime] }
-      );
+      this.$refs.compUpdate.form = Object.assign({}, row);
+
+      const { id, ...data } = row;
+      this.$refs.compUpdate.orderData = [{ ...data }];
       this.$refs.compUpdate.cloneForm = Object.assign({}, row);
       this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.getOrderDetail(row.salesOrderNo);
     },
     handleOldUpdate(row) {
       this.title = "编辑计划";
@@ -922,12 +775,13 @@ export default {
           this.getList();
           this.msgSuccess("删除成功");
         })
-        .catch(() => {});
+        .catch(() => { });
     },
     // 查看任务令
     handleQrCode(row) {
       this.isQrCode = true;
       this.qrCodeObj = row;
+      this.getDictData();
     },
     // 资料状态
     cellClick(row, column) {
@@ -989,6 +843,56 @@ export default {
       this.$refs.editLogRef.dialogVisible = true;
       this.$refs.editLogRef.getList(id);
     },
+    // 生产完结
+    onEditProdStatusEnd(row) {
+      this.$confirm(`确定要"生产完结"吗?`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(function () {
+          const data = {
+            id: row.id,
+            productStatus: 2,
+          }
+          return schedulingEdit(data);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("操作成功");
+        })
+        .catch(() => { });
+    },
+    // 任务令配置
+    onSetCodeConfig(row) {
+      this.isSetMuaShow = true;
+      this.$refs.muaSetRef.dialogVisible = true;
+      this.$refs.muaSetRef.reset();
+      console.log(row);
+      this.$refs.muaSetRef.echoData({
+        id: row.id,
+        configList: row.configList || [], 
+      })
+    },
+    // 详细信息
+    onBoxInfo(id) {
+      this.isBoxInfoShow = true;
+      this.schedulingId = id;
+
+      this.boxInfoQueryParams.id = id;
+      this.getBoxInfoData();
+    },
+    getBoxInfoData() {
+      this.isBoxInfoLoading = true;
+
+      boxInfoList(this.boxInfoQueryParams).then((res) => {
+        this.boxInfoData = res.data.list;
+        this.boxInfoTotal = res.data.total;
+      }).finally(() => {
+        this.isBoxInfoLoading = false;
+      })
+    },
+
   },
 };
 </script>
@@ -998,6 +902,7 @@ export default {
     min-height: 150px;
     max-height: 300px;
     overflow: hidden;
+
     &:hover {
       overflow-y: auto;
     }

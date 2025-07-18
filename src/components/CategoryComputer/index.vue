@@ -39,7 +39,6 @@ export default {
       });
     },
     changeCategory(data) {
-      console.log(data);
       this.$emit("input", data);
     },
   },

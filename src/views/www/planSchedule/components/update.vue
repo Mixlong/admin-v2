@@ -1,168 +1,213 @@
 <template>
   <el-dialog
+    class="fixed_bottom_dialog"
     :title="title"
     :visible.sync="dialogVisible"
     center
     append-to-body
     top="0vh"
-    width="700px"
+    fullscreen
     :close-on-click-modal="false"
   >
     <el-form
       ref="form"
-      label-position="left"
+      label-position="top"
       :model="form"
       :rules="rules"
       label-width="100px"
-      class="overflow-y"
-      style="max-height: 500px"
     >
       <template v-if="!isExcelFile">
-        <el-form-item label="迪太订单号:" prop="salesOrderNo">
-          <select-loadMore
-            style="width: 65%"
-            v-model="form.salesOrderNo"
-            :data="orderData.data"
-            :page="orderData.page"
-            :hasMore="orderData.more"
-            dictLabel="salesOrderNo"
-            :moreParams="true"
-            :disabled="!!form.id"
-            :request="getOrderList"
-            @getChange="getOrderId"
-            placeholder="请选择迪太订单号"
-          />
-        </el-form-item>
+        <el-row :gutter="30">
+          <el-col :span="4">
+            <el-form-item label="迪太订单号:" prop="salesOrderNo">
+              <select-loadMore
+                v-model="form.salesOrderNo"
+                :data="orderCodeData.data"
+                :page="orderCodeData.page"
+                :hasMore="orderCodeData.more"
+                dictLabel="salesOrderNo"
+                dictValue="salesOrderNo"
+                :disabled="!!form.id"
+                :request="getCustomerOrderList"
+                @getChange="getOrderNo"
+                placeholder="请选择迪太订单号"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
 
-        <template v-if="form.salesOrderNo && orderInfo.salesOrderNo && dialogVisible">
-          <transition name="fade">
-            <el-descriptions
-              class="margin-top margin-bottom"
-              :column="3"
-              direction="vertical"
-              size="mini"
-              border
-            >
-              <el-descriptions-item label="迪太订单号">
-                {{ orderInfo.salesOrderNo }}
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="客户名称"
-                v-if="orderInfo.customerName"
+          <el-col :span="4">
+            <el-form-item label="订单编号" prop="orderCode">
+              <select-loadMore
+                v-model="form.orderCode"
+                :data="prodPlatData.data"
+                :page="prodPlatData.page"
+                :hasMore="prodPlatData.more"
+                dictLabel="orderCode"
+                dictValue="orderCode"
+                :request="getProdPlantList"
+                placeholder="请选择订单编号"
+                style="width: 100%"
               >
-                {{ orderInfo.customerName }}
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="客户订单号"
-                v-if="orderInfo.customerOrderNo"
-              >
-                {{ orderInfo.customerOrderNo }}
-              </el-descriptions-item>
-              <el-descriptions-item label="品类" v-if="orderInfo.categoryName">
-                {{ orderInfo.categoryName }}
-              </el-descriptions-item>
-              <el-descriptions-item label="型号" v-if="orderInfo.computerName">
-                {{ orderInfo.computerName }}
-              </el-descriptions-item>
-              <el-descriptions-item label="BOM编码" v-if="orderInfo.bomCode">
-                {{ orderInfo.bomCode }}
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="芯片版本"
-                v-if="orderInfo.chipVersion"
-              >
-                {{ orderInfo.chipVersion }}
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="订单数量"
-                v-if="orderInfo.orderQuantity"
-              >
-                {{ orderInfo.orderQuantity }}
-              </el-descriptions-item>
-              <el-descriptions-item label="出货日期" v-if="orderInfo.sellTime">
-                <span class="text-red">
-                  {{ parseTime(orderInfo.sellTime) }}
-                </span>
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="客户要求到货日期"
-                v-if="orderInfo.arrivalTime"
-              >
-                <span class="text-green">
-                  {{ parseTime(orderInfo.arrivalTime) }}
-                </span>
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="出货地址"
-                v-if="orderInfo.consigneeAddress"
-              >
-                {{ orderInfo.consigneeAddress }}
-              </el-descriptions-item>
-              <el-descriptions-item label="状态">
-                {{ statusList[orderInfo.status] }}
-              </el-descriptions-item>
-              <el-descriptions-item label="箱唛" v-if="orderInfo.isMark">
-                {{ markList[orderInfo.isMark] }}
-              </el-descriptions-item>
-              <el-descriptions-item
-                label="指定内容"
-                v-if="orderInfo.containerMarkInfo"
-              >
-                {{ orderInfo.containerMarkInfo }}
-              </el-descriptions-item>
-            </el-descriptions>
-          </transition>
-        </template>
+              </select-loadMore>
+            </el-form-item>
+          </el-col>
 
-        <el-form-item label="生产日期:" prop="date">
-          <el-date-picker
-            v-model="form.date"
-            style="width: 65%"
-            :disabled="!form.salesOrderNo"
-            type="date"
-            :default-time="defaultTime"
-            :picker-options="pickerOptions"
-            value-format="timestamp"
-            placeholder="请选择生产日期"
-            @change="selDate"
+          <el-col :span="4">
+            <el-form-item label="生产日期:" prop="date">
+              <el-date-picker
+                v-model="form.date"
+                :disabled="!form.salesOrderNo"
+                type="date"
+                value-format="timestamp"
+                placeholder="请选择生产日期"
+                style="width: 100%"
+              >
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="4">
+            <el-form-item label="生产流程:" prop="process">
+              <el-select
+                v-model="form.process"
+                :disabled="!!form.id"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="(item, index) in operationList"
+                  :key="index"
+                  :label="item.dictLabel"
+                  :value="item.dictLabel"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="4">
+            <el-form-item label="生产地点:" prop="address">
+              <el-select v-model="form.address" style="width: 100%">
+                <el-option
+                  v-for="(item, index) in productAddressList"
+                  :key="index"
+                  :label="item.dictLabel"
+                  :value="item.dictLabel"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="4">
+            <el-form-item label="备注:" prop="remark">
+              <el-input v-model="form.remark" clearable placeholder="请输入"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="客户订单信息:" required>
+          <el-table
+            ref="customerOrderRef"
+            :data="orderData"
+            border
+            row-key="id"
+            :height="tableHeight(-50)"
+            class="margin-bottom-sm"
+            @selection-change="handleSelectionChange"
           >
-          </el-date-picker>
-        </el-form-item>
-
-        <el-form-item label="生产流程:" prop="process">
-          <el-radio-group v-model="form.process" :disabled="!!form.id">
-            <el-radio
-              v-for="(item, index) in operationList"
-              :key="index"
-              :label="item.dictLabel"
+            <el-table-column
+              v-if="!form.id"
+              type="selection"
+              width="55"
+              align="center"
+              :reserve-selection="true"
+            />
+            <el-table-column
+              label="客户订单号"
+              align="center"
+              prop="customerOrderNo"
+            />
+            <el-table-column
+              label="客户名称"
+              align="center"
+              prop="customerName"
+            />
+            <el-table-column label="品类" align="center" prop="categoryName" />
+            <el-table-column label="型号" align="center" prop="computerName" />
+            <el-table-column label="BOM编码" align="center" prop="bomCode">
+              <template slot-scope="scope">
+                <span v-NoData="scope.row.bomCode"></span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="芯片版本"
+              align="center"
+              prop="chipVersion"
+            />
+            <el-table-column
+              label="订单数量"
+              align="center"
+              prop="orderQuantity"
+            />
+            <el-table-column label="出货日期" align="center" prop="sellTime">
+              <template slot-scope="scope">
+                <span
+                  v-NoData="parseTime(scope.row.sellTime, '{y}-{m}-{d}')"
+                  class="text-red"
+                ></span>
+              </template>
+            </el-table-column>
+            <!-- <el-table-column
+              label="客户要求到货日期"
+              align="center"
+              prop="arrivalTime"
             >
-              {{ item.dictLabel }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item label="生产地点:" prop="address">
-          <el-radio-group v-model="form.address">
-            <el-radio
-              v-for="(item, index) in productAddressList"
-              :key="index"
-              :label="item.dictLabel"
-            >
-              {{ item.dictLabel }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item label="排产数量:" prop="num">
-          <el-input
-            v-model="form.num"
-            clearable
-            style="width: 65%"
-            placeholder="请输入排产数量"
-            v-PreInput:price
-          >
-            <template slot="append">pcs</template>
-          </el-input>
+              <template slot-scope="scope">
+                <span
+                  v-NoData="parseTime(scope.row.arrivalTime)"
+                  class="text-green"
+                ></span>
+              </template>
+            </el-table-column> -->
+            <!-- <el-table-column
+              label="出货地址"
+              align="center"
+              prop="consigneeAddress"
+            /> -->
+            <!-- <el-table-column label="箱唛" align="center" prop="isMark">
+              <template slot-scope="scope">
+                {{ markList[scope.row.isMark] }}
+              </template>
+            </el-table-column> -->
+            <el-table-column label="批次号" align="center" prop="batchNo">
+              <template slot-scope="scope">
+                <el-input
+                  v-model.trim="scope.row.batchNo"
+                  placeholder="请输入批次号"
+                  clearable
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="批次数量" align="center" prop="batchNum">
+              <template slot-scope="scope">
+                <el-input-number
+                  v-model="scope.row.batchNum"
+                  controls-position="right"
+                  :min="1"
+                  :precision="0"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="排产数量" align="center" prop="num">
+              <template slot-scope="scope">
+                <el-input-number
+                  v-model="scope.row.num"
+                  controls-position="right"
+                  :min="1"
+                  :precision="0"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
         </el-form-item>
       </template>
 
@@ -189,10 +234,10 @@ import {
   schedulingEdit,
   scheduleVersion,
 } from "@/api/www/planSchedule";
-import { listComputer } from "@/api/third/computer";
 import { schemeTypeList } from "@/api/system/skipType";
 import tinymce from "@/views/components/Editor";
-import { orderList } from "@/api/order";
+import { orderList, orderManagementList } from "@/api/order";
+import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
   name: "planScheduleUpdate",
@@ -202,12 +247,10 @@ export default {
   },
   data() {
     return {
-      disabledDate: null,
       isBtnLoading: false,
       dialogVisible: false,
       // 生产地点
       productAddressList: [],
-      modelList: [],
       // 方案版本字典
       versionList: [],
       // 芯片列表
@@ -217,20 +260,30 @@ export default {
       form: {
         categoryId: "",
         computerId: "",
+        orderCode: "",
         date: "",
         address: "",
         process: "",
         schemeVersion: "",
-        dateRange: [],
-        num: "",
+        batchNo: "",
+        batchNum: 1,
+        list: [],
       },
-      // 订单数据
-      orderData: {
+      selOrderData: [],
+      // 订单id
+      orderCodeData: {
         data: [],
         page: 1,
         more: true,
       },
-      orderInfo: {},
+      // 订单数据
+      orderData: [],
+      // 订单编号
+      prodPlatData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       statusList: {
         0: "待审核",
         1: "正常",
@@ -247,6 +300,9 @@ export default {
         salesOrderNo: [
           { required: true, message: "请选择迪太订单号", trigger: "change" },
         ],
+        orderCode: [
+          { required: true, message: "请选择订单编号", trigger: "change" },
+        ],
         computerId: [
           { required: true, message: "请选择产品型号", trigger: "change" },
         ],
@@ -262,47 +318,22 @@ export default {
         schemeVersion: [
           { required: true, message: "请选择方案版本", trigger: "change" },
         ],
-        dateRange: [
-          { required: true, message: "请选择时间", trigger: "change" },
-        ],
         orderNo: [
           { required: true, message: "请输入客户订单号", trigger: "blur" },
         ],
         excelUrl: [
           { required: true, message: "请上传资料清单", trigger: "change" },
         ],
+        batchNo: [
+          { required: false, message: "请输入批次号", trigger: "change" },
+        ],
+        batchNum: [
+          { required: false, message: "请输入批次数量", trigger: "change" },
+        ],
       },
     };
   },
-  computed: {
-    pickerOptions() {
-      return {
-        // disabledDate: this.disabledDate,
-        selectableRange: `${this.defaultTime} - 23:59:59`,
-      };
-    },
-  },
   watch: {
-    "form.categoryId"(id) {
-      if (id)
-        this.modelList = this.dictList.filter(
-          (item) => item.id === id
-        )[0].computerList;
-    },
-    "orderInfo.sellTime"(sellTime) {
-      if (sellTime) {
-        this.disabledDate = (time) => {
-          return (
-            time.getTime() > sellTime ||
-            time.getTime() < Date.now() - 24 * 3650 * 1000
-          );
-        };
-      } else {
-        this.disabledDate = (time) => {
-          return time.getTime() < Date.now() - 24 * 3650 * 1000;
-        };
-      }
-    },
     "form.excelUrl"(excelUrl) {
       if (excelUrl) {
         this.clearValidateItem("form", "excelUrl");
@@ -320,47 +351,58 @@ export default {
     this.getChipTypeList();
   },
   methods: {
-    /** 订单号数据 */
-    getOrderList({ page = 1, more = false, keyword = "" } = {}) {
+    getCustomerOrderList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
-        orderList({
+        orderManagementList({
           p: page,
           status: 1,
           salesOrderNo: keyword,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
-            this.orderData.data = [...this.orderData.data, ...list];
+            this.orderCodeData.data = [...this.orderCodeData.data, ...list];
           } else {
-            this.orderData.data = list;
+            this.orderCodeData.data = list;
           }
-          this.orderData.more = pageNum * pageSize < total;
-          this.orderData.page = pageNum;
+          this.orderCodeData.more = pageNum * pageSize < total;
+          this.orderCodeData.page = pageNum;
           resolve();
         });
       });
     },
-    getOrderId(info) {
-      if (!info) {
-        this.form.orderId = "";
-        return;
-      }
-      this.orderInfo = JSON.parse(info);
-      this.form.orderId = this.orderInfo.id;
-    },
-    getComputerId(id) {
-      if (id) {
-        this.form.computerId = "";
+    getOrderNo(salesOrderNo) {
+      if (salesOrderNo) {
+        this.getOrderList(salesOrderNo);
       }
     },
-    getOrderDetail(salesOrderNo) {
+    /** 订单号数据 */
+    getOrderList(salesOrderNo) {
       orderList({
+        p: 1,
+        l: 100,
         status: 1,
         salesOrderNo,
       }).then((res) => {
-        if (res.data.list.length) {
-          this.orderInfo = res.data.list[0];
-        }
+        this.orderData = res.data.list ?? [];
+      });
+    },
+    /** 生产工单 */
+    getProdPlantList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        orderWorkList({
+          p: page,
+          orderCode: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.prodPlatData.data = [...this.prodPlatData.data, ...list];
+          } else {
+            this.prodPlatData.data = list;
+          }
+          this.prodPlatData.more = pageNum * pageSize < total;
+          this.prodPlatData.page = pageNum;
+          resolve();
+        });
       });
     },
     // 芯片类型
@@ -368,13 +410,6 @@ export default {
       schemeTypeList({ p: 1, l: 10 }).then((res) => {
         const { list } = res.data;
         this.chipList = list;
-      });
-    },
-    // 获取型号字典
-    getlistComputer(key) {
-      listComputer({ key }).then((res) => {
-        const { list } = res.data;
-        this.modelList = list;
       });
     },
     // 方案版本字典
@@ -389,31 +424,35 @@ export default {
         this.productAddressList = response.data;
       });
     },
-    selDate(time) {
-      this.form.dateRange = [time, time];
-    },
     // 表单重置
     reset() {
       this.form = {
         categoryId: "",
         computerId: "",
         date: "",
+        orderCode: "",
         address: "",
         process: "",
         schemeVersion: "",
-        dateRange: [],
-        num: "",
+        batchNo: "",
+        batchNum: 1,
+        list: [],
+        remark: ""
       };
+      this.orderData = [];
+      this.selOrderData = [];
       this.resetForm("form");
+      this.$nextTick(() => {
+        this.$refs.customerOrderRef.clearSelection();
+      })
     },
     onAlertReason(params) {
-      const { salesOrderNo, date, process, address, num } = params;
+      const { salesOrderNo, date, process, address } = params;
       if (
         this.cloneForm.salesOrderNo !== salesOrderNo ||
         this.cloneForm.date !== date ||
         this.cloneForm.process !== process ||
-        this.cloneForm.address !== address ||
-        this.cloneForm.num !== num
+        this.cloneForm.address !== address
       ) {
         return true;
       } else {
@@ -430,23 +469,45 @@ export default {
             this.$emit("getData");
           }
         })
-        .catch(() => {
+        .finally(() => {
           this.isBtnLoading = false;
         });
+    },
+    // 选择客户订单号
+    handleSelectionChange(selection) {
+      this.selOrderData = selection;
+    },
+    checkDeliverOrderData(data, param) {
+      const flag = data.some((item) => this.Is_Empty(item[param]));
+      return flag;
     },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          const data = this.addDateRange(this.form, this.form.dateRange, {
-            begin: "startTime",
-          });
-          this.isBtnLoading = true;
+          let data = Object.assign({}, this.form);
+
           if (this.form.process !== "SMT") {
             this.form.schemeVersion = "";
           }
-          if (this.form.id) {
-            if (!this.isExcelFile && this.onAlertReason(this.form)) {
+
+          if (data.id) {
+            const { batchNo, batchNum, num } = this.orderData[0];
+
+            if (!batchNum) {
+              this.msgWarning("批次数量不能为空");
+              return;
+            }
+
+            if (!num) {
+              this.msgWarning("排产数量不能为空");
+              return;
+            }
+
+            data = { ...data, batchNo, batchNum, num };
+
+            this.isBtnLoading = true;
+            if (!this.isExcelFile && this.onAlertReason(data)) {
               this.$prompt("请输入修改原因", "提示", {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
@@ -459,25 +520,52 @@ export default {
                 inputErrorMessage: "修改原因不能为空",
               })
                 .then(({ value }) => {
-                  this.onUpdateOrder({ msg: value, ...this.form });
+                  this.onUpdateOrder({ msg: value, ...data });
                 })
-                .catch(() => {
+                .finally(() => {
                   this.isBtnLoading = false;
                 });
             } else {
-              this.onUpdateOrder(this.form);
+              this.onUpdateOrder(data);
             }
           } else {
+            if (!this.selOrderData.length) {
+              return this.msgWarning("请选择客户订单");
+            }
+
+            // if (this.checkDeliverOrderData(this.selOrderData, "batchNo")) {
+            //   this.msgWarning("批次号不能为空");
+            //   return;
+            // }
+
+            if (this.checkDeliverOrderData(this.selOrderData, "batchNum")) {
+              this.msgWarning("批次数量不能为空");
+              return;
+            }
+
+            if (this.checkDeliverOrderData(this.selOrderData, "num")) {
+              this.msgWarning("排产数量不能为空");
+              return;
+            }
+
+            data.list = this.selOrderData.map((item) => {
+              return {
+                batchNo: item.batchNo,
+                batchNum: item.batchNum,
+                orderId: item.id,
+                orderNo: item.customerOrderNo,
+                num: item.num
+              };
+            });
+
+            this.isBtnLoading = true;
             schedulingCreate(data)
               .then((res) => {
                 if (res.code === 200) {
-                  this.msgSuccess("新增成功");
+                  this.msgSuccess("创建成功");
                   this.dialogVisible = false;
                   this.$emit("getData");
                 }
-              })
-              .then(() => {
-                this.isBtnLoading = false;
               })
               .finally(() => {
                 this.isBtnLoading = false;
