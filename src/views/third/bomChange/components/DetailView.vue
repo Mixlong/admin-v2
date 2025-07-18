@@ -474,7 +474,7 @@
                   <span class="attachment-name">{{ item }}</span>
                   <el-button type="text" size="small" @click="zipFile(item)">
                     <i class="el-icon-download"></i>
-                    下载1
+                    下载
                   </el-button>
                 </div>
               </div>
