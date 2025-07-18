@@ -2,20 +2,36 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="品类" prop="categoryName">
-        <el-input
-          v-model="queryParams.categoryName"
-          placeholder="请输入品类"
+      <el-select
+      v-model="queryParams.categoryName"
+          placeholder="请选择品类"
           clearable
-          @keyup.enter.native="handleQuery"
-        />
+          style="max-width: 140px"
+          @change="changeCategory"
+        >
+          <el-option
+            v-for="dict in dictList"
+            :key="dict.id"
+            :label="dict.name"
+            :value="dict.name"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="型号" prop="computerName">
-        <el-input
+        <el-select
           v-model="queryParams.computerName"
-          placeholder="请输入型号"
           clearable
-          @keyup.enter.native="handleQuery"
-        />
+          placeholder="请选择型号"
+          @change="getList"
+          style="width: 160px"
+        >
+          <el-option
+            v-for="dict in computerOptions"
+            :key="dict.model"
+            :label="dict.name"
+            :value="dict.name"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="工单号" prop="orderCode">
         <el-input
@@ -81,7 +97,7 @@
 
 <script>
 import { materialHouseList, materialHouseExport } from "@/api/third/materialHouse";
-
+import { categoryComputerDict, } from "@/api/third/fileConfig";
 export default {
   name: "MaterialHouse",
   data() {
@@ -100,6 +116,8 @@ export default {
       total: 0,
       // 出库料记录表格数据
       materialHouseList: [],
+      dictList: [],
+      computerOptions: [],
       // 查询参数
       queryParams: {
         p: 1,
@@ -114,6 +132,26 @@ export default {
   },
   created() {
     this.getList();
+    categoryComputerDict().then((response) => {
+      this.dictList = response.data;
+      let type = this.$route.query.type;
+      if (type) {
+        this.queryParams.type = type;
+      }
+      let { categoryId, status } = this.$route.query;
+
+      if (categoryId) {
+        this.queryParams.categoryId = categoryId;
+        this.changeCategory(categoryId);
+        let computerId = this.$route.query.model;
+        if (computerId) {
+          this.queryParams.computerId = computerId;
+        }
+      }
+      if (status) {
+        this.queryParams.status = status;
+      }
+    });
   },
   methods: {
     /** 查询出库料记录列表 */
@@ -124,6 +162,14 @@ export default {
         this.total = response.data.total;
         this.loading = false;
       });
+    },
+    changeCategory(categoryName) {
+      if (!categoryName) return;
+      this.queryParams.computerName = "";
+      this.getList();
+      this.computerOptions = this.dictList.filter(
+        (item) => item.name === categoryName
+      )[0].computerList;
     },
     /** 搜索按钮操作 */
     handleQuery() {
