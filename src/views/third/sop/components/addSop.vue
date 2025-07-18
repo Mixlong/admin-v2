@@ -260,11 +260,24 @@ export default {
       this.onSetStationBoxRef();
     },
     onSetStationBoxRef() {
+      // 检查 stationBoxRef 是否存在
+      if (!this.$refs.stationBoxRef) {
+        console.warn('stationBoxRef 不存在，跳过滚动操作');
+        return;
+      }
+      
       const scrollRef = this.$refs.stationBoxRef.$el;
+      if (!scrollRef) {
+        console.warn('stationBoxRef.$el 不存在，跳过滚动操作');
+        return;
+      }
+      
       const scrollHeight = scrollRef.scrollHeight;
 
       this.$nextTick(() => {
-        scrollRef.scrollTop = scrollHeight;
+        if (scrollRef && scrollRef.scrollHeight) {
+          scrollRef.scrollTop = scrollHeight;
+        }
       });
     },
     // 删除物料损耗项
