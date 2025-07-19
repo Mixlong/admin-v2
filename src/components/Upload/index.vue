@@ -55,9 +55,6 @@ export default {
       type: Boolean,
       default: true,
     },
-    accept: {
-      default: "image/jpeg, image/gif, image/png,image/bmp",
-    },
     // 是否使用对象数组格式 {name, url, time}
     useObjectFormat: {
       type: Boolean,
