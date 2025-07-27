@@ -2,25 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="流程名称" prop="processName">
-        <el-input
-          v-model="queryParams.processName"
-          placeholder="请输入流程名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.processName" placeholder="请输入流程名称" clearable size="small"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="审批时间">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 240px"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="['00:00:00', '23:59:59']"
-        ></el-date-picker>
+        <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
+          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -30,59 +18,39 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          v-hasPermi="['workflow:process:finishedExport']"
-          @click="handleExport"
-        >导出</el-button>
+        <el-button type="warning" plain icon="el-icon-download" size="mini"
+          v-hasPermi="['workflow:process:finishedExport']" @click="handleExport">导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="finishedList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true"/>
-      <el-table-column label="流程名称" align="center" prop="procDefName" :show-overflow-tooltip="true"/>
+      <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true" />
+      <el-table-column label="流程名称" align="center" prop="procDefName" :show-overflow-tooltip="true" />
       <el-table-column label="任务节点" align="center" prop="taskName" />
       <el-table-column label="流程发起人" align="center">
         <template slot-scope="scope">
-          <label>{{scope.row.startUserName}} <el-tag type="info" size="mini">{{scope.row.startDeptName}}</el-tag></label>
+          <label>{{ scope.row.startUserName }} <el-tag type="info" size="mini">{{ scope.row.startDeptName
+              }}</el-tag></label>
         </template>
       </el-table-column>
-      <el-table-column label="接收时间" align="center" prop="createTime" width="180"/>
-      <el-table-column label="审批时间" align="center" prop="finishTime" width="180"/>
-      <el-table-column label="耗时" align="center" prop="duration" width="180"/>
+      <el-table-column label="接收时间" align="center" prop="createTime" width="180" />
+      <el-table-column label="审批时间" align="center" prop="finishTime" width="180" />
+      <el-table-column label="耗时" align="center" prop="duration" width="180" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-tickets"
-            @click="handleFlowRecord(scope.row)"
-            v-hasPermi="['workflow:process:query']"
-          >流转记录</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-tickets"
-            @click="handleRevoke(scope.row)"
-            v-hasPermi="['workflow:process:revoke']"
-          >撤回
+          <el-button size="mini" type="text" icon="el-icon-tickets" @click="handleFlowRecord(scope.row)"
+            v-hasPermi="['workflow:process:query']">流转记录</el-button>
+          <el-button size="mini" type="text" icon="el-icon-tickets" @click="handleRevoke(scope.row)"
+            v-hasPermi="['workflow:process:revoke']">撤回
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -137,10 +105,13 @@ export default {
       }
     };
   },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.getList()
-    })
+  // beforeRouteEnter(to, from, next) {
+  //   next(vm => {
+  //     vm.getList()
+  //   })
+  // },
+  moubted() {
+    this.getList();
   },
   methods: {
     /** 查询流程定义列表 */
@@ -173,18 +144,18 @@ export default {
       };
       this.resetForm("form");
     },
-    setIcon(val){
-      if (val){
+    setIcon(val) {
+      if (val) {
         return "el-icon-check";
-      }else {
+      } else {
         return "el-icon-time";
       }
 
     },
-    setColor(val){
-      if (val){
+    setColor(val) {
+      if (val) {
         return "#2bc418";
-      }else {
+      } else {
         return "#b3bdbb";
       }
 
@@ -203,7 +174,7 @@ export default {
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)
-      this.single = selection.length!==1
+      this.single = selection.length !== 1
       this.multiple = !selection.length
     },
     /** 新增按钮操作 */
@@ -213,7 +184,7 @@ export default {
       this.title = "添加流程定义";
     },
     /** 流程流转记录 */
-    handleFlowRecord(row){
+    handleFlowRecord(row) {
       this.$router.push({
         path: '/workflow/process/detail/' + row.procInsId,
         query: {

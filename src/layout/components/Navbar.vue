@@ -62,6 +62,7 @@
               </div>
             </el-col>
           </el-row>
+          
           <el-button slot="reference" type="text">
             <svg-icon icon-class="pifu" v-if="customImage == 0" />
             <svg-icon icon-class="pifu-white" v-if="customImage" />
@@ -84,6 +85,9 @@
         <span>welcome,</span>
         <span class="user-name">{{ nickName }}</span>
       </div>
+      <template v-if="device!=='mobile'">
+        <search id="header-search" class="right-menu-item" v-if="name === 'admin'" />
+      </template>
       <SizeSelect class="pointer" />
       <el-dropdown
         class="avatar-container right-menu-item hover-effect"
@@ -135,7 +139,7 @@ export default {
     RuoYiDoc,
   },
   computed: {
-    ...mapGetters(["sidebar", "avatar", "nickName", "readNum", "device"]),
+    ...mapGetters(["sidebar", "avatar", "nickName", "readNum", "device", "name"]),
     ...mapState({
       customImage: (state) => state.settings.customImage,
       themeImageCount: (state) => state.settings.themeImageCount,

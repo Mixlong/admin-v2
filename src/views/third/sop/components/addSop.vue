@@ -82,7 +82,12 @@
                           class="draggable-container">
                           <div class="file-item" :key="element.id"
                             v-for="(element, fileIndex) in getFileList(item.file)">
-                            <img :src="element.url" :alt="element.name" class="file-preview" />
+                            <el-image
+                              :src="element.url"
+                              :preview-src-list="getFileList(item.file).map(item=>item.url)"
+                              class="file-preview"
+                              fit="cover">
+                            </el-image>
                             <div class="file-info">
                             </div>
                             <div class="file-actions">
