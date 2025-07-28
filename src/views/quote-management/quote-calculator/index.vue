@@ -166,10 +166,14 @@ export default {
         // 生成临时key
         generateTemporaryKey() {
             // 生成基于时间戳和随机数的唯一key
-            const timestamp = Date.now()
-            const random = Math.random().toString(36).substring(2, 15)
-            this.temporaryKey = `quote_1753441553318_o0rzohi1li` || `quote_${timestamp}_${random}`
-            console.log('生成临时key:', this.temporaryKey)
+            let temporaryKey = sessionStorage.getItem('quote_temporary_key')
+            if (!temporaryKey) {
+                const timestamp = Date.now()
+                const random = Math.random().toString(36).substring(2, 15)
+                this.temporaryKey = `quote_${timestamp}_${random}`
+                sessionStorage.setItem('quote_temporary_key', this.temporaryKey)
+            }
+            this.temporaryKey = temporaryKey
         },
 
         // 初始化数据
@@ -480,7 +484,8 @@ export default {
 
                     // 刷新表格数据
                     await this.$nextTick() // 确保DOM更新完成
-                    this.$refs.quoteTable?.refreshData()
+                    console.log("🚀 ~ handleAddConfirm ~  this.$refs.quoteTable:", this.$refs.quoteTable)
+
 
                 } else if (this.currentCopyData) {
                     // 复制模式：创建新项目，使用复制数据的ID（已经是新的递增ID）
@@ -538,6 +543,7 @@ export default {
                 this.handleError(error, '处理报价单数据')
                 this.$message.error('操作失败')
             }
+            this.$refs.quoteTable?.refreshData()
         },
 
         // 新增报价单取消

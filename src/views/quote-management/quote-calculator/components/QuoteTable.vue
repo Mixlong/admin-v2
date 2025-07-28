@@ -17,8 +17,8 @@
       <el-table-column label="图片" width="100" align="center">
         <template slot-scope="scope">
           <div class="image-cell">
-            <img v-if="scope.row.image" :src="scope.row.image" class="product-image"
-              @click="previewImage(scope.row.image)" />
+            <img v-if="scope.row.modelImg" :src="scope.row.modelImg" class="product-image"
+              @click="previewImage(scope.row.modelImg)" />
             <div v-else class="image-placeholder">
               <i class="el-icon-picture"></i>
             </div>
@@ -32,8 +32,8 @@
       <!-- 标准规格列 -->
       <el-table-column label="标准规格" align="center" min-width="300" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span v-if="currentLanguage === 'zh'">{{ scope.row.standardSpec || '-' }}</span>
-          <span v-else>{{ scope.row.standardSpecEn || '-' }}</span>
+          <span v-if="currentLanguage === 'zh'" v-html="scope.row.standardSpec"> </span>
+          <span v-else v-html="scope.row.standardSpecEn"> </span>
         </template>
       </el-table-column>
 

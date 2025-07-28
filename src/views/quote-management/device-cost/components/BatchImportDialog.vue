@@ -1,6 +1,6 @@
 <template>
   <el-dialog title="批量导入设备成本" :visible.sync="dialogVisible" width="900px" :close-on-click-modal="false"
-    @close="handleClose" class="batch-import-dialog" center top="3vh">
+    @close="handleClose" class="batch-import-dialog" center top="0vh">
 
     <!-- 渐进式流程容器 -->
     <div class="import-container">
@@ -29,7 +29,7 @@
             <!-- 透明的上传组件覆盖整个header区域 -->
             <el-upload ref="headerUpload" class="header-upload-overlay" drag action="#" :auto-upload="false"
               :on-change="handleChange" :before-upload="beforeUpload" :disabled="loading" accept=".xlsx,.xls"
-              :show-file-list="false" multiple="false">
+              :show-file-list="false" :multiple="false">
               <div class="upload-overlay-content"></div>
             </el-upload>
           </div>
@@ -185,24 +185,27 @@
               <span>错误详情</span>
             </div>
             <el-collapse>
-              <el-collapse-item title="查看详细错误信息" name="errors">
-                <div class="error-categories">
-                  <div v-for="(errorGroup, groupIndex) in importResult.errors" :key="groupIndex" class="error-category">
-                    <div class="error-category-header">
-                      <i :class="getErrorIcon(errorGroup.type)"></i>
-                      <span class="error-category-title">{{ errorGroup.title }}</span>
-                      <el-tag :type="getErrorTagType(errorGroup.type)" size="mini">{{ errorGroup.items.length }}
-                        项</el-tag>
-                    </div>
-                    <div class="error-list">
-                      <div v-for="(error, errorIndex) in errorGroup.items" :key="errorIndex" class="error-item">
-                        <i class="el-icon-close"></i>
-                        <span>{{ error }}</span>
+              <div style="padding:0 16px;background:#fff">
+                <el-collapse-item title="查看详细错误信息" name="errors">
+                  <div class="error-categories">
+                    <div v-for="(errorGroup, groupIndex) in importResult.errors" :key="groupIndex"
+                      class="error-category">
+                      <div class="error-category-header">
+                        <i :class="getErrorIcon(errorGroup.type)"></i>
+                        <span class="error-category-title">{{ errorGroup.title }}</span>
+                        <el-tag :type="getErrorTagType(errorGroup.type)" size="mini">{{ errorGroup.items.length }}
+                          项</el-tag>
+                      </div>
+                      <div class="error-list">
+                        <div v-for="(error, errorIndex) in errorGroup.items" :key="errorIndex" class="error-item">
+                          <i class="el-icon-close"></i>
+                          <span>{{ error }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </el-collapse-item>
+                </el-collapse-item>
+              </div>
             </el-collapse>
           </div>
 
@@ -311,7 +314,7 @@ export default {
     async downloadTemplate() {
       try {
         const link = document.createElement('a')
-        link.href = 'https://digiwise-web.oss-eu-central-1.aliyuncs.com/admin/%E8%AE%BE%E5%A4%87%E6%88%90%E6%9C%AC%E6%A8%A1%E7%89%88.xlsx'
+        link.href = 'https://digiwise-web.oss-eu-central-1.aliyuncs.com/admin/%E7%BA%BF%E7%BC%86%E6%88%90%E6%9C%AC%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx'
         link.download = '设备成本导入模板.xlsx'
         document.body.appendChild(link)
         link.click()
@@ -1447,7 +1450,7 @@ export default {
     display: flex;
     justify-content: center;
     gap: 24px;
-    margin-bottom: 32px;
+    margin: 20px;
 
     .stat-item {
       text-align: center;

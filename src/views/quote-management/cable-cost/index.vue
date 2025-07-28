@@ -24,7 +24,7 @@
       <!-- 操作按钮区域 -->
       <div class="action-section">
         <el-button type="success" @click="handleSupplierManage" icon="el-icon-user">供应商管理</el-button>
-        <!-- <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2">批量导入</el-button> -->
+        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2">批量导入</el-button>
         <el-button type="danger" @click="handleBatchDelete" icon="el-icon-delete"
           :disabled="selectedRows.length === 0">批量删除</el-button>
         <el-button type="primary" @click="handleAdd" icon="el-icon-plus">新增线缆成本</el-button>

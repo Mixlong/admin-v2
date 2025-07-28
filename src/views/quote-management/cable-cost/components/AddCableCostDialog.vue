@@ -93,11 +93,11 @@ export default {
           { type: 'number', min: 0, message: '价格必须大于等于0', trigger: 'blur' }
         ],
         commonLinearPrice: [
-          { 
+          {
             validator: function (rule, value, callback) {
               var form = this.form || rule.form
-              if ((value === undefined || value === null || value === '') && 
-                  (form.ulLinearPrice === undefined || form.ulLinearPrice === null || form.ulLinearPrice === '')) {
+              if ((value === undefined || value === null || value === '') &&
+                (form.ulLinearPrice === undefined || form.ulLinearPrice === null || form.ulLinearPrice === '')) {
                 callback(new Error('普通线价格和UL线价格至少填写一个'))
               } else if (value !== undefined && value !== null && value !== '' && value < 0) {
                 callback(new Error('价格必须大于等于0'))
@@ -109,11 +109,11 @@ export default {
           }
         ],
         ulLinearPrice: [
-          { 
+          {
             validator: function (rule, value, callback) {
               var form = this.form || rule.form
-              if ((value === undefined || value === null || value === '') && 
-                  (form.commonLinearPrice === undefined || form.commonLinearPrice === null || form.commonLinearPrice === '')) {
+              if ((value === undefined || value === null || value === '') &&
+                (form.commonLinearPrice === undefined || form.commonLinearPrice === null || form.commonLinearPrice === '')) {
                 callback(new Error('普通线价格和UL线价格至少填写一个'))
               } else if (value !== undefined && value !== null && value !== '' && value < 0) {
                 callback(new Error('价格必须大于等于0'))

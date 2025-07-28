@@ -17,7 +17,8 @@
                             <!-- 产品品类 -->
                             <el-form-item label="产品品类" prop="categoryId">
                                 <el-select v-model="mainProduct.categoryId" style="width: 100%" placeholder="请输入或选择产品品类"
-                                    :loading="loading" filterable remote :remote-method="searchMainProductCategory"
+                                    clearable :loading="loading" filterable remote
+                                    :remote-method="searchMainProductCategory"
                                     :filter-method="filterMainProductCategory" default-first-option
                                     @change="handleMainProductCategoryChange">
                                     <el-option v-for="(category, index) in filteredMainProductCategories"
@@ -121,7 +122,7 @@
                                         <div class="input-with-unit" v-show="mainProductIdCostSharing">
                                             <el-input-number v-model="mainProduct.idCostSharingPcs" :min="1"
                                                 :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="right" />
+                                                style="width: 120px" :controls-position="'right'" />
                                             <span class="unit-text">pcs</span>
                                         </div>
                                     </div>
@@ -134,7 +135,7 @@
                                         <div class="input-with-unit" v-show="mainProductAbrasiveCostSharing">
                                             <el-input-number v-model="mainProduct.abrasiveCostSharingPcs" :min="1"
                                                 :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="right" />
+                                                style="width: 120px" :controls-position="'right'" />
                                             <span class="unit-text">pcs</span>
                                         </div>
                                     </div>
@@ -149,24 +150,20 @@
                     <div class="section-header">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <h3>按键</h3>
-                            <el-switch
-                                v-model="buttonEnabled"
-                                @change="handleButtonEnabledChange"
-                                active-text="启用"
-                                inactive-text="禁用"
-                                active-color="#409EFF"
-                                inactive-color="#C0C4CC">
+                            <el-switch v-model="buttonEnabled" @change="handleButtonEnabledChange" active-text="启用"
+                                inactive-text="禁用" active-color="#409EFF" inactive-color="#C0C4CC">
                             </el-switch>
                         </div>
                     </div>
                     <div class="section-content">
-                        <el-form :model="buttonProduct || {}" :rules="dynamicButtonRules" ref="buttonForm" label-width="100px"
-                            size="small">
+                        <el-form :model="buttonProduct || {}" :rules="dynamicButtonRules" ref="buttonForm"
+                            label-width="100px" size="small">
                             <!-- 按键品类 -->
                             <el-form-item prop="categoryId">
-                                <span slot="label"><span v-if="isButtonCategoryRequired" style="color: #f56c6c;">*</span>按键品类</span>
+                                <span slot="label"><span v-if="isButtonCategoryRequired"
+                                        style="color: #f56c6c;">*</span>按键品类</span>
                                 <el-select v-model="buttonProduct.categoryId" style="width: 100%"
-                                    placeholder="请输入或选择按键品类" :loading="loading" filterable remote
+                                    placeholder="请输入或选择按键品类" :loading="loading" filterable remote clearable
                                     :remote-method="searchButtonCategory" :filter-method="filterButtonCategory"
                                     default-first-option @change="handleButtonCategoryChange"
                                     :disabled="!buttonEnabled">
@@ -223,7 +220,8 @@
                             <el-form-item label="线缆">
                                 <div class="cable-config">
                                     <!-- 线缆类型 -->
-                                    <div class="cable-supplier" :class="{ 'has-details': buttonProduct.cableType === 2 && buttonEnabled }">
+                                    <div class="cable-supplier"
+                                        :class="{ 'has-details': buttonProduct.cableType === 2 && buttonEnabled }">
                                         <el-radio-group v-model="buttonProduct.cableType" class="supplier-radio"
                                             :disabled="!buttonEnabled">
                                             <el-radio :label="1">迪太提供</el-radio>
@@ -280,7 +278,7 @@
                                         <div class="input-with-unit" v-show="buttonIdCostSharing && buttonEnabled">
                                             <el-input-number v-model="buttonProduct.idCostSharingPcs" :min="1"
                                                 :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="right" />
+                                                style="width: 120px" :controls-position="'right'" />
                                             <span class="unit-text">pcs</span>
                                         </div>
                                     </div>
@@ -294,7 +292,7 @@
                                             v-show="buttonAbrasiveCostSharing && buttonEnabled">
                                             <el-input-number v-model="buttonProduct.abrasiveCostSharingPcs" :min="1"
                                                 :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="right" />
+                                                style="width: 120px" :controls-position="'right'" />
                                             <span class="unit-text">pcs</span>
                                         </div>
                                     </div>
@@ -342,11 +340,15 @@
                             </div>
                             <div class="form-column">
                                 <el-form-item label="售后费用" prop="afterSalesRate">
-                                    <div
-                                        style="width: 100%; line-height: 32px; color: #606266; background-color: #f5f7fa; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 15px; font-size: 14px;">
-                                        {{ quotationData.afterSalesRate || '0' }}%
-                                    </div>
+                                    <el-select v-model="quotationData.afterSalesRate" style="width: 100%"
+                                        placeholder="请选择售后费用">
+                                        <el-option v-for="(afterSalesRate, index) in dictData.afterSalesRates"
+                                            :key="`after-sales-${afterSalesRate.value}-${index}`"
+                                            :label="`${afterSalesRate.label}%`" :value="afterSalesRate.value">
+                                        </el-option>
+                                    </el-select>
                                 </el-form-item>
+
                             </div>
                         </div>
 
@@ -413,9 +415,6 @@
 import {
     saveQuotation,
     getCategoryList,
-    getCustomerTypes,
-    getProductTaxRates,
-    getAfterSalesRates,
     getSupplierDict,
     getDeviceCostByCategory,
     getCostCategoryDict,
@@ -543,12 +542,18 @@ export default {
                 customerType: [
                     { required: true, message: '请选择客户类型', trigger: 'change' }
                 ],
+                productTaxRate: [
+                    { required: true, message: '请选择产品税率', trigger: 'change' }
+                ],
                 quotationType: [
                     { required: true, message: '请选择报价方式', trigger: 'change' }
                 ],
                 exchangeRate: [
                     { required: true, message: '请输入汇率', trigger: 'blur' },
                     { type: 'number', min: 0.0001, max: 20, message: '汇率必须在0.0001-20之间', trigger: 'blur' }
+                ],
+                afterSalesRate: [
+                    { required: true, message: '请选择售后费用', trigger: 'change' }
                 ]
             },
 
@@ -612,7 +617,7 @@ export default {
             if (this.buttonEnabled) {
                 return {
                     categoryId: [
-                        { 
+                        {
                             validator: function (rule, value, callback) {
                                 if (!value) {
                                     callback(new Error('请选择按键品类'))
@@ -771,9 +776,23 @@ export default {
                 var response = await getCategoryList()
                 if (response.code === 200) {
                     this.categoryList = response.data || []
-                    // 初始化过滤后的列表 - 不再按type过滤，所有品类都可用于主产品和按键
-                    this.$set(this, 'filteredMainProductCategories', this.categoryList.slice())
-                    this.$set(this, 'filteredButtonCategories', this.categoryList.slice())
+                    // 根据productType过滤品类：1=仪表类，2=按键类
+                    var mainProductCategories = this.categoryList.filter(function (cat) {
+                        return cat.productType === 1   // 仪表类品类
+                    })
+                    var buttonCategories = this.categoryList.filter(function (cat) {
+                        return cat.productType === 2 // 按键类品类
+                    })
+
+                    this.$set(this, 'filteredMainProductCategories', mainProductCategories)
+                    this.$set(this, 'filteredButtonCategories', buttonCategories)
+
+
+                    console.log('品类过滤结果:', {
+                        total: this.categoryList.length,
+                        mainProduct: mainProductCategories.length,
+                        button: buttonCategories.length
+                    })
                 } else {
                     this.$message.error(response.msg || '获取品类列表失败')
                 }
@@ -825,20 +844,28 @@ export default {
         // 搜索主产品品类
         searchMainProductCategory: function (query) {
             this.searchMainProductQuery = query
+            // 先获取仪表类品类
+            var mainProductCategories = this.categoryList.filter(function (cat) {
+                return cat.productType === 1 // 仅仪表类品类
+            })
+
             if (query) {
                 var lowerQuery = query.toLowerCase()
-                this.$set(this, 'filteredMainProductCategories', this.categoryList.filter(function (cat) {
+                this.$set(this, 'filteredMainProductCategories', mainProductCategories.filter(function (cat) {
                     return (cat.name && cat.name.toLowerCase().includes(lowerQuery)) ||
                         (cat.code && cat.code.toLowerCase().includes(lowerQuery)) ||
                         (cat.pinyin && cat.pinyin.toLowerCase().includes(lowerQuery))
                 }))
             } else {
-                this.$set(this, 'filteredMainProductCategories', this.categoryList.slice())
+                this.$set(this, 'filteredMainProductCategories', mainProductCategories.slice())
             }
         },
 
         // 过滤主产品品类
         filterMainProductCategory: function (val) {
+            // 首先确保是仪表类品类
+            if (val.productType !== 1) return false
+
             var query = this.searchMainProductQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
                 (val.code && val.code.toLowerCase().includes(query)) ||
@@ -848,20 +875,28 @@ export default {
         // 搜索按键品类
         searchButtonCategory: function (query) {
             this.searchButtonQuery = query
+            // 先获取按键类品类
+            var buttonCategories = this.categoryList.filter(function (cat) {
+                return cat.productType === 2 // 仅按键类品类
+            })
+
             if (query) {
                 var lowerQuery = query.toLowerCase()
-                this.$set(this, 'filteredButtonCategories', this.categoryList.filter(function (cat) {
+                this.$set(this, 'filteredButtonCategories', buttonCategories.filter(function (cat) {
                     return (cat.name && cat.name.toLowerCase().includes(lowerQuery)) ||
                         (cat.code && cat.code.toLowerCase().includes(lowerQuery)) ||
                         (cat.pinyin && cat.pinyin.toLowerCase().includes(lowerQuery))
                 }))
             } else {
-                this.$set(this, 'filteredButtonCategories', this.categoryList.slice())
+                this.$set(this, 'filteredButtonCategories', buttonCategories.slice())
             }
         },
 
         // 过滤按键品类
         filterButtonCategory: function (val) {
+            // 首先确保是按键类品类
+            if (val.productType !== 2) return false
+
             var query = this.searchButtonQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
                 (val.code && val.code.toLowerCase().includes(query)) ||
@@ -933,8 +968,16 @@ export default {
 
             // 确保过滤列表已初始化
             if (this.categoryList.length > 0) {
-                this.$set(this, 'filteredMainProductCategories', this.categoryList.slice())
-                this.$set(this, 'filteredButtonCategories', this.categoryList.slice())
+                // 根据productType过滤品类
+                var mainProductCategories = this.categoryList.filter(function (cat) {
+                    return cat.productType === 1 // 仪表类品类
+                })
+                var buttonCategories = this.categoryList.filter(function (cat) {
+                    return cat.productType === 2 // 按键类品类
+                })
+
+                this.$set(this, 'filteredMainProductCategories', mainProductCategories)
+                this.$set(this, 'filteredButtonCategories', buttonCategories)
             }
         },
 
@@ -1167,12 +1210,12 @@ export default {
                 if (buttonIndex !== -1) {
                     this.quotationData.list.splice(buttonIndex, 1)
                 }
-                
+
                 // 清空选项数据
                 this.buttonOptions = []
                 this.buttonIdCostSharing = false
                 this.buttonAbrasiveCostSharing = false
-                
+
                 // 清空表单验证 - 延迟执行确保DOM更新完成
                 var self = this
                 this.$nextTick(function () {
@@ -1201,7 +1244,7 @@ export default {
                     }
                     this.quotationData.list.push(newButtonProduct)
                 }
-                
+
                 // 启用后不立即校验，等提交时再校验
             }
         },
@@ -1365,7 +1408,6 @@ export default {
 
                 if (response.code === 200) {
                     this.$emit('save', response.data)
-                    this.$emit('update:visible', false)
                 } else {
                     this.$message.error(response.msg || '保存失败')
                 }
