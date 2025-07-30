@@ -284,7 +284,7 @@
                                     <el-select v-model="quotationData.productTaxRate" style="width: 100%"
                                         placeholder="请选择产品税率">
                                         <el-option v-for="(taxRate, index) in dictData.productTaxRates || []"
-                                            :key="`tax-rate-${taxRate.value}-${index}`" :label="`${taxRate.label}%`"
+                                            :key="`tax-rate-${taxRate.value}-${index}`" :label="`${taxRate.dictValue}%`"
                                             :value="taxRate.value">
                                         </el-option>
                                     </el-select>
@@ -296,7 +296,7 @@
                                         placeholder="请选择售后费用">
                                         <el-option v-for="(afterSalesRate, index) in dictData.afterSalesRates"
                                             :key="`after-sales-${afterSalesRate.value}-${index}`"
-                                            :label="`${afterSalesRate.label}%`" :value="afterSalesRate.value">
+                                            :label="`${afterSalesRate.dictValue}%`" :value="afterSalesRate.value">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
@@ -429,7 +429,7 @@ export default {
             waterproofHeadOptions: [],
             costCategoryOptions: [],
             costProjectOptions: [],
-            
+
             // 所有品类数据（用于判断 allocationType）
             mainProductAllData: [],
             buttonAllData: [],
@@ -450,7 +450,7 @@ export default {
                         validator: function (rule, value, callback) {
                             var mainProduct = this.mainProduct
                             if (mainProduct && mainProduct.cableType === 2 && !value) {
-                                callback(new Error('选择客供线缆时，线缆供应商为必填'))
+                                callback(new Error('选择迪太云线缆时，供应商为必填'))
                             } else {
                                 callback()
                             }
@@ -463,7 +463,7 @@ export default {
                         validator: function (rule, value, callback) {
                             var mainProduct = this.mainProduct
                             if (mainProduct && mainProduct.cableType === 2 && !value) {
-                                callback(new Error('选择客供线缆时，防水头型号为必填'))
+                                callback(new Error('选择迪太云线缆时，防水头型号为必填'))
                             } else {
                                 callback()
                             }
@@ -476,7 +476,7 @@ export default {
                         validator: function (rule, value, callback) {
                             var mainProduct = this.mainProduct
                             if (mainProduct && mainProduct.cableType === 2 && (!value || value <= 0)) {
-                                callback(new Error('选择客供线缆时，线长为必填且必须大于0'))
+                                callback(new Error('选择迪太云线缆时，线长为必填且必须大于0'))
                             } else {
                                 callback()
                             }
@@ -936,7 +936,7 @@ export default {
                         productType: 1, // 主产品
                         deviceOptional: [],
                         cableId: null,
-                        cableLong: 5000000,
+                        cableLong: 1,
                         cableType: 2,
                         supplierCode: null,
                         wireType: 1,
@@ -1060,6 +1060,14 @@ export default {
                     await this.loadButtonOptions(categoryId)
                     // 清空选项
                     this.buttonProduct.deviceOptional = []
+
+                    // 清除表单验证错误
+                    var self = this
+                    this.$nextTick(function () {
+                        if (self.$refs.buttonForm) {
+                            self.$refs.buttonForm.clearValidate('categoryId')
+                        }
+                    })
                 } catch (error) {
                     console.error('加载按键选项失败:', error)
                 }
@@ -1077,7 +1085,7 @@ export default {
                     // 存储所有数据用于判断 allocationType
                     var allOptions = response.data || []
                     this.mainProductAllData = allOptions
-                    
+
                     // 过滤只显示选配项 (isOptional = 1)
                     this.mainProductOptions = allOptions.filter(function (option) {
                         return option.isOptional === 1 || option.isOptional === '1'
@@ -1097,7 +1105,7 @@ export default {
                     // 存储所有数据用于判断 allocationType
                     var allOptions = response.data || []
                     this.buttonAllData = allOptions
-                    
+
                     // 过滤只显示选配项 (isOptional = 1)
                     this.buttonOptions = allOptions.filter(function (option) {
                         return option.isOptional === 1 || option.isOptional === '1'
@@ -1223,7 +1231,7 @@ export default {
                         productType: 2, // 按键
                         deviceOptional: [],
                         cableId: null,
-                        cableLong: 1000,
+                        cableLong: 1,
                         cableType: 2,
                         supplierCode: null,
                         wireType: 1,
@@ -1388,20 +1396,20 @@ export default {
 
             try {
                 var results = await Promise.all(validationPromises)
-                
+
                 // 查找第一个验证失败的表单
                 for (var i = 0; i < results.length; i++) {
                     var result = results[i]
                     if (result && result.isValid === false) {
                         // 显示错误消息
                         self.$message.error(result.formName + '存在验证错误，请检查输入')
-                        
+
                         // 定位到第一个错误字段
                         self.scrollToFirstError(formRefs[i].ref)
                         return false
                     }
                 }
-                
+
                 // 所有表单验证成功
                 return true
             } catch (error) {
@@ -1423,7 +1431,7 @@ export default {
                             behavior: 'smooth',
                             block: 'center'
                         })
-                        
+
                         // 聚焦到输入框
                         var input = errorField.querySelector('input, select, textarea')
                         if (input) {

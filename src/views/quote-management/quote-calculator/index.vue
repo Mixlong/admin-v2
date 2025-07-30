@@ -205,7 +205,8 @@ export default {
                 if (taxRatesRes.code === 200) {
                     this.dictData.productTaxRates = (taxRatesRes.data || []).map(item => ({
                         value: item.dictCode,
-                        label: item.dictLabel
+                        label: item.dictLabel,
+                        dictValue: item.dictValue
                     }))
                 }
 
@@ -213,7 +214,8 @@ export default {
                 if (afterSalesRes.code === 200) {
                     this.dictData.afterSalesRates = (afterSalesRes.data || []).map(item => ({
                         value: item.dictCode,
-                        label: item.dictLabel
+                        label: item.dictLabel,
+                        dictValue: item.dictValue
                     }))
                 }
 
