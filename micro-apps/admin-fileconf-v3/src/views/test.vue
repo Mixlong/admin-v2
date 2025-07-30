@@ -15,7 +15,6 @@ import { useDict } from
 const userStore = useUserStore()
 const { sys_user_sex } =
     useDict('sys_user_sex')
-console.log("🚀 ~ sys_user_sex:", sys_user_sex)
 
 
 const route = useRoute()
