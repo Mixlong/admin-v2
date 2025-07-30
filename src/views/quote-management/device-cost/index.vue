@@ -36,11 +36,11 @@
       </el-form>
       <!-- 操作按钮区域 -->
       <div class="action-section">
-        <el-button type="success" @click="handleCategoryManage" icon="el-icon-setting">类别管理</el-button>
-        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2">批量导入</el-button>
+        <el-button type="success" @click="handleCategoryManage" icon="el-icon-setting" v-hasPermi="['quote:device:category']">类别管理</el-button>
+        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2" v-hasPermi="['quote:device:import']">批量导入</el-button>
         <el-button type="danger" @click="handleBatchDelete" icon="el-icon-delete"
-          :disabled="selectedRows.length === 0">批量删除</el-button>
-        <el-button type="primary" @click="handleAdd" icon="el-icon-plus">新增</el-button>
+          :disabled="selectedRows.length === 0" v-hasPermi="['quote:device:remove']">批量删除</el-button>
+        <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['quote:device:add']">新增</el-button>
       </div>
 
     </div>
@@ -74,9 +74,9 @@
         </el-table-column>
         <el-table-column label="操作" width="150" align="center">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
+            <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit" v-hasPermi="['quote:device:edit']">编辑</el-button>
             <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)"
-              icon="el-icon-delete">删除</el-button>
+              icon="el-icon-delete" v-hasPermi="['quote:device:remove']">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

@@ -59,15 +59,15 @@
         <template slot-scope="scope">
           <div class="action-buttons">
             <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" :title="getEditTooltip(scope.row)">
+              :disabled="isRowDisabled(scope.row)" :title="getEditTooltip(scope.row)" v-hasPermi="['quote:calculation:edit']">
               修改
             </el-button>
             <el-button size="mini" type="text" icon="el-icon-copy-document" @click="handleCopy(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" :title="getCopyTooltip(scope.row)">
+              :disabled="isRowDisabled(scope.row)" :title="getCopyTooltip(scope.row)" v-hasPermi="['quote:calculation:copy']">
               复制
             </el-button>
             <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" class="danger-button" :title="getDeleteTooltip(scope.row)">
+              :disabled="isRowDisabled(scope.row)" class="danger-button" :title="getDeleteTooltip(scope.row)" v-hasPermi="['quote:calculation:remove']">
               删除
             </el-button>
           </div>
