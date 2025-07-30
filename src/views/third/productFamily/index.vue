@@ -2,65 +2,30 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="key">
-        <el-select
-          v-model="queryParams.key"
-          @change="changeCategory"
-          filterable
-          allow-create
-          clearable
-          placeholder="请选择品类"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.key" @change="changeCategory" filterable allow-create clearable
+          placeholder="请选择品类">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          v-model="queryParams.computerId"
-          placeholder="请选择仪表型号"
-          @change="getList()"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
+        <el-select :loading="isCLoading" filterable remote clearable v-model="queryParams.computerId"
+          placeholder="请选择仪表型号" @change="getList()" :remote-method="getComputerNameList">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model"
+            productFamily />
         </el-select>
       </el-form-item>
 
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          @click="resetQuery"
-        >
+        <el-button icon="el-icon-refresh" @click="resetQuery">
           重置
         </el-button>
       </el-form-item>
-      <el-button
-        class="fr"
-        type="primary"
-        icon="el-icon-plus"
-        v-hasPermi="['third:productFamily:add']"
-        @click="handleAdd"
-      >
+      <el-button class="fr" type="primary" icon="el-icon-plus" v-hasPermi="['third:productFamily:add']"
+        @click="handleAdd">
         新增
       </el-button>
     </el-form>
@@ -70,71 +35,37 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品型号"
-        prop="name"
-        align="center"
-        width="140"
-      />
+      <el-table-column label="产品型号" prop="name" align="center" width="140" />
       <el-table-column label="描述" prop="desc" align="center">
         <span slot-scope="scope" v-NoData="scope.row.desc" />
       </el-table-column>
       <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatus(scope.row)"
-          ></el-switch>
+          <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1"
+            @change="handleStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="STS" align="center" width="100">
         <template slot-scope="{ row }">
           <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{
             row.isSts === 1 ? "是" : "否"
-          }}</el-tag>
+            }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        prop="createBy"
-        align="center"
-        width="100"
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="140"
-        sortable
-      />
+      <el-table-column label="创建人" prop="createBy" align="center" width="100" />
+      <el-table-column label="创建时间" prop="createTime" align="center" width="140" sortable />
       <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:productFamily:update']"
-            @click="handleUpdate(scope.row)"
-          />
-          <Tooltip
-            icon="el-icon-delete"
-            :className="['text-red']"
-            content="删除"
-            v-hasPermi="['third:productFamily:delete']"
-            @click="handleDelete(scope.row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:productFamily:update']"
+            @click="handleUpdate(scope.row)" />
+          <Tooltip icon="el-icon-delete" :className="['text-red']" content="删除"
+            v-hasPermi="['third:productFamily:delete']" @click="handleDelete(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <CompUpdate ref="compUpdate" />
   </div>
@@ -272,7 +203,7 @@ export default {
     },
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
-      
+
       detailComputer(row.id).then((res) => {
         let { data } = res;
         data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
@@ -412,6 +343,7 @@ export default {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
   .position-abs {
     position: absolute;
     right: -120px;

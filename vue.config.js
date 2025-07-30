@@ -11,7 +11,7 @@ function resolve(dir) {
 
 const name = defaultSettings.title || "迪太云"; // 标题
 
-const port = process.env.port || process.env.npm_config_port || 80; // 端口
+const port = process.env.port || process.env.npm_config_port || 2025; // 端口
 
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
@@ -30,10 +30,16 @@ module.exports = {
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
   devServer: {
-    host: "0.0.0.0",
+    host: "0.0.0.0", // 允许外部访问
     port,
     hot: true,
     open: false,
+    // 允许跨域访问
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
         target: process.env.VUE_APP_BASE_URL,

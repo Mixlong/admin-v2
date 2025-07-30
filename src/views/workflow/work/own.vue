@@ -1,202 +1,80 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      v-show="showSearch"
-      label-width="68px"
-    >
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="流程标识" prop="processKey">
-        <el-input
-          v-model="queryParams.processKey"
-          placeholder="请输入流程标识"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.processKey" placeholder="请输入流程标识" clearable size="small"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="流程名称" prop="processName">
-        <el-input
-          v-model="queryParams.processName"
-          placeholder="请输入流程名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.processName" placeholder="请输入流程名称" clearable size="small"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="流程分类" prop="category">
-        <el-select
-          v-model="queryParams.category"
-          clearable
-          placeholder="请选择"
-          size="small"
-        >
-          <el-option
-            v-for="item in categoryOptions"
-            :key="item.categoryId"
-            :label="item.categoryName"
-            :value="item.code"
-          >
+        <el-select v-model="queryParams.category" clearable placeholder="请选择" size="small">
+          <el-option v-for="item in categoryOptions" :key="item.categoryId" :label="item.categoryName"
+            :value="item.code">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="提交时间">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 240px"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="['00:00:00', '23:59:59']"
-        ></el-date-picker>
+        <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
+          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-          >搜索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          >删除</el-button
-        >
+        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple"
+          @click="handleDelete">删除</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          v-hasPermi="['workflow:process:ownExport']"
-          @click="handleExport"
-          >导出</el-button
-        >
+        <el-button type="warning" plain icon="el-icon-download" size="mini" v-hasPermi="['workflow:process:ownExport']"
+          @click="handleExport">导出</el-button>
       </el-col>
-      <right-toolbar
-        :showSearch.sync="showSearch"
-        @queryTable="getList"
-      ></right-toolbar>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table
-      v-loading="loading"
-      :data="ownProcessList"
-      @selection-change="handleSelectionChange"
-    >
+    <el-table v-loading="loading" :data="ownProcessList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column
-        label="流程编号"
-        align="center"
-        prop="procInsId"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column
-        label="流程名称"
-        align="center"
-        prop="procDefName"
-        :show-overflow-tooltip="true"
-      />
-      <el-table-column
-        label="流程类别"
-        align="center"
-        prop="category"
-        :formatter="categoryFormat"
-      />
+      <el-table-column label="流程编号" align="center" prop="procInsId" :show-overflow-tooltip="true" />
+      <el-table-column label="流程名称" align="center" prop="procDefName" :show-overflow-tooltip="true" />
+      <el-table-column label="流程类别" align="center" prop="category" :formatter="categoryFormat" />
       <el-table-column label="流程版本" align="center" width="80px">
         <template slot-scope="scope">
           <el-tag size="medium">v{{ scope.row.procDefVersion }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="当前节点" align="center" prop="taskName" />
-      <el-table-column
-        label="提交时间"
-        align="center"
-        prop="createTime"
-        width="180"
-      />
+      <el-table-column label="提交时间" align="center" prop="createTime" width="180" />
       <el-table-column label="流程状态" align="center" width="100">
         <template slot-scope="scope">
-          <dict-tag
-            :options="dict.type.wf_process_status"
-            :value="scope.row.processStatus"
-          />
+          <dict-tag :options="dict.type.wf_process_status" :value="scope.row.processStatus" />
         </template>
       </el-table-column>
-      <el-table-column
-        label="耗时"
-        align="center"
-        prop="duration"
-        width="180"
-      />
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-      >
+      <el-table-column label="耗时" align="center" prop="duration" width="180" />
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            type="text"
-            size="mini"
-            icon="el-icon-tickets"
-            @click="handleFlowRecord(scope.row)"
-            v-hasPermi="['workflow:process:query']"
-          >
+          <el-button type="text" size="mini" icon="el-icon-tickets" @click="handleFlowRecord(scope.row)"
+            v-hasPermi="['workflow:process:query']">
             详情
           </el-button>
-          <el-button
-            type="text"
-            size="mini"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-if="scope.row.finishTime"
-            v-hasPermi="['workflow:process:remove']"
-            >删除</el-button
-          >
-          <el-button
-            type="text"
-            size="mini"
-            icon="el-icon-circle-close"
-            @click="handleStop(scope.row)"
-            v-hasPermi="['workflow:process:cancel']"
-            >取消</el-button
-          >
-          <el-button
-            type="text"
-            size="mini"
-            icon="el-icon-refresh-right"
-            v-hasPermi="['workflow:process:start']"
-            @click="handleAgain(scope.row)"
-            >重新发起</el-button
-          >
+          <el-button type="text" size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)"
+            v-if="scope.row.finishTime" v-hasPermi="['workflow:process:remove']">删除</el-button>
+          <el-button type="text" size="mini" icon="el-icon-circle-close" @click="handleStop(scope.row)"
+            v-hasPermi="['workflow:process:cancel']">取消</el-button>
+          <el-button type="text" size="mini" icon="el-icon-refresh-right" v-hasPermi="['workflow:process:start']"
+            @click="handleAgain(scope.row)">重新发起</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -253,12 +131,13 @@ export default {
   },
   created() {
     this.getCategoryList();
+    this.getList();
   },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.getList();
-    });
-  },
+  // beforeRouteEnter(to, from, next) {
+  //   next((vm) => {
+  //     vm.getList();
+  //   });
+  // },
   methods: {
     /** 查询流程分类列表 */
     getCategoryList() {

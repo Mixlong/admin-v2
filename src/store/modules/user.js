@@ -1,5 +1,6 @@
 import { login, logout, getInfo } from '@/api/login';
 import { getToken, setToken, removeToken } from '@/utils/auth';
+import { setSharedToken, removeSharedToken, syncUserInfo } from '@/utils/microAppAuth';
 import { projectLisReceiveRemind, remindMum } from '@/api/third/project';
 import { taskNotice } from '@/api/third/task';
 
@@ -59,6 +60,7 @@ const user = {
         login(username, password, code, uuid)
           .then(res => {
             setToken(res.token);
+            setSharedToken(res.token); // 同步token到微应用
             commit('SET_TOKEN', res.token);
             resolve();
           })
@@ -89,6 +91,20 @@ const user = {
             commit('SET_ID', user.userId);
             commit('SET_NICK_NAME', user.nickName);
             commit('SET_READ_NUM', res.readNum);
+
+            // 同步用户信息到微应用
+            const userInfo = {
+              userId: user.userId,
+              userName: user.userName,
+              nickName: user.nickName,
+              avatar: avatar,
+              roles: res.roles,
+              permissions: res.permissions
+            }
+            syncUserInfo(userInfo);
+
+            // 通过bus同步store数据到微应用
+            dispatch('SyncStoreToMicroApp');
 
             // 因不知是否有用，暂时注释
             
@@ -145,6 +161,46 @@ const user = {
         });
       });
     },
+    
+    // 同步store数据到微应用
+    SyncStoreToMicroApp({ state }) {
+      // 检查是否有必要同步
+      if (!state.token) {
+        console.log('⚠️  无token，跳过同步')
+        return
+      }
+      
+      const storeData = {
+        user: {
+          token: state.token,
+          id: state.userId,
+          name: state.name,
+          nickName: state.nickName,
+          avatar: state.avatar,
+          roles: state.roles,
+          permissions: state.permissions
+        },
+        timestamp: Date.now(),
+        source: 'auto-sync'  // 标识这是自动同步
+      }
+      
+      console.log('📤 主应用自动同步store数据到微应用:', storeData)
+      
+      // 通过无界bus发送数据
+      setTimeout(() => {
+        if (window.$wujie && window.$wujie.bus) {
+          try {
+            window.$wujie.bus.$emit('main-store-sync', storeData)
+            console.log('✅ store数据同步发送成功')
+          } catch (error) {
+            console.error('❌ store数据同步发送失败:', error)
+          }
+        } else {
+          console.warn('⚠️  无界bus不可用，同步失败')
+        }
+      }, 100)
+    },
+    
     /**任务数量 */
     TaskNum({ commit }) {
       return new Promise(resolve => {

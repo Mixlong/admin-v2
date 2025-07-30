@@ -5,6 +5,7 @@ import App from './App';
 import store from '@/store';
 import router from '@/router';
 import plugins from './plugins' // plugins
+import WujieVue from 'wujie-vue2'; // 无界微前端
 
 // import './assets/styles/element-variables.scss';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -44,6 +45,29 @@ Vue.config.productionTip = false;
 
 Vue.use(plugins)
 Vue.use(MainComponent)
+Vue.use(WujieVue) // 注册无界组件
+
+// 微应用预加载（已禁用以避免多余iframe）
+// import { preloadApp } from 'wujie'
+
+// 在用户登录后预加载常用微应用（已禁用）
+const preloadMicroApps = () => {
+  console.log('🚫 微应用预加载已禁用，避免多余iframe')
+  // const hostname = window.location.hostname;
+  // preloadApp({
+  //   name: 'ruoyi-admin',
+  //   url: process.env.NODE_ENV === 'development' 
+  //     ? `http://${hostname}:3002` 
+  //     : 'https://ruoyi-admin.yourdomain.com'
+  // })
+}
+
+// 将预加载函数挂载到Vue原型，方便在权限获取后调用
+Vue.prototype.$preloadMicroApps = preloadMicroApps
+
+// 初始化微应用token同步
+import { watchTokenChange } from '@/utils/microAppAuth'
+watchTokenChange()
 
 // Vue.use(VueNativeSock, WS, {
 //   // 启用Vuex集成,store的值为你的vuex

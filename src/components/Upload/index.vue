@@ -1,23 +1,8 @@
 <template>
-  <el-upload
-    ref="upload"
-    :style="css"
-    class="my-upload-demo style-upload"
-    :action="actionUrl"
-    :on-success="uploadSuccess"
-    :on-error="uploadError"
-    :on-remove="removeUpload"
-    :on-exceed="handleExceed"
-    :before-upload="beforeUpload"
-    :file-list="fileList"
-    :drag="drag"
-    :limit="limit"
-    :disabled="disabled"
-    :multiple="multiple"
-    :list-type="listType"
-    :accept="accept"
-    :show-file-list="showFileList"
-  >
+  <el-upload ref="upload" :style="css" class="my-upload-demo style-upload" :action="actionUrl"
+    :on-success="uploadSuccess" :on-error="uploadError" :on-remove="removeUpload" :on-exceed="handleExceed"
+    :before-upload="beforeUpload" :file-list="fileList" :drag="drag" :limit="limit" :disabled="disabled"
+    :multiple="multiple" :list-type="listType" :accept="accept" :show-file-list="showFileList">
     <slot>
       <el-button size="mini" type="primary">
         {{ isUploadStatus === 1 ? "上传中..." : "上传文件" }}
@@ -85,7 +70,7 @@ export default {
       }
 
       let fileList = [];
-      
+
       if (this.useObjectFormat) {
         // 处理对象数组格式 [{name, url, time}]
         if (Array.isArray(value)) {
@@ -136,7 +121,7 @@ export default {
       };
 
 
- 
+
     },
     uploadSuccess(response, file, fileList) {
       if (this.limit == 1) {
@@ -154,8 +139,7 @@ export default {
     handleExceed(files, fileList) {
       if (!this.isExceedTip) return;
       this.msgWarning(
-        `当前限制选择 ${this.limit} 个文件，本次选择了 ${
-          files.length
+        `当前限制选择 ${this.limit} 个文件，本次选择了 ${files.length
         } 个文件，共选择了 ${files.length + fileList.length} 个文件`
       );
     },
@@ -167,7 +151,7 @@ export default {
         let currentFill = file.map((item) => {
           const url = item.response ? item.response.data[0].url : item.url;
           const name = item.name || url.slice(url.lastIndexOf("/") + 1);
-          
+
           if (this.useObjectFormat) {
             return {
               name: name,
@@ -201,26 +185,32 @@ export default {
 .my-upload-demo {
   .el-upload {
     height: inherit;
+
     .all-img {
       height: inherit !important;
       line-height: inherit !important;
+
       .el-image {
         height: inherit !important;
         line-height: inherit !important;
       }
     }
   }
+
   .el-upload-list {
     display: flex;
     flex-wrap: wrap;
   }
+
   .el-upload-dragger {
     width: 100%;
   }
+
   .el-upload--picture-card {
     width: 100px !important;
     height: 100px !important;
     line-height: 100px !important;
+
     .all-img {
       height: inherit !important;
       line-height: inherit !important;

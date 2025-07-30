@@ -2,6 +2,8 @@ import { constantRoutes } from "@/router";
 import { getRouters } from "@/api/menu";
 import Layout from "@/layout/index";
 import ParentView from "@/components/ParentView";
+import MicroAppContainer from "@/components/MicroAppContainer";
+import { parseMicroAppConfig } from "@/config/microApps";
 
 const permission = {
   state: {
@@ -34,12 +36,27 @@ const permission = {
 function filterAsyncRouter(asyncRouterMap) {
   return asyncRouterMap.filter((route) => {
     if (route.component) {
+      console.log('处理路由组件:', route.component, '类型:', typeof route.component);
+
       // Layout组件特殊处理
       if (route.component === "Layout") {
         route.component = Layout;
       } else if (route.component === "ParentView") {
         route.component = ParentView;
+      } else if (route.component === "MicroApp") {
+        // 微应用组件特殊处理
+        route.component = MicroAppContainer;
+      } else if (typeof route.component === 'string' && route.component.trim().indexOf("micro:") === 0) {
+        // 微应用路径标识处理 (格式: micro:应用名:路径)
+        console.log('检测到微应用路径:', route.component);
+        const originalComponent = route.component.trim();
+        route.component = MicroAppContainer;
+        // 解析微应用配置
+        route.meta = route.meta || {};
+        route.meta.microApp = parseMicroAppConfig(originalComponent, route.path);
+        console.log('微应用配置解析完成:', route.meta.microApp);
       } else {
+        console.log('使用loadView加载普通组件:', route.component);
         route.component = loadView(route.component);
       }
     }
@@ -51,8 +68,16 @@ function filterAsyncRouter(asyncRouterMap) {
 }
 
 export const loadView = (view) => {
+  // 防止微应用路径误入loadView
+  if (typeof view === 'string' && view.indexOf('micro:') !== -1) {
+    console.error('微应用路径不应该进入loadView:', view);
+    return () => import('@/components/MicroAppContainer.vue');
+  }
+
   // 路由懒加载
   return (resolve) => require([`@/views/${view}`], resolve);
 };
+
+// parseMicroAppConfig 已从 @/config/microApps 导入
 
 export default permission;

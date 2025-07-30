@@ -2,35 +2,15 @@
   <div class="app-container font12">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="产品品类：">
-        <el-select
-          v-model="queryParams.key"
-          filterable
-          @change="changeCategory"
-          placeholder="请选择产品品类"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.key" filterable @change="changeCategory" placeholder="请选择产品品类">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          v-hasPermi="['third:hardVersion:add']"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
-        >
+        <el-button v-hasPermi="['third:hardVersion:add']" type="primary" icon="el-icon-plus" @click="handleAdd">
           新增
         </el-button>
-        <el-button
-          type="primary"
-          v-hasPermi="['third:hardVersion:refresh']"
-          @click="getList"
-          >刷新</el-button
-        >
+        <el-button type="primary" v-hasPermi="['third:hardVersion:refresh']" @click="getList">刷新</el-button>
       </el-form-item>
     </el-form>
     <el-table v-loading="loading" :data="list" :height="tableHeight(38)">
@@ -43,46 +23,23 @@
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="状态" align="center">
         <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatus(scope.row)"
-          ></el-switch>
+          <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1"
+            @change="handleStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="创建人" prop="createBy" align="center" />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        sortable
-      />
+      <el-table-column label="创建时间" prop="createTime" align="center" sortable />
       <el-table-column label="操作" align="center">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:hardVersion:update']"
-            @click="handleUpdate(scope.row)"
-          />
-          <Tooltip
-            icon="el-icon-delete"
-            :className="['text-red']"
-            content="删除"
-            v-hasPermi="['third:hardVersion:delete']"
-            @click="handleDelete(scope.row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:hardVersion:update']"
+            @click="handleUpdate(scope.row)" />
+          <Tooltip icon="el-icon-delete" :className="['text-red']" content="删除"
+            v-hasPermi="['third:hardVersion:delete']" @click="handleDelete(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <CompUpdate ref="compUpdate" />
   </div>
@@ -125,10 +82,13 @@ export default {
       },
     };
   },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.getTypeCategory();
-    })
+  // beforeRouteEnter(to, from, next) {
+  //   next(vm => {
+  //     vm.getTypeCategory();
+  //   })
+  // },
+  mounted() {
+    this.getTypeCategory();
   },
   methods: {
     // 获取品类
@@ -244,6 +204,7 @@ export default {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
   .position-abs {
     position: absolute;
     right: -120px;

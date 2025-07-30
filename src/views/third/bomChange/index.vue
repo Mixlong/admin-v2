@@ -2,25 +2,25 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" size="small" class="search-form">
       <div>
-      <el-form-item label="客户单号" prop="customerNo">
-        <el-input v-model="queryParams.customerNo" placeholder="请输入客户单号" clearable @keyup.enter.native="handleQuery"
-          style="width: 200px" />
-      </el-form-item>
+        <el-form-item label="客户单号" prop="customerNo">
+          <el-input v-model="queryParams.customerNo" placeholder="请输入客户单号" clearable @keyup.enter.native="handleQuery"
+            style="width: 200px" />
+        </el-form-item>
 
-      <el-form-item label="U8单号" prop="uNo">
-        <el-input v-model="queryParams.uNo" placeholder="请输入U8单号" clearable @keyup.enter.native="handleQuery"
-          style="width: 200px" />
-      </el-form-item>
+        <el-form-item label="U8单号" prop="uNo">
+          <el-input v-model="queryParams.uNo" placeholder="请输入U8单号" clearable @keyup.enter.native="handleQuery"
+            style="width: 200px" />
+        </el-form-item>
 
-      <el-form-item label="E树单号" prop="eNo">
-        <el-input v-model="queryParams.eNo" placeholder="请输入E树单号" clearable @keyup.enter.native="handleQuery"
-          style="width: 200px" />
-      </el-form-item>
+        <el-form-item label="E树单号" prop="eNo">
+          <el-input v-model="queryParams.eNo" placeholder="请输入E树单号" clearable @keyup.enter.native="handleQuery"
+            style="width: 200px" />
+        </el-form-item>
 
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+        </el-form-item>
 
       </div>
       <div class="operation-btns">
@@ -39,13 +39,13 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="客户" prop="customer" align="center"   />
-      <el-table-column label="U8" prop="uuNo" align="center"   />
-      <el-table-column label="E树" prop="treeNo" align="center"   />
-       
-      <el-table-column label="客户单号" prop="customerNo" align="center"   />
+      <el-table-column label="客户" prop="customer" align="center" />
+      <el-table-column label="U8" prop="uuNo" align="center" />
+      <el-table-column label="E树" prop="treeNo" align="center" />
+
+      <el-table-column label="客户单号" prop="customerNo" align="center" />
       <el-table-column label="变更前BOM" prop="beforeOrderBom" align="center" show-overflow-tooltip />
-      <el-table-column label="变更后BOM" prop="afterOrderBom" align="center"   show-overflow-tooltip />
+      <el-table-column label="变更后BOM" prop="afterOrderBom" align="center" show-overflow-tooltip />
       <el-table-column label="变更原因" prop="changeCause" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           <div style="white-space: break-spaces">
@@ -57,17 +57,18 @@
         <template slot-scope="{ row }">
           <div class="compact-review-status">
             <div v-for="(group, field) in getReviewStatusByField(row.list)" :key="field" class="review-group">
-              <el-tooltip   placement="top" 
-                         v-if="getDepartmentPersons(row.list, field).length > 3">
-                         
+              <el-tooltip placement="top" v-if="getDepartmentPersons(row.list, field).length > 3">
+
                 <div class="review-row">
                   <span class="department-name">{{ TriageList[field] }}</span>
                   <span class="person-list">
-                    <span v-for="(item, index) in getDepartmentPersons(row.list, field).slice(0, getMaxDisplayCount(field))" :key="index" 
-                          class="person-item" :class="getPersonStatusClass(item.state)">
+                    <span
+                      v-for="(item, index) in getDepartmentPersons(row.list, field).slice(0, getMaxDisplayCount(field))"
+                      :key="index" class="person-item" :class="getPersonStatusClass(item.state)">
                       {{ item.fieldName }}
                     </span>
-                    <span v-if="getDepartmentPersons(row.list, field).length > getMaxDisplayCount(field)" class="person-more">...</span>
+                    <span v-if="getDepartmentPersons(row.list, field).length > getMaxDisplayCount(field)"
+                      class="person-more">...</span>
                   </span>
                   <el-tag v-if="group.total === group.passed" type="success" size="mini">
                     {{ group.passed }}/{{ group.total }}
@@ -78,13 +79,13 @@
                   <el-tag v-else type="warning" size="mini">
                     {{ group.passed }}/{{ group.total }}
                   </el-tag>
-              </div>
+                </div>
               </el-tooltip>
               <div v-else class="review-row">
                 <span class="department-name">{{ TriageList[field] }}</span>
                 <span class="person-list">
-                  <span v-for="(item, index) in getDepartmentPersons(row.list, field)" :key="index" 
-                        class="person-item" :class="getPersonStatusClass(item.state)">
+                  <span v-for="(item, index) in getDepartmentPersons(row.list, field)" :key="index" class="person-item"
+                    :class="getPersonStatusClass(item.state)">
                     {{ item.fieldName }}
                   </span>
                 </span>
@@ -192,15 +193,11 @@
         <template slot-scope="{ row }">
           <el-button size="mini" type="primary" icon="el-icon-view" @click="handleView(row)">查看</el-button>
 
-          <el-button v-if="row.firstState !== 1" size="mini" type="primary" icon="el-icon-edit" @click="handleUpdate(row)"  >编辑</el-button>
- 
-            <el-button 
-              v-show="row.createBy === nickName"
-              size="mini"
-              type="danger"
-                  @click="handleDelete(row)"
-              icon="el-icon-delete"
-            >删除</el-button>
+          <el-button v-if="row.firstState !== 1" size="mini" type="primary" icon="el-icon-edit"
+            @click="handleUpdate(row)">编辑</el-button>
+
+          <el-button v-show="row.createBy === nickName" size="mini" type="danger" @click="handleDelete(row)"
+            icon="el-icon-delete">删除</el-button>
           <!-- 会审按钮 - 优化逻辑 -->
           <template v-for="(item, index) in (row && row.list ? row.list : [])">
             <!-- 会审按钮 -->
@@ -253,14 +250,16 @@
           </el-button>
 
           <!-- 订单变更按钮 row.orderChangePerson === nickName && row.systemState === 1 -->
-          <el-button v-if="row && row.orderChangePerson === nickName && row.orderChangeState === 0 && row.systemState === 1" size="mini" type="primary"
-            @click="handleAuthFlag(row, 7)" style="margin-left: 5px;">
+          <el-button
+            v-if="row && row.orderChangePerson === nickName && row.orderChangeState === 0 && row.systemState === 1"
+            size="mini" type="primary" @click="handleAuthFlag(row, 7)" style="margin-left: 5px;">
             <i class="el-icon-document"></i> 订单变更
           </el-button>
 
           <!-- 工单变更按钮 -->
-          <el-button v-if="row && row.workOrderChangePerson === nickName && row.workOrderChangeState === 0 && row.orderChangeState === 1" size="mini" type="info"
-            @click="handleAuthFlag(row, 6)" style="margin-left: 5px;">
+          <el-button
+            v-if="row && row.workOrderChangePerson === nickName && row.workOrderChangeState === 0 && row.orderChangeState === 1"
+            size="mini" type="info" @click="handleAuthFlag(row, 6)" style="margin-left: 5px;">
             <i class="el-icon-tickets"></i> 工单变更
           </el-button>
 
@@ -289,7 +288,7 @@
 
         <!-- 系统变更专用字段 -->
         <template v-if="isSystemStateFlag">
- 
+
           <el-form-item label="变更前BOM编码" prop="beforeOrderBom">
             <el-input v-model="authForm.beforeOrderBom" placeholder="请输入变更前BOM编码" />
           </el-form-item>
@@ -303,7 +302,7 @@
 
         <!-- 订单变更专用字段 -->
         <template v-if="isOrderChangeStateFlag">
- 
+
           <el-form-item label="订单是否已做变更" prop="orderChangeStatus">
             <el-select v-model="authForm.orderChangeStatus" placeholder="请选择" style="width: 100%">
               <el-option label="已变更" value="1"></el-option>
@@ -317,7 +316,7 @@
 
         <!-- 工单变更专用字段 -->
         <template v-if="isWorkOrderChangeStateFlag">
- 
+
           <el-form-item label="工单是否已做变更" prop="workOrderChangeState">
             <el-select v-model="authForm.workOrderChangeState" placeholder="请选择" style="width: 100%">
               <el-option label="已变更" value="1"></el-option>
@@ -451,47 +450,47 @@
                   :key="item.userId || item.userName + '_firstAuditor_' + index" :label="item.userName"
                   :value="item.userName">
                 </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="最终审核：" prop="finalJudgmentData">
+              </el-select>
+            </el-form-item>
+            <el-form-item label="最终审核：" prop="finalJudgmentData">
               <el-select class="w100" v-model="peopleManageForm.finalJudgmentData" filterable multiple clearable
                 placeholder="请选择">
                 <el-option v-for="(item, index) in pmDictListOptions"
                   :key="item.userId || item.userName + '_finalJudgment_' + index" :label="item.userName"
                   :value="item.userName">
                 </el-option>
-                </el-select>
-              </el-form-item>
+              </el-select>
+            </el-form-item>
             <el-form-item label="变更领域人员：" label-width="500px"></el-form-item>
-              <el-form-item label="系统变更 ：" prop="systemChangeData">
+            <el-form-item label="系统变更 ：" prop="systemChangeData">
               <el-select class="w100" v-model="peopleManageForm.systemChangeData" filterable multiple clearable
                 placeholder="请选择">
                 <el-option v-for="(item, index) in pmDictListOptions"
                   :key="item.userId || item.userName + '_systemChange_' + index" :label="item.userName"
                   :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-              <el-form-item label="订单变更 ：" prop="orderChangeData" required>
+            <el-form-item label="订单变更 ：" prop="orderChangeData" required>
               <el-select class="w100" v-model="peopleManageForm.orderChangeData" filterable multiple clearable
                 placeholder="请选择">
                 <el-option v-for="(item, index) in pmDictListOptions"
                   :key="item.userId || item.userName + '_orderChange_' + index" :label="item.userName"
                   :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-              <el-form-item label="工单变更 ：" prop="workOrderChangeData" required>
+            <el-form-item label="工单变更 ：" prop="workOrderChangeData" required>
               <el-select class="w100" v-model="peopleManageForm.workOrderChangeData" filterable multiple clearable
                 placeholder="请选择">
                 <el-option v-for="(item, index) in pmDictListOptions"
                   :key="item.userId || item.userName + '_workOrderChange_' + index" :label="item.userName"
                   :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
           </el-form>
         </el-col>
@@ -524,8 +523,7 @@ import {
 import { ecnFieldState, ecnPersonList, ecnPersonEdit } from "@/api/third/ecn"
 import { dictUserList } from "@/api/system/user"
 import { listDept } from "@/api/system/dept"
-import { cloneDeep } from "lodash"
-
+import { mapGetters } from "vuex";
 export default {
   name: "BomChange",
   components: {
@@ -771,10 +769,10 @@ export default {
       pmDictListOptions: [],
       deptOptions: [],
       userId: this.$store.getters.userId,
-      nickName: this.$store.getters.name
     };
   },
   computed: {
+    ...mapGetters(["userId", "nickName"]),
     // 判断是否为初审状态
     isFirstStateFlag() {
       return this.isAuthFlag === 1;
@@ -1068,7 +1066,7 @@ export default {
       if (!list || list.length === 0) return {};
 
       const grouped = {};
-      
+
       list.forEach(item => {
         const field = item.field;
         if (!grouped[field]) {
@@ -1079,9 +1077,9 @@ export default {
             pending: 0
           };
         }
-        
+
         grouped[field].total++;
-        
+
         switch (item.state) {
           case 0:
             grouped[field].pending++;
@@ -1108,7 +1106,7 @@ export default {
       Object.keys(grouped).forEach(field => {
         const group = grouped[field];
         const departmentName = this.TriageList[field];
-        
+
         // 获取该部门的所有人员详情
         const departmentItems = list.filter(item => item.field === field);
         const personDetails = departmentItems.map(item => {
@@ -1405,7 +1403,7 @@ export default {
       this.$refs.detailView.openDialog(row.id);
     },
 
- 
+
     getCheckedLabels(changeCause) {
       // 如果传入的是字符串，先解析JSON
       let arr = [];
@@ -1599,14 +1597,14 @@ export default {
         // 对数据进行去重处理，避免重复键值问题
         const uniqueUsers = [];
         const userNameSet = new Set();
-        
+
         res.data.forEach(user => {
           if (!userNameSet.has(user.userName)) {
             userNameSet.add(user.userName);
             uniqueUsers.push(user);
           }
         });
-        
+
         this.pmDictListOptions = uniqueUsers;
       });
     },
@@ -2309,8 +2307,8 @@ export default {
     margin-bottom: 2px;
 
     .review-row {
-    display: flex;
-    align-items: center;
+      display: flex;
+      align-items: center;
       gap: 8px;
       min-height: 24px;
 
@@ -2394,12 +2392,12 @@ export default {
 // 会审提示框样式
 :global(.review-tooltip) {
   max-width: 300px;
-  
+
   .el-tooltip__popper {
     background: #fff;
     border: 1px solid #e4e7ed;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    
+
     .el-tooltip__content {
       color: #606266;
       font-size: 12px;

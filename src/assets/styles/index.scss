@@ -52,10 +52,10 @@ body {
 }
 
 .receive-wrap {
-  > div {
+  >div {
     text-align: left;
 
-    > span {
+    >span {
       &:first-child {
         display: inline-block;
         min-width: 60px;
@@ -227,13 +227,11 @@ aside {
   text-align: right;
   padding-right: 20px;
   transition: 600ms ease position;
-  background: linear-gradient(
-    90deg,
-    rgba(32, 182, 249, 1) 0%,
-    rgba(32, 182, 249, 1) 0%,
-    rgba(33, 120, 241, 1) 100%,
-    rgba(33, 120, 241, 1) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(32, 182, 249, 1) 0%,
+      rgba(32, 182, 249, 1) 0%,
+      rgba(33, 120, 241, 1) 100%,
+      rgba(33, 120, 241, 1) 100%);
 
   .subtitle {
     font-size: 20px;
@@ -578,6 +576,7 @@ aside {
 .margin-xl {
   margin: 50px;
 }
+
 .margin-top-xs {
   margin-top: 10px;
 }
@@ -1308,12 +1307,12 @@ ul {
     background: #888;
   }
 
-  &::-webkit-scrollbar-corner {
-  }
+  &::-webkit-scrollbar-corner {}
 }
 
 .supplier-info,
 .input-width-default {
+
   .el-input,
   .el-select,
   .el-date-editor {
@@ -1371,13 +1370,13 @@ ul {
 }
 
 .el-drawer__header {
-  > span:focus {
+  >span:focus {
     outline: none;
   }
 }
 
 .click-open {
-  > div {
+  >div {
     height: 32px;
     display: flex;
     align-items: center;
@@ -1435,6 +1434,7 @@ fieldset {
 .overflow-y {
   overflow-x: hidden;
   overflow-y: auto;
+
   &::-webkit-scrollbar {
     display: none;
     width: 10px;
@@ -1494,6 +1494,7 @@ fieldset {
   .el-table__body-wrapper {
     cursor: grab;
     user-select: none;
+
     .cell {
       cursor: auto !important;
       user-select: text !important;
@@ -1510,4 +1511,33 @@ fieldset {
 // 隐藏元素
 input[aria-hidden=true] {
   display: none !important;
+}
+
+/* 修复无界缓存iframe对页面滚动条的影响 */
+iframe[data-wujie-flag] {
+  opacity: 0;
+
+  /* 确保隐藏的iframe不影响页面布局 */
+  &[style*="display: none"] {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+  }
+
+  /* 只有当前激活的iframe才正常显示 */
+  &:not([style*="display: none"]) {
+    position: absolute !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    height: 0% !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+  }
 }

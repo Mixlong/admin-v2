@@ -3,9 +3,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
-        <el-select v-model="queryParams.categoryId" filterable allow-create clearable placeholder="请选择品类"
-          style="width: 140px" @change="changeCategory">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+        <el-select v-model="validCategoryId" filterable clearable placeholder="请选择品类"
+          style="width: 140px" @change="changeCategory" 
+          :loading="isDictLoading" 
+          :disabled="isDictLoading">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id">
+            {{ dict.name }}
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
@@ -231,6 +235,7 @@ export default {
     return {
       commonStatusList,
       isCLoading: false,
+      isDictLoading: true, // 品类数据加载状态
       checkStatus: null,
       form: {},
       urls: [],
@@ -282,6 +287,17 @@ export default {
       statusOptions: (state) => state.commonData.statusOptions,
     }),
     ...mapGetters("commonData", ["isCheckType"]),
+    // 确保categoryId是有效的
+    validCategoryId: {
+      get() {
+        if (!this.queryParams.categoryId || !this.dictList.length) return '';
+        const validCategory = this.dictList.find(dict => dict.id === this.queryParams.categoryId);
+        return validCategory ? this.queryParams.categoryId : '';
+      },
+      set(value) {
+        this.queryParams.categoryId = value;
+      }
+    },
     isComputerStatus() {
       return (status) => {
         return status ? "danger" : "success";
@@ -336,22 +352,31 @@ export default {
         if (route.name === "FileConfig") {
           this.queryParams.categoryId = "";
           this.queryParams.computerId = "";
+          this.isDictLoading = true; // 开始加载
 
           const { categoryId, computerId } = route?.params;
-          if (categoryId && computerId) {
+          
+          try {
+            // 先加载品类数据
             this.dictList = await this.getCategoryData();
-            this.queryParams.categoryId = categoryId;
-            this.getComputerData();
-            this.queryParams.computerId = computerId;
+            
+            if (categoryId && computerId) {
+              // 确保categoryId在dictList中存在
+              const validCategory = this.dictList.find(dict => dict.id === categoryId);
+              this.queryParams.categoryId = validCategory ? categoryId : this.dictList[0]?.id;
+              this.getComputerData();
+              this.queryParams.computerId = computerId;
 
-            this.handleQuery();
-          } else {
-            this.dictList = await this.getCategoryData();
-            // 默认选择第一个
-            this.queryParams.categoryId = this.dictList[0]?.id;
-            this.getComputerData();
+              this.handleQuery();
+            } else {
+              // 默认选择第一个
+              this.queryParams.categoryId = this.dictList[0]?.id;
+              this.getComputerData();
 
-            this.handleQuery();
+              this.handleQuery();
+            }
+          } finally {
+            this.isDictLoading = false; // 加载完成
           }
         }
       },
