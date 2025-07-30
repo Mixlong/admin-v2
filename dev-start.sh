@@ -14,9 +14,9 @@ echo "检查端口占用情况..."
 lsof -ti:3002 | xargs kill -9 2>/dev/null || true
 lsof -ti:2025 | xargs kill -9 2>/dev/null || true
 
-# 启动子应用 RuoYi-Vue3
-echo "启动子应用 RuoYi-Vue3 (端口 3002)..."
-cd micro-apps/RuoYi-Vue3
+# 启动子应用 admin-fileconf-v3
+echo "启动子应用 admin-fileconf-v3 (端口 3002)..."
+cd micro-apps/admin-fileconf-v3
 
 # 初始化 nvm 环境
 export NVM_DIR="$HOME/.nvm"
