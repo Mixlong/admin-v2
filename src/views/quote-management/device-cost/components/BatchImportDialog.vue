@@ -314,7 +314,7 @@ export default {
     async downloadTemplate() {
       try {
         const link = document.createElement('a')
-        link.href = 'https://digiwise-web.oss-eu-central-1.aliyuncs.com/admin/%E7%BA%BF%E7%BC%86%E6%88%90%E6%9C%AC%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx'
+        link.href = 'http://file.riding-evolved.com/20250728/1753704385/设备成本导入模板.xlsx'
         link.download = '设备成本导入模板.xlsx'
         document.body.appendChild(link)
         link.click()
@@ -390,9 +390,18 @@ export default {
 
         if (response.code === 200) {
           // 根据实际API响应结构映射数据
-          const totalCount = response.data.num || 0
+          const totalCount = response.data.finalNum || 0
           const successCount = response.data.successNum || 0
-          const failedCount = totalCount - successCount
+          
+          // 计算错误数量：遍历errorInfo中所有错误行号数组的长度
+          let failedCount = 0
+          if (response.data.errorInfo && typeof response.data.errorInfo === 'object') {
+            Object.values(response.data.errorInfo).forEach(errorRows => {
+              if (Array.isArray(errorRows)) {
+                failedCount += errorRows.length
+              }
+            })
+          }
 
           // 解析错误信息
           const errorInfo = this.parseErrorInfo(response.data)
@@ -417,7 +426,6 @@ export default {
         }
       } catch (error) {
         console.error('导入失败:', error)
-        this.$message.error(error.message || '导入失败，请稍后重试')
         // 导入失败时重置到初始状态
         this.fileList = []
         this.fileUploaded = false
@@ -446,46 +454,62 @@ export default {
     parseErrorInfo(data) {
       const errors = []
 
-      // 设备成本导入错误
-      if (data.computerIndex && Array.isArray(data.computerIndex) && data.computerIndex.length > 0) {
-        errors.push({
-          type: 'category',
-          title: '无效品类行',
-          items: data.computerIndex.map(index => `第 ${index} 行：品类信息无效或不存在`)
-        })
-      }
+      // 检查是否有errorInfo对象
+      if (data.errorInfo && typeof data.errorInfo === 'object') {
+        // 遍历errorInfo中的所有错误类型
+        Object.keys(data.errorInfo).forEach(errorType => {
+          const errorRows = data.errorInfo[errorType]
+          if (Array.isArray(errorRows) && errorRows.length > 0) {
+            let title = errorType
+            let type = 'general'
 
-      if (data.costCategoryIndex && Array.isArray(data.costCategoryIndex) && data.costCategoryIndex.length > 0) {
-        errors.push({
-          type: 'costCategory',
-          title: '无效成本类型行',
-          items: data.costCategoryIndex.map(index => `第 ${index} 行：成本类型信息无效或不存在`)
-        })
-      }
+            // 根据错误类型设置标题和类型
+            switch (errorType) {
+              case '无效供应商行号':
+                title = '无效供应商行'
+                type = 'cableSupplier'
+                break
+              case '数据重复行号':
+                title = '数据重复行'
+                type = 'duplicate'
+                break
+              case '无效品类行号':
+                title = '无效品类行'
+                type = 'category'
+                break
+              case '无效成本类型行号':
+                title = '无效成本类型行'
+                type = 'costCategory'
+                break
+              case '无效成本项行号':
+                title = '无效成本项行'
+                type = 'costProject'
+                break
+              default:
+                title = errorType
+                type = 'general'
+            }
 
-      if (data.costProjectIndex && Array.isArray(data.costProjectIndex) && data.costProjectIndex.length > 0) {
-        errors.push({
-          type: 'costProject',
-          title: '无效成本项行',
-          items: data.costProjectIndex.map(index => `第 ${index} 行：成本项信息无效或不存在`)
-        })
-      }
-
-      // 线缆成本导入错误
-      if (data.cableSupplierIndex && Array.isArray(data.cableSupplierIndex) && data.cableSupplierIndex.length > 0) {
-        errors.push({
-          type: 'cableSupplier',
-          title: '无效供应商行',
-          items: data.cableSupplierIndex.map(index => `第 ${index} 行：供应商信息无效或不存在`)
-        })
-      }
-
-      // 通用错误 - 数据重复行
-      if (data.errorIndex && Array.isArray(data.errorIndex) && data.errorIndex.length > 0) {
-        errors.push({
-          type: 'duplicate',
-          title: '数据重复行',
-          items: data.errorIndex.map(index => `第 ${index} 行：数据重复，请检查后重新导入`)
+            errors.push({
+              type: type,
+              title: title,
+              items: errorRows.map(index => {
+                if (type === 'duplicate') {
+                  return `第 ${index} 行：数据重复，请检查后重新导入`
+                } else if (type === 'cableSupplier') {
+                  return `第 ${index} 行：供应商信息无效或不存在`
+                } else if (type === 'category') {
+                  return `第 ${index} 行：品类信息无效或不存在`
+                } else if (type === 'costCategory') {
+                  return `第 ${index} 行：成本类型信息无效或不存在`
+                } else if (type === 'costProject') {
+                  return `第 ${index} 行：成本项信息无效或不存在`
+                } else {
+                  return `第 ${index} 行：${title}`
+                }
+              })
+            })
+          }
         })
       }
 
@@ -499,7 +523,8 @@ export default {
         costCategory: 'el-icon-price-tag',
         costProject: 'el-icon-paperclip',
         cableSupplier: 'el-icon-connection',
-        duplicate: 'el-icon-copy-document'
+        duplicate: 'el-icon-copy-document',
+        general: 'el-icon-warning'
       }
       return iconMap[errorType] || 'el-icon-warning'
     },
@@ -511,7 +536,8 @@ export default {
         costCategory: 'danger',
         costProject: 'info',
         cableSupplier: 'success',
-        duplicate: 'danger'
+        duplicate: 'danger',
+        general: 'warning'
       }
       return typeMap[errorType] || 'danger'
     },

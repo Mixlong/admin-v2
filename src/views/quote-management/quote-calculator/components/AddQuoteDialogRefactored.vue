@@ -1,322 +1,274 @@
 <template>
-    <el-dialog :visible="visible" @update:visible="handleVisibleChange" :title="dialogTitle" width="1300px"
+    <el-dialog :visible="visible" @update:visible="handleVisibleChange" :title="dialogTitle" width="900px"
         :close-on-click-modal="false" :close-on-press-escape="false" class="add-quote-dialog"
         :before-close="handleBeforeClose" center top="0">
-        <div class=" dialog-content" style="height: calc(70vh - 80px); overflow-y: auto; padding-right: 10px;">
+        <div class="dialog-content" style="height: calc(70vh - 80px); overflow-y: auto; padding: 20px 20px 0;">
 
-            <!-- 产品配置区域 -->
-            <div class="config-container">
-                <!-- 左侧：主产品配置 -->
-                <div class="config-section main-product-section">
-                    <div class="section-header">
-                        <h3>主产品</h3>
-                    </div>
-                    <div class="section-content">
-                        <el-form :model="mainProduct" :rules="mainProductRules" ref="mainProductForm"
-                            label-width="100px" size="small">
-                            <!-- 产品品类 -->
-                            <el-form-item label="产品品类" prop="categoryId">
-                                <el-select v-model="mainProduct.categoryId" style="width: 100%" placeholder="请输入或选择产品品类"
-                                    clearable :loading="loading" filterable remote
-                                    :remote-method="searchMainProductCategory"
-                                    :filter-method="filterMainProductCategory" default-first-option
-                                    @change="handleMainProductCategoryChange">
-                                    <el-option v-for="(category, index) in filteredMainProductCategories"
-                                        :key="`main-category-${category.id || index}-${index}-${category.name}`"
-                                        :label="category.name" :value="category.id">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
+            <!-- 主产品配置 -->
+            <div class="module-container">
+                <el-divider content-position="left" class="module-divider">
+                    <span style="font-weight: 600; color: #409EFF;">
+                        <i class="el-icon-mobile-phone" style="margin-right: 5px;"></i>
+                        主产品配置
+                    </span>
+                </el-divider>
+                <div class="module-content">
+                    <el-form :model="mainProduct" :rules="mainProductRules" ref="mainProductForm" label-width="100px"
+                        size="small">
+                        <!-- 产品品类 -->
+                        <el-form-item label="产品品类" prop="categoryId">
+                            <el-select v-model="mainProduct.categoryId" style="width: 100%" placeholder="请输入或选择产品品类"
+                                clearable :loading="loading" filterable remote
+                                :remote-method="searchMainProductCategory" :filter-method="filterMainProductCategory"
+                                default-first-option @change="handleMainProductCategoryChange">
+                                <el-option v-for="(category, index) in filteredMainProductCategories"
+                                    :key="`main-category-${category.id || index}-${index}-${category.name}`"
+                                    :label="category.name" :value="category.id">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
 
-                            <!-- 选项 -->
-                            <el-form-item label="选项">
-                                <el-checkbox-group v-model="mainProduct.deviceOptional"
-                                    v-if="mainProductOptions.length > 0" v-show="!mainProductOptionsLoading"
-                                    class="checkbox-group options-fade">
-                                    <el-checkbox v-for="(option, index) in mainProductOptions"
-                                        :key="`main-product-option-${option.id || index}-${index}-${option.name || ''}`"
-                                        :label="option.id">
-                                        <div class="option-item">
-                                            <span class="option-name">{{ getOptionDisplayName(option) }}</span>
-                                            <span class="option-amount">¥{{ option.amount || 0 }}</span>
+                        <!-- 选项 -->
+                        <el-form-item label="选项" v-if="mainProductOptions.length > 0">
+                            <el-checkbox-group v-model="mainProduct.deviceOptional" class="checkbox-group options-fade">
+                                <el-checkbox v-for="(option, index) in mainProductOptions"
+                                    :key="`main-product-option-${option.id || index}-${index}-${option.name || ''}`"
+                                    :label="option.id">
+                                    <span class="option-name">{{ getOptionDisplayName(option) }}</span>
+                                </el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
+
+                        <!-- 线缆 -->
+                        <el-form-item label="线缆">
+                            <div class="cable-config">
+                                <!-- 线缆类型 -->
+                                <div class="cable-supplier" :class="{ 'has-details': mainProduct.cableType === 2 }">
+                                    <el-radio-group v-model="mainProduct.cableType" class="supplier-radio">
+                                        <el-radio :label="2">迪太提供</el-radio>
+                                        <el-radio :label="1">客供线缆</el-radio>
+                                    </el-radio-group>
+                                </div>
+
+                                <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
+                                <div class="cable-details" v-if="mainProduct.cableType === 2">
+                                    <el-form-item prop="supplierCode" class="cable-detail-item">
+                                        <label class="cable-label">供应商：</label>
+                                        <el-select v-model="mainProduct.supplierCode" class="cable-select"
+                                            placeholder="请选择供应商" @change="handleMainProductSupplierChange">
+                                            <el-option v-for="(supplier, index) in supplierOptions"
+                                                :key="`main-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
+                                                :label="supplier.dictLabel" :value="String(supplier.dictCode)">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+
+                                    <el-form-item prop="cableId" class="cable-detail-item">
+                                        <label class="cable-label">防水头型号：</label>
+                                        <el-select v-model="mainProduct.cableId" class="cable-select"
+                                            placeholder="请选择防水头型号" :disabled="!mainProduct.supplierCode">
+                                            <el-option v-for="(option, index) in waterproofHeadOptions"
+                                                :key="`main-waterproof-${option.id || index}-${index}-${option.cableModel}`"
+                                                :label="option.cableModel" :value="String(option.id)">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+
+                                    <el-form-item prop="cableLong" class="cable-detail-item">
+                                        <label class="cable-label">线长：</label>
+                                        <div class="input-with-unit">
+                                            <el-input-number v-model="mainProduct.cableLong" :min="1" :max="10000000"
+                                                :step="1000" :precision="0" :controls="false" class="cable-length-input"
+                                                placeholder="请输入线长" />
                                         </div>
+                                        <span class="unit-text">mm</span>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </el-form-item>
+
+                        <!-- 费用分摊 -->
+                        <el-form-item label="费用分摊" v-if="shouldShowMainProductCostSharing">
+                            <div class="cost-sharing-config">
+                                <!-- ID费用分摊 -->
+                                <div class="cost-sharing-item" v-if="shouldShowMainProductIdCostSharing">
+                                    <el-checkbox v-model="mainProductIdCostSharing"
+                                        @change="handleMainProductIdCostSharingChange">
+                                        <span class="share-label-text">ID费用分摊</span>
                                     </el-checkbox>
-                                </el-checkbox-group>
-                                <div v-if="mainProductOptions.length === 0" class="no-options" :class="{
-                                    'no-category': !mainProduct.categoryId,
-                                    'loading-state': mainProductOptionsLoading,
-                                    'empty-state': !mainProductOptionsLoading && mainProduct.categoryId
-                                }">
-                                    <span v-if="!mainProduct.categoryId" class="hint-text">
-                                        <i class="el-icon-info"></i>
-                                        请先选择产品品类
-                                    </span>
-                                    <span v-else-if="mainProductOptionsLoading" class="loading-text">
-                                        <i class="el-icon-loading"></i>
-                                        正在加载选项数据...
-                                    </span>
-                                    <span v-else class="empty-text">
-                                        <i class="el-icon-warning-outline"></i>
-                                        暂无可选项
-                                    </span>
-                                </div>
-                            </el-form-item>
-
-                            <!-- 线缆 -->
-                            <el-form-item label="线缆">
-                                <div class="cable-config">
-                                    <!-- 线缆类型 -->
-                                    <div class="cable-supplier" :class="{ 'has-details': mainProduct.cableType === 2 }">
-                                        <el-radio-group v-model="mainProduct.cableType" class="supplier-radio">
-                                            <el-radio :label="1">迪太提供</el-radio>
-                                            <el-radio :label="2">客供线缆</el-radio>
-                                        </el-radio-group>
-                                    </div>
-
-                                    <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
-                                    <div class="cable-details" v-if="mainProduct.cableType === 2">
-                                        <el-form-item prop="supplierCode" class="cable-detail-item">
-                                            <label class="cable-label">供应商：</label>
-                                            <el-select v-model="mainProduct.supplierCode" class="cable-select"
-                                                placeholder="请选择供应商" @change="handleMainProductSupplierChange">
-                                                <el-option v-for="(supplier, index) in supplierOptions"
-                                                    :key="`main-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
-                                                    :label="supplier.dictLabel" :value="String(supplier.dictCode)">
-                                                </el-option>
-                                            </el-select>
-                                        </el-form-item>
-
-                                        <el-form-item prop="cableId" class="cable-detail-item">
-                                            <label class="cable-label">防水头型号：</label>
-                                            <el-select v-model="mainProduct.cableId" class="cable-select"
-                                                placeholder="请选择防水头型号" :disabled="!mainProduct.supplierCode">
-                                                <el-option v-for="(option, index) in waterproofHeadOptions"
-                                                    :key="`main-waterproof-${option.id || index}-${index}-${option.cableModel}`"
-                                                    :label="option.cableModel" :value="String(option.id)">
-                                                </el-option>
-                                            </el-select>
-                                        </el-form-item>
-
-                                        <el-form-item prop="cableLong" class="cable-detail-item">
-                                            <label class="cable-label">线长：</label>
-                                            <div class="input-with-unit">
-                                                <el-input-number v-model="mainProduct.cableLong" :min="1"
-                                                    :max="10000000" :step="1000" :precision="0" :controls="false"
-                                                    class="cable-length-input" placeholder="请输入线长" />
-                                            </div>
-                                            <span class="unit-text">mm</span>
-                                        </el-form-item>
+                                    <div class="input-with-unit" v-show="mainProductIdCostSharing">
+                                        <el-input-number v-model="mainProduct.idCostSharingPcs" :min="1" :max="999999"
+                                            :step="1" :precision="0" :controls="false" size="small" style="width: 120px"
+                                            :controls-position="'right'" />
+                                        <span class="unit-text">pcs</span>
                                     </div>
                                 </div>
-                            </el-form-item>
-
-                            <!-- 费用分摊 -->
-                            <el-form-item label="费用分摊">
-                                <div class="cost-sharing-config">
-                                    <!-- ID费用分摊 -->
-                                    <div class="cost-sharing-item">
-                                        <el-checkbox v-model="mainProductIdCostSharing"
-                                            @change="handleMainProductIdCostSharingChange">
-                                            <span class="share-label-text">ID费用分摊</span>
-                                        </el-checkbox>
-                                        <div class="input-with-unit" v-show="mainProductIdCostSharing">
-                                            <el-input-number v-model="mainProduct.idCostSharingPcs" :min="1"
-                                                :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="'right'" />
-                                            <span class="unit-text">pcs</span>
-                                        </div>
-                                    </div>
-                                    <!-- 摸具费用分摊 -->
-                                    <div class="cost-sharing-item">
-                                        <el-checkbox v-model="mainProductAbrasiveCostSharing"
-                                            @change="handleMainProductAbrasiveCostSharingChange">
-                                            <span class="share-label-text">摸具费用分摊</span>
-                                        </el-checkbox>
-                                        <div class="input-with-unit" v-show="mainProductAbrasiveCostSharing">
-                                            <el-input-number v-model="mainProduct.abrasiveCostSharingPcs" :min="1"
-                                                :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="'right'" />
-                                            <span class="unit-text">pcs</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </el-form-item>
-                        </el-form>
-                    </div>
-                </div>
-
-                <!-- 右侧：按键配置 -->
-                <div class="config-section button-section">
-                    <div class="section-header">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <h3>按键</h3>
-                            <el-switch v-model="buttonEnabled" @change="handleButtonEnabledChange" active-text="启用"
-                                inactive-text="禁用" active-color="#409EFF" inactive-color="#C0C4CC">
-                            </el-switch>
-                        </div>
-                    </div>
-                    <div class="section-content">
-                        <el-form :model="buttonProduct || {}" :rules="dynamicButtonRules" ref="buttonForm"
-                            label-width="100px" size="small">
-                            <!-- 按键品类 -->
-                            <el-form-item prop="categoryId">
-                                <span slot="label"><span v-if="isButtonCategoryRequired"
-                                        style="color: #f56c6c;">*</span>按键品类</span>
-                                <el-select v-model="buttonProduct.categoryId" style="width: 100%"
-                                    placeholder="请输入或选择按键品类" :loading="loading" filterable remote clearable
-                                    :remote-method="searchButtonCategory" :filter-method="filterButtonCategory"
-                                    default-first-option @change="handleButtonCategoryChange"
-                                    :disabled="!buttonEnabled">
-                                    <el-option v-for="(category, index) in filteredButtonCategories"
-                                        :key="`button-category-${category.id || index}-${index}-${category.name}`"
-                                        :label="category.name" :value="category.id">
-                                        <div class="category-option-simple">
-                                            <span class="category-name">{{ category.name }}</span>
-                                            <span v-if="category.code" class="category-code">{{ category.code }}</span>
-                                        </div>
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-
-                            <!-- 选项 -->
-                            <el-form-item label="选项">
-                                <el-checkbox-group v-model="buttonProduct.deviceOptional"
-                                    v-if="buttonOptions.length > 0 && buttonEnabled"
-                                    v-show="!buttonProductOptionsLoading" class="checkbox-group options-fade">
-                                    <el-checkbox v-for="(option, index) in buttonOptions"
-                                        :key="`button-option-${option.id || index}-${index}-${option.name || ''}`"
-                                        :label="option.id">
-                                        <div class="option-item">
-                                            <span class="option-name">{{ getOptionDisplayName(option) }}</span>
-                                            <span class="option-amount">¥{{ option.amount || 0 }}</span>
-                                        </div>
+                                <!-- 摸具费用分摊 -->
+                                <div class="cost-sharing-item" v-if="shouldShowMainProductMoldCostSharing">
+                                    <el-checkbox v-model="mainProductAbrasiveCostSharing"
+                                        @change="handleMainProductAbrasiveCostSharingChange">
+                                        <span class="share-label-text">摸具费用分摊</span>
                                     </el-checkbox>
-                                </el-checkbox-group>
-                                <div v-if="buttonOptions.length === 0 || !buttonEnabled" class="no-options" :class="{
-                                    'no-category': !buttonProduct || !buttonProduct.categoryId || !buttonEnabled,
-                                    'loading-state': buttonProductOptionsLoading,
-                                    'empty-state': !buttonProductOptionsLoading && buttonProduct && buttonProduct.categoryId && buttonEnabled
-                                }">
-                                    <span v-if="!buttonEnabled" class="hint-text">
-                                        <i class="el-icon-info"></i>
-                                        请先启用按键配置
-                                    </span>
-                                    <span v-else-if="!buttonProduct || !buttonProduct.categoryId" class="hint-text">
-                                        <i class="el-icon-info"></i>
-                                        请先选择按键品类
-                                    </span>
-                                    <span v-else-if="buttonProductOptionsLoading" class="loading-text">
-                                        <i class="el-icon-loading"></i>
-                                        正在加载选项数据...
-                                    </span>
-                                    <span v-else class="empty-text">
-                                        <i class="el-icon-warning-outline"></i>
-                                        暂无可选项
-                                    </span>
-                                </div>
-                            </el-form-item>
-
-                            <!-- 线缆 -->
-                            <el-form-item label="线缆">
-                                <div class="cable-config">
-                                    <!-- 线缆类型 -->
-                                    <div class="cable-supplier"
-                                        :class="{ 'has-details': buttonProduct.cableType === 2 && buttonEnabled }">
-                                        <el-radio-group v-model="buttonProduct.cableType" class="supplier-radio"
-                                            :disabled="!buttonEnabled">
-                                            <el-radio :label="1">迪太提供</el-radio>
-                                            <el-radio :label="2">客供线缆</el-radio>
-                                        </el-radio-group>
-                                    </div>
-
-                                    <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
-                                    <div class="cable-details" v-if="buttonProduct.cableType === 2 && buttonEnabled">
-                                        <el-form-item prop="supplierCode" class="cable-detail-item">
-                                            <label class="cable-label">供应商：</label>
-                                            <el-select v-model="buttonProduct.supplierCode" class="cable-select"
-                                                placeholder="请选择供应商" @change="handleButtonSupplierChange">
-                                                <el-option v-for="(supplier, index) in supplierOptions"
-                                                    :key="`button-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
-                                                    :label="supplier.dictLabel" :value="String(supplier.dictCode)">
-                                                </el-option>
-                                            </el-select>
-                                        </el-form-item>
-
-                                        <el-form-item prop="cableId" class="cable-detail-item">
-                                            <label class="cable-label">防水头型号：</label>
-                                            <el-select v-model="buttonProduct.cableId" class="cable-select"
-                                                placeholder="请选择防水头型号" :disabled="!buttonProduct.supplierCode">
-                                                <el-option v-for="(option, index) in waterproofHeadOptions"
-                                                    :key="`button-waterproof-${option.id || index}-${index}-${option.cableModel}`"
-                                                    :label="option.cableModel" :value="String(option.id)">
-                                                </el-option>
-                                            </el-select>
-                                        </el-form-item>
-
-                                        <el-form-item prop="cableLong" class="cable-detail-item">
-                                            <label class="cable-label">线长：</label>
-                                            <div class="input-with-unit">
-                                                <el-input-number v-model="buttonProduct.cableLong" :min="1"
-                                                    :max="10000000" :step="1000" :precision="0" :controls="false"
-                                                    class="cable-length-input" placeholder="请输入线长" />
-                                            </div>
-                                            <span class="unit-text">mm</span>
-                                        </el-form-item>
+                                    <div class="input-with-unit" v-show="mainProductAbrasiveCostSharing">
+                                        <el-input-number v-model="mainProduct.abrasiveCostSharingPcs" :min="1"
+                                            :max="999999" :step="1" :precision="0" :controls="false" size="small"
+                                            style="width: 120px" :controls-position="'right'" />
+                                        <span class="unit-text">pcs</span>
                                     </div>
                                 </div>
-                            </el-form-item>
-
-                            <!-- 费用分摊 -->
-                            <el-form-item label="费用分摊">
-                                <div class="cost-sharing-config">
-                                    <!-- ID费用分摊 -->
-                                    <div class="cost-sharing-item">
-                                        <el-checkbox v-model="buttonIdCostSharing"
-                                            @change="handleButtonIdCostSharingChange" :disabled="!buttonEnabled">
-                                            <span class="share-label-text">ID费用分摊</span>
-                                        </el-checkbox>
-                                        <div class="input-with-unit" v-show="buttonIdCostSharing && buttonEnabled">
-                                            <el-input-number v-model="buttonProduct.idCostSharingPcs" :min="1"
-                                                :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="'right'" />
-                                            <span class="unit-text">pcs</span>
-                                        </div>
-                                    </div>
-                                    <!-- 摸具费用分摊 -->
-                                    <div class="cost-sharing-item">
-                                        <el-checkbox v-model="buttonAbrasiveCostSharing"
-                                            @change="handleButtonAbrasiveCostSharingChange" :disabled="!buttonEnabled">
-                                            <span class="share-label-text">摸具费用分摊</span>
-                                        </el-checkbox>
-                                        <div class="input-with-unit"
-                                            v-show="buttonAbrasiveCostSharing && buttonEnabled">
-                                            <el-input-number v-model="buttonProduct.abrasiveCostSharingPcs" :min="1"
-                                                :max="999999" :step="1" :precision="0" :controls="false" size="small"
-                                                style="width: 120px" :controls-position="'right'" />
-                                            <span class="unit-text">pcs</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </el-form-item>
-                        </el-form>
-                    </div>
+                            </div>
+                        </el-form-item>
+                    </el-form>
                 </div>
             </div>
 
-            <!-- 其他配置 -->
-            <div class="other-config">
-                <div class="section-header">
-                    <h3>
-                        <i class="el-icon-setting"></i>
-                        其他信息
-                    </h3>
+            <!-- 按键配置 -->
+            <div class="module-container" style="margin-top: 30px;">
+                <el-divider content-position="left" class="module-divider">
+                    <span style="font-weight: 600; color: #409EFF;">
+                        <i class="el-icon-s-operation" style="margin-right: 5px;"></i>
+                        按键配置
+
+                    </span>
+                </el-divider>
+                <div class="module-content">
+                    <el-form :model="buttonProduct || {}" :rules="dynamicButtonRules" ref="buttonForm"
+                        label-width="100px" size="small">
+                        <!-- 按键品类 -->
+                        <el-form-item label="是否选配按键">
+                            <el-switch v-model="buttonEnabled" @change="handleButtonEnabledChange"
+                                active-color="#409EFF" inactive-color="#C0C4CC" style="margin-left: 15px;" size="small">
+                            </el-switch>
+                        </el-form-item>
+                        <el-form-item prop="categoryId">
+                            <span slot="label"><span v-if="isButtonCategoryRequired"
+                                    style="color: #f56c6c;">*</span>按键品类</span>
+                            <el-select v-model="buttonProduct.categoryId" style="width: 100%" placeholder="请输入或选择按键品类"
+                                :loading="loading" filterable remote clearable :remote-method="searchButtonCategory"
+                                :filter-method="filterButtonCategory" default-first-option
+                                @change="handleButtonCategoryChange" :disabled="!buttonEnabled">
+                                <el-option v-for="(category, index) in filteredButtonCategories"
+                                    :key="`button-category-${category.id || index}-${index}-${category.name}`"
+                                    :label="category.name" :value="category.id">
+                                    <div class="category-option-simple">
+                                        <span class="category-name">{{ category.name }}</span>
+                                        <span v-if="category.code" class="category-code">{{ category.code }}</span>
+                                    </div>
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <!-- 选项 -->
+                        <el-form-item label="选项" v-if="buttonOptions.length > 0 && buttonEnabled">
+                            <el-checkbox-group v-model="buttonProduct.deviceOptional"
+                                class="checkbox-group options-fade">
+                                <el-checkbox v-for="(option, index) in buttonOptions"
+                                    :key="`button-option-${option.id || index}-${index}-${option.name || ''}`"
+                                    :label="option.id">
+                                    <span class="option-name">{{ getOptionDisplayName(option) }}</span>
+                                </el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
+
+                        <!-- 线缆 -->
+                        <el-form-item label="线缆">
+                            <div class="cable-config">
+                                <!-- 线缆类型 -->
+                                <div class="cable-supplier"
+                                    :class="{ 'has-details': buttonProduct.cableType === 2 && buttonEnabled }">
+                                    <el-radio-group v-model="buttonProduct.cableType" class="supplier-radio"
+                                        :disabled="!buttonEnabled">
+                                        <el-radio :label="2">迪太提供</el-radio>
+                                        <el-radio :label="1">客供线缆</el-radio>
+                                    </el-radio-group>
+                                </div>
+
+                                <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
+                                <div class="cable-details" v-if="buttonProduct.cableType === 2 && buttonEnabled">
+                                    <el-form-item prop="supplierCode" class="cable-detail-item">
+                                        <label class="cable-label">供应商：</label>
+                                        <el-select v-model="buttonProduct.supplierCode" class="cable-select"
+                                            placeholder="请选择供应商" @change="handleButtonSupplierChange">
+                                            <el-option v-for="(supplier, index) in supplierOptions"
+                                                :key="`button-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
+                                                :label="supplier.dictLabel" :value="String(supplier.dictCode)">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+
+                                    <el-form-item prop="cableId" class="cable-detail-item">
+                                        <label class="cable-label">防水头型号：</label>
+                                        <el-select v-model="buttonProduct.cableId" class="cable-select"
+                                            placeholder="请选择防水头型号" :disabled="!buttonProduct.supplierCode">
+                                            <el-option v-for="(option, index) in waterproofHeadOptions"
+                                                :key="`button-waterproof-${option.id || index}-${index}-${option.cableModel}`"
+                                                :label="option.cableModel" :value="String(option.id)">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+
+                                    <el-form-item prop="cableLong" class="cable-detail-item">
+                                        <label class="cable-label">线长：</label>
+                                        <div class="input-with-unit">
+                                            <el-input-number v-model="buttonProduct.cableLong" :min="1" :max="10000000"
+                                                :step="1000" :precision="0" :controls="false" class="cable-length-input"
+                                                placeholder="请输入线长" />
+                                        </div>
+                                        <span class="unit-text">mm</span>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </el-form-item>
+
+                        <!-- 费用分摊 -->
+                        <el-form-item label="费用分摊" v-if="shouldShowButtonCostSharing">
+                            <div class="cost-sharing-config">
+                                <!-- ID费用分摊 -->
+                                <div class="cost-sharing-item" v-if="shouldShowButtonIdCostSharing">
+                                    <el-checkbox v-model="buttonIdCostSharing" @change="handleButtonIdCostSharingChange"
+                                        :disabled="!buttonEnabled">
+                                        <span class="share-label-text">ID费用分摊</span>
+                                    </el-checkbox>
+                                    <div class="input-with-unit" v-show="buttonIdCostSharing && buttonEnabled">
+                                        <el-input-number v-model="buttonProduct.idCostSharingPcs" :min="1" :max="999999"
+                                            :step="1" :precision="0" :controls="false" size="small" style="width: 120px"
+                                            :controls-position="'right'" />
+                                        <span class="unit-text">pcs</span>
+                                    </div>
+                                </div>
+                                <!-- 摸具费用分摊 -->
+                                <div class="cost-sharing-item" v-if="shouldShowButtonMoldCostSharing">
+                                    <el-checkbox v-model="buttonAbrasiveCostSharing"
+                                        @change="handleButtonAbrasiveCostSharingChange" :disabled="!buttonEnabled">
+                                        <span class="share-label-text">摸具费用分摊</span>
+                                    </el-checkbox>
+                                    <div class="input-with-unit" v-show="buttonAbrasiveCostSharing && buttonEnabled">
+                                        <el-input-number v-model="buttonProduct.abrasiveCostSharingPcs" :min="1"
+                                            :max="999999" :step="1" :precision="0" :controls="false" size="small"
+                                            style="width: 120px" :controls-position="'right'" />
+                                        <span class="unit-text">pcs</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-form-item>
+                    </el-form>
                 </div>
-                <div class="section-content">
+            </div>
+
+            <!-- 其他信息 -->
+            <div class="module-container" style="margin-top: 30px;">
+                <el-divider content-position="left" class="module-divider">
+                    <span style="font-weight: 600; color: #409EFF;">
+                        <i class="el-icon-setting" style="margin-right: 5px;"></i>
+                        其他信息
+                    </span>
+                </el-divider>
+                <div class="module-content">
                     <el-form :model="quotationData" :rules="otherRules" ref="otherForm" label-width="100px"
                         size="small">
                         <!-- 第一行：客户类型、产品税率、售后费用 -->
-                        <div class="form-row three-columns">
-                            <div class="form-column">
+                        <el-row :gutter="20">
+                            <el-col :span="8">
                                 <el-form-item label="客户类型" prop="customerType">
                                     <el-select v-model="quotationData.customerType" style="width: 100%"
                                         placeholder="请选择客户类型">
@@ -326,8 +278,8 @@
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
-                            </div>
-                            <div class="form-column">
+                            </el-col>
+                            <el-col :span="8">
                                 <el-form-item label="产品税率" prop="productTaxRate">
                                     <el-select v-model="quotationData.productTaxRate" style="width: 100%"
                                         placeholder="请选择产品税率">
@@ -337,8 +289,8 @@
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
-                            </div>
-                            <div class="form-column">
+                            </el-col>
+                            <el-col :span="8">
                                 <el-form-item label="售后费用" prop="afterSalesRate">
                                     <el-select v-model="quotationData.afterSalesRate" style="width: 100%"
                                         placeholder="请选择售后费用">
@@ -348,44 +300,41 @@
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
-
-                            </div>
-                        </div>
+                            </el-col>
+                        </el-row>
 
                         <!-- 第二行：报价方式和汇率 -->
-                        <el-row class="form-row">
-                            <el-col :span="10">
+                        <el-row :gutter="20">
+                            <el-col :span="12">
                                 <el-form-item label="报价方式" prop="quotationType">
                                     <el-radio-group v-model="quotationData.quotationType">
                                         <el-radio :label="1">
-                                            <i class="el-icon-coin"></i>
                                             人民币
                                         </el-radio>
                                         <el-radio :label="2">
-                                            <i class="el-icon-money"></i>
                                             美元
                                         </el-radio>
                                     </el-radio-group>
                                 </el-form-item>
                             </el-col>
                             <!-- 汇率 - 选择美元时显示，独立表单项进行校验 -->
-                            <el-form-item label="汇率" prop="exchangeRate" v-if="quotationData.quotationType === 2">
-                                <div class="input-with-unit">
-                                    <el-input-number v-model="quotationData.exchangeRate" :min="0.0001" :max="20"
-                                        :precision="4" :step="0" :controls="false" size="small" style="width: 120px"
-                                        placeholder="请输入汇率" />
-                                    <span class="unit-text">CNY/USD</span>
-                                </div>
-                            </el-form-item>
+                            <el-col :span="12" v-if="quotationData.quotationType === 2">
+                                <el-form-item label="汇率" prop="exchangeRate">
+                                    <div class="input-with-unit">
+                                        <el-input-number v-model="quotationData.exchangeRate" :min="0.0001" :max="20"
+                                            :precision="4" :step="0" :controls="false" size="small" style="width: 120px"
+                                            placeholder="请输入汇率" />
+                                        <span class="unit-text">CNY==>USD</span>
+                                    </div>
+                                </el-form-item>
+                            </el-col>
                         </el-row>
 
                         <!-- 第三行：备注描述 -->
-                        <div class="form-row">
-                            <el-form-item label="备注描述" prop="remark">
-                                <el-input v-model="quotationData.remark" type="textarea" :rows="3"
-                                    placeholder="请输入备注信息（可选）" maxlength="500" show-word-limit style="width: 100%" />
-                            </el-form-item>
-                        </div>
+                        <el-form-item label="备注描述" prop="remark">
+                            <el-input v-model="quotationData.remark" type="textarea" :rows="3" placeholder="请输入备注信息（可选）"
+                                maxlength="500" show-word-limit style="width: 100%" />
+                        </el-form-item>
                     </el-form>
                 </div>
             </div>
@@ -395,8 +344,6 @@
         <div slot="footer" class="dialog-footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <i class="el-icon-info"></i>
-                    <span>请确认所有信息填写正确后再提交</span>
                 </div>
                 <div class="footer-buttons">
                     <el-button @click="handleCancel" size="medium" icon="el-icon-close">
@@ -466,8 +413,6 @@ export default {
             },
 
             // Loading 状态
-            mainProductOptionsLoading: false,
-            buttonProductOptionsLoading: false,
 
             // UI辅助状态
             buttonEnabled: false,
@@ -484,6 +429,10 @@ export default {
             waterproofHeadOptions: [],
             costCategoryOptions: [],
             costProjectOptions: [],
+            
+            // 所有品类数据（用于判断 allocationType）
+            mainProductAllData: [],
+            buttonAllData: [],
 
             // 过滤后的品类列表
             filteredMainProductCategories: [],
@@ -639,6 +588,50 @@ export default {
         // 按键品类是否必填
         isButtonCategoryRequired: function () {
             return this.buttonEnabled
+        },
+
+        // 主产品是否显示ID费用分摊
+        shouldShowMainProductIdCostSharing: function () {
+            return this.mainProductAllData.some(function (option) {
+                return option.allocationType === 1 || option.allocationType === '1'
+            })
+        },
+
+        // 主产品是否显示模具费用分摊
+        shouldShowMainProductMoldCostSharing: function () {
+            return this.mainProductAllData.some(function (option) {
+                return option.allocationType === 2 || option.allocationType === '2'
+            })
+        },
+
+        // 按键是否显示ID费用分摊
+        shouldShowButtonIdCostSharing: function () {
+            if (!this.buttonEnabled) {
+                return false
+            }
+            return this.buttonAllData.some(function (option) {
+                return option.allocationType === 1 || option.allocationType === '1'
+            })
+        },
+
+        // 按键是否显示模具费用分摊
+        shouldShowButtonMoldCostSharing: function () {
+            if (!this.buttonEnabled) {
+                return false
+            }
+            return this.buttonAllData.some(function (option) {
+                return option.allocationType === 2 || option.allocationType === '2'
+            })
+        },
+
+        // 主产品是否显示费用分摊整个模块
+        shouldShowMainProductCostSharing: function () {
+            return this.shouldShowMainProductIdCostSharing || this.shouldShowMainProductMoldCostSharing
+        },
+
+        // 按键是否显示费用分摊整个模块
+        shouldShowButtonCostSharing: function () {
+            return this.shouldShowButtonIdCostSharing || this.shouldShowButtonMoldCostSharing
         }
     },
 
@@ -739,7 +732,6 @@ export default {
 
         // 关闭前确认
         handleBeforeClose: function (done) {
-            var self = this
             if (this.hasUnsavedChanges) {
                 this.$confirm('您有未保存的更改，确定要关闭吗？', '提示', {
                     confirmButtonText: '确定',
@@ -945,7 +937,7 @@ export default {
                         deviceOptional: [],
                         cableId: null,
                         cableLong: 5000000,
-                        cableType: 1,
+                        cableType: 2,
                         supplierCode: null,
                         wireType: 1,
                         isIdCostSharing: 0,
@@ -965,6 +957,8 @@ export default {
             this.mainProductOptions = []
             this.buttonOptions = []
             this.waterproofHeadOptions = []
+            this.mainProductAllData = []
+            this.buttonAllData = []
 
             // 确保过滤列表已初始化
             if (this.categoryList.length > 0) {
@@ -1039,9 +1033,6 @@ export default {
         // 主产品品类变化
         handleMainProductCategoryChange: async function (categoryId) {
             if (categoryId) {
-                // 设置 loading 状态
-                this.mainProductOptionsLoading = true
-
                 // 存储品类图片
                 var category = this.categoryList.find(function (cat) { return cat.id === categoryId })
                 if (category && category.img) {
@@ -1054,12 +1045,10 @@ export default {
                     this.mainProduct.deviceOptional = []
                 } catch (error) {
                     console.error('加载主产品选项失败:', error)
-                } finally {
-                    this.mainProductOptionsLoading = false
                 }
             } else {
                 this.mainProductOptions = []
-                this.mainProductOptionsLoading = false
+                this.mainProductAllData = []
                 this.quotationData.modelImg = null
             }
         },
@@ -1067,21 +1056,16 @@ export default {
         // 按键品类变化
         handleButtonCategoryChange: async function (categoryId) {
             if (categoryId) {
-                // 设置 loading 状态
-                this.buttonProductOptionsLoading = true
-
                 try {
                     await this.loadButtonOptions(categoryId)
                     // 清空选项
                     this.buttonProduct.deviceOptional = []
                 } catch (error) {
                     console.error('加载按键选项失败:', error)
-                } finally {
-                    this.buttonProductOptionsLoading = false
                 }
             } else {
                 this.buttonOptions = []
-                this.buttonProductOptionsLoading = false
+                this.buttonAllData = []
             }
         },
 
@@ -1090,8 +1074,11 @@ export default {
             try {
                 var response = await getDeviceCostByCategory(categoryId)
                 if (response.code === 200) {
-                    // 过滤只显示选配项 (isOptional = 1)
+                    // 存储所有数据用于判断 allocationType
                     var allOptions = response.data || []
+                    this.mainProductAllData = allOptions
+                    
+                    // 过滤只显示选配项 (isOptional = 1)
                     this.mainProductOptions = allOptions.filter(function (option) {
                         return option.isOptional === 1 || option.isOptional === '1'
                     })
@@ -1107,8 +1094,11 @@ export default {
             try {
                 var response = await getDeviceCostByCategory(categoryId)
                 if (response.code === 200) {
-                    // 过滤只显示选配项 (isOptional = 1)
+                    // 存储所有数据用于判断 allocationType
                     var allOptions = response.data || []
+                    this.buttonAllData = allOptions
+                    
+                    // 过滤只显示选配项 (isOptional = 1)
                     this.buttonOptions = allOptions.filter(function (option) {
                         return option.isOptional === 1 || option.isOptional === '1'
                     })
@@ -1234,7 +1224,7 @@ export default {
                         deviceOptional: [],
                         cableId: null,
                         cableLong: 1000,
-                        cableType: 1,
+                        cableType: 2,
                         supplierCode: null,
                         wireType: 1,
                         isIdCostSharing: 0,
@@ -1365,21 +1355,87 @@ export default {
         // 表单验证
         validateForm: async function () {
             var self = this
-            var promises = []
+            var validationPromises = []
+            var formRefs = []
 
+            // 按顺序添加表单引用和验证
             if (self.$refs.mainProductForm) {
-                promises.push(self.$refs.mainProductForm.validate().catch(function () { return false }))
-            }
-            if (self.$refs.otherForm) {
-                promises.push(self.$refs.otherForm.validate().catch(function () { return false }))
+                formRefs.push({ ref: self.$refs.mainProductForm, name: '主产品配置' })
+                validationPromises.push(
+                    self.$refs.mainProductForm.validate().catch(function (errorFields) {
+                        return { isValid: false, formName: '主产品配置', errorFields: errorFields }
+                    })
+                )
             }
 
             if (self.buttonEnabled && self.$refs.buttonForm) {
-                promises.push(self.$refs.buttonForm.validate().catch(function () { return false }))
+                formRefs.push({ ref: self.$refs.buttonForm, name: '按键配置' })
+                validationPromises.push(
+                    self.$refs.buttonForm.validate().catch(function (errorFields) {
+                        return { isValid: false, formName: '按键配置', errorFields: errorFields }
+                    })
+                )
             }
 
-            var results = await Promise.all(promises)
-            return results.every(function (result) { return result !== false })
+            if (self.$refs.otherForm) {
+                formRefs.push({ ref: self.$refs.otherForm, name: '其他信息' })
+                validationPromises.push(
+                    self.$refs.otherForm.validate().catch(function (errorFields) {
+                        return { isValid: false, formName: '其他信息', errorFields: errorFields }
+                    })
+                )
+            }
+
+            try {
+                var results = await Promise.all(validationPromises)
+                
+                // 查找第一个验证失败的表单
+                for (var i = 0; i < results.length; i++) {
+                    var result = results[i]
+                    if (result && result.isValid === false) {
+                        // 显示错误消息
+                        self.$message.error(result.formName + '存在验证错误，请检查输入')
+                        
+                        // 定位到第一个错误字段
+                        self.scrollToFirstError(formRefs[i].ref)
+                        return false
+                    }
+                }
+                
+                // 所有表单验证成功
+                return true
+            } catch (error) {
+                console.error('表单验证出错:', error)
+                return false
+            }
+        },
+
+        // 滚动到第一个错误字段
+        scrollToFirstError: function (formRef) {
+            var self = this
+            this.$nextTick(function () {
+                try {
+                    // 查找第一个有错误的字段
+                    var errorField = formRef.$el.querySelector('.is-error')
+                    if (errorField) {
+                        // 滚动到错误字段
+                        errorField.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        })
+                        
+                        // 聚焦到输入框
+                        var input = errorField.querySelector('input, select, textarea')
+                        if (input) {
+                            setTimeout(function () {
+                                input.focus()
+                            }, 300)
+                        }
+                    }
+                } catch (error) {
+                    console.error('定位错误字段失败:', error)
+                }
+            })
         },
 
         // 保存操作
@@ -1511,4 +1567,32 @@ export default {
 
 <style lang="scss" scoped>
 @import './styles/add-quote-dialog.scss';
+
+/* 模块容器样式 */
+.module-container {
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    position: relative;
+    background: #ffffff;
+}
+
+.module-divider {
+    margin: 0;
+    position: relative;
+    top: -2px;
+    background: #ffffff;
+    z-index: 1;
+}
+
+.module-content {
+    padding: 40px 20px 20px 20px;
+    margin-top: -12px;
+}
+
+/* 确保el-divider的文本部分有背景色 */
+.module-divider .el-divider__text {
+    background-color: #ffffff;
+    padding: 0 20px;
+}
 </style>

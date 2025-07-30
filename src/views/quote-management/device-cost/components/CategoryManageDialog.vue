@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="类别管理" :visible.sync="dialogVisible" width="900px" :close-on-click-modal="false"    top='0'
+  <el-dialog title="类别管理" :visible.sync="dialogVisible" width="900px" :close-on-click-modal="false" top='0'
     @close="handleClose">
 
     <div class="category-manage-container">
@@ -22,7 +22,8 @@
                 </div>
                 <div class="item-actions">
                   <el-button size="mini" @click.stop="editCostType(item)" icon="el-icon-edit"></el-button>
-                  <el-button size="mini" type="danger" @click.stop="deleteCostType(item)" icon="el-icon-delete"></el-button>
+                  <el-button size="mini" type="danger" @click.stop="deleteCostType(item)"
+                    icon="el-icon-delete"></el-button>
                 </div>
               </div>
             </div>
@@ -47,7 +48,8 @@
                 </div>
                 <div class="item-actions">
                   <el-button size="mini" @click.stop="editCostItem(item)" icon="el-icon-edit"></el-button>
-                  <el-button size="mini" type="danger" @click.stop="deleteCostItem(item)" icon="el-icon-delete"></el-button>
+                  <el-button size="mini" type="danger" @click.stop="deleteCostItem(item)"
+                    icon="el-icon-delete"></el-button>
                 </div>
               </div>
             </div>
@@ -74,12 +76,13 @@
       </el-form>
       <div slot="footer">
         <el-button @click="typeDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveType">确定</el-button>
+        <el-button type="primary" @click="saveType" :disabled="loading">确定</el-button>
       </div>
     </el-dialog>
 
     <!-- 编辑成本项弹窗 -->
-    <el-dialog :title="editItemData ? '编辑成本项' : '新增成本项'" :visible.sync="itemDialogVisible" width="400px" append-to-body top="0">
+    <el-dialog :title="editItemData ? '编辑成本项' : '新增成本项'" :visible.sync="itemDialogVisible" width="400px" append-to-body
+      top="0">
       <el-form :model="itemForm" :rules="itemRules" ref="itemForm" label-width="100px">
         <el-form-item label="所属成本类型">
           <el-input :value="selectedTypeName" disabled></el-input>
@@ -93,7 +96,7 @@
       </el-form>
       <div slot="footer">
         <el-button @click="itemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveItem">确定</el-button>
+        <el-button type="primary" @click="saveItem" :disabled="loading">确定</el-button>
       </div>
     </el-dialog>
   </el-dialog>
@@ -120,6 +123,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       dialogVisible: false,
       selectedTypeId: null,
       // 成本类型编辑
@@ -153,18 +157,18 @@ export default {
     // 根据选中的成本类型过滤成本项
     filteredCostItems() {
       console.log("当前选中的成本类型ID:", this.costItems)
-      
+
       if (!this.selectedTypeId) return []
-      
+
       const selectedType = this.costTypes.find(type => type.dictCode === this.selectedTypeId)
       console.log("选中的成本类型:", selectedType)
-      
+
       if (!selectedType) return []
-      
+
       // 直接比较dictValue，成本项的dictValue等于成本类型的dictValue即为关联
       const filtered = this.costItems.filter(item => item.dictValue === selectedType.dictValue)
       console.log("过滤后的成本项:", filtered)
-      
+
       return filtered
     }
   },
@@ -233,7 +237,7 @@ export default {
             dictType: 'cost_category',
             remark: this.typeForm.remark
           }
-
+          this.loading = true
           if (this.editTypeData) {
             // 编辑时使用原来的值
             data.dictValue = this.editTypeData.dictValue
@@ -248,6 +252,8 @@ export default {
               }
             }).catch(() => {
               this.$message.error('保存失败')
+            }).finally(() => {
+              this.loading = false
             })
           } else {
             // 新增时，获取最大的dictValue并加1
@@ -259,7 +265,7 @@ export default {
               }
             })
             data.dictValue = (maxValue + 1).toString()
-            
+
             addData(data).then(res => {
               if (res.code === 200) {
                 this.$message.success('保存成功')
@@ -270,6 +276,8 @@ export default {
               }
             }).catch(() => {
               this.$message.error('保存失败')
+            }).finally(() => {
+              this.loading = false
             })
           }
         }
@@ -335,7 +343,7 @@ export default {
             remark: this.itemForm.remark,
             dictValue: selectedType.dictValue // 使用选中的成本类型的dictValue
           }
-
+          this.loading = true;
           if (this.editItemData) {
             // 编辑时保留原来的值
             data.dictCode = this.editItemData.dictCode
@@ -349,6 +357,8 @@ export default {
               }
             }).catch(() => {
               this.$message.error('保存失败')
+            }).finally(() => {
+              this.loading = false
             })
           } else {
             // 新增时直接使用成本类型的dictValue
@@ -362,6 +372,8 @@ export default {
               }
             }).catch(() => {
               this.$message.error('保存失败')
+            }).finally(() => {
+              this.loading = false
             })
           }
         }

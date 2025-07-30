@@ -164,9 +164,12 @@ export default {
         this.fetchData();
       }
     },
-    temporaryKey(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.fetchData();
+    temporaryKey: {
+      deep: true,
+      handler(newVal, oldVal) {
+        if (newVal && newVal !== oldVal) {
+          this.fetchData();
+        }
       }
     }
   },

@@ -125,8 +125,8 @@ export function deleteSupplier(id) {
 // 批量导入线缆成本
 export function importCableCost(data) {
   return request({
-    url: '/cable-cost/import',
-    method: 'post',
+    url: '/cost/cable/import',
+    method: 'put',
     data,
     headers: {
       'Content-Type': 'multipart/form-data'

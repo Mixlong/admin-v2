@@ -172,8 +172,9 @@ export default {
                 const random = Math.random().toString(36).substring(2, 15)
                 this.temporaryKey = `quote_${timestamp}_${random}`
                 sessionStorage.setItem('quote_temporary_key', this.temporaryKey)
+            } else {
+                this.temporaryKey = temporaryKey
             }
-            this.temporaryKey = temporaryKey
         },
 
         // 初始化数据
