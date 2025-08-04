@@ -18,7 +18,7 @@ PROJECT_NAME=$(node -p "require('./package.json').name")
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 MONTH=$(date +%m)
 DAY=$(date +%d)
-BACKUP_NAME="admin_${MONTH}_${DAY}"
+BACKUP_NAME="dist_${MONTH}_${DAY}"
 ZIP_FILE="dist_${TIMESTAMP}.zip"
 
 echo "========================================="
@@ -32,7 +32,7 @@ echo "✓ 切换到项目目录: $LOCAL_PROJECT_PATH"
 
 # 本地构建项目（生产环境）
 echo "🏗️ 正在本地构建项目 (生产环境)..."
-npm run build:prod
+npm run build
 
 if [ $? -eq 0 ]; then
     echo "✅ 本地构建完成"
