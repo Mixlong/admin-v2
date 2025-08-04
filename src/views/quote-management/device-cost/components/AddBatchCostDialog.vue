@@ -14,7 +14,7 @@
           </div>
         </div>
         <div class="cotegory-input-wrapper">
-          <el-select v-model="form.categoryId" placeholder="请选择品类" style="width: 100%" class="el-select-cost">
+          <el-select v-model="form.categoryId" placeholder="请选择品类" style="width: 100%" class="el-select-cost" filterable>
             <el-option v-for="item in categoryOptions" :key="item.id" :label="item.name" :value="item.id"
               :disabled="isCategoryDisabled(item.id)">
             </el-option>

@@ -2,7 +2,7 @@
   <div class="quote-table">
     <!-- 表格操作栏 -->
 
-    <el-table :data="paginatedData" border stripe empty-text="暂无数据" style="width: 100%"
+    <el-table :data="paginatedData" border stripe empty-text="暂无数据" style="width: 100%" :height="tableHeight(-30)"
       @selection-change="handleSelectionChange" :row-class-name="getRowClassName" v-loading="loading">
       <!-- 选择列 -->
 
@@ -59,15 +59,18 @@
         <template slot-scope="scope">
           <div class="action-buttons">
             <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" :title="getEditTooltip(scope.row)" v-hasPermi="['quote:calculation:edit']">
+              :disabled="isRowDisabled(scope.row)" :title="getEditTooltip(scope.row)"
+              v-hasPermi="['quote:calculation:edit']">
               修改
             </el-button>
             <el-button size="mini" type="text" icon="el-icon-copy-document" @click="handleCopy(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" :title="getCopyTooltip(scope.row)" v-hasPermi="['quote:calculation:copy']">
+              :disabled="isRowDisabled(scope.row)" :title="getCopyTooltip(scope.row)"
+              v-hasPermi="['quote:calculation:copy']">
               复制
             </el-button>
             <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.$index, scope.row)"
-              :disabled="isRowDisabled(scope.row)" class="danger-button" :title="getDeleteTooltip(scope.row)" v-hasPermi="['quote:calculation:remove']">
+              :disabled="isRowDisabled(scope.row)" class="danger-button" :title="getDeleteTooltip(scope.row)"
+              v-hasPermi="['quote:calculation:remove']">
               删除
             </el-button>
           </div>

@@ -37,8 +37,8 @@
     <!-- 数据表格 -->
     <div class="table-section">
       <el-table ref="table" :data="tableData" v-loading="loading" element-loading-text="加载中..."
-        @selection-change="handleSelectionChange" element-loading-spinner="el-icon-loading" border stripe
-        style="width: 100%" empty-text="暂无数据">
+        :height="tableHeight(-30)" @selection-change="handleSelectionChange" element-loading-spinner="el-icon-loading"
+        border stripe style="width: 100%" empty-text="暂无数据">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
         <el-table-column prop="supplierName" label="供应商" align="center" show-overflow-tooltip>
