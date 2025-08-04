@@ -2,25 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="流程名称" prop="processName">
-        <el-input
-          v-model="queryParams.processName"
-          placeholder="请输入流程名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.processName" placeholder="请输入流程名称" clearable size="small"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="接收时间">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 240px"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="['00:00:00', '23:59:59']"
-        ></el-date-picker>
+        <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="daterange"
+          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -30,55 +18,40 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          v-hasPermi="['workflow:process:todoExport']"
-          @click="handleExport"
-        >导出</el-button>
+        <el-button type="warning" plain icon="el-icon-download" size="mini" v-hasPermi="['workflow:process:todoExport']"
+          @click="handleExport">导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="todoList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true"/>
-      <el-table-column label="流程名称" align="center" prop="procDefName"/>
-      <el-table-column label="任务节点" align="center" prop="taskName"/>
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true" />
+      <el-table-column label="流程名称" align="center" prop="procDefName" />
+      <el-table-column label="任务节点" align="center" prop="taskName" />
       <el-table-column label="流程版本" align="center">
         <template slot-scope="scope">
-          <el-tag size="medium" >v{{scope.row.procDefVersion}}</el-tag>
+          <el-tag size="medium">v{{ scope.row.procDefVersion }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="流程发起人" align="center">
         <template slot-scope="scope">
-          <label>{{scope.row.startUserName}} <el-tag type="info" size="mini">{{scope.row.startDeptName}}</el-tag></label>
+          <label>{{ scope.row.startUserName }} <el-tag type="info"
+              size="mini">{{ scope.row.startDeptName }}</el-tag></label>
         </template>
       </el-table-column>
-      <el-table-column label="接收时间" align="center" prop="createTime" width="180"/>
+      <el-table-column label="接收时间" align="center" prop="createTime" width="180" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit-outline"
-            @click="handleProcess(scope.row)"
-            v-hasPermi="['workflow:process:approval']"
-          >办理
+          <el-button size="mini" type="text" icon="el-icon-edit-outline" @click="handleProcess(scope.row)"
+            v-hasPermi="['workflow:process:approval']">办理
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -123,10 +96,13 @@ export default {
       rules: {}
     };
   },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.getList()
-    })
+  // beforeRouteEnter(to, from, next) {
+  //   next(vm => {
+  //     vm.getList()
+  //   })
+  // },
+  mounted() {
+    this.getList();
   },
   methods: {
     /** 查询流程定义列表 */

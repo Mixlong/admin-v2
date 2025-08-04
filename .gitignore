@@ -1,5 +1,5 @@
 .DS_Store
-../../Desktop/file-conf/node_modules/
+node_modules/
 dist/
 npm-debug.log*
 yarn-debug.log*
@@ -9,7 +9,11 @@ node_modules
 tests/**/coverage/
 tests/e2e/reports
 selenium-debug.log
-
+admin-v3
+prod.ssh
+test.ssh
+.serena
+src/config/local-ip.json
 # Editor directories and files
 .idea
 .vscode
@@ -22,3 +26,9 @@ selenium-debug.log
 package-lock.json
 yarn.lock
 oldDist
+*.zip
+prod.ssh
+test.ssh
+
+# 忽略子项目的.git目录，但保留文件内容
+micro-apps/*/.git/

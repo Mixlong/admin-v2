@@ -1,6 +1,6 @@
 <template>
   <div class="post-form">
-    <el-dialog :close-on-click-modal="false" :visible.sync="dialogVisible" title="BOM变更详情" top="5vh" width="90%"
+    <el-dialog :close-on-click-modal="false" :visible.sync="dialogVisible" title="订单变更详情" top="5vh" width="90%"
       custom-class="detail-dialog">
       <div class="detail-container" v-loading="loading" element-loading-text="加载详情中...">
         <!-- 基础信息 -->
@@ -335,7 +335,7 @@
                   <el-col :span="8">
                     审核状态：
                     <span :class="getStateClass(detailData.secondState)">{{ getStateText(detailData.secondState)
-                      }}</span>
+                    }}</span>
                   </el-col>
                   <el-col :span="8">
                     审核备注：
@@ -366,7 +366,7 @@
                     <span :class="getChangeStateClass(detailData.systemState)">{{
                       getChangeStateText(detailData.systemState) }}</span>
                   </el-col>
-         
+
                 </el-row>
                 <el-row class="margin-bottom-xs">
                   <el-col :span="8">
@@ -1278,10 +1278,11 @@ export default {
 
 .audit-detail {
   margin-bottom: 20px;
-  border:1px solid #e4e7ed;
-  border-radius: 8px;;
-  padding:20px;
-  
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  ;
+  padding: 20px;
+
 }
 
 .audit-detail h4 {

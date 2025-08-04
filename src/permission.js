@@ -9,8 +9,8 @@ const whiteList = ["/login", "/auth-redirect", "/bind", "/register", "/survey"];
 router.beforeEach((to, from, next) => {
   start();
   if (getToken()) {
-    
-    if(to.matched && to.matched.length > 2) {
+
+    if (to.matched && to.matched.length > 2) {
       to.matched.splice(1, to.matched.length - 2)
     }
 
@@ -33,6 +33,11 @@ router.beforeEach((to, from, next) => {
               // 根据roles权限生成可访问的路由表
               router.addRoutes(accessRoutes); // 动态添加可访问路由表
               // store.commit('SOCKET_SEND')
+
+              // 预加载微应用
+              if (window.Vue && window.Vue.prototype.$preloadMicroApps) {
+                window.Vue.prototype.$preloadMicroApps()
+              }
 
               next({ ...to, replace: true }); // hack方法 确保addRoutes已完成
             });

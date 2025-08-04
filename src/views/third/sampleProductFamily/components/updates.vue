@@ -21,11 +21,9 @@
             复制
           </el-button>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :disabled="!queryParams.computerId" @click="handleCopy2">
-            产品族谱复制
-          </el-button>
-        </el-form-item>
+
+        <div style="width:100%"></div>
+        <CopyBtn @config="handleCopy2" />
       </el-form>
 
       <el-switch class="margin-bottom-sm" v-model="form.isSts" :active-value="1" :inactive-value="0"
@@ -970,6 +968,7 @@ import mixin from "./export";
 import commonSampleData from "@/mixins/commonSampleData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
+import CopyBtn from "./copyBtn.vue";
 import {
   detailComputer,
 } from "@/api/third/computer";
@@ -1143,6 +1142,7 @@ export default {
   components: {
     ElUploadSortable,
     tinymce,
+    CopyBtn
   },
   computed: {
     isCheckConfigItem() {
@@ -1461,36 +1461,6 @@ export default {
         this.form.instrumentModel.canRate = 7;
       }
     },
-    async handleCopy2() {
-      const { computerId } = this.queryParams;
-
-      try {
-        const { data } = await detailComputer(computerId);
-        data.instrumentModel = data.instrumentModel ?? {};
-        this.msgSuccess("操作成功");
-        // 编辑拷贝
-        if (this.form.id) {
-          this.isEditCopy = true;
-          const { id, categoryId, name, instrumentModel } = this.form;
-
-          const copyData = Object.assign({}, data);
-          copyData.id = id;
-          copyData.categoryId = categoryId;
-          copyData.name = name;
-          copyData.instrumentModel.id = instrumentModel?.id;
-          copyData.instrumentModel.categoryId = instrumentModel?.categoryId;
-          copyData.instrumentModel.computerId = instrumentModel?.computerId;
-
-          this.form = copyData;
-        } else {
-          // 新增拷贝
-          this.form = Object.assign({}, data);
-        }
-      } catch (error) {
-        this.msgError("操作失败");
-        console.error(error);
-      }
-    },
     async handleCopy() {
       const { computerId } = this.queryParams;
 
@@ -1521,6 +1491,33 @@ export default {
         console.error(error);
       }
     },
+    async handleCopy2(computerId) {
+            try {
+                const { data } = await detailComputer(computerId);
+                data.instrumentModel = data.instrumentModel ?? {};
+                this.msgSuccess("操作成功");
+                // 编辑拷贝
+                if (this.form.id) {
+                    this.isEditCopy = true;
+                    const { id, categoryId, name, instrumentModel } = this.form;
+
+                    const copyData = Object.assign({}, data);
+                    copyData.id = id;
+                    copyData.categoryId = categoryId;
+                    copyData.name = name;
+                    copyData.instrumentModel.id = instrumentModel?.id;
+                    copyData.instrumentModel.categoryId = instrumentModel?.categoryId;
+                    copyData.instrumentModel.computerId = instrumentModel?.computerId;
+                    this.form = copyData;
+                } else {
+                    // 新增拷贝
+                    this.form = Object.assign({}, data);
+                }
+            } catch (error) {
+                this.msgError("操作失败");
+                console.error(error);
+            }
+        },
     configToJsonString() {
       const {
         backlightBrightness,

@@ -9,8 +9,10 @@
     "build:dev": "vue-cli-service build --mode development",
     "build:test": "vue-cli-service build --mode test",
     "build:stage": "vue-cli-service build --mode staging",
-    "dev": "vue-cli-service serve",
-    "start": "npm run dev"
+    "dev": "node scripts/get-local-ip.js && vue-cli-service serve",
+    "dev:micro": "./dev-start.sh",
+    "start": "npm run dev",
+    "update-ip": "node scripts/get-local-ip.js"
   },
   "dependencies": {
     "@riophae/vue-treeselect": "0.4.0",
@@ -72,6 +74,8 @@
     "vue2-verify": "^1.1.5",
     "vuedraggable": "2.20.0",
     "vuex": "3.1.0",
+    "wujie": "^1.0.29",
+    "wujie-vue2": "^1.0.29",
     "xlsx": "^0.16.9",
     "xlsx-style": "^0.8.13",
     "xml-js": "1.6.11"

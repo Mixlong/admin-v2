@@ -48,6 +48,14 @@ export function ecnPersonList(params) {
     params,
   });
 }
+// Bom人员列表
+export function BomPersonList(params) {
+  return request({
+    url: "/bom/order/personnel/list",
+    method: "get",
+    params,
+  });
+}
 
 // ECN人员管理
 export function ecnPersonEdit(data) {
@@ -57,7 +65,13 @@ export function ecnPersonEdit(data) {
     data,
   });
 }
-
+export function personBomEdit(data) {
+  return request({
+    url: "/bom/order/personnel/edit",
+    method: "put",
+    data,
+  });
+}
 // 初审
 export function ecnFirstState(data) {
   return request({

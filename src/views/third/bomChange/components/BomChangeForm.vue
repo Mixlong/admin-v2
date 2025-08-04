@@ -52,8 +52,12 @@
                 <el-col :span="8">
                   <el-form-item label="客户名称" prop="customer"
                     :rules="[{ required: true, message: '请输入客户名称', trigger: 'blur' }]">
-                    <el-input v-model="form.customer" placeholder="请输入客户名称" prefix-icon="el-icon-office-building"
-                      size="small" />
+                    <!-- <el-input v-model="form.customer" placeholder="请输入客户名称" prefix-icon="el-icon-office-building"
+                      size="small" /> -->
+                    <select-loadMore v-model="form.customer" :data="customerData.data" :page="customerData.page"
+                      :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData"
+                      size="small" placeholder="请选择客户名称" style="width:100%;">
+                    </select-loadMore>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
@@ -87,7 +91,11 @@
                 <el-col :span="8">
                   <el-form-item label="配置型号" prop="configModel"
                     :rules="[{ required: true, message: '请输入配置型号', trigger: 'blur' }]">
-                    <el-input v-model="form.configModel" placeholder="请输入配置型号" prefix-icon="el-icon-cpu" size="small" />
+                    <el-select filterable remote clearable v-model="form.configModel" placeholder="请选择配置型号"
+                      :remote-method="getComputerNameList" size="small" style="width:100%">
+                      <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name"
+                        :value="dict.name" />
+                    </el-select>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -108,16 +116,14 @@
                   <el-form-item label="原下单日期" prop="originalOrderTime"
                     :rules="[{ required: true, message: '请选择原下单日期', trigger: 'change' }]">
                     <el-date-picker v-model="form.originalOrderTime" placeholder="请选择原下单日期" type="datetime"
-                      format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" size="small"
-                      style="width: 100%" />
+                      format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="原计划交期" prop="originalPlanTime"
                     :rules="[{ required: true, message: '请选择原计划交期', trigger: 'change' }]">
                     <el-date-picker v-model="form.originalPlanTime" placeholder="请选择原计划交期" type="datetime"
-                      format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" size="small"
-                      style="width: 100%" />
+                      format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -126,8 +132,7 @@
                   <el-form-item label="客户通知变更时间" prop="customerNoticeTime"
                     :rules="[{ required: true, message: '请选择客户通知变更时间', trigger: 'change' }]">
                     <el-date-picker v-model="form.customerNoticeTime" type="datetime" placeholder="请选择客户通知变更时间"
-                      format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" size="small"
-                      style="width: 100%" />
+                      format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="16">
@@ -402,13 +407,16 @@
 
 <script>
 import { addBomOrderChange, updateBomOrderChange } from "@/api/third/bomChange"
-import { ecnPersonList } from "@/api/third/ecn"
+import { BomPersonList } from "@/api/third/ecn"
 import DrUpload from "@/components/MyUpload"
 import Treeselect from "@riophae/vue-treeselect";
 import { listDept } from "@/api/system/dept";
 import { listUser } from '@/api/system/user'
-
+import {
+  getCustomerList,
+} from "@/api/order";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { computerNameList } from "@/api/third/fileConfig";
 export default {
   name: "BomChangeForm",
   components: {
@@ -417,6 +425,8 @@ export default {
   },
   data() {
     return {
+      // 型号
+      computerOptions: [],
       // 对话框标题
       title: "",
       // 是否显示弹出层
@@ -491,6 +501,11 @@ export default {
         marketerId: null, // 重要：保存市场记录的ID
         // 部门验证字段
         departmentValidation: ''
+      },
+      customerData: {
+        data: [],
+        page: 1,
+        more: true,
       },
       // 表单校验
       rules: {
@@ -578,7 +593,7 @@ export default {
           { required: true, message: "工单变更人员不能为空", trigger: "change" }
         ],
         file: [
-          { required: true, message: "附件不能为空", trigger: "change" }
+          { required: false, message: "附件不能为空", trigger: "change" }
         ],
         departmentValidation: [
           {
@@ -705,6 +720,39 @@ export default {
     }
   },
   methods: {
+    // 型号
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = false;
+        computerNameList({
+          name,
+        }).then((res) => {
+          this.computerOptions = res.data;
+        });
+      } else {
+        this.computerOptions = [];
+      }
+    },
+    getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          list.filter((item) => item.status === 0);
+
+          if (more) {
+            this.customerData.data = [...this.customerData.data, ...list];
+          } else {
+            this.customerData.data = list;
+          }
+          this.customerData.more = pageNum * pageSize < total;
+          this.customerData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     /**
      * 检查指定部门的信息是否完整
      * @param {string} departmentType - 部门类型：'pmc', 'buyer', 'research', 'marketer'
@@ -713,13 +761,17 @@ export default {
     isDepartmentComplete(departmentType) {
       switch (departmentType) {
         case 'pmc':
-          return !!(this.form.selPmcData && this.form.selPmcData.length > 0 && this.form.pmcTxt);
+          // return !!(this.form.selPmcData && this.form.selPmcData.length > 0 && this.form.pmcTxt);
+          return !!(this.form.selPmcData && this.form.selPmcData.length > 0);
         case 'buyer':
-          return !!(this.form.selBuyerData && this.form.selBuyerData.length > 0 && this.form.buyerTxt);
+          // return !!(this.form.selBuyerData && this.form.selBuyerData.length > 0 && this.form.buyerTxt);
+          return !!(this.form.selBuyerData && this.form.selBuyerData.length > 0);
         case 'research':
-          return !!(this.form.selResearchData && this.form.selResearchData.length > 0 && this.form.researchDataTxt);
+          // return !!(this.form.selResearchData && this.form.selResearchData.length > 0 && this.form.researchDataTxt);
+          return !!(this.form.selResearchData && this.form.selResearchData.length > 0);
         case 'marketer':
-          return !!(this.form.selMarketerData && this.form.selMarketerData.length > 0 && this.form.finishedHandleTxt && this.form.warehouseDataTxt);
+          // return !!(this.form.selMarketerData && this.form.selMarketerData.length > 0 && this.form.finishedHandleTxt && this.form.warehouseDataTxt);
+          return !!(this.form.selMarketerData && this.form.selMarketerData.length > 0);
         default:
           return false;
       }
@@ -737,7 +789,7 @@ export default {
       const hasCompleteDepart = departments.some(dept => this.isDepartmentComplete(dept));
 
       if (!hasCompleteDepart) {
-        callback(new Error('请至少选择一个变更涉及领域并填写完整信息（负责人员和处理方案）'));
+        callback(new Error('请至少选择一个变更涉及领域并填写完整信息（负责人员）'));
         return;
       }
 
@@ -775,7 +827,7 @@ export default {
     },
     // 获取人员列表 - 参考 ECN 组件
     getPeopleList(type) {
-      ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
+      BomPersonList({ type, p: 1, l: 50 }).then((res) => {
         const { list } = res.data;
 
         switch (type) {
@@ -1021,13 +1073,13 @@ export default {
         // 重点：正确映射部门字段数据和ID
         this.mapDepartmentFieldsWithIds(row.list || []);
 
-        this.title = isApproval ? "审批BOM变更" : "修改BOM变更";
+        this.title = isApproval ? "审批订单变更" : "修改订单变更";
       } else {
-        this.title = "新增BOM变更";
+        this.title = "新增订单变更";
         // 明确设置部门相关字段为空，确保不会显示默认值
         this.form.dept = null;
         this.form.deptPerson = '';
-        this.form.processCode = 'BOM' + new Date().getTime();
+        this.form.processCode = 'order' + new Date().getTime();
       }
 
       this.open = true;
@@ -1205,22 +1257,22 @@ export default {
       console.log('部门验证结果:', {
         pmc: {
           hasData: this.form.selPmcData && this.form.selPmcData.length > 0,
-          hasText: !!this.form.pmcTxt,
+          hasText: true || !!this.form.pmcTxt,
           complete: this.isDepartmentComplete('pmc')
         },
         buyer: {
-          hasData: this.form.selBuyerData && this.form.selBuyerData.length > 0,
-          hasText: !!this.form.buyerTxt,
+          hasData: true || this.form.selBuyerData && this.form.selBuyerData.length > 0,
+          hasText: true || !!this.form.buyerTxt,
           complete: this.isDepartmentComplete('buyer')
         },
         research: {
-          hasData: this.form.selResearchData && this.form.selResearchData.length > 0,
-          hasText: !!this.form.researchDataTxt,
+          hasData: true || this.form.selResearchData && this.form.selResearchData.length > 0,
+          hasText: true || !!this.form.researchDataTxt,
           complete: this.isDepartmentComplete('research')
         },
         marketer: {
-          hasData: this.form.selMarketerData && this.form.selMarketerData.length > 0,
-          hasText: !!(this.form.finishedHandleTxt && this.form.warehouseDataTxt),
+          hasData: true || this.form.selMarketerData && this.form.selMarketerData.length > 0,
+          hasText: true || !!(this.form.finishedHandleTxt && this.form.warehouseDataTxt),
           complete: this.isDepartmentComplete('marketer')
         },
         hasCompleteDepart

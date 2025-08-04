@@ -114,13 +114,15 @@
             </span>
 
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-if="row.productStatus !== 2" v-hasPermi="['www:planSchedule:delete']" @click.native="handleDelete(row)">
+              <el-dropdown-item v-if="row.productStatus !== 2" v-hasPermi="['www:planSchedule:delete']"
+                @click.native="handleDelete(row)">
                 删除
               </el-dropdown-item>
               <el-dropdown-item v-hasPermi="['www:planSchedule:log']" @click.native="onEditLog(row.id)">
                 日志
               </el-dropdown-item>
-              <el-dropdown-item v-if="row.productStatus === 0" v-hasPermi="['www:planSchedule:editProdEnd']" @click.native="onEditProdStatusEnd(row)">
+              <el-dropdown-item v-if="row.productStatus === 0" v-hasPermi="['www:planSchedule:editProdEnd']"
+                @click.native="onEditProdStatusEnd(row)">
                 生产完结
               </el-dropdown-item>
               <el-dropdown-item v-hasPermi="['www:planSchedule:codeSet']" @click.native="onSetCodeConfig(row)">
@@ -482,6 +484,9 @@ export default {
       await vm.getCategoryComputerData();
       vm.getCacheParamsFn(to?.params);
     });
+  },
+  mounted() {
+    this.getCacheParamsFn(this.$route?.params);
   },
   created() {
     this.getOperationList();
@@ -871,7 +876,7 @@ export default {
       console.log(row);
       this.$refs.muaSetRef.echoData({
         id: row.id,
-        configList: row.configList || [], 
+        configList: row.configList || [],
       })
     },
     // 详细信息
