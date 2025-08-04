@@ -42,8 +42,10 @@
       <el-table-column label="客户" prop="customer" align="center" />
       <el-table-column label="U8" prop="uuNo" align="center" />
       <el-table-column label="E树" prop="treeNo" align="center" />
+      <el-table-column label="配置项型号" prop="configModel" align="center" />
 
       <el-table-column label="客户单号" prop="customerNo" align="center" />
+      <el-table-column label="订单数量" prop="orderNum" align="center" width="80" />
       <el-table-column label="变更前BOM" prop="beforeOrderBom" align="center" show-overflow-tooltip />
       <el-table-column label="变更后BOM" prop="afterOrderBom" align="center" show-overflow-tooltip />
       <el-table-column label="变更原因" prop="changeCause" align="center" show-overflow-tooltip>
@@ -53,7 +55,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="会审状态" prop="list" align="center" width="280">
+      <el-table-column label="会审状态" prop="list" align="center" width="220">
         <template slot-scope="{ row }">
           <div class="compact-review-status">
             <div v-for="(group, field) in getReviewStatusByField(row.list)" :key="field" class="review-group">
@@ -520,7 +522,7 @@ import {
   bomOrderChangeState,
   bomOrderWorkState
 } from "@/api/third/bomChange"
-import { ecnFieldState, ecnPersonList, ecnPersonEdit } from "@/api/third/ecn"
+import { ecnFieldState, BomPersonList, personBomEdit } from "@/api/third/ecn"
 import { dictUserList } from "@/api/system/user"
 import { listDept } from "@/api/system/dept"
 import { mapGetters } from "vuex";
@@ -1664,7 +1666,7 @@ export default {
     getPeopleList(type) {
       return new Promise((resolve) => {
         try {
-          ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
+          BomPersonList({ type, p: 1, l: 50 }).then((res) => {
             const { list } = res.data;
             // 对人员数据进行去重处理
             const uniquePersonnel = [...new Set(list.map((item) => item.personnel))];
@@ -1750,7 +1752,7 @@ export default {
             ...setPeopleList(workOrderChangeData, 13),
           ];
 
-          ecnPersonEdit(list).then((res) => {
+          personBomEdit(list).then((res) => {
             console.log(res);
             if (res.data) {
               this.msgSuccess("操作成功");

@@ -21,7 +21,6 @@
           <el-input-number v-model="form.waterproofHeadPrice" :precision="2" :min="0" :controls="false"
             placeholder="请输入防水头价格" style="width: 100%" class="number-input">
           </el-input-number>
-          <span class="unit-text">元/米</span>
         </div>
       </el-form-item>
       <el-form-item label="普通线价格" prop="commonLinearPrice">

@@ -23,11 +23,14 @@
 
       <!-- 操作按钮区域 -->
       <div class="action-section">
-        <el-button type="success" @click="handleSupplierManage" icon="el-icon-user" v-hasPermi="['quote:cable:supplier']">供应商管理</el-button>
-        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2" v-hasPermi="['quote:cable:import']">批量导入</el-button>
-        <el-button type="danger" @click="handleBatchDelete" icon="el-icon-delete"
-          :disabled="selectedRows.length === 0" v-hasPermi="['quote:cable:remove']">批量删除</el-button>
-        <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['quote:cable:add']">新增线缆成本</el-button>
+        <el-button type="success" @click="handleSupplierManage" icon="el-icon-user"
+          v-hasPermi="['quote:cable:supplier']">供应商管理</el-button>
+        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2"
+          v-hasPermi="['quote:cable:import']">批量导入</el-button>
+        <el-button type="danger" @click="handleBatchDelete" icon="el-icon-delete" :disabled="selectedRows.length === 0"
+          v-hasPermi="['quote:cable:remove']">批量删除</el-button>
+        <el-button type="primary" @click="handleAdd" icon="el-icon-plus"
+          v-hasPermi="['quote:cable:add']">新增线缆成本</el-button>
       </div>
     </div>
 
@@ -48,7 +51,7 @@
             <span>{{ scope.row.cableModel }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="waterproofHeadPrice" label="防水头价格(元/个)" align="center">
+        <el-table-column prop="waterproofHeadPrice" label="防水头价格" align="center">
           <template slot-scope="scope">
             <span class="text-red">{{ scope.row.waterproofHeadPrice }}</span>
           </template>
@@ -74,9 +77,10 @@
         </el-table-column>
         <el-table-column label="操作" width="150" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)" v-hasPermi="['quote:cable:edit']">编辑</el-button>
-            <el-button size="mini" type="text" icon="el-icon-delete" class="text-red"
-              @click="handleDelete(scope.row)" v-hasPermi="['quote:cable:remove']">删除</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)"
+              v-hasPermi="['quote:cable:edit']">编辑</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="text-red" @click="handleDelete(scope.row)"
+              v-hasPermi="['quote:cable:remove']">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

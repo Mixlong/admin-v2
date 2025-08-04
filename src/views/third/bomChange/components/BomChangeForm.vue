@@ -407,7 +407,7 @@
 
 <script>
 import { addBomOrderChange, updateBomOrderChange } from "@/api/third/bomChange"
-import { ecnPersonList } from "@/api/third/ecn"
+import { BomPersonList } from "@/api/third/ecn"
 import DrUpload from "@/components/MyUpload"
 import Treeselect from "@riophae/vue-treeselect";
 import { listDept } from "@/api/system/dept";
@@ -827,7 +827,7 @@ export default {
     },
     // 获取人员列表 - 参考 ECN 组件
     getPeopleList(type) {
-      ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
+      BomPersonList({ type, p: 1, l: 50 }).then((res) => {
         const { list } = res.data;
 
         switch (type) {
@@ -1073,13 +1073,13 @@ export default {
         // 重点：正确映射部门字段数据和ID
         this.mapDepartmentFieldsWithIds(row.list || []);
 
-        this.title = isApproval ? "审批BOM变更" : "修改BOM变更";
+        this.title = isApproval ? "审批订单变更" : "修改订单变更";
       } else {
-        this.title = "新增BOM变更";
+        this.title = "新增订单变更";
         // 明确设置部门相关字段为空，确保不会显示默认值
         this.form.dept = null;
         this.form.deptPerson = '';
-        this.form.processCode = 'BOM' + new Date().getTime();
+        this.form.processCode = 'order' + new Date().getTime();
       }
 
       this.open = true;

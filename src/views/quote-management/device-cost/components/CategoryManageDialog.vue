@@ -58,11 +58,6 @@
       </div>
     </div>
 
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="handleCancel">取消</el-button>
-      <!-- <el-button type="primary" @click="handleConfirm">确定</el-button> -->
-    </div>
-
     <!-- 编辑成本类型弹窗 -->
     <el-dialog :title="editTypeData ? '编辑成本类型' : '新增成本类型'" :visible.sync="typeDialogVisible" width="400px"
       append-to-body>

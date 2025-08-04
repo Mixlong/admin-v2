@@ -34,7 +34,7 @@ export function batchDeleteDeviceCost(data) {
     data
   })
 }
- 
+
 
 // 删除成本项
 export function deleteCostItem(id) {
@@ -77,6 +77,22 @@ export function addDeviceCost(data) {
   return request({
     url: '/cost/add/device',
     method: 'post',
+    data
+  })
+}
+
+// 批量新增设备成本
+export function batchAddDeviceCost(data) {
+  return request({
+    url: '/cost/save/device',
+    method: 'put',
+    data
+  })
+}// 类别列表
+export function categoryList(data) {
+  return request({
+    url: '/cost/completed/category/list',
+    method: 'get',
     data
   })
 }
