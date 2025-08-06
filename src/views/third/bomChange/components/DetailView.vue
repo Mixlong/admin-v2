@@ -263,7 +263,7 @@
                         <span :class="getStateClass(item.state)">{{ getStateText(item.state) }}</span>
                       </el-col>
                       <el-col :span="6">
-                        方案或文件：
+                        {{ getFieldLabel(item.field) }}：
                         <span class="gray">{{ item.programme || '-' }}</span>
                       </el-col>
                       <el-col :span="6">
@@ -277,6 +277,28 @@
                           {{ item.result }}
                         </span>
                         <span v-else class="gray">{{ item.result || '-' }}</span>
+                      </el-col>
+                    </el-row>
+                    <!-- 会审附件显示 -->
+                    <el-row v-if="item.annexUrl && item.annexUrl.trim()" class="margin-bottom-xs">
+                      <el-col :span="24">
+                        <div class="attachment-section">
+                          <label class="attachment-label">
+                            <i class="el-icon-paperclip"></i>
+                            会审附件：
+                          </label>
+                          <div class="attachment-list-inline">
+                            <div v-for="(file, fileIndex) in parseAnnexFiles(item.annexUrl)" :key="fileIndex"
+                              class="attachment-item-inline">
+                              <i class="el-icon-document"></i>
+                              <span class="attachment-name">{{ file.name }}</span>
+                              <el-button type="text" size="mini" @click="zipFile(file.name)" class="download-btn">
+                                <i class="el-icon-download"></i>
+                                下载
+                              </el-button>
+                            </div>
+                          </div>
+                        </div>
                       </el-col>
                     </el-row>
                   </div>
@@ -335,7 +357,7 @@
                   <el-col :span="8">
                     审核状态：
                     <span :class="getStateClass(detailData.secondState)">{{ getStateText(detailData.secondState)
-                    }}</span>
+                      }}</span>
                   </el-col>
                   <el-col :span="8">
                     审核备注：
@@ -835,6 +857,46 @@ export default {
         default:
           return 'status-pending'; // 未完成/待处理
       }
+    },
+
+    // 获取字段对应的标签名称
+    getFieldLabel(field) {
+      const labelMap = {
+        10: '在制产品处理方案',  // PMC部门
+        2: '在途物料处理方案',   // 采购部门
+        6: '涉及更新的文件',     // 研发部门
+        8: '在库成品处理方案'    // 市场部门
+      };
+      return labelMap[field] || '方案或文件';
+    },
+
+    // 解析会审附件
+    parseAnnexFiles(annexUrl) {
+      if (!annexUrl || !annexUrl.trim()) return [];
+
+      try {
+        // 尝试解析为JSON格式
+        const files = JSON.parse(annexUrl);
+        if (Array.isArray(files)) {
+          return files.map(file => ({
+            name: file.name || file.fileName || file,
+            url: file.url || file.filePath || file
+          }));
+        } else if (typeof files === 'object' && files.name) {
+          return [{
+            name: files.name || files.fileName,
+            url: files.url || files.filePath
+          }];
+        }
+      } catch (e) {
+        // 如果不是JSON格式，按逗号分割处理
+        return annexUrl.split(',').map(fileName => ({
+          name: fileName.trim(),
+          url: fileName.trim()
+        })).filter(file => file.name);
+      }
+
+      return [];
     }
   }
 }
@@ -1274,6 +1336,35 @@ export default {
 .no-data {
   color: #909399;
   font-style: italic;
+}
+
+.attachment-section {
+  margin-top: 8px;
+  padding: 8px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.attachment-list-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.attachment-item-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.attachment-item-inline i {
+  color: #409eff;
 }
 
 .audit-detail {

@@ -203,7 +203,8 @@
           <!-- 会审按钮 - 优化逻辑 -->
           <template v-for="(item, index) in (row && row.list ? row.list : [])">
             <!-- 会审按钮 -->
-            <el-tooltip v-if="item.state === 0 && item.fieldName === nickName && row.firstState === 0"
+            <el-tooltip
+              v-if="item.state === 0 && item.fieldName === nickName && row.firstState === 0 && canShowReviewButton(row, item.field)"
               :content="`${TriageList[item.field]}会审`" placement="top" :key="'review-' + index">
               <el-button size="mini" type="primary" @click="handleAuthFlag(item, 2, item.field)">
                 <i class="el-icon-check"></i> {{ TriageList[item.field] }}会审
@@ -211,7 +212,8 @@
             </el-tooltip>
 
             <!-- 撤回会审按钮 -->
-            <el-tooltip v-if="item.state === 1 && item.fieldName === nickName && row.firstState === 0"
+            <el-tooltip
+              v-if="item.state === 1 && item.fieldName === nickName && row.firstState === 0 && canRevokeReview(row, item.field)"
               :content="`撤销${TriageList[item.field]}会审`" placement="top" :key="'reset-' + index">
               <el-button size="mini" type="danger" @click="handleResetCheck(item, 2, item.field)">
                 <i class="el-icon-refresh-left"></i> 撤回{{ TriageList[item.field] }}会审
@@ -344,6 +346,53 @@
             <el-radio label="否">否</el-radio>
           </el-radio-group>
         </el-form-item>
+
+        <!-- 部门特定方案字段 - 会审时显示 -->
+        <template v-if="isFieldStateFlag">
+          <!-- PMC部门方案 -->
+          <template v-if="isAuthAlterData.field === 10">
+            <el-form-item label="在制产品处理方案" prop="programme">
+              <el-input v-model="authForm.programme" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
+                type="textarea" :rows="4" class="modern-textarea"></el-input>
+            </el-form-item>
+          </template>
+
+          <!-- 采购部门方案 -->
+          <template v-if="isAuthAlterData.field === 2">
+            <el-form-item label="在途物料处理方案" prop="programme">
+              <el-input v-model="authForm.programme" clearable placeholder="订单暂停、订单取消、物料变更及数量减少情况下涉及填写" type="textarea"
+                :rows="4" class="modern-textarea"></el-input>
+            </el-form-item>
+          </template>
+
+          <!-- 研发部门方案 -->
+          <template v-if="isAuthAlterData.field === 6">
+            <el-form-item label="涉及更新的文件" prop="programme">
+              <el-input v-model="authForm.programme" clearable placeholder="物料变更及软件变更情况下涉及填写" type="textarea" :rows="4"
+                class="modern-textarea"></el-input>
+            </el-form-item>
+          </template>
+
+          <!-- 市场部门方案 -->
+          <template v-if="isAuthAlterData.field === 8">
+            <el-form-item label="在库成品处理方案" prop="programme">
+              <el-input v-model="authForm.programme" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
+                type="textarea" :rows="4" class="modern-textarea"></el-input>
+            </el-form-item>
+
+            <el-form-item label="在库物料处理方案" prop="treatment">
+              <el-input v-model="authForm.treatment" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
+                type="textarea" :rows="4" class="modern-textarea"></el-input>
+            </el-form-item>
+          </template>
+
+          <!-- 通用附件上传字段 - 所有部门会审时都显示 -->
+          <el-form-item label="相关附件" prop="annexUrl">
+            <DrUpload v-model="authForm.annexUrl" :drag="true" :multiple="true" :limit="5" accept="*"
+              :css="{ width: '100%' }" class="modern-upload">
+            </DrUpload>
+          </el-form-item>
+        </template>
 
         <!-- 通用备注和不通过理由字段 -->
         <el-form-item
@@ -508,6 +557,7 @@
 <script>
 import BomChangeForm from './components/BomChangeForm'
 import DetailView from './components/DetailView'
+import DrUpload from "@/components/MyUpload"
 import {
   getBomOrderChangeList,
   addBomOrderChange,
@@ -530,7 +580,8 @@ export default {
   name: "BomChange",
   components: {
     BomChangeForm,
-    DetailView
+    DetailView,
+    DrUpload
   },
   data() {
     return {
@@ -729,8 +780,8 @@ export default {
         state: 1,
         remark: '',
         result: '',
-        isCorrelation: '',
-        isComplete: '',
+        isCorrelation: '是', // 默认值：是
+        isComplete: '是',    // 默认值：是
         // 系统变更专用字段
         beforeOrderBom: '',
         afterOrderBom: '',
@@ -742,11 +793,15 @@ export default {
         // 工单变更专用字段
         workOrderChangePerson: '',
         workOrderChangeStatus: '',
-        workOrderChangeResult: ''
+        workOrderChangeResult: '',
+        // 部门特定方案字段
+        programme: '',
+        treatment: '',
+        // 附件字段
+        annexUrl: ''
       },
       authFormRules: {
         state: [{ required: true, message: '请选择审核状态', trigger: 'change' }],
-        remark: [{ required: true, message: '请输入备注', trigger: 'blur' }],
         result: [{ required: true, message: '请输入不通过理由', trigger: 'blur' }],
         isCorrelation: [{ required: true, message: '请选择相关性', trigger: 'change' }],
         isComplete: [{ required: true, message: '请选择是否完成', trigger: 'change' }],
@@ -762,7 +817,39 @@ export default {
         // 工单变更专用字段验证
         workOrderChangePerson: [{ required: true, message: '请选择工单变更人员', trigger: 'change' }],
         workOrderChangeStatus: [{ required: true, message: '请选择工单是否已做变更', trigger: 'change' }],
-        workOrderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }]
+        workOrderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }],
+        // 部门特定方案字段验证（会审时使用 - 动态验证）
+        programme: [{
+          validator: (rule, value, callback) => {
+            if (this.isFieldStateFlag) {
+              if (!value || value.trim() === '') {
+                const fieldMap = {
+                  10: '请输入在制产品处理方案',
+                  2: '请输入在途物料处理方案',
+                  6: '请输入涉及更新的文件',
+                  8: '请输入在库成品处理方案'
+                };
+                const message = fieldMap[this.isAuthAlterData.field] || '请输入处理方案';
+                callback(new Error(message));
+                return;
+              }
+            }
+            callback();
+          },
+          trigger: 'blur'
+        }],
+        treatment: [{
+          validator: (rule, value, callback) => {
+            if (this.isFieldStateFlag && this.isAuthAlterData.field === 8) {
+              if (!value || value.trim() === '') {
+                callback(new Error('请输入在库物料处理方案'));
+                return;
+              }
+            }
+            callback();
+          },
+          trigger: 'blur'
+        }]
       },
       // 人员管理相关
       isPeopleManageVisible: false,
@@ -881,6 +968,83 @@ export default {
     }
   },
   methods: {
+    /** 检查会审流程前置条件 - PMC -> 采购 -> 研发 -> 市场 */
+    canShowReviewButton(row, currentField) {
+      if (!row.list || row.list.length === 0) return false;
+
+      // 定义会审流程顺序：PMC(10) -> 采购(2) -> 研发(6) -> 市场(8)
+      const reviewOrder = [10, 2, 6, 8];
+      const currentIndex = reviewOrder.indexOf(currentField);
+
+      if (currentIndex === -1) return false; // 无效的部门字段
+
+      // 如果是第一个部门(PMC)，直接允许
+      if (currentIndex === 0) return true;
+
+      // 检查前面所有部门是否都已完成会审
+      for (let i = 0; i < currentIndex; i++) {
+        const previousField = reviewOrder[i];
+        const previousReviews = row.list.filter(item => item.field === previousField);
+
+        // 如果前面的部门没有人员配置，跳过
+        if (previousReviews.length === 0) continue;
+
+        // 检查前面部门的所有人员是否都已通过会审
+        const allPassed = previousReviews.every(item => item.state === 1);
+        if (!allPassed) return false;
+      }
+
+      return true;
+    },
+
+    /** 检查是否可以撤回会审 - 只有当后面的部门都未开始会审时才能撤回 */
+    canRevokeReview(row, currentField) {
+      if (!row.list || row.list.length === 0) return false;
+
+      // 定义会审流程顺序：PMC(10) -> 采购(2) -> 研发(6) -> 市场(8)
+      const reviewOrder = [10, 2, 6, 8];
+      const currentIndex = reviewOrder.indexOf(currentField);
+
+      if (currentIndex === -1) return false; // 无效的部门字段
+
+      // 检查后面所有部门是否都还未开始会审（状态为0）
+      for (let i = currentIndex + 1; i < reviewOrder.length; i++) {
+        const nextField = reviewOrder[i];
+        const nextReviews = row.list.filter(item => item.field === nextField);
+
+        // 如果后面的部门没有人员配置，跳过
+        if (nextReviews.length === 0) continue;
+
+        // 检查后面部门是否有人已经开始会审（状态不为0）
+        const hasStarted = nextReviews.some(item => item.state !== 0);
+        if (hasStarted) return false;
+      }
+
+      return true;
+    },
+
+    /** 测试会审流程控制逻辑 - 开发调试用 */
+    testReviewFlow() {
+      // 模拟测试数据
+      const testRow = {
+        list: [
+          { field: 10, fieldName: 'PMC用户', state: 1 }, // PMC已完成
+          { field: 2, fieldName: '采购用户', state: 0 },  // 采购待审核
+          { field: 6, fieldName: '研发用户', state: 0 },  // 研发待审核
+          { field: 8, fieldName: '市场用户', state: 0 }   // 市场待审核
+        ]
+      };
+
+      console.log('=== 会审流程控制测试 ===');
+      console.log('PMC可以会审:', this.canShowReviewButton(testRow, 10)); // true
+      console.log('采购可以会审:', this.canShowReviewButton(testRow, 2));  // true (PMC已完成)
+      console.log('研发可以会审:', this.canShowReviewButton(testRow, 6));  // false (采购未完成)
+      console.log('市场可以会审:', this.canShowReviewButton(testRow, 8));  // false (前面未完成)
+
+      console.log('PMC可以撤回:', this.canRevokeReview(testRow, 10)); // true (后面都未开始)
+      console.log('采购可以撤回:', this.canRevokeReview(testRow, 2));  // true (后面都未开始)
+    },
+
     /** 判断审核是否禁用 */
     isAuditDisabled(row, config) {
       // 检查前置条件
@@ -1789,12 +1953,24 @@ export default {
       }
 
       if (isAuthFlag === 2) {
+        // 从 row 或 list 中查找当前用户对应的审核记录
+        let existingReview = null;
+        if (row && row.list && Array.isArray(row.list)) {
+          existingReview = row.list.find(item =>
+            item.fieldName === this.nickName && item.field === field
+          );
+        }
+
         this.authForm = {
-          state: 1,
-          remark: '',
-          result: '',
-          isCorrelation: '',
-          isComplete: '',
+          state: existingReview ? existingReview.state || 1 : 1,
+          remark: existingReview ? existingReview.remark || '' : '',
+          result: existingReview ? existingReview.result || '' : '',
+          isCorrelation: existingReview ? existingReview.isCorrelation || '是' : '是', // 默认值：是
+          isComplete: existingReview ? existingReview.isComplete || '是' : '是',     // 默认值：是
+          // 部门特定字段 - 从现有记录中获取
+          programme: existingReview ? existingReview.programme || '' : '',
+          treatment: existingReview ? existingReview.treatment || '' : '',
+          annexUrl: existingReview ? existingReview.annexUrl || '' : ''
         };
       }
 
@@ -1943,8 +2119,8 @@ export default {
         state: 1,
         remark: '',
         result: '',
-        isCorrelation: '',
-        isComplete: '',
+        isCorrelation: '是', // 默认值：是
+        isComplete: '是',    // 默认值：是
         // 系统变更专用字段
         systemPerson: '',
         beforeBomCode: '',
@@ -1957,7 +2133,12 @@ export default {
         // 工单变更专用字段
         workOrderChangePerson: '',
         workOrderChangeStatus: '',
-        workOrderChangeResult: ''
+        workOrderChangeResult: '',
+        // 部门特定方案字段
+        programme: '',
+        treatment: '',
+        // 附件字段
+        annexUrl: ''
       };
       this.resetForm("authForm");
     },
