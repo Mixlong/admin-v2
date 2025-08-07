@@ -829,7 +829,7 @@ export default {
     return {
       uploadIds: [],
       isDrawerFlag: false,
-      isSample: true,
+      isSample: false,
       isDeployShow: false,
       deployData: {},
       myCategoryId: "",
@@ -1062,7 +1062,7 @@ export default {
     },
     handleOpenDetail(row) {
       this.isDeployShow = true;
-      this.isSample = true;
+      this.isSample = false;
       this.deployData = Object.assign({}, row);
     },
     handleParamsCompare() {
