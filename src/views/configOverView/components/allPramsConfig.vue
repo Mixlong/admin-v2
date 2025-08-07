@@ -25,13 +25,16 @@
         <el-button type="danger" @click="clearFilter">
           清除所有过滤器
         </el-button>
-        <el-button type="primary" @click="addDialogChange" v-hasPermi="['config:overview:first:add']">
-          新增族谱
-        </el-button>
-        <el-button class="float-right" type="warning" icon="el-icon-download" @click="handleExport">
-          导 出
-        </el-button>
+
       </el-form-item>
+
+      <el-button class="fr" style="margin-left: 20px;" type="warning" icon="el-icon-download" @click="handleExport"
+        v-hasPermi="['config:overview:first:export']">
+        导 出
+      </el-button>
+      <el-button class="fr" type="primary" @click="addDialogChange" v-hasPermi="['config:overview:first:add']">
+        新增配置
+      </el-button>
       <!-- <el-button class="fr" icon="el-icon-plus" @click="handleParamsCompare">
           对比
         </el-button> -->
@@ -41,7 +44,7 @@
     </el-alert>
 
     <el-table id="drag_table" ref="tableRef" row-key="id" v-loading="loading" :data="brandList"
-      :height="tableHeight(-80)" @selection-change="handleSelectionChange">
+      :height="tableHeight(-20)" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" fixed :reserve-selection="true" />
       <el-table-column label="操作" align="center" width="100" fixed>
         <template slot-scope="{ row }">
@@ -64,7 +67,7 @@
                 " /> -->
 
             <!-- 配置详情 -->
-            <Tooltip class="margin-0" icon="el-icon-s-management" content="车型配置详情" @click="handleOpenDetail(row)" />
+            <Tooltip class="margin-0" icon="el-icon-s-management" content="配置详情" @click="handleOpenDetail(row)" />
             <Tooltip v-hasPermi="['config:overview:first:edit']" icon="el-icon-edit" content="编辑"
               @click="handleEdit(row)" style="margin-left: 0px;" />
           </div>
@@ -522,7 +525,7 @@
     <el-dialog :visible.sync="isDeployShow" width="50%" center top="2vh">
       <template v-slot:title>
         <div>
-          <h2>车型配置详情</h2>
+          <h2>配置详情</h2>
           <el-switch v-model="isSample" active-text="简化"> </el-switch>
         </div>
       </template>
@@ -1057,7 +1060,7 @@ export default {
     },
     handleOpenDetail(row) {
       this.isDeployShow = true;
-      this.isSample = false;
+      this.isSample = true;
       this.deployData = Object.assign({}, row);
     },
     handleParamsCompare() {

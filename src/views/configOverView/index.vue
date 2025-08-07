@@ -1,13 +1,14 @@
 <template>
   <div class="app-container">
-    <el-tabs v-model="activeName" type="card">
+    <AllPramsConfig />
+    <!-- <el-tabs v-model="activeName" type="card">
       <el-tab-pane label="总配置项" name="first">
         <AllPramsConfig />
       </el-tab-pane>
       <el-tab-pane label="型号名称" name="second">
         <SingleParamsConfig />
       </el-tab-pane>
-    </el-tabs>
+    </el-tabs> -->
   </div>
 </template>
 
