@@ -48,7 +48,7 @@
       <el-table-column type="selection" width="55" align="center" fixed :reserve-selection="true" />
       <el-table-column label="操作" align="center" width="100" fixed>
         <template slot-scope="{ row }">
-          <div class="flex justify-between">
+          <div class="flex  gap-btn justify-center">
 
             <!-- 初审 -->
             <Tooltip v-if="row.state === 0" class="text-orange" icon="el-icon-coordinate" content="待初审"
@@ -75,13 +75,15 @@
       </el-table-column>
       <el-table-column label="包装信息" prop="state" align="center" width="100" fixed>
         <template v-slot="{ row }">
+          <div class="flex  gap-btn justify-center">
+            <!-- 包装信息查看 -->
+            <Tooltip v-show="row.packagingInfo" class="margin-0" icon="el-icon-view" content="包装信息"
+              @click="handleSeePackagingInfo(row)" />
+            <!-- 包装信息 -->
+            <Tooltip v-hasPermi="['config:overview:first:editPackage']" class="margin-0" icon="el-icon-edit"
+              content="编辑包装信息" @click="handleEditPackagingInfo(row)" />
+          </div>
 
-          <!-- 包装信息查看 -->
-          <Tooltip v-show="row.packagingInfo" class="margin-0" icon="el-icon-view" content="包装信息"
-            @click="handleSeePackagingInfo(row)" />
-          <!-- 包装信息 -->
-          <Tooltip v-hasPermi="['config:overview:first:editPackage']" class="margin-0" icon="el-icon-edit"
-            content="编辑包装信息" @click="handleEditPackagingInfo(row)" />
         </template>
       </el-table-column>
       <el-table-column label="审核状态" prop="state" align="center" width="100" fixed>
@@ -1100,3 +1102,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.gap-btn {
+  gap: 10px;
+}
+</style>
