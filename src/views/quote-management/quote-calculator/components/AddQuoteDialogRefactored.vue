@@ -774,6 +774,9 @@ export default {
                     })
                     var buttonCategories = this.categoryList.filter(function (cat) {
                         return cat.productType === 2 // 按键类品类
+                    }).sort(function (a, b) {
+                        // 按创建时间排序，最新的在前面
+                        return new Date(b.createTime) - new Date(a.createTime)
                     })
 
                     this.$set(this, 'filteredMainProductCategories', mainProductCategories)
