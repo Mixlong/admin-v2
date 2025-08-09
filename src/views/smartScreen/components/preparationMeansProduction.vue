@@ -6,8 +6,9 @@
           <th>生产日期</th>
           <th>订单号</th>
           <th>型号</th>
-          <th>许可状态</th>
-          <th>延期时长</th>
+          <th>配置审核状态</th>
+          <th>生产许可状态</th>
+          <th>备料状态</th>
         </tr>
       </thead>
     </table>
@@ -19,11 +20,14 @@
               <td>{{ item.date }}</td>
               <td>{{ item.orderNo }}</td>
               <td>{{ item.computerName }}</td>
-              <td :style="isLicenseStyle(item.isLicense)">
-                {{ item.isLicense === 1 ? "已许可" : "未许可" }}
+              <td :style="isLicenseStyle(item.configAuditStatus)">
+                {{ item.configAuditStatus === 1 ? "已审核" : "未审核" }}
               </td>
-              <td :style="durationStyle(item.isLicense, item.duration)">
-                {{ overdueTime(item.duration) }}
+              <td :style="isLicenseStyle(item.productionPermitStatus)">
+                {{ item.productionPermitStatus === 1 ? "已许可" : "未许可" }}
+              </td>
+              <td :style="materialStatusStyle(item.materialStatus)">
+                {{ getMaterialStatusText(item.materialStatus) }}
               </td>
             </tr>
           </tbody>
@@ -104,6 +108,28 @@ export default {
         };
       };
     },
+    materialStatusStyle() {
+      return (status) => {
+        const colors = {
+          0: "#FF386B", // 未备料 - 红色
+          1: "#FF8C00", // 备料中 - 橙色  
+          2: "#00E8B5"  // 已备料 - 绿色
+        };
+        return {
+          color: colors[status] || "#FFFFFF"
+        };
+      };
+    },
+    getMaterialStatusText() {
+      return (status) => {
+        const texts = {
+          0: "未备料",
+          1: "备料中", 
+          2: "已备料"
+        };
+        return texts[status] || "未知";
+      };
+    },
   }
 };
 </script>
@@ -136,7 +162,12 @@ export default {
       text-transform: none;
 
       th {
-        width: calc(100% / 5);
+        &:nth-child(1) { width: 15%; } // 生产日期
+        &:nth-child(2) { width: 20%; } // 订单号
+        &:nth-child(3) { width: 15%; } // 型号
+        &:nth-child(4) { width: 18%; } // 配置审核状态
+        &:nth-child(5) { width: 16%; } // 生产许可状态
+        &:nth-child(6) { width: 16%; } // 备料状态
       }
     }
 
@@ -147,7 +178,12 @@ export default {
         font-weight: 500;
 
         td {
-          width: calc(100% / 5);
+          &:nth-child(1) { width: 15%; } // 生产日期
+          &:nth-child(2) { width: 20%; } // 订单号
+          &:nth-child(3) { width: 15%; } // 型号
+          &:nth-child(4) { width: 18%; } // 配置审核状态
+          &:nth-child(5) { width: 16%; } // 生产许可状态
+          &:nth-child(6) { width: 16%; } // 备料状态
         }
       }
     }

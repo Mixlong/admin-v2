@@ -3,10 +3,11 @@
     <table>
       <thead>
         <tr>
-          <th>订单号</th>
+          <th>工单号</th>
           <th>型号</th>
-          <th>问题类型</th>
+          <th>问题描述</th>
           <th>上报人</th>
+          <th>责任归属</th>
           <th>处理时长</th>
         </tr>
       </thead>
@@ -18,9 +19,10 @@
             <tr v-for="(item, index) in tableData" :key="index">
               <td>{{ item.orderNo }}</td>
               <td>{{ item.model }}</td>
-              <td>{{ item.problem }}</td>
-              <td>{{ item.configuration }}</td>
-              <td :style="durationStyle(item.packaging)">{{ overdueTime(item.packaging) }}</td>
+              <td>{{ item.problemDescription }}</td>
+              <td>{{ item.reporter }}</td>
+              <td>{{ item.responsibility }}</td>
+              <td :style="durationStyle(item.duration)">{{ overdueTime(item.duration) }}</td>
             </tr>
           </tbody>
         </table>
@@ -132,7 +134,12 @@ export default {
       text-transform: none;
 
       th {
-        width: calc(100% / 5);
+        &:nth-child(1) { width: 18%; } // 工单号
+        &:nth-child(2) { width: 12%; } // 型号  
+        &:nth-child(3) { width: 25%; } // 问题描述
+        &:nth-child(4) { width: 15%; } // 上报人
+        &:nth-child(5) { width: 15%; } // 责任归属
+        &:nth-child(6) { width: 15%; } // 处理时长
       }
     }
 
@@ -143,7 +150,12 @@ export default {
         font-weight: 500;
 
         td {
-          width: calc(100% / 5);
+          &:nth-child(1) { width: 18%; } // 工单号
+          &:nth-child(2) { width: 12%; } // 型号  
+          &:nth-child(3) { width: 25%; } // 问题描述
+          &:nth-child(4) { width: 15%; } // 上报人
+          &:nth-child(5) { width: 15%; } // 责任归属
+          &:nth-child(6) { width: 15%; } // 处理时长
         }
       }
     }
