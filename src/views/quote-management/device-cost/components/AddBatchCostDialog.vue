@@ -1,6 +1,6 @@
 <template>
-  <el-dialog :visible.sync="dialogVisible" width="850px" top='5vh' :close-on-click-modal="false" @close="handleClose"
-    custom-class="batch-cost-dialog">
+  <el-dialog :visible.sync="dialogVisible" width="850px" top='0vh' :close-on-click-modal="false" @close="handleClose"
+    class="add-batch-cost-dialog" custom-class="batch-cost-dialog">
     <div slot="title" class="dialog-title">
       <i class="el-icon-s-grid"></i>
       {{ editMode ? '编辑成本' : '新增成本' }}
@@ -14,7 +14,8 @@
           </div>
         </div>
         <div class="cotegory-input-wrapper">
-          <el-select v-model="form.categoryId" placeholder="请选择品类" style="width: 100%" class="el-select-cost" filterable>
+          <el-select v-model="form.categoryId" placeholder="请选择品类" style="width: 100%" class="el-select-cost"
+            filterable>
             <el-option v-for="item in categoryOptions" :key="item.id" :label="item.name" :value="item.id"
               :disabled="isCategoryDisabled(item.id)">
             </el-option>
@@ -382,6 +383,13 @@ export default {
 
 <style lang="scss" scoped>
 // 弹窗整体样式
+.add-batch-cost-dialog {
+  ::v-deep .el-dialog__body {
+    max-height: 82vh;
+    overflow-y: auto;
+  }
+}
+
 :deep(.batch-cost-dialog) {
   .el-dialog__header {
     padding: 15px 20px 10px;

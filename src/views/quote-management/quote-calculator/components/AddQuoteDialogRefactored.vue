@@ -346,10 +346,10 @@
                 <div class="footer-info">
                 </div>
                 <div class="footer-buttons">
-                    <el-button @click="handleCancel" size="medium" icon="el-icon-close">
+                    <el-button @click="handleCancel" size="medium">
                         取 消
                     </el-button>
-                    <el-button type="primary" @click="handleSave" :loading="saving" size="medium" icon="el-icon-check">
+                    <el-button type="primary" @click="handleSave" :loading="saving" size="medium">
                         {{ saving ? '保存中...' : '确 定' }}
                     </el-button>
                 </div>

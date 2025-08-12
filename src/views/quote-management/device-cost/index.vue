@@ -91,7 +91,7 @@
         <el-table-column prop="createTime" label="创建时间" align="center">
           <template slot-scope="scope">
             <!-- 主记录显示创建时间，子记录不显示 -->
-            <span v-if="scope.row.isParent">{{ scope.row.createTime | formatDate }}</span>
+            <span v-if="scope.row.isParent">{{ scope.row.createTime }}</span>
             <span v-else class="sub-item-note">-</span>
           </template>
         </el-table-column>
