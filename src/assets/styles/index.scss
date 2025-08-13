@@ -52,10 +52,10 @@ body {
 }
 
 .receive-wrap {
-  >div {
+  > div {
     text-align: left;
 
-    >span {
+    > span {
       &:first-child {
         display: inline-block;
         min-width: 60px;
@@ -227,11 +227,13 @@ aside {
   text-align: right;
   padding-right: 20px;
   transition: 600ms ease position;
-  background: linear-gradient(90deg,
-      rgba(32, 182, 249, 1) 0%,
-      rgba(32, 182, 249, 1) 0%,
-      rgba(33, 120, 241, 1) 100%,
-      rgba(33, 120, 241, 1) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(32, 182, 249, 1) 0%,
+    rgba(32, 182, 249, 1) 0%,
+    rgba(33, 120, 241, 1) 100%,
+    rgba(33, 120, 241, 1) 100%
+  );
 
   .subtitle {
     font-size: 20px;
@@ -1307,12 +1309,12 @@ ul {
     background: #888;
   }
 
-  &::-webkit-scrollbar-corner {}
+  &::-webkit-scrollbar-corner {
+  }
 }
 
 .supplier-info,
 .input-width-default {
-
   .el-input,
   .el-select,
   .el-date-editor {
@@ -1370,13 +1372,13 @@ ul {
 }
 
 .el-drawer__header {
-  >span:focus {
+  > span:focus {
     outline: none;
   }
 }
 
 .click-open {
-  >div {
+  > div {
     height: 32px;
     display: flex;
     align-items: center;
@@ -1509,7 +1511,7 @@ fieldset {
 }
 
 // 隐藏元素
-input[aria-hidden=true] {
+input[aria-hidden="true"] {
   display: none !important;
 }
 
@@ -1539,5 +1541,15 @@ iframe[data-wujie-flag] {
     visibility: visible !important;
     pointer-events: auto !important;
     z-index: auto !important;
+  }
+}
+
+.dialog-scroll {
+  .el-dialog {
+    margin-top: 0 !important;
+  }
+  .el-dialog__body {
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }

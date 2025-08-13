@@ -2,76 +2,36 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="品类" prop="categoryName">
-      <el-select
-      v-model="queryParams.categoryName"
-          placeholder="请选择品类"
-          clearable
-          style="max-width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.categoryName" placeholder="请选择品类" clearable style="max-width: 140px"
+          @change="changeCategory">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="型号" prop="computerName">
-        <el-select
-          v-model="queryParams.computerName"
-          clearable
-          placeholder="请选择型号"
-          @change="getList"
-          style="width: 160px"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.computerName" clearable placeholder="请选择型号" @change="getList"
+          style="width: 160px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="工单号" prop="orderCode">
-        <el-input
-          v-model="queryParams.orderCode"
-          placeholder="请输入工单号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.orderCode" placeholder="请输入工单号" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="批次号" prop="batchNumber">
-        <el-input
-          v-model="queryParams.batchNumber"
-          placeholder="请输入批次号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.batchNumber" placeholder="请输入批次号" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="排产单号" prop="schedulingId">
-        <el-input
-          v-model="queryParams.schedulingId"
-          placeholder="请输入排产单号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.schedulingId" placeholder="请输入排产单号" clearable
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['third:materialHouse:export']"
-        >导出</el-button>
+        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+          v-hasPermi="['third:materialHouse:export']">导出</el-button>
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="materialHouseList">
+    <el-table v-loading="loading" :data="materialHouseList" border :height="tableHeight()">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="品类" align="center" prop="categoryName" />
       <el-table-column label="型号" align="center" prop="computerName" />
@@ -85,13 +45,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -184,7 +139,7 @@ export default {
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)
-      this.single = selection.length!==1
+      this.single = selection.length !== 1
       this.multiple = !selection.length
     },
     /** 导出按钮操作 */
@@ -194,7 +149,7 @@ export default {
         return materialHouseExport(this.queryParams);
       }).then(response => {
         if (response.code === 200 && response.msg) {
-              this.download(response.msg);
+          this.download(response.msg);
         } else {
           this.$message.error('导出失败');
         }

@@ -670,7 +670,7 @@ export default {
   .supplier-cell {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 
     .expand-icon {
       cursor: pointer;

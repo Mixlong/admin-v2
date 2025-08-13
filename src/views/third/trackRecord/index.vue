@@ -1,26 +1,13 @@
 <template>
-  <div class="app-container">
+  <div :class="[searchOrderCode ? '' : 'app-container']">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="批次号" prop="batchNumber">
-        <el-input
-          v-model="queryParams.batchNumber"
-          placeholder="请输入批次号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.batchNumber" placeholder="请输入批次号" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="工单号" prop="orderCode">
-        <select-loadMore
-          v-model="queryParams.orderCode"
-          :data="orderData.data"
-          :page="orderData.page"
-          :hasMore="orderData.more"
-          dictLabel="orderCode"
-          dictValue="orderCode"
-          :request="getProdPlantList"
-          placeholder="请选择工单号"
-          style="width: 100%"
-        >
+        <select-loadMore v-model="queryParams.orderCode" :data="orderData.data" :page="orderData.page"
+          :hasMore="orderData.more" dictLabel="orderCode" dictValue="orderCode" :request="getProdPlantList"
+          placeholder="请选择工单号" style="width: 100%">
         </select-loadMore>
       </el-form-item>
       <el-form-item>
@@ -31,12 +18,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-    >
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -58,13 +40,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-if="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-if="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -74,6 +51,12 @@ import { orderWorkList } from "@/api/third/prodPlant";
 
 export default {
   name: "TrackRecord",
+  props: {
+    searchOrderCode: {
+      type: String,
+      default: "",
+    },
+  },
   data() {
     return {
       form: {},
@@ -104,19 +87,31 @@ export default {
       },
     };
   },
+  watch: {
+    searchOrderCode: {
+      handler(val) {
+        this.queryParams.orderCode = val;
+        this.getList();
+      },
+      deep: true,
+      immediate: true,
+    },
+  },
   created() {
     this.getList();
   },
   activated() {
     const { orderCode } = this.$route.params;
     this.queryParams.orderCode = orderCode;
-
-    this.getList();
+    if (!this.searchOrderCode) {
+      this.getList();
+    }
   },
   methods: {
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
+      this.brandList = []
       trackLogList(this.queryParams)
         .then(({ data }) => {
           const { list, total } = data;

@@ -460,6 +460,9 @@ export default {
           const submitData = []
           let sort = 1
 
+          // 获取当前时间
+          const createTime = new Date().toISOString().slice(0, 19).replace('T', ' ')
+
           // 添加防水头数据
           validWaterproofHeads.forEach(item => {
             submitData.push({
@@ -468,7 +471,8 @@ export default {
               cableModel: item.cableModel,
               waterproofHeadPrice: item.waterproofHeadPrice,
               sort: sort++,
-              isDel: 0
+              isDel: 0,
+              createTime: createTime
             })
           })
 
@@ -481,7 +485,8 @@ export default {
               commonLinearPrice: item.linearType === 'common' ? item.price : 0,
               ulLinearPrice: item.linearType === 'ul' ? item.price : 0,
               sort: sort++,
-              isDel: 0
+              isDel: 0,
+              createTime: createTime
             })
           })
 
@@ -493,7 +498,8 @@ export default {
               triggerTerminalModel: item.triggerTerminalModel,
               triggerTerminalPrice: item.triggerTerminalPrice,
               sort: sort++,
-              isDel: 0
+              isDel: 0,
+              createTime: createTime
             })
           })
 
