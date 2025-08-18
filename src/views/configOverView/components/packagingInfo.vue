@@ -10,11 +10,10 @@
         </el-table-column>
         <el-table-column label="内容" width="280">
           <template slot-scope="scope">
-   
-                <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
-                v-if="scope.row.content === item.id"
-                  >{{ item.label }}</span>
-           
+
+            <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
+              v-if="scope.row.content === item.id">{{ item.label }}</span>
+
           </template>
         </el-table-column>
         <el-table-column label="详情">
@@ -57,8 +56,8 @@ export default {
           content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
-            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放尾数箱' },
+            { id: 'customerSpecified', label: '所有附件统一放每箱内' }
           ],
         },
         {
@@ -103,7 +102,7 @@ export default {
   methods: {
     // 初始化表格数据
     initializeTableData() {
-      let processedData ;
+      let processedData;
       if (!this.packagingInfo) {
         this.tableData = [];
         return;

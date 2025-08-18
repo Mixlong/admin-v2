@@ -21,19 +21,14 @@
                 <el-button size="small" type="primary">点击上传</el-button>
                 <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
               </MyUpload> -->
-                  <DrUpload
-             v-model="scope.row.details"
-              :limit="1"
-              :isOnePic="1"
-              class="flex-direction align-start"
-            >
-              <div class="text-left">
-                <el-button type="primary" size="small">
-                  上传
-                  <i class="el-icon-upload el-icon--right"></i>
-                </el-button>
-              </div>
-            </DrUpload>
+              <DrUpload v-model="scope.row.details" :limit="1" :isOnePic="1" class="flex-direction align-start">
+                <div class="text-left">
+                  <el-button type="primary" size="small">
+                    上传
+                    <i class="el-icon-upload el-icon--right"></i>
+                  </el-button>
+                </div>
+              </DrUpload>
             </div>
             <div v-else>
               <el-input type="textarea" v-model="scope.row.details"></el-input>
@@ -73,8 +68,8 @@ export default {
           content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
           contentOptions: [
-            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放尾数箱' },
+            { id: 'customerSpecified', label: '所有附件统一放每箱内' }
           ],
         },
         {
@@ -152,12 +147,12 @@ export default {
         // 没有数据，使用默认数据
         this.tableData = JSON.parse(JSON.stringify(this.defaultTableData));
       }
-      
+
       // 确保每行的content都默认选择第一个选项
       this.ensureDefaultContentSelection();
       console.log("🚀 ~ initializeTableData ~ this.tableData:", this.tableData)
     },
-    
+
     // 确保每行的content都默认选择第一个选项
     ensureDefaultContentSelection() {
       this.tableData.forEach(row => {
