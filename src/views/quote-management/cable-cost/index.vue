@@ -1,7 +1,7 @@
 <template>
   <div class="cable-cost-container app-container">
     <!-- 搜索区域 -->
-    <div class="search-section">
+    <div class="toolbar">
       <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
         <el-form-item label="线缆型号" prop="cableModel">
           <el-input v-model="searchForm.cableModel" placeholder="请输入线缆型号" clearable></el-input>
@@ -36,7 +36,7 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(-30)"
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(30)"
         @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
         :row-class-name="getRowClassName">
         <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">

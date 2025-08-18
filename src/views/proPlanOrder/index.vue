@@ -1326,7 +1326,6 @@ export default {
 
 <style lang="scss" scoped>
 .prod-plan-box {
-  margin: -30px;
 
   .options-box {
     list-style: none;

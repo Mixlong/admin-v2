@@ -6,14 +6,18 @@
           style="width: 200px"></el-input>
       </el-form-item>
 
-      <el-form-item label="项目名称" prop="projectName">
-        <el-input v-model="queryParams.projectName" placeholder="请输入项目名称" clearable @keyup.enter.native="handleQuery"
-          style="width: 200px"></el-input>
+      <el-form-item label="品类" prop="categoryName">
+        <el-select v-model="queryParams.categoryName" @change="changeCategory" placeholder="请选择品类" clearable filterable
+          style="width: 200px">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+        </el-select>
       </el-form-item>
 
-      <el-form-item label="产品代号" prop="productCode">
-        <el-input v-model="queryParams.productCode" placeholder="请输入产品代号" clearable @keyup.enter.native="handleQuery"
-          style="width: 200px"></el-input>
+      <el-form-item label="型号" prop="computerName">
+        <el-select v-model="queryParams.computerName" clearable filterable @change="getList" placeholder="请选择型号"
+          style="width: 200px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+        </el-select>
       </el-form-item>
 
       <el-form-item>
@@ -36,8 +40,8 @@
         </template>
       </el-table-column>
       <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175" />
-      <el-table-column label="项目名称" prop="projectName" align="center" width="140" />
-      <el-table-column label="产品代号" prop="productCode" align="center" width="140" />
+      <el-table-column label="品类" prop="categoryName" align="center" width="140" />
+      <el-table-column label="型号" prop="computerName" align="center" width="140" />
       <el-table-column label="申请部门" prop="reqUnit" align="center" :formatter="reqUnitFormatter" width="80" />
       <el-table-column label="初审状态" prop="firstState" align="center" width="120">
         <template slot-scope="{ row }">
@@ -68,26 +72,16 @@
       </el-table-column>
       <el-table-column label="终审状态" prop="secondState" align="center" width="170">
         <template slot-scope="{ row }">
-          <div style="display: grid; row-gap: 5px">
-            <div class="flex align-center justify-between check-box">
-              <div>PMC -- {{ row.thirdPerson }}</div>
+          <div class="flex align-center justify-between check-box">
+            <div>{{ row.secondPerson }}</div>
 
-              <el-tag type="warning" v-if="row.thirdState === 0">待审核</el-tag>
-              <el-tag type="success" v-if="row.thirdState === 1">已审核</el-tag>
-              <el-tag type="danger" v-if="row.thirdState === 2">已驳回</el-tag>
-            </div>
-
-            <div class="flex align-center justify-between check-box">
-              <div>{{ row.secondPerson }}</div>
-
-              <el-tag type="warning" v-if="row.secondState === 0">
-                待审核
-              </el-tag>
-              <el-tag type="success" v-if="row.secondState === 1">
-                已审核
-              </el-tag>
-              <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
-            </div>
+            <el-tag type="warning" v-if="row.secondState === 0">
+              待审核
+            </el-tag>
+            <el-tag type="success" v-if="row.secondState === 1">
+              已审核
+            </el-tag>
+            <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
           </div>
         </template>
       </el-table-column>
@@ -121,7 +115,7 @@
                 item.state !== 1 &&
                 row.firstState === 1
               " class="text-orange" icon="el-icon-coordinate" :content="`待（${TriageList[item.field]}）--（${item.fieldName
-                  }） ${item.state === 2 ? '重新' : ''}会审`" @click="handleAuthFlag(item, 2)" />
+                }） ${item.state === 2 ? '重新' : ''}会审`" @click="handleAuthFlag(item, 2)" />
 
               <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
                 item.state === 1 &&
@@ -167,35 +161,22 @@
                 @click="handleResetCheck(item, 2)" />
             </span>
 
-            <!-- PMC终审 -->
-            <Tooltip v-show="row.thirdPerson === nickName &&
-              row.thirdState !== 1 &&
-              isSecondStateFlag(row)
-              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.thirdPerson}） 终审`"
-              @click="handleAuthFlag(row, 4)" />
-
-            <Tooltip v-show="row.thirdPerson === nickName && row.thirdState === 1" class="text-grey"
-              icon="el-icon-circle-check" content="撤销PMC终审" @click="handleResetCheck(row, 4)" />
-            <Tooltip
-              v-show="row.systemPerson === nickName && row.thirdState === 1 && row.secondState === 1 && row.systemState !== 0"
+            <Tooltip v-show="row.systemPerson === nickName && row.secondState === 1 && row.systemState !== 0"
               class="text-grey" icon="el-icon-circle-check" content="撤销系统变更审核" @click="handleResetCheck(row, 5)" />
 
             <!-- 最终审核 -->
             <Tooltip v-show="row.secondPerson === nickName &&
               row.secondState !== 1 &&
-              row.thirdState === 1 &&
               isSecondStateFlag(row)
               " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.secondPerson}） 终审`"
               @click="handleAuthFlag(row, 3)" />
             <Tooltip v-show="row.systemPerson === nickName &&
               row.systemState !== 1 &&
-              row.secondState === 1 &&
-              row.thirdState === 1
+              row.secondState === 1
               " class="text-green" icon="el-icon-coordinate" content="系统变更审核" @click="handleAuthFlag(row, 5)" />
 
             <Tooltip v-show="row.secondPerson === nickName &&
-              row.secondState === 1 &&
-              row.thirdState === 1
+              row.secondState === 1
               " class="text-grey" icon="el-icon-circle-check" content="撤销终审" @click="handleResetCheck(row, 3)" />
 
             <Tooltip class="text-green" icon="el-icon-view" content="详情" @click="handleDetail(row)" />
@@ -221,7 +202,8 @@
     <pagination v-show="total > 0" :total="total" :small="true" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
 
-    <CompUpdate1 ref="compUpdate" :classifyList="classifyList" :involveUnitList="involveUnitList" />
+    <CompUpdate1 ref="compUpdate" :classifyList="classifyList" :involveUnitList="involveUnitList"
+      :dictList="dictList" />
 
     <CompDetail ref="compDetail" :classifyList="classifyList" :involveUnitList="involveUnitList"
       :deptOptions="deptOptions" />
@@ -245,41 +227,9 @@
 
             <el-form-item label="会审人员："></el-form-item>
             <el-form-item label-width="20px">
-              <el-form-item label="采购：" prop="buyerData" label-width="70px">
-                <el-select class="w100" v-model="peopleManageForm.buyerData" filterable multiple clearable
-                  placeholder="请选择采购人员">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="品质：" prop="QAData" label-width="70px">
-                <el-select class="w100" v-model="peopleManageForm.QAData" filterable multiple clearable
-                  placeholder="请选择品质人员">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
               <el-form-item label="生产：" prop="productData" label-width="70px">
                 <el-select class="w100" v-model="peopleManageForm.productData" filterable multiple clearable
                   placeholder="请选择生产人员">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="工程：" prop="engineerData" label-width="70px">
-                <el-select class="w100" v-model="peopleManageForm.engineerData" filterable multiple clearable
-                  placeholder="请选择工程人员">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="研发：" prop="researchData" label-width="70px">
-                <el-select class="w100" v-model="peopleManageForm.researchData" filterable multiple clearable
-                  placeholder="请选择研发人员">
                   <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
                     :value="item.userName">
                   </el-option>
@@ -303,32 +253,13 @@
               </el-form-item>
             </el-form-item>
 
-            <el-form-item label="终审人员："></el-form-item>
-            <el-form-item label-width="20px">
-              <el-form-item label="PMC：" prop="pmcData">
-                <el-select class="w100" v-model="peopleManageForm.pmcData" filterable multiple clearable
-                  placeholder="请选择">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="最终审核：" prop="finalJudgmentData">
-                <el-select class="w100" v-model="peopleManageForm.finalJudgmentData" filterable multiple clearable
-                  placeholder="请选择">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="系统变更 ：" prop="systemChangeData">
-                <el-select class="w100" v-model="peopleManageForm.systemChangeData" filterable multiple clearable
-                  placeholder="请选择">
-                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
+            <el-form-item label="最终审核：" prop="finalJudgmentData">
+              <el-select class="w100" v-model="peopleManageForm.finalJudgmentData" filterable multiple clearable
+                placeholder="请选择最终审核人员">
+                <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-form>
         </el-col>
@@ -415,16 +346,15 @@
 
 <script>
 import {
-  bomList,
-  bomAuth,
-  ecnFirstState,
-  ecnFieldState,
-  ecnSecondState,
-  ecnPmcState,
-  ecnPersonEdit,
-  ecnPersonList,
-  ecnSystemState
-} from "@/api/third/ecn";
+  listSoftwareEcn,
+  auditSoftwareEcn,
+  softwareEcnFirstState,
+  softwareEcnFieldState,
+  softwareEcnSecondState,
+  softwareEcnPersonnelEdit,
+  softwareEcnPersonnelList
+} from "@/api/production/software-ecn";
+import { categoryComputerDict } from "@/api/third/fileConfig";
 import { dictUserList } from "@/api/system/user";
 import CompUpdate from "./components/update";
 import CompDetail from "./components/detail";
@@ -474,35 +404,28 @@ export default {
         p: 1,
         l: 20,
         ecn: "",
-        projectName: "",
-        productCode: "",
+        categoryName: "",
+        computerName: "",
       },
+      // 品类字典
+      dictList: [],
+      // 型号选项
+      computerOptions: [],
       detailData: {},
       classifyList: [],
       involveUnitList: [],
       peopleManageForm: {
         firstAuditorData: [],
-        buyerData: [],
-        QAData: [],
         productData: [],
-        engineerData: [],
-        researchData: [],
         warehouseData: [],
         marketerData: [],
-        pmcData: [],
         finalJudgmentData: [],
-        systemChangeData: [],
       },
       // 会审人员
       TriageList: {
-        2: "采购",
-        3: "品质",
         4: "生产",
-        5: "工程",
-        6: "研发",
         7: "仓库",
         8: "市场",
-        9: "PMC",
       },
       peopleManageRules: {
         firstAuditorData: [
@@ -512,38 +435,10 @@ export default {
             trigger: "change",
           },
         ],
-        buyerData: [
-          {
-            required: true,
-            message: "请选择采购人员",
-            trigger: "change",
-          },
-        ],
-        QAData: [
-          {
-            required: true,
-            message: "请选择品质人员",
-            trigger: "change",
-          },
-        ],
         productData: [
           {
             required: true,
             message: "请选择生产人员",
-            trigger: "change",
-          },
-        ],
-        engineerData: [
-          {
-            required: true,
-            message: "请选择工程人员",
-            trigger: "change",
-          },
-        ],
-        researchData: [
-          {
-            required: true,
-            message: "请选择研发人员",
             trigger: "change",
           },
         ],
@@ -561,24 +456,10 @@ export default {
             trigger: "change",
           },
         ],
-        pmcData: [
-          {
-            required: true,
-            message: "请选择PMC人员",
-            trigger: "change",
-          },
-        ],
         finalJudgmentData: [
           {
             required: true,
-            message: "请选择终审人员",
-            trigger: "change",
-          },
-        ],
-        systemChangeData: [
-          {
-            required: true,
-            message: "请选择系统变更人员",
+            message: "请选择最终审核人员",
             trigger: "change",
           },
         ],
@@ -602,7 +483,7 @@ export default {
     },
     isFinalStateFlag() {
       return (row) => {
-        return row.thirdState === 0 && row.secondState === 0;
+        return row.secondState === 0;
       };
     },
     isSecondStateFlag() {
@@ -627,8 +508,15 @@ export default {
     await this.getDicts("ecn_classify_name").then((res) => {
       this.classifyList = res.data;
     });
-    await this.getDicts("ecn_involveUnit").then((res) => {
-      this.involveUnitList = res.data;
+    // 设置涉及领域为生产、仓库、市场
+    this.involveUnitList = [
+      { dictLabel: "生产", dictValue: "4" },
+      { dictLabel: "仓库", dictValue: "7" },
+      { dictLabel: "市场", dictValue: "8" }
+    ];
+    // 获取品类字典数据
+    await categoryComputerDict().then((response) => {
+      this.dictList = response.data;
     });
     this.getList();
 
@@ -640,7 +528,7 @@ export default {
     getList() {
       this.loading = true;
       let params = Object.assign({}, this.queryParams);
-      bomList(params).then((response) => {
+      listSoftwareEcn(params).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
@@ -680,6 +568,18 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    // 品类变更处理
+    changeCategory(categoryName) {
+      this.queryParams.computerName = "";
+      if (categoryName) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.name === categoryName
+        )[0]?.computerList || [];
+      } else {
+        this.computerOptions = [];
+      }
+      this.getList();
+    },
     /** 查询部门下拉树结构 */
     getTreeselect() {
       listDept().then((res) => {
@@ -699,52 +599,34 @@ export default {
     // 获取人员列表
     getTotalPeopleData() {
       const requestList = [
-        this.getPeopleList(1),
-        this.getPeopleList(2),
-        this.getPeopleList(3),
-        this.getPeopleList(4),
-        this.getPeopleList(5),
-        this.getPeopleList(6),
-        this.getPeopleList(7),
-        this.getPeopleList(8),
-        this.getPeopleList(9),
-        this.getPeopleList(10),
-        this.getPeopleList(11),
+        this.getPeopleList(1),  // 初审人员
+        this.getPeopleList(4),  // 生产人员
+        this.getPeopleList(7),  // 仓库人员
+        this.getPeopleList(8),  // 市场人员
+        this.getPeopleList(9),  // 最终审核人员
       ];
       Promise.all(requestList).then((res) => {
         const [
           firstAuditorData,
-          buyerData,
-          QAData,
           productData,
-          engineerData,
-          researchData,
           warehouseData,
           marketerData,
           finalJudgmentData,
-          pmcData,
-          systemChangeData,
         ] = res;
 
         this.peopleManageForm = {
           firstAuditorData,
-          buyerData,
-          QAData,
           productData,
-          engineerData,
-          researchData,
           warehouseData,
           marketerData,
           finalJudgmentData,
-          pmcData,
-          systemChangeData,
         };
       });
     },
     getPeopleList(type) {
       return new Promise((resolve) => {
         try {
-          ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
+          softwareEcnPersonnelList({ type, p: 1, l: 50 }).then((res) => {
             const { list } = res.data;
             resolve(list.map((item) => item.personnel));
           });
@@ -822,7 +704,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      bomAuth([{ id: row.id, status: 1 }]).then(() => {
+      auditSoftwareEcn([{ id: row.id, status: 1 }]).then(() => {
         this.getList();
         this.msgSuccess("删除成功");
       });
@@ -883,17 +765,14 @@ export default {
 
       params.changeCauseData = changeCauseData;
 
-      // 领域
-      // const involveUnitData = [];
-      // params.involveUnit.forEach((item) => {
-      //   this.involveUnitList.forEach((cItem) => {
-      //     if (item === +cItem.dictValue) {
-      //       involveUnitData.push(cItem);
-      //     }
-      //   });
-      // });
+      // 涉及领域 - 只显示生产、仓库、市场
+      const involveUnitData = [
+        { dictLabel: "生产", dictValue: "4" },
+        { dictLabel: "仓库", dictValue: "7" },
+        { dictLabel: "市场", dictValue: "8" }
+      ];
 
-      params.involveUnitData = this.involveUnitList;
+      params.involveUnitData = involveUnitData;
 
       this.$refs.compDetail.form = params;
     },
@@ -905,14 +784,9 @@ export default {
     resetPeopleForm() {
       this.peopleManageForm = {
         firstAuditorData: [],
-        buyerData: [],
-        QAData: [],
         productData: [],
-        engineerData: [],
-        researchData: [],
         warehouseData: [],
         marketerData: [],
-        pmcData: [],
         finalJudgmentData: [],
       };
       this.resetForm("peopleForm");
@@ -923,16 +797,10 @@ export default {
         if (valid) {
           const {
             firstAuditorData,
-            buyerData,
-            QAData,
             productData,
-            engineerData,
-            researchData,
             warehouseData,
             marketerData,
-            pmcData,
             finalJudgmentData,
-            systemChangeData
           } = this.peopleManageForm;
 
           const setPeopleList = (data, type) => {
@@ -946,19 +814,13 @@ export default {
 
           const list = [
             ...setPeopleList(firstAuditorData, 1),
-            ...setPeopleList(buyerData, 2),
-            ...setPeopleList(QAData, 3),
             ...setPeopleList(productData, 4),
-            ...setPeopleList(engineerData, 5),
-            ...setPeopleList(researchData, 6),
             ...setPeopleList(warehouseData, 7),
             ...setPeopleList(marketerData, 8),
             ...setPeopleList(finalJudgmentData, 9),
-            ...setPeopleList(pmcData, 10),
-            ...setPeopleList(systemChangeData, 11),
           ];
 
-          ecnPersonEdit(list).then((res) => {
+          softwareEcnPersonnelEdit(list).then((res) => {
             console.log(res);
             if (res.data) {
               this.msgSuccess("操作成功");
@@ -1002,13 +864,6 @@ export default {
         };
       }
 
-      if (isAuthFlag === 4) {
-        this.authForm = {
-          state: row.thirdState || 1,
-          remark: row.thirdRemark,
-          result: row.thirdResult,
-        };
-      }
 
       if (isAuthFlag === 5) {
         this.authForm = {
@@ -1036,7 +891,7 @@ export default {
               state: 0,
             };
 
-            ecnFirstState(data).then((res) => {
+            softwareEcnFirstState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1055,7 +910,7 @@ export default {
               state: 0,
             };
 
-            ecnFieldState(data).then((res) => {
+            softwareEcnFieldState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1073,7 +928,7 @@ export default {
               state: 0,
             };
 
-            ecnSecondState(data).then((res) => {
+            softwareEcnSecondState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1082,41 +937,7 @@ export default {
             });
           }
 
-          // 撤销PMC终审
-          if (flag === 4) {
-            const data = {
-              id: row.id,
-              remark: row.thirdRemark,
-              result: row.thirdResult,
-              state: 0,
-            };
 
-            ecnPmcState(data).then((res) => {
-              if (res.data) {
-                this.msgSuccess("操作成功");
-                this.getList();
-                this.authDialogVisible = false;
-              }
-            });
-          }
-
-          // 最终系统审核
-          if (flag === 5) {
-            const data = {
-              id: row.id,
-              remark: row.thirdRemark,
-              result: row.thirdResult,
-              state: 0,
-            };
-
-            ecnSystemState(data).then((res) => {
-              if (res.data) {
-                this.msgSuccess("操作成功");
-                this.getList();
-                this.authDialogVisible = false;
-              }
-            });
-          }
 
         })
         .catch(() => { });
@@ -1137,7 +958,7 @@ export default {
               id: this.isAuthAlterData.id,
               ...this.authForm,
             };
-            ecnFirstState(data).then((res) => {
+            softwareEcnFirstState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1156,7 +977,7 @@ export default {
               ...this.authForm,
             };
 
-            ecnFieldState(data).then((res) => {
+            softwareEcnFieldState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1171,7 +992,7 @@ export default {
               ...this.authForm,
             };
 
-            ecnSecondState(data).then((res) => {
+            softwareEcnSecondState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
                 this.getList();
@@ -1180,35 +1001,7 @@ export default {
             });
           }
 
-          // PMC终审
-          if (this.isAuthFlag === 4) {
-            const data = {
-              id: this.isAuthAlterData.id,
-              ...this.authForm,
-            };
 
-            ecnPmcState(data).then((res) => {
-              if (res.data) {
-                this.msgSuccess("操作成功");
-                this.getList();
-                this.authDialogVisible = false;
-              }
-            });
-          }
-          if (this.isAuthFlag === 5) {
-            const data = {
-              id: this.isAuthAlterData.id,
-              ...this.authForm,
-            };
-
-            ecnSystemState(data).then((res) => {
-              if (res.data) {
-                this.msgSuccess("操作成功");
-                this.getList();
-                this.authDialogVisible = false;
-              }
-            });
-          }
         }
       });
     },

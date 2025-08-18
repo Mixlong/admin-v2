@@ -1,7 +1,7 @@
 <template>
   <div class="device-cost-container app-container">
     <!-- 搜索区域 -->
-    <div class="search-section">
+    <div class="search-section toolbar">
       <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
         <el-form-item label="所属品类" prop="categoryId">
           <el-select v-model="searchForm.categoryId" @change="handleSearch" filterable allow-create clearable
@@ -32,7 +32,7 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(-30)"
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(30)"
         @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
         :row-class-name="getRowClassName">
         <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">
@@ -612,9 +612,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
     border-radius: 8px;
-    margin-bottom: 20px;
 
     .search-form {
       .el-form-item {

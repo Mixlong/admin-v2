@@ -47,6 +47,14 @@ const user = {
     SET_TASKNUM: (state, data) => {
       state.taskOverdueNum = data;
     },
+    SET_DEPT_ID: (state, deptId) => {
+      console.log('SET_DEPT_ID mutation执行:', deptId);
+      state.deptId = deptId;
+    },
+    SET_DEPT_NAME: (state, deptName) => {
+      console.log('SET_DEPT_NAME mutation执行:', deptName);
+      state.deptName = deptName;
+    },
   },
 
   actions: {
@@ -91,6 +99,19 @@ const user = {
             commit('SET_ID', user.userId);
             commit('SET_NICK_NAME', user.nickName);
             commit('SET_READ_NUM', res.readNum);
+            
+            // 调试：显示API返回的用户数据
+            console.log('GetInfo API返回的用户数据:', user);
+            console.log('用户部门信息:', user.dept);
+            
+            // 存储部门信息
+            if (user.dept) {
+              console.log('正在存储部门信息:', user.dept.deptId, user.dept.deptName);
+              commit('SET_DEPT_ID', user.dept.deptId);
+              commit('SET_DEPT_NAME', user.dept.deptName);
+            } else {
+              console.warn('API返回的用户数据中没有dept字段');
+            }
 
             // 同步用户信息到微应用
             const userInfo = {

@@ -73,9 +73,9 @@
           <CommonData title="生产报警">
             <template #content>
               <AlarmTable :tableData="alarmData" />
-              <van-notice-bar v-if="alarmData.length" class="notice-bar-box" scrollable left-icon="volume"
+              <van-notice-bar v-if="noticeData.length" class="notice-bar-box" scrollable left-icon="volume"
                 background="rgba(255,56,107,0.25)">
-                <span class="notice-box" v-for="item in noticeData">
+                <span class="notice-box" v-for="(item, index) in noticeData" :key="index">
                   <span class="orderNo">{{ item.orderNo }}</span>
                   <span class="timeout-period">({{ item.time }}),</span>
                 </span>
@@ -107,6 +107,7 @@ import {
   getScreenTodayProgress,
   getScreenProductionMeans,
 } from "@/api/smartScreen";
+import { getLargeScreenAlerts } from "@/api/production-management/alerts";
 import productionPlant from "./components/productionPlant.vue";
 import CommonData from "./components/commonData.vue";
 import AlarmTable from "./components/alarmTable.vue";
@@ -134,7 +135,7 @@ export default {
       currentDate: "--",
       currentWeekday: "--",
       productionSituationData: [], // 生产实况
-      alarmData: [], // 生产报警
+      alarmData: [], // 生产报警数据
       preparationData: [], // 生产资料准备情况
       todayInfoData: [
         {
@@ -152,7 +153,7 @@ export default {
           progress: 0,
         },
       ],
-      noticeData: [],
+      noticeData: [], // 通知数据
       headerTimer: null,
       pageDataTimer: null,
       // 可配置的指标区间参数
@@ -170,12 +171,14 @@ export default {
   created() {
     this.getHeaderTime();
     this.getTodayInfo();
+    this.getAlarmData();
 
     this.headerTimer = setInterval(() => {
       this.getHeaderTime();
     }, 1000);
     this.pageDataTimer = setInterval(() => {
       this.getTodayInfo();
+      this.getAlarmData();
     }, 10 * 1000);
   },
   mounted() {
@@ -221,6 +224,31 @@ export default {
 
       getScreenProductionMeans().then((res) => {
         this.preparationData = res.data;
+      });
+    },
+
+    // 获取生产报警数据
+    getAlarmData() {
+      getLargeScreenAlerts().then((res) => {
+        if (res.code === 200) {
+          this.alarmData = res.data || [];
+          
+          // 生成通知数据（超时的报警）- 只有大于1天才进入横幅警报
+          this.noticeData = this.alarmData
+            .filter(item => {
+              // 判断是否超时（只有包含"天"的报警才进入横幅）
+              const duration = item.processDuration || '';
+              return duration.includes('天');
+            })
+            .map(item => ({
+              orderNo: item.workOrderNo,
+              time: item.processDuration || '--'
+            }));
+        }
+      }).catch((error) => {
+        console.error('获取生产报警数据失败:', error);
+        this.alarmData = [];
+        this.noticeData = [];
       });
     },
     toPercentage(value) {

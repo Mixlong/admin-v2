@@ -142,7 +142,8 @@
     <pagination v-if="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
 
-    <el-dialog title="版本信息" :visible.sync="isStsDetailShow" center append-to-body top="1vh" width="1300px">
+    <el-dialog title="版本信息" :visible.sync="isStsDetailShow" center append-to-body top="1vh" width="1300px"
+      class=" custom-dialog">
       <el-table :data="stsDetail" bordered height="450">
         <el-table-column label="工序名称" prop="processName" align="center" width="100" />
         <el-table-column label="品类" prop="categoryName" align="center" width="100" />
@@ -372,18 +373,28 @@ export default {
 </script>
 <style lang="scss" scoped>
 .custom-dialog {
-  ::v-deep .el-form {
-    display: none;
-  }
+  ::v-deep {
 
-  .el-dialog__body {
-    max-height: 95vh;
-    overflow-y: auto;
+    .el-form,
+    .pagination-container {
+      display: none;
+    }
 
-    .app-container {
-      margin: 0;
-      padding: 0;
-      height: auto;
+    .el-dialog__header {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .el-dialog__body {
+      max-height: 95vh;
+      overflow-y: auto;
+      padding-top: 10px;
+
+      .app-container {
+        margin: 0;
+        padding: 0;
+        height: auto;
+      }
     }
   }
 }

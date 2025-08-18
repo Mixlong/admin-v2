@@ -4,6 +4,7 @@
 @import "./element-ui.scss";
 @import "./sidebar.scss";
 @import "./btn.scss";
+@import "./toolbar.scss";
 
 body {
   height: 100%;
@@ -1196,7 +1197,7 @@ aside {
   overflow: hidden;
   overflow-y: auto;
   background: #fff;
-  padding: 30px 40px;
+  padding: 30px 30px;
   margin-bottom: 10px;
 }
 
@@ -1549,7 +1550,12 @@ iframe[data-wujie-flag] {
     margin-top: 0 !important;
   }
   .el-dialog__body {
-    max-height: 90vh;
+    max-height: 75vh;
     overflow-y: auto;
+    padding-top: 10px;
   }
+}
+
+.work-status-dropdown {
+  z-index: 99999 !important;
 }

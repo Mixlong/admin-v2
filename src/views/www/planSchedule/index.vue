@@ -1,57 +1,60 @@
 <template>
   <div class="app-container">
-    <transition name="fade-transform-tb">
-      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
-        <el-form-item label="所属品类" prop="categoryId">
-          <el-select v-model="queryParams.categoryId" filterable allow-create clearable @change="changeCategory"
-            style="width: 140px" placeholder="请选择">
-            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="仪表型号" prop="computerId">
-          <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
-            @change="getList" :remote-method="getComputerNameList" style="width: 140px">
-            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="迪太订单号" prop="salesOrderNo">
-          <el-input v-model.trim="queryParams.salesOrderNo" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请选择" />
-        </el-form-item>
-        <el-form-item label="排产单号" prop="no">
-          <el-input v-model.trim="queryParams.no" clearable @keyup.native.enter="handleQuery" style="width: 140px"
-            placeholder="请选择" />
-        </el-form-item>
-        <el-form-item label="排产状态" prop="productStatus">
-          <el-select v-model="queryParams.productStatus" clearable style="width: 100px">
-            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="生产日期">
-          <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
-            range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
-            搜 索
+    <div class="toolbar">
+      <transition name="fade-transform-tb">
+        <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" class="search-form">
+          <el-form-item label="所属品类" prop="categoryId">
+            <el-select v-model="queryParams.categoryId" filterable allow-create clearable @change="changeCategory"
+              style="width: 140px" placeholder="请选择">
+              <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="仪表型号" prop="computerId">
+            <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+              @change="getList" :remote-method="getComputerNameList" style="width: 140px">
+              <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="迪太订单号" prop="salesOrderNo">
+            <el-input v-model.trim="queryParams.salesOrderNo" clearable @keyup.native.enter="handleQuery"
+              style="width: 140px" placeholder="请选择" />
+          </el-form-item>
+          <el-form-item label="排产单号" prop="no">
+            <el-input v-model.trim="queryParams.no" clearable @keyup.native.enter="handleQuery" style="width: 140px"
+              placeholder="请选择" />
+          </el-form-item>
+          <el-form-item label="排产状态" prop="productStatus">
+            <el-select v-model="queryParams.productStatus" clearable style="width: 100px">
+              <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="生产日期">
+            <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
+              range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+              @change="handleQuery"></el-date-picker>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
+              搜 索
+            </el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+              重 置
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </transition>
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd">
+            新 增
           </el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-            重 置
+          <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd">
+            新 增(旧)
           </el-button>
-        </el-form-item>
-      </el-form>
-    </transition>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd">
-          新 增
-        </el-button>
-        <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd">
-          新 增(旧)
-        </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
-    </el-row>
+        </el-col>
+        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
+      </el-row>
+    </div>
 
     <el-table border v-loading="loading" :height="tableHeight()" :data="list" :cell-class-name="cellClassName"
       @cell-click="cellClick">
@@ -732,12 +735,12 @@ export default {
     handleUpdate(row) {
       this.title = "编辑计划";
       this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign({}, row);
-
-      const { id, ...data } = row;
-      this.$refs.compUpdate.orderData = [{ ...data }];
-      this.$refs.compUpdate.cloneForm = Object.assign({}, row);
       this.$refs.compUpdate.dialogVisible = true;
+
+      // 使用 loadScheduleData 方法正确处理编辑数据
+      console.log('🚀 开始编辑，原始数据:', row);
+      this.$refs.compUpdate.loadScheduleData(row);
+      this.$refs.compUpdate.cloneForm = Object.assign({}, row);
     },
     handleOldUpdate(row) {
       this.title = "编辑计划";

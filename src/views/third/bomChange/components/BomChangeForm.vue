@@ -1,6 +1,6 @@
 <template>
   <el-dialog :title="title" :visible.sync="open" width="70%" append-to-body :close-on-click-modal="false" top="0vh"
-    custom-class="bom-change-dialog">
+    custom-class="  dialog-scroll">
     <div class="form-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="140px" @submit.native.prevent class="modern-form">
         <!-- 基本信息卡片 -->
@@ -1486,12 +1486,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 主容器样式
-.form-container {
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
 // 现代化表单样式
 .modern-form {
   padding-top: 20px;
@@ -1899,23 +1893,6 @@ export default {
   text-align: center;
   padding: 20px 24px;
   border-top: 1px solid #e8f4fd;
-
-  .el-button {
-    min-width: 100px;
-    border-radius: 8px;
-    font-weight: 500;
-
-    &.cancel-btn {
-      background: #ffffff;
-      color: #666666;
-    }
-
-    &.submit-btn {
-      background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-      border: none;
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-    }
-  }
 }
 
 // 对话框自定义样式

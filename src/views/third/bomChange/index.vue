@@ -2274,8 +2274,6 @@ export default {
 .app-container {
   .search-form {
     background: #fff;
-    padding: 20px;
-    margin-bottom: 10px;
     border-radius: 4px;
     display: flex;
     justify-content: space-between;

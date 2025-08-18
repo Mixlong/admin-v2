@@ -1,42 +1,47 @@
 <template>
   <!-- 软件数据 -->
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="所属品类" prop="categoryId">
-        <el-select v-model="queryParams.categoryId" filterable allow-create clearable placeholder="请选择品类"
-          style="width: 140px" @change="changeCategory">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="仪表型号" prop="computerId">
-        <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
-          placeholder="请选择仪表型号" :remote-method="getComputerNameList" style="width: 140px" @change="getList">
-          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="ERP编码" prop="erp">
-        <el-input v-model="queryParams.erp" placeholder="请输入" clearable @keyup.enter.native="getList"
-          style="width: 140px" />
-      </el-form-item>
-      <el-form-item label="审核状态" prop="status">
-        <el-select style="width: 100px" clearable v-model="queryParams.status" @change="getList">
-          <el-option v-for="(value, key) in statusOptions" :key="key" :label="value" :value="key" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="产品状态" prop="computerStatus">
-        <el-select v-model="queryParams.computerStatus" style="width: 100px" clearable @change="getList">
-          <el-option v-for="(value, key) in commonStatusList" :key="key" :label="value" :value="key" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="送样单号" prop="number">
-        <select-loadMore v-model="queryParams.number" :data="sampleNumberData.data" :page="sampleNumberData.page"
-          :hasMore="sampleNumberData.more" :request="getSampleNumberList" placeholder="请选择送样单号" />
-      </el-form-item>
-      <el-form-item>
+    <div class="toolbar">
+      <el-form :model="queryParams" ref="queryForm" :inline="true" class="search-form">
+        <el-form-item label="所属品类" prop="categoryId">
+          <el-select v-model="queryParams.categoryId" filterable allow-create clearable placeholder="请选择品类"
+            style="width: 140px" @change="changeCategory">
+            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号" prop="computerId">
+          <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+            placeholder="请选择仪表型号" :remote-method="getComputerNameList" style="width: 140px" @change="getList">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="ERP编码" prop="erp">
+          <el-input v-model="queryParams.erp" placeholder="请输入" clearable @keyup.enter.native="getList"
+            style="width: 140px" />
+        </el-form-item>
+        <el-form-item label="审核状态" prop="status">
+          <el-select style="width: 100px" clearable v-model="queryParams.status" @change="getList">
+            <el-option v-for="(value, key) in statusOptions" :key="key" :label="value" :value="key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="产品状态" prop="computerStatus">
+          <el-select v-model="queryParams.computerStatus" style="width: 100px" clearable @change="getList">
+            <el-option v-for="(value, key) in commonStatusList" :key="key" :label="value" :value="key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="送样单号" prop="number">
+          <select-loadMore v-model="queryParams.number" :data="sampleNumberData.data" :page="sampleNumberData.page"
+            :hasMore="sampleNumberData.more" :request="getSampleNumberList" placeholder="请选择送样单号" />
+        </el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+
+        <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
+          @click="handleResetCheck">重置审核</el-button> -->
+      </el-form>
+      <div>
         <el-button type="warning" v-if="checkRole(['f_test'])" v-hasPermi="['third:cad:batchFirstCheck']"
           @click="handleAuthBatchChange(1)">
           批量初审
@@ -51,10 +56,8 @@
         <el-button v-hasPermi="['third:cad:fileBatchConfig']" type="danger" @click="handleFileBatchSyncConfig">
           同步文件
         </el-button>
-        <!-- <el-button v-if="checkRole(['product'])" type="danger"  :disabled="multiple"
-          @click="handleResetCheck">重置审核</el-button> -->
-      </el-form-item>
-    </el-form>
+      </div>
+    </div>
     <div class="file_config_Sn_box">
       <span>
         <b>Sn：</b>
@@ -66,7 +69,7 @@
       </span>
     </div>
     <el-table ref="multipleTableRef" v-loading="loading" :data="brandList" :row-key="getRowKeys"
-      :height="tableHeight(35)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
+      :height="tableHeight(-65)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
       <el-table-column type="selection" width="55" align="center" :reserve-selection="true"
         :selectable="checkSelectable" />
       <el-table-column label="序号" width="58" type="index" align="center" />

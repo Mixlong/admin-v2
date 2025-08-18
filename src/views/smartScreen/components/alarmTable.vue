@@ -17,12 +17,12 @@
         <table>
           <tbody>
             <tr v-for="(item, index) in tableData" :key="index">
-              <td>{{ item.orderNo }}</td>
-              <td>{{ item.model }}</td>
-              <td>{{ item.problemDescription }}</td>
+              <td>{{ item.workOrderNo }}</td>
+              <td>{{ item.computerName }}</td>
+              <td>{{ item.problemDesc }}</td>
               <td>{{ item.reporter }}</td>
-              <td>{{ item.responsibility }}</td>
-              <td :style="durationStyle(item.duration)">{{ overdueTime(item.duration) }}</td>
+              <td>{{ item.responsible }}</td>
+              <td :style="durationStyle(item.processDuration)">{{ overdueTime(item.processDuration) }}</td>
             </tr>
           </tbody>
         </table>
@@ -39,7 +39,12 @@
 </template>
 
 <script>
+import vueSeamlessScroll from 'vue-seamless-scroll'
+
 export default {
+  components: {
+    vueSeamlessScroll
+  },
   props: {
     tableData: {
       type: Array,
@@ -50,55 +55,87 @@ export default {
     return {
       classOption: {
         autoPlay: true,
-        step: 0.5,
-        limitMoveNum: 5,
+        step: 0.8, // 滚动速度
+        limitMoveNum: 3, // 限制滚动条数
+        hoverStop: true, // 鼠标悬停时停止滚动
+        direction: 1, // 1向上 0向下
+        openWatch: true, // 开启数据实时监控刷新dom
+        singleHeight: 40, // 单步运动停止的高度
+        singleWidth: 0,
+        waitTime: 2000 // 单步运动停止的时间(默认值1000ms)
       }
     };
   },
   computed: {
     overdueTime() {
-      return (seconds) => {
-        const days = Math.floor(seconds / (24 * 3600));
-        const hours = Math.floor((seconds % (24 * 3600)) / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+      return (durationStr) => {
+        // 如果是格式化字符串，直接返回
+        if (typeof durationStr === 'string' && durationStr) {
+          return durationStr;
+        }
+        
+        // 如果是数字秒数，进行格式化
+        if (typeof durationStr === 'number') {
+          const seconds = durationStr;
+          const days = Math.floor(seconds / (24 * 3600));
+          const hours = Math.floor((seconds % (24 * 3600)) / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+          const secs = seconds % 60;
 
-        let timeString = "";
+          let timeString = "";
 
-        if (days > 0) {
-          timeString += `${days}天`;
-        }
-        if (days > 0 && (hours > 0 || minutes > 0 || secs > 0)) {
-          timeString += "";
-        }
-        if (hours > 0 || (days > 0 && minutes >= 0)) {
-          timeString += `${hours}小时`;
-        }
-        if (hours > 0 && (minutes > 0 || secs > 0)) {
-          timeString += "";
-        }
-        if (
-          minutes > 0 ||
-          (days > 0 && secs >= 0) ||
-          (hours > 0 && secs >= 0)
-        ) {
-          timeString += `${minutes}分`;
-        }
-        if (minutes > 0 && secs > 0) {
-          timeString += "";
-        }
-        if (secs > 0) {
-          timeString += `${secs}秒`;
+          if (days > 0) {
+            timeString += `${days}天`;
+          }
+          if (days > 0 && (hours > 0 || minutes > 0 || secs > 0)) {
+            timeString += "";
+          }
+          if (hours > 0 || (days > 0 && minutes >= 0)) {
+            timeString += `${hours}小时`;
+          }
+          if (hours > 0 && (minutes > 0 || secs > 0)) {
+            timeString += "";
+          }
+          if (
+            minutes > 0 ||
+            (days > 0 && secs >= 0) ||
+            (hours > 0 && secs >= 0)
+          ) {
+            timeString += `${minutes}分`;
+          }
+          if (minutes > 0 && secs > 0) {
+            timeString += "";
+          }
+          if (secs > 0) {
+            timeString += `${secs}秒`;
+          }
+
+          return timeString || "--";
         }
 
-        return timeString || "--";
+        return "--";
       };
     },
     durationStyle() {
-      return (duration) => {
-        const days = Math.floor(duration / (24 * 3600));
+      return (durationStr) => {
+        // 如果是格式化字符串，通过关键词判断是否超期
+        if (typeof durationStr === 'string') {
+          const isOverdue = durationStr.includes('天') || durationStr.includes('小时');
+          return {
+            color: isOverdue ? "#FF386B" : "#FFFFFF",
+          };
+        }
+        
+        // 如果是数字，按原来的逻辑
+        if (typeof durationStr === 'number') {
+          const days = Math.floor(durationStr / (24 * 3600));
+          return {
+            color: days && durationStr ? "#FF386B" : "#FFFFFF",
+          };
+        }
+
         return {
-          color: days && duration ? "#FF386B" : "#FFFFFF",
+          color: "#FFFFFF",
         };
       };
     },
@@ -114,6 +151,7 @@ export default {
   overflow: hidden;
 
   .scroll-box {
+    height: 160px; /* 固定滚动区域高度 */
     overflow: hidden;
   }
 
