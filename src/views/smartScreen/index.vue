@@ -72,7 +72,7 @@
         <div class="production-alarm-box">
           <CommonData title="生产报警">
             <template #content>
-              <AlarmTable :tableData="alarmData" />
+              <AlarmTable :tableData="alarmData" :hasNotice="noticeData.length > 0" />
               <van-notice-bar v-if="noticeData.length" class="notice-bar-box" scrollable left-icon="volume"
                 background="rgba(255,56,107,0.25)">
                 <span class="notice-box" v-for="(item, index) in noticeData" :key="index">
@@ -93,7 +93,7 @@
         <div class="production-alarm-box">
           <CommonData title="良率趋势图(近15天)">
             <template #content>
-              <el-empty description="后续迭代" :image-size="80"></el-empty>
+              <TrendChart :chartData="throughRateTrendData" height="100%" />
             </template>
           </CommonData>
         </div>
@@ -105,15 +105,20 @@
 <script>
 import {
   getScreenTodayProgress,
-  getScreenProductionMeans,
+  getProductionMaterialsAlerts,
+  getProductionScheduling,
+  getThroughRateTrend,
+  getThroughRateToday,
+  getProductionRateToday,
 } from "@/api/smartScreen";
 import { getLargeScreenAlerts } from "@/api/production-management/alerts";
+import categoryService from '@/utils/categoryService';
 import productionPlant from "./components/productionPlant.vue";
 import CommonData from "./components/commonData.vue";
 import AlarmTable from "./components/alarmTable.vue";
 import PreparationMeansProduction from "./components/preparationMeansProduction.vue";
-import CircularProgress from "./components/circularProgress.vue";
 import EchartsProgress from "./components/echartsProgress.vue";
+import TrendChart from "./components/trendChart.vue";
 import { NoticeBar } from "vant";
 import screenfull from "screenfull";
 import autofit from "autofit.js";
@@ -125,8 +130,8 @@ export default {
     [NoticeBar.name]: NoticeBar,
     AlarmTable,
     PreparationMeansProduction,
-    CircularProgress,
     EchartsProgress,
+    TrendChart,
   },
   name: "smartScreen",
   data() {
@@ -137,6 +142,9 @@ export default {
       productionSituationData: [], // 生产实况
       alarmData: [], // 生产报警数据
       preparationData: [], // 生产资料准备情况
+      computerMap: new Map(), // 计算机ID到名称的映射
+      categoryMap: new Map(), // 品类ID到名称的映射
+      mappingLoaded: false, // 映射数据是否已加载完成
       todayInfoData: [
         {
           title: "今日直通运行情况",
@@ -154,6 +162,7 @@ export default {
         },
       ],
       noticeData: [], // 通知数据
+      throughRateTrendData: {}, // 直通率趋势数据（原始）
       headerTimer: null,
       pageDataTimer: null,
       // 可配置的指标区间参数
@@ -170,6 +179,9 @@ export default {
   },
   created() {
     this.getHeaderTime();
+
+    // 并行加载数据，不阻塞页面初始显示
+    this.initComputerMapping();
     this.getTodayInfo();
     this.getAlarmData();
 
@@ -179,7 +191,8 @@ export default {
     this.pageDataTimer = setInterval(() => {
       this.getTodayInfo();
       this.getAlarmData();
-    }, 10 * 1000);
+      this.loadThroughRateTrendData();
+    }, 10 * 60 * 1000); // 10分钟刷新一次
   },
   mounted() {
     autofit.init({
@@ -198,33 +211,246 @@ export default {
       this.currentWeekday = this.moment().locale("zh-cn").format("dddd");
     },
 
+    // 初始化计算机和品类映射（使用共享的CategoryService）
+    async initComputerMapping() {
+      try {
+        const { categories, computers } = await categoryService.getCategoryData();
+
+        // 构建品类映射
+        categories.forEach(category => {
+          this.categoryMap.set(category.id, category.name);
+        });
+
+        // 构建计算机映射
+        computers.forEach(computer => {
+          this.computerMap.set(computer.model, computer.name);
+        });
+
+        // 标记映射数据已加载完成
+        this.mappingLoaded = true;
+
+        // 映射加载完成后，更新已有数据中的型号名称
+        this.updateComputerNames();
+
+      } catch (error) {
+        console.error('获取映射数据失败:', error);
+        // 即使失败也设置标记，避免一直显示"获取中..."
+        this.mappingLoaded = true;
+      }
+    },
+
+    // 更新已有数据中的计算机名称
+    updateComputerNames() {
+      // 更新生产资料准备情况数据
+      if (this.preparationData.length > 0) {
+        this.preparationData = this.preparationData.map(item => ({
+          ...item,
+          computerName: this.getComputerName(item.computerId || item.computerName),
+          categoryName: this.getCategoryName(item.categoryId)
+        }));
+      }
+
+      // 更新生产实况数据
+      if (this.productionSituationData.length > 0) {
+        this.productionSituationData = this.productionSituationData.map(item => ({
+          ...item,
+          computerName: this.getComputerName(item.computerId || item.computerName)
+        }));
+      }
+    },
+
     getTodayInfo() {
-      getScreenTodayProgress().then((res) => {
-        const { data } = res;
-        this.todayInfoData[0].value = data.throughCompleteNum;
-        this.todayInfoData[0].total = data.throughTotalNum;
-        if (data.throughTotalNum) {
-          this.todayInfoData[0].progress = this.toPercentage(
-            data.throughCompleteNum / data.throughTotalNum
-          );
+      // 并行获取所有今日数据
+      Promise.all([
+        getThroughRateToday(),
+        getProductionRateToday()
+      ]).then(([throughRateRes, productionRateRes]) => {
+        // 处理今日直通率数据
+        if (throughRateRes.code === 200 && throughRateRes.data) {
+          const throughRateData = throughRateRes.data;
+          // API返回格式: {"data":{"rate":0,"totalCount":0,"okCount":0},"code":200,"msg":"获取成功"}
+          this.todayInfoData[0].value = throughRateData.okCount || 0;
+          this.todayInfoData[0].total = throughRateData.totalCount || 0;
+          this.todayInfoData[0].progress = throughRateData.rate || 0;
         }
 
-        this.todayInfoData[1].value = data.productCompleteNum;
-        this.todayInfoData[1].total = data.productNum;
-        if (data.productNum) {
-          this.todayInfoData[1].progress = this.toPercentage(
-            data.productCompleteNum / data.productNum
-          );
+        // 处理今日生产进度数据
+        if (productionRateRes.code === 200 && productionRateRes.data) {
+          const productionData = productionRateRes.data;
+          // API返回格式: {"data":{"rate":0.00,"packagingTotalCount":0,"totalPlanCount":19},"code":200,"msg":"获取成功"}
+          this.todayInfoData[1].value = productionData.packagingTotalCount || 0;
+          this.todayInfoData[1].total = productionData.totalPlanCount || 0;
+          this.todayInfoData[1].progress = productionData.rate || 0;
+        }
+      }).catch((error) => {
+        console.error('获取新API数据失败，降级到原有接口:', error);
+        // 降级到原有接口
+        getScreenTodayProgress().then((res) => {
+          const { data } = res;
+          this.todayInfoData[0].value = data.throughCompleteNum;
+          this.todayInfoData[0].total = data.throughTotalNum;
+          if (data.throughTotalNum) {
+            this.todayInfoData[0].progress = this.toPercentage(
+              data.throughCompleteNum / data.throughTotalNum
+            );
+          }
+
+          this.todayInfoData[1].value = data.productCompleteNum;
+          this.todayInfoData[1].total = data.productNum;
+          if (data.productNum) {
+            this.todayInfoData[1].progress = this.toPercentage(
+              data.productCompleteNum / data.productNum
+            );
+          }
+        }).catch((fallbackError) => {
+          console.error('原有接口也失败:', fallbackError);
+        });
+      });
+
+      // 并行获取生产实况数据和生产资料数据
+      this.loadProductionSituationData();
+      this.loadMaterialsData();
+      this.loadThroughRateTrendData();
+    },
+
+    // 生成模拟生产实况数据
+    generateMockProductionData() {
+      const mockData = [];
+      const computerIds = ['C001', 'C002', 'C003', 'C004', 'C005'];
+      const computerNames = ['迪太DT-8000', '迪太DT-9000', '迪太DT-7500', '迪太DT-6800', '迪太DT-8500'];
+      const orderPrefixes = ['WO', 'PO', 'SO', 'MO'];
+
+      for (let i = 0; i < 8; i++) {
+        const computerId = computerIds[i % computerIds.length];
+        const computerName = computerNames[i % computerNames.length];
+        const orderPrefix = orderPrefixes[i % orderPrefixes.length];
+        const orderNum = String(Math.floor(Math.random() * 9000) + 1000);
+        const orderNo = `${orderPrefix}${orderNum}`;
+
+        // 生成日期（最近7天内的随机日期）
+        const daysAgo = Math.floor(Math.random() * 7);
+        const feedingDate = this.moment().subtract(daysAgo, 'days').format('YYYY-MM-DD');
+
+        // 生成计划完成时间（未来1-5天）
+        const futureDays = Math.floor(Math.random() * 5) + 1;
+        const completeTime = this.moment().add(futureDays, 'days').add(Math.floor(Math.random() * 24), 'hours').format('YYYY-MM-DD HH:mm');
+
+        // 生成数量数据
+        const plannedCount = Math.floor(Math.random() * 500) + 100; // 100-600
+        const completedCount = Math.floor(plannedCount * (0.3 + Math.random() * 0.7)); // 30%-100%完成
+        const configCount = Math.floor(Math.random() * 8) + 2; // 2-10个配置
+
+        // 计算达成率
+        const reach = Math.round((completedCount / plannedCount) * 100);
+
+        mockData.push({
+          feedingDate: feedingDate,
+          orderNo: orderNo,
+          computerName: computerName,
+          iqcCount: plannedCount, // 半成品（计划数量）
+          oqcCount: completedCount, // 成品（完成数量）
+          dcdCount: configCount, // 配置数量
+          num: plannedCount, // 计划数量
+          date: completeTime, // 计划完成时间
+          reach: reach, // 达成率
+          computerId: computerId,
+          _mock: true // 标记为模拟数据
+        });
+      }
+
+      return mockData;
+    },
+
+    // 加载生产实况数据 - 使用新的排产调度接口
+    async loadProductionSituationData() {
+      try {
+        // 开发环境下可以使用模拟数据
+        const useMockData = process.env.NODE_ENV === 'development' && true; // 设置为true启用模拟数据
+
+        if (useMockData) {
+          this.productionSituationData = this.generateMockProductionData();
+          return;
         }
 
+        const res = await getProductionScheduling();
+        if (res.code === 200) {
+          // 将排产调度数据转换为生产实况格式
+          this.productionSituationData = (res.data || []).map(item => {
+            // 计算达成率 - 基于详情数据
+            let reach = 0;
+            if (item.detailList && item.detailList.length > 0) {
+              const totalPlanned = item.detailList.reduce((sum, detail) => sum + (detail.num || 0), 0);
+              const completed = item.orderQuantity || 0; // 使用订单数量作为完成数量的参考
+              if (totalPlanned > 0) {
+                reach = Math.round((completed / totalPlanned) * 100);
+              }
+            }
 
+            return {
+              feedingDate: this.formatDate(item.date), // 上料日期 = 生产日期
+              orderNo: item.orderCode || item.no, // 工单号 = 订单编号或排产单号
+              computerName: this.getComputerName(item.computerId), // 型号
+              iqcCount: item.detailList ? item.detailList.reduce((sum, detail) => sum + (detail.num || 0), 0) : 0, // 半成品 = 计划数量总和
+              oqcCount: item.orderQuantity || 0, // 成品 = 订单数量
+              dcdCount: item.configList ? item.configList.length : 0, // 配置 = 配置列表数量
+              num: item.num || item.orderQuantity || 0, // 计划数量
+              date: this.formatDateTime(item.endDate), // 计划完成时间
+              reach: reach, // 达成率
+              // 保存原始ID用于后续映射更新
+              computerId: item.computerId,
+              // 保留原始数据用于调试
+              _original: item
+            };
+          });
+        }
+      } catch (error) {
+        console.error('获取生产实况数据失败:', error);
+        this.productionSituationData = [];
+      }
+    },
 
-        this.productionSituationData = data.list;
-      });
+    // 加载生产资料数据
+    async loadMaterialsData() {
+      try {
+        const res = await getProductionMaterialsAlerts();
+        if (res.code === 200) {
+          // 转换新API数据结构，先显示基础数据
+          this.preparationData = (res.data || []).map(item => {
+            return {
+              date: this.formatDate(item.date),
+              orderNo: item.orderCode,
+              computerName: this.getComputerName(item.computerId),
+              configAuditStatus: this.getConfigAuditStatus(item.instrumentState),
+              productionPermitStatus: item.isLicense,
+              materialStatus: item.materialState,
+              // 新增字段
+              batchNo: item.batchNo || '--',
+              categoryId: item.categoryId,
+              categoryName: this.getCategoryName(item.categoryId),
+              num: item.num || 0,
+              schedulingId: item.schedulingId,
+              // 保存原始ID用于后续映射更新
+              computerId: item.computerId
+            };
+          });
+        }
+      } catch (error) {
+        console.error('获取生产资料准备情况失败:', error);
+        this.preparationData = [];
+      }
+    },
 
-      getScreenProductionMeans().then((res) => {
-        this.preparationData = res.data;
-      });
+    // 加载直通率趋势数据
+    async loadThroughRateTrendData() {
+      try {
+        const res = await getThroughRateTrend();
+        if (res.code === 200) {
+          this.throughRateTrendData = res.data || {};
+        }
+      } catch (error) {
+        console.error('获取直通率趋势数据失败:', error);
+        this.throughRateTrendData = {};
+      }
     },
 
     // 获取生产报警数据
@@ -232,7 +458,7 @@ export default {
       getLargeScreenAlerts().then((res) => {
         if (res.code === 200) {
           this.alarmData = res.data || [];
-          
+
           // 生成通知数据（超时的报警）- 只有大于1天才进入横幅警报
           this.noticeData = this.alarmData
             .filter(item => {
@@ -260,6 +486,51 @@ export default {
       } else {
         return percentage;
       }
+    },
+
+    // 格式化日期时间戳
+    formatDate(timestamp) {
+      if (!timestamp) return '--';
+      return this.moment(timestamp).format('YYYY-MM-DD');
+    },
+
+    // 格式化日期时间戳 - 包含时间
+    formatDateTime(timestamp) {
+      if (!timestamp) return '--';
+      return this.moment(timestamp).format('YYYY-MM-DD HH:mm');
+    },
+
+    // 根据配置审核状态映射到显示状态
+    getConfigAuditStatus(instrumentState) {
+      // instrumentState: 0初始录入 1市场已确认 2研发已确认 3已发布
+      // 映射为: 0未审核 1已审核
+      return instrumentState >= 3 ? 1 : 0;
+    },
+
+    // 根据计算机ID获取计算机名称
+    getComputerName(computerId) {
+      if (!computerId) return '--';
+
+      // 如果映射数据还未加载完成，显示"获取中..."
+      if (!this.mappingLoaded) {
+        return '获取中...';
+      }
+
+      // 映射完成后，返回映射的名称或原ID
+      return this.computerMap.get(computerId) || computerId;
+    },
+
+    // 根据品类ID获取品类名称
+    getCategoryName(categoryId) {
+      if (!categoryId) return '--';
+
+      // 如果映射数据还未加载完成，显示"获取中..."
+      if (!this.mappingLoaded) {
+        return '获取中...';
+      }
+
+      // 映射完成后，返回映射的名称或原ID
+      return this.categoryMap.get(categoryId) || categoryId;
     },
   },
 };

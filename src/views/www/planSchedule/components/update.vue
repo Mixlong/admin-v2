@@ -500,7 +500,7 @@ export default {
         batchNo: orderData.batchNo || '',
         batchNum: orderData.batchNum || 1,
         remark: orderData.remark || '',
-        date: orderData.date ? orderData.date : '', // 保持时间戳格式，不转换为Date对象
+        date: orderData.date ? new Date(orderData.date) : null, // 转换为Date对象以便表单正确显示
       };
 
       // 构建日期范围 - 优先从 detailList 获取实际的开始和结束日期
@@ -587,7 +587,7 @@ export default {
       this.form = {
         ...this.form,
         ...scheduleData,
-        date: scheduleData.date ? scheduleData.date : '', // 保持时间戳格式，不转换为Date对象
+        date: scheduleData.date ? new Date(scheduleData.date) : null, // 转换为Date对象以便表单正确显示
       };
 
       // 处理订单列表数据
@@ -676,23 +676,23 @@ export default {
     // ✅ 转换为时间戳格式 - 后端已修改支持 Long 类型
     convertToTimestamp(dateValue) {
       if (!dateValue) return null;
-      
+
       // 如果已经是数字（时间戳），直接返回
       if (typeof dateValue === 'number') {
         return dateValue;
       }
-      
+
       // 如果是Date对象，转换为时间戳
       if (dateValue instanceof Date) {
         return dateValue.getTime();
       }
-      
+
       // 如果是字符串，尝试解析为时间戳
       if (typeof dateValue === 'string') {
         const timestamp = new Date(dateValue).getTime();
         return isNaN(timestamp) ? null : timestamp;
       }
-      
+
       return null;
     },
 
@@ -705,21 +705,21 @@ export default {
     },
     onAlertReason(params) {
       const { salesOrderNo, date, process, address } = params;
-      
+
       console.log('🔍 检查修改原因:', {
         cloneForm: this.cloneForm,
         params: { salesOrderNo, date, process, address }
       });
-      
+
       // 如果没有 cloneForm 数据，说明是新增，不需要修改原因
       if (!this.cloneForm || Object.keys(this.cloneForm).length === 0) {
         return false;
       }
-      
+
       // 日期需要特殊处理，因为可能是时间戳或Date对象
       const cloneDate = this.cloneForm.date instanceof Date ? this.cloneForm.date.getTime() : this.cloneForm.date;
       const currentDate = date instanceof Date ? date.getTime() : date;
-      
+
       if (
         this.cloneForm.salesOrderNo !== salesOrderNo ||
         cloneDate !== currentDate ||
@@ -732,6 +732,7 @@ export default {
       }
     },
     onUpdateOrder(params) {
+      console.log("🚀 ~ file: update.vue:735 ~ params:", params)
       schedulingEdit(params)
         .then((res) => {
           if (res.code === 200) {
@@ -764,7 +765,8 @@ export default {
             'data.id': data.id,
             'isEdit': !!data.id,
             'dailyScheduleData': this.dailyScheduleData,
-            'orderData': this.orderData
+            'orderData': this.orderData,
+            ...data
           });
 
           if (this.form.process !== "SMT") {
@@ -789,7 +791,7 @@ export default {
             const item = this.orderData[0];
             const rowKey = `${item.id || item.customerOrderNo}_0`;
             const dailySchedules = this.dailyScheduleData[rowKey] || [];
-            
+
             console.log('🔍 编辑时获取每日排产数据:', {
               item: item,
               rowKey: rowKey,
@@ -839,7 +841,6 @@ export default {
               batchNo,
               batchNum,
               num,
-              orderId: item.id,
               orderNo: item.customerOrderNo,
               // 日期相关字段
               date: this.convertToTimestamp(this.form.date),
@@ -854,6 +855,7 @@ export default {
                 id: data.id,
                 batchNo: data.batchNo,
                 num: data.num,
+                orderNo: data.orderNo,
                 date: data.date,
                 endDate: data.endDate
               }
@@ -926,7 +928,6 @@ export default {
                   // ✅ 在 detailList 中添加批次号相关数据
                   batchNo: item.batchNo,
                   batchNum: item.batchNum,
-                  orderId: item.id,
                   customerOrderNo: item.customerOrderNo,
                   bomCode: item.bomCode || '',
                   chipVersion: item.chipVersion || '',
@@ -936,7 +937,6 @@ export default {
               return {
                 batchNo: item.batchNo,
                 batchNum: item.batchNum,
-                orderId: item.id,
                 orderNo: item.customerOrderNo,
                 num: item.num,
                 date: item.dateRange ? new Date(item.dateRange[0]).getTime() : null,

@@ -77,6 +77,17 @@
           show-word-limit />
       </el-form-item>
 
+      <el-form-item label="附件上传" prop="fileUrl">
+        <DrUpload v-model="formData.fileUrl" :isOnePic="0" :multiple="true" class="file-upload-container">
+          <div class="upload-area">
+            <el-button size="small" type="primary" icon="el-icon-upload">上传附件</el-button>
+            <div class="upload-tip">
+              支持上传图片、文档等文件，单个文件不超过10MB
+            </div>
+          </div>
+        </DrUpload>
+      </el-form-item>
+
 
     </el-form>
 
@@ -92,7 +103,7 @@
 <script>
 import { createProductionAlert, updateProductionAlert } from '@/api/production-management/alerts'
 import { alertFormRules, processTypeOptions } from '@/types/production-alerts'
-import { categoryComputerDict } from '@/api/third/fileConfig'
+import categoryService from '@/utils/categoryService'
 import { listDept } from '@/api/system/dept'
 import { listUser } from '@/api/system/user'
 import Treeselect from '@riophae/vue-treeselect'
@@ -111,22 +122,6 @@ export default {
     editData: {
       type: Object,
       default: null
-    },
-    categoryOptions: {
-      type: Array,
-      default: () => []
-    },
-    computerOptions: {
-      type: Array,
-      default: () => []
-    },
-    departmentOptions: {
-      type: Array,
-      default: () => []
-    },
-    userOptions: {
-      type: Array,
-      default: () => []
     }
   },
   data() {
@@ -155,6 +150,7 @@ export default {
         processType: 1, // 默认为待处理
         processName: '',
         remark: '',
+        fileUrl: '', // 附件上传字段
         createdTime: '',
         processStartTime: '',
         processEndTime: '',
@@ -177,10 +173,6 @@ export default {
     canEditStatus() {
       // 只有管理员或处理人可以编辑状态
       return true // TODO: 根据用户权限判断
-    },
-    // 计算品类选项（与testRecord/index.vue保持一致，使用CategoryMixin模式）
-    categoryOptions() {
-      return this.dictList
     }
   },
   watch: {
@@ -241,6 +233,7 @@ export default {
         processType: 1,
         processName: '',
         remark: '',
+        fileUrl: '', // 重置附件字段
         createdTime: '',
         processStartTime: '',
         processEndTime: '',
@@ -293,7 +286,7 @@ export default {
       }
     },
 
-    // 品类变化处理（与testRecord/index.vue保持一致，使用CategoryMixin模式）
+    // 品类变化处理（使用共享的CategoryService）
     changeCategory(categoryName) {
       if (!categoryName) {
         this.computerOptions = []
@@ -304,9 +297,8 @@ export default {
       // 清空型号选择
       this.formData.computerName = ""
 
-      // 根据品类查找对应的型号列表
-      const selectedCategory = this.dictList.find(item => item.name === categoryName)
-      this.computerOptions = selectedCategory ? selectedCategory.computerList || [] : []
+      // 使用CategoryService获取对应的型号列表
+      this.computerOptions = categoryService.getComputersByCategory(categoryName)
     },
 
     // 兼容原有的方法名
@@ -314,29 +306,21 @@ export default {
       this.changeCategory(value)
     },
 
-    // 加载品类和型号数据（与testRecord/index.vue保持一致，使用CategoryMixin模式）
-    getCategoryData() {
-      return new Promise((resolve, reject) => {
-        try {
-          categoryComputerDict().then((res) => {
-            if (res.code === 200) {
-              this.dictList = res.data || []
-              resolve(res.data)
-            } else {
-              this.$message.error('获取品类数据失败')
-              this.dictList = []
-              resolve([])
-            }
-          }).catch(error => {
-
-            this.$message.error('获取品类数据失败')
-            this.dictList = []
-            reject(error)
-          })
-        } catch (error) {
-          reject(error)
-        }
-      })
+    // 加载品类和型号数据（使用共享的CategoryService）
+    async getCategoryData() {
+      try {
+        this.categoryLoading = true
+        const { categories } = await categoryService.getCategoryData()
+        this.dictList = categories || []
+        return categories
+      } catch (error) {
+        console.error('获取品类数据失败:', error)
+        this.$message.error('获取品类数据失败')
+        this.dictList = []
+        return []
+      } finally {
+        this.categoryLoading = false
+      }
     },
 
     // 查询部门下拉树结构（与BomChangeForm完全一致）
@@ -637,6 +621,34 @@ export default {
       padding: 15px;
       background-color: #f8f9fa;
       border-radius: 6px;
+    }
+
+    .file-upload-container {
+      .upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+
+        .upload-tip {
+          font-size: 12px;
+          color: #909399;
+          line-height: 1.4;
+        }
+      }
+
+      ::v-deep .el-upload-list {
+        margin-top: 10px;
+      }
+
+      ::v-deep .el-upload-list__item {
+        border-radius: 4px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: #f5f7fa;
+        }
+      }
     }
   }
 

@@ -1,104 +1,83 @@
 <template>
     <div class="production-alerts-container app-container">
-        <!-- 搜索区域 -->
-        <div class="search-section toolbar">
-            <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
-                <el-form-item label="工单号" prop="workOrderNo">
-                    <el-autocomplete v-model="searchForm.workOrderNo" :fetch-suggestions="queryWorkOrders"
-                        placeholder="请输入工单号" clearable style="width: 200px" @select="handleWorkOrderSelect">
-                        <template slot-scope="{ item }">
-                            <div class="work-order-item">
-                                <span>{{ item.value }}</span>
-                                <span class="work-order-desc">{{ item.desc }}</span>
-                            </div>
-                        </template>
+        <!-- 智能搜索区域 -->
+        <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch"
+            @reset="handleReset" @field-change="handleFieldChange" @layout-changed="handleSearchFormLayoutChanged">
+            <!-- 自定义工单号字段渲染 -->
+            <template #field-workOrderNo="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key">
+                    <el-autocomplete v-model="searchForm[field.key]" placeholder="请输入工单号" clearable style="width: 200px"
+                        size="mini">
                     </el-autocomplete>
                 </el-form-item>
+            </template>
 
-                <el-form-item label="品类名称" prop="categoryName">
-                    <el-select v-model="searchForm.categoryName" placeholder="请选择品类" clearable filterable
-                        style="width: 150px" @change="handleCategoryChange">
+            <!-- 自定义品类字段渲染 -->
+            <template #field-categoryName="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择品类" clearable filterable
+                        style="width: 150px" @change="handleCategoryChange" size="mini">
                         <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
                 </el-form-item>
+            </template>
 
-                <el-form-item label="型号名称" prop="computerName">
-                    <el-select v-model="searchForm.computerName" placeholder="请选择型号" clearable filterable
-                        style="width: 150px">
+            <!-- 自定义型号字段渲染 -->
+            <template #field-computerName="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择型号" clearable filterable
+                        style="width: 150px" size="mini">
                         <el-option v-for="item in computerOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
                 </el-form-item>
+            </template>
 
-                <el-form-item label="处理状态" prop="processType">
-                    <el-select v-model="searchForm.processType" placeholder="请选择状态" clearable style="width: 150px">
-                        <el-option v-for="item in processTypeOptions" :key="item.value" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
-
-                <el-form-item label="上报人" prop="reporter">
-                    <el-input v-model="searchForm.reporter" placeholder="请输入上报人" clearable style="width: 120px" />
-                </el-form-item>
-
-                <el-form-item label="责任归属部门" prop="responsibleDept">
-                    <treeselect v-model="searchForm.responsibleDept" :options="deptOptions" :disable-branch-nodes="true"
+            <!-- 自定义责任归属部门字段渲染 -->
+            <template #field-responsibleDept="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key" label-width="90px">
+                    <treeselect v-model="searchForm[field.key]" :options="deptOptions" :disable-branch-nodes="true"
                         placeholder="请选择责任归属部门" :clearable="true" :searchable="true" @input="handleSearchDeptChange"
                         :loading="deptLoading" style="width: 150px" />
                 </el-form-item>
+            </template>
 
-                <el-form-item label="责任归属人" prop="responsible">
-                    <el-select v-model="searchForm.responsible" placeholder="请先选择部门" filterable clearable
-                        style="width: 120px" :disabled="!searchForm.responsibleDept" :loading="computerLoading">
+            <!-- 自定义责任归属人字段渲染 -->
+            <template #field-responsible="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key" label-width="80px">
+                    <el-select v-model="searchForm[field.key]" placeholder="请先选择部门" filterable clearable
+                        style="width: 150px" :disabled="!searchForm.responsibleDept" :loading="computerLoading"
+                        size="mini">
                         <el-option v-for="item in applicantList" :key="item.userId" :label="item.nickName"
                             :value="item.nickName" />
                     </el-select>
                 </el-form-item>
+            </template>
 
-
-                <el-form-item label="创建时间" prop="dateRange">
+            <!-- 自定义创建时间字段渲染 -->
+            <template #field-dateRange="{ field, searchForm }">
+                <el-form-item :label="field.label" :prop="field.key">
                     <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
-                        end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 240px" />
+                        end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 240px"
+                        size="mini" />
                 </el-form-item>
+            </template>
 
-                <el-form-item>
-                    <el-button type="primary" @click="handleSearch" icon="el-icon-search">搜索</el-button>
-                    <el-button @click="handleReset" icon="el-icon-refresh">重置</el-button>
-                    <el-button @click="toggleDebugMode" icon="el-icon-setting" type="warning"
-                        size="mini">调试模式</el-button>
-                </el-form-item>
-            </el-form>
-
-            <!-- 操作按钮区域 -->
-            <div class="action-section">
-                <!-- 调试按钮权限 -->
-                <div v-if="debugMode"
-                    style="margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                    <p><strong>🔍 权限调试信息:</strong></p>
-                    <p>用户权限: {{ $store.getters.permissions }}</p>
-                    <p>是否有新增权限: {{ $auth ? $auth.hasPermi(['production:alerts:add']) : '未知' }}</p>
-                    <p>是否有编辑权限: {{ $auth ? $auth.hasPermi(['production:alerts:edit']) : '未知' }}</p>
-                    <p>是否有删除权限: {{ $auth ? $auth.hasPermi(['production:alerts:remove']) : '未知' }}</p>
-                </div>
-
-                <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['production:alerts:add']">
+            <!-- 页面操作按钮 -->
+            <template #page-actions>
+                <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['production:alerts:add']"
+                    size="mini">
                     新增报警
                 </el-button>
-                <el-button type="danger" @click="handleBatchDelete" :disabled="selectedRows.length === 0"
-                    icon="el-icon-delete" v-hasPermi="['production:alerts:remove']">
-                    批量删除 ({{ selectedRows.length }})
-                </el-button>
-
-            </div>
-        </div>
+            </template>
+        </IntelligentSearchForm>
 
         <!-- 数据表格 -->
         <div class="table-section">
-            <el-table :data="tableData" v-loading="loading" border style="width: 100%" :height="tableHeight(-60)"
-                @selection-change="handleSelectionChange" :row-class-name="getRowClassName" row-key="id"
+            <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%"
+                :height="dynamicTableHeight" :row-class-name="getRowClassName" row-key="id"
                 @sort-change="handleSortChange">
-                <el-table-column type="selection" width="55" align="center" />
 
                 <el-table-column prop="workOrderNo" label="工单号" align="center" width="120">
                     <template slot-scope="scope">
@@ -117,7 +96,6 @@
                 <el-table-column prop="computerName" label="型号名称" align="center" width="120" />
 
                 <el-table-column prop="problemDesc" label="问题描述" align="center" min-width="200" show-overflow-tooltip />
-                <el-table-column prop="remark" label="备注" align="center" min-width="200" show-overflow-tooltip />
 
                 <el-table-column prop="processType" label="处理状态" align="center" width="130">
                     <template slot-scope="scope">
@@ -148,6 +126,27 @@
                     </template>
                 </el-table-column>
 
+                <el-table-column prop="fileUrl" label="附件" align="center" width="100">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.fileUrl && scope.row.fileUrl.length > 0" class="attachment-cell">
+                            <el-dropdown @command="handleDownloadFile" trigger="click">
+                                <el-button type="text" size="mini" icon="el-icon-paperclip">
+                                    附件({{ getFileCount(scope.row.fileUrl) }})
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item v-for="(file, index) in parseFileUrls(scope.row.fileUrl)"
+                                        :key="index" :command="{ file, row: scope.row }">
+                                        <i :class="getFileIcon(file.name)" style="margin-right: 8px;"></i>
+                                        {{ file.name }}
+                                        <span class="file-size">({{ formatFileSize(file.size) }})</span>
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </div>
+                        <span v-else class="no-attachment">-</span>
+                    </template>
+                </el-table-column>
+
                 <el-table-column prop="createdTime" label="创建时间" align="center" width="160" sortable>
                     <template slot-scope="scope">
                         <div class="time-cell">
@@ -156,13 +155,13 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column label="操作" width="280" align="center" fixed="right">
+                <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button size="mini" type="text" @click="handleView(scope.row)" icon="el-icon-view">
                             查看
                         </el-button>
                         <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
-                            v-hasPermi="['production:alerts:edit']">
+                            v-hasPermi="['production:alerts:edit']" :disabled="scope.row.processType === 4">
                             编辑
                         </el-button>
 
@@ -185,7 +184,7 @@
                         </el-button>
 
                         <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)"
-                            icon="el-icon-delete" v-hasPermi="['production:alerts:remove']">
+                            icon="el-icon-delete" v-if="canDelete(scope.row)">
                             删除
                         </el-button>
                     </template>
@@ -238,23 +237,27 @@
 </template>
 
 <script>
-import { getProductionAlertsList, deleteProductionAlert, batchDeleteProductionAlerts, startProcessAlert, completeProcessAlert, verifyProcessResult, PROCESS_STATUS } from '@/api/production-management/alerts'
+import { getProductionAlertsList, deleteProductionAlert, startProcessAlert, completeProcessAlert, verifyProcessResult, PROCESS_STATUS } from '@/api/production-management/alerts'
 import { processTypeOptions, processTypeColors } from '@/types/production-alerts'
-import { categoryComputerDict } from '@/api/third/fileConfig'
+import categoryService from '@/utils/categoryService'
 import { listDept } from '@/api/system/dept'
 import { listUser } from '@/api/system/user'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import AlertForm from './components/AlertForm.vue'
 import AlertDetail from './components/AlertDetail.vue'
+import IntelligentSearchForm from '@/components/IntelligentSearchForm'
+import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
 
 export default {
     name: 'ProductionAlerts',
     components: {
         AlertForm,
         AlertDetail,
-        Treeselect
+        Treeselect,
+        IntelligentSearchForm
     },
+    mixins: [dynamicTableHeightMixin],
     data() {
         return {
             // 搜索表单
@@ -275,15 +278,13 @@ export default {
             // 表格数据
             tableData: [],
             loading: false,
-            debugMode: false,
             // 分页信息
             pagination: {
                 current: 1,
                 size: 20,
                 total: 0
             },
-            // 选中的行
-            selectedRows: [],
+
             // 下拉选项
             categoryOptions: [],
             computerOptions: [],
@@ -319,8 +320,61 @@ export default {
 
             // 部门映射表 - 将部门ID映射到部门名称
             deptIdToNameMap: new Map(), // Map<deptId, deptName>
+
+            // 高级搜索展开状态
+            isAdvancedExpanded: false,
+
+            // IntelligentSearchForm 配置（包含排序权重）
+            searchFields: [
+                {
+                    key: 'workOrderNo',
+                    label: '工单号',
+                    component: 'el-autocomplete',
+                    sort: 1     // 第1位 - 工单号最重要
+                },
+                {
+                    key: 'categoryName',
+                    label: '品类名称',
+                    component: 'el-select',
+                    sort: 2     // 第2位 - 品类重要
+                },
+                {
+                    key: 'processType',
+                    label: '处理状态',
+                    component: 'el-select',
+                    sort: 3     // 第3位 - 处理状态重要
+                },
+                {
+                    key: 'computerName',
+                    label: '型号名称',
+                    component: 'el-select',
+                    sort: 4     // 第4位 - 型号中等重要
+                },
+                {
+                    key: 'responsibleDept',
+                    label: '责任归属部门',
+                    component: 'treeselect',
+                    sort: 5     // 第5位 - 部门
+                },
+                {
+                    key: 'responsible',
+                    label: '责任归属人',
+                    component: 'el-select',
+                    sort: 6     // 第6位 - 责任人
+                },
+                {
+                    key: 'dateRange',
+                    label: '创建时间',
+                    component: 'el-date-picker',
+                    sort: 7     // 第7位 - 时间范围
+                }
+            ],
+
+
         }
     },
+
+
 
     created() {
         // 加载用户偏好
@@ -355,10 +409,11 @@ export default {
         // 获取当前用户信息
         this.initUserInfo()
 
-        // 添加测试数据按钮（仅在开发环境显示）
-        if (process.env.NODE_ENV === 'development') {
-            this.addTestDataButton()
-        }
+        // 初始化动态表格高度 (使用自定义配置)
+        this.initDynamicTableHeight({
+            topOffset: 244  // 根据用户修正的值
+        })
+
     },
 
     beforeDestroy() {
@@ -466,19 +521,7 @@ export default {
         // 错误上报
         reportError(error, context) {
             // TODO: 实现错误上报到监控系统
-            const errorReport = {
-                timestamp: new Date().toISOString(),
-                context,
-                error: {
-                    message: error.message,
-                    stack: error.stack,
-                    code: error.code
-                },
-                userAgent: navigator.userAgent,
-                url: window.location.href
-            }
-
-
+            // 这里可以发送错误信息到监控系统
         },
 
         // 显示加载状态
@@ -667,6 +710,9 @@ export default {
                     // 桌面端：显示所有列
                     this.showAllColumns()
                 }
+
+                // 重新计算表格高度 (使用mixin方法)
+                this.refreshTableHeight()
             })
         },
 
@@ -728,45 +774,20 @@ export default {
             }
         },
 
-        // 加载品类和型号选项
+        // 加载品类和型号选项（使用共享的CategoryService）
         async loadCategoryAndComputerOptions() {
             try {
-                const response = await categoryComputerDict()
+                const { categoryOptions, computerOptions } = await categoryService.getFormattedOptions()
 
-                if (response.code === 200) {
-                    const rawData = response.data
+                this.categoryOptions = categoryOptions
+                this.computerOptions = computerOptions
 
-                    if (Array.isArray(rawData) && rawData.length > 0) {
-                        // 提取品类选项
-                        this.categoryOptions = rawData.map(item => ({
-                            label: item.name,
-                            value: item.name
-                        }))
+                // 保存原始数据供品类筛选使用（从CategoryService获取）
+                const { categories } = await categoryService.getCategoryData()
+                this.categoryComputerData = categories
 
-                        // 提取所有型号选项
-                        const allComputers = []
-                        rawData.forEach(category => {
-                            if (category.computerList && Array.isArray(category.computerList)) {
-                                category.computerList.forEach(computer => {
-                                    allComputers.push({
-                                        label: computer.name,
-                                        value: computer.name,
-                                        categoryName: category.name
-                                    })
-                                })
-                            }
-                        })
-                        this.computerOptions = allComputers
-
-                        // 保存原始数据供品类筛选使用
-                        this.categoryComputerData = rawData
-                    } else {
-                        this.setDefaultOptions()
-                    }
-                } else {
-                    this.setDefaultOptions()
-                }
             } catch (error) {
+                console.error('获取品类和型号选项失败:', error)
                 this.setDefaultOptions()
             }
         },
@@ -812,10 +833,7 @@ export default {
         async loadUserOptions() {
             // TODO: 调用实际的API获取用户数据
             this.userOptions = [
-                { label: '张三', value: 'zhangsan' },
-                { label: '李四', value: 'lisi' },
-                { label: '王五', value: 'wangwu' },
-                { label: '赵六', value: 'zhaoliu' }
+
             ]
         },
 
@@ -983,225 +1001,19 @@ export default {
             return canVerify
         },
 
-        // 添加测试数据按钮（开发环境）
-        addTestDataButton() {
-            // 在页面顶部添加测试按钮
-            const testButtonContainer = document.createElement('div')
-            testButtonContainer.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                z-index: 9999;
-                background: #fff;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            `
-            testButtonContainer.innerHTML = `
-                <div style="margin-bottom: 10px; font-size: 12px; color: #666;">测试按钮状态</div>
-                <button onclick="window.refreshUserInfo()" style="margin-right: 5px; padding: 5px 10px; font-size: 12px;">刷新用户信息</button>
-                <button onclick="window.addTestData()" style="margin-right: 5px; padding: 5px 10px; font-size: 12px;">添加测试数据</button>
-                <button onclick="window.showCurrentUser()" style="padding: 5px 10px; font-size: 12px;">查看用户信息</button>
-            `
-            document.body.appendChild(testButtonContainer)
+        // 判断是否可以删除 - 只有创建人可以删除
+        canDelete(row) {
+            if (!this.currentUser || !row) return false
 
-            // 全局方法
-            window.refreshUserInfo = this.refreshUserInfo.bind(this)
-            window.addTestData = this.addTestData.bind(this)
-            window.showCurrentUser = this.showCurrentUserInfo.bind(this)
+            // 检查是否是创建人（上报人）
+            const isCreator = this.currentUser.nickName === row.reporter
+            console.log("🚀 ~ file: index.vue:933 ~ isCreator:", isCreator)
+
+            return isCreator
         },
 
-        // 刷新用户信息
-        async refreshUserInfo() {
-            try {
-                // 手动调用Store的GetInfo action来刷新用户信息
-                await this.$store.dispatch('GetInfo')
-
-                // 重新获取用户信息
-                this.getCurrentUser()
-
-                this.$message.success('用户信息已刷新')
-
-            } catch (error) {
-
-                this.$message.error('刷新用户信息失败: ' + (error.message || '未知错误'))
-            }
-        },
-
-        // 设置测试用户
-        setTestUser() {
-            this.currentUser = {
-                userId: 1,
-                userName: 'admin',
-                nickName: 'admin',
-                deptId: 103,
-                deptName: '103部门'
-            }
 
 
-            this.$message.success('测试用户已设置：admin (103部门)')
-        },
-
-        // 添加测试数据
-        addTestData() {
-            // 使用当前用户的部门信息创建测试数据
-            const currentDeptId = this.currentUser?.deptId || 103
-            const currentDeptName = this.currentUser?.deptName || '研发部'
-            const currentUserName = this.currentUser?.nickName || 'admin'
-
-            // 确保部门映射表中有当前部门的信息
-            if (currentDeptId && currentDeptName) {
-                this.deptIdToNameMap.set(currentDeptId, currentDeptName);
-            }
-            // 添加一些其他测试部门
-            this.deptIdToNameMap.set(999, '其他部门');
-            this.deptIdToNameMap.set(101, '生产部');
-            this.deptIdToNameMap.set(102, '质检部');
-
-            const testData = [
-                {
-                    id: 'test-1',
-                    workOrderNo: 'TEST-001',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 待处理状态（责任部门可开始处理）',
-                    processType: 1, // 待处理
-                    reporter: currentUserName,
-                    responsible: currentUserName,
-                    responsibleDept: currentDeptName, // 部门名称 (string)
-                    responsibleDeptId: String(currentDeptId), // 部门ID (string)
-                    processName: '',
-                    remark: '这是一个测试备注信息',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-2',
-                    workOrderNo: 'TEST-002',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 处理中状态（责任人可完成处理）',
-                    processType: 2, // 处理中
-                    reporter: 'other_user',
-                    responsible: currentUserName, // 责任人是当前用户，可以完成处理
-                    responsibleDept: currentDeptName, // 部门名称 (string)
-                    responsibleDeptId: String(currentDeptId), // 部门ID (string)
-                    processName: 'processor_user', // 处理人是其他用户
-                    remark: '正在处理中的报警备注',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-3',
-                    workOrderNo: 'TEST-003',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 待验证状态（上报人可验证）',
-                    processType: 3, // 已处理待验证
-                    reporter: currentUserName, // 上报人是当前用户，可以验证
-                    responsible: 'other_responsible',
-                    responsibleDept: currentDeptName, // 部门名称 (string)
-                    responsibleDeptId: String(currentDeptId), // 部门ID (string)
-                    processName: 'processor_user',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-4',
-                    workOrderNo: 'TEST-004',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 其他部门待处理（不应显示按钮）',
-                    processType: 1, // 待处理
-                    reporter: 'other_user',
-                    responsible: 'other_user',
-                    responsibleDept: '其他部门', // 不同部门，不能开始处理
-                    responsibleDeptId: 999,
-                    processName: '',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-7',
-                    workOrderNo: 'TEST-007',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 生产部门报警',
-                    processType: 1, // 待处理
-                    reporter: 'prod_user',
-                    responsible: 'prod_manager',
-                    responsibleDept: '生产部', // 部门名称 (string)
-                    responsibleDeptId: '101', // 部门ID (string)
-                    processName: '',
-                    remark: '生产线设备异常，需要紧急处理',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-8',
-                    workOrderNo: 'TEST-008',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 质检部门报警',
-                    processType: 2, // 处理中
-                    reporter: 'qc_user',
-                    responsible: 'qc_manager',
-                    responsibleDept: '质检部', // 部门名称 (string)
-                    responsibleDeptId: '102', // 部门ID (string)
-                    processName: 'qc_processor',
-                    remark: '质量检查发现问题',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-5',
-                    workOrderNo: 'TEST-005',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 其他人处理中（不应显示完成按钮）',
-                    processType: 2, // 处理中
-                    reporter: currentUserName,
-                    responsible: 'other_responsible', // 责任人不是当前用户
-                    responsibleDept: currentDeptName, // 部门名称 (string)
-                    responsibleDeptId: String(currentDeptId), // 部门ID (string)
-                    processName: 'processor_user',
-                    createdTime: new Date().toISOString()
-                },
-                {
-                    id: 'test-6',
-                    workOrderNo: 'TEST-006',
-                    categoryName: '测试品类',
-                    computerName: '测试型号',
-                    problemDesc: '测试问题描述 - 其他人上报待验证（不应显示验证按钮）',
-                    processType: 3, // 已处理待验证
-                    reporter: 'other_reporter', // 上报人不是当前用户
-                    responsible: currentUserName,
-                    responsibleDept: currentDeptName, // 部门名称 (string)
-                    responsibleDeptId: String(currentDeptId), // 部门ID (string)
-                    processName: 'processor_user',
-                    createdTime: new Date().toISOString()
-                }
-            ]
-
-            // 添加到表格数据前面
-            this.tableData = [...testData, ...this.tableData]
-
-
-
-            this.$message.success(`测试数据已添加！使用部门: ${currentDeptName}(ID:${currentDeptId})，用户: ${currentUserName}`)
-        },
-
-        // 显示当前用户信息
-        showCurrentUserInfo() {
-            const userInfo = `
-当前用户信息：
-- 用户名: ${this.currentUser?.userName || '未获取'}
-- 昵称: ${this.currentUser?.nickName || '未获取'}
-- 部门ID: ${this.currentUser?.deptId || '未获取'}
-- 部门名称: ${this.currentUser?.deptName || '未获取'}
-
-测试说明：
-1. 待处理(状态1): 只有责任部门的人可以看到"开始处理"按钮
-2. 处理中(状态2): 只有责任人可以看到"完成处理"按钮
-3. 待验证(状态3): 只有上报人可以看到"验证"按钮
-            `
-            alert(userInfo)
-        },
 
         // 搜索功能
         handleSearch() {
@@ -1223,9 +1035,6 @@ export default {
 
         // 重置搜索
         handleReset() {
-            // 重置表单
-            this.$refs.searchForm.resetFields()
-
             // 重置日期范围
             this.dateRange = []
 
@@ -1245,6 +1054,23 @@ export default {
 
             this.pagination.current = 1
             this.fetchData()
+        },
+
+        // 处理IntelligentSearchForm字段变化
+        handleFieldChange(fieldKey, value) {
+            if (fieldKey === 'categoryName') {
+                this.handleCategoryChange(value);
+            } else if (fieldKey === 'responsibleDept') {
+                this.handleSearchDeptChange(value);
+            }
+        },
+
+        // 切换高级搜索展开状态
+        toggleAdvanced() {
+            this.isAdvancedExpanded = !this.isAdvancedExpanded
+
+            // 保存用户偏好
+            this.saveUserPreference('advancedSearchExpanded', this.isAdvancedExpanded)
         },
 
 
@@ -1278,32 +1104,21 @@ export default {
             this.searchForm.computerName = ''
 
             if (!categoryName) {
-                // 显示所有型号
-                const allComputers = []
-                this.categoryComputerData.forEach(category => {
-                    if (category.computerList && Array.isArray(category.computerList)) {
-                        category.computerList.forEach(computer => {
-                            allComputers.push({
-                                label: computer.name,
-                                value: computer.name,
-                                categoryName: category.name
-                            })
-                        })
-                    }
-                })
-                this.computerOptions = allComputers
-            } else {
-                // 根据品类过滤型号
-                const selectedCategory = this.categoryComputerData.find(item => item.name === categoryName)
-                if (selectedCategory && selectedCategory.computerList) {
-                    this.computerOptions = selectedCategory.computerList.map(computer => ({
-                        label: computer.name,
-                        value: computer.name,
-                        categoryName: categoryName
-                    }))
-                } else {
+                // 显示所有型号 - 使用CategoryService重新获取
+                categoryService.getFormattedOptions().then(({ computerOptions }) => {
+                    this.computerOptions = computerOptions
+                }).catch(error => {
+                    console.error('获取所有型号失败:', error)
                     this.computerOptions = []
-                }
+                })
+            } else {
+                // 根据品类过滤型号 - 使用CategoryService
+                const filteredComputers = categoryService.getComputersByCategory(categoryName)
+                this.computerOptions = filteredComputers.map(computer => ({
+                    label: computer.name,
+                    value: computer.name,
+                    categoryName: computer.categoryName
+                }))
             }
         },
 
@@ -1338,26 +1153,10 @@ export default {
 
         // 新增报警
         handleAdd() {
-            // 调试信息
-            console.log('🔍 按钮点击调试信息:')
-            console.log('1. 用户权限:', this.$store.getters.permissions)
-            console.log('2. 是否有新增权限:', this.$auth.hasPermi(['production:alerts:add']))
-            console.log('3. 当前用户信息:', this.currentUser)
-
             this.currentEditData = null
             this.alertFormVisible = true
-
-            console.log('4. 对话框状态:', this.alertFormVisible)
         },
 
-        // 切换调试模式
-        toggleDebugMode() {
-            this.debugMode = !this.debugMode
-            this.$message.info(`调试模式已${this.debugMode ? '开启' : '关闭'}`)
-            if (this.debugMode) {
-                console.log('🔍 调试模式已开启，可以查看权限和按钮状态信息')
-            }
-        },
 
         // 查看详情
         handleView(row) {
@@ -1367,6 +1166,12 @@ export default {
 
         // 编辑报警
         handleEdit(row) {
+            // 检查是否已完成，已完成的报警不能编辑
+            if (row.processType === 4) {
+                this.$message.warning('已完成的报警不能编辑')
+                return
+            }
+
             this.currentEditData = { ...row }
             this.alertFormVisible = true
         },
@@ -1465,9 +1270,24 @@ export default {
 
         // 删除报警
         async handleDelete(row) {
-            // 检查是否可以删除
-            if (row.processType === 2) {
-                this.showError('正在处理中的报警无法删除')
+            // 检查删除权限
+            if (!this.canDelete(row)) {
+                if (!this.currentUser) {
+                    this.showError('用户信息获取失败，无法执行删除操作')
+                    return
+                }
+
+                if (this.currentUser.nickName !== row.reporter) {
+                    this.showError('只有报警创建人才能删除该记录')
+                    return
+                }
+
+                if (row.processType === 2) {
+                    this.showError('正在处理中的报警无法删除')
+                    return
+                }
+
+                this.showError('您没有删除该记录的权限')
                 return
             }
 
@@ -1503,57 +1323,12 @@ export default {
         },
 
         // 记录用户操作日志
-        logUserAction(action, data) {
-            const log = {
-                timestamp: new Date().toISOString(),
-                user: this.$store.getters.name || '未知用户',
-                action,
-                target: data.workOrderNo || data.id,
-                details: data
-            }
-
-
-            // TODO: 发送到后端记录
+        logUserAction() {
+            // TODO: 实现用户操作日志记录
+            // 可以发送到后端记录用户操作
         },
 
-        // 批量删除
-        handleBatchDelete() {
-            if (this.selectedRows.length === 0) {
-                this.$message.warning('请选择要删除的记录')
-                return
-            }
 
-            // 检查选中项中是否有正在处理的报警
-            const processingAlerts = this.selectedRows.filter(row => row.processType === 2)
-            if (processingAlerts.length > 0) {
-                this.$message.error(`选中项中有 ${processingAlerts.length} 条正在处理的报警，无法删除`)
-                return
-            }
-
-            this.$confirm(`确定要删除选中的 ${this.selectedRows.length} 条记录吗？`, '批量删除确认', {
-                confirmButtonText: '确定删除',
-                cancelButtonText: '取消',
-                type: 'warning',
-                customClass: 'batch-delete-confirm'
-            }).then(async () => {
-                try {
-                    const ids = this.selectedRows.map(row => row.id).join(',')
-                    const response = await batchDeleteProductionAlerts(ids)
-                    if (response.code === 200) {
-                        this.$message.success(`成功删除 ${this.selectedRows.length} 条记录`)
-                        this.selectedRows = []
-                        this.fetchData()
-                    } else {
-                        this.$message.error(response.msg || '删除失败')
-                    }
-                } catch (error) {
-
-                    this.$message.error('删除失败')
-                }
-            }).catch(() => {
-                this.$message.info('已取消删除')
-            })
-        },
 
 
 
@@ -1571,6 +1346,12 @@ export default {
 
         // 详情编辑处理
         handleDetailEdit(alertData) {
+            // 检查是否已完成，已完成的报警不能编辑
+            if (alertData.processType === 4) {
+                this.$message.warning('已完成的报警不能编辑')
+                return
+            }
+
             this.currentEditData = alertData
             this.alertFormVisible = true
         },
@@ -1583,10 +1364,7 @@ export default {
 
 
 
-        // 表格选择项变化
-        handleSelectionChange(selection) {
-            this.selectedRows = selection
-        },
+
 
         // 分页大小改变
         handleSizeChange(val) {
@@ -1633,6 +1411,11 @@ export default {
                 // 应用列显示偏好
                 if (preferences.columnSettings) {
                     this.columnSettings = preferences.columnSettings
+                }
+
+                // 应用高级搜索展开状态偏好
+                if (preferences.advancedSearchExpanded !== undefined) {
+                    this.isAdvancedExpanded = preferences.advancedSearchExpanded
                 }
             } catch (error) {
 
@@ -1727,7 +1510,7 @@ export default {
         },
 
         // 数据排序管理
-        handleSortChange({ column, prop, order }) {
+        handleSortChange({ prop, order }) {
 
 
             // 保存排序偏好
@@ -1877,7 +1660,7 @@ export default {
         },
 
         // 获取表格行样式类名
-        getRowClassName({ row, rowIndex }) {
+        getRowClassName({ row }) {
             let className = ''
 
             // 根据处理状态设置行样式
@@ -1891,7 +1674,7 @@ export default {
                 case 3: // 已处理待验证
                     className += 'row-awaiting '
                     break
-                case 4: // 已验证
+                case 4: // 已完成
                     className += 'row-verified '
                     break
                 default:
@@ -1905,17 +1688,10 @@ export default {
             return className.trim()
         },
 
-        // 处理排序变化
-        handleSortChange({ column, prop, order }) {
-
-            // TODO: 实现服务端排序
-            this.fetchData()
-        },
 
         // 查看工单详情
-        handleViewWorkOrder(workOrderNo) {
+        handleViewWorkOrder() {
             // TODO: 跳转到工单详情页面
-            // this.$message.info(`查看工单: ${workOrderNo}`)
         },
 
 
@@ -1924,7 +1700,264 @@ export default {
         formatDateTime(dateTime) {
             if (!dateTime) return '-'
             return new Date(dateTime).toLocaleString('zh-CN')
+        },
+
+        // 处理搜索表单布局变化
+        handleSearchFormLayoutChanged() {
+            // 使用mixin提供的方法重新计算表格高度
+            this.refreshTableHeight()
+        },
+
+        // ==================== 附件相关方法 ====================
+
+        // 解析文件URL字符串为文件对象数组
+        parseFileUrls(fileUrl) {
+            if (!fileUrl) return []
+
+            try {
+                // 如果是JSON字符串，尝试解析
+                if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
+                    return JSON.parse(fileUrl)
+                }
+
+                // 如果是逗号分隔的URL字符串
+                if (typeof fileUrl === 'string') {
+                    return fileUrl.split(',').map((url, index) => {
+                        const fileName = this.getFileNameFromUrl(url.trim())
+                        return {
+                            name: fileName,
+                            url: url.trim(),
+                            size: 0 // 大小未知
+                        }
+                    })
+                }
+
+                // 如果已经是数组
+                if (Array.isArray(fileUrl)) {
+                    return fileUrl
+                }
+
+                return []
+            } catch (error) {
+                console.error('解析文件URL失败:', error)
+                return []
+            }
+        },
+
+        // 从URL中提取文件名
+        getFileNameFromUrl(url) {
+            if (!url) return '未知文件'
+
+            try {
+                // 从URL中提取文件名
+                const urlParts = url.split('/')
+                const fileName = urlParts[urlParts.length - 1]
+
+                // 如果包含查询参数，去除
+                const cleanFileName = fileName.split('?')[0]
+
+                return decodeURIComponent(cleanFileName) || '未知文件'
+            } catch (error) {
+                return '未知文件'
+            }
+        },
+
+        // 获取文件数量
+        getFileCount(fileUrl) {
+            const files = this.parseFileUrls(fileUrl)
+            return files.length
+        },
+
+        // 根据文件名获取文件图标
+        getFileIcon(fileName) {
+            if (!fileName) return 'el-icon-document'
+
+            const extension = fileName.toLowerCase().split('.').pop()
+            const iconMap = {
+                // 图片文件
+                'jpg': 'el-icon-picture',
+                'jpeg': 'el-icon-picture',
+                'png': 'el-icon-picture',
+                'gif': 'el-icon-picture',
+                'bmp': 'el-icon-picture',
+                'webp': 'el-icon-picture',
+
+                // 文档文件
+                'pdf': 'el-icon-document',
+                'doc': 'el-icon-document',
+                'docx': 'el-icon-document',
+                'txt': 'el-icon-document',
+                'rtf': 'el-icon-document',
+
+                // 表格文件
+                'xls': 'el-icon-s-grid',
+                'xlsx': 'el-icon-s-grid',
+                'csv': 'el-icon-s-grid',
+
+                // 演示文件
+                'ppt': 'el-icon-film',
+                'pptx': 'el-icon-film',
+
+                // 压缩文件
+                'zip': 'el-icon-folder-opened',
+                'rar': 'el-icon-folder-opened',
+                '7z': 'el-icon-folder-opened',
+
+                // 视频文件
+                'mp4': 'el-icon-video-camera',
+                'avi': 'el-icon-video-camera',
+                'mov': 'el-icon-video-camera',
+                'wmv': 'el-icon-video-camera',
+
+                // 音频文件
+                'mp3': 'el-icon-headset',
+                'wav': 'el-icon-headset',
+                'flac': 'el-icon-headset'
+            }
+
+            return iconMap[extension] || 'el-icon-document'
+        },
+
+        // 格式化文件大小
+        formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '-'
+
+            const sizes = ['B', 'KB', 'MB', 'GB']
+            const i = Math.floor(Math.log(bytes) / Math.log(1024))
+
+            if (i === 0) return `${bytes} ${sizes[i]}`
+
+            return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`
+        },
+
+        // 处理文件下载
+        async handleDownloadFile(command) {
+            const { file, row } = command
+
+            try {
+                // 直接下载文件URL
+                this.downloadFileUrl(file.url, file.name)
+
+                this.showSuccess(`文件 "${file.name}" 开始下载`)
+
+                // 记录下载日志
+                this.logFileDownload(file, row)
+
+            } catch (error) {
+                console.error('文件下载失败:', error)
+                this.showError(`文件下载失败: ${error.message || '未知错误'}`)
+            }
+        },
+
+        // 记录文件下载日志
+        logFileDownload(file, row) {
+            console.log('文件下载记录:', {
+                fileName: file.name,
+                fileUrl: file.url,
+                alertId: row.id,
+                workOrderNo: row.workOrderNo,
+                downloadTime: new Date().toISOString(),
+                user: this.currentUser?.nickName
+            })
+
+            // TODO: 可以发送到后端记录下载日志
+        },
+
+        // 批量下载所有附件
+        async handleBatchDownloadFiles(row) {
+            const files = this.parseFileUrls(row.fileUrl)
+
+            if (files.length === 0) {
+                this.showWarning('该记录没有附件')
+                return
+            }
+
+            const confirmed = await this.confirmAction(
+                `确定要下载工单 "${row.workOrderNo}" 的所有附件吗？\n共 ${files.length} 个文件`,
+                '批量下载确认'
+            )
+
+            if (!confirmed) return
+
+            try {
+                this.showLoading(`正在下载 ${files.length} 个文件...`)
+
+                // 逐个下载文件（避免浏览器阻止多个下载）
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i]
+
+                    // 延迟下载以避免浏览器限制
+                    setTimeout(() => {
+                        // 直接下载文件URL
+                        this.downloadFileUrl(file.url, file.name)
+
+                        // 记录下载日志
+                        this.logFileDownload(file, row)
+                    }, i * 500) // 每个文件间隔500ms
+                }
+
+                this.showSuccess(`开始批量下载 ${files.length} 个文件`)
+
+            } catch (error) {
+                console.error('批量下载失败:', error)
+                this.showError(`批量下载失败: ${error.message || '未知错误'}`)
+            } finally {
+                setTimeout(() => {
+                    this.hideLoading()
+                }, files.length * 500 + 1000) // 等待所有文件开始下载后隐藏loading
+            }
+        },
+
+        // 预览文件（如果是图片或PDF）
+        handlePreviewFile(file, row) {
+            const extension = file.name.toLowerCase().split('.').pop()
+            const previewableTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'pdf']
+
+            if (previewableTypes.includes(extension)) {
+                // 在新窗口中打开预览
+                window.open(file.url, '_blank')
+
+                // 记录预览日志
+                console.log('文件预览记录:', {
+                    fileName: file.name,
+                    fileUrl: file.url,
+                    alertId: row.id,
+                    workOrderNo: row.workOrderNo,
+                    previewTime: new Date().toISOString(),
+                    user: this.currentUser?.nickName
+                })
+            } else {
+                this.showInfo('该文件类型不支持预览，请下载后查看')
+                this.handleDownloadFile({ file, row })
+            }
+        },
+
+        // 直接下载文件URL的方法
+        downloadFileUrl(url, fileName) {
+            try {
+                // 创建一个隐藏的a标签来触发下载
+                const link = document.createElement('a')
+                link.href = url
+                link.download = fileName || this.getFileNameFromUrl(url)
+                link.target = '_blank'
+                link.style.display = 'none'
+
+                // 添加到DOM并触发点击
+                document.body.appendChild(link)
+                link.click()
+
+                // 清理DOM
+                setTimeout(() => {
+                    document.body.removeChild(link)
+                }, 100)
+
+            } catch (error) {
+                console.error('下载失败:', error)
+                // 如果a标签下载失败，尝试直接打开URL
+                window.open(url, '_blank')
+            }
         }
+
     }
 }
 </script>
@@ -1932,22 +1965,125 @@ export default {
 <style lang="scss" scoped>
 .production-alerts-container {
     .search-section {
-        margin-bottom: 20px;
-        padding: 20px;
         background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 6px;
 
+        .search-form {
+            .search-row {
+                display: flex;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 8px;
 
+                &.primary-row {
+                    justify-content: space-between;
 
+                    .action-buttons {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        flex-shrink: 0;
+                        margin-left: auto;
 
+                        .toggle-button {
+                            color: #606266;
+                            padding: 7px 8px;
 
+                            &:hover {
+                                color: #409EFF;
+                                background-color: #ecf5ff;
+                            }
+                        }
+                    }
+                }
+
+                &.advanced-row {
+                    margin-top: 12px;
+                    padding-top: 12px;
+                    border-top: 1px solid #f0f0f0;
+                }
+            }
+
+            ::v-deep .el-form-item {
+                margin-bottom: 8px;
+                margin-right: 12px;
+
+                .el-form-item__label {
+                    padding-right: 8px;
+                    font-size: 13px;
+                    color: #606266;
+                }
+
+                .el-input,
+                .el-select,
+                .el-autocomplete,
+                .el-date-picker {
+
+                    &.el-input--mini,
+                    &.el-select--mini {
+                        .el-input__inner {
+                            height: 32px;
+                            line-height: 32px;
+                            font-size: 13px;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 响应式设计
+        @media (max-width: 1200px) {
+            .search-row.primary-row {
+                flex-direction: column;
+                align-items: stretch;
+
+                .action-buttons {
+                    margin-left: 0;
+                    margin-top: 8px;
+                    justify-content: flex-start;
+                    flex-wrap: wrap;
+                }
+            }
+        }
+
+        @media (max-width: 768px) {
+            padding: 12px;
+
+            ::v-deep .el-form-item {
+                width: 100%;
+                margin-right: 0;
+
+                .el-input,
+                .el-select,
+                .el-autocomplete,
+                .el-date-picker {
+                    width: 100% !important;
+                }
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+
+                .el-button {
+                    flex: 1;
+                    margin: 0 4px;
+                    max-width: 80px;
+
+                    &.toggle-button {
+                        flex: 0 0 auto;
+                        max-width: none;
+                        padding: 7px 12px;
+                    }
+                }
+            }
+        }
     }
 
     .table-section {
         background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
 
@@ -2257,6 +2393,8 @@ export default {
         }
     }
 
+
+
     ::v-deep .row-processing {
         background-color: #f0f9ff;
 
@@ -2355,6 +2493,74 @@ export default {
     .no-remark {
         color: #c0c4cc;
         font-style: italic;
+    }
+
+    // 附件单元格样式
+    .attachment-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .el-button {
+            color: #409eff;
+
+            &:hover {
+                color: #66b1ff;
+            }
+        }
+
+        .el-dropdown-menu {
+            .el-dropdown-menu__item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 16px;
+
+                &:hover {
+                    background-color: #f5f7fa;
+                }
+
+                .file-size {
+                    font-size: 11px;
+                    color: #909399;
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+
+    .no-attachment {
+        color: #c0c4cc;
+        font-style: italic;
+    }
+
+    // 文件图标颜色
+    .el-icon-picture {
+        color: #67c23a;
+    }
+
+    .el-icon-document {
+        color: #409eff;
+    }
+
+    .el-icon-s-grid {
+        color: #e6a23c;
+    }
+
+    .el-icon-film {
+        color: #f56c6c;
+    }
+
+    .el-icon-folder-opened {
+        color: #909399;
+    }
+
+    .el-icon-video-camera {
+        color: #f56c6c;
+    }
+
+    .el-icon-headset {
+        color: #67c23a;
     }
 }
 </style>

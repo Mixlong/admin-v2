@@ -1,7 +1,7 @@
 <template>
   <!-- 添加售后 -->
   <el-dialog class="after-sale-box sop-form-dialog premium-dialog" :title="isTitle" :visible="visible" width="950px"
-    append-to-body center top="2vh" :close-on-click-modal="false" @close="close">
+    append-to-body center top="0vh" :close-on-click-modal="false" @close="close">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px" label-position="left">
       <el-row :gutter="24" class="form-header-section">
         <el-col :span="12">
@@ -46,7 +46,7 @@
 
                 <i class="el-icon-upload el-icon--left"></i> 上传PDF
               </el-button>
-              
+
               <input ref="pdfFileInput" type="file" accept="application/pdf" style="display: none"
                 @change="onPdfFileSelected">
             </div>
@@ -74,18 +74,14 @@
                       :style="{ marginBottom: item.file ? 0 : '18px' }" class="custom-upload-item">
                       <!-- 使用 draggable 包装每个上传组件，实现跨行拖拽 -->
                       <div class="file-list-container">
-                        <draggable :list="getFileList(item.file)" 
-                        :group="{ name: 'images', pull: true, put: true }" 
-                         :item-key="getItemKey" animation="300"
-                          ghost-class="sortable-ghost" chosen-class="sortable-chosen" drag-class="sortable-drag"
-                          @start="onDragStart($event, index)" @end="onDragEnd" @change="onFileListChange($event, index)"
-                          class="draggable-container">
+                        <draggable :list="getFileList(item.file)" :group="{ name: 'images', pull: true, put: true }"
+                          :item-key="getItemKey" animation="300" ghost-class="sortable-ghost"
+                          chosen-class="sortable-chosen" drag-class="sortable-drag" @start="onDragStart($event, index)"
+                          @end="onDragEnd" @change="onFileListChange($event, index)" class="draggable-container">
                           <div class="file-item" :key="element.id"
                             v-for="(element, fileIndex) in getFileList(item.file)">
-                            <el-image
-                              :src="element.url"
-                              :preview-src-list="getFileList(item.file).map(item=>item.url)"
-                              class="file-preview"
+                            <el-image :src="element.url"
+                              :preview-src-list="getFileList(item.file).map(item => item.url)" class="file-preview"
                               fit="cover">
                             </el-image>
                             <div class="file-info">
@@ -95,11 +91,11 @@
                                 @click="removeFile(index, fileIndex)" />
                             </div>
                           </div>
-                          <div style="width: 100%;height: 98px;flex:1;" v-if="getFileList(item.file).length === 0"></div>
+                          <div style="width: 100%;height: 98px;flex:1;" v-if="getFileList(item.file).length === 0">
+                          </div>
                         </draggable>
                         <!-- 上传按钮 -->
-                        <el-upload :action="actionUrl" :show-file-list="false"
-                       :accept="accept"
+                        <el-upload :action="actionUrl" :show-file-list="false" :accept="accept"
                           :on-success="(response) => onUploadSuccess(response, index)" :before-upload="beforeUpload"
                           class="upload-trigger">
                           <div class="upload-button">
@@ -113,6 +109,16 @@
                     <el-form-item label="" label-width="0" :prop="`list[${index}].remark`" :rules="rules.remark">
                       <el-input v-model="item.remark" clearable placeholder="请输入工位文件描述" style="width: 100%"
                         @blur="onSaveItem(item)" />
+                    </el-form-item>
+                    <!-- 工时输入 -->
+                    <el-form-item label="" label-width="0" :prop="`list[${index}].spendTime`" :rules="rules.spendTime">
+                      <div class="spend-time-input">
+                        <el-input-number v-model="item.spendTime" :min="0" :precision="0" controls-position="right"
+                          placeholder="工时(秒)" style="width: 100%" @blur="onSaveItem(item)" />
+                        <div class="time-display" v-if="item.spendTime">
+                          {{ formatSpendTime(item.spendTime) }}
+                        </div>
+                      </div>
                     </el-form-item>
                     <!-- 保存 -->
                     <div class="action-buttons">
@@ -217,6 +223,10 @@ export default {
         ],
         remark: [
           { required: false, message: "工位文件描述为空", trigger: "blur" },
+        ],
+        spendTime: [
+          { required: true, message: "工时不能为空", trigger: "blur" },
+          { type: "number", min: 0, message: "工时必须大于等于0秒", trigger: "blur" }
         ]
       },
     };
@@ -249,6 +259,7 @@ export default {
             indexNum: undefined,
             file: "",
             remark: "",
+            spendTime: null,
           },
         ],
       };
@@ -260,6 +271,7 @@ export default {
         indexNum: undefined,
         file: "",
         remark: "",
+        spendTime: null,
       });
 
       this.onSetStationBoxRef();
@@ -270,13 +282,13 @@ export default {
         console.warn('stationBoxRef 不存在，跳过滚动操作');
         return;
       }
-      
+
       const scrollRef = this.$refs.stationBoxRef.$el;
       if (!scrollRef) {
         console.warn('stationBoxRef.$el 不存在，跳过滚动操作');
         return;
       }
-      
+
       const scrollHeight = scrollRef.scrollHeight;
 
       this.$nextTick(() => {
@@ -416,7 +428,7 @@ export default {
       return true;
     },
 
-  
+
 
     checkListItem() {
       let arr = [];
@@ -533,7 +545,7 @@ export default {
         this.msgError(data.msg || 'PDF转换失败');
       }
     },
- 
+
     /** 提交按钮 */
     submitForm: function () {
       if (this.checkListItem()) return;
@@ -582,13 +594,29 @@ export default {
       console.log("🚀 ~ setFormData ~ formData.historyFile:", formData.historyFile)
       this.form = formData;
     },
+
+    /** 格式化工时显示 */
+    formatSpendTime(seconds) {
+      if (!seconds || seconds === 0) return '';
+
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+
+      let result = [];
+      if (hours > 0) result.push(`${hours}时`);
+      if (minutes > 0) result.push(`${minutes}分`);
+      if (remainingSeconds > 0 || result.length === 0) result.push(`${remainingSeconds}秒`);
+
+      return result.join('');
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .after-sale-box {
-  .el-dialog__body {
+  ::v-deep .el-dialog__body {
     max-height: 80vh;
     overflow: hidden;
     overflow-y: auto;
@@ -737,6 +765,32 @@ export default {
     margin-top: 10px;
   }
 
+  .spend-time-input {
+    position: relative;
+
+    .time-unit {
+      position: absolute;
+      right: 35px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: #909399;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .time-display {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #67c23a;
+      text-align: center;
+      background: #f0f9ff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #e1f5fe;
+    }
+  }
+
   .upload-section {
     border-radius: 10px;
     position: relative;
@@ -872,6 +926,7 @@ export default {
   .custom-upload-item {
     margin: 10px 0;
     transition: all 0.3s;
+
     .file-list-container {
       display: flex;
       align-items: center;
@@ -934,9 +989,6 @@ export default {
   }
 
   .station_box {
-    max-height: 500px;
-    overflow: hidden;
-    overflow-y: auto;
     scroll-behavior: smooth;
     padding-right: 10px;
     padding-top: 5px;
@@ -1042,8 +1094,9 @@ export default {
     transition: all 0.3s;
     display: flex;
     gap: 20px;
-    flex:1;
+    flex: 1;
     flex-wrap: wrap;
+
     &.drag-over {
       border-color: #409eff;
       background: rgba(64, 158, 255, 0.05);
@@ -1065,9 +1118,10 @@ export default {
     justify-content: center;
     gap: 8px;
     padding: 20px;
-    min-height:58px;
-    min-width:58px;
+    min-height: 58px;
+    min-width: 58px;
     box-sizing: border-box;
+
     &:hover {
       border-color: #409eff;
       color: #409eff;

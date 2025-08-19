@@ -22,11 +22,11 @@
           <li v-NoData="item.dcdCount"></li>
           <li v-NoData="item.num"></li>
           <li v-NoData="item.date"></li>
-          <li class="reach-rate" :style="reactTxtStyle(item.reach)">
+          <li class="reach-rate">
             <div class="reach-progress">
               <div class="progress-bar" :style="progressBarStyle(item.reach)"></div>
-              <span class="progress-text">{{ reachData(item.reach) }}</span>
             </div>
+            <span class="progress-text" :style="reactTxtStyle(item.reach)">{{ reachData(item.reach) }}</span>
           </li>
         </ul>
       </vue-seamless-scroll>
@@ -125,7 +125,9 @@ export default {
     background: linear-gradient(360deg,
         #1fb4ff8f 0%,
         rgba(31, 180, 255, 0) 100%);
-    border: 1px solid #093d4d;
+    border-image-source: linear-gradient(180deg, rgba(90, 211, 251, 0) 0%, #5AD3FB 100%),
+      linear-gradient(0deg, #093D4D, #093D4D);
+    border-image-slice: 1;
     font-weight: 400;
     font-size: 14px;
     color: #ffffff;
@@ -137,6 +139,15 @@ export default {
       text-align: center;
       padding: 0 6px;
       box-sizing: border-box;
+      text-shadow:
+        -1px -1px 0 #0a3a4a,
+        1px -1px 0 #0a3a4a,
+        -1px 1px 0 #0a3a4a,
+        1px 1px 0 #0a3a4a,
+        0 -1px 0 #0a3a4a,
+        0 1px 0 #0a3a4a,
+        -1px 0 0 #0a3a4a,
+        1px 0 0 #0a3a4a;
 
       &:nth-child(1) {
         width: 9%; // 上料日期
@@ -233,30 +244,33 @@ export default {
 
       .reach-rate {
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
 
         .reach-progress {
           position: relative;
-          width: 100%;
-          height: 20px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
+          width: 80px; // 增加进度条宽度
+          height: 4px; // 保持细线条
+          background: #171D38;
+          border-radius: 2px;
           overflow: hidden;
+          margin-right: 10px;
 
           .progress-bar {
             height: 100%;
-            border-radius: 10px;
+            border-radius: 2px;
             transition: width 0.3s ease;
           }
+        }
 
-          .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 11px;
-            font-weight: bold;
-            z-index: 2;
-          }
+        .progress-text {
+          font-size: 12px;
+          font-weight: 500;
+          color: inherit;
+          white-space: nowrap;
+          min-width: 35px;
         }
       }
     }

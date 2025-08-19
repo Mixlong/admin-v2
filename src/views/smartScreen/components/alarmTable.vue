@@ -1,5 +1,5 @@
 <template>
-  <div class="seamless-container">
+  <div class="seamless-container" :class="{ 'full-height': !hasNotice }">
     <table>
       <thead>
         <tr>
@@ -29,12 +29,7 @@
       </vue-seamless-scroll>
     </div>
 
-    <el-empty
-      v-else
-      description="后续迭代"
-      :image-size="80"
-      style="height: 100%"
-    ></el-empty>
+    <el-empty v-else description="后续迭代" :image-size="80" style="height: 100%"></el-empty>
   </div>
 </template>
 
@@ -50,6 +45,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    hasNotice: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -62,7 +61,7 @@ export default {
         openWatch: true, // 开启数据实时监控刷新dom
         singleHeight: 40, // 单步运动停止的高度
         singleWidth: 0,
-        waitTime: 2000 // 单步运动停止的时间(默认值1000ms)
+        waitTime: 0 // 单步运动停止的时间(默认值1000ms)
       }
     };
   },
@@ -73,7 +72,7 @@ export default {
         if (typeof durationStr === 'string' && durationStr) {
           return durationStr;
         }
-        
+
         // 如果是数字秒数，进行格式化
         if (typeof durationStr === 'number') {
           const seconds = durationStr;
@@ -125,7 +124,7 @@ export default {
             color: isOverdue ? "#FF386B" : "#FFFFFF",
           };
         }
-        
+
         // 如果是数字，按原来的逻辑
         if (typeof durationStr === 'number') {
           const days = Math.floor(durationStr / (24 * 3600));
@@ -150,8 +149,20 @@ export default {
   box-sizing: border-box;
   overflow: hidden;
 
+  &.full-height {
+    height: 264px;
+    /* 220px + 44px(通知栏高度) = 264px */
+
+    .scroll-box {
+      height: 204px;
+      /* 160px + 44px = 204px */
+      overflow: hidden;
+    }
+  }
+
   .scroll-box {
-    height: 160px; /* 固定滚动区域高度 */
+    height: 160px;
+    /* 固定滚动区域高度 */
     overflow: hidden;
   }
 
@@ -172,12 +183,36 @@ export default {
       text-transform: none;
 
       th {
-        &:nth-child(1) { width: 18%; } // 工单号
-        &:nth-child(2) { width: 12%; } // 型号  
-        &:nth-child(3) { width: 25%; } // 问题描述
-        &:nth-child(4) { width: 15%; } // 上报人
-        &:nth-child(5) { width: 15%; } // 责任归属
-        &:nth-child(6) { width: 15%; } // 处理时长
+        &:nth-child(1) {
+          width: 18%;
+        }
+
+        // 工单号
+        &:nth-child(2) {
+          width: 12%;
+        }
+
+        // 型号  
+        &:nth-child(3) {
+          width: 25%;
+        }
+
+        // 问题描述
+        &:nth-child(4) {
+          width: 15%;
+        }
+
+        // 上报人
+        &:nth-child(5) {
+          width: 15%;
+        }
+
+        // 责任归属
+        &:nth-child(6) {
+          width: 15%;
+        }
+
+        // 处理时长
       }
     }
 
@@ -188,12 +223,36 @@ export default {
         font-weight: 500;
 
         td {
-          &:nth-child(1) { width: 18%; } // 工单号
-          &:nth-child(2) { width: 12%; } // 型号  
-          &:nth-child(3) { width: 25%; } // 问题描述
-          &:nth-child(4) { width: 15%; } // 上报人
-          &:nth-child(5) { width: 15%; } // 责任归属
-          &:nth-child(6) { width: 15%; } // 处理时长
+          &:nth-child(1) {
+            width: 18%;
+          }
+
+          // 工单号
+          &:nth-child(2) {
+            width: 12%;
+          }
+
+          // 型号  
+          &:nth-child(3) {
+            width: 25%;
+          }
+
+          // 问题描述
+          &:nth-child(4) {
+            width: 15%;
+          }
+
+          // 上报人
+          &:nth-child(5) {
+            width: 15%;
+          }
+
+          // 责任归属
+          &:nth-child(6) {
+            width: 15%;
+          }
+
+          // 处理时长
         }
       }
     }

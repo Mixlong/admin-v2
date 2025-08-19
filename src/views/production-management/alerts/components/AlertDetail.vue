@@ -48,11 +48,6 @@
         <div class="remark-content">{{ alertData.remark }}</div>
       </el-card>
     </div>
-
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="handleClose">关闭</el-button>
-      <el-button type="primary" @click="handleEdit">编辑</el-button>
-    </div>
   </el-dialog>
 </template>
 

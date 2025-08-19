@@ -177,7 +177,7 @@ export function getAlertsByWorkOrder(workOrderNo) {
 // 生产大屏报警消息列表（只展示待处理跟处理中的数据）
 export function getLargeScreenAlerts() {
     return request({
-        url: '/production/alerts/large/Screen',
+        url: '/production/alerts/large/screen',
         method: 'get'
     })
 }
@@ -188,7 +188,7 @@ export const PROCESS_STATUS = {
     PENDING: 1,            // 待处理
     IN_PROGRESS: 2,        // 处理中
     PROCESSED_AWAITING: 3, // 已处理待验证
-    VERIFIED: 4            // 已验证
+    VERIFIED: 4            // 已完成
 }
 
 // 处理状态标签映射
@@ -197,7 +197,7 @@ export const PROCESS_STATUS_LABELS = {
     [PROCESS_STATUS.PENDING]: '待处理',
     [PROCESS_STATUS.IN_PROGRESS]: '处理中',
     [PROCESS_STATUS.PROCESSED_AWAITING]: '已处理待验证',
-    [PROCESS_STATUS.VERIFIED]: '已验证'
+    [PROCESS_STATUS.VERIFIED]: '已完成'
 }
 
 // 验证类型枚举

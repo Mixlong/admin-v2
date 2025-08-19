@@ -5,6 +5,7 @@
         <tr>
           <th>生产日期</th>
           <th>订单号</th>
+          <th>批次号</th>
           <th>型号</th>
           <th>配置审核状态</th>
           <th>生产许可状态</th>
@@ -19,6 +20,7 @@
             <tr v-for="(item, index) in tableData" :key="index">
               <td>{{ item.date }}</td>
               <td>{{ item.orderNo }}</td>
+              <td>{{ item.batchNo }}</td>
               <td>{{ item.computerName }}</td>
               <td :style="isLicenseStyle(item.configAuditStatus)">
                 {{ item.configAuditStatus === 1 ? "已审核" : "未审核" }}
@@ -124,7 +126,7 @@ export default {
       return (status) => {
         const texts = {
           0: "未备料",
-          1: "备料中", 
+          1: "备料中",
           2: "已备料"
         };
         return texts[status] || "未知";
@@ -162,12 +164,41 @@ export default {
       text-transform: none;
 
       th {
-        &:nth-child(1) { width: 15%; } // 生产日期
-        &:nth-child(2) { width: 20%; } // 订单号
-        &:nth-child(3) { width: 15%; } // 型号
-        &:nth-child(4) { width: 18%; } // 配置审核状态
-        &:nth-child(5) { width: 16%; } // 生产许可状态
-        &:nth-child(6) { width: 16%; } // 备料状态
+        &:nth-child(1) {
+          width: 12%;
+        }
+
+        // 生产日期
+        &:nth-child(2) {
+          width: 18%;
+        }
+
+        // 订单号
+        &:nth-child(3) {
+          width: 12%;
+        }
+
+        // 批次号
+        &:nth-child(4) {
+          width: 15%;
+        }
+
+        // 型号
+        &:nth-child(5) {
+          width: 15%;
+        }
+
+        // 配置审核状态
+        &:nth-child(6) {
+          width: 14%;
+        }
+
+        // 生产许可状态
+        &:nth-child(7) {
+          width: 14%;
+        }
+
+        // 备料状态
       }
     }
 
@@ -178,12 +209,41 @@ export default {
         font-weight: 500;
 
         td {
-          &:nth-child(1) { width: 15%; } // 生产日期
-          &:nth-child(2) { width: 20%; } // 订单号
-          &:nth-child(3) { width: 15%; } // 型号
-          &:nth-child(4) { width: 18%; } // 配置审核状态
-          &:nth-child(5) { width: 16%; } // 生产许可状态
-          &:nth-child(6) { width: 16%; } // 备料状态
+          &:nth-child(1) {
+            width: 12%;
+          }
+
+          // 生产日期
+          &:nth-child(2) {
+            width: 18%;
+          }
+
+          // 订单号
+          &:nth-child(3) {
+            width: 12%;
+          }
+
+          // 批次号
+          &:nth-child(4) {
+            width: 15%;
+          }
+
+          // 型号
+          &:nth-child(5) {
+            width: 15%;
+          }
+
+          // 配置审核状态
+          &:nth-child(6) {
+            width: 14%;
+          }
+
+          // 生产许可状态
+          &:nth-child(7) {
+            width: 14%;
+          }
+
+          // 备料状态
         }
       }
     }

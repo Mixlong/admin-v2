@@ -10,20 +10,31 @@
         </el-table-column>
         <el-table-column label="内容" width="280">
           <template slot-scope="scope">
-   
-                <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
-                v-if="scope.row.content === item.id"
-                  >{{ item.label }}</span>
-           
+
+            <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
+              v-if="scope.row.content === item.id">{{ item.label }}</span>
+
           </template>
         </el-table-column>
         <el-table-column label="详情">
           <template slot-scope="scope">
-            <template v-if="isHttpLink(scope.row.details)">
-              <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
+            <!-- 迪太英文指标项显示文件信息 -->
+            <template v-if="scope.row.checkItem.id === 'ditaiEnglishIndicators'">
+              <div v-if="scope.row.fileUrl && scope.row.fileUrl.length > 0" class="file-info">
+                <el-button type="text" size="mini" icon="el-icon-document" @click="handleFileDownload(scope.row.fileUrl)">
+                  {{ getFileName(scope.row.fileUrl) }}
+                </el-button>
+              </div>
+              <span v-else class="no-file">未上传文件</span>
             </template>
+            <!-- 其他项的详情显示 -->
             <template v-else>
-              {{ scope.row.details || '无' }}
+              <template v-if="isHttpLink(scope.row.details)">
+                <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
+              </template>
+              <template v-else>
+                {{ scope.row.details || '无' }}
+              </template>
             </template>
           </template>
         </el-table-column>
@@ -103,7 +114,7 @@ export default {
   methods: {
     // 初始化表格数据
     initializeTableData() {
-      let processedData ;
+      let processedData;
       if (!this.packagingInfo) {
         this.tableData = [];
         return;
@@ -148,6 +159,10 @@ export default {
         console.log("🚀 ~ file: packagingInfo.vue:174 ~ element:", element)
         this.defaultTableData[i].content = element.contentId;
         this.defaultTableData[i].details = element.details;
+        // 处理文件URL字段（如果存在）
+        if (element.fileUrl !== undefined) {
+          this.defaultTableData[i].fileUrl = element.fileUrl;
+        }
       }
       return this.defaultTableData
     },
@@ -167,6 +182,75 @@ export default {
       const option = row.contentOptions.find(opt => opt.id === row.content);
       return option ? option.label : row.content;
     },
+
+    // 处理文件下载
+    handleFileDownload(fileUrl) {
+      if (!fileUrl) {
+        this.$message.warning('文件链接不存在');
+        return;
+      }
+      
+      try {
+        // 如果是JSON字符串格式的文件数组，解析第一个文件
+        let downloadUrl = fileUrl;
+        if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
+          const files = JSON.parse(fileUrl);
+          if (files && files.length > 0) {
+            downloadUrl = files[0].url || files[0];
+          }
+        }
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = this.getFileName(downloadUrl);
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+      } catch (error) {
+        console.error('文件下载失败:', error);
+        this.$message.error('文件下载失败');
+      }
+    },
+
+    // 从文件URL中提取文件名
+    getFileName(fileUrl) {
+      if (!fileUrl) return '未知文件';
+      
+      try {
+        // 如果是JSON字符串格式的文件数组，解析第一个文件名
+        if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
+          const files = JSON.parse(fileUrl);
+          if (files && files.length > 0) {
+            const file = files[0];
+            return file.name || this.extractFileNameFromUrl(file.url || file);
+          }
+        }
+        
+        // 直接从URL提取文件名
+        return this.extractFileNameFromUrl(fileUrl);
+        
+      } catch (error) {
+        console.error('解析文件名失败:', error);
+        return '文件';
+      }
+    },
+
+    // 从URL中提取文件名
+    extractFileNameFromUrl(url) {
+      if (!url) return '未知文件';
+      
+      try {
+        const urlParts = url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const cleanFileName = fileName.split('?')[0]; // 去除查询参数
+        return decodeURIComponent(cleanFileName) || '文件';
+      } catch (error) {
+        return '文件';
+      }
+    },
   }
 };
 </script>
@@ -185,6 +269,27 @@ export default {
     &:hover {
       text-decoration: underline;
     }
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    
+    .el-button {
+      color: #409EFF;
+      padding: 4px 8px;
+      
+      &:hover {
+        color: #66b1ff;
+        background-color: #ecf5ff;
+      }
+    }
+  }
+
+  .no-file {
+    color: #c0c4cc;
+    font-style: italic;
+    font-size: 12px;
   }
 }
 </style>

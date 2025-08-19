@@ -9,7 +9,7 @@ export const ProductionAlert = {
   categoryName: '',            // 品类名称
   computerName: '',            // 型号名称
   problemDesc: '',             // 问题描述
-  processType: 0,              // 处理状态 0.无需处理 1.待处理 2处理中 3.已处理待验证 4.已验证
+  processType: 0,              // 处理状态 0.无需处理 1.待处理 2处理中 3.已处理待验证 4.已完成
   reporter: '',                // 上报人
   responsible: '',             // 责任归属人
   responsibleDept: '',         // 责任归属部门
@@ -83,7 +83,7 @@ export const processTypeOptions = [
   { label: '待处理', value: 1 },
   { label: '处理中', value: 2 },
   { label: '已处理待验证', value: 3 },
-  { label: '已验证', value: 4 }
+  { label: '已完成', value: 4 }
 ]
 
 // 处理状态颜色映射
@@ -92,5 +92,5 @@ export const processTypeColors = {
   1: 'warning',   // 待处理 - 橙色
   2: 'primary',   // 处理中 - 蓝色
   3: 'success',   // 已处理待验证 - 绿色
-  4: 'success'    // 已验证 - 绿色
+  4: 'success'    // 已完成 - 绿色
 }
