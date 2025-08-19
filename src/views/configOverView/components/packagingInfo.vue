@@ -18,11 +18,24 @@
         </el-table-column>
         <el-table-column label="详情">
           <template slot-scope="scope">
-            <template v-if="isHttpLink(scope.row.details)">
-              <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
+            <!-- 如果当前选择的是迪太英文标准，显示文件信息 -->
+            <template v-if="scope.row.content === 'ditaiEnglishIndicators'">
+              <div v-if="scope.row.details && scope.row.details.length > 0" class="file-info">
+                <el-button type="text" size="mini" icon="el-icon-document"
+                  @click="handleFileDownload(scope.row.details)">
+                  {{ getFileName(scope.row.details) }}
+                </el-button>
+              </div>
+              <span v-else class="no-file">未上传文件</span>
             </template>
+            <!-- 其他选项的详情显示 -->
             <template v-else>
-              {{ scope.row.details || '无' }}
+              <template v-if="isHttpLink(scope.row.details)">
+                <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
+              </template>
+              <template v-else>
+                {{ scope.row.details || '无' }}
+              </template>
             </template>
           </template>
         </el-table-column>
@@ -45,46 +58,56 @@ export default {
           checkItem: { id: 'ditaiStandardNoLockAttachment', label: '支架螺丝安装要求' },
           content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
             { id: 'customerSpecifiedNoLock', label: '客户指定：锁上，但不锁紧' },
-            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' }
+            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'accessoryPackingRequirements', label: '附件装箱要求' },
           content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放尾数箱' },
-            { id: 'customerSpecified', label: '所有附件统一放每箱内' }
+            { id: 'customerSpecified', label: '所有附件统一放每箱内' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'packagingRequirementsCardboardWaterproofBag', label: '包装要求 (卡板、防水袋)' },
           content: 'accordingToBOM', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'accordingToBOM', label: '依据BOM' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'boxMarkRequirements', label: '箱唛要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
             { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'inspectionReportRequirements', label: '检验报告要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
       ],
@@ -166,6 +189,58 @@ export default {
       const option = row.contentOptions.find(opt => opt.id === row.content);
       return option ? option.label : row.content;
     },
+
+    // 处理文件下载
+    handleFileDownload(fileUrl) {
+      try {
+        const link = document.createElement('a')
+        link.href = fileUrl
+        link.download = this.getFileName(fileUrl)
+        link.target = '_blank'
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        setTimeout(() => {
+          document.body.removeChild(link)
+        }, 100)
+      } catch (error) {
+        console.error('下载失败:', error)
+        window.open(fileUrl, '_blank')
+      }
+    },
+
+    // 获取文件名
+    getFileName(fileUrl) {
+      if (!fileUrl) return '未知文件'
+
+      try {
+        // 如果是JSON格式的文件信息
+        if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
+          const fileList = JSON.parse(fileUrl)
+          if (fileList && fileList.length > 0) {
+            return this.extractFileNameFromUrl(fileList[0].url) || fileList[0].name || '文件'
+          }
+        }
+
+        // 如果是直接的URL
+        return this.extractFileNameFromUrl(fileUrl) || '文件'
+      } catch (error) {
+        console.error('解析文件名失败:', error)
+        return '文件'
+      }
+    },
+
+    // 从URL中提取文件名
+    extractFileNameFromUrl(url) {
+      if (!url) return null
+      try {
+        const urlParts = url.split('/')
+        const fileName = urlParts[urlParts.length - 1]
+        return fileName.split('?')[0] || null
+      } catch (error) {
+        return null
+      }
+    },
   }
 };
 </script>
@@ -184,6 +259,27 @@ export default {
     &:hover {
       text-decoration: underline;
     }
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .el-button--text {
+      color: #409EFF;
+      padding: 0;
+
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+  }
+
+  .no-file {
+    color: #909399;
+    font-size: 12px;
+    font-style: italic;
   }
 }
 </style>

@@ -68,7 +68,7 @@
   @pagination="getList" /> -->
   <!-- </div> -->
   <div>
-    <CompUpdate ref="compUpdate" :isPackage="isPackage" />
+    <CompUpdate ref="compUpdate" :isPackage="isPackage" @refresh-list="handleRefreshList" />
   </div>
 </template>
 
@@ -126,6 +126,9 @@ export default {
     this.handleCacheLink();
   },
   methods: {
+    handleRefreshList() {
+      this.$emit('refresh-list');
+    },
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
       const { categoryId, computerId } = this.$route.params;

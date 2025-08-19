@@ -1690,7 +1690,7 @@ export default {
           if (response.code === 200) {
             this.msgSuccess("添加成功");
             this.dialogVisible = false;
-            this.$parent.getList();
+            this.$emit('refresh-list');
             this.open = false;
           }
         })
@@ -1713,7 +1713,7 @@ export default {
                 if (response.code === 200) {
                   this.msgSuccess("拷贝成功");
                   this.dialogVisible = false;
-                  this.$parent.getList();
+                  this.$emit('refresh-list');
                 }
               })
               .finally(() => {
@@ -1727,7 +1727,7 @@ export default {
             if (response.code === 200) {
               this.msgSuccess("修改成功");
               this.dialogVisible = false;
-              this.$parent.getList();
+              this.$emit('refresh-list');
             }
           })
           .finally(() => {

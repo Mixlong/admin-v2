@@ -800,7 +800,7 @@
     <ParamsCompare :isParamsCompareShow.sync="isParamsCompareShow" :dictList="dictList" />
 
     <PackagingInfo ref="packInfoRef" />
-    <addDialog ref="addDialogRef" />
+    <addDialog ref="addDialogRef" @refresh-list="getList" />
   </div>
 </template>
 
@@ -962,47 +962,46 @@ export default {
     initTableDrag() {
       let isDragging = false;
       let isCtrlDown = false;
-      
-      // 移除之前的事件监听器
+ // 移除之前的事件监听器
       if (this.dragEventListeners) {
         this.dragEventListeners.forEach(({ element, type, listener }) => {
           element.removeEventListener(type, listener);
         });
       }
       this.dragEventListeners = [];
-      
-      const scrollContainer = this.$refs.tableRef?.$el?.querySelector(".el-table__body-wrapper");
-      
-      if (!scrollContainer) {
+
+      scrollContainer = this.$refs.tableRef?.$el?.querySelector(".el-table__body-wrapper");
+
+      if (!Container) {
         console.warn("Table scroll container not found");
         return;
       }
-      
+
       // 键盘按下事件
-      const keydownHandler = (event) => {
+ onst keydownHandler = (event) => {
         if (event.key === "Control" || event.key === "Meta") {
           isCtrlDown = true;
         }
       };
-      
+
       // 键盘释放事件
-      const keyupHandler = (event) => {
+      ceyupHandler = (event) => {
         if (event.key === "Control" || event.key === "Meta") {
           isCtrlDown = false;
           isDragging = false;
         }
       };
-      
+
       // 鼠标按下事件
-      const mousedownHandler = (event) => {
+      const mwnHandler = (event) => {
         if (isCtrlDown) {
           isDragging = true;
           event.preventDefault();
         }
       };
-      
+
       // 鼠标移动事件
-      const mousemoveHandler = (event) => {
+      const mousemoler = (event) => {
         if (isDragging) {
           const scrollLeft = scrollContainer.scrollLeft;
           const deltaX = event.movementX;
@@ -1010,33 +1009,33 @@ export default {
           event.preventDefault();
         }
       };
-      
+
       // 鼠标释放事件
-      const mouseupHandler = (event) => {
+      const mouseupHandlevent) => {
         if (isDragging) {
           isDragging = false;
         }
       };
-      
+
       // 点击事件
-      const clickHandler = (event) => {
+      const clickHandler = (event
         if (isDragging) {
           event.preventDefault();
           event.stopPropagation();
         }
       };
-      
+
       // 添加事件监听器
-      document.addEventListener("keydown", keydownHandler);
+      document.addEventListener("key keydownHandler);
       document.addEventListener("keyup", keyupHandler);
       document.addEventListener("mousedown", mousedownHandler);
       document.addEventListener("mousemove", mousemoveHandler);
       document.addEventListener("mouseup", mouseupHandler);
       document.addEventListener("click", clickHandler);
-      
+
       // 保存事件监听器引用以便后续清理
       this.dragEventListeners = [
-        { element: document, type: "keydown", listener: keydownHandler },
+  { element: document, type: "keydown", listener: keydownHandler },
         { element: document, type: "keyup", listener: keyupHandler },
         { element: document, type: "mousedown", listener: mousedownHandler },
         { element: document, type: "mousemove", listener: mousemoveHandler },
@@ -1215,14 +1214,14 @@ export default {
 /* 修复固定列遮挡滚动条的问题 */
 ::v-deep .el-table__fixed {
   pointer-events: none;
-  
+
   /* 允许固定列内的按钮等元素可以点击 */
   .el-table__fixed-body-wrapper,
   .el-table__fixed-header-wrapper,
   .el-table__fixed-footer-wrapper {
     pointer-events: auto;
   }
-  
+
   /* 确保固定列内容可以交互 */
   .el-table__body,
   .el-table__header,
@@ -1237,18 +1236,17 @@ export default {
     height: 12px;
     width: 12px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 6px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 6px;
-    
-    &:hover {
-      background: #a8a8a8;
+
+    &:hover { background: #a8a8a8;
     }
   }
 }
