@@ -962,7 +962,8 @@ export default {
     initTableDrag() {
       let isDragging = false;
       let isCtrlDown = false;
- // 移除之前的事件监听器
+
+      // 移除之前的事件监听器
       if (this.dragEventListeners) {
         this.dragEventListeners.forEach(({ element, type, listener }) => {
           element.removeEventListener(type, listener);
@@ -970,22 +971,22 @@ export default {
       }
       this.dragEventListeners = [];
 
-      scrollContainer = this.$refs.tableRef?.$el?.querySelector(".el-table__body-wrapper");
+      const scrollContainer = this.$refs.tableRef?.$el?.querySelector(".el-table__body-wrapper");
 
-      if (!Container) {
+      if (!scrollContainer) {
         console.warn("Table scroll container not found");
         return;
       }
 
       // 键盘按下事件
- onst keydownHandler = (event) => {
+      const keydownHandler = (event) => {
         if (event.key === "Control" || event.key === "Meta") {
           isCtrlDown = true;
         }
       };
 
       // 键盘释放事件
-      ceyupHandler = (event) => {
+      const keyupHandler = (event) => {
         if (event.key === "Control" || event.key === "Meta") {
           isCtrlDown = false;
           isDragging = false;
@@ -993,7 +994,7 @@ export default {
       };
 
       // 鼠标按下事件
-      const mwnHandler = (event) => {
+      const mousedownHandler = (event) => {
         if (isCtrlDown) {
           isDragging = true;
           event.preventDefault();
@@ -1001,7 +1002,7 @@ export default {
       };
 
       // 鼠标移动事件
-      const mousemoler = (event) => {
+      const mousemoveHandler = (event) => {
         if (isDragging) {
           const scrollLeft = scrollContainer.scrollLeft;
           const deltaX = event.movementX;
@@ -1011,14 +1012,14 @@ export default {
       };
 
       // 鼠标释放事件
-      const mouseupHandlevent) => {
+      const mouseupHandler = (event) => {
         if (isDragging) {
           isDragging = false;
         }
       };
 
       // 点击事件
-      const clickHandler = (event
+      const clickHandler = (event) => {
         if (isDragging) {
           event.preventDefault();
           event.stopPropagation();
@@ -1026,7 +1027,7 @@ export default {
       };
 
       // 添加事件监听器
-      document.addEventListener("key keydownHandler);
+      document.addEventListener("keydown", keydownHandler);
       document.addEventListener("keyup", keyupHandler);
       document.addEventListener("mousedown", mousedownHandler);
       document.addEventListener("mousemove", mousemoveHandler);
@@ -1035,7 +1036,7 @@ export default {
 
       // 保存事件监听器引用以便后续清理
       this.dragEventListeners = [
-  { element: document, type: "keydown", listener: keydownHandler },
+        { element: document, type: "keydown", listener: keydownHandler },
         { element: document, type: "keyup", listener: keyupHandler },
         { element: document, type: "mousedown", listener: mousedownHandler },
         { element: document, type: "mousemove", listener: mousemoveHandler },
@@ -1246,7 +1247,8 @@ export default {
     background: #c1c1c1;
     border-radius: 6px;
 
-    &:hover { background: #a8a8a8;
+    &:hover {
+      background: #a8a8a8;
     }
   }
 }
