@@ -22,6 +22,7 @@ import '@/utils/sticky';
 import '@/utils/mainOperation/mainDirective'
 import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
+import directives from '@/directives'
 // import VueNativeSock from 'vue-native-websocket';
 
 Vue.prototype.msgSuccess = function (msg) {
@@ -45,6 +46,7 @@ Vue.config.productionTip = false;
 
 Vue.use(plugins)
 Vue.use(MainComponent)
+Vue.use(directives) // 注册自定义指令
 Vue.use(WujieVue) // 注册无界组件
 
 // 微应用预加载（已禁用以避免多余iframe）

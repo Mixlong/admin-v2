@@ -18,24 +18,11 @@
         </el-table-column>
         <el-table-column label="详情">
           <template slot-scope="scope">
-            <!-- 如果当前选择的是迪太英文标准，显示文件信息 -->
-            <template v-if="scope.row.content === 'ditaiEnglishIndicators'">
-              <div v-if="scope.row.details && scope.row.details.length > 0" class="file-info">
-                <el-button type="text" size="mini" icon="el-icon-document"
-                  @click="handleFileDownload(scope.row.details)">
-                  {{ getFileName(scope.row.details) }}
-                </el-button>
-              </div>
-              <span v-else class="no-file">未上传文件</span>
+            <template v-if="isHttpLink(scope.row.details)">
+              <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
             </template>
-            <!-- 其他选项的详情显示 -->
             <template v-else>
-              <template v-if="isHttpLink(scope.row.details)">
-                <a href="javascript:void(0)" @click="handleDownload(scope.row.details)" class="download-link">下载链接</a>
-              </template>
-              <template v-else>
-                {{ scope.row.details || '无' }}
-              </template>
+              {{ scope.row.details || '无' }}
             </template>
           </template>
         </el-table-column>
@@ -170,6 +157,10 @@ export default {
         console.log("🚀 ~ file: packagingInfo.vue:174 ~ element:", element)
         this.defaultTableData[i].content = element.contentId;
         this.defaultTableData[i].details = element.details;
+        // 处理文件URL字段（如果存在）
+        if (element.fileUrl !== undefined) {
+          this.defaultTableData[i].fileUrl = element.fileUrl;
+        }
       }
       return this.defaultTableData
     },
@@ -189,58 +180,6 @@ export default {
       const option = row.contentOptions.find(opt => opt.id === row.content);
       return option ? option.label : row.content;
     },
-
-    // 处理文件下载
-    handleFileDownload(fileUrl) {
-      try {
-        const link = document.createElement('a')
-        link.href = fileUrl
-        link.download = this.getFileName(fileUrl)
-        link.target = '_blank'
-        link.style.display = 'none'
-        document.body.appendChild(link)
-        link.click()
-        setTimeout(() => {
-          document.body.removeChild(link)
-        }, 100)
-      } catch (error) {
-        console.error('下载失败:', error)
-        window.open(fileUrl, '_blank')
-      }
-    },
-
-    // 获取文件名
-    getFileName(fileUrl) {
-      if (!fileUrl) return '未知文件'
-
-      try {
-        // 如果是JSON格式的文件信息
-        if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
-          const fileList = JSON.parse(fileUrl)
-          if (fileList && fileList.length > 0) {
-            return this.extractFileNameFromUrl(fileList[0].url) || fileList[0].name || '文件'
-          }
-        }
-
-        // 如果是直接的URL
-        return this.extractFileNameFromUrl(fileUrl) || '文件'
-      } catch (error) {
-        console.error('解析文件名失败:', error)
-        return '文件'
-      }
-    },
-
-    // 从URL中提取文件名
-    extractFileNameFromUrl(url) {
-      if (!url) return null
-      try {
-        const urlParts = url.split('/')
-        const fileName = urlParts[urlParts.length - 1]
-        return fileName.split('?')[0] || null
-      } catch (error) {
-        return null
-      }
-    },
   }
 };
 </script>
@@ -259,27 +198,6 @@ export default {
     &:hover {
       text-decoration: underline;
     }
-  }
-
-  .file-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .el-button--text {
-      color: #409EFF;
-      padding: 0;
-
-      &:hover {
-        color: #66b1ff;
-      }
-    }
-  }
-
-  .no-file {
-    color: #909399;
-    font-size: 12px;
-    font-style: italic;
   }
 }
 </style>

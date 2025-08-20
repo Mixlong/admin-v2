@@ -1,131 +1,69 @@
 <template>
   <div class="app-container">
-    <el-form
-      ref="queryForm"
-      :model="queryParams"
-      :inline="true"
-      v-show="showSearch"
-      @submit.native.prevent
-    >
-      <el-form-item label="客户" prop="name">
-        <select-loadMore
-          v-model="queryParams.name"
-          :data="customerData.data"
-          :page="customerData.page"
-          :hasMore="customerData.more"
-          dictLabel="name"
-          dictValue="name"
-          :request="getCustomerData"
-          placeholder="请选择客户名称"
-        >
-        </select-loadMore>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-      </el-form-item>
-    </el-form>
+    <div class="toolbar">
+      <el-form ref="queryForm" :model="queryParams" :inline="true" class="search-form" v-show="showSearch"
+        @submit.native.prevent>
+        <el-form-item label="客户" prop="name">
+          <select-loadMore v-model="queryParams.name" :data="customerData.data" :page="customerData.page"
+            :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData"
+            placeholder="请选择客户名称">
+          </select-loadMore>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+        </el-form-item>
+      </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          v-hasPermi="['third:customer:add']"
-          @click="handleAdd"
-        >
-          新增
-        </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
-    </el-row>
+      <el-row :gutter="10">
+        <el-col :span="1.5">
+          <el-button type="primary" icon="el-icon-plus" v-hasPermi="['third:customer:add']" @click="handleAdd">
+            新增
+          </el-button>
+        </el-col>
+        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
+      </el-row>
 
-    <el-table
-      v-loading="loading"
-      border
-      :data="customerList"
-      :height="tableHeight()"
-    >
+    </div>
+    <el-table v-loading="loading" border :data="customerList" :height="tableHeight()">
       <el-table-column label="序号" width="50" type="index" align="center" />
       <el-table-column label="客户名称" prop="name" align="center" />
       <el-table-column label="客户编号" prop="no" align="center" />
       <el-table-column label="状态" prop="status" align="center">
         <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatusChange(scope.row)"
-          />
+          <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1"
+            @change="handleStatusChange(scope.row)" />
         </template>
       </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        sortable
-      >
+      <el-table-column label="创建时间" align="center" prop="createTime" sortable>
         <template slot-scope="scope">
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-      >
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:customer:update']"
-            @click="handleUpdate(row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:customer:update']" @click="handleUpdate(row)" />
 
-          <Tooltip
-            icon="el-icon-document"
-            content="客户地址"
-            v-hasPermi="['third:customer:address']"
-            @click="handleNameToPage('CustomerAddress', { name: row.name })"
-          />
+          <Tooltip icon="el-icon-document" content="客户地址" v-hasPermi="['third:customer:address']"
+            @click="handleNameToPage('CustomerAddress', { name: row.name })" />
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog
-      :close-on-click-modal="false"
-      :title="title"
-      :visible.sync="open"
-      width="400px"
-      append-to-body
-      center
-    >
+    <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="open" width="400px" append-to-body center>
       <el-form ref="form" :model="form" :rules="rules" label-width="90px">
         <el-form-item label="客户名称:" prop="name">
-          <el-input
-            v-model.trim="form.name"
-            clearable
-            placeholder="请输入客户名称"
-          />
+          <el-input v-model.trim="form.name" clearable placeholder="请输入客户名称" />
         </el-form-item>
         <el-form-item label="客户编号:" prop="no">
-          <el-input
-            v-model.trim="form.no"
-            clearable
-            placeholder="请输入客户编号"
-          />
+          <el-input v-model.trim="form.no" clearable placeholder="请输入客户编号" />
         </el-form-item>
       </el-form>
 

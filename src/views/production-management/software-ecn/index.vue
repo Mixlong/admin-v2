@@ -1,0 +1,1093 @@
+<template>
+  <div class="app-container ecn-box">
+    <el-form :model="queryParams" ref="queryForm" :inline="true" size="small" class="search-form">
+      <el-form-item label="ECR/N编号" prop="ecn">
+        <el-input v-model.trim="queryParams.ecn" placeholder="请输入ECR/N编号" clearable @keyup.enter.native="handleQuery"
+          style="width: 200px"></el-input>
+      </el-form-item>
+
+      <el-form-item label="品类" prop="categoryName">
+        <el-select v-model="queryParams.categoryName" @change="changeCategory" placeholder="请选择品类" clearable filterable
+          style="width: 200px">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="型号" prop="computerName">
+        <el-select v-model="queryParams.computerName" clearable filterable @change="getList" placeholder="请选择型号"
+          style="width: 200px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
+      </el-form-item>
+
+      <div class="operation-btns">
+        <el-button type="primary" icon="el-icon-user-solid" v-hasPermi="['software-ecn:people:manage']"
+          @click="handleAddPeople">人员管理</el-button>
+        <el-button v-hasPermi="['software-ecn:create']" type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
+      </div>
+    </el-form>
+
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border @cell-click="cellClick"
+      :cell-style="cellStyle">
+      <el-table-column label="序号" type="index" width="50" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175" />
+      <el-table-column label="品类" prop="categoryName" align="center" width="140" />
+      <el-table-column label="型号" prop="computerName" align="center" width="140" />
+      <el-table-column label="申请部门" prop="reqUnit" align="center" :formatter="reqUnitFormatter" width="80" />
+      <el-table-column label="初审状态" prop="firstState" align="center" width="120">
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
+          <el-tag type="success" v-if="row.firstState === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="row.firstState === 2">已驳回</el-tag>
+
+          <div style="margin-top: 5px">审核人：{{ row.firstPerson }}</div>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="会审状态" prop="changeContent" align="center">
+        <template slot-scope="{ row }">
+          <div style="display: flex; row-gap: 5px;flex-wrap: wrap;">
+            <div v-for="item in row.list" :key="item.id" class=" align-center check-bo"
+              style="flex-basis:50%;display: flex;padding:0 5px;">
+              <div class="flex-sub text-left">
+                {{ TriageList[item.field] }}
+                --
+                <span class="normal-wrap"> {{ item.fieldName }}</span>
+              </div>
+              <el-tag type="warning" v-if="item.state === 0">待审核</el-tag>
+              <el-tag type="success" v-if="item.state === 1">已审核</el-tag>
+              <el-tag type="danger" v-if="item.state === 2">已驳回</el-tag>
+            </div>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="终审状态" prop="secondState" align="center" width="170">
+        <template slot-scope="{ row }">
+          <div class="flex align-center justify-between check-box">
+            <div>{{ row.secondPerson }}</div>
+
+            <el-tag type="warning" v-if="row.secondState === 0">
+              待审核
+            </el-tag>
+            <el-tag type="success" v-if="row.secondState === 1">
+              已审核
+            </el-tag>
+            <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="申请人" prop="applicant" align="center" width="85" />
+      <el-table-column label="申请时间" prop="createTime" align="center" sortable width="100">
+      </el-table-column>
+      <el-table-column label="操作" align="center" fixed="right" width="80">
+        <template slot-scope="{ row }">
+          <div class="flex flex-direction table-options-col">
+            <Tooltip v-hasPermi="['software-ecn:update']" v-show="row.secondState !== 1 && row.applicant === nickName"
+              icon="el-icon-edit" content="编辑" @click="handleUpdate(row)" />
+
+            <Tooltip v-show="row.firstPerson === nickName && row.firstState !== 1" class="text-orange"
+              icon="el-icon-coordinate" :content="`待 （${row.firstPerson}） 初审`" @click="handleAuthFlag(row, 1)" />
+
+            <Tooltip v-show="isFirstStateFlag(row)" class="text-grey" icon="el-icon-circle-check" content="撤销初审"
+              @click="handleResetCheck(row, 1)" />
+
+            <span v-for="item in row.list" :key="item.id">
+              <Tooltip style="margin-left: 5px" v-if="
+                item.fieldName === nickName &&
+                item.state !== 1 &&
+                row.firstState === 1
+              " class="text-orange" icon="el-icon-coordinate" :content="`待（${TriageList[item.field]}）--（${item.fieldName
+                }） ${item.state === 2 ? '重新' : ''}会审`" @click="handleAuthFlag(item, 2)" />
+
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 2 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（采购）-（${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 3 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（品质）- （${item.fieldName}）会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 4 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（生产）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 5 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（工程）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 6 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（研发）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 7 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（仓库）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 8 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（市场）-（${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+            </span>
+
+            <Tooltip v-show="row.systemPerson === nickName && row.secondState === 1 && row.systemState !== 0"
+              class="text-grey" icon="el-icon-circle-check" content="撤销系统变更审核" @click="handleResetCheck(row, 5)" />
+
+            <!-- 最终审核 -->
+            <Tooltip v-show="row.secondPerson === nickName &&
+              row.secondState !== 1 &&
+              isSecondStateFlag(row)
+              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.secondPerson}） 终审`"
+              @click="handleAuthFlag(row, 3)" />
+            <Tooltip v-show="row.systemPerson === nickName &&
+              row.systemState !== 1 &&
+              row.secondState === 1
+              " class="text-green" icon="el-icon-coordinate" content="系统变更审核" @click="handleAuthFlag(row, 5)" />
+
+            <Tooltip v-show="row.secondPerson === nickName &&
+              row.secondState === 1
+              " class="text-grey" icon="el-icon-circle-check" content="撤销终审" @click="handleResetCheck(row, 3)" />
+
+            <Tooltip class="text-green" icon="el-icon-view" content="详情" @click="handleDetail(row)" />
+
+            <!-- <Tooltip
+            :className="['text-orange']"
+            icon="el-icon-folder"
+            content="导出"
+            @click="handleExport(row)"
+          /> -->
+
+            <el-popconfirm v-show="row.applicant === nickName" title="确定要删除吗？" @confirm="handleDelete(row)"
+              v-hasPermi="['software-ecn:delete']">
+              <Tooltip slot="reference" icon="el-icon-delete" :className="['text-red']" content="删除" />
+            </el-popconfirm>
+
+            <Tooltip v-if="row.file" icon="el-icon-download" content="附件下载" @click="urlDownload(row.file)" />
+          </div>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination v-show="total > 0" :total="total" :small="true" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
+
+    <CompUpdate1 ref="compUpdate" :classifyList="classifyList" :involveUnitList="involveUnitList"
+      :dictList="dictList" />
+
+    <CompDetail ref="compDetail" :classifyList="classifyList" :involveUnitList="involveUnitList"
+      :deptOptions="deptOptions" />
+
+    <!-- 审核人员管理 -->
+    <el-dialog title="ECN审核人员管理" :visible.sync="isPeopleManageVisible" top="2vh" center append-to-body width="600px"
+      :close-on-click-modal="false">
+      <el-row type="flex" justify="center">
+        <el-col :xs="0" :span="2"></el-col>
+        <el-col :xs="24" :span="20">
+          <el-form ref="peopleForm" :model="peopleManageForm" :rules="peopleManageRules" label-width="100px"
+            label-position="left" class="input-width">
+            <el-form-item label="初审人员：" prop="firstAuditorData">
+              <el-select class="w100" v-model="peopleManageForm.firstAuditorData" filterable multiple clearable
+                placeholder="请选择初审人员">
+                <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+
+            <el-form-item label="会审人员："></el-form-item>
+            <el-form-item label-width="20px">
+              <el-form-item label="生产：" prop="productData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.productData" filterable multiple clearable
+                  placeholder="请选择生产人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="仓库：" prop="warehouseData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.warehouseData" filterable multiple clearable
+                  placeholder="请选择仓库人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="市场：" prop="marketerData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.marketerData" filterable multiple clearable
+                  placeholder="请选择市场人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-form-item>
+
+            <el-form-item label="最终审核：" prop="finalJudgmentData">
+              <el-select class="w100" v-model="peopleManageForm.finalJudgmentData" filterable multiple clearable
+                placeholder="请选择最终审核人员">
+                <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </el-col>
+        <el-col :xs="0" :span="2"></el-col>
+      </el-row>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitPeopleForm">确 定</el-button>
+        <el-button @click="isPeopleManageVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 审核 -->
+    <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="600px" center :close-on-click-modal="false">
+      <el-form ref="authForm" :model="authForm" label-position="top" label-width="0">
+        <el-form-item label="通过状态" prop="state" :rules="[
+          {
+            required: true,
+            message: '请选择通过状态',
+            trigger: 'change',
+          },
+        ]">
+          <el-radio-group v-model="authForm.state" @change="handleResetErrTip">
+            <el-radio :label="1">通过</el-radio>
+            <el-radio :label="2">不通过</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="是否有相关性" prop="isCorrelation" :rules="[
+          {
+            required: true,
+            message: '请选择',
+            trigger: 'change',
+          },
+        ]">
+          <el-radio-group v-model="authForm.isCorrelation">
+            <el-radio :label="0">是</el-radio>
+            <el-radio :label="1">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item v-if="authForm.isCorrelation === 0" label="相关性是否完成" prop="isComplete" :rules="[
+          {
+            required: false,
+            message: '请选择',
+            trigger: 'change',
+          },
+        ]">
+          <el-radio-group v-model="authForm.isComplete">
+            <el-radio :label="0">是</el-radio>
+            <el-radio :label="1">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <transition name="fade">
+          <el-form-item v-if="authForm.state === 1" class="auth" prop="remark" :rules="[
+            {
+              required: true,
+              message: '请输入备注信息',
+              trigger: 'blur',
+            },
+          ]">
+            <el-input v-model="authForm.remark" type="textarea" :autosize="{ minRows: 4, maxRows: 8 }"
+              placeholder="请输入备注信息" />
+          </el-form-item>
+          <el-form-item v-if="authForm.state === 2" class="auth" prop="result" :rules="[
+            {
+              required: true,
+              message: '请输入不通过的理由',
+              trigger: 'blur',
+            },
+          ]">
+            <el-input v-model="authForm.result" type="textarea" :autosize="{ minRows: 4, maxRows: 8 }"
+              placeholder="请输入不通过的理由" />
+          </el-form-item>
+        </transition>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitAuthForm">确 定</el-button>
+        <el-button @click="authDialogVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import {
+  listSoftwareEcn,
+  auditSoftwareEcn,
+  softwareEcnFirstState,
+  softwareEcnFieldState,
+  softwareEcnSecondState,
+  softwareEcnPersonnelEdit,
+  softwareEcnPersonnelList
+} from "@/api/production/software-ecn";
+import { categoryComputerDict } from "@/api/third/fileConfig";
+import { dictUserList } from "@/api/system/user";
+import CompUpdate from "./components/update";
+import CompDetail from "./components/detail";
+import { mapGetters } from "vuex";
+import { listDept } from "@/api/system/dept";
+import { cloneDeep } from "lodash";
+import CompUpdate1 from "./components/update1";
+
+export default {
+  name: "Ecn",
+  components: {
+    CompUpdate,
+    CompDetail,
+    CompUpdate1
+  },
+  data() {
+    return {
+      open: false,
+      // 遮罩层
+      loading: true,
+      authDialogVisible: false,
+      isPeopleManageVisible: false,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 总条数
+      total: 0,
+      brandList: [],
+      authForm: {
+        state: 1,
+        remark: "",
+        result: "",
+      },
+      // 初审： 1， 会审： 2， 终审： 3
+      isAuthFlag: 1,
+      // 修改的数据
+      isAuthAlterData: {},
+      // 审核人员列表
+      pmDictListOptions: [],
+      // 部门
+      deptOptions: [],
+      // 查询参数
+      queryParams: {
+        p: 1,
+        l: 20,
+        ecn: "",
+        categoryName: "",
+        computerName: "",
+      },
+      // 品类字典
+      dictList: [],
+      // 型号选项
+      computerOptions: [],
+      detailData: {},
+      classifyList: [],
+      involveUnitList: [],
+      peopleManageForm: {
+        firstAuditorData: [],
+        productData: [],
+        warehouseData: [],
+        marketerData: [],
+        finalJudgmentData: [],
+      },
+      // 会审人员
+      TriageList: {
+        4: "生产",
+        7: "仓库",
+        8: "市场",
+      },
+      peopleManageRules: {
+        firstAuditorData: [
+          {
+            required: true,
+            message: "请选择初审人员",
+            trigger: "change",
+          },
+        ],
+        productData: [
+          {
+            required: true,
+            message: "请选择生产人员",
+            trigger: "change",
+          },
+        ],
+        warehouseData: [
+          {
+            required: true,
+            message: "请选择仓库人员",
+            trigger: "change",
+          },
+        ],
+        marketerData: [
+          {
+            required: true,
+            message: "请选择市场人员",
+            trigger: "change",
+          },
+        ],
+        finalJudgmentData: [
+          {
+            required: true,
+            message: "请选择最终审核人员",
+            trigger: "change",
+          },
+        ],
+      },
+      // 初审人员
+      firstAuditorData: [],
+      // 终审人员
+      finalJudgmentData: [],
+    };
+  },
+  computed: {
+    ...mapGetters(["userId", "nickName"]),
+    isFirstStateFlag() {
+      return (row) => {
+        return (
+          row.firstPerson === this.nickName &&
+          row.firstState === 1 &&
+          row.list.every((item) => item.state === 0)
+        );
+      };
+    },
+    isFinalStateFlag() {
+      return (row) => {
+        return row.secondState === 0;
+      };
+    },
+    isSecondStateFlag() {
+      return (row) => {
+        return (
+          row.firstState === 1 && row.list.every((item) => item.state === 1)
+        );
+      };
+    },
+  },
+  watch: {
+    isPeopleManageVisible(bool) {
+      if (bool) {
+        this.getTotalPeopleData();
+      }
+    },
+  },
+  created() {
+    this.getTreeselect();
+  },
+  async mounted() {
+    await this.getDicts("ecn_classify_name").then((res) => {
+      this.classifyList = res.data;
+    });
+    // 设置涉及领域为生产、仓库、市场
+    this.involveUnitList = [
+      { dictLabel: "生产", dictValue: "4" },
+      { dictLabel: "仓库", dictValue: "7" },
+      { dictLabel: "市场", dictValue: "8" }
+    ];
+    // 获取品类字典数据
+    await categoryComputerDict().then((response) => {
+      this.dictList = response.data;
+    });
+    this.getList();
+
+    // 获取人员列表
+    this.getCheckPeopleList();
+  },
+  methods: {
+    /** 查询品牌列表 */
+    getList() {
+      this.loading = true;
+      let params = Object.assign({}, this.queryParams);
+      listSoftwareEcn(params).then((response) => {
+        this.brandList = response.data.list;
+        this.total = response.data.total;
+        this.loading = false;
+      });
+    },
+    // 生成ECN
+    generateDTString() {
+      const date = new Date(); // 获取当前日期和时间
+      const year = date.getFullYear(); // 获取年份
+      const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 获取月份，月份是从0开始的
+      const day = date.getDate().toString().padStart(2, "0"); // 获取日期
+      const hours = date.getHours().toString().padStart(2, "0"); // 获取小时
+      const minutes = date.getMinutes().toString().padStart(2, "0"); // 获取分钟
+      const seconds = date.getSeconds().toString().padStart(2, "0"); // 获取秒
+      const milliseconds = date.getMilliseconds().toString().padStart(3, "0"); // 获取毫秒
+
+      // 拼接字符串
+      const dtString = `DT-ECN${String(year).slice(
+        -2
+      )}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
+      return dtString;
+    },
+    handleAdd() {
+      this.$refs.compUpdate.dialogVisible = true;
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.title = "添加ECR/N";
+      this.$refs.compUpdate.form.ecn = this.generateDTString();
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.p = 1;
+      this.getList();
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.dateRange = [];
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
+    // 品类变更处理
+    changeCategory(categoryName) {
+      this.queryParams.computerName = "";
+      if (categoryName) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.name === categoryName
+        )[0]?.computerList || [];
+      } else {
+        this.computerOptions = [];
+      }
+      this.getList();
+    },
+    /** 查询部门下拉树结构 */
+    getTreeselect() {
+      listDept().then((res) => {
+        this.deptOptions = res.data;
+      });
+    },
+    //
+    reqUnitFormatter(row, column, cellvalue, index) {
+      return this.deptOptions.find((item) => item.deptId === +row.reqUnit)
+        ?.deptName;
+    },
+    getCheckPeopleList() {
+      dictUserList().then((res) => {
+        this.pmDictListOptions = res.data;
+      });
+    },
+    // 获取人员列表
+    getTotalPeopleData() {
+      const requestList = [
+        this.getPeopleList(1),  // 初审人员
+        this.getPeopleList(4),  // 生产人员
+        this.getPeopleList(7),  // 仓库人员
+        this.getPeopleList(8),  // 市场人员
+        this.getPeopleList(9),  // 最终审核人员
+      ];
+      Promise.all(requestList).then((res) => {
+        const [
+          firstAuditorData,
+          productData,
+          warehouseData,
+          marketerData,
+          finalJudgmentData,
+        ] = res;
+
+        this.peopleManageForm = {
+          firstAuditorData,
+          productData,
+          warehouseData,
+          marketerData,
+          finalJudgmentData,
+        };
+      });
+    },
+    getPeopleList(type) {
+      return new Promise((resolve) => {
+        try {
+          softwareEcnPersonnelList({ type, p: 1, l: 50 }).then((res) => {
+            const { list } = res.data;
+            resolve(list.map((item) => item.personnel));
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    },
+    handleUpdate(row, showName, title) {
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.dialogVisible = true;
+      let params = cloneDeep(row);
+
+      params.list.forEach((item, index) => {
+        if (item.field === 2) {
+          params.selBuyerData = this.handleGetFieldName(params.list, 2);
+          params.buyerTxt = item.programme;
+        } else if (item.field === 3) {
+          params.selQAData = this.handleGetFieldName(params.list, 3);
+          params.QADataTxt = item.programme;
+        } else if (item.field === 4) {
+          params.selProductData = this.handleGetFieldName(params.list, 4);
+          params.productDataTxt = item.programme;
+        } else if (item.field === 5) {
+          params.selEngineerData = this.handleGetFieldName(params.list, 5);
+          params.engineerDataTxt = item.programme;
+        } else if (item.field === 6) {
+          params.selResearchData = this.handleGetFieldName(params.list, 6);
+          params.researchDataTxt = item.programme;
+        } else if (item.field === 7) {
+          params.selWarehouseData = this.handleGetFieldName(params.list, 7);
+          params.warehouseDataTxt = item.programme;
+          params.finishedHandleTxt = item.treatment;
+        } else if (item.field === 8) {
+          params.selMarketerData = this.handleGetFieldName(params.list, 8);
+          params.marketerDataTxt = item.programme;
+          params.noMarketerDataTxt = item.treatment;
+        } else if (item.field === 9) {
+          params.selPmcData = this.handleGetFieldName(params.list, 9);
+          params.pmcDataTxt = item.programme;
+        }
+      });
+
+      params.changeCause = params.changeCause.split(",");
+      this.$refs.compUpdate.form = params;
+      this.$refs.compUpdate.showName = showName;
+      this.$refs.compUpdate.title = title == undefined ? "修改ECN" : title;
+    },
+    handleGetFieldName(paramsList, field) {
+      return paramsList
+        .filter((item) => item.field == field)
+        .map((item) => item.fieldName);
+    },
+    cellClick(row, column, cell, event) {
+      switch (column.label) {
+        case "实现方案":
+          if (row.principal == this.userId || this.checkRole(["admin"]))
+            this.handleUpdate(row, "scheme", "实现方案");
+          break;
+        case "导入计划":
+          if (row.principal == this.userId || this.checkRole(["admin"]))
+            this.handleUpdate(row, "plan", "");
+          break;
+        default:
+          break;
+      }
+    },
+    cellStyle({ row, column, rowIndex, columnIndex }) {
+      if (
+        (column.label == "实现方案" || column.label == "导入计划") &&
+        (row.principal == this.userId || this.checkRole(["admin"]))
+      ) {
+        return `cursor: pointer;`;
+      }
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      auditSoftwareEcn([{ id: row.id, status: 1 }]).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      });
+    },
+
+    handleExport(row) {
+      let parmas = Object.assign({}, row);
+      parmas = this.handleforData(parmas);
+      import("./js/export").then((excel) => {
+        excel.export_json_to_excel({
+          header: [], //表头 必填
+          data: parmas, //具体数据 必填
+          filename: row.projectName, //非必填
+          autoWidth: true, //非必填
+          bookType: "xlsx", //非必填
+        });
+      });
+    },
+    handleforData(parmas) {
+      let classifyName = "";
+      let involveName = "";
+      let involveUnit = parmas.involveUnit.split(",");
+      let changeCause = parmas.changeCause.split(",");
+      //分类
+      for (let key of this.classifyList) {
+        let findVal = changeCause.findIndex((item) => item == key.dictValue);
+
+        classifyName +=
+          (findVal > -1 ? "■" : "□") + key.dictLabel + "         ";
+      }
+      //涉及领域
+      for (let key of this.involveUnitList) {
+        let findVal = involveUnit.findIndex((item) => item == key.dictValue);
+        involveName +=
+          (findVal > -1 ? "■" : "□") + key.dictLabel + "                 ";
+      }
+
+      parmas.involveUnit = involveName;
+      parmas.changeCause = classifyName;
+      return parmas;
+    },
+    handleDetail(row) {
+      this.$refs.compDetail.dialogVisible = true;
+      let params = Object.assign({}, row);
+
+      params.changeCause = params.changeCause.split(",");
+      // params.involveUnit = params.involveUnit.split(",").map((item) => +item);
+
+      // 分类
+      const changeCauseData = [];
+      params.changeCause.forEach((item) => {
+        this.classifyList.forEach((cItem) => {
+          if (item === cItem.dictValue) {
+            changeCauseData.push(cItem);
+          }
+        });
+      });
+
+      params.changeCauseData = changeCauseData;
+
+      // 涉及领域 - 只显示生产、仓库、市场
+      const involveUnitData = [
+        { dictLabel: "生产", dictValue: "4" },
+        { dictLabel: "仓库", dictValue: "7" },
+        { dictLabel: "市场", dictValue: "8" }
+      ];
+
+      params.involveUnitData = involveUnitData;
+
+      this.$refs.compDetail.form = params;
+    },
+    // ECN人员管理
+    handleAddPeople() {
+      this.isPeopleManageVisible = true;
+      this.resetPeopleForm();
+    },
+    resetPeopleForm() {
+      this.peopleManageForm = {
+        firstAuditorData: [],
+        productData: [],
+        warehouseData: [],
+        marketerData: [],
+        finalJudgmentData: [],
+      };
+      this.resetForm("peopleForm");
+    },
+    // ECN审核人员管理
+    submitPeopleForm() {
+      this.$refs["peopleForm"].validate((valid) => {
+        if (valid) {
+          const {
+            firstAuditorData,
+            productData,
+            warehouseData,
+            marketerData,
+            finalJudgmentData,
+          } = this.peopleManageForm;
+
+          const setPeopleList = (data, type) => {
+            return data.map((personnel) => {
+              return {
+                type,
+                personnel,
+              };
+            });
+          };
+
+          const list = [
+            ...setPeopleList(firstAuditorData, 1),
+            ...setPeopleList(productData, 4),
+            ...setPeopleList(warehouseData, 7),
+            ...setPeopleList(marketerData, 8),
+            ...setPeopleList(finalJudgmentData, 9),
+          ];
+
+          softwareEcnPersonnelEdit(list).then((res) => {
+            console.log(res);
+            if (res.data) {
+              this.msgSuccess("操作成功");
+              this.isPeopleManageVisible = false;
+            }
+          });
+        }
+      });
+    },
+
+    handleAuthFlag(row, isAuthFlag) {
+      this.resetAuthForm();
+
+      this.isAuthAlterData = Object.assign({}, row);
+      this.isAuthFlag = isAuthFlag;
+      this.authDialogVisible = true;
+
+      if (isAuthFlag === 1) {
+        this.authForm = {
+          state: row.firstState || 1,
+          remark: row.remark,
+          result: row.result,
+        };
+      }
+
+      if (isAuthFlag === 2) {
+        this.authForm = {
+          state: row.state || 1,
+          remark: row.remark,
+          result: row.result,
+          isCorrelation: row.isCorrelation,
+          isComplete: row.isComplete,
+        };
+      }
+
+      if (isAuthFlag === 3) {
+        this.authForm = {
+          state: row.secondState || 1,
+          remark: row.finalRemark,
+          result: row.finalResult,
+        };
+      }
+
+
+      if (isAuthFlag === 5) {
+        this.authForm = {
+          state: row.systemState || 1,
+          remark: row.systemRemark,
+          result: row.systemResult,
+        };
+      }
+    },
+
+    // 撤销审核
+    handleResetCheck(row, flag) {
+      this.$confirm("确定要撤销审核吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          // 撤销初审
+          if (flag === 1) {
+            const data = {
+              id: row.id,
+              remark: row.remark,
+              result: row.result,
+              state: 0,
+            };
+
+            softwareEcnFirstState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+          // 撤销会审
+          if (flag === 2) {
+            const data = {
+              field: row.field,
+              fieldName: row.fieldName,
+              id: row.id,
+              bomChangeId: row.bomChangeId,
+              state: 0,
+            };
+
+            softwareEcnFieldState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+          // 撤销终审
+          if (flag === 3) {
+            const data = {
+              id: row.id,
+              remark: row.finalRemark,
+              result: row.finalResult,
+              state: 0,
+            };
+
+            softwareEcnSecondState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+
+
+        })
+        .catch(() => { });
+    },
+    resetAuthForm() {
+      this.authForm = {
+        state: 1,
+      };
+      this.resetForm("authForm");
+    },
+    // 审核
+    submitAuthForm() {
+      this.$refs["authForm"].validate((valid) => {
+        if (valid) {
+          // 初审
+          if (this.isAuthFlag === 1) {
+            const data = {
+              id: this.isAuthAlterData.id,
+              ...this.authForm,
+            };
+            softwareEcnFirstState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+          // 会审
+          if (this.isAuthFlag === 2) {
+            const data = {
+              field: this.isAuthAlterData.field,
+              fieldName: this.isAuthAlterData.fieldName,
+              id: this.isAuthAlterData.id,
+              bomChangeId: this.isAuthAlterData.bomChangeId,
+              ...this.authForm,
+            };
+
+            softwareEcnFieldState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+          // 终审
+          if (this.isAuthFlag === 3) {
+            const data = {
+              id: this.isAuthAlterData.id,
+              ...this.authForm,
+            };
+
+            softwareEcnSecondState(data).then((res) => {
+              if (res.data) {
+                this.msgSuccess("操作成功");
+                this.getList();
+                this.authDialogVisible = false;
+              }
+            });
+          }
+
+
+        }
+      });
+    },
+    handleResetErrTip(state) {
+      this.clearValidateItem("authForm", state === 1 ? "remark" : "result");
+    },
+  },
+};
+</script>
+<style lang="scss" scoped>
+.ecn-box {
+  .auth {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .finish-row td,
+  .finish-row:hover td {
+    background-color: rgba(155, 216, 148, 0.3) !important;
+  }
+
+  .mask-layer {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+  }
+
+  .open-detail-style {
+    div {
+      >span {
+        &:first-child {
+          color: #666;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+
+  .check-box {
+    // border-bottom: 1px solid #eee8e8;
+    padding: 5px 0;
+  }
+}
+
+.search-form {
+  margin-bottom: 16px;
+  background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 10px;
+
+    .el-form-item__label {
+      color: #606266;
+      font-weight: 500;
+    }
+
+    .el-input__inner {
+      border-radius: 4px;
+      transition: all 0.3s;
+
+      &:hover,
+      &:focus {
+        border-color: #409EFF;
+      }
+    }
+  }
+
+  .operation-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+
+    .el-button {
+      padding: 8px 15px;
+      font-weight: 500;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+</style>

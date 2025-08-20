@@ -228,7 +228,7 @@
 
             <Tooltip v-hasPermi="['third:sample:software']" class="mlZero" icon="el-icon-position" content="软件发布"
               @click="
-                handleNameToPage('CadFileConfig', { number: scope.row.number })
+                handleNameToPage('SampleCADFamily', { number: scope.row.number })
                 " />
 
             <Tooltip v-hasPermi="['third:sample:toProduct']" v-if="scope.row.state == 6" class="mlZero"

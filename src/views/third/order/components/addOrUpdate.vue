@@ -4,138 +4,65 @@
       <div slot="header" class="clearfix">
         <span class="text-blue font20">{{ commonObj.title }}</span>
       </div>
-      <el-form
-        ref="form"
-        label-position="left"
-        :model="form"
-        :rules="rules"
-        label-width="135px"
-      >
+      <el-form ref="form" label-position="left" :model="form" :rules="rules" label-width="135px">
         <el-row type="flex" justify="space-between" :gutter="20">
           <el-col :span="8">
             <el-col>
               <el-form-item label="迪太订单号" prop="salesOrderNo">
-                <el-input
-                  v-model.trim="form.salesOrderNo"
-                  clearable
-                  placeholder="请输入迪太订单号"
-                />
+                <el-input v-model.trim="form.salesOrderNo" clearable placeholder="请输入迪太订单号" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="客户名称" prop="customerName">
-                <select-loadMore
-                  style="width: 100%"
-                  v-model="form.customerName"
-                  :data="customerData.data"
-                  :page="customerData.page"
-                  :hasMore="customerData.more"
-                  dictLabel="name"
-                  dictValue="id"
-                  :request="getCustomerList"
-                  @getChange="getCustomerId"
-                  placeholder="请选择客户名称"
-                />
+                <select-loadMore style="width: 100%" v-model="form.customerName" :data="customerData.data"
+                  :page="customerData.page" :hasMore="customerData.more" dictLabel="name" dictValue="id"
+                  :request="getCustomerList" @getChange="getCustomerId" placeholder="请选择客户名称" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="客户订单号" prop="customerOrderNo">
-                <el-input
-                  v-model.trim="form.customerOrderNo"
-                  clearable
-                  placeholder="请输入客户订单号"
-                />
+                <el-input v-model.trim="form.customerOrderNo" clearable placeholder="请输入客户订单号" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="品类" prop="categoryId">
-                <el-select
-                  v-model="form.categoryId"
-                  class="w100"
-                  filterable
-                  allow-create
-                  clearable
-                  placeholder="请选择所属品类"
-                  @change="changeCategory"
-                >
-                  <el-option
-                    v-for="dict in dictList"
-                    :key="dict.id"
-                    :label="dict.name"
-                    :value="dict.id"
-                  />
+                <el-select v-model="form.categoryId" class="w100" filterable allow-create clearable
+                  placeholder="请选择所属品类" @change="changeCategory">
+                  <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="型号" prop="computerId">
-                <el-select
-                  v-model="form.computerId"
-                  filterable
-                  remote
-                  clearable
-                  class="w100"
-                  placeholder="请选择仪表型号"
-                  :remote-method="getComputerNameList"
-                >
-                  <el-option
-                    v-for="dict in computerOptions"
-                    :key="dict.model"
-                    :label="dict.name"
-                    :value="dict.model"
-                  />
+                <el-select v-model="form.computerId" filterable remote clearable class="w100" placeholder="请选择仪表型号"
+                  :remote-method="getComputerNameList">
+                  <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="芯片版本" prop="chipVersion">
-                <el-select
-                  v-model="form.chipVersion"
-                  clearable
-                  class="w100"
-                  placeholder="请选择芯片版本"
-                >
-                  <el-option
-                    v-for="dict in chipVersionList"
-                    :key="dict.dictCode"
-                    :label="dict.dictLabel"
-                    :value="dict.dictLabel"
-                  />
+                <el-select v-model="form.chipVersion" clearable class="w100" placeholder="请选择芯片版本">
+                  <el-option v-for="dict in chipVersionList" :key="dict.dictCode" :label="dict.dictLabel"
+                    :value="dict.dictLabel" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="BOM编码" prop="bomCode">
-                <el-input
-                  v-model.trim="form.bomCode"
-                  clearable
-                  placeholder="请选择BOM编码"
-                />
+                <el-input v-model.trim="form.bomCode" clearable placeholder="请选择BOM编码" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="订单数量" prop="orderQuantity">
-                <el-input
-                  v-model.trim="form.orderQuantity"
-                  clearable
-                  onkeyup="value=value.replace(/[^\d0]/g, '')"
-                  placeholder="请输入订单数量"
-                />
+                <el-input v-model.trim="form.orderQuantity" clearable onkeyup="value=value.replace(/[^\d0]/g, '')"
+                  placeholder="请输入订单数量" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="出货日期" prop="sellTime">
-                <el-date-picker
-                  v-model="form.sellTime"
-                  style="width: 100%"
-                  align="right"
-                  type="date"
-                  clearable
-                  placeholder="请选择出货日期"
-                  value-format="timestamp"
-                  :picker-options="pickerOptions"
-                  format="yyyy-MM-dd"
-                />
+                <el-date-picker v-model="form.sellTime" style="width: 100%" align="right" type="date" clearable
+                  placeholder="请选择出货日期" value-format="timestamp" :picker-options="pickerOptions" format="yyyy-MM-dd" />
               </el-form-item>
             </el-col>
             <!-- <el-col>
@@ -155,22 +82,12 @@
             </el-col> -->
             <el-col>
               <el-form-item label="出货地址" prop="consigneeAddress">
-                <el-input
-                  v-model.trim="form.consigneeAddress"
-                  type="textarea"
-                  clearable
-                  placeholder="请输入出货地址"
-                />
+                <el-input v-model.trim="form.consigneeAddress" type="textarea" clearable placeholder="请输入出货地址" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="箱唛" prop="isMark">
-                <el-select
-                  v-model="form.isMark"
-                  class="w100"
-                  clearable
-                  placeholder="请选择箱唛"
-                >
+                <el-select v-model="form.isMark" class="w100" clearable placeholder="请选择箱唛">
                   <el-option label="否" value="0" />
                   <el-option label="是" value="1" />
                   <el-option label="待确认" value="2" />
@@ -181,12 +98,7 @@
               <el-form-item label="指定内容" prop="containerMarkInfo">
                 <el-row>
                   <el-col>
-                    <DrUpload
-                      v-model="form.containerMarkInfo"
-                      :limit="1"
-                      :isOnePic="1"
-                      :showFileList="false"
-                    >
+                    <DrUpload v-model="form.containerMarkInfo" :limit="1" :isOnePic="1" :showFileList="false">
                       <div class="text-left">
                         <el-button size="mini" type="primary">上传</el-button>
                       </div>
@@ -206,20 +118,12 @@
           <el-col :span="16">
             <el-col>
               <el-form-item label="BOM选配信息" prop="bomInfo">
-                <tinymce
-                  v-model="form.bomInfo"
-                  placeholder="请输入BOM选配信息"
-                  height="300"
-                />
+                <tinymce v-model="form.bomInfo" placeholder="请输入BOM选配信息" height="300" />
               </el-form-item>
             </el-col>
             <el-col>
               <el-form-item label="备注" prop="remark">
-                <tinymce
-                  v-model="form.remark"
-                  placeholder="请输入备注"
-                  height="300"
-                />
+                <tinymce v-model="form.remark" placeholder="请输入备注" height="300" />
               </el-form-item>
             </el-col>
           </el-col>
@@ -489,10 +393,9 @@ export default {
             if (this.onAlertReason(this.form)) {
               this.$prompt(
                 "请输入修改原因",
-                `${
-                  this.checkRule(this.form)
-                    ? "若“品类”、“型号”、“芯片版本”改变，该排产将被取消?"
-                    : ""
+                `${this.checkRule(this.form)
+                  ? "若“品类”、“型号”、“芯片版本”改变，该排产将被取消?"
+                  : ""
                 }`,
                 {
                   confirmButtonText: "确定",
@@ -510,7 +413,7 @@ export default {
                 .then(({ value }) => {
                   this.onUpdateOrder({ msg: value, ...this.form });
                 })
-                .catch(() => {});
+                .catch(() => { });
             } else {
               this.onUpdateOrder(this.form);
             }
@@ -518,7 +421,7 @@ export default {
             addOrder(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("添加成功");
-                this.$router.push("/www/order");
+                // this.$router.push("/www/order");
               }
             });
           }

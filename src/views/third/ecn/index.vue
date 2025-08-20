@@ -2,33 +2,18 @@
   <div class="app-container ecn-box">
     <el-form :model="queryParams" ref="queryForm" :inline="true" size="small" class="search-form">
       <el-form-item label="ECR/N编号" prop="ecn">
-        <el-input
-          v-model.trim="queryParams.ecn"
-          placeholder="请输入ECR/N编号"
-          clearable
-          @keyup.enter.native="handleQuery"
-          style="width: 200px"
-        ></el-input>
+        <el-input v-model.trim="queryParams.ecn" placeholder="请输入ECR/N编号" clearable @keyup.enter.native="handleQuery"
+          style="width: 200px"></el-input>
       </el-form-item>
 
       <el-form-item label="项目名称" prop="projectName">
-        <el-input
-          v-model="queryParams.projectName"
-          placeholder="请输入项目名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-          style="width: 200px"
-        ></el-input>
+        <el-input v-model="queryParams.projectName" placeholder="请输入项目名称" clearable @keyup.enter.native="handleQuery"
+          style="width: 200px"></el-input>
       </el-form-item>
 
       <el-form-item label="产品代号" prop="productCode">
-        <el-input
-          v-model="queryParams.productCode"
-          placeholder="请输入产品代号"
-          clearable
-          @keyup.enter.native="handleQuery"
-          style="width: 200px"
-        ></el-input>
+        <el-input v-model="queryParams.productCode" placeholder="请输入产品代号" clearable @keyup.enter.native="handleQuery"
+          style="width: 200px"></el-input>
       </el-form-item>
 
       <el-form-item>
@@ -37,44 +22,23 @@
       </el-form-item>
 
       <div class="operation-btns">
-        <el-button
-          type="primary"
-          icon="el-icon-user-solid"
-          v-hasPermi="['ECN:People:Add']"
-          @click="handleAddPeople"
-        >人员管理</el-button>
-        <el-button
-          v-hasPermi="['ecn:add']"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
-        >新增</el-button>
+        <el-button type="primary" icon="el-icon-user-solid" v-hasPermi="['ECN:People:Add']"
+          @click="handleAddPeople">人员管理</el-button>
+        <el-button v-hasPermi="['ecn:add']" type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
       </div>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-      @cell-click="cellClick"
-      :cell-style="cellStyle"
-    >
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border @cell-click="cellClick"
+      :cell-style="cellStyle">
       <el-table-column label="序号" type="index" width="50" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175"/>
-      <el-table-column label="项目名称" prop="projectName" align="center"width="140" />
+      <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175" />
+      <el-table-column label="项目名称" prop="projectName" align="center" width="140" />
       <el-table-column label="产品代号" prop="productCode" align="center" width="140" />
-      <el-table-column
-        label="申请部门"
-        prop="reqUnit"
-        align="center"
-        :formatter="reqUnitFormatter"
-        width="80"
-      />
+      <el-table-column label="申请部门" prop="reqUnit" align="center" :formatter="reqUnitFormatter" width="80" />
       <el-table-column label="初审状态" prop="firstState" align="center" width="120">
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
@@ -84,22 +48,12 @@
           <div style="margin-top: 5px">审核人：{{ row.firstPerson }}</div>
         </template>
       </el-table-column>
- 
-      <el-table-column
-        label="会审状态"
-        prop="changeContent"
-        align="center"
-    
-      
-      >
+
+      <el-table-column label="会审状态" prop="changeContent" align="center">
         <template slot-scope="{ row }">
-          <div style="display: flex; row-gap: 5px;flex-wrap: wrap;" >
-            <div
-              v-for="item in row.list"
-              :key="item.id"
-              class=" align-center check-bo"
-              style="flex-basis:50%;display: flex;padding:0 5px;"
-            >
+          <div style="display: flex; row-gap: 5px;flex-wrap: wrap;">
+            <div v-for="item in row.list" :key="item.id" class=" align-center check-bo"
+              style="flex-basis:50%;display: flex;padding:0 5px;">
               <div class="flex-sub text-left">
                 {{ TriageList[item.field] }}
                 --
@@ -112,12 +66,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        label="终审状态"
-        prop="secondState"
-        align="center"
-        width="170"
-      >
+      <el-table-column label="终审状态" prop="secondState" align="center" width="170">
         <template slot-scope="{ row }">
           <div style="display: grid; row-gap: 5px">
             <div class="flex align-center justify-between check-box">
@@ -151,228 +100,105 @@
           <div style="margin-top: 5px">审核人：{{ row.systemPerson }}</div>
         </template>
       </el-table-column>
-      <el-table-column
-        label="申请人"
-        prop="applicant"
-        align="center"
-        width="85"
-      />
-      <el-table-column
-        label="申请时间"
-        prop="createTime"
-        align="center"
-        sortable
-        width="100"
-      >
+      <el-table-column label="申请人" prop="applicant" align="center" width="85" />
+      <el-table-column label="申请时间" prop="createTime" align="center" sortable width="100">
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="80">
         <template slot-scope="{ row }">
           <div class="flex flex-direction table-options-col">
-            <Tooltip
-              v-hasPermi="['ecn:update']"
-              v-show="row.secondState !== 1 && row.applicant === nickName"
-              icon="el-icon-edit"
-              content="编辑"
-              @click="handleUpdate(row)"
-            />
+            <Tooltip v-hasPermi="['ecn:update']" v-show="row.secondState !== 1 && row.applicant === nickName"
+              icon="el-icon-edit" content="编辑" @click="handleUpdate(row)" />
 
-            <Tooltip
-              v-show="row.firstPerson === nickName && row.firstState !== 1"
-              class="text-orange"
-              icon="el-icon-coordinate"
-              :content="`待 （${row.firstPerson}） 初审`"
-              @click="handleAuthFlag(row, 1)"
-            />
+            <Tooltip v-show="row.firstPerson === nickName && row.firstState !== 1" class="text-orange"
+              icon="el-icon-coordinate" :content="`待 （${row.firstPerson}） 初审`" @click="handleAuthFlag(row, 1)" />
 
-            <Tooltip
-              v-show="isFirstStateFlag(row)"
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销初审"
-              @click="handleResetCheck(row, 1)"
-            />
+            <Tooltip v-show="isFirstStateFlag(row)" class="text-grey" icon="el-icon-circle-check" content="撤销初审"
+              @click="handleResetCheck(row, 1)" />
 
             <span v-for="item in row.list" :key="item.id">
-              <Tooltip
-                style="margin-left: 5px"
-                v-if="
-                  item.fieldName === nickName &&
-                  item.state !== 1 &&
-                  row.firstState === 1
-                "
-                class="text-orange"
-                icon="el-icon-coordinate"
-                :content="`待（${TriageList[item.field]}）--（${
-                  item.fieldName
-                }） ${item.state === 2 ? '重新' : ''}会审`"
-                @click="handleAuthFlag(item, 2)"
-              />
+              <Tooltip style="margin-left: 5px" v-if="
+                item.fieldName === nickName &&
+                item.state !== 1 &&
+                row.firstState === 1
+              " class="text-orange" icon="el-icon-coordinate" :content="`待（${TriageList[item.field]}）--（${item.fieldName
+                  }） ${item.state === 2 ? '重新' : ''}会审`" @click="handleAuthFlag(item, 2)" />
 
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 2 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（采购）-（${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 3 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（品质）- （${item.fieldName}）会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 4 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（生产）- （${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 5 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（工程）- （${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 6 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（研发）- （${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 7 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（仓库）- （${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
-              <Tooltip
-                style="margin-left: 5px"
-                v-show="
-                  item.fieldName === nickName &&
-                  item.state === 1 &&
-                  item.field === 8 &&
-                  isFinalStateFlag(row)
-                "
-                class="text-grey"
-                icon="el-icon-circle-check"
-                :content="`撤销（市场）-（${item.fieldName}） 会审`"
-                @click="handleResetCheck(item, 2)"
-              />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 2 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（采购）-（${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 3 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（品质）- （${item.fieldName}）会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 4 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（生产）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 5 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（工程）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 6 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（研发）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 7 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（仓库）- （${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
+              <Tooltip style="margin-left: 5px" v-show="item.fieldName === nickName &&
+                item.state === 1 &&
+                item.field === 8 &&
+                isFinalStateFlag(row)
+                " class="text-grey" icon="el-icon-circle-check" :content="`撤销（市场）-（${item.fieldName}） 会审`"
+                @click="handleResetCheck(item, 2)" />
             </span>
 
             <!-- PMC终审 -->
-            <Tooltip
-              v-show="
-                row.thirdPerson === nickName &&
-                row.thirdState !== 1 &&
-                isSecondStateFlag(row)
-              "
-              class="text-orange"
-              icon="el-icon-coordinate"
-              :content="`待 （${row.thirdPerson}） 终审`"
-              @click="handleAuthFlag(row, 4)"
-            />
+            <Tooltip v-show="row.thirdPerson === nickName &&
+              row.thirdState !== 1 &&
+              isSecondStateFlag(row)
+              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.thirdPerson}） 终审`"
+              @click="handleAuthFlag(row, 4)" />
 
+            <Tooltip v-show="row.thirdPerson === nickName && row.thirdState === 1" class="text-grey"
+              icon="el-icon-circle-check" content="撤销PMC终审" @click="handleResetCheck(row, 4)" />
             <Tooltip
-              v-show="row.thirdPerson === nickName && row.thirdState === 1"
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销PMC终审"
-              @click="handleResetCheck(row, 4)"
-            />
-            <Tooltip
-              v-show="row.systemPerson === nickName && row.thirdState ===1  && row.secondState === 1 && row.systemState !== 0"
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销系统变更审核"
-              @click="handleResetCheck(row, 5)"
-            />
+              v-show="row.systemPerson === nickName && row.thirdState === 1 && row.secondState === 1 && row.systemState !== 0"
+              class="text-grey" icon="el-icon-circle-check" content="撤销系统变更审核" @click="handleResetCheck(row, 5)" />
 
             <!-- 最终审核 -->
-            <Tooltip
-              v-show="
-                row.secondPerson === nickName &&
-                row.secondState !== 1 &&
-                row.thirdState === 1 &&
-                isSecondStateFlag(row)
-              "
-              class="text-orange"
-              icon="el-icon-coordinate"
-              :content="`待 （${row.secondPerson}） 终审`"
-              @click="handleAuthFlag(row, 3)"
-            />
-            <Tooltip
-            v-show="
-                row.systemPerson === nickName &&
-                row.systemState !== 1 &&
-                row.secondState === 1 &&
-                row.thirdState === 1
-              "
-              class="text-green"
-            icon="el-icon-coordinate"
-              content="系统变更审核"
-              @click="handleAuthFlag(row, 5)"
-            />
+            <Tooltip v-show="row.secondPerson === nickName &&
+              row.secondState !== 1 &&
+              row.thirdState === 1 &&
+              isSecondStateFlag(row)
+              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.secondPerson}） 终审`"
+              @click="handleAuthFlag(row, 3)" />
+            <Tooltip v-show="row.systemPerson === nickName &&
+              row.systemState !== 1 &&
+              row.secondState === 1 &&
+              row.thirdState === 1
+              " class="text-green" icon="el-icon-coordinate" content="系统变更审核" @click="handleAuthFlag(row, 5)" />
 
-            <Tooltip
-              v-show="
-                row.secondPerson === nickName &&
-                row.secondState === 1 &&
-                row.thirdState === 1
-              "
-              class="text-grey"
-              icon="el-icon-circle-check"
-              content="撤销终审"
-              @click="handleResetCheck(row, 3)"
-            />
+            <Tooltip v-show="row.secondPerson === nickName &&
+              row.secondState === 1 &&
+              row.thirdState === 1
+              " class="text-grey" icon="el-icon-circle-check" content="撤销终审" @click="handleResetCheck(row, 3)" />
 
-            <Tooltip
-              class="text-green"
-              icon="el-icon-view"
-              content="详情"
-              @click="handleDetail(row)"
-            />
+            <Tooltip class="text-green" icon="el-icon-view" content="详情" @click="handleDetail(row)" />
 
             <!-- <Tooltip
             :className="['text-orange']"
@@ -381,89 +207,38 @@
             @click="handleExport(row)"
           /> -->
 
-            <el-popconfirm
-              v-show="row.applicant === nickName"
-              title="确定要删除吗？"
-              @confirm="handleDelete(row)"
-              v-hasPermi="['ecn:delete']"
-            >
-              <Tooltip
-                slot="reference"
-                icon="el-icon-delete"
-                :className="['text-red']"
-                content="删除"
-              />
+            <el-popconfirm v-show="row.applicant === nickName" title="确定要删除吗？" @confirm="handleDelete(row)"
+              v-hasPermi="['ecn:delete']">
+              <Tooltip slot="reference" icon="el-icon-delete" :className="['text-red']" content="删除" />
             </el-popconfirm>
 
-            <Tooltip
-              v-if="row.file"
-              icon="el-icon-download"
-              content="附件下载"
-              @click="urlDownload(row.file)"
-            />
+            <Tooltip v-if="row.file" icon="el-icon-download" content="附件下载" @click="urlDownload(row.file)" />
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :small="true"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :small="true" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <CompUpdate1
-      ref="compUpdate"
-      :classifyList="classifyList"
-      :involveUnitList="involveUnitList"
-    />
+    <CompUpdate1 ref="compUpdate" :classifyList="classifyList" :involveUnitList="involveUnitList" />
 
-    <CompDetail
-      ref="compDetail"
-      :classifyList="classifyList"
-      :involveUnitList="involveUnitList"
-      :deptOptions="deptOptions"
-    />
+    <CompDetail ref="compDetail" :classifyList="classifyList" :involveUnitList="involveUnitList"
+      :deptOptions="deptOptions" />
 
     <!-- 审核人员管理 -->
-    <el-dialog
-      title="ECN审核人员管理"
-      :visible.sync="isPeopleManageVisible"
-      top="2vh"
-      center
-      append-to-body
-      width="600px"
-      :close-on-click-modal="false"
-    >
+    <el-dialog title="ECN审核人员管理" :visible.sync="isPeopleManageVisible" top="2vh" center append-to-body width="600px"
+      :close-on-click-modal="false">
       <el-row type="flex" justify="center">
         <el-col :xs="0" :span="2"></el-col>
         <el-col :xs="24" :span="20">
-          <el-form
-            ref="peopleForm"
-            :model="peopleManageForm"
-            :rules="peopleManageRules"
-            label-width="100px"
-            label-position="left"
-            class="input-width"
-          >
+          <el-form ref="peopleForm" :model="peopleManageForm" :rules="peopleManageRules" label-width="100px"
+            label-position="left" class="input-width">
             <el-form-item label="初审人员：" prop="firstAuditorData">
-              <el-select
-                class="w100"
-                v-model="peopleManageForm.firstAuditorData"
-                filterable
-                multiple
-                clearable
-                placeholder="请选择初审人员"
-              >
-                <el-option
-                  v-for="(item, index) in pmDictListOptions"
-                  :key="index"
-                  :label="item.userName"
-                  :value="item.userName"
-                >
+              <el-select class="w100" v-model="peopleManageForm.firstAuditorData" filterable multiple clearable
+                placeholder="请选择初审人员">
+                <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -471,148 +246,58 @@
             <el-form-item label="会审人员："></el-form-item>
             <el-form-item label-width="20px">
               <el-form-item label="采购：" prop="buyerData" label-width="70px">
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.buyerData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择采购人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+                <el-select class="w100" v-model="peopleManageForm.buyerData" filterable multiple clearable
+                  placeholder="请选择采购人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="品质：" prop="QAData" label-width="70px">
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.QAData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择品质人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+                <el-select class="w100" v-model="peopleManageForm.QAData" filterable multiple clearable
+                  placeholder="请选择品质人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="生产："
-                prop="productData"
-                label-width="70px"
-              >
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.productData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择生产人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+              <el-form-item label="生产：" prop="productData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.productData" filterable multiple clearable
+                  placeholder="请选择生产人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="工程："
-                prop="engineerData"
-                label-width="70px"
-              >
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.engineerData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择工程人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+              <el-form-item label="工程：" prop="engineerData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.engineerData" filterable multiple clearable
+                  placeholder="请选择工程人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="研发："
-                prop="researchData"
-                label-width="70px"
-              >
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.researchData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择研发人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+              <el-form-item label="研发：" prop="researchData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.researchData" filterable multiple clearable
+                  placeholder="请选择研发人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="仓库："
-                prop="warehouseData"
-                label-width="70px"
-              >
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.warehouseData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择仓库人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+              <el-form-item label="仓库：" prop="warehouseData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.warehouseData" filterable multiple clearable
+                  placeholder="请选择仓库人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item
-                label="市场："
-                prop="marketerData"
-                label-width="70px"
-              >
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.marketerData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择市场人员"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+              <el-form-item label="市场：" prop="marketerData" label-width="70px">
+                <el-select class="w100" v-model="peopleManageForm.marketerData" filterable multiple clearable
+                  placeholder="请选择市场人员">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -621,56 +306,26 @@
             <el-form-item label="终审人员："></el-form-item>
             <el-form-item label-width="20px">
               <el-form-item label="PMC：" prop="pmcData">
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.pmcData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+                <el-select class="w100" v-model="peopleManageForm.pmcData" filterable multiple clearable
+                  placeholder="请选择">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="最终审核：" prop="finalJudgmentData">
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.finalJudgmentData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+                <el-select class="w100" v-model="peopleManageForm.finalJudgmentData" filterable multiple clearable
+                  placeholder="请选择">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="系统变更 ：" prop="systemChangeData">
-                <el-select
-                  class="w100"
-                  v-model="peopleManageForm.systemChangeData"
-                  filterable
-                  multiple
-                  clearable
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="(item, index) in pmDictListOptions"
-                    :key="index"
-                    :label="item.userName"
-                    :value="item.userName"
-                  >
+                <el-select class="w100" v-model="peopleManageForm.systemChangeData" filterable multiple clearable
+                  placeholder="请选择">
+                  <el-option v-for="(item, index) in pmDictListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -686,65 +341,41 @@
     </el-dialog>
 
     <!-- 审核 -->
-    <el-dialog
-      title="请确认是否通过"
-      :visible.sync="authDialogVisible"
-      width="600px"
-      center
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="authForm"
-        :model="authForm"
-        label-position="top"
-        label-width="0"
-      >
-        <el-form-item
-          label="通过状态"
-          prop="state"
-          :rules="[
-            {
-              required: true,
-              message: '请选择通过状态',
-              trigger: 'change',
-            },
-          ]"
-        >
+    <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="600px" center :close-on-click-modal="false">
+      <el-form ref="authForm" :model="authForm" label-position="top" label-width="0">
+        <el-form-item label="通过状态" prop="state" :rules="[
+          {
+            required: true,
+            message: '请选择通过状态',
+            trigger: 'change',
+          },
+        ]">
           <el-radio-group v-model="authForm.state" @change="handleResetErrTip">
             <el-radio :label="1">通过</el-radio>
             <el-radio :label="2">不通过</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item
-          label="是否有相关性"
-          prop="isCorrelation"
-          :rules="[
-            {
-              required: true,
-              message: '请选择',
-              trigger: 'change',
-            },
-          ]"
-        >
+        <el-form-item label="是否有相关性" prop="isCorrelation" :rules="[
+          {
+            required: true,
+            message: '请选择',
+            trigger: 'change',
+          },
+        ]">
           <el-radio-group v-model="authForm.isCorrelation">
             <el-radio :label="0">是</el-radio>
             <el-radio :label="1">否</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item
-          v-if="authForm.isCorrelation === 0"
-          label="相关性是否完成"
-          prop="isComplete"
-          :rules="[
-            {
-              required: false,
-              message: '请选择',
-              trigger: 'change',
-            },
-          ]"
-        >
+        <el-form-item v-if="authForm.isCorrelation === 0" label="相关性是否完成" prop="isComplete" :rules="[
+          {
+            required: false,
+            message: '请选择',
+            trigger: 'change',
+          },
+        ]">
           <el-radio-group v-model="authForm.isComplete">
             <el-radio :label="0">是</el-radio>
             <el-radio :label="1">否</el-radio>
@@ -752,43 +383,25 @@
         </el-form-item>
 
         <transition name="fade">
-          <el-form-item
-            v-if="authForm.state === 1"
-            class="auth"
-            prop="remark"
-            :rules="[
-              {
-                required: true,
-                message: '请输入备注信息',
-                trigger: 'blur',
-              },
-            ]"
-          >
-            <el-input
-              v-model="authForm.remark"
-              type="textarea"
-              :autosize="{ minRows: 4, maxRows: 8 }"
-              placeholder="请输入备注信息"
-            />
+          <el-form-item v-if="authForm.state === 1" class="auth" prop="remark" :rules="[
+            {
+              required: true,
+              message: '请输入备注信息',
+              trigger: 'blur',
+            },
+          ]">
+            <el-input v-model="authForm.remark" type="textarea" :autosize="{ minRows: 4, maxRows: 8 }"
+              placeholder="请输入备注信息" />
           </el-form-item>
-          <el-form-item
-            v-if="authForm.state === 2"
-            class="auth"
-            prop="result"
-            :rules="[
-              {
-                required: true,
-                message: '请输入不通过的理由',
-                trigger: 'blur',
-              },
-            ]"
-          >
-            <el-input
-              v-model="authForm.result"
-              type="textarea"
-              :autosize="{ minRows: 4, maxRows: 8 }"
-              placeholder="请输入不通过的理由"
-            />
+          <el-form-item v-if="authForm.state === 2" class="auth" prop="result" :rules="[
+            {
+              required: true,
+              message: '请输入不通过的理由',
+              trigger: 'blur',
+            },
+          ]">
+            <el-input v-model="authForm.result" type="textarea" :autosize="{ minRows: 4, maxRows: 8 }"
+              placeholder="请输入不通过的理由" />
           </el-form-item>
         </transition>
       </el-form>
@@ -1504,9 +1117,9 @@ export default {
               }
             });
           }
-          
+
         })
-        .catch(() => {});
+        .catch(() => { });
     },
     resetAuthForm() {
       this.authForm = {
@@ -1605,18 +1218,21 @@ export default {
   },
 };
 </script>
-<style lang="scss"  scoped>
+<style lang="scss" scoped>
 .ecn-box {
   .auth {
     text-align: center;
     margin-bottom: 10px;
   }
+
   .finish-row td,
   .finish-row:hover td {
     background-color: rgba(155, 216, 148, 0.3) !important;
   }
+
   .mask-layer {
     position: relative;
+
     &::after {
       content: "";
       position: absolute;
@@ -1627,9 +1243,10 @@ export default {
       z-index: 1;
     }
   }
+
   .open-detail-style {
     div {
-      > span {
+      >span {
         &:first-child {
           color: #666;
           margin-right: 10px;
@@ -1645,8 +1262,7 @@ export default {
 }
 
 .search-form {
-  margin-bottom: 10px;
-  padding: 15px;
+  margin-bottom: 16px;
   background: #fff;
   display: flex;
   flex-wrap: wrap;
@@ -1666,7 +1282,8 @@ export default {
       border-radius: 4px;
       transition: all 0.3s;
 
-      &:hover, &:focus {
+      &:hover,
+      &:focus {
         border-color: #409EFF;
       }
     }
@@ -1684,7 +1301,7 @@ export default {
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
     }
   }
