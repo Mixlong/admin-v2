@@ -41,6 +41,13 @@
               </el-form-item>
             </el-col>
 
+            <!-- <el-col :span="4">
+              <el-form-item label="生产日期:" prop="date">
+                <el-date-picker v-model="form.date" type="date" placeholder="请选择生产日期" 
+                  value-format="yyyy-MM-dd" format="yyyy-MM-dd" style="width: 100%"></el-date-picker>
+              </el-form-item>
+            </el-col> -->
+
             <el-col :span="4">
               <el-form-item label="备注:" prop="remark">
                 <el-input v-model="form.remark" clearable placeholder="请输入"></el-input>
@@ -159,7 +166,13 @@
       <div class="popover-content">
         <el-table :data="dailyScheduleList" size="mini" max-height="300" :show-header="true"
           class="daily-schedule-table">
-          <el-table-column label="日期" prop="date" width="120" align="center" />
+          <el-table-column label="日期" prop="date" width="120" align="center">
+            <template slot-scope="scope">
+              <span class="weekday-text" :class="{ 'weekend': scope.row.isWeekend }">
+                {{ parseTime(scope.row.date, '{y}-{m}-{d}') }}
+              </span>
+            </template>
+          </el-table-column>
           <el-table-column label="星期" width="60" align="center">
             <template slot-scope="scope">
               <span class="weekday-text" :class="{ 'weekend': scope.row.isWeekend }">
@@ -384,7 +397,8 @@ export default {
       });
     },
     getOrderNo(salesOrderNo) {
-      if (salesOrderNo) {
+      // ✅ 编辑模式下不重新加载订单数据，避免覆盖回显数据
+      if (salesOrderNo && !this.form.id) {
         this.getOrderList(salesOrderNo);
       }
     },
@@ -486,6 +500,9 @@ export default {
 
     // 处理单个订单编辑数据
     loadSingleOrderData(orderData) {
+      // ✅ 首先加载下拉数据源，确保编辑时选项可用
+      this.loadDropdownData(orderData);
+
       // 设置表单基础数据 - 根据API响应格式映射字段
       this.form = {
         ...this.form,
@@ -500,7 +517,7 @@ export default {
         batchNo: orderData.batchNo || '',
         batchNum: orderData.batchNum || 1,
         remark: orderData.remark || '',
-        date: orderData.date ? new Date(orderData.date) : null, // 转换为Date对象以便表单正确显示
+        date: orderData.date ? this.formatDateOnly(orderData.date) : '', // 转换为日期字符串，统一为00:00:00
       };
 
       // 构建日期范围 - 优先从 detailList 获取实际的开始和结束日期
@@ -549,24 +566,50 @@ export default {
       if (orderData.detailList && orderData.detailList.length > 0) {
         const rowKey = `${orderData.id || orderData.customerOrderNo}_0`;
 
-        // 转换 detailList 为每日排产数据
-        const dailySchedules = orderData.detailList.map(detail => ({
-          date: this.formatTimestamp(detail.date),
-          plannedNum: detail.num,
-          actualNum: 0,
-          isWeekend: this.isWeekend(detail.date),
-          workStatus: 'working', // 默认为工作日，实际可以根据业务逻辑调整
-          status: 'pending'
-        }));
+        // 生成完整的日期范围（包括周日）
+        let fullDailySchedules = [];
+        if (dateRange && dateRange.length === 2) {
+          // 基于日期范围生成完整的每日列表
+          fullDailySchedules = this.generateFullDateRange(dateRange[0], dateRange[1]);
+        }
+
+        // 将 detailList 的数据映射到完整的日期列表中
+        if (fullDailySchedules.length > 0) {
+          orderData.detailList.forEach(detail => {
+            const detailDateStr = this.formatTimestamp(detail.date);
+            const matchingDay = fullDailySchedules.find(day => day.date === detailDateStr);
+            if (matchingDay) {
+              matchingDay.plannedNum = detail.num;
+              // 只有周日在有排产数据时才设置为特殊排班，周六是默认上班
+              const dayOfWeek = new Date(detail.date).getDay();
+              if (dayOfWeek === 0 && detail.num > 0) { // 只有周日才需要特殊处理
+                matchingDay.workStatus = 'special';
+              }
+            }
+          });
+        } else {
+          // 降级方案：直接使用 detailList 数据
+          fullDailySchedules = orderData.detailList.map(detail => {
+            const dayOfWeek = new Date(detail.date).getDay();
+            return {
+              date: this.formatTimestamp(detail.date),
+              plannedNum: detail.num,
+              actualNum: 0,
+              isWeekend: this.isWeekend(detail.date),
+              workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'special' : (dayOfWeek === 0 ? 'rest' : 'working'),
+              status: 'pending'
+            };
+          });
+        }
 
         // 计算总排产数量
-        const totalNum = dailySchedules.reduce((sum, schedule) => sum + schedule.plannedNum, 0);
+        const totalNum = fullDailySchedules.reduce((sum, schedule) => sum + schedule.plannedNum, 0);
         orderRow.num = totalNum;
 
         // 存储每日排产数据
-        this.$set(this.dailyScheduleData, rowKey, dailySchedules);
+        this.$set(this.dailyScheduleData, rowKey, fullDailySchedules);
 
-        console.log('✅ 单个订单每日排产数据已设置:', rowKey, dailySchedules);
+        console.log('✅ 单个订单每日排产数据已设置:', rowKey, fullDailySchedules);
         console.log('✅ 计算总排产数量:', totalNum);
       }
 
@@ -587,7 +630,7 @@ export default {
       this.form = {
         ...this.form,
         ...scheduleData,
-        date: scheduleData.date ? new Date(scheduleData.date) : null, // 转换为Date对象以便表单正确显示
+        date: scheduleData.date ? this.formatDateOnly(scheduleData.date) : '', // 转换为日期字符串，统一为00:00:00
       };
 
       // 处理订单列表数据
@@ -636,24 +679,50 @@ export default {
         if (batchItem.detailList && batchItem.detailList.length > 0) {
           const rowKey = `${batchItem.orderId || batchItem.orderNo}_${index}`;
 
-          // 转换 detailList 为每日排产数据
-          const dailySchedules = batchItem.detailList.map(detail => ({
-            date: this.formatTimestamp(detail.date),
-            plannedNum: detail.num,
-            actualNum: 0,
-            isWeekend: this.isWeekend(detail.date),
-            workStatus: 'working', // 默认为工作日，实际可以根据业务逻辑调整
-            status: 'pending'
-          }));
+          // 生成完整的日期范围（包括周日）
+          let fullDailySchedules = [];
+          if (dateRange && dateRange.length === 2) {
+            // 基于日期范围生成完整的每日列表
+            fullDailySchedules = this.generateFullDateRange(dateRange[0], dateRange[1]);
+          }
+
+          // 将 detailList 的数据映射到完整的日期列表中
+          if (fullDailySchedules.length > 0) {
+            batchItem.detailList.forEach(detail => {
+              const detailDateStr = this.formatTimestamp(detail.date);
+              const matchingDay = fullDailySchedules.find(day => day.date === detailDateStr);
+              if (matchingDay) {
+                matchingDay.plannedNum = detail.num;
+                // 只有周日在有排产数据时才设置为特殊排班，周六是默认上班
+                const dayOfWeek = new Date(detail.date).getDay();
+                if (dayOfWeek === 0 && detail.num > 0) { // 只有周日才需要特殊处理
+                  matchingDay.workStatus = 'special';
+                }
+              }
+            });
+          } else {
+            // 降级方案：直接使用 detailList 数据
+            fullDailySchedules = batchItem.detailList.map(detail => {
+              const dayOfWeek = new Date(detail.date).getDay();
+              return {
+                date: this.formatTimestamp(detail.date),
+                plannedNum: detail.num,
+                actualNum: 0,
+                isWeekend: this.isWeekend(detail.date),
+                workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'special' : (dayOfWeek === 0 ? 'rest' : 'working'),
+                status: 'pending'
+              };
+            });
+          }
 
           // 计算总排产数量
-          const totalNum = dailySchedules.reduce((sum, schedule) => sum + schedule.plannedNum, 0);
+          const totalNum = fullDailySchedules.reduce((sum, schedule) => sum + schedule.plannedNum, 0);
           orderRow.num = totalNum;
 
           // 存储每日排产数据
-          this.$set(this.dailyScheduleData, rowKey, dailySchedules);
+          this.$set(this.dailyScheduleData, rowKey, fullDailySchedules);
 
-          console.log(`📅 回显第 ${index} 行每日排产数据:`, dailySchedules);
+          console.log(`📅 回显第 ${index} 行每日排产数据:`, fullDailySchedules);
           console.log(`📊 计算第 ${index} 行总排产数量:`, totalNum);
         }
 
@@ -666,11 +735,73 @@ export default {
       });
     },
 
+    // ✅ 新增：加载下拉数据源方法
+    loadDropdownData(orderData) {
+      // 加载迪太订单号数据
+      if (orderData.salesOrderNo && this.orderCodeData.data.length === 0) {
+        this.getCustomerOrderList({ keyword: orderData.salesOrderNo }).then(() => {
+          // 确保当前值在选项中
+          const exists = this.orderCodeData.data.some(item => item.salesOrderNo === orderData.salesOrderNo);
+          if (!exists && orderData.salesOrderNo) {
+            this.orderCodeData.data.unshift({ salesOrderNo: orderData.salesOrderNo });
+          }
+        });
+      }
+
+      // 加载订单编号数据
+      if (orderData.orderCode && this.prodPlatData.data.length === 0) {
+        this.getProdPlantList({ keyword: orderData.orderCode }).then(() => {
+          // 确保当前值在选项中
+          const exists = this.prodPlatData.data.some(item => item.orderCode === orderData.orderCode);
+          if (!exists && orderData.orderCode) {
+            this.prodPlatData.data.unshift({ orderCode: orderData.orderCode });
+          }
+        });
+      }
+
+      // ✅ 编辑模式下不需要预加载订单数据，避免覆盖已经设置好的回显数据
+      // 注释掉此行防止覆盖回显数据
+      // if (orderData.salesOrderNo) {
+      //   this.getOrderList(orderData.salesOrderNo);
+      // }
+    },
+
     // 时间戳转日期字符串
     formatTimestamp(timestamp) {
       if (!timestamp) return '';
       const date = new Date(timestamp);
       return this.formatDate(date, 'yyyy-MM-dd') + ' 00:00:00';
+    },
+
+    // ✅ 新增：时间戳转日期字符串，专用于表单日期字段（只要日期部分）
+    formatDateOnly(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      return this.formatDate(date, 'yyyy-MM-dd');
+    },
+
+    // ✅ 新增：获取有效日期，优先使用表单日期，否则使用 dateRange 的开始日期
+    getValidDate(formDate, dateRange) {
+      console.log('🔍 getValidDate 调用:', { formDate, dateRange });
+
+      // 1. 优先使用表单日期（检查非空字符串）
+      if (formDate && typeof formDate === 'string' && formDate.trim() !== '') {
+        const timestamp = this.convertToTimestamp(formDate);
+        console.log('📅 表单日期转换结果:', timestamp);
+        if (timestamp && !isNaN(timestamp)) return timestamp;
+      }
+
+      // 2. 降级使用 dateRange 的开始日期
+      if (dateRange && Array.isArray(dateRange) && dateRange.length >= 2 && dateRange[0]) {
+        const startTimestamp = new Date(dateRange[0]).getTime();
+        console.log('📅 dateRange开始日期转换结果:', startTimestamp);
+        if (!isNaN(startTimestamp)) return startTimestamp;
+      }
+
+      // 3. 最后降级使用当前日期
+      const fallbackDate = new Date().setHours(0, 0, 0, 0);
+      console.log('📅 使用当前日期作为兜底:', fallbackDate);
+      return fallbackDate;
     },
 
     // ✅ 转换为时间戳格式 - 后端已修改支持 Long 类型
@@ -812,7 +943,7 @@ export default {
                   batchNo: batchNo,
                   categoryId: item.categoryId || '',
                   computerId: item.computerId || '',
-                  date: new Date(day.date + ' 00:00:00').getTime(),
+                  date: new Date(day.date).getTime(), // day.date 已经包含时间，不需要再拼接
                   num: day.plannedNum,
                   orderCode: this.form.orderCode || '',
                   schedulingId: data.id // 编辑时使用当前排产单ID
@@ -820,14 +951,40 @@ export default {
             } else {
               // 如果没有每日排产数据，使用批次的整体日期范围创建单条记录
               console.warn('⚠️ 没有找到每日排产数据，使用整体日期范围');
+              console.log('🔍 item.dateRange:', item.dateRange, 'item.num:', item.num);
+
               if (item.dateRange && item.dateRange.length === 2 && item.num > 0) {
+                // 将总数量平均分配到两个日期
+                const halfNum = Math.ceil(item.num / 2);
+                detailList = [
+                  {
+                    batchNo: batchNo,
+                    categoryId: item.categoryId || '',
+                    computerId: item.computerId || '',
+                    date: new Date(item.dateRange[0]).getTime(),
+                    num: halfNum,
+                    orderCode: this.form.orderCode || '',
+                    schedulingId: data.id
+                  },
+                  {
+                    batchNo: batchNo,
+                    categoryId: item.categoryId || '',
+                    computerId: item.computerId || '',
+                    date: new Date(item.dateRange[1]).getTime(),
+                    num: item.num - halfNum,
+                    orderCode: this.form.orderCode || '',
+                    schedulingId: data.id
+                  }
+                ];
+              } else {
+                // 兜底方案：使用当前日期
+                console.warn('⚠️ dateRange无效，使用当前日期');
                 detailList = [{
-                  // ✅ 根据 TProductionSchedulingDetail 对象字段调整
                   batchNo: batchNo,
                   categoryId: item.categoryId || '',
                   computerId: item.computerId || '',
-                  date: new Date(item.dateRange[0]).getTime(),
-                  num: item.num,
+                  date: new Date().setHours(0, 0, 0, 0),
+                  num: item.num || 0,
                   orderCode: this.form.orderCode || '',
                   schedulingId: data.id
                 }];
@@ -842,9 +999,9 @@ export default {
               batchNum,
               num,
               orderNo: item.customerOrderNo,
-              // 日期相关字段
-              date: this.convertToTimestamp(this.form.date),
-              endDate: item.dateRange ? new Date(item.dateRange[1]).getTime() : null,
+              // 日期相关字段 - 从 dateRange 获取日期或使用表单日期
+              date: this.getValidDate(this.form.date, item.dateRange),
+              endDate: item.dateRange && item.dateRange.length === 2 ? new Date(item.dateRange[1]).getTime() : new Date().setHours(0, 0, 0, 0),
               // 排产详情
               detailList: detailList
             };
@@ -858,6 +1015,11 @@ export default {
                 orderNo: data.orderNo,
                 date: data.date,
                 endDate: data.endDate
+              },
+              dateDebug: {
+                'form.date': this.form.date,
+                'item.dateRange': item.dateRange,
+                'getValidDate_result': this.getValidDate(this.form.date, item.dateRange)
               }
             });
 
@@ -921,7 +1083,7 @@ export default {
                 .map(day => ({
                   categoryId: item.categoryId || '',
                   computerId: item.computerId || '',
-                  date: new Date(day.date + ' 00:00:00').getTime(), // 转换为时间戳，确保是00:00:00
+                  date: new Date(day.date).getTime(), // day.date 已经包含时间，不需要再拼接
                   num: day.plannedNum,
                   orderCode: this.form.orderCode || '',
                   schedulingId: '', // 创建时为空，编辑时会有值
@@ -938,6 +1100,7 @@ export default {
                 batchNo: item.batchNo,
                 batchNum: item.batchNum,
                 orderNo: item.customerOrderNo,
+                orderId: item.id, // ✅ 添加缺失的orderId字段
                 num: item.num,
                 date: item.dateRange ? new Date(item.dateRange[0]).getTime() : null,
                 endDate: item.dateRange ? new Date(item.dateRange[1]).getTime() : null,
@@ -946,6 +1109,11 @@ export default {
             });
 
             console.log('📦 创建时第一个 detailList 包含批次数据:', data.list[0]?.detailList?.[0]);
+            console.log('🔍 创建时orderId字段检查:', {
+              firstItemOrderId: data.list[0]?.orderId,
+              firstItemOrderNo: data.list[0]?.orderNo,
+              hasOrderId: !!data.list[0]?.orderId
+            });
             console.log('📅 创建时日期格式检查:', {
               originalDate: this.form.date,
               convertedDate: data.date,
@@ -1103,6 +1271,9 @@ export default {
       this.dailySchedulePopover.currentRowIndex = rowIndex;
       this.dailySchedulePopover.currentRowData = rowData;
 
+      // 设置智能分配数量的默认值为当前行的订单数量
+      this.distributeAmount = rowData.orderQuantity || 0;
+
       // 生成每日排产数据
       this.generateDailyScheduleList(rowData);
 
@@ -1134,6 +1305,32 @@ export default {
       this.dailySchedulePopover.currentRowData = null;
       this.dailyScheduleList = [];
       document.removeEventListener('click', this.handleOutsideClick);
+    },
+
+    // 生成完整日期范围的方法（用于编辑回显）
+    generateFullDateRange(startDateStr, endDateStr) {
+      const dailyList = [];
+      let currentDate = new Date(startDateStr);
+      const endDateTime = new Date(endDateStr);
+
+      while (currentDate <= endDateTime) {
+        const dayOfWeek = currentDate.getDay();
+        const isRestDay = dayOfWeek === 0; // 只有周日是休息日，周六是正常工作日
+
+        // 包含所有日期，但设置默认工作状态（周六为正常工作日）
+        dailyList.push({
+          date: this.formatDate(currentDate, 'yyyy-MM-dd') + ' 00:00:00',
+          plannedNum: 0,
+          actualNum: 0,
+          isWeekend: dayOfWeek === 0 || dayOfWeek === 6, // 保留周末标识用于显示样式
+          workStatus: isRestDay ? 'rest' : 'working', // 只有周日默认休息，周六为工作日
+          status: 'pending'
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      return dailyList;
     },
 
     // 生成每日排产数据列表

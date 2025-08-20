@@ -791,7 +791,7 @@ export default {
       }
     },
     isTestTabHeight() {
-      return "calc(100vh - 240px)";
+      return "calc(100vh - 290px)";
     },
     hopeDateStyle() {
       return (hopeDate, result) => {
@@ -863,6 +863,8 @@ export default {
     }
   },
   created() {
+    // 设置默认日期范围：今天到明天
+    this.setDefaultDateRange();
     this.getList();
     this.getOperationList();
     // this.getHomeProductionAll();
@@ -897,8 +899,23 @@ export default {
         this.computerOptions = [];
       }
     },
+    // 设置默认日期范围：今天到明天
+    setDefaultDateRange() {
+      const today = new Date();
+      // 设置今天的时间为 00:00:00
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      // 设置明天的时间为 23:59:59
+      tomorrow.setHours(23, 59, 59, 999);
+
+      // 设置为时间戳格式
+      this.dateRange = [today.getTime(), tomorrow.getTime()];
+    },
     resetQuery() {
       this.dateTime = [];
+      this.dateRange = []; // 重置时清空日期范围
       this.$set(this.queryParams, 'myLag', '');
       this.$set(this.queryParams, 'myTodo', '');
       this.resetForm("queryForm");

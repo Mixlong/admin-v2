@@ -79,7 +79,7 @@
                 :height="dynamicTableHeight" :row-class-name="getRowClassName" row-key="id"
                 @sort-change="handleSortChange">
 
-                <el-table-column prop="workOrderNo" label="工单号" align="center" width="120">
+                <el-table-column prop="workOrderNo" label="工单号" align="center">
                     <template slot-scope="scope">
                         <div class="work-order-cell">
                             <el-link type="primary" @click="handleViewWorkOrder(scope.row.workOrderNo)"
@@ -93,9 +93,18 @@
 
                 <el-table-column prop="categoryName" label="品类名称" align="center" width="120" />
 
-                <el-table-column prop="computerName" label="型号名称" align="center" width="120" />
+                <el-table-column prop="computerName" label="型号名称" align="center" />
 
                 <el-table-column prop="problemDesc" label="问题描述" align="center" min-width="200" show-overflow-tooltip />
+
+
+                <el-table-column prop="remark" label="备注" align="center" width="120" show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.remark" class="remark-content">{{ scope.row.remark }}</span>
+                        <span v-else class="no-remark">-</span>
+                    </template>
+                </el-table-column>
+
 
                 <el-table-column prop="processType" label="处理状态" align="center" width="130">
                     <template slot-scope="scope">
@@ -107,9 +116,6 @@
                         </div>
                     </template>
                 </el-table-column>
-
-                <el-table-column prop="reporter" label="上报人" align="center" width="100" />
-
                 <el-table-column prop="responsibleDept" label="责任部门" align="center" width="120">
                     <template slot-scope="scope">
                         <span>{{ scope.row.responsibleDept || '-' }}</span>
@@ -119,33 +125,8 @@
                 <el-table-column prop="responsible" label="责任人" align="center" width="100" />
 
 
-                <el-table-column prop="remark" label="备注" align="center" width="120" show-overflow-tooltip>
-                    <template slot-scope="scope">
-                        <span v-if="scope.row.remark" class="remark-content">{{ scope.row.remark }}</span>
-                        <span v-else class="no-remark">-</span>
-                    </template>
-                </el-table-column>
 
-                <el-table-column prop="fileUrl" label="附件" align="center" width="100">
-                    <template slot-scope="scope">
-                        <div v-if="scope.row.fileUrl && scope.row.fileUrl.length > 0" class="attachment-cell">
-                            <el-dropdown @command="handleDownloadFile" trigger="click">
-                                <el-button type="text" size="mini" icon="el-icon-paperclip">
-                                    附件({{ getFileCount(scope.row.fileUrl) }})
-                                </el-button>
-                                <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item v-for="(file, index) in parseFileUrls(scope.row.fileUrl)"
-                                        :key="index" :command="{ file, row: scope.row }">
-                                        <i :class="getFileIcon(file.name)" style="margin-right: 8px;"></i>
-                                        {{ file.name }}
-                                        <span class="file-size">({{ formatFileSize(file.size) }})</span>
-                                    </el-dropdown-item>
-                                </el-dropdown-menu>
-                            </el-dropdown>
-                        </div>
-                        <span v-else class="no-attachment">-</span>
-                    </template>
-                </el-table-column>
+                <el-table-column prop="reporter" label="上报人" align="center" width="100" />
 
                 <el-table-column prop="createdTime" label="创建时间" align="center" width="160" sortable>
                     <template slot-scope="scope">
@@ -157,7 +138,8 @@
 
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-button size="mini" type="text" @click="handleView(scope.row)" icon="el-icon-view">
+                        <el-button size="mini" type="text" v-hasPermi="['production:alerts:view']"
+                            @click="handleView(scope.row)" icon="el-icon-view">
                             查看
                         </el-button>
                         <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
@@ -1708,255 +1690,7 @@ export default {
             this.refreshTableHeight()
         },
 
-        // ==================== 附件相关方法 ====================
 
-        // 解析文件URL字符串为文件对象数组
-        parseFileUrls(fileUrl) {
-            if (!fileUrl) return []
-
-            try {
-                // 如果是JSON字符串，尝试解析
-                if (typeof fileUrl === 'string' && fileUrl.startsWith('[')) {
-                    return JSON.parse(fileUrl)
-                }
-
-                // 如果是逗号分隔的URL字符串
-                if (typeof fileUrl === 'string') {
-                    return fileUrl.split(',').map((url, index) => {
-                        const fileName = this.getFileNameFromUrl(url.trim())
-                        return {
-                            name: fileName,
-                            url: url.trim(),
-                            size: 0 // 大小未知
-                        }
-                    })
-                }
-
-                // 如果已经是数组
-                if (Array.isArray(fileUrl)) {
-                    return fileUrl
-                }
-
-                return []
-            } catch (error) {
-                console.error('解析文件URL失败:', error)
-                return []
-            }
-        },
-
-        // 从URL中提取文件名
-        getFileNameFromUrl(url) {
-            if (!url) return '未知文件'
-
-            try {
-                // 从URL中提取文件名
-                const urlParts = url.split('/')
-                const fileName = urlParts[urlParts.length - 1]
-
-                // 如果包含查询参数，去除
-                const cleanFileName = fileName.split('?')[0]
-
-                return decodeURIComponent(cleanFileName) || '未知文件'
-            } catch (error) {
-                return '未知文件'
-            }
-        },
-
-        // 获取文件数量
-        getFileCount(fileUrl) {
-            const files = this.parseFileUrls(fileUrl)
-            return files.length
-        },
-
-        // 根据文件名获取文件图标
-        getFileIcon(fileName) {
-            if (!fileName) return 'el-icon-document'
-
-            const extension = fileName.toLowerCase().split('.').pop()
-            const iconMap = {
-                // 图片文件
-                'jpg': 'el-icon-picture',
-                'jpeg': 'el-icon-picture',
-                'png': 'el-icon-picture',
-                'gif': 'el-icon-picture',
-                'bmp': 'el-icon-picture',
-                'webp': 'el-icon-picture',
-
-                // 文档文件
-                'pdf': 'el-icon-document',
-                'doc': 'el-icon-document',
-                'docx': 'el-icon-document',
-                'txt': 'el-icon-document',
-                'rtf': 'el-icon-document',
-
-                // 表格文件
-                'xls': 'el-icon-s-grid',
-                'xlsx': 'el-icon-s-grid',
-                'csv': 'el-icon-s-grid',
-
-                // 演示文件
-                'ppt': 'el-icon-film',
-                'pptx': 'el-icon-film',
-
-                // 压缩文件
-                'zip': 'el-icon-folder-opened',
-                'rar': 'el-icon-folder-opened',
-                '7z': 'el-icon-folder-opened',
-
-                // 视频文件
-                'mp4': 'el-icon-video-camera',
-                'avi': 'el-icon-video-camera',
-                'mov': 'el-icon-video-camera',
-                'wmv': 'el-icon-video-camera',
-
-                // 音频文件
-                'mp3': 'el-icon-headset',
-                'wav': 'el-icon-headset',
-                'flac': 'el-icon-headset'
-            }
-
-            return iconMap[extension] || 'el-icon-document'
-        },
-
-        // 格式化文件大小
-        formatFileSize(bytes) {
-            if (!bytes || bytes === 0) return '-'
-
-            const sizes = ['B', 'KB', 'MB', 'GB']
-            const i = Math.floor(Math.log(bytes) / Math.log(1024))
-
-            if (i === 0) return `${bytes} ${sizes[i]}`
-
-            return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`
-        },
-
-        // 处理文件下载
-        async handleDownloadFile(command) {
-            const { file, row } = command
-
-            try {
-                // 直接下载文件URL
-                this.downloadFileUrl(file.url, file.name)
-
-                this.showSuccess(`文件 "${file.name}" 开始下载`)
-
-                // 记录下载日志
-                this.logFileDownload(file, row)
-
-            } catch (error) {
-                console.error('文件下载失败:', error)
-                this.showError(`文件下载失败: ${error.message || '未知错误'}`)
-            }
-        },
-
-        // 记录文件下载日志
-        logFileDownload(file, row) {
-            console.log('文件下载记录:', {
-                fileName: file.name,
-                fileUrl: file.url,
-                alertId: row.id,
-                workOrderNo: row.workOrderNo,
-                downloadTime: new Date().toISOString(),
-                user: this.currentUser?.nickName
-            })
-
-            // TODO: 可以发送到后端记录下载日志
-        },
-
-        // 批量下载所有附件
-        async handleBatchDownloadFiles(row) {
-            const files = this.parseFileUrls(row.fileUrl)
-
-            if (files.length === 0) {
-                this.showWarning('该记录没有附件')
-                return
-            }
-
-            const confirmed = await this.confirmAction(
-                `确定要下载工单 "${row.workOrderNo}" 的所有附件吗？\n共 ${files.length} 个文件`,
-                '批量下载确认'
-            )
-
-            if (!confirmed) return
-
-            try {
-                this.showLoading(`正在下载 ${files.length} 个文件...`)
-
-                // 逐个下载文件（避免浏览器阻止多个下载）
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i]
-
-                    // 延迟下载以避免浏览器限制
-                    setTimeout(() => {
-                        // 直接下载文件URL
-                        this.downloadFileUrl(file.url, file.name)
-
-                        // 记录下载日志
-                        this.logFileDownload(file, row)
-                    }, i * 500) // 每个文件间隔500ms
-                }
-
-                this.showSuccess(`开始批量下载 ${files.length} 个文件`)
-
-            } catch (error) {
-                console.error('批量下载失败:', error)
-                this.showError(`批量下载失败: ${error.message || '未知错误'}`)
-            } finally {
-                setTimeout(() => {
-                    this.hideLoading()
-                }, files.length * 500 + 1000) // 等待所有文件开始下载后隐藏loading
-            }
-        },
-
-        // 预览文件（如果是图片或PDF）
-        handlePreviewFile(file, row) {
-            const extension = file.name.toLowerCase().split('.').pop()
-            const previewableTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'pdf']
-
-            if (previewableTypes.includes(extension)) {
-                // 在新窗口中打开预览
-                window.open(file.url, '_blank')
-
-                // 记录预览日志
-                console.log('文件预览记录:', {
-                    fileName: file.name,
-                    fileUrl: file.url,
-                    alertId: row.id,
-                    workOrderNo: row.workOrderNo,
-                    previewTime: new Date().toISOString(),
-                    user: this.currentUser?.nickName
-                })
-            } else {
-                this.showInfo('该文件类型不支持预览，请下载后查看')
-                this.handleDownloadFile({ file, row })
-            }
-        },
-
-        // 直接下载文件URL的方法
-        downloadFileUrl(url, fileName) {
-            try {
-                // 创建一个隐藏的a标签来触发下载
-                const link = document.createElement('a')
-                link.href = url
-                link.download = fileName || this.getFileNameFromUrl(url)
-                link.target = '_blank'
-                link.style.display = 'none'
-
-                // 添加到DOM并触发点击
-                document.body.appendChild(link)
-                link.click()
-
-                // 清理DOM
-                setTimeout(() => {
-                    document.body.removeChild(link)
-                }, 100)
-
-            } catch (error) {
-                console.error('下载失败:', error)
-                // 如果a标签下载失败，尝试直接打开URL
-                window.open(url, '_blank')
-            }
-        }
 
     }
 }
@@ -2495,72 +2229,6 @@ export default {
         font-style: italic;
     }
 
-    // 附件单元格样式
-    .attachment-cell {
-        display: flex;
-        align-items: center;
-        justify-content: center;
 
-        .el-button {
-            color: #409eff;
-
-            &:hover {
-                color: #66b1ff;
-            }
-        }
-
-        .el-dropdown-menu {
-            .el-dropdown-menu__item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 8px 16px;
-
-                &:hover {
-                    background-color: #f5f7fa;
-                }
-
-                .file-size {
-                    font-size: 11px;
-                    color: #909399;
-                    margin-left: 8px;
-                }
-            }
-        }
-    }
-
-    .no-attachment {
-        color: #c0c4cc;
-        font-style: italic;
-    }
-
-    // 文件图标颜色
-    .el-icon-picture {
-        color: #67c23a;
-    }
-
-    .el-icon-document {
-        color: #409eff;
-    }
-
-    .el-icon-s-grid {
-        color: #e6a23c;
-    }
-
-    .el-icon-film {
-        color: #f56c6c;
-    }
-
-    .el-icon-folder-opened {
-        color: #909399;
-    }
-
-    .el-icon-video-camera {
-        color: #f56c6c;
-    }
-
-    .el-icon-headset {
-        color: #67c23a;
-    }
 }
 </style>

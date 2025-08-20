@@ -54,14 +54,15 @@ export default {
     return {
       classOption: {
         autoPlay: true,
-        step: 0.8, // 滚动速度
-        limitMoveNum: 3, // 限制滚动条数
-        hoverStop: true, // 鼠标悬停时停止滚动
+        step: 5, // 滚动速度
+        limitMoveNum: 4, // 每屏显示4条数据（160px/40px=4条）
+        hoverStop: false, // 鼠标悬停时停止滚动
         direction: 1, // 1向上 0向下
         openWatch: true, // 开启数据实时监控刷新dom
-        singleHeight: 40, // 单步运动停止的高度
+        singleHeight: 160, // 一屏的高度（显示区域高度）
         singleWidth: 0,
-        waitTime: 0 // 单步运动停止的时间(默认值1000ms)
+        waitTime: 10000 // 每屏停留10秒钟
+
       }
     };
   },
@@ -117,19 +118,19 @@ export default {
     },
     durationStyle() {
       return (durationStr) => {
-        // 如果是格式化字符串，通过关键词判断是否超期
+        // 如果是格式化字符串，只有包含"天"才显示红色
         if (typeof durationStr === 'string') {
-          const isOverdue = durationStr.includes('天') || durationStr.includes('小时');
+          const isOverOneDay = durationStr.includes('天');
           return {
-            color: isOverdue ? "#FF386B" : "#FFFFFF",
+            color: isOverOneDay ? "#FF386B" : "#FFFFFF",
           };
         }
 
-        // 如果是数字，按原来的逻辑
+        // 如果是数字，只有超过1天（86400秒）才显示红色
         if (typeof durationStr === 'number') {
           const days = Math.floor(durationStr / (24 * 3600));
           return {
-            color: days && durationStr ? "#FF386B" : "#FFFFFF",
+            color: days >= 1 ? "#FF386B" : "#FFFFFF",
           };
         }
 
@@ -194,7 +195,7 @@ export default {
 
         // 型号  
         &:nth-child(3) {
-          width: 25%;
+          width: 27%;
         }
 
         // 问题描述
@@ -204,7 +205,7 @@ export default {
 
         // 上报人
         &:nth-child(5) {
-          width: 15%;
+          width: 13%;
         }
 
         // 责任归属
@@ -234,7 +235,7 @@ export default {
 
           // 型号  
           &:nth-child(3) {
-            width: 25%;
+            width: 27%;
           }
 
           // 问题描述
@@ -244,7 +245,7 @@ export default {
 
           // 上报人
           &:nth-child(5) {
-            width: 15%;
+            width: 13%;
           }
 
           // 责任归属

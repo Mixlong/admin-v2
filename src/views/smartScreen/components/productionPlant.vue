@@ -13,20 +13,23 @@
     </ul>
     <div class="scroll-box" v-if="tableData.length">
       <vue-seamless-scroll :data="tableData" :classOption="classOption">
+
         <ul class="production-row" v-for="(item, index) in tableData" :key="index" :class="productionRow(index)">
-          <li v-NoData="item.feedingDate || '25/10/13'"></li>
-          <li v-NoData="item.orderNo"></li>
+          <li v-NoData="formatDate(item.date)"></li>
+          <li v-NoData="item.orderCode"></li>
           <li v-NoData="item.computerName"></li>
-          <li v-NoData="item.iqcCount"></li>
-          <li v-NoData="item.oqcCount"></li>
-          <li v-NoData="item.dcdCount"></li>
+          <li v-NoData="item.ipqcNum"></li>
+          <li v-NoData="item.oqcNum"></li>
+          <li v-NoData="item.packagingNum"></li>
           <li v-NoData="item.num"></li>
-          <li v-NoData="item.date"></li>
+          <li v-NoData="formatDate(item.endDate)"></li>
           <li class="reach-rate">
             <div class="reach-progress">
-              <div class="progress-bar" :style="progressBarStyle(item.reach)"></div>
+              <div class="progress-bar" :style="progressBarStyle(Number(item._original.achievementRate))"></div>
             </div>
-            <span class="progress-text" :style="reactTxtStyle(item.reach)">{{ reachData(item.reach) }}</span>
+            <span class="progress-text" :style="reactTxtStyle(Number(item._original.achievementRate))">{{
+              item._original.achievementRate
+              }}</span>
           </li>
         </ul>
       </vue-seamless-scroll>
@@ -47,9 +50,18 @@ export default {
   data() {
     return {
       classOption: {
-        autoPlay: true,
-        step: 0.5,
-        limitMoveNum: 11,
+        step: 0.5, // 步长
+        limitMoveNum: 11, // 启动无缝滚动的数据量
+        hoverStop: false, // 鼠标悬停时不停止滚动
+        direction: 1, // 向上滚动
+        singleHeight: 0, // 单步运动停止的高度(默认值0是无缝不停止的滚动)
+        singleWaitTime: 1000, // 单步运动停止的时间(默认值1000ms)
+        isRemUnit: true, // 是否开启rem度量
+        delay: 1000, // 动画延迟时间
+        ease: 'ease-in', // 动画效果
+        count: 0, // 动画循环次数，0为无限循环
+        copyHtml: true, // 是否可以复制
+        autoPlay: true, // 是否自动播放
       },
     };
   },
@@ -71,43 +83,55 @@ export default {
       };
     },
     reachData() {
-      return (reach) => {
-        if (reach) {
-          return reach + "%"; // 确保返回的是字符串类型
+      return (achievementRate) => {
+        if (achievementRate !== null && achievementRate !== undefined) {
+          return achievementRate + "%"; // 确保返回的是字符串类型
         } else {
           return "- - -";
         }
       };
     },
     reactTxtStyle() {
-      return (reach) => {
-        if (!reach) {
-          return { color: "#FFFFFF" };
-        }
-        if (reach < 70) {
-          return { color: "#FF386B" };
-        } else if (reach >= 70 && reach <= 80) {
-          return { color: "#F5E74F" };
-        } else if (reach > 80) {
-          return { color: "#00E8B5" };
-        }
+
+      return (achievementRate) => {
+        // if (achievementRate === null || achievementRate === undefined) {
+        //   return { color: "#FFFFFF" };
+        // }
+        // if (achievementRate < 70) {
+        //   return { color: "#FF386B" };
+        // } else if (achievementRate >= 70 && achievementRate <= 80) {
+        //   return { color: "#F5E74F" };
+        // } else if (achievementRate > 80) {
+        //   return { color: "#00E8B5" };
+        // }
+        return { color: "#FFFFFF" };
       };
     },
     progressBarStyle() {
-      return (reach) => {
+      return (achievementRate) => {
         let backgroundColor = "#FF386B"; // 红色（低于70%）
-        if (reach >= 70 && reach <= 80) {
+        if (achievementRate >= 70 && achievementRate <= 80) {
           backgroundColor = "#F5E74F"; // 黄色（70%-80%）
-        } else if (reach > 80) {
+        } else if (achievementRate > 80) {
           backgroundColor = "#00E8B5"; // 绿色（大于80%）
         }
         return {
-          width: `${reach || 0}%`,
+          width: `${achievementRate || 0}%`,
           backgroundColor: backgroundColor,
         };
       };
     },
   },
+  methods: {
+    // 格式化日期
+    formatDate(timestamp) {
+      if (!timestamp) return '- - -';
+      const date = new Date(timestamp);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${month}/${day}`;
+    }
+  }
 };
 </script>
 
@@ -196,7 +220,7 @@ export default {
       align-items: center;
       height: 56px;
       color: #fff;
-      font-size: 12px;
+      font-size: 15px;
 
       li {
         width: calc(100% / 9);
@@ -252,9 +276,9 @@ export default {
         .reach-progress {
           position: relative;
           width: 80px; // 增加进度条宽度
-          height: 4px; // 保持细线条
+          height: 7px; // 保持细线条
           background: #171D38;
-          border-radius: 2px;
+          border-radius: 10px;
           overflow: hidden;
           margin-right: 10px;
 
@@ -266,7 +290,7 @@ export default {
         }
 
         .progress-text {
-          font-size: 12px;
+          font-size: 15px;
           font-weight: 500;
           color: inherit;
           white-space: nowrap;

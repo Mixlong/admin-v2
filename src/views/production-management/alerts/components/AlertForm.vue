@@ -10,7 +10,6 @@
               <template slot-scope="{ item }">
                 <div class="work-order-suggestion">
                   <span>{{ item.value }}</span>
-                  <span class="work-order-desc">{{ item.desc }}</span>
                 </div>
               </template>
             </el-autocomplete>
@@ -21,7 +20,7 @@
       </el-row>
 
       <el-row :gutter="20">
-        <el-col :span="12">
+        <!-- <el-col :span="12">
           <el-form-item label="品类名称" prop="categoryName">
             <el-select v-model="formData.categoryName" placeholder="请选择品类" clearable filterable style="width: 100%"
               :loading="categoryLoading" @change="changeCategory">
@@ -36,7 +35,7 @@
               <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
             </el-select>
           </el-form-item>
-        </el-col>
+        </el-col> -->
 
         <el-col :span="12" style="display: none;">
           <el-form-item label="上报人" prop="reporter">
@@ -101,7 +100,7 @@
 </template>
 
 <script>
-import { createProductionAlert, updateProductionAlert } from '@/api/production-management/alerts'
+import { createProductionAlert, updateProductionAlert, getTodayOrderCodes } from '@/api/production-management/alerts'
 import { alertFormRules, processTypeOptions } from '@/types/production-alerts'
 import categoryService from '@/utils/categoryService'
 import { listDept } from '@/api/system/dept'
@@ -138,9 +137,16 @@ export default {
       deptOptions: [],
       applicantList: [],
       deptLoading: false,
+      // 工单号数据缓存
+      allOrderCodes: [], // 缓存所有工单数据
+      orderCodesLoaded: false, // 标记数据是否已加载
       formData: {
         id: '',
         workOrderNo: '',
+        schedulingId: '', // 排产单ID
+        categoryId: '', // 品类ID
+        computerId: '', // 型号ID
+        orderCode: '', // 订单编号
         categoryName: '',
         computerName: '',
         problemDesc: '',
@@ -182,6 +188,8 @@ export default {
         this.initForm()
         this.getCategoryData()
         this.getTreeselect()
+        // 预加载工单数据
+        this.loadAllOrderCodes()
       }
     },
     dialogVisible(val) {
@@ -224,6 +232,10 @@ export default {
       this.formData = {
         id: '',
         workOrderNo: '',
+        schedulingId: '', // 排产单ID
+        categoryId: '', // 品类ID
+        computerId: '', // 型号ID
+        orderCode: '', // 订单编号
         categoryName: '',
         computerName: '',
         problemDesc: '',
@@ -263,15 +275,94 @@ export default {
       return findInOptions(this.deptOptions)
     },
 
-    // 工单号自动完成查询
-    queryWorkOrders(queryString, callback) {
-      // TODO: 调用实际的API获取工单号建议
-      callback([])
+    // 工单号自动完成查询（本地过滤）
+    async queryWorkOrders(queryString, callback) {
+      try {
+        // 如果数据未加载，先加载所有工单数据
+        if (!this.orderCodesLoaded) {
+          await this.loadAllOrderCodes()
+        }
+
+        // 本地过滤数据
+        let filteredResults = this.allOrderCodes
+
+        if (queryString && queryString.trim()) {
+          const query = queryString.toLowerCase().trim()
+          filteredResults = this.allOrderCodes.filter(item => {
+            const orderCode = (item.orderCode || item.value || '').toLowerCase()
+            const desc = (item.productName || item.desc || '').toLowerCase()
+            return orderCode.includes(query) || desc.includes(query)
+          })
+        }
+
+        // 限制返回结果数量，避免列表过长
+        const limitedResults = filteredResults.slice(0, 20)
+        callback(limitedResults)
+      } catch (error) {
+        console.error('工单号查询失败:', error)
+        callback([])
+      }
+    },
+
+    // 加载所有工单数据并缓存
+    async loadAllOrderCodes() {
+      try {
+        const response = await getTodayOrderCodes()
+        if (response.code === 200 && response.data) {
+          // 转换并缓存数据，使用新的API数据结构
+          this.allOrderCodes = response.data.map(item => ({
+            value: item.orderCode || item.id, // 显示的工单号
+            desc: `排产数量: ${item.num || 0}`,
+            // 保留完整的原始数据用于自动填充
+            id: item.id,
+            schedulingId: item.schedulingId,
+            categoryId: item.categoryId,
+            computerId: item.computerId,
+            orderCode: item.orderCode,
+            batchNo: item.batchNo,
+            date: item.date,
+            num: item.num
+          }))
+          this.orderCodesLoaded = true
+          console.log(`已加载 ${this.allOrderCodes.length} 个工单号`)
+        } else {
+          console.warn('获取工单数据失败:', response.msg)
+          this.allOrderCodes = []
+        }
+      } catch (error) {
+        console.error('加载工单数据失败:', error)
+        this.allOrderCodes = []
+      }
     },
 
     // 工单号选择处理
     handleWorkOrderSelect(item) {
+      console.log('📝 选中工单:', item)
+
+      // 设置工单号
       this.formData.workOrderNo = item.value
+
+      // 自动填充API返回的字段
+      if (item.schedulingId) {
+        this.formData.schedulingId = item.schedulingId
+      }
+      if (item.categoryId) {
+        this.formData.categoryId = item.categoryId
+      }
+      if (item.computerId) {
+        this.formData.computerId = item.computerId
+      }
+      if (item.orderCode) {
+        this.formData.orderCode = item.orderCode
+      }
+
+      console.log('✅ 自动填充完成:', {
+        schedulingId: this.formData.schedulingId,
+        categoryId: this.formData.categoryId,
+        computerId: this.formData.computerId,
+        orderCode: this.formData.orderCode
+      })
+
       // 根据工单号自动填充相关信息
       this.autoFillByWorkOrder(item)
     },
@@ -279,10 +370,47 @@ export default {
     // 根据工单号自动填充信息
     async autoFillByWorkOrder(workOrder) {
       try {
-        // TODO: 调用实际的API获取工单详情
+        console.log('🔄 开始自动填充工单信息:', workOrder)
 
+        // 如果有categoryId，尝试根据categoryId获取品类名称
+        if (workOrder.categoryId && this.dictList.length > 0) {
+          const category = this.dictList.find(item => item.id === workOrder.categoryId)
+          if (category) {
+            this.formData.categoryName = category.name
+            console.log('✅ 自动填充品类名称:', category.name)
+
+            // 更新型号选项
+            this.changeCategory(category.name)
+
+            // 如果有computerId，尝试根据computerId获取型号名称
+            if (workOrder.computerId) {
+              this.$nextTick(() => {
+                const computer = this.computerOptions.find(item => item.model === workOrder.computerId)
+                if (computer) {
+                  this.formData.computerName = computer.name
+                  console.log('✅ 自动填充型号名称:', computer.name)
+                }
+              })
+            }
+          }
+        }
+
+        // 如果没有找到品类信息，但有传统的productName和categoryName，使用原来的逻辑
+        if (workOrder.productName && workOrder.categoryName) {
+          this.formData.categoryName = workOrder.categoryName
+          if (workOrder.categoryName) {
+            this.changeCategory(workOrder.categoryName)
+            if (workOrder.computerName) {
+              this.$nextTick(() => {
+                this.formData.computerName = workOrder.computerName
+              })
+            }
+          }
+        }
+
+        console.log('✅ 工单信息填充完成')
       } catch (error) {
-
+        console.error('自动填充工单信息失败:', error)
       }
     },
 
@@ -464,15 +592,9 @@ export default {
           console.log('6. API响应:', response)
 
           if (response.code === 200) {
-            if (this.isEdit) {
-              this.$message.success('更新成功')
-              this.$emit('success', response.data)
-              this.handleClose()
-            } else {
-              // 创建成功后询问是否继续创建
-              this.$emit('success', response.data)
-              this.handleCreateSuccess()
-            }
+            this.$message.success(this.isEdit ? '更新操作成功' : '创建操作成功')
+            this.$emit('success', response.data)
+            this.handleClose()
           } else {
             this.$message.error(response.msg || '操作失败')
           }
@@ -551,23 +673,6 @@ export default {
 
       return data
     },
-
-    // 处理创建成功
-    handleCreateSuccess() {
-      this.$confirm('报警创建成功！是否继续创建新的报警？', '创建成功', {
-        confirmButtonText: '继续创建',
-        cancelButtonText: '关闭',
-        type: 'success'
-      }).then(() => {
-        // 继续创建，重置表单但保留一些信息
-        this.resetFormForContinue()
-        this.$message.success('可以继续创建新的报警')
-      }).catch(() => {
-        // 关闭对话框
-        this.handleClose()
-      })
-    },
-
     // 为继续创建重置表单
     resetFormForContinue() {
       const keepFields = {
@@ -590,6 +695,9 @@ export default {
     handleClose() {
       this.dialogVisible = false
       this.resetForm()
+      // 清除工单数据缓存，确保下次打开时获取最新数据
+      this.allOrderCodes = []
+      this.orderCodesLoaded = false
     },
 
 

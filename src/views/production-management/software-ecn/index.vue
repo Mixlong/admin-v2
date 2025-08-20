@@ -26,9 +26,9 @@
       </el-form-item>
 
       <div class="operation-btns">
-        <el-button type="primary" icon="el-icon-user-solid" v-hasPermi="['ECN:People:Add']"
+        <el-button type="primary" icon="el-icon-user-solid" v-hasPermi="['software-ecn:people:manage']"
           @click="handleAddPeople">人员管理</el-button>
-        <el-button v-hasPermi="['ecn:add']" type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
+        <el-button v-hasPermi="['software-ecn:create']" type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
       </div>
     </el-form>
 
@@ -85,22 +85,13 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="系统变更人员" prop="systemPerson" align="center" width="120">
-        <template slot-scope="{ row }">
-          <el-tag type="warning" v-if="row.systemState === 0">待变更</el-tag>
-          <el-tag type="success" v-if="row.systemState === 1">已变更</el-tag>
-          <el-tag type="danger" v-if="row.systemState === 2">已驳回</el-tag>
-
-          <div style="margin-top: 5px">审核人：{{ row.systemPerson }}</div>
-        </template>
-      </el-table-column>
       <el-table-column label="申请人" prop="applicant" align="center" width="85" />
       <el-table-column label="申请时间" prop="createTime" align="center" sortable width="100">
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="80">
         <template slot-scope="{ row }">
           <div class="flex flex-direction table-options-col">
-            <Tooltip v-hasPermi="['ecn:update']" v-show="row.secondState !== 1 && row.applicant === nickName"
+            <Tooltip v-hasPermi="['software-ecn:update']" v-show="row.secondState !== 1 && row.applicant === nickName"
               icon="el-icon-edit" content="编辑" @click="handleUpdate(row)" />
 
             <Tooltip v-show="row.firstPerson === nickName && row.firstState !== 1" class="text-orange"
@@ -189,7 +180,7 @@
           /> -->
 
             <el-popconfirm v-show="row.applicant === nickName" title="确定要删除吗？" @confirm="handleDelete(row)"
-              v-hasPermi="['ecn:delete']">
+              v-hasPermi="['software-ecn:delete']">
               <Tooltip slot="reference" icon="el-icon-delete" :className="['text-red']" content="删除" />
             </el-popconfirm>
 

@@ -70,18 +70,28 @@ class CategoryService {
           newCategoryResponse.value.code === 200 && 
           Array.isArray(newCategoryResponse.value.data)) {
         
-        newCategoryResponse.value.data.forEach(category => {
-          const categoryItem = {
-            id: category.id,
-            name: category.name,
-            desc: category.desc,
-            status: category.status,
-            createTime: category.createTime,
-            updateTime: category.updateTime,
-            productType: category.productType
+        console.log('新接口型号数据:', newCategoryResponse.value.data)
+        
+        newCategoryResponse.value.data.forEach(computer => {
+          const computerItem = {
+            id: computer.id,
+            model: computer.id, // 使用ID作为model标识
+            name: computer.name, // name字段是型号名称，如"3KM"
+            desc: computer.desc || '',
+            status: computer.status,
+            createTime: computer.createTime,
+            updateTime: computer.updateTime,
+            img: computer.img || '',
+            isSample: computer.isSample,
+            productType: computer.productType,
+            createBy: computer.createBy,
+            updateBy: computer.updateBy,
+            // 没有明确的categoryId，暂时留空，后续从旧接口补充
+            categoryId: null,
+            categoryName: null
           }
-          categories.push(categoryItem)
-          categoryMap.set(category.id, categoryItem)
+          computers.push(computerItem)
+          computerMap.set(computer.id, computerItem) // 使用ID作为映射键
         })
       }
 

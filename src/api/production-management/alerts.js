@@ -205,3 +205,11 @@ export const VERIFY_TYPE = {
     COMPLETE: 1,    // 验证完成
     REJECT: 2       // 验证不通过重新处理
 }
+
+// 获取当日生产计划工单号列表（用于工单号自动完成）
+export function getTodayOrderCodes() {
+    return handleApiCall(request({
+        url: '/production/alerts/production/plan/today/orderCode',
+        method: 'get'
+    }))
+}

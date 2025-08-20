@@ -365,7 +365,7 @@ export default {
     async loadProductionSituationData() {
       try {
         // 开发环境下可以使用模拟数据
-        const useMockData = process.env.NODE_ENV === 'development' && true; // 设置为true启用模拟数据
+        const useMockData = process.env.NODE_ENV !== 'development' && true; // 设置为true启用模拟数据
 
         if (useMockData) {
           this.productionSituationData = this.generateMockProductionData();

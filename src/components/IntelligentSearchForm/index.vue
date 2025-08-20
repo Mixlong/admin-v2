@@ -506,6 +506,11 @@ export default {
 
 <style lang="scss" scoped>
 .intelligent-search-form {
+  // 如果父级是 .app-container，设置样式：
+  .app-container & {
+    overflow-y: hidden;
+  }
+
   background: #fff;
   margin-bottom: 16px;
   border-radius: 6px;

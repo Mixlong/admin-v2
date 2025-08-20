@@ -41,7 +41,12 @@
 </template>
 
 <script>
+import vueSeamlessScroll from 'vue-seamless-scroll'
+
 export default {
+  components: {
+    vueSeamlessScroll
+  },
   props: {
     tableData: {
       type: Array,
@@ -52,8 +57,14 @@ export default {
     return {
       classOption: {
         autoPlay: true,
-        step: 0.5,
-        limitMoveNum: 5,
+        step: 5, // 滚动速度
+        limitMoveNum: 5, // 每屏显示5条数据（200px/40px=5条）
+        hoverStop: false, // 鼠标悬停时停止滚动
+        direction: 1, // 1向上 0向下
+        openWatch: true, // 开启数据实时监控刷新dom
+        singleHeight: 200, // 一屏的高度（显示区域高度）
+        singleWidth: 0,
+        waitTime: 10000 // 每屏停留10秒钟
       }
     };
   },
@@ -112,13 +123,9 @@ export default {
     },
     materialStatusStyle() {
       return (status) => {
-        const colors = {
-          0: "#FF386B", // 未备料 - 红色
-          1: "#FF8C00", // 备料中 - 橙色  
-          2: "#00E8B5"  // 已备料 - 绿色
-        };
+        // 只有已完成(状态2)显示绿色，其他都是白色
         return {
-          color: colors[status] || "#FFFFFF"
+          color: status === 2 ? "#00E8B5" : "#FFFFFF"
         };
       };
     },
@@ -144,6 +151,7 @@ export default {
   overflow: hidden;
 
   .scroll-box {
+    height: 200px; // 设置滚动区域固定高度，与AlarmTable相近
     overflow: hidden;
   }
 
