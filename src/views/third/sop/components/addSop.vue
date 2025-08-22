@@ -151,10 +151,8 @@
                   </el-form-item>
                   <el-form-item label="工时" :prop="`list[${index}].spendTime`" :rules="rules.spendTime"
                     label-width="60px" required>
-                    <el-time-picker v-model="item.timeValue" placeholder="请选择工时" format="HH:mm:ss"
-                      value-format="HH:mm:ss" style="width: 100%;" @change="(time) => updateSpendTime(index, time)"
-                      @blur="onSaveItem(item)" />
-
+                    <el-input v-model="item.spendTime" placeholder="请输入工时(秒)" size="small" style="width: 100%;"
+                      @input="handleSpendTimeInput($event, index)" @keypress="handleNumberKeypress" @blur="onSaveItem(item)" />
                   </el-form-item>
                   <el-form-item label="描述" :prop="`list[${index}].remark`" :rules="rules.remark" label-width="60px">
                     <el-input v-model="item.remark" type="textarea" :rows="2" placeholder="请输入工位文件描述"
@@ -227,7 +225,6 @@ export default {
             file: "",
             remark: "",
             spendTime: null,
-            timeValue: "00:00:00", // 默认展示00:00:00
           },
         ],
       },
@@ -259,10 +256,10 @@ export default {
           {
             validator: (rule, value, callback) => {
               // 工时必填
-              if (value === null || value === undefined || value === '' || value === 0) {
-                callback(new Error('请选择工时'));
-              } else if (typeof value !== 'number' || value < 0) {
-                callback(new Error('工时必须大于0秒'));
+              if (value === null || value === undefined || value === '') {
+                callback(new Error('请输入工时'));
+              } else if (isNaN(value) || parseFloat(value) <= 0) {
+                callback(new Error('工时必须大于0'));
               } else {
                 callback();
               }
@@ -315,7 +312,6 @@ export default {
             file: "",
             remark: "",
             spendTime: null,
-            timeValue: "00:00:00", // 默认展示00:00:00
           },
         ],
       };
@@ -334,7 +330,6 @@ export default {
         file: "",
         remark: "",
         spendTime: null,
-        timeValue: "00:00:00", // 默认展示00:00:00
       });
 
       this.onSetStationBoxRef();
@@ -393,7 +388,7 @@ export default {
       const item = {
         ...this.form.list[index],
         id: "",
-        timeValue: this.form.list[index].timeValue || "00:00:00" // 复制时间选择器值，默认00:00:00
+        spendTime: this.form.list[index].spendTime || null
       };
       this.form.list.splice(index + 1, 0, item);
     },
@@ -625,8 +620,7 @@ export default {
                 indexNum: maxIndexNum + idx + 1, // 从最大序号+1开始
                 file: cleanUrl,
                 remark: '',
-                spendTime: null,
-                timeValue: "00:00:00" // 默认展示00:00:00
+                spendTime: null
               });
             }
           });
@@ -649,8 +643,7 @@ export default {
               indexNum: undefined,
               file: cleanUrl,
               remark: '',
-              spendTime: null,
-              timeValue: "00:00:00" // 默认展示00:00:00
+              spendTime: null
             });
             this.onSetStationBoxRef();
           }
@@ -718,10 +711,12 @@ export default {
         id: file.id || (Date.now() + index)
       }));
 
-      // 初始化时间选择器的值
+      // 确保工时是数字格式
       if (formData.list && formData.list.length > 0) {
         formData.list.forEach(item => {
-          item.timeValue = this.secondsToTime(item.spendTime) || "00:00:00";
+          if (item.spendTime && typeof item.spendTime === 'string') {
+            item.spendTime = parseFloat(item.spendTime) || null;
+          }
         });
       }
 
@@ -744,37 +739,16 @@ export default {
       return result.join('');
     },
 
-    /** 将秒数转换为时间格式 HH:mm:ss */
-    secondsToTime(seconds) {
-      if (!seconds || seconds === 0) return "00:00:00"; // 返回默认时间而不是null
-
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const remainingSeconds = seconds % 60;
-
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    },
-
-    /** 将时间格式 HH:mm:ss 转换为秒数 */
-    timeToSeconds(timeString) {
-      if (!timeString) return null;
-
-      const [hours, minutes, seconds] = timeString.split(':').map(Number);
-      const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-      // 如果总秒数为0，也返回null，因为工时必须大于0
-      return totalSeconds === 0 ? null : totalSeconds;
-    },
-
-    /** 更新工时数据 */
-    updateSpendTime(index, timeString) {
-      const seconds = this.timeToSeconds(timeString);
-      this.form.list[index].spendTime = seconds;
-
-      // 如果用户清空了时间选择器，设为null触发必填验证
-      if (!timeString) {
-        this.form.list[index].spendTime = null;
-      }
+    /** 处理工时输入，只允许数字 */
+    handleSpendTimeInput(value, index) {
+      // 移除非数字字符（保留小数点）
+      const numericValue = value.replace(/[^\d.]/g, '');
+      
+      // 转换为数字，如果为空则设为null
+      const numberValue = numericValue === '' ? null : parseFloat(numericValue);
+      
+      // 更新数据
+      this.form.list[index].spendTime = numberValue;
     },
 
     /** 处理序号输入，只允许数字 */

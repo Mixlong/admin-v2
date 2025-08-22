@@ -1,60 +1,57 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="品类" prop="categoryName">
-        <el-select v-model="queryParams.categoryName" clearable filterable style="max-width: 135px"
-          @change="changeCategory">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="型号" prop="computerName">
-        <el-select v-model="queryParams.computerName" clearable filterable @change="getList" style="max-width: 135px">
-          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="整机SN" prop="sn">
-        <el-input v-model="queryParams.sn" placeholder="请输入" clearable style="max-width: 135px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="客户订单号" prop="customerOrderNo">
-        <el-input v-model="queryParams.customerOrderNo" placeholder="请输入" clearable style="max-width: 135px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="箱号" prop="boxNo">
-        <el-input v-model="queryParams.boxNo" placeholder="请输入" clearable style="max-width: 135px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="工单号" prop="orderCode">
-        <select-loadMore v-model="queryParams.orderCode" :data="orderData.data" :page="orderData.page"
-          :hasMore="orderData.more" dictLabel="orderCode" dictValue="orderCode" :request="getProdPlantList"
-          style="max-width: 135px" placeholder="请选择">
-        </select-loadMore>
-      </el-form-item>
-      <el-form-item label="迪太订单号" prop="salesOrderNo">
-        <el-input v-model="queryParams.salesOrderNo" placeholder="请输入" clearable style="width: 135px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="批次号" prop="batchNo">
-        <el-input v-model="queryParams.batchNo" placeholder="请输入" clearable style="max-width: 135px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="测试环节" prop="processName">
-        <el-select v-model="queryParams.processName" clearable style="max-width: 110px">
-          <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
-        </el-select>
-      </el-form-item>
-      <el-form-item class="fr">
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
+    <IntelligentSearchForm :searchForm="queryParams" :fields="searchFields" @search="handleQuery" @reset="resetQuery"
+      @layout-changed="refreshTableHeight">
+      <!-- 品类选择器自定义插槽 -->
+      <template #field-categoryName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable filterable style="max-width: 135px"
+            @change="changeCategory">
+            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 型号选择器自定义插槽 -->
+      <template #field-computerName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable filterable @change="getList" style="max-width: 135px">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 工单号选择器自定义插槽 -->
+      <template #field-orderCode="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <select-loadMore v-model="searchForm[field.key]" :data="orderData.data" :page="orderData.page"
+            :hasMore="orderData.more" dictLabel="orderCode" dictValue="orderCode" :request="getProdPlantList"
+            style="max-width: 135px" placeholder="请选择">
+          </select-loadMore>
+        </el-form-item>
+      </template>
+
+      <!-- 测试环节选择器自定义插槽 -->
+      <template #field-processName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable style="max-width: 110px">
+            <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
+          </el-select>
+        </el-form-item>
+      </template>
+      <!-- 页面操作按钮 -->
+      <template #page-actions>
+        <el-button type="primary" icon="el-icon-search" @click="handleSurfaceBoard">
+          测试详情
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
         <el-button type="warning" icon="el-icon-download" @click="handleExport">
           导 出
         </el-button>
-      </el-form-item>
-    </el-form>
+      </template>
+    </IntelligentSearchForm>
 
-    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" :cell-class-name="cellClassName" border>
+    <el-table v-loading="loading" :data="brandList" :height="dynamicTableHeight" :cell-class-name="cellClassName"
+      border>
       <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -171,8 +168,8 @@
       class="dialog-scroll custom-dialog">
       <MaterialsTrackRecord :searchOrderCode="queryDialogParams.searchOrderCode" />
     </el-dialog>
-    <el-dialog :visible.sync="stsTestResult" width="90%" append-to-body title="测试信息" v-if="stsTestResult"
-      class="dialog-scroll custom-dialog">
+    <el-dialog :visible.sync="stsTestResult" width="90%" append-to-body :title="stsTestResulTtitle" v-if="stsTestResult"
+      class="dialog-scroll custom-dialog" :class="{ 'surface-board': stsTestResulTtitle === '通用仪表2' }">
       <StsTestResult :sn="queryDialogParams.sn" :pcbaSn="queryDialogParams.pcbaSn" />
     </el-dialog>
   </div>
@@ -186,16 +183,20 @@ import {
 } from "@/api/third/fileConfig";
 import { orderWorkList } from "@/api/third/prodPlant";
 import { CategoryMixin } from "@/mixins/common";
+import dynamicTableHeightMixin from "@/mixins/dynamicTableHeight";
 
 export default {
   name: "ProductRecord",
-  mixins: [CategoryMixin],
+  mixins: [CategoryMixin, dynamicTableHeightMixin],
   components: {
     MaterialsTrackRecord: () => import("@/views/third/trackRecord/index.vue"),
     StsTestResult: () => import("@/views/third/testRecord/index.vue"),
+    IntelligentSearchForm: () => import("@/components/IntelligentSearchForm"),
+
   },
   data() {
     return {
+      stsTestResulTtitle: "",
       stsTestResult: false,
       materialsTrackRecord: false,
       isStsDetailShow: false,
@@ -221,6 +222,7 @@ export default {
         categoryName: "",
         computerName: "",
         sn: "",
+        pcbaSn: "",
         processName: "",
         result: "",
         orderCode: "",
@@ -233,7 +235,19 @@ export default {
         sn: '',
         searchOrderCode: '',
         pcbaSn: ''
-      }
+      },
+      searchFields: [
+        { key: 'categoryName', label: '品类', sort: 1, component: 'el-select' },
+        { key: 'computerName', label: '型号', sort: 2, component: 'el-select' },
+        { key: 'sn', label: '整机SN', sort: 3, placeholder: '请输入整机SN' },
+        { key: 'pcbaSn', label: 'PCBA SN', sort: 4, placeholder: '请输入PCBA SN' },
+        { key: 'customerOrderNo', label: '客户订单号', sort: 5, placeholder: '请输入客户订单号' },
+        { key: 'boxNo', label: '箱号', sort: 6, placeholder: '请输入箱号' },
+        { key: 'orderCode', label: '工单号', sort: 7, component: 'select-loadMore' },
+        { key: 'salesOrderNo', label: '迪太订单号', sort: 8, placeholder: '请输入迪太订单号' },
+        { key: 'batchNo', label: '批次号', sort: 9, placeholder: '请输入批次号' },
+        { key: 'processName', label: '测试环节', sort: 10, component: 'el-select' },
+      ]
     };
   },
   watch: {
@@ -309,17 +323,19 @@ export default {
       this.queryParams.recordId = "";
       this.queryParams = {
         p: 1,
-        l: 20,
+        l: 40,
         categoryName: "",
         computerName: "",
         sn: "",
+        pcbaSn: "",
         processName: "",
         result: "",
         orderCode: "",
         boxNo: "",
+        salesOrderNo: "",
         batchNo: "",
       };
-      this.resetForm("quer    m"); this.handleQuery();
+      this.handleQuery();
     },     /**
      * @descr     n: 鼠标移入表格显示小手帕
           ram {*} row
@@ -365,9 +381,16 @@ export default {
     },
     openStsTestResult(row) {
       this.stsTestResult = true;
+      this.stsTestResulTtitle = '测试信息'
       this.queryDialogParams.sn = row.sn;
       this.queryDialogParams.pcbaSn = row.pcbaSn;
     },
+    handleSurfaceBoard() {
+      this.stsTestResult = true;
+      this.stsTestResulTtitle = '通用仪表2',
+        this.queryDialogParams.sn = '';
+      this.queryDialogParams.pcbaSn = '';
+    }
   },
 };
 </script>
@@ -394,6 +417,18 @@ export default {
         margin: 0;
         padding: 0;
         height: auto;
+      }
+    }
+
+
+  }
+
+  &.surface-board {
+    ::v-deep {
+
+      .el-form,
+      .pagination-container {
+        display: block !important;
       }
     }
   }

@@ -29,7 +29,7 @@
       </vue-seamless-scroll>
     </div>
 
-    <el-empty v-else description="后续迭代" :image-size="80" style="height: 100%"></el-empty>
+    <el-empty v-else description="暂无数据" :image-size="80" style="height: 100%"></el-empty>
   </div>
 </template>
 
@@ -190,12 +190,12 @@ export default {
 
         // 工单号
         &:nth-child(2) {
-          width: 12%;
+          width: 14%;
         }
 
         // 型号  
         &:nth-child(3) {
-          width: 27%;
+          width: 25%;
         }
 
         // 问题描述
@@ -230,12 +230,12 @@ export default {
 
           // 工单号
           &:nth-child(2) {
-            width: 12%;
+            width: 14%;
           }
 
           // 型号  
           &:nth-child(3) {
-            width: 27%;
+            width: 25%;
           }
 
           // 问题描述

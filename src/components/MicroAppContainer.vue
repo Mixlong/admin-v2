@@ -88,7 +88,7 @@ export default {
       this.storeUnwatch()
       this.storeUnwatch = null
     }
-    
+
     // 清理防抖计时器
     if (this.syncTimer) {
       clearTimeout(this.syncTimer)
@@ -175,7 +175,7 @@ export default {
 
       // 立即同步store数据到微应用
       this.syncStoreToMicroApp()
-      
+
       // 延迟再次同步，确保数据传递成功
       setTimeout(() => {
         this.syncStoreToMicroApp()
@@ -197,7 +197,7 @@ export default {
     // 同步store数据到微应用
     syncStoreToMicroApp() {
       console.log('同步store数据到微应用')
-      
+
       // 匹配子应用的store字段结构 (Pinia格式)
       const storeData = {
         user: {
@@ -211,9 +211,9 @@ export default {
         },
         timestamp: Date.now()
       }
-      
+
       console.log('发送store数据到微应用:', storeData)
-      
+
       // 通过无界的bus发送store数据同步事件
       setTimeout(() => {
         if (window.$wujie && window.$wujie.bus) {
@@ -301,7 +301,7 @@ export default {
     // 设置store变化监听器
     setupStoreWatcher() {
       console.log('🔍 设置store变化监听器')
-      
+
       // 使用$store.watch监听用户相关状态变化
       this.storeUnwatch = this.$store.watch(
         // getter函数，返回需要监听的状态
@@ -320,12 +320,12 @@ export default {
             new: newVal,
             old: oldVal
           })
-          
+
           // 防抖处理，避免频繁同步
           if (this.syncTimer) {
             clearTimeout(this.syncTimer)
           }
-          
+
           this.syncTimer = setTimeout(() => {
             // 只有在微应用已挂载时才同步
             if (this.microAppConfig.name && !this.loading) {
@@ -340,14 +340,14 @@ export default {
           deep: true         // 深度监听对象变化
         }
       )
-      
+
       console.log('✅ store监听器设置完成')
     },
 
     // 设置认证错误监听器
     setupAuthErrorListener() {
       console.log('🔐 设置子应用认证错误监听器')
-      
+
       if (window.$wujie && window.$wujie.bus) {
         window.$wujie.bus.$on('micro-app-auth-error', (errorData) => {
           console.log('🚨 收到子应用认证错误:', errorData)
@@ -359,9 +359,9 @@ export default {
     // 处理认证错误
     handleAuthError(errorData) {
       const { code, message } = errorData
-      
+
       console.log(`🔐 处理认证错误 [${code}]:`, message)
-      
+
       if (code === 4003) {
         // 特殊错误，只显示通知
         this.$notify.error({
@@ -398,7 +398,6 @@ export default {
 <style lang="scss" scoped>
 .micro-app-container {
   width: 100%;
-  height: calc(100vh - 84px);
   /* 减去header高度 */
   overflow: hidden;
   position: relative;

@@ -37,8 +37,16 @@
                     define-back-color="#F6FFFC"
                   ></el-progress> -->
 
-                  <EchartsProgress :percentage="item.progress" :size="140" :thresholds="progressThresholds"
-                    :colors="progressColors" />
+                  <!-- 使用新的移动端兼容组件 -->
+                  <CircleStatistic :size="120" :main-value="item.progress" unit="%" :segments="[{
+                    value: item.progress,
+                    color: getProgressColor(item.progress),
+                    gradient: getProgressGradient(item.progress)
+                  }]" :stroke-width="10" main-color="#FFFFFF" unit-color="#CCCCCC" :glow-effect="true" />
+
+                  <!-- ECharts备用方案，移动端可能不显示 -->
+                  <!-- <EchartsProgress :percentage="item.progress" :size="140" :thresholds="progressThresholds"
+                    :colors="progressColors" /> -->
                 </div>
               </div>
               <div class="main-right-box">
@@ -99,6 +107,7 @@
         </div>
       </div>
     </div>
+    
   </div>
 </template>
 
@@ -118,6 +127,7 @@ import CommonData from "./components/commonData.vue";
 import AlarmTable from "./components/alarmTable.vue";
 import PreparationMeansProduction from "./components/preparationMeansProduction.vue";
 import EchartsProgress from "./components/echartsProgress.vue";
+import CircleStatistic from "./components/CircleStatistic.vue";
 import TrendChart from "./components/trendChart.vue";
 import { NoticeBar } from "vant";
 import screenfull from "screenfull";
@@ -131,6 +141,7 @@ export default {
     AlarmTable,
     PreparationMeansProduction,
     EchartsProgress,
+    CircleStatistic,
     TrendChart,
   },
   name: "smartScreen",
@@ -192,7 +203,7 @@ export default {
       this.getTodayInfo();
       this.getAlarmData();
       this.loadThroughRateTrendData();
-    }, 10 * 60 * 1000); // 10分钟刷新一次
+    }, 1 * 60 * 1000); // 1分钟刷新一次
   },
   mounted() {
     autofit.init({
@@ -532,6 +543,38 @@ export default {
       // 映射完成后，返回映射的名称或原ID
       return this.categoryMap.get(categoryId) || categoryId;
     },
+
+    // 根据进度值获取对应颜色
+    getProgressColor(progress) {
+      if (progress >= this.progressThresholds.good) {
+        return this.progressColors.good; // 绿色
+      } else if (progress >= this.progressThresholds.warning) {
+        return this.progressColors.warning; // 橙色
+      } else {
+        return this.progressColors.danger; // 红色
+      }
+    },
+
+    // 根据进度值获取渐变配置
+    getProgressGradient(progress) {
+      if (progress >= this.progressThresholds.good) {
+        return [
+          { offset: '0%', color: '#00FFB3' },
+          { offset: '100%', color: '#00E8B5' }
+        ];
+      } else if (progress >= this.progressThresholds.warning) {
+        return [
+          { offset: '0%', color: '#FFB800' },
+          { offset: '100%', color: '#FF8C00' }
+        ];
+      } else {
+        return [
+          { offset: '0%', color: '#FF6B8A' },
+          { offset: '100%', color: '#FF4757' }
+        ];
+      }
+    },
+
   },
 };
 </script>
@@ -661,7 +704,6 @@ export default {
               align-items: center;
               width: 140px;
               height: 140px;
-              border: 1px solid rgba(31, 198, 255, 0.32);
               border-radius: 50%;
               box-sizing: border-box;
               flex-shrink: 0;

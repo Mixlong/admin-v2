@@ -913,8 +913,8 @@ export default {
               return;
             }
 
-            if (!num) {
-              this.msgWarning("排产数量不能为空");
+            if (!num || num <= 0) {
+              this.msgWarning("排产数量必须大于0");
               return;
             }
 
@@ -1061,8 +1061,8 @@ export default {
               return;
             }
 
-            if (this.checkDeliverOrderData(this.selOrderData, "num")) {
-              this.msgWarning("排产数量不能为空");
+            if (this.checkDeliverOrderData(this.selOrderData, "num") || this.selOrderData.some(item => item.num <= 0)) {
+              this.msgWarning("排产数量必须大于0");
               return;
             }
 

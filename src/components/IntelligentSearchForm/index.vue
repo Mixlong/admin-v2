@@ -22,7 +22,7 @@
             <div class="search-buttons" ref="searchButtons">
               <el-button type="primary" @click="handleSearch" icon="el-icon-search" size="mini">搜索</el-button>
               <el-button @click="handleReset" icon="el-icon-refresh" size="mini">重置</el-button>
-
+              <slot name="add-search-buttons"></slot>
               <!-- 展开按钮 - 只在有隐藏字段时显示 -->
               <el-button v-if="initialHiddenFields.length > 0" type="text" @click="toggleCollapsed"
                 class="toggle-button" size="mini" :icon="isCollapsed ? 'el-icon-arrow-down' : 'el-icon-arrow-up'">
@@ -506,6 +506,7 @@ export default {
 
 <style lang="scss" scoped>
 .intelligent-search-form {
+
   // 如果父级是 .app-container，设置样式：
   .app-container & {
     overflow-y: hidden;
