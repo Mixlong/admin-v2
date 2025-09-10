@@ -642,7 +642,7 @@ $lighterBlue: #409eff;
   box-sizing: border-box;
 }
 .logo {
-  position: absolute;
+  // position: absolute;
   left: 12px;
   top: 6px;
   line-height: 30px;

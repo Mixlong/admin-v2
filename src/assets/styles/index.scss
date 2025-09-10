@@ -1559,3 +1559,12 @@ iframe[data-wujie-flag] {
 .work-status-dropdown {
   z-index: 99999 !important;
 }
+
+.flex-app-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  .table-section {
+    flex: 1;
+  }
+}

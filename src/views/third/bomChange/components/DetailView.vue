@@ -1,545 +1,721 @@
 <template>
-  <div class="post-form">
-    <el-dialog :close-on-click-modal="false" :visible.sync="dialogVisible" title="订单变更详情" top="5vh" width="90%"
-      custom-class="detail-dialog">
-      <div class="detail-container" v-loading="loading" element-loading-text="加载详情中...">
+  <div class="order-detail-dialog" :class="{ 'panel-open': progressPanelVisible }">
+    <el-dialog
+      :close-on-click-modal="false"
+      :visible.sync="dialogVisible"
+      :title="dialogTitle"
+      width="80%"
+      top="0vh"
+      custom-class="modern-dialog"
+      @close="handleClose"
+    >
+
+      <div v-loading="loading" class="modal-body" element-loading-text="加载中...">
         <!-- 基础信息 -->
-        <div class="detail-section">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-document mr10 margin-left-xs"></i>基础信息</div>
-              </div>
+        <section class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            基础信息
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">流程编号</span>
+              <span class="info-value" :class="{ empty: !detailData.processCode }">{{ detailData.processCode || '-'
+              }}</span>
             </div>
-            <div class="model-content">
-              <el-row class="margin-bottom-xs">
-                <el-col :span="8">
-                  流程编号：
-                  <span class="gray">{{ detailData.processCode || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  客户：
-                  <span class="gray">{{ detailData.customer || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  客户单号：
-                  <span class="gray">{{ detailData.customerNo || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row class="margin-bottom-xs">
-                <el-col :span="8">
-                  U8单号：
-                  <span class="gray">{{ detailData.uuNo || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  E树单号：
-                  <span class="gray">{{ detailData.treeNo || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  订单BOM编码：
-                  <span class="gray">{{ detailData.orderBom || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row class="margin-bottom-xs">
-                <el-col :span="8">
-                  配置型号：
-                  <span class="gray">{{ detailData.configModel || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  订单数量：
-                  <span class="gray">{{ detailData.orderNum || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  申请部门：
-                  <span class="gray">{{ detailData.dept || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row class="margin-bottom-xs">
-                <el-col :span="8">
-                  申请人员：
-                  <span class="gray">{{ detailData.deptPerson || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  原下单日期：
-                  <span class="gray">{{ detailData.originalOrderTime || '-' }}</span>
-                </el-col>
-                <el-col :span="8">
-                  原计划交期：
-                  <span class="gray">{{ detailData.originalPlanTime || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row class="margin-bottom-xs">
-                <el-col :span="8">
-                  客户通知变更时间：
-                  <span class="gray">{{ detailData.customerNoticeTime || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="24">
-                  变更说明：
-                  <span class="gray">{{ detailData.changeInfo || '-' }}</span>
-                </el-col>
-              </el-row>
+            <div class="info-item">
+              <span class="info-label">客户</span>
+              <span class="info-value" :class="{ empty: !detailData.customer }">{{ detailData.customer || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">客户单号</span>
+              <span class="info-value" :class="{ empty: !detailData.customerNo }">{{ detailData.customerNo || '-'
+              }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">U8单号</span>
+              <span class="info-value" :class="{ empty: !detailData.uuNo }">{{ detailData.uuNo || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">E树单号</span>
+              <span class="info-value" :class="{ empty: !detailData.treeNo }">{{ detailData.treeNo || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">订单BOM编码</span>
+              <span class="info-value" :class="{ empty: !detailData.orderBom }">{{ detailData.orderBom || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">配置型号</span>
+              <span class="info-value" :class="{ empty: !detailData.configModel }">{{ detailData.configModel || '-'
+              }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">订单数量</span>
+              <span class="info-value" :class="{ empty: !detailData.orderNum }">{{ detailData.orderNum || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">申请部门</span>
+              <span class="info-value" :class="{ empty: !detailData.dept }">{{ detailData.dept || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">申请人员</span>
+              <span class="info-value" :class="{ empty: !detailData.deptPerson }">{{ detailData.deptPerson || '-'
+              }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">原下单日期</span>
+              <span class="info-value" :class="{ empty: !detailData.originalOrderTime }">{{ detailData.originalOrderTime
+                || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">原计划交期</span>
+              <span class="info-value" :class="{ empty: !detailData.originalPlanTime }">{{ detailData.originalPlanTime
+                || '-' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">变更说明</span>
+              <span class="info-value" :class="{ empty: !detailData.changeInfo }">{{ detailData.changeInfo || '-'
+              }}</span>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- 变更分类 -->
-        <div class="detail-section">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-edit mr10 margin-left-xs"></i>变更分类</div>
+        <section v-if="detailData.changeCause" class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              />
+            </svg>
+            变更分类
+          </h3>
+          <div class="card">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">变更类型</span>
+                <span class="info-value">{{ getChangeTypeText(detailData.changeCause) }}</span>
               </div>
-            </div>
-            <div class="model-content">
-              <el-row class="margin-bottom-xs">
-                <el-col :span="12">
-                  变更类型：
-                  <span class="gray">{{ getChangeTypeText(detailData.changeCause) }}</span>
-                </el-col>
-                <el-col :span="12">
-                  变更子类型：
-                  <span class="gray">{{ getChangeSubTypeText(detailData.changeCause) }}</span>
-                </el-col>
-              </el-row>
+              <div class="info-item">
+                <span class="info-label">变更子类型</span>
+                <span class="info-value">{{ getChangeSubTypeText(detailData.changeCause) }}</span>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- BOM编码变更信息 -->
-        <div class="detail-section" v-if="detailData.beforeOrderBom || detailData.afterOrderBom">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-s-order mr10 margin-left-xs"></i>BOM编码变更信息</div>
-              </div>
+        <!-- BOM变更对比 -->
+        <section v-if="detailData.beforeOrderBom || detailData.afterOrderBom" class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              />
+            </svg>
+            BOM编码变更
+          </h3>
+          <div class="bom-comparison card">
+            <div class="bom-item before">
+              <span class="info-label">变更前</span>
+              <span class="info-value">{{ detailData.beforeOrderBom || '-' }}</span>
             </div>
-            <div class="model-content">
-              <el-row class="margin-bottom-xs">
-                <el-col :span="12">
-                  变更前BOM编码：
-                  <span class="gray">{{ detailData.beforeOrderBom || '-' }}</span>
-                </el-col>
-                <el-col :span="12">
-                  变更后BOM编码：
-                  <span class="gray">{{ detailData.afterOrderBom || '-' }}</span>
-                </el-col>
-              </el-row>
+            <div class="arrow-icon">→</div>
+            <div class="bom-item after">
+              <span class="info-label">变更后</span>
+              <span class="info-value">{{ detailData.afterOrderBom || '-' }}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- 审核进度 -->
-        <div class="detail-section">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-s-promotion mr10 margin-left-xs"></i>审核进度</div>
+        <!-- 审核进度触发按钮 -->
+        <section class="section">
+          <div class="progress-trigger" @click="toggleProgressPanel">
+            <div class="progress-summary">
+              <div class="progress-summary-header">
+                <!-- <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg> -->
+                <span class="progress-title">审核进度</span>
+                <button class="progress-expand-btn">
+                  <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              <div class="progress-overview">
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: isAllReviewsPassed(),
+                    warning: getReviewStatusText().includes('中'),
+                    error: getReviewStatusText().includes('驳回'),
+                    info: getReviewStatusText() === '无会审'
+                  }"
+                >{{ getReviewStatusText() }}</span>
+                <span class="divider">•</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.firstState === 1,
+                    error: detailData.firstState === 2,
+                    info: detailData.firstState === 0 || !detailData.firstState
+                  }"
+                >初审{{ getStateText(detailData.firstState) }}</span>
+                <span class="divider">•</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.secondState === 1,
+                    error: detailData.secondState === 2,
+                    info: detailData.secondState === 0 || !detailData.secondState
+                  }"
+                >终审{{ getStateText(detailData.secondState) }}</span>
+                <span class="divider">•</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.systemState === 1,
+                    error: detailData.systemState === 2,
+                    warning: detailData.systemState === 0,
+                    info: !detailData.systemState
+                  }"
+                >系统{{ getChangeStateText(detailData.systemState) }}</span>
+                <span class="divider">•</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.orderChangeState === 1,
+                    error: detailData.orderChangeState === 2,
+                    warning: detailData.orderChangeState === 0,
+                    info: !detailData.orderChangeState
+                  }"
+                >订单{{ getChangeStateText(detailData.orderChangeState) }}</span>
+                <span class="divider">•</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.workOrderChangeState === 1,
+                    error: detailData.workOrderChangeState === 2,
+                    warning: detailData.workOrderChangeState === 0,
+                    info: !detailData.workOrderChangeState
+                  }"
+                >工单{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
               </div>
             </div>
-            <div class="model-content">
-              <div class="progress-container">
-                <div class="progress-steps">
-                  <!-- 会审 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('review')">
-                      <i class="el-icon-user"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">会审</div>
-                      <div class="step-status" :class="getReviewStatusClass()">{{ getReviewStatusText() }}</div>
-                      <div class="step-person" v-if="getReviewPersons()">{{ getReviewPersons() }}</div>
-                    </div>
+          </div>
+        </section>
+
+        <!-- 涉及领域 -->
+        <section v-if="detailData.list && detailData.list.length > 0" class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            变更涉及领域
+          </h3>
+
+          <div v-for="group in groupedFields" :key="group.field" class="field-group">
+            <div class="field-header">{{ getFieldName(group.field) }}</div>
+            <div class="field-items">
+              <div v-for="item in group.items" :key="item.id" class="field-item">
+                <div class="field-item-header">
+                  <span class="field-person">{{ item.fieldName || '-' }}</span>
+                  <div class="field-badges">
+                    <span class="status-badge" :class="{ success: item.isCorrelation === 0 }">
+                      {{ item.isCorrelation === 0 ? '相关' : '不相关' }}
+                    </span>
+                    <span
+                      class="status-badge"
+                      :class="{
+                        success: item.isComplete === 0,
+                        warning: item.isComplete !== 0
+                      }"
+                    >
+                      {{ item.isComplete === 0 ? '已完成' : '未完成' }}
+                    </span>
+                    <span
+                      class="status-badge"
+                      :class="{
+                        success: item.state === 1,
+                        error: item.state === 2,
+                        info: item.state === 0 || !item.state
+                      }"
+                    >
+                      {{ getStateText(item.state) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div
+                  v-if="item.programme || item.treatment || item.remark || (item.result && item.state === 2) || (item.annexUrl && item.annexUrl.trim())"
+                  class="field-content"
+                >
+                  <div v-if="item.programme" class="info-item">
+                    <span class="info-label">{{ getFieldLabel(item.field) }}</span>
+                    <div class="info-value rich-text" v-html="item.programme" />
                   </div>
 
-                  <!-- 初审 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('first')">
-                      <i class="el-icon-circle-check"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">初审</div>
-                      <div class="step-status" :class="getStateClass(detailData.firstState)">{{
-                        getStateText(detailData.firstState) }}</div>
-                      <div class="step-person" v-if="detailData.firstPerson">{{ detailData.firstPerson }}</div>
-                    </div>
+                  <div v-if="item.treatment && item.field === 8" class="info-item">
+                    <span class="info-label">在库物料处理方案</span>
+                    <div class="info-value rich-text" v-html="item.treatment" />
                   </div>
 
-                  <!-- 终审 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('second')">
-                      <i class="el-icon-circle-check"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">终审</div>
-                      <div class="step-status" :class="getStateClass(detailData.secondState)">{{
-                        getStateText(detailData.secondState) }}</div>
-                      <div class="step-person" v-if="detailData.secondPerson">{{ detailData.secondPerson }}</div>
-                    </div>
+                  <div v-if="item.remark" class="info-item">
+                    <span class="info-label">备注</span>
+                    <span class="info-value">{{ item.remark }}</span>
                   </div>
 
-                  <!-- 系统变更 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('system')">
-                      <i class="el-icon-setting"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">系统变更</div>
-                      <div class="step-status" :class="getChangeStateClass(detailData.systemState)">{{
-                        getChangeStateText(detailData.systemState) }}</div>
-                      <div class="step-person" v-if="detailData.systemPerson">{{ detailData.systemPerson }}</div>
-                    </div>
+                  <div v-if="item.result && item.state === 2" class="info-item">
+                    <span class="info-label">拒绝原因</span>
+                    <span class="info-value reject-text">{{ item.result }}</span>
                   </div>
 
-                  <!-- 订单变更 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('order')">
-                      <i class="el-icon-s-order"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">订单变更</div>
-                      <div class="step-status" :class="getChangeStateClass(detailData.orderChangeState)">{{
-                        getChangeStateText(detailData.orderChangeState) }}</div>
-                      <div class="step-person" v-if="detailData.orderChangePerson">{{ detailData.orderChangePerson }}
+                  <div v-if="item.annexUrl && item.annexUrl.trim()" class="info-item">
+                    <span class="info-label">附件</span>
+                    <div class="attachment-list">
+                      <div
+                        v-for="(file, idx) in parseAnnexFiles(item.annexUrl)"
+                        :key="idx"
+                        class="attachment-item"
+                        @click="zipFile(file.name)"
+                      >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                          />
+                        </svg>
+                        {{ file.name }}
                       </div>
                     </div>
                   </div>
-
-                  <!-- 工单变更 -->
-                  <div class="progress-step">
-                    <div class="step-icon" :class="getProgressStepClass('work')">
-                      <i class="el-icon-s-cooperation"></i>
-                    </div>
-                    <div class="step-content">
-                      <div class="step-title">工单变更</div>
-                      <div class="step-status" :class="getChangeStateClass(detailData.workOrderChangeState)">{{
-                        getChangeStateText(detailData.workOrderChangeState) }}</div>
-                      <div class="step-person" v-if="detailData.workOrderChangePerson">{{
-                        detailData.workOrderChangePerson }}</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <!-- 变更涉及领域 -->
-        <div class="detail-section" v-if="detailData.list && detailData.list.length > 0">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-user mr10 margin-left-xs"></i>变更涉及领域</div>
-              </div>
-            </div>
-            <div class="model-content">
-              <div v-for="group in groupedFields" :key="group.field" class="field-group">
-                <h4 class="field-title">{{ getFieldName(group.field) }}</h4>
-                <div class="field-items">
-                  <div v-for="item in group.items" :key="item.id" class="field-item">
-                    <el-row class="margin-bottom-xs">
-                      <el-col :span="6">
-                        涉及人员：
-                        <span class="gray">{{ item.fieldName || '-' }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        处理方案：
-                        <span class="gray">{{ item.treatment || '-' }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        相关性：
-                        <span :class="item.isCorrelation === 0 ? 'status-passed' : 'status-rejected'">{{
-                          item.isCorrelation === 0 ? '是' : '否' }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        完成情况：
-                        <span :class="item.isComplete === 0 ? 'status-completed' : 'status-pending'">{{ item.isComplete
-                          === 0 ? '已完成' : '未完成' }}</span>
-                      </el-col>
-                    </el-row>
-                    <el-row class="margin-bottom-xs">
-                      <el-col :span="6">
-                        审核状态：
-                        <span :class="getStateClass(item.state)">{{ getStateText(item.state) }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        {{ getFieldLabel(item.field) }}：
-                        <span class="gray">{{ item.programme || '-' }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        备注：
-                        <span class="gray">{{ item.remark || '-' }}</span>
-                      </el-col>
-                      <el-col :span="6">
-                        拒绝原因：
-                        <span v-if="item.result && item.state === 2" class="reject-reason-highlight">
-                          <i class="el-icon-warning"></i>
-                          {{ item.result }}
-                        </span>
-                        <span v-else class="gray">{{ item.result || '-' }}</span>
-                      </el-col>
-                    </el-row>
-                    <!-- 会审附件显示 -->
-                    <el-row v-if="item.annexUrl && item.annexUrl.trim()" class="margin-bottom-xs">
-                      <el-col :span="24">
-                        <div class="attachment-section">
-                          <label class="attachment-label">
-                            <i class="el-icon-paperclip"></i>
-                            会审附件：
-                          </label>
-                          <div class="attachment-list-inline">
-                            <div v-for="(file, fileIndex) in parseAnnexFiles(item.annexUrl)" :key="fileIndex"
-                              class="attachment-item-inline">
-                              <i class="el-icon-document"></i>
-                              <span class="attachment-name">{{ file.name }}</span>
-                              <el-button type="text" size="mini" @click="zipFile(file.name)" class="download-btn">
-                                <i class="el-icon-download"></i>
-                                下载
-                              </el-button>
-                            </div>
-                          </div>
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        </section>
 
         <!-- 审核详情 -->
-        <div class="detail-section">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-chat-line-square mr10 margin-left-xs"></i>审核详情</div>
-              </div>
-            </div>
-            <div class="model-content">
-              <!-- 初审详情 -->
-              <div class="audit-detail">
-                <h4>初审详情</h4>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    审核人员：
-                    <span class="gray">{{ detailData.firstPerson || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    审核状态：
-                    <span :class="getStateClass(detailData.firstState)">{{ getStateText(detailData.firstState) }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    审核备注：
-                    <span class="gray">{{ detailData.firstRemark || '-' }}</span>
-                  </el-col>
-                </el-row>
-                <el-row class="margin-bottom-xs" v-if="detailData.firstResult">
-                  <el-col :span="24">
-                    <div class="reject-reason-section">
-                      <i class="el-icon-warning-outline"></i>
-                      <span class="reject-label">拒绝原因：</span>
-                      <span class="reject-reason-text">{{ detailData.firstResult }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
+        <section class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+            审核详情
+          </h3>
 
-              <!-- 终审详情 -->
-              <div class="audit-detail">
-                <h4>终审详情</h4>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    审核人员：
-                    <span class="gray">{{ detailData.secondPerson || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    审核状态：
-                    <span :class="getStateClass(detailData.secondState)">{{ getStateText(detailData.secondState)
-                      }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    审核备注：
-                    <span class="gray">{{ detailData.secondRemark || '-' }}</span>
-                  </el-col>
-                </el-row>
-                <el-row class="margin-bottom-xs" v-if="detailData.secondResult">
-                  <el-col :span="24">
-                    <div class="reject-reason-section">
-                      <i class="el-icon-warning-outline"></i>
-                      <span class="reject-label">拒绝原因：</span>
-                      <span class="reject-reason-text">{{ detailData.secondResult }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-
-              <!-- 系统变更详情 -->
-              <div class="audit-detail">
-                <h4>系统变更</h4>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    变更人员：
-                    <span class="gray">{{ detailData.systemPerson || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    变更状态：
-                    <span :class="getChangeStateClass(detailData.systemState)">{{
-                      getChangeStateText(detailData.systemState) }}</span>
-                  </el-col>
-
-                </el-row>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    变更前BOM编码：
-                    <span class="gray">{{ detailData.beforeOrderBom || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    变更后BOM编码：
-                    <span class="gray">{{ detailData.afterOrderBom || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    变更内容：
-                    <span class="gray">{{ detailData.systemChangResult || '-' }}</span>
-                  </el-col>
-                </el-row>
-                <!-- 变更结果 -->
-                <el-row class="margin-bottom-xs" v-if="detailData.systemResult">
-                  <el-col :span="24">
-                    <div v-if="detailData.systemState === 2" class="reject-reason-section">
-                      <i class="el-icon-warning-outline"></i>
-                      <span class="reject-label">变更结果：</span>
-                      <span class="reject-reason-text">{{ detailData.systemResult }}</span>
-                    </div>
-                    <div v-else>
-                      变更结果：
-                      <span class="gray">{{ detailData.systemResult }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-
-              <!-- 订单变更详情 -->
-              <div class="audit-detail">
-                <h4>订单变更</h4>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    变更人员：
-                    <span class="gray">{{ detailData.orderChangePerson || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    变更状态：
-                    <span :class="getChangeStateClass(detailData.orderChangeState)">{{
-                      getChangeStateText(detailData.orderChangeState) }}</span>
-                  </el-col>
-                </el-row>
-                <el-row class="margin-bottom-xs" v-if="detailData.orderChangeResult">
-                  <el-col :span="24">
-                    <div v-if="detailData.orderChangeState === 2" class="reject-reason-section">
-                      <i class="el-icon-warning-outline"></i>
-                      <span class="reject-label">变更结果：</span>
-                      <span class="reject-reason-text">{{ detailData.orderChangeResult }}</span>
-                    </div>
-                    <div v-else>
-                      变更结果：
-                      <span class="gray">{{ detailData.orderChangeResult }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-
-              <!-- 工单变更详情 -->
-              <div class="audit-detail">
-                <h4>工单变更</h4>
-                <el-row class="margin-bottom-xs">
-                  <el-col :span="8">
-                    变更人员：
-                    <span class="gray">{{ detailData.workOrderChangePerson || '-' }}</span>
-                  </el-col>
-                  <el-col :span="8">
-                    变更状态：
-                    <span :class="getChangeStateClass(detailData.workOrderChangeState)">{{
-                      getChangeStateText(detailData.workOrderChangeState) }}</span>
-                  </el-col>
-                </el-row>
-                <el-row class="margin-bottom-xs" v-if="detailData.workOrderChangeResult">
-                  <el-col :span="24">
-                    <div v-if="detailData.workOrderChangeState === 2" class="reject-reason-section">
-                      <i class="el-icon-warning-outline"></i>
-                      <span class="reject-label">变更结果：</span>
-                      <span class="reject-reason-text">{{ detailData.workOrderChangeResult }}</span>
-                    </div>
-                    <div v-else>
-                      变更结果：
-                      <span class="gray">{{ detailData.workOrderChangeResult }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-            </div>
+          <div class="tabs">
+            <button class="tab" :class="{ active: activeTab === 'first' }" @click="activeTab = 'first'">初审详情</button>
+            <button class="tab" :class="{ active: activeTab === 'second' }" @click="activeTab = 'second'">终审详情</button>
+            <button class="tab" :class="{ active: activeTab === 'system' }" @click="activeTab = 'system'">系统变更</button>
+            <button class="tab" :class="{ active: activeTab === 'order' }" @click="activeTab = 'order'">订单变更</button>
+            <button class="tab" :class="{ active: activeTab === 'work' }" @click="activeTab = 'work'">工单变更</button>
           </div>
-        </div>
+
+          <div v-if="activeTab === 'first'" class="tab-content active">
+            <div v-if="detailData.firstPerson" class="audit-info">
+              <div class="audit-header">
+                <span class="field-person">{{ detailData.firstPerson }}</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.firstState === 1,
+                    error: detailData.firstState === 2,
+                    info: detailData.firstState === 0 || !detailData.firstState
+                  }"
+                >{{ getStateText(detailData.firstState) }}</span>
+              </div>
+              <div v-if="detailData.firstRemark" class="info-item">
+                <span class="info-label">审核备注</span>
+                <span class="info-value">{{ detailData.firstRemark }}</span>
+              </div>
+              <div v-if="detailData.firstResult" class="info-item">
+                <span class="info-label">拒绝原因</span>
+                <span class="info-value reject-text">{{ detailData.firstResult }}</span>
+              </div>
+            </div>
+            <div v-else class="empty-state">暂无数据</div>
+          </div>
+
+          <div v-if="activeTab === 'second'" class="tab-content active">
+            <div v-if="detailData.secondPerson" class="audit-info">
+              <div class="audit-header">
+                <span class="field-person">{{ detailData.secondPerson }}</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.secondState === 1,
+                    error: detailData.secondState === 2,
+                    info: detailData.secondState === 0 || !detailData.secondState
+                  }"
+                >{{ getStateText(detailData.secondState) }}</span>
+              </div>
+              <div v-if="detailData.secondRemark" class="info-item">
+                <span class="info-label">审核备注</span>
+                <span class="info-value">{{ detailData.secondRemark }}</span>
+              </div>
+              <div v-if="detailData.secondResult" class="info-item">
+                <span class="info-label">拒绝原因</span>
+                <span class="info-value reject-text">{{ detailData.secondResult }}</span>
+              </div>
+            </div>
+            <div v-else class="empty-state">暂无数据</div>
+          </div>
+
+          <div v-if="activeTab === 'system'" class="tab-content active">
+            <div v-if="detailData.systemPerson" class="audit-info">
+              <div class="audit-header">
+                <span class="field-person">{{ detailData.systemPerson }}</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.systemState === 1,
+                    error: detailData.systemState === 2,
+                    warning: detailData.systemState === 0,
+                    info: !detailData.systemState
+                  }"
+                >{{ getChangeStateText(detailData.systemState) }}</span>
+              </div>
+              <div v-if="detailData.systemChangResult" class="info-item">
+                <span class="info-label">变更内容</span>
+                <span class="info-value">{{ detailData.systemChangResult }}</span>
+              </div>
+              <div v-if="detailData.systemResult" class="info-item">
+                <span class="info-label">变更结果</span>
+                <span class="info-value" :class="{ 'reject-text': detailData.systemState === 2 }">
+                  {{ detailData.systemResult }}
+                </span>
+              </div>
+            </div>
+            <div v-else class="empty-state">暂无数据</div>
+          </div>
+
+          <div v-if="activeTab === 'order'" class="tab-content active">
+            <div v-if="detailData.orderChangePerson" class="audit-info">
+              <div class="audit-header">
+                <span class="field-person">{{ detailData.orderChangePerson }}</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.orderChangeState === 1,
+                    error: detailData.orderChangeState === 2,
+                    warning: detailData.orderChangeState === 0,
+                    info: !detailData.orderChangeState
+                  }"
+                >{{ getChangeStateText(detailData.orderChangeState) }}</span>
+              </div>
+              <div v-if="detailData.orderChangeResult" class="info-item">
+                <span class="info-label">变更结果</span>
+                <span class="info-value" :class="{ 'reject-text': detailData.orderChangeState === 2 }">
+                  {{ detailData.orderChangeResult }}
+                </span>
+              </div>
+            </div>
+            <div v-else class="empty-state">暂无数据</div>
+          </div>
+
+          <div v-if="activeTab === 'work'" class="tab-content active">
+            <div v-if="detailData.workOrderChangePerson" class="audit-info">
+              <div class="audit-header">
+                <span class="field-person">{{ detailData.workOrderChangePerson }}</span>
+                <span
+                  class="status-badge"
+                  :class="{
+                    success: detailData.workOrderChangeState === 1,
+                    error: detailData.workOrderChangeState === 2,
+                    warning: detailData.workOrderChangeState === 0,
+                    info: !detailData.workOrderChangeState
+                  }"
+                >{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
+              </div>
+              <div v-if="detailData.workOrderChangeResult" class="info-item">
+                <span class="info-label">变更结果</span>
+                <span class="info-value" :class="{ 'reject-text': detailData.workOrderChangeState === 2 }">
+                  {{ detailData.workOrderChangeResult }}
+                </span>
+              </div>
+            </div>
+            <div v-else class="empty-state">暂无数据</div>
+          </div>
+        </section>
 
         <!-- 附件 -->
-        <div class="detail-section" v-if="detailData.file">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-paperclip mr10 margin-left-xs"></i>附件</div>
-              </div>
-            </div>
-            <div class="model-content">
-              <div class="attachment-list">
-                <div class="attachment-item" v-for="(item, index) in detailData.file.split(',')">
-                  <i class="el-icon-paperclip"></i>
-                  <span class="attachment-name">{{ item }}</span>
-                  <el-button type="text" size="small" @click="zipFile(item)">
-                    <i class="el-icon-download"></i>
-                    下载
-                  </el-button>
-                </div>
-              </div>
+        <section v-if="detailData.file" class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+              />
+            </svg>
+            附件
+          </h3>
+          <div class="attachment-list">
+            <div
+              v-for="(item, index) in detailData.file.split(',')"
+              :key="index"
+              class="attachment-item"
+              @click="zipFile(item)"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+              {{ item }}
             </div>
           </div>
+        </section>
+
+        <!-- 操作记录 -->
+        <section class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            操作记录
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">创建人</span>
+              <span class="info-value" :class="{ empty: !detailData.createBy }">{{ detailData.createBy || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">创建时间</span>
+              <span class="info-value" :class="{ empty: !detailData.createTime }">{{ detailData.createTime || '-'
+              }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">修改人</span>
+              <span class="info-value" :class="{ empty: !detailData.updateBy }">{{ detailData.updateBy || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">修改时间</span>
+              <span class="info-value" :class="{ empty: !detailData.updaeTime }">{{ detailData.updaeTime || '-'
+              }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 悬浮审核进度侧边栏 -->
+      <div v-show="progressPanelVisible" class="progress-panel">
+        <div class="progress-panel-header">
+          <h4 class="panel-title">
+            <svg class="panel-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            审核进度详情
+          </h4>
+          <button class="panel-close-btn" @click="closeProgressPanel">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 5L5 15M5 5l10 10" />
+            </svg>
+          </button>
         </div>
 
-        <!-- 创建/修改信息 -->
-        <div class="detail-section">
-          <div class="post-form model-wrap">
-            <div class="model-wrap-style">
-              <div class="title" style="padding-left: 3px">
-                <div><i class="el-icon-time mr10 margin-left-xs"></i>创建/修改信息</div>
+        <div class="progress-panel-body">
+          <div class="progress-timeline vertical">
+            <div class="timeline-item" :class="getTimelineClass('review')">
+              <div
+                class="timeline-dot"
+                :class="{
+                  active: isAllReviewsPassed(),
+                  success: isAllReviewsPassed(),
+                  error: getReviewStatusText().includes('驳回')
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">会审</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: isAllReviewsPassed(),
+                      warning: getReviewStatusText().includes('中'),
+                      error: getReviewStatusText().includes('驳回'),
+                      info: getReviewStatusText() === '无会审'
+                    }"
+                  >{{ getReviewStatusText() }}</span>
+                </div>
+                <div v-if="getReviewPersons()" class="timeline-info">{{ getReviewPersons() }}</div>
               </div>
             </div>
-            <div class="model-content">
-              <el-row class="margin-bottom-xs">
-                <el-col :span="12">
-                  创建人：
-                  <span class="gray">{{ detailData.createBy || '-' }}</span>
-                </el-col>
-                <el-col :span="12">
-                  创建时间：
-                  <span class="gray">{{ detailData.createTime || '-' }}</span>
-                </el-col>
-              </el-row>
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  修改人：
-                  <span class="gray">{{ detailData.updateBy || '-' }}</span>
-                </el-col>
-                <el-col :span="12">
-                  修改时间：
-                  <span class="gray">{{ detailData.updaeTime || '-' }}</span>
-                </el-col>
-              </el-row>
+
+            <div class="timeline-item" :class="getTimelineClass(detailData.firstState)">
+              <div
+                class="timeline-dot"
+                :class="{
+                  success: detailData.firstState === 1,
+                  error: detailData.firstState === 2,
+                  active: detailData.firstState === 1
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">初审</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: detailData.firstState === 1,
+                      error: detailData.firstState === 2,
+                      info: detailData.firstState === 0 || !detailData.firstState
+                    }"
+                  >{{ getStateText(detailData.firstState) }}</span>
+                </div>
+                <div v-if="detailData.firstPerson" class="timeline-info">{{ detailData.firstPerson }}</div>
+              </div>
+            </div>
+
+            <div class="timeline-item" :class="getTimelineClass(detailData.secondState)">
+              <div
+                class="timeline-dot"
+                :class="{
+                  success: detailData.secondState === 1,
+                  error: detailData.secondState === 2,
+                  active: detailData.secondState === 1
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">终审</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: detailData.secondState === 1,
+                      error: detailData.secondState === 2,
+                      info: detailData.secondState === 0 || !detailData.secondState
+                    }"
+                  >{{ getStateText(detailData.secondState) }}</span>
+                </div>
+                <div v-if="detailData.secondPerson" class="timeline-info">{{ detailData.secondPerson }}</div>
+              </div>
+            </div>
+
+            <div class="timeline-item" :class="getTimelineClass(detailData.systemState)">
+              <div
+                class="timeline-dot"
+                :class="{
+                  success: detailData.systemState === 1,
+                  error: detailData.systemState === 2,
+                  active: detailData.systemState === 1
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">系统变更</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: detailData.systemState === 1,
+                      error: detailData.systemState === 2,
+                      warning: detailData.systemState === 0,
+                      info: !detailData.systemState
+                    }"
+                  >{{ getChangeStateText(detailData.systemState) }}</span>
+                </div>
+                <div v-if="detailData.systemPerson" class="timeline-info">{{ detailData.systemPerson }}</div>
+              </div>
+            </div>
+
+            <div class="timeline-item" :class="getTimelineClass(detailData.orderChangeState)">
+              <div
+                class="timeline-dot"
+                :class="{
+                  success: detailData.orderChangeState === 1,
+                  error: detailData.orderChangeState === 2,
+                  active: detailData.orderChangeState === 1
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">订单变更</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: detailData.orderChangeState === 1,
+                      error: detailData.orderChangeState === 2,
+                      warning: detailData.orderChangeState === 0,
+                      info: !detailData.orderChangeState
+                    }"
+                  >{{ getChangeStateText(detailData.orderChangeState) }}</span>
+                </div>
+                <div v-if="detailData.orderChangePerson" class="timeline-info">{{ detailData.orderChangePerson }}</div>
+              </div>
+            </div>
+
+            <div class="timeline-item" :class="getTimelineClass(detailData.workOrderChangeState)">
+              <div
+                class="timeline-dot"
+                :class="{
+                  success: detailData.workOrderChangeState === 1,
+                  error: detailData.workOrderChangeState === 2,
+                  active: detailData.workOrderChangeState === 1
+                }"
+              />
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-title">工单变更</span>
+                  <span
+                    class="status-badge small"
+                    :class="{
+                      success: detailData.workOrderChangeState === 1,
+                      error: detailData.workOrderChangeState === 2,
+                      warning: detailData.workOrderChangeState === 0,
+                      info: !detailData.workOrderChangeState
+                    }"
+                  >{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
+                </div>
+                <div v-if="detailData.workOrderChangePerson" class="timeline-info">{{ detailData.workOrderChangePerson
+                }}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">关 闭</el-button>
+        <el-button @click="dialogVisible = false">关闭</el-button>
       </div>
     </el-dialog>
   </div>
@@ -548,7 +724,6 @@
 <script>
 import { getBomOrderChangeDetail } from '@/api/third/bomChange'
 
-
 export default {
   name: 'DetailView',
   data() {
@@ -556,7 +731,9 @@ export default {
       dialogVisible: false,
       detailData: {},
       loading: false,
-      // 领域映射
+      activeTab: 'first',
+      dialogTitle: '订单变更详情',
+      progressPanelVisible: true, // 审核进度面板显示状态
       fieldMap: {
         2: '采购',
         3: '品质',
@@ -573,107 +750,80 @@ export default {
     }
   },
   computed: {
-    // 解析变更分类
-    parsedChangeCause() {
-      if (!this.detailData.changeCause) return null;
-      try {
-        const data = JSON.parse(this.detailData.changeCause);
-        return Array.isArray(data) ? data.filter(item => item.check) : null;
-      } catch (e) {
-        return null;
-      }
-    },
-
-    // 按领域分组
     groupedFields() {
-      if (!this.detailData.list) return [];
+      if (!this.detailData.list) return []
 
-      const groups = {};
+      const groups = {}
       this.detailData.list.forEach(item => {
         if (!groups[item.field]) {
           groups[item.field] = {
             field: item.field,
             items: []
-          };
+          }
         }
-        groups[item.field].items.push(item);
-      });
+        groups[item.field].items.push(item)
+      })
 
-      return Object.values(groups);
+      return Object.values(groups)
     }
   },
   methods: {
-    // 打开详情弹窗
-    async openDialog(data) {
-      console.log("🚀 ~ openDialog ~ data:", data)
-      this.dialogVisible = true;
-      this.loading = true;
-      this.detailData = {}; // 清空上次数据
+    // 打开详情弹窗 - 这是关键方法，需要暴露给父组件
+    async openDialog(id) {
+      this.dialogVisible = true
+      this.progressPanelVisible = true
+      this.loading = true
+      this.detailData = {}
+      this.activeTab = 'first'
 
-      // 如果传入的是ID，则调用接口获取详情
       try {
-        const response = await getBomOrderChangeDetail(data);
-        this.detailData = response.data || {};
+        const response = await getBomOrderChangeDetail(id)
+        this.detailData = response.data || {}
+
+        // 设置标题
+        if (this.detailData.processCode) {
+          this.dialogTitle = `订单变更详情 - ${this.detailData.processCode}`
+        }
       } catch (error) {
-        console.error('获取详情失败:', error);
-        this.$message.error('获取详情失败');
-        this.detailData = {};
+        console.error('获取详情失败:', error)
+        this.$message.error('获取详情失败')
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
-    // 获取分类标签类型
-    getCategoryTagType(id) {
-      const typeMap = {
-        1: 'warning',  // 订单暂停
-        2: 'danger',   // 订单取消
-        3: 'primary'   // 订单变更
-      };
-      return typeMap[id] || 'info';
+    // 关闭弹窗
+    handleClose() {
+      this.dialogVisible = false
+      this.detailData = {}
+      this.activeTab = 'first'
+      this.progressPanelVisible = false // 关闭悬浮面板
     },
 
-    // 获取分类图标
-    getCategoryIcon(id) {
-      const iconMap = {
-        1: 'el-icon-video-pause',  // 订单暂停
-        2: 'el-icon-close',        // 订单取消
-        3: 'el-icon-edit'          // 订单变更
-      };
-      return iconMap[id] || 'el-icon-document';
+    // 切换审核进度面板显示状态
+    toggleProgressPanel() {
+      this.progressPanelVisible = !this.progressPanelVisible
+    },
+
+    // 关闭审核进度面板
+    closeProgressPanel() {
+      this.progressPanelVisible = false
     },
 
     // 获取领域名称
     getFieldName(field) {
-      return this.fieldMap[field] || '未知领域';
+      return this.fieldMap[field] || '未知领域'
     },
 
-    // 获取领域标签类型
-    getFieldTagType(field) {
-      const typeMap = {
-        2: 'primary',   // 采购
-        3: 'success',   // 品质
-        4: 'warning',   // 生产
-        5: 'info',      // 工程
-        6: 'danger',    // 研发
-        7: 'primary',   // 仓库
-        8: 'success'    // 市场
-      };
-      return typeMap[field] || 'info';
-    },
-
-    // 获取领域图标
-    getFieldIcon(field) {
-      const iconMap = {
-        2: 'el-icon-shopping-cart-2', // 采购
-        3: 'el-icon-medal',           // 品质
-        4: 'el-icon-s-cooperation',   // 生产
-        5: 'el-icon-setting',         // 工程
-        6: 'el-icon-cpu',             // 研发
-        7: 'el-icon-box',             // 仓库
-        8: 'el-icon-s-marketing'      // 市场
-      };
-      return iconMap[field] || 'el-icon-user';
+    // 获取字段标签
+    getFieldLabel(field) {
+      const labelMap = {
+        10: '在制产品处理方案',
+        2: '在途物料处理方案',
+        6: '涉及更新的文件',
+        8: '在库成品处理方案'
+      }
+      return labelMap[field] || '方案'
     },
 
     // 获取状态文本
@@ -682,761 +832,912 @@ export default {
         0: '待审核',
         1: '通过',
         2: '驳回'
-      };
-      return stateMap[state] || '未知状态';
+      }
+      return stateMap[state] || '未知'
     },
 
     // 获取变更状态文本
     getChangeStateText(state) {
       const stateMap = {
         0: '待变更',
-        1: '已变更'
-      };
-      return stateMap[state] || '未知状态';
+        1: '已变更',
+        2: '变更失败'
+      }
+      return stateMap[state] || '未知'
     },
 
     // 获取状态标签类型
     getStateTagType(state) {
       const typeMap = {
-        0: 'info',     // 待审核
-        1: 'success',  // 通过
-        2: 'danger'    // 驳回
-      };
-      return typeMap[state] || 'info';
+        0: 'info',
+        1: 'success',
+        2: 'danger'
+      }
+      return typeMap[state] || 'info'
     },
 
-    // 获取进度步骤样式类
-    getProgressStepClass(type) {
-      switch (type) {
-        case 'review':
-          return this.isAllReviewsPassed() ? 'step-completed' : 'step-pending';
-        case 'first':
-          return this.detailData.firstState === 1 ? 'step-completed' :
-            this.detailData.firstState === 2 ? 'step-rejected' : 'step-pending';
-        case 'second':
-          return this.detailData.secondState === 1 ? 'step-completed' :
-            this.detailData.secondState === 2 ? 'step-rejected' : 'step-pending';
-        case 'system':
-          return this.detailData.systemState === 1 ? 'step-completed' : 'step-pending';
-        case 'order':
-          return this.detailData.orderChangeState === 1 ? 'step-completed' : 'step-pending';
-        case 'work':
-          return this.detailData.workOrderChangeState === 1 ? 'step-completed' : 'step-pending';
-        default:
-          return 'step-pending';
+    // 获取变更状态标签类型
+    getChangeStateTagType(state) {
+      const typeMap = {
+        0: 'warning',
+        1: 'success',
+        2: 'danger'
       }
+      return typeMap[state] || 'info'
+    },
+
+    // 获取时间线样式类
+    getTimelineClass(state) {
+      if (state === 'review') {
+        return this.isAllReviewsPassed() ? 'completed' : 'pending'
+      }
+      return state === 1 ? 'completed' : state === 2 ? 'rejected' : 'pending'
     },
 
     // 检查所有会审是否通过
     isAllReviewsPassed() {
       if (!this.detailData.list || this.detailData.list.length === 0) {
-        return false;
+        return false
       }
-      return this.detailData.list.every(item => item.state === 1);
+      return this.detailData.list.every(item => item.state === 1)
     },
 
     // 获取会审状态文本
     getReviewStatusText() {
       if (!this.detailData.list || this.detailData.list.length === 0) {
-        return '无会审项';
+        return '无会审'
       }
 
-      const total = this.detailData.list.length;
-      const passed = this.detailData.list.filter(item => item.state === 1).length;
-      const rejected = this.detailData.list.filter(item => item.state === 2).length;
+      const total = this.detailData.list.length
+      const passed = this.detailData.list.filter(item => item.state === 1).length
+      const rejected = this.detailData.list.filter(item => item.state === 2).length
 
-      if (rejected > 0) {
-        return '会审驳回';
-      } else if (passed === total) {
-        return '会审通过';
-      } else {
-        return `会审中(${passed}/${total})`;
+      if (rejected > 0) return '会审驳回'
+      if (passed === total) return '会审通过'
+      return `会审中(${passed}/${total})`
+    },
+
+    // 获取会审标签类型
+    getReviewTagType() {
+      if (!this.detailData.list || this.detailData.list.length === 0) {
+        return 'info'
       }
+
+      const rejected = this.detailData.list.some(item => item.state === 2)
+      const allPassed = this.detailData.list.every(item => item.state === 1)
+
+      if (rejected) return 'danger'
+      if (allPassed) return 'success'
+      return 'warning'
     },
 
     // 获取会审人员
     getReviewPersons() {
       if (!this.detailData.list || this.detailData.list.length === 0) {
-        return '';
+        return ''
       }
 
-      const persons = this.detailData.list.map(item => item.fieldName).filter(Boolean);
-      return persons.length > 0 ? persons.join('、') : '';
-    },
-
-    // 获取会审状态样式类
-    getReviewStatusClass() {
-      if (!this.detailData.list || this.detailData.list.length === 0) {
-        return 'status-pending';
-      }
-
-      const rejected = this.detailData.list.filter(item => item.state === 2).length;
-      const total = this.detailData.list.length;
-      const passed = this.detailData.list.filter(item => item.state === 1).length;
-
-      if (rejected > 0) {
-        return 'status-rejected';
-      } else if (passed === total) {
-        return 'status-passed';
-      } else {
-        return 'status-pending';
-      }
-    },
-
-    // 解析附件
-    parseFiles(fileStr) {
-      if (!fileStr) return [];
-
-      try {
-        // 如果是JSON格式
-        const files = JSON.parse(fileStr);
-        return Array.isArray(files) ? files : [files];
-      } catch (e) {
-        // 如果是简单字符串，按逗号分割
-        return fileStr.split(',').map(name => ({ name: name.trim() }));
-      }
+      const persons = this.detailData.list.map(item => item.fieldName).filter(Boolean)
+      return persons.length > 0 ? persons.join('、') : ''
     },
 
     // 获取变更类型文本
     getChangeTypeText(changeCause) {
-      if (!changeCause) return '-';
+      if (!changeCause) return '-'
       try {
-        const data = JSON.parse(changeCause);
+        const data = JSON.parse(changeCause)
         if (Array.isArray(data)) {
-          const checkedItems = data.filter(item => item.check);
-          return checkedItems.map(item => item.label).join('、') || '-';
+          const checkedItems = data.filter(item => item.check)
+          return checkedItems.map(item => item.label).join('、') || '-'
         }
       } catch (e) {
-        return changeCause;
+        return changeCause
       }
-      return '-';
+      return '-'
     },
 
     // 获取变更子类型文本
     getChangeSubTypeText(changeCause) {
-      if (!changeCause) return '-';
+      if (!changeCause) return '-'
       try {
-        const data = JSON.parse(changeCause);
+        const data = JSON.parse(changeCause)
         if (Array.isArray(data)) {
-          const subTypes = [];
+          const subTypes = []
           data.forEach(item => {
             if (item.check && item.list) {
-              const checkedSubs = item.list.filter(sub => sub.check);
-              subTypes.push(...checkedSubs.map(sub => sub.label));
+              const checkedSubs = item.list.filter(sub => sub.check)
+              subTypes.push(...checkedSubs.map(sub => sub.label))
             }
-          });
-          return subTypes.join('、') || '-';
+          })
+          return subTypes.join('、') || '-'
         }
       } catch (e) {
-        return '-';
+        return '-'
       }
-      return '-';
+      return '-'
     },
 
-    // 获取审核状态样式类
-    getStateClass(state) {
-      switch (state) {
-        case 1:
-          return 'status-passed'; // 通过
-        case 2:
-          return 'status-rejected'; // 拒绝
-        case 0:
-        default:
-          return 'status-pending'; // 待审核
-      }
-    },
-
-    // 获取变更状态样式类
-    getChangeStateClass(state) {
-      switch (state) {
-        case 1:
-          return 'status-completed'; // 已完成
-        case 2:
-          return 'status-rejected'; // 拒绝/失败
-        case 0:
-        default:
-          return 'status-pending'; // 未完成/待处理
-      }
-    },
-
-    // 获取字段对应的标签名称
-    getFieldLabel(field) {
-      const labelMap = {
-        10: '在制产品处理方案',  // PMC部门
-        2: '在途物料处理方案',   // 采购部门
-        6: '涉及更新的文件',     // 研发部门
-        8: '在库成品处理方案'    // 市场部门
-      };
-      return labelMap[field] || '方案或文件';
-    },
-
-    // 解析会审附件
+    // 解析附件
     parseAnnexFiles(annexUrl) {
-      if (!annexUrl || !annexUrl.trim()) return [];
+      if (!annexUrl || !annexUrl.trim()) return []
 
       try {
-        // 尝试解析为JSON格式
-        const files = JSON.parse(annexUrl);
+        const files = JSON.parse(annexUrl)
         if (Array.isArray(files)) {
           return files.map(file => ({
             name: file.name || file.fileName || file,
             url: file.url || file.filePath || file
-          }));
-        } else if (typeof files === 'object' && files.name) {
-          return [{
-            name: files.name || files.fileName,
-            url: files.url || files.filePath
-          }];
+          }))
         }
       } catch (e) {
-        // 如果不是JSON格式，按逗号分割处理
         return annexUrl.split(',').map(fileName => ({
           name: fileName.trim(),
           url: fileName.trim()
-        })).filter(file => file.name);
+        })).filter(file => file.name)
       }
 
-      return [];
+      return []
+    },
+
+    // 下载文件
+    // zipFile(fileName) {
+    //   if (!fileName) {
+    //     this.$message.warning('文件名不能为空');
+    //     return;
+    //   }
+
+    //   // 如果文件名包含完整路径，直接下载
+    //   if (fileName.startsWith('http') || fileName.startsWith('/')) {
+    //     this.$download.zip(fileName, this.extractFileName(fileName));
+    //   } else {
+    //     // 否则构建下载路径（根据项目实际API路径调整）
+    //     const downloadUrl = `/system/file/download/${fileName}`;
+    //     this.$download.zip(downloadUrl, fileName);
+    //   }
+    // },
+
+    // 从完整路径中提取文件名
+    extractFileName(filePath) {
+      if (!filePath) return 'download'
+      const parts = filePath.split('/')
+      return parts[parts.length - 1] || 'download'
     }
   }
 }
 </script>
 
-<style scoped>
-.detail-container {
-  max-height: 70vh;
-  overflow-y: auto;
+<style lang="scss" scoped>
+* {
+  box-sizing: border-box;
 }
 
-.detail-section {
-  margin-bottom: 20px;
+.order-detail-dialog {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  ::v-deep .modern-dialog {
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    position: relative;
+
+    .el-dialog__header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #e5e7eb;
+
+      .el-dialog__title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+      }
+    }
+
+    .el-dialog__body {
+      padding: 0;
+      max-height: calc(90vh - 250px);
+      overflow: auto;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+
+        &:hover {
+          background: #9ca3af;
+        }
+      }
+    }
+
+    .el-dialog__footer {
+      padding: 20px 32px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
 }
 
-.detail-section .model-wrap {
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  overflow: hidden;
+.modal-body {
+  padding: 32px;
+  background: #ffffff;
+  color: #1a1a1a;
+  line-height: 1.6;
+  transition: margin-right 0.3s ease-out;
 }
 
-.model-wrap-style {
-  background: #f5f7fa;
-  border-bottom: 1px solid #e4e7ed;
+.order-detail-dialog.panel-open .modal-body {
+  margin-right: 370px;
 }
 
-.model-wrap-style .title {
-  padding: 12px 16px;
-  font-weight: 600;
-  color: #303133;
+// 现代化区块样式
+.section {
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section-title {
   font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
+  gap: 8px;
+
+  .section-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
+  }
 }
 
-.model-wrap-style .title i {
-  margin-right: 8px;
-  color: #409eff;
-}
-
-.model-content {
-  padding: 20px;
-}
-
-.margin-bottom-xs {
-  margin-bottom: 16px;
-}
-
-.gray {
-  color: #606266;
-}
-
-.section-content {
-  padding: 16px;
+// 信息网格
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
 .info-item {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.info-item label {
-  font-weight: 600;
-  color: #606266;
-  min-width: 120px;
-  margin-right: 8px;
-}
-
-.info-item span {
-  color: #303133;
-  flex: 1;
-}
-
-.change-category {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.category-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.sub-categories {
-  display: flex;
-  flex-wrap: wrap;
   gap: 4px;
-  margin-left: 8px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
 }
 
-.field-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.field-group {
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.field-header {
-  background: #fafafa;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e4e7ed;
-}
-
-.field-items {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.field-item .el-card {
-  border-radius: 6px;
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.person-name {
-  font-weight: 600;
-  color: #303133;
-}
-
-.item-content {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.item-row {
-  display: flex;
-  align-items: flex-start;
-}
-
-.item-row label {
-  font-weight: 600;
-  color: #606266;
-  min-width: 80px;
-  margin-right: 8px;
-}
-
-.item-row span {
-  color: #303133;
-  flex: 1;
-}
-
-.reject-reason {
-  color: #f56c6c !important;
-}
-
-.reject-reason-highlight {
-  color: #f56c6c !important;
-  font-weight: 600;
-  background: #fef0f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #fbc4c4;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.reject-reason-highlight i {
-  font-size: 14px;
-}
-
-.reject-reason-section {
-  background: #fef0f0;
-  border: 1px solid #fbc4c4;
-  border-radius: 6px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.reject-reason-section i {
-  color: #f56c6c;
-  font-size: 16px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.reject-label {
-  color: #f56c6c;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.reject-reason-text {
-  color: #f56c6c;
+.info-label {
+  font-size: 12px;
+  color: #9ca3af;
   font-weight: 500;
-  line-height: 1.5;
-  word-break: break-word;
 }
 
-/* 状态样式 */
-.status-passed {
-  color: #67c23a !important;
-  font-weight: 600;
-  background: #f0f9ff;
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid #b3e19d;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.info-value {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+
+  &.empty {
+    color: #d1d5db;
+  }
+
+  &.reject-text {
+    color: #ef4444;
+  }
 }
 
-.status-passed::before {
-  content: '✓';
-  font-weight: bold;
-  font-size: 12px;
+.card {
+  background: #fafbfc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
 }
 
-.status-completed {
-  color: #409eff !important;
-  font-weight: 600;
-  background: #ecf5ff;
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid #b3d8ff;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-completed::before {
-  content: '✓';
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.status-rejected {
-  color: #f56c6c !important;
-  font-weight: 600;
-  background: #fef0f0;
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid #fbc4c4;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-rejected::before {
-  content: '✗';
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.status-pending {
-  color: #e6a23c !important;
-  font-weight: 600;
-  background: #fdf6ec;
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid #f5dab1;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-pending::before {
-  content: '⏳';
-  font-size: 12px;
-}
-
-.progress-container {
-  padding: 16px 0;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  position: relative;
-}
-
-.progress-steps::before {
-  content: '';
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  height: 2px;
-  background: #e4e7ed;
-  z-index: 1;
-}
-
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  position: relative;
-  z-index: 2;
-}
-
-.step-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+// BOM对比
+.bom-comparison {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e4e7ed;
-  color: #909399;
-  margin-bottom: 8px;
-  font-size: 16px;
+  gap: 24px;
+
+  .bom-item {
+    flex: 1;
+    max-width: 300px;
+    text-align: center;
+
+    .info-label {
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      display: block;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+
+    &.after .info-value {
+      background: #e8f4fd;
+      color: #1890ff;
+      font-weight: 500;
+    }
+  }
+
+  .arrow-icon {
+    font-size: 20px;
+    color: #9ca3af;
+  }
 }
 
-.step-icon.step-completed {
-  background: #67c23a;
-  color: white;
+// 时间线进度样式（横向布局）
+.progress-timeline {
+  padding: 20px;
+
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 24px;
+
+    &:last-child {
+      padding-bottom: 0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 30px;
+      bottom: 0;
+      width: 1px;
+      background: #e8e8e8;
+    }
+
+    &.completed {
+      .timeline-dot {
+        background: #52c41a;
+        border-color: #52c41a;
+      }
+    }
+
+    &.rejected {
+      .timeline-dot {
+        background: #ff4d4f;
+        border-color: #ff4d4f;
+      }
+    }
+
+    &.pending {
+      .timeline-dot {
+        background: #fff;
+        border-color: #d9d9d9;
+      }
+    }
+  }
+
+  .timeline-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #d9d9d9;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+    z-index: 1;
+    position: relative;
+
+    &.active {
+      border-color: #3b82f6;
+      background: #3b82f6;
+    }
+
+    &.success {
+      border-color: #10b981;
+      background: #10b981;
+    }
+
+    &.error {
+      border-color: #ef4444;
+      background: #ef4444;
+    }
+
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  }
+
+  .timeline-content {
+    flex: 1;
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+
+      .timeline-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+      }
+    }
+
+    .timeline-info {
+      font-size: 12px;
+      color: #999;
+    }
+  }
 }
 
-.step-icon.step-rejected {
-  background: #f56c6c;
-  color: white;
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 4px;
+
+  &.success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  &.warning {
+    background: #fed7aa;
+    color: #92400e;
+  }
+
+  &.error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  &.info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
 }
 
-.step-icon.step-pending {
-  background: #409eff;
-  color: white;
+// 领域分组样式
+.field-group {
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.step-content {
-  text-align: center;
-  min-width: 80px;
-}
-
-.step-title {
+.field-header {
+  background: #f9fafb;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
   font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-  font-size: 12px;
+  color: #111827;
 }
 
-.step-status {
-  color: #606266;
-  font-size: 12px;
-  margin-bottom: 2px;
+.field-items {
+  padding: 16px;
 }
 
-.step-person {
-  color: #909399;
-  font-size: 11px;
-}
-
-.audit-details {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.audit-item {
-  border: 1px solid #e4e7ed;
+.field-item {
+  padding: 16px;
+  background: white;
   border-radius: 6px;
-  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.field-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.field-person {
+  font-weight: 600;
+  color: #111827;
+}
+
+.field-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.field-content {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.rich-text {
+  background: #fafbfc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  line-height: 1.6;
+
+  ::v-deep p {
+    margin: 0 0 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ::v-deep ul,
+  ::v-deep ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+}
+
+// 标签页样式
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #111827;
+  }
+
+  &.active {
+    color: #3b82f6;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #3b82f6;
+    }
+  }
+}
+
+.tab-content {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+.audit-info {
+  background: #fafbfc;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .audit-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.audit-person {
-  color: #606266;
-  font-size: 13px;
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 14px;
 }
 
-.audit-content {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.audit-remark,
-.audit-result {
-  display: flex;
-  align-items: flex-start;
-}
-
-.audit-remark label,
-.audit-result label {
-  font-weight: 600;
-  color: #606266;
-  min-width: 80px;
-  margin-right: 8px;
-}
-
-.audit-remark span,
-.audit-result span {
-  color: #303133;
-  flex: 1;
-}
-
+// 附件列表
 .attachment-list {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .attachment-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-}
-
-.attachment-item i {
-  color: #409eff;
-}
-
-.file-name,
-.attachment-name {
-  flex: 1;
-  color: #303133;
-}
-
-.no-data {
-  color: #909399;
-  font-style: italic;
-}
-
-.attachment-section {
-  margin-top: 8px;
-  padding: 8px;
-  background: #fafafa;
-  border-radius: 4px;
-}
-
-.attachment-list-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.attachment-item-inline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: white;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  font-size: 12px;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
-.attachment-item-inline i {
-  color: #409eff;
-}
-
-.audit-detail {
-  margin-bottom: 20px;
-  border: 1px solid #e4e7ed;
+// 审核进度触发按钮样式
+.progress-trigger {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  ;
-  padding: 20px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
 
+  &:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 
-.audit-detail h4 {
-  margin: 0 0 12px 0;
-  padding: 10px 0 10px 16px;
-  border-bottom: 1px solid #e4e7ed;
-  border-left: 4px solid #409EFF;
-  background: #f5f7fa;
-  color: #2d8cf0;
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  line-height: 1.4;
+.progress-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  .progress-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: #9ca3af;
+
+    &:hover {
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    .expand-icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 
-.field-title {
-  margin: 0 0 12px 0;
-  padding: 8px 12px;
-  background: #f5f7fa;
-  border-bottom: 1px solid #e4e7ed;
-  color: #303133;
-  font-size: 14px;
-  font-weight: 600;
+.progress-overview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .divider {
+    color: #d1d5db;
+    font-size: 12px;
+  }
 }
 
-.field-item {
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
+// 悬浮面板样式
+.progress-panel {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  bottom: 20px;
+  width: 350px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  animation: slideInRight 0.3s ease-out;
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
 }
 
-.field-item:last-child {
-  border-bottom: none;
+.progress-panel-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+
+  .panel-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .panel-icon {
+      width: 20px;
+      height: 20px;
+      color: #6b7280;
+    }
+  }
+
+  .panel-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    color: #6b7280;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+  }
 }
 
-.dialog-footer {
-  text-align: center;
-  padding: 16px 0;
+.progress-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 2px;
+
+    &:hover {
+      background: #9ca3af;
+    }
+  }
 }
 
-/* 响应式设计 */
+// 垂直时间线样式
+.progress-timeline.vertical {
+  .timeline-item {
+    padding-bottom: 20px;
+
+    &:last-child {
+      padding-bottom: 0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    &::before {
+      background: #e8e8e8;
+    }
+  }
+
+  .timeline-content {
+    .timeline-header {
+      gap: 8px;
+      margin-bottom: 6px;
+
+      .timeline-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+      }
+    }
+
+    .timeline-info {
+      font-size: 11px;
+      color: #6b7280;
+      margin-left: 0;
+    }
+  }
+}
+
+// 小尺寸状态徽章
+.status-badge.small {
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+// 响应式设计
 @media (max-width: 768px) {
-  .progress-steps {
+  .modal-body {
+    padding: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bom-comparison {
     flex-direction: column;
-    gap: 16px;
+
+    .arrow-icon {
+      transform: rotate(90deg);
+    }
   }
 
-  .progress-steps::before {
-    display: none;
+  .tabs {
+    overflow-x: auto;
   }
 
-  .progress-step {
-    flex-direction: row;
-    justify-content: flex-start;
-    text-align: left;
+  .progress-panel {
+    width: calc(100vw - 40px);
+    max-width: 400px;
   }
 
-  .step-icon {
-    margin-right: 12px;
-    margin-bottom: 0;
-  }
-
-  .step-content {
-    text-align: left;
+  .progress-overview {
+    font-size: 12px;
   }
 }
 </style>

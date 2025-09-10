@@ -429,8 +429,37 @@ export default {
       const flatData = []
 
       rawData.forEach((item, index) => {
-        // 获取所有子项，不过滤任何项目
+        // 获取所有子项，不过滤任何项目，并按照指定顺序排序
         const allChildren = item.list && Array.isArray(item.list) ? item.list : []
+        
+        // 按照指定顺序排序：防水头-普通线-UL线-线缆-上锡价格-SR价格-插线端子
+        const sortOrder = {
+          1: 1, // 防水头
+          2: 2, // 线缆（普通线和UL线都是类型2，后面会细分）
+          4: 5, // 上锡价格
+          5: 6, // SR价格
+          3: 7  // 插线端子
+        }
+        
+        allChildren.sort((a, b) => {
+          const orderA = sortOrder[a.costCableType] || 999
+          const orderB = sortOrder[b.costCableType] || 999
+          
+          // 如果都是线缆类型（costCableType === 2），按照普通线优先
+          if (a.costCableType === 2 && b.costCableType === 2) {
+            const aHasCommon = a.commonLinearPrice > 0
+            const bHasCommon = b.commonLinearPrice > 0
+            const aHasUL = a.ulLinearPrice > 0
+            const bHasUL = b.ulLinearPrice > 0
+            
+            if (aHasCommon && !bHasCommon) return -1 // a是普通线，b不是普通线
+            if (!aHasCommon && bHasCommon) return 1  // b是普通线，a不是普通线
+            if (aHasUL && !bHasUL) return 1          // a是UL线，b不是UL线
+            if (!aHasUL && bHasUL) return -1         // b是UL线，a不是UL线
+          }
+          
+          return orderA - orderB
+        })
 
         const hasValidChildren = allChildren.length > 0
 
@@ -513,6 +542,10 @@ export default {
         return '线缆'
       } else if (row.costCableType === 3) {
         return '插线端子'
+      } else if (row.costCableType === 4) {
+        return '上锡价格'
+      } else if (row.costCableType === 5) {
+        return 'SR价格'
       }
       return '-'
     },
@@ -525,6 +558,10 @@ export default {
         return 'cable-type'
       } else if (row.costCableType === 3) {
         return 'terminal-type'
+      } else if (row.costCableType === 4) {
+        return 'tinning-type'
+      } else if (row.costCableType === 5) {
+        return 'sr-type'
       }
       return ''
     },
@@ -540,6 +577,12 @@ export default {
       } else if (row.costCableType === 3) {
         // 插线端子：显示型号
         return row.triggerTerminalModel || '-'
+      } else if (row.costCableType === 4) {
+        // 上锡价格：显示上锡型号
+        return row.tinningModel || '-'
+      } else if (row.costCableType === 5) {
+        // SR价格：显示SR型号
+        return row.srModel || '-'
       }
       return '-'
     },
@@ -560,6 +603,12 @@ export default {
       } else if (row.costCableType === 3) {
         // 插线端子价格
         return `¥${(row.triggerTerminalPrice || 0).toFixed(2)}`
+      } else if (row.costCableType === 4) {
+        // 上锡价格
+        return `¥${(row.tinningPrice || 0).toFixed(2)}`
+      } else if (row.costCableType === 5) {
+        // SR价格
+        return `¥${(row.srPrice || 0).toFixed(2)}`
       }
       return '-'
     },
@@ -777,6 +826,14 @@ export default {
 
     &.terminal-type {
       background-color: #E6A23C;
+    }
+
+    &.tinning-type {
+      background-color: #9C27B0; // 紫色 - 上锡价格
+    }
+
+    &.sr-type {
+      background-color: #FF5722; // 橙红色 - SR价格
     }
   }
 

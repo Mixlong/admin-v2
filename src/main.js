@@ -12,9 +12,9 @@ import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/styles/index.scss'; // global css
 import '@/assets/styles/ruoyi.scss'; // ruoyi css
 import 'normalize.css/normalize.css'; // a modern alternative to CSS resets
+// 延迟加载非必需CSS
 import "viewerjs/dist/viewer.css";
-// 引入样式
-import "vue-easytable/libs/theme-default/index.css";
+// import "vue-easytable/libs/theme-default/index.css";
 import '@/assets/icons'; // icon
 import '@/permission'; // permission control
 

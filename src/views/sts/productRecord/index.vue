@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
+  <div class="app-container flex-app-container">
     <IntelligentSearchForm :searchForm="queryParams" :fields="searchFields" @search="handleQuery" @reset="resetQuery"
-      @layout-changed="refreshTableHeight">
+      :defaultVisibleCount="4" @layout-changed="refreshTableHeight">
       <!-- 品类选择器自定义插槽 -->
       <template #field-categoryName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
@@ -26,7 +26,7 @@
         <el-form-item :label="field.label" :prop="field.key">
           <select-loadMore v-model="searchForm[field.key]" :data="orderData.data" :page="orderData.page"
             :hasMore="orderData.more" dictLabel="orderCode" dictValue="orderCode" :request="getProdPlantList"
-            style="max-width: 135px" placeholder="请选择">
+            placeholder="请选择">
           </select-loadMore>
         </el-form-item>
       </template>
@@ -34,7 +34,7 @@
       <!-- 测试环节选择器自定义插槽 -->
       <template #field-processName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm[field.key]" clearable style="max-width: 110px">
+          <el-select v-model="searchForm[field.key]" clearable>
             <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
           </el-select>
         </el-form-item>
@@ -50,8 +50,7 @@
       </template>
     </IntelligentSearchForm>
 
-    <el-table v-loading="loading" :data="brandList" :height="dynamicTableHeight" :cell-class-name="cellClassName"
-      border>
+    <el-table v-loading="loading" :data="brandList" height="100%" :cell-class-name="cellClassName" border>
       <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -113,7 +112,7 @@
       </el-table-column>
       <el-table-column label="版本信息" align="center" width="90" fixed="right">
         <template slot-scope="scope">
-          <el-button type="text" @click="seeDetail(scope.row.id)">
+          <el-button type="text" @click="seeDetail(scope.row)">
             查看
           </el-button>
         </template>
@@ -308,9 +307,9 @@ export default {
       });
     },
     // 测试详情
-    async seeDetail(recordId) {
+    async seeDetail(row) {
       this.isStsDetailShow = true;
-      const result = await recordVersionList({ recordId });
+      const result = await recordVersionList({ recordId: row.id, pcbaSn: row.pcbaSn, sn: row.sn });
       this.stsDetail = result.data;
     },
     /** 搜索按钮操作 */

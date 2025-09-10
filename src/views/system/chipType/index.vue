@@ -19,7 +19,7 @@
             重置
           </el-button>
         </el-form-item>
-      </el-form>
+      </el-form> 
 
       <el-row :gutter="10">
         <el-col :span="1.5">
@@ -82,15 +82,9 @@
           </el-card>
           <el-card class="flex-sub margin-left-xs margin-right-xs">
             <div slot="header" class="clearfix">
-              <span class="type_title">硬件属性</span>
+              <span class="type_title">软件属性（bist）</span>
             </div>
-            <ChooseType v-model="form.hardValue" :typeList="hardType" />
-          </el-card>
-          <el-card class="flex-sub">
-            <div slot="header" class="clearfix">
-              <span class="type_title">工程属性</span>
-            </div>
-            <ChooseType v-model="form.projectValue" :typeList="epcType" />
+            <ChooseType v-model="form.bistValue" :typeList="softwareType" />
           </el-card>
         </div>
       </el-form>
@@ -116,20 +110,11 @@
             </el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="硬件属性" :labelStyle="{ textAlign: 'center' }"
+        <el-descriptions-item label="软件属性（bist）" :labelStyle="{ textAlign: 'center' }"
           :contentStyle="{ width: '33.333%', verticalAlign: 'top' }">
           <div class="detail_item_box">
             <el-tag size="small" class="margin-right-xs margin-bottom-xs"
-              v-for="(typeName, index) in detailData.hardType" :key="index">
-              {{ typeName }}
-            </el-tag>
-          </div>
-        </el-descriptions-item>
-        <el-descriptions-item label="工程属性" :labelStyle="{ textAlign: 'center' }"
-          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }">
-          <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs"
-              v-for="(typeName, index) in detailData.epcType" :key="index">
+              v-for="(typeName, index) in detailData.bistType" :key="index">
               {{ typeName }}
             </el-tag>
           </div>
@@ -182,6 +167,7 @@ export default {
         categoryName: "",
         schemeVersion: "",
         softValue: [],
+        bistValue: [],
         hardValue: [],
         projectValue: [],
       },
@@ -190,6 +176,7 @@ export default {
       isDetailTypeName: "",
       detailData: {
         softwareType: [],
+        bistType: [],
         hardType: [],
         epcType: [],
       },
@@ -250,6 +237,7 @@ export default {
         categoryName: "",
         schemeVersion: "",
         softValue: [],
+        bistValue: [],
         hardValue: [],
         projectValue: [],
       };
@@ -285,11 +273,12 @@ export default {
       this.form.id = id;
       this.isAddOrUpLoading = true;
 
-      const { softList, hardList, projectList } = await this.getChipType(
+      const { softList, bistList, hardList, projectList } = await this.getChipType(
         schemeVersion,
         categoryId
       );
       this.form.softValue = softList;
+      this.form.bistValue = bistList;
       this.form.hardValue = hardList;
       this.form.projectValue = projectList;
     },
@@ -301,6 +290,7 @@ export default {
           this.isDetailLoading = false;
           resolve({
             softList: res.data[1] || [],
+            bistList: res.data[4] || [],
             hardList: res.data[2] || [],
             projectList: res.data[3] || [],
           });
@@ -313,7 +303,7 @@ export default {
       const { schemeVersion, categoryId } = row;
       this.isDetailTypeName = schemeVersion;
       this.isDetailLoading = true;
-      const { softList, hardList, projectList } = await this.getChipType(
+      const { softList, bistList, hardList, projectList } = await this.getChipType(
         schemeVersion,
         categoryId
       );
@@ -321,6 +311,11 @@ export default {
       this.detailData.softwareType = this.handleTransType(
         this.softwareType,
         softList
+      );
+      // 软件（bist）
+      this.detailData.bistType = this.handleTransType(
+        this.softwareType,
+        bistList
       );
       // 硬件
       this.detailData.hardType = this.handleTransType(this.hardType, hardList);
@@ -349,9 +344,10 @@ export default {
     submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          const { projectValue, hardValue, softValue } = this.form;
+          const { projectValue, hardValue, softValue, bistValue } = this.form;
           const dataFlag = [
             this.Is_Empty(softValue),
+            this.Is_Empty(bistValue),
             this.Is_Empty(hardValue),
             this.Is_Empty(projectValue),
           ].every((item) => item === true);

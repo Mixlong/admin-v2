@@ -1,22 +1,27 @@
 <template>
-    <div class="production-alerts-container app-container">
+    <div class="production-alerts-container app-container flex-app-container">
         <!-- 智能搜索区域 -->
         <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch"
-            @reset="handleReset" @field-change="handleFieldChange" @layout-changed="handleSearchFormLayoutChanged">
+            :defaultVisibleCount="4" @reset="handleReset" @field-change="handleFieldChange"
+            @layout-changed="handleSearchFormLayoutChanged">
             <!-- 自定义工单号字段渲染 -->
             <template #field-workOrderNo="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key">
-                    <el-autocomplete v-model="searchForm[field.key]" placeholder="请输入工单号" clearable style="width: 200px"
-                        size="mini">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+                    <el-autocomplete v-model="searchForm[field.key]" :fetch-suggestions="queryWorkOrders"
+                        placeholder="请输入工单号" clearable size="small">
+                        <template slot-scope="{ item }">
+                            <div class="work-order-item">
+                                <span>{{ item.value }}</span>
+                            </div>
+                        </template>
                     </el-autocomplete>
                 </el-form-item>
             </template>
 
             <!-- 自定义品类字段渲染 -->
             <template #field-categoryName="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key">
-                    <el-select v-model="searchForm[field.key]" placeholder="请选择品类" clearable filterable
-                        style="width: 150px" @change="handleCategoryChange" size="mini">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择品类" clearable filterable size="small">
                         <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
@@ -25,9 +30,8 @@
 
             <!-- 自定义型号字段渲染 -->
             <template #field-computerName="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key">
-                    <el-select v-model="searchForm[field.key]" placeholder="请选择型号" clearable filterable
-                        style="width: 150px" size="mini">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择型号" clearable filterable size="small">
                         <el-option v-for="item in computerOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
@@ -36,19 +40,20 @@
 
             <!-- 自定义责任归属部门字段渲染 -->
             <template #field-responsibleDept="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key" label-width="90px">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth"
+                    style="display: flex;">
                     <treeselect v-model="searchForm[field.key]" :options="deptOptions" :disable-branch-nodes="true"
-                        placeholder="请选择责任归属部门" :clearable="true" :searchable="true" @input="handleSearchDeptChange"
-                        :loading="deptLoading" style="width: 150px" />
+                        placeholder="请选择责任归属部门" style="width: 240px" :clearable="true" :searchable="true"
+                        @input="handleSearchDeptChange" :loading="deptLoading" />
                 </el-form-item>
             </template>
 
             <!-- 自定义责任归属人字段渲染 -->
             <template #field-responsible="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key" label-width="80px">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
                     <el-select v-model="searchForm[field.key]" placeholder="请先选择部门" filterable clearable
-                        style="width: 150px" :disabled="!searchForm.responsibleDept" :loading="computerLoading"
-                        size="mini">
+                        :disabled="!searchForm.responsibleDept" :loading="computerLoading" size="small"
+                        style="width: 240px;">
                         <el-option v-for="item in applicantList" :key="item.userId" :label="item.nickName"
                             :value="item.nickName" />
                     </el-select>
@@ -57,17 +62,17 @@
 
             <!-- 自定义创建时间字段渲染 -->
             <template #field-dateRange="{ field, searchForm }">
-                <el-form-item :label="field.label" :prop="field.key">
+                <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
                     <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
-                        end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 240px"
-                        size="mini" />
+                        end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 250px"
+                        size="small" />
                 </el-form-item>
             </template>
 
             <!-- 页面操作按钮 -->
             <template #page-actions>
                 <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['production:alerts:add']"
-                    size="mini">
+                    size="small">
                     新增报警
                 </el-button>
             </template>
@@ -75,9 +80,8 @@
 
         <!-- 数据表格 -->
         <div class="table-section">
-            <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%"
-                :height="dynamicTableHeight" :row-class-name="getRowClassName" row-key="id"
-                @sort-change="handleSortChange">
+            <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%" height="100%"
+                :row-class-name="getRowClassName" row-key="id" @sort-change="handleSortChange">
 
                 <el-table-column prop="workOrderNo" label="工单号" align="center">
                     <template slot-scope="scope">
@@ -138,34 +142,34 @@
 
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-button size="mini" type="text" v-hasPermi="['production:alerts:view']"
+                        <el-button size="small" type="text" v-hasPermi="['production:alerts:view']"
                             @click="handleView(scope.row)" icon="el-icon-view">
                             查看
                         </el-button>
-                        <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
+                        <el-button size="small" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
                             v-hasPermi="['production:alerts:edit']" :disabled="scope.row.processType === 4">
                             编辑
                         </el-button>
 
                         <!-- 开始处理按钮 - 状态为待处理(1)且当前用户部门与责任部门匹配时显示 -->
-                        <el-button v-if="canStartProcess(scope.row)" size="mini" type="text"
+                        <el-button v-if="canStartProcess(scope.row)" size="small" type="text"
                             @click="handleStartProcess(scope.row)" icon="el-icon-video-play" style="color: #409EFF;">
                             开始处理
                         </el-button>
 
                         <!-- 完成处理按钮 - 状态为处理中(2)且当前用户是处理人时显示 -->
-                        <el-button v-if="canCompleteProcess(scope.row)" size="mini" type="text"
+                        <el-button v-if="canCompleteProcess(scope.row)" size="small" type="text"
                             @click="handleCompleteProcess(scope.row)" icon="el-icon-check" style="color: #67C23A;">
                             完成处理
                         </el-button>
 
                         <!-- 验证按钮 - 状态为已处理待验证(3)且当前用户是责任人时显示 -->
-                        <el-button v-if="canVerifyProcess(scope.row)" size="mini" type="text"
+                        <el-button v-if="canVerifyProcess(scope.row)" size="small" type="text"
                             @click="handleVerifyProcess(scope.row)" icon="el-icon-finished" style="color: #E6A23C;">
                             验证
                         </el-button>
 
-                        <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)"
+                        <el-button size="small" type="text" class="text-red" @click="handleDelete(scope.row)"
                             icon="el-icon-delete" v-if="canDelete(scope.row)">
                             删除
                         </el-button>
@@ -181,10 +185,7 @@
                 layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" />
         </div>
 
-        <!-- 空状态 -->
-        <div v-if="!loading && tableData.length === 0" class="empty-state">
-            <el-empty description="暂无数据" />
-        </div>
+
 
         <!-- 报警表单对话框 -->
         <AlertForm :visible.sync="alertFormVisible" :editData="currentEditData" :categoryOptions="categoryOptions"
@@ -219,7 +220,7 @@
 </template>
 
 <script>
-import { getProductionAlertsList, deleteProductionAlert, startProcessAlert, completeProcessAlert, verifyProcessResult, PROCESS_STATUS } from '@/api/production-management/alerts'
+import { getProductionAlertsList, deleteProductionAlert, startProcessAlert, completeProcessAlert, verifyProcessResult, getTodayOrderCodes, PROCESS_STATUS } from '@/api/production-management/alerts'
 import { processTypeOptions, processTypeColors } from '@/types/production-alerts'
 import categoryService from '@/utils/categoryService'
 import { listDept } from '@/api/system/dept'
@@ -282,6 +283,10 @@ export default {
             computerLoading: false,
             // 当前用户信息
             currentUser: null,
+
+            // 工单号数据缓存（与AlertForm保持一致）
+            allOrderCodes: [], // 缓存所有工单数据
+            orderCodesLoaded: false, // 标记数据是否已加载
             // 验证处理对话框
             verifyProcessDialogVisible: false,
             currentProcessRow: null,
@@ -312,43 +317,47 @@ export default {
                     key: 'workOrderNo',
                     label: '工单号',
                     component: 'el-autocomplete',
-                    sort: 1     // 第1位 - 工单号最重要
+                    sort: 1
                 },
                 {
                     key: 'categoryName',
                     label: '品类名称',
                     component: 'el-select',
-                    sort: 2     // 第2位 - 品类重要
+                    sort: 2
                 },
                 {
                     key: 'processType',
                     label: '处理状态',
                     component: 'el-select',
-                    sort: 3     // 第3位 - 处理状态重要
+                    sort: 6,
+                    props: {
+                        options: processTypeOptions
+                    }
                 },
                 {
                     key: 'computerName',
                     label: '型号名称',
                     component: 'el-select',
-                    sort: 4     // 第4位 - 型号中等重要
+                    sort: 5
                 },
                 {
                     key: 'responsibleDept',
-                    label: '责任归属部门',
-                    component: 'treeselect',
-                    sort: 5     // 第5位 - 部门
+                    label: '归属部门',
+                    component: 'el-select',  // 使用el-select作为fallback，实际由插槽渲染
+                    sort: 3
                 },
                 {
                     key: 'responsible',
                     label: '责任归属人',
                     component: 'el-select',
-                    sort: 6     // 第6位 - 责任人
+                    sort: 4
                 },
                 {
                     key: 'dateRange',
                     label: '创建时间',
                     component: 'el-date-picker',
-                    sort: 7     // 第7位 - 时间范围
+                    labelWidth: '100px',
+                    sort: 7
                 }
             ],
 
@@ -370,6 +379,8 @@ export default {
         // 预加载数据
         this.$nextTick(() => {
             this.preloadData()
+            // 预加载工单号数据（与AlertForm保持一致）
+            this.loadAllOrderCodes()
         })
     },
 
@@ -395,6 +406,9 @@ export default {
         this.initDynamicTableHeight({
             topOffset: 244  // 根据用户修正的值
         })
+
+        // 加载部门数据
+        this.getTreeselect()
 
     },
 
@@ -435,10 +449,7 @@ export default {
                     // 缓存当前页数据
                     this.cacheData(`page_${this.pagination.current}`, response.data)
 
-                    // 数据加载成功提示
-                    if (this.tableData.length === 0 && Object.keys(this.searchForm).some(key => this.searchForm[key])) {
-                        this.$message.info('未找到符合条件的数据')
-                    }
+
                 } else {
                     this.handleApiError(response, '获取数据失败')
                     this.tableData = []
@@ -1040,9 +1051,8 @@ export default {
 
         // 处理IntelligentSearchForm字段变化
         handleFieldChange(fieldKey, value) {
-            if (fieldKey === 'categoryName') {
-                this.handleCategoryChange(value);
-            } else if (fieldKey === 'responsibleDept') {
+            // 移除品类级联逻辑，允许独立选择
+            if (fieldKey === 'responsibleDept') {
                 this.handleSearchDeptChange(value);
             }
         },
@@ -1058,8 +1068,41 @@ export default {
 
 
         // 工单号自动完成查询
-        queryWorkOrders(queryString, callback) {
-            // TODO: 调用实际的API获取工单号建议
+        async queryWorkOrders(queryString, callback) {
+            try {
+                // 调用实际的API获取当日生产计划工单号
+                const response = await getTodayOrderCodes()
+
+                if (response.code === 200 && response.data) {
+                    // 将API返回的数据转换为自动完成需要的格式
+                    let workOrders = response.data.map(item => ({
+                        value: typeof item === 'string' ? item : item.workOrderNo || item.orderCode,
+                        desc: typeof item === 'object' ? (item.desc || item.description || '生产工单') : '生产工单'
+                    }))
+
+                    // 根据查询字符串过滤结果
+                    if (queryString) {
+                        workOrders = workOrders.filter(item =>
+                            item.value.toLowerCase().includes(queryString.toLowerCase())
+                        )
+                    }
+
+                    // 限制返回数量，避免列表过长
+                    const results = workOrders.slice(0, 20)
+                    callback(results)
+                } else {
+                    // API调用失败时的降级处理，使用默认数据
+                    this.fallbackQueryWorkOrders(queryString, callback)
+                }
+            } catch (error) {
+                console.error('获取工单号列表失败:', error)
+                // 出错时使用降级处理
+                this.fallbackQueryWorkOrders(queryString, callback)
+            }
+        },
+
+        // 降级处理方法 - 当API调用失败时使用
+        fallbackQueryWorkOrders(queryString, callback) {
             const workOrders = [
                 { value: 'WO202401001', desc: '电子产品生产工单' },
                 { value: 'WO202401002', desc: '机械设备维护工单' },
@@ -1081,28 +1124,8 @@ export default {
 
         },
 
-        // 品类变更处理
-        handleCategoryChange(categoryName) {
-            this.searchForm.computerName = ''
-
-            if (!categoryName) {
-                // 显示所有型号 - 使用CategoryService重新获取
-                categoryService.getFormattedOptions().then(({ computerOptions }) => {
-                    this.computerOptions = computerOptions
-                }).catch(error => {
-                    console.error('获取所有型号失败:', error)
-                    this.computerOptions = []
-                })
-            } else {
-                // 根据品类过滤型号 - 使用CategoryService
-                const filteredComputers = categoryService.getComputersByCategory(categoryName)
-                this.computerOptions = filteredComputers.map(computer => ({
-                    label: computer.name,
-                    value: computer.name,
-                    categoryName: computer.categoryName
-                }))
-            }
-        },
+        // 品类变更处理方法已移除，实现独立选择
+        // handleCategoryChange() - 已移除级联逻辑，品类和型号可独立选择
 
         // 搜索表单部门变化时加载对应人员（与AlertForm完全一致）
         async handleSearchDeptChange(deptId) {

@@ -24,11 +24,21 @@
             </el-button>
           </el-form-item>
         </el-form>
-
-        <el-switch class="margin-bottom-sm" v-model="form.isSts" :active-value="1" :inactive-value="0"
-          active-color="#13ce66" inactive-color="#ff4949" active-text="STS" inactive-text="非STS">
-        </el-switch>
-
+        <div class="flex margin-bottom-sm">
+          <div class="flex items-center" style="align-items: center;">
+            <span class="mr5"> 是否配置</span>
+            <el-switch v-model="form.isSts" :active-value="1" :inactive-value="0" active-color="#13ce66"
+              inactive-color="#ff4949">
+            </el-switch>
+          </div>
+          <span style="margin-left: 50px;"></span>
+          <div class="flex items-center" style="align-items: center;">
+            <span class="mr5"> BIST型号</span>
+            <el-switch v-model="form.isBist" :active-value="1" :inactive-value="0" active-color="#13ce66"
+              inactive-color="#ff4949">
+            </el-switch>
+          </div>
+        </div>
         <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
           <fieldset>
             <legend class="text-red">基础配置</legend>

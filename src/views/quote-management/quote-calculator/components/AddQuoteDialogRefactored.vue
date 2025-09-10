@@ -441,7 +441,7 @@ import {
     getCostProjectDict
 } from '@/api/quote-management/quotation'
 import { getCableCostList } from '@/api/quote-management/cableCost'
-
+import { getDicts } from "@/api/system/dict/data";
 export default {
     name: 'AddQuoteDialogRefactored',
     props: {
@@ -486,7 +486,11 @@ export default {
             },
 
             // Loading 状态
-
+            mainProductDiCode: '',
+            btnDiCode: '',
+            // 支持多个dictCode匹配
+            mainProductDiCodes: [],
+            btnDiCodes: [],
             // UI辅助状态
             buttonEnabled: false,
             mainProductIdCostSharing: false,
@@ -607,20 +611,52 @@ export default {
 
         // 主产品数据
         mainProduct: function () {
-            return (this.quotationData.list || []).find(function (item) { return item.productType === 1 }) || {}
+            if (!this.mainProductDiCodes || this.mainProductDiCodes.length === 0) return {}
+            var self = this
+            return (this.quotationData.list || []).find(function (item) {
+                return self.mainProductDiCodes.includes(item.productType) ||
+                    self.mainProductDiCodes.includes(Number(item.productType)) ||
+                    self.mainProductDiCodes.includes(String(item.productType)) ||
+                    item.productType === 1 ||
+                    item.productType === '1'
+            }) || {}
         },
 
         mainProductIndex: function () {
-            return (this.quotationData.list || []).findIndex(function (item) { return item.productType === 1 })
+            if (!this.mainProductDiCodes || this.mainProductDiCodes.length === 0) return -1
+            var self = this
+            return (this.quotationData.list || []).findIndex(function (item) {
+                return self.mainProductDiCodes.includes(item.productType) ||
+                    self.mainProductDiCodes.includes(Number(item.productType)) ||
+                    self.mainProductDiCodes.includes(String(item.productType)) ||
+                    item.productType === 1 ||
+                    item.productType === '1'
+            })
         },
 
         // 按键产品数据
         buttonProduct: function () {
-            return (this.quotationData.list || []).find(function (item) { return item.productType === 2 }) || {}
+            if (!this.btnDiCodes || this.btnDiCodes.length === 0) return {}
+            var self = this
+            return (this.quotationData.list || []).find(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === 2 ||
+                    item.productType === '2'
+            }) || {}
         },
 
         buttonProductIndex: function () {
-            return (this.quotationData.list || []).findIndex(function (item) { return item.productType === 2 })
+            if (!this.btnDiCodes || this.btnDiCodes.length === 0) return -1
+            var self = this
+            return (this.quotationData.list || []).findIndex(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === 2 ||
+                    item.productType === '2'
+            })
         },
 
         // 是否有未保存的更改
@@ -918,10 +954,11 @@ export default {
         loadInitialData: async function () {
             try {
                 this.loading = true
+                // 先加载字典数据，然后再加载品类列表
+                await this.loadCostDictionaries()
                 await Promise.all([
                     this.loadCategoryList(),
-                    this.loadSupplierOptions(),
-                    this.loadCostDictionaries()
+                    this.loadSupplierOptions()
                 ])
             } catch (error) {
                 console.error('加载初始数据失败:', error)
@@ -936,27 +973,12 @@ export default {
             try {
                 var response = await getCategoryList()
                 if (response.code === 200) {
-                    this.categoryList = response.data || []
-                    // 根据productType过滤品类：1=仪表类，2=按键类
-                    var mainProductCategories = this.categoryList.filter(function (cat) {
-                        return cat.productType === 1   // 仪表类品类
-                    })
-                    var buttonCategories = this.categoryList.filter(function (cat) {
-                        return cat.productType === 2 // 按键类品类
-                    }).sort(function (a, b) {
-                        // 按创建时间排序，最新的在前面
-                        return new Date(b.createTime) - new Date(a.createTime)
-                    })
+                    this.categoryList = response.data.filter(item => item.isSample === 1) || []
 
-                    this.$set(this, 'filteredMainProductCategories', mainProductCategories)
-                    this.$set(this, 'filteredButtonCategories', buttonCategories)
-
-
-                    console.log('品类过滤结果:', {
-                        total: this.categoryList.length,
-                        mainProduct: mainProductCategories.length,
-                        button: buttonCategories.length
-                    })
+                    // 只有在字典数据已加载时才进行过滤
+                    if (this.mainProductDiCodes.length > 0 && this.btnDiCodes.length > 0) {
+                        this.filterCategories()
+                    }
                 } else {
                     this.$message.error(response.msg || '获取品类列表失败')
                 }
@@ -978,10 +1000,22 @@ export default {
         loadCostDictionaries: async function () {
             var results = await Promise.all([
                 getCostCategoryDict(),
-                getCostProjectDict()
+                getCostProjectDict(),
+                getDicts('product_type')
             ])
             var categoryRes = results[0]
             var projectRes = results[1]
+            // 找到按键类型（dictValue === '2'）
+            var buttonTypes = results[2].data.filter(item => item.dictValue === '2')
+            this.btnDiCodes = buttonTypes.map(item => item.dictCode)
+            this.btnDiCode = buttonTypes[0]?.dictCode || ''
+            console.log("🚀 ~ file: AddQuoteDialogRefactored.vue:1037 ~ btnDiCode:", this.btnDiCode)
+
+            // 找到主产品类型（dictValue === '1'）- 获取所有仪表类型的dictCode
+            var instrumentTypes = results[2].data.filter(item => item.dictValue === '1')
+            this.mainProductDiCodes = instrumentTypes.map(item => item.dictCode)
+            this.mainProductDiCode = instrumentTypes[0]?.dictCode || ''
+
 
             if (categoryRes.code === 200) {
                 this.costCategoryOptions = (categoryRes.data || []).map(function (item) {
@@ -1003,14 +1037,58 @@ export default {
                     }
                 })
             }
+
+            // 如果品类列表已加载，进行过滤
+            if (this.categoryList.length > 0) {
+                this.filterCategories()
+            }
+        },
+
+        // 过滤品类列表
+        filterCategories: function () {
+            var self = this
+            var mainProductCategories = this.categoryList.filter(function (cat) {
+                return self.mainProductDiCodes.includes(cat.productType) ||
+                    self.mainProductDiCodes.includes(Number(cat.productType)) ||
+                    self.mainProductDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 1 ||
+                    cat.productType === '1'   // 仪表类品类
+            })
+
+            var buttonCategories = this.categoryList.filter(function (cat) {
+                return self.btnDiCodes.includes(cat.productType) ||
+                    self.btnDiCodes.includes(Number(cat.productType)) ||
+                    self.btnDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 2 ||
+                    cat.productType === '2' // 按键类品类
+            }).sort(function (a, b) {
+                // 按创建时间排序，最新的在前面
+                return new Date(b.createTime) - new Date(a.createTime)
+            })
+
+            this.$set(this, 'filteredMainProductCategories', mainProductCategories)
+            this.$set(this, 'filteredButtonCategories', buttonCategories)
+
+            console.log('品类过滤结果:', {
+                total: this.categoryList.length,
+                mainProduct: mainProductCategories.length,
+                button: buttonCategories.length,
+                mainProductDiCodes: this.mainProductDiCodes,
+                btnDiCodes: this.btnDiCodes
+            })
         },
 
         // 搜索主产品品类
         searchMainProductCategory: function (query) {
             this.searchMainProductQuery = query
-            // 先获取仪表类品类
+            // 先获取仪表类品类 - 使用多个dictCode匹配
+            var self = this
             var mainProductCategories = this.categoryList.filter(function (cat) {
-                return cat.productType === 1 // 仅仪表类品类
+                return self.mainProductDiCodes.includes(cat.productType) ||
+                    self.mainProductDiCodes.includes(Number(cat.productType)) ||
+                    self.mainProductDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 1 ||
+                    cat.productType === '1' // 仪表类品类
             })
 
             if (query) {
@@ -1027,8 +1105,12 @@ export default {
 
         // 过滤主产品品类
         filterMainProductCategory: function (val) {
-            // 首先确保是仪表类品类
-            if (val.productType !== 1) return false
+            // 首先确保是仪表类品类 - 使用多个dictCode匹配
+            if (!this.mainProductDiCodes.includes(val.productType) &&
+                !this.mainProductDiCodes.includes(Number(val.productType)) &&
+                !this.mainProductDiCodes.includes(String(val.productType)) &&
+                val.productType !== 1 &&
+                val.productType !== '1') return false
 
             var query = this.searchMainProductQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
@@ -1039,9 +1121,15 @@ export default {
         // 搜索按键品类
         searchButtonCategory: function (query) {
             this.searchButtonQuery = query
-            // 先获取按键类品类
+            // 先获取按键类品类 - 使用多个dictCode匹配
+            var self = this
+            console.log("🚀 ~ file: AddQuoteDialogRefactored.vue:1111 ~ self.btnDiCodes:", self.btnDiCodes)
             var buttonCategories = this.categoryList.filter(function (cat) {
-                return cat.productType === 2 // 仅按键类品类
+                return self.btnDiCodes.includes(cat.productType) ||
+                    self.btnDiCodes.includes(Number(cat.productType)) ||
+                    self.btnDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 2 ||
+                    cat.productType === '2' // 按键类品类
             })
 
             if (query) {
@@ -1058,8 +1146,12 @@ export default {
 
         // 过滤按键品类
         filterButtonCategory: function (val) {
-            // 首先确保是按键类品类
-            if (val.productType !== 2) return false
+            // 首先确保是按键类品类 - 使用多个dictCode匹配
+            if (!this.btnDiCodes.includes(val.productType) &&
+                !this.btnDiCodes.includes(Number(val.productType)) &&
+                !this.btnDiCodes.includes(String(val.productType)) &&
+                val.productType !== 2 &&
+                val.productType !== '2') return false
 
             var query = this.searchButtonQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
@@ -1070,7 +1162,7 @@ export default {
         // 初始化表单
         initializeForm: async function () {
             // 确保基础数据已加载
-            if (this.categoryList.length === 0 || this.supplierOptions.length === 0) {
+            if (this.categoryList.length === 0 || this.supplierOptions.length === 0 || this.mainProductDiCodes.length === 0 || this.btnDiCodes.length === 0) {
                 await this.loadInitialData()
             }
 
@@ -1105,7 +1197,7 @@ export default {
                 list: [
                     {
                         categoryId: null,
-                        productType: 1, // 主产品
+                        productType: this.mainProductDiCodes[0] || this.mainProductDiCode || 1, // 主产品，使用动态dictCode数组第一个或默认值
                         deviceOptional: [],
                         wireCableId: null,
                         waterproofHeadId: null, // 防水头型号ID
@@ -1137,17 +1229,8 @@ export default {
             this.buttonAllData = []
 
             // 确保过滤列表已初始化
-            if (this.categoryList.length > 0) {
-                // 根据productType过滤品类
-                var mainProductCategories = this.categoryList.filter(function (cat) {
-                    return cat.productType === 1 // 仪表类品类
-                })
-                var buttonCategories = this.categoryList.filter(function (cat) {
-                    return cat.productType === 2 // 按键类品类
-                })
-
-                this.$set(this, 'filteredMainProductCategories', mainProductCategories)
-                this.$set(this, 'filteredButtonCategories', buttonCategories)
+            if (this.categoryList.length > 0 && this.mainProductDiCodes.length > 0 && this.btnDiCodes.length > 0) {
+                this.filterCategories()
             }
         },
 
@@ -1166,7 +1249,14 @@ export default {
 
 
             // 设置UI状态
-            var buttonProduct = this.quotationData.list.find(function (item) { return item.productType === 2 })
+            var self = this
+            var buttonProduct = this.quotationData.list.find(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === '2' ||
+                    item.productType === 2
+            })
             this.buttonEnabled = !!buttonProduct
 
             var mainProduct = this.mainProduct
@@ -1467,7 +1557,7 @@ export default {
                     // 如果 list 中没有按键产品，创建一个新的
                     var newButtonProduct = {
                         categoryId: null,
-                        productType: 2, // 按键
+                        productType: this.btnDiCodes[0] || this.btnDiCode || 2, // 按键，使用动态dictCode数组第一个或默认值
                         deviceOptional: [],
                         wireCableId: null,
                         waterproofHeadId: null, // 防水头型号ID

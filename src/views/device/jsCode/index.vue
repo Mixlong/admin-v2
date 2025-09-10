@@ -186,12 +186,8 @@ export default {
       this.cascaderKey ++
     }
   },
-  async created() {
-    await remoteLoad("http://udot.oss-cn-shenzhen.aliyuncs.com/js/ace.js");
-    await remoteLoad(
-      "https://udot.oss-cn-shenzhen.aliyuncs.com/js/ext-language_tools.min.js"
-    );
-
+  created() {
+    // 先获取数据,不阻塞页面渲染
     typeDict().then((response) => {
       let { data } = response;
       if (data.length) {
@@ -200,9 +196,22 @@ export default {
         this.getList(1);
       }
     });
-    this.init();
+
+    // 异步加载外部脚本,不阻塞页面
+    this.loadAceEditor();
   },
   methods: {
+    // 异步加载Ace编辑器
+    async loadAceEditor() {
+      try {
+        await remoteLoad("http://udot.oss-cn-shenzhen.aliyuncs.com/js/ace.js");
+        await remoteLoad("https://udot.oss-cn-shenzhen.aliyuncs.com/js/ext-language_tools.min.js");
+        this.init();
+      } catch (error) {
+        console.error('加载Ace编辑器失败:', error);
+        this.$message.error('代码编辑器加载失败，请刷新重试');
+      }
+    },
     init() {
       this.editor = ace.edit("editor3", {
         theme: "ace/theme/monokai",

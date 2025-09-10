@@ -2,21 +2,28 @@
   <div>
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
-        <el-select v-model="queryParams.categoryId" @change="changeCategory" filterable allow-create clearable>
+        <el-select v-model="queryParams.categoryId" @change="changeCategory" filterable allow-create clearable
+          style="width: 150px;">
           <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="仪表型号" prop="computerId">
         <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable @change="getList"
-          :remote-method="getComputerNameList">
+          style="width: 150px;" :remote-method="getComputerNameList">
           <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
         </el-select>
       </el-form-item>
       <el-form-item label="客户名称" prop="customerName">
         <select-loadMore v-model="queryParams.customerName" :data="customerNameData.data" :page="customerNameData.page"
-          :hasMore="customerNameData.more" dictLabel="name" dictValue="name" :request="getCustomerNameList" />
+          :hasMore="customerNameData.more" dictLabel="name" dictValue="name" :request="getCustomerNameList"
+          style="width: 150px;" />
       </el-form-item>
-
+      <el-form-item label="BIST型号" prop="customerName">
+        <el-select v-model="queryParams.isBist" @change="getList" clearable style="width: 70px;">
+          <el-option label="是" :value="1" />
+          <el-option label="否" :value="0" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -122,6 +129,12 @@
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="BIST型号" prop="isBist" align="center" width="120" fixed>
+        <template slot-scope="{ row }">
+          <el-tag type="success" v-if="row.isBist == 1">是</el-tag>
+          <el-tag type="danger" v-else>否</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="客户" prop="customerName" align="center" width="120" fixed column-key="customerName"
         :filters="getFiltersData('customerName')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
@@ -137,6 +150,7 @@
       <el-table-column label="SN" prop="sn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
+
       <el-table-column label="pcbaSn" prop="pcbaSn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
@@ -818,6 +832,16 @@ import addDialog from '@/views/third/productFamily/index.vue'
 export default {
   name: "ConfigOverview",
   mixins: [commonData],
+  props: {
+    categoryId: {
+      type: [String, Number],
+      default: undefined
+    },
+    computerId: {
+      type: String,
+      default: undefined
+    }
+  },
   components: {
     addDialog,
     CategoryComputer: () => import("@/components/CategoryComputer"),
@@ -890,6 +914,28 @@ export default {
       },
     };
   },
+  watch: {
+    // 监听传入的 categoryId 变化
+    categoryId: {
+      handler(newVal, oldVal) {
+        if (newVal !== oldVal && newVal) {
+          this.queryParams.categoryId = newVal;
+          this.changeCategory(newVal);
+        }
+      },
+      immediate: false
+    },
+    // 监听传入的 computerId 变化
+    computerId: {
+      handler(newVal, oldVal) {
+        if (newVal !== oldVal && newVal) {
+          this.queryParams.computerId = newVal;
+          this.getList();
+        }
+      },
+      immediate: false
+    }
+  },
   computed: {
     isShow() {
       const list = [null, "null", undefined, "undefined", false, "false"];
@@ -944,10 +990,29 @@ export default {
     this.getConfigDicts("uart_baud_rate", "baudRateList");
     // can波特率
     this.getConfigDicts("can_baud_rate", "canRateList");
+
+    // 处理传入的路由参数
+    if (this.categoryId) {
+      this.queryParams.categoryId = this.categoryId;
+    }
+    if (this.computerId) {
+      this.queryParams.computerId = this.computerId;
+    }
+
     this.getList();
   },
   activated() {
     this.getCategoryComputerDict();
+
+    // 处理传入的路由参数（处理缓存情况）
+    if (this.categoryId && this.queryParams.categoryId !== this.categoryId) {
+      this.queryParams.categoryId = this.categoryId;
+      this.changeCategory(this.categoryId);
+    }
+    if (this.computerId && this.queryParams.computerId !== this.computerId) {
+      this.queryParams.computerId = this.computerId;
+      this.getList();
+    }
   },
   beforeDestroy() {
     // 清理事件监听器
@@ -1093,9 +1158,23 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.p = 1;
+      // 完全重置查询参数和相关数据 - 不保留任何默认值
+      this.queryParams = {
+        p: 1,
+        l: 10,
+        categoryId: undefined,
+        computerId: undefined,
+        customerName: undefined,
+      };
+
+      // 清空相关选项
+      this.computerOptions = [];
       this.dateRange = [];
+
+      // 重置表单
       this.resetForm("queryForm");
+
+      // 直接查询，不恢复任何路由参数
       this.handleQuery();
     },
     getComputerNameList(name) {

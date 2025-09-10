@@ -48,11 +48,17 @@ export default {
   watch: {
     value: {
       handler(data) {
-        this.checkAll = data.length === this.typeList.length;
         this.checkedCities = data;
+        this.updateCheckAllState();
       },
       immediate: true
     },
+    typeList: {
+      handler() {
+        this.updateCheckAllState();
+      },
+      immediate: true
+    }
   },
   methods: {
     handleCheckAllChange(all) {
@@ -64,7 +70,17 @@ export default {
       let checkedCount = value.length;
       this.checkAll = checkedCount === this.typeList.length;
       this.isIndeterminate = checkedCount > 0 && checkedCount < this.typeList.length;
-      this.$emit("input", this.checkedCities);
+      this.$emit("input", value);
+    },
+    updateCheckAllState() {
+      if (this.typeList.length > 0) {
+        let checkedCount = this.checkedCities.length;
+        this.checkAll = checkedCount === this.typeList.length;
+        this.isIndeterminate = checkedCount > 0 && checkedCount < this.typeList.length;
+      } else {
+        this.checkAll = false;
+        this.isIndeterminate = false;
+      }
     },
   },
 };

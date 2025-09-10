@@ -236,6 +236,7 @@ export default {
       commonStatusList,
       isCLoading: false,
       isDictLoading: true, // 品类数据加载状态
+      isInitialized: false, // 是否已经初始化
       checkStatus: null,
       form: {},
       urls: [],
@@ -350,11 +351,25 @@ export default {
     $route: {
       async handler(route) {
         if (route.name === "FileConfig") {
+          const { categoryId, computerId } = route?.params;
+          
+          // 如果已经初始化过，只有在有参数传入时才更新
+          if (this.isInitialized) {
+            if (categoryId && computerId) {
+              // 确保categoryId在dictList中存在
+              const validCategory = this.dictList.find(dict => dict.id === categoryId);
+              this.queryParams.categoryId = validCategory ? categoryId : this.dictList[0]?.id;
+              this.getComputerData();
+              this.queryParams.computerId = computerId;
+              this.handleQuery();
+            }
+            return;
+          }
+
+          // 首次初始化
           this.queryParams.categoryId = "";
           this.queryParams.computerId = "";
           this.isDictLoading = true; // 开始加载
-
-          const { categoryId, computerId } = route?.params;
           
           try {
             // 先加载品类数据
@@ -375,6 +390,8 @@ export default {
 
               this.handleQuery();
             }
+            
+            this.isInitialized = true; // 标记已初始化
           } finally {
             this.isDictLoading = false; // 加载完成
           }

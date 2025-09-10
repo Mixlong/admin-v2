@@ -16,8 +16,7 @@
           </div>
         </div>
         <div class="supplier-input-wrapper">
-          <el-select v-model="form.supplier" placeholder="请选择供应商" style="width: 100%" class="el-select-supplier"
-            filterable>
+          <el-select v-model="form.supplier" placeholder="请选择供应商" class="el-select-supplier" filterable>
             <el-option v-for="item in supplierOptions" :key="item.dictCode" :label="item.dictLabel"
               :value="item.dictCode" :disabled="isSupplierDisabled(item.dictCode)">
             </el-option>
@@ -38,11 +37,14 @@
         <div class="cost-items-grid">
           <div v-for="(item, index) in form.waterproofHeads" :key="index" class="cost-item-card">
             <div class="cost-item-info">
-              <el-input v-model="item.cableModel" placeholder="防水头型号" size="mini" style="margin-bottom: 8px;">
+              <el-input v-model="item.cableModel" placeholder="防水头型号" size="mini" class="input-field">
               </el-input>
-              <el-input-number v-model="item.waterproofHeadPrice" :precision="2" :min="0" :controls="false"
-                placeholder="价格" size="mini" style="width: 100%">
-              </el-input-number>
+              <div class="input-with-unit">
+                <el-input-number v-model="item.waterproofHeadPrice" :precision="2" :min="0" :controls="false"
+                  placeholder="价格" size="mini">
+                </el-input-number>
+                <span class="unit-text">元</span>
+              </div>
             </div>
             <div class="cost-item-actions">
               <el-button size="mini" type="danger" icon="el-icon-delete" circle
@@ -52,7 +54,7 @@
         </div>
       </div>
 
-      <!-- 扳机端子模块 -->
+      <!-- 插线端子模块 -->
       <div class="cost-type-section">
         <div class="cost-type-header">
           <div class="cost-type-title">
@@ -63,14 +65,16 @@
           </el-button>
         </div>
         <div class="cost-items-grid">
-          <div v-for="(item, index) in form.triggerTerminals" :key="index" class="cost-item-card">
+          <div v-for="(item, index) in form.triggerTerminals" :key="index" class="cost-item-card trigger-terminal-card">
             <div class="cost-item-info">
-              <el-input v-model="item.triggerTerminalModel" placeholder="扳机端子型号" size="mini"
-                style="margin-bottom: 8px;">
+              <el-input v-model="item.triggerTerminalModel" placeholder="插线端子型号" size="mini" class="input-field">
               </el-input>
-              <el-input-number v-model="item.triggerTerminalPrice" :precision="2" :min="0" :controls="false"
-                placeholder="价格" size="mini" style="width: 100%">
-              </el-input-number>
+              <div class="input-with-unit">
+                <el-input-number v-model="item.triggerTerminalPrice" :precision="2" :min="0" :controls="false"
+                  placeholder="端子价格" size="mini">
+                </el-input-number>
+                <span class="unit-text">元</span>
+              </div>
             </div>
             <div class="cost-item-actions">
               <el-button size="mini" type="danger" icon="el-icon-delete" circle
@@ -79,6 +83,68 @@
           </div>
         </div>
       </div>
+ 
+
+      <!-- 上锡价格模块 -->
+      <div class="cost-type-section">
+        <div class="cost-type-header">
+          <div class="cost-type-title">
+            上锡价格
+          </div>
+          <el-button size="mini" type="text" @click="addTinningPrice">
+            <i class="el-icon-plus"></i> 新增
+          </el-button>
+        </div>
+        <div class="cost-items-grid">
+          <div v-for="(item, index) in form.tinningPrices" :key="index" class="cost-item-card">
+            <div class="cost-item-info">
+              <el-input v-model="item.tinningModel" placeholder="上锡型号" size="mini" class="input-field">
+              </el-input>
+              <div class="input-with-unit">
+                <el-input-number v-model="item.tinningPrice" :precision="2" :min="0" :controls="false"
+                  placeholder="上锡价格" size="mini">
+                </el-input-number>
+                <span class="unit-text">元</span>
+              </div>
+            </div>
+            <div class="cost-item-actions">
+              <el-button size="mini" type="danger" icon="el-icon-delete" circle
+                @click="removeTinningPrice(index)"></el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SR价格模块 -->
+      <div class="cost-type-section">
+        <div class="cost-type-header">
+          <div class="cost-type-title">
+            SR价格
+          </div>
+          <el-button size="mini" type="text" @click="addSrPrice">
+            <i class="el-icon-plus"></i> 新增
+          </el-button>
+        </div>
+        <div class="cost-items-grid">
+          <div v-for="(item, index) in form.srPrices" :key="index" class="cost-item-card">
+            <div class="cost-item-info">
+              <el-input v-model="item.srModel" placeholder="SR型号" size="mini" class="input-field">
+              </el-input>
+              <div class="input-with-unit">
+                <el-input-number v-model="item.srPrice" :precision="2" :min="0" :controls="false" placeholder="SR价格"
+                  size="mini">
+                </el-input-number>
+                <span class="unit-text">元</span>
+              </div>
+            </div>
+            <div class="cost-item-actions">
+              <el-button size="mini" type="danger" icon="el-icon-delete" circle
+                @click="removeSrPrice(index)"></el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <!-- 线缆价格模块 -->
       <div class="cost-type-section">
@@ -93,17 +159,17 @@
         <div class="cost-items-grid">
           <div v-for="(item, index) in form.linearPrices" :key="index" class="cost-item-card linear-price-card">
             <div class="cost-item-info">
-              <el-select v-model="item.linearType" placeholder="线材类型" size="mini"
-                style="margin-bottom: 8px; width: 100%;">
+              <el-select v-model="item.linearType" placeholder="线材类型" size="mini" class="input-field">
                 <el-option label="普通线" value="common"></el-option>
                 <el-option label="UL线" value="ul"></el-option>
               </el-select>
-              <el-input v-model="item.linearModel" placeholder="线材型号" size="mini" style="margin-bottom: 8px;">
+              <el-input v-model="item.linearModel" placeholder="线材型号" size="mini" class="input-field">
               </el-input>
               <div class="input-with-unit">
-                <el-input-number v-model="item.price" :precision="2" :min="0" :controls="false" placeholder="价格（元/米）"
-                  size="mini" style="width: 100%;">
+                <el-input-number v-model="item.price" :precision="2" :min="0" :controls="false" placeholder="价格"
+                  size="mini">
                 </el-input-number>
+                <span class="unit-text">元/米</span>
               </div>
             </div>
             <div class="cost-item-actions">
@@ -156,7 +222,9 @@ export default {
         supplier: '',
         waterproofHeads: [],
         linearPrices: [], // 线缆价格数组
-        triggerTerminals: []
+        triggerTerminals: [],
+        tinningPrices: [], // 上锡价格数组
+        srPrices: [] // SR价格数组
       },
       rules: {
         supplier: [
@@ -191,10 +259,12 @@ export default {
           supplier: this.editData.supplier || '',
           waterproofHeads: [],
           linearPrices: [],
-          triggerTerminals: []
+          triggerTerminals: [],
+          tinningPrices: [], // 上锡价格数组
+          srPrices: []
         }
 
-        // 解析编辑数据中的防水头、线缆价格和扳机端子
+        // 解析编辑数据中的防水头、线缆价格、插线端子和SR价格
         if (this.editData.list && Array.isArray(this.editData.list)) {
           this.editData.list.forEach(item => {
             if (item.costCableType === 1) {
@@ -220,10 +290,31 @@ export default {
                 })
               }
             } else if (item.costCableType === 3) {
-              // 扳机端子
+              // 插线端子
               this.form.triggerTerminals.push({
                 triggerTerminalModel: item.triggerTerminalModel || '',
                 triggerTerminalPrice: item.triggerTerminalPrice || undefined
+              })
+            } else if (item.costCableType === 4) {
+              // 上锡价格 (新版本) 或 SR价格 (老版本兼容)
+              if (item.tinningModel !== undefined || item.tinningPrice !== undefined) {
+                // 新版本：上锡价格数据
+                this.form.tinningPrices.push({
+                  tinningModel: item.tinningModel || '',
+                  tinningPrice: item.tinningPrice || undefined
+                })
+              } else {
+                // 老版本兼容：原来的SR价格数据
+                this.form.srPrices.push({
+                  srModel: item.srModel || '',
+                  srPrice: item.srPrice || undefined
+                })
+              }
+            } else if (item.costCableType === 5) {
+              // SR价格 (新版本)
+              this.form.srPrices.push({
+                srModel: item.srModel || '',
+                srPrice: item.srPrice || undefined
               })
             }
           })
@@ -249,6 +340,18 @@ export default {
             triggerTerminalPrice: undefined
           })
         }
+        if (this.form.tinningPrices.length === 0) {
+          this.form.tinningPrices.push({
+            tinningModel: '',
+            tinningPrice: undefined
+          })
+        }
+        if (this.form.srPrices.length === 0) {
+          this.form.srPrices.push({
+            srModel: '',
+            srPrice: undefined
+          })
+        }
       } else {
         // 新增模式
         this.form = {
@@ -265,6 +368,14 @@ export default {
           triggerTerminals: [{
             triggerTerminalModel: '',
             triggerTerminalPrice: undefined
+          }],
+          tinningPrices: [{
+            tinningModel: '',
+            tinningPrice: undefined
+          }],
+          srPrices: [{
+            srModel: '',
+            srPrice: undefined
           }]
         }
       }
@@ -306,20 +417,38 @@ export default {
     },
 
 
-    // 新增扳机端子
+    // 新增插线端子
     addTriggerTerminal() {
       this.form.triggerTerminals.push({
         triggerTerminalModel: '',
-        triggerTerminalPrice: undefined
+        triggerTerminalPrice: undefined,
+        tinningPrice: undefined
       })
     },
 
-    // 删除扳机端子
+    // 删除插线端子
     removeTriggerTerminal(index) {
       if (this.form.triggerTerminals.length > 1) {
         this.form.triggerTerminals.splice(index, 1)
       } else {
-        this.$message.warning('至少保留一个扳机端子项')
+        this.$message.warning('至少保留一个插线端子项')
+      }
+    },
+
+    // 新增SR价格
+    addSrPrice() {
+      this.form.srPrices.push({
+        srModel: '',
+        srPrice: undefined
+      })
+    },
+
+    // 删除SR价格
+    removeSrPrice(index) {
+      if (this.form.srPrices.length > 1) {
+        this.form.srPrices.splice(index, 1)
+      } else {
+        this.$message.warning('至少保留一个SR价格项')
       }
     },
 
@@ -368,7 +497,7 @@ export default {
       return { validLinearPrices, incompleteLinearPrices }
     },
 
-    // 验证扳机端子模块
+    // 验证插线端子模块
     validateTriggerTerminals() {
       const validTriggerTerminals = []
       const incompleteTriggerTerminals = []
@@ -381,13 +510,75 @@ export default {
           // 完整的项目
           validTriggerTerminals.push(item)
         } else if (hasModel || hasPrice) {
-          // 不完整的项目（有一个字段填写了但另一个没填）
+          // 不完整的项目（有字段填写了但不完整）
           incompleteTriggerTerminals.push(item)
         }
         // 完全空的项目直接跳过
       })
 
       return { validTriggerTerminals, incompleteTriggerTerminals }
+    },
+
+    // 上锡价格相关方法
+    addTinningPrice() {
+      if (!this.form.tinningPrices) {
+        this.form.tinningPrices = []
+      }
+      this.form.tinningPrices.push({
+        tinningModel: '',
+        tinningPrice: undefined
+      })
+    },
+    removeTinningPrice(index) {
+      if (!this.form.tinningPrices) {
+        this.form.tinningPrices = []
+        return
+      }
+      this.form.tinningPrices.splice(index, 1)
+    },
+    validateTinningPrices() {
+      const validTinningPrices = []
+      const incompleteTinningPrices = []
+      
+      if (!this.form.tinningPrices) {
+        this.form.tinningPrices = []
+        return { validTinningPrices, incompleteTinningPrices }
+      }
+      
+      this.form.tinningPrices.forEach(item => {
+        if (item.tinningModel && item.tinningPrice !== undefined && item.tinningPrice !== null && item.tinningPrice !== '') {
+          validTinningPrices.push(item)
+        } else if (item.tinningModel || (item.tinningPrice !== undefined && item.tinningPrice !== null && item.tinningPrice !== '')) {
+          incompleteTinningPrices.push(item)
+        }
+      })
+      
+      return { validTinningPrices, incompleteTinningPrices }
+    },
+
+    // SR价格相关方法
+    addSrPrice() {
+      this.form.srPrices.push({
+        srModel: '',
+        srPrice: undefined
+      })
+    },
+    removeSrPrice(index) {
+      this.form.srPrices.splice(index, 1)
+    },
+    validateSrPrices() {
+      const validSrPrices = []
+      const incompleteSrPrices = []
+      
+      this.form.srPrices.forEach(item => {
+        if (item.srModel && item.srPrice !== undefined && item.srPrice !== null && item.srPrice !== '') {
+          validSrPrices.push(item)
+        } else if (item.srModel || (item.srPrice !== undefined && item.srPrice !== null && item.srPrice !== '')) {
+          incompleteSrPrices.push(item)
+        }
+      })
+      
+      return { validSrPrices, incompleteSrPrices }
     },
 
     // 判断供应商是否应该被禁用
@@ -419,8 +610,12 @@ export default {
           const { validWaterproofHeads, incompleteWaterproofHeads } = this.validateWaterproofHeads()
           // 验证线缆价格模块
           const { validLinearPrices, incompleteLinearPrices } = this.validateLinearPrices()
-          // 验证扳机端子模块
+          // 验证插线端子模块
           const { validTriggerTerminals, incompleteTriggerTerminals } = this.validateTriggerTerminals()
+          // 验证上锡价格模块
+          const { validTinningPrices, incompleteTinningPrices } = this.validateTinningPrices()
+          // 验证SR价格模块
+          const { validSrPrices, incompleteSrPrices } = this.validateSrPrices()
 
           // 检查是否有不完整的项目并提示用户
           const incompleteMessages = []
@@ -432,6 +627,12 @@ export default {
           }
           if (incompleteTriggerTerminals.length > 0) {
             incompleteMessages.push(`插线端子模块有 ${incompleteTriggerTerminals.length} 项未完成填写`)
+          }
+          if (incompleteTinningPrices.length > 0) {
+            incompleteMessages.push(`上锡价格模块有 ${incompleteTinningPrices.length} 项未完成填写`)
+          }
+          if (incompleteSrPrices.length > 0) {
+            incompleteMessages.push(`SR价格模块有 ${incompleteSrPrices.length} 项未完成填写`)
           }
 
           if (incompleteMessages.length > 0) {
@@ -449,6 +650,9 @@ export default {
           }
           if (validTriggerTerminals.length === 0) {
             moduleMessages.push('插线端子模块')
+          }
+          if (validSrPrices.length === 0) {
+            moduleMessages.push('SR价格模块')
           }
 
           if (moduleMessages.length > 0) {
@@ -490,13 +694,39 @@ export default {
             })
           })
 
-          // 添加扳机端子数据
+          // 添加插线端子数据
           validTriggerTerminals.forEach(item => {
             submitData.push({
               supplier: this.form.supplier,
-              costCableType: 3, // 扳机端子
+              costCableType: 3, // 插线端子
               triggerTerminalModel: item.triggerTerminalModel,
               triggerTerminalPrice: item.triggerTerminalPrice,
+              sort: sort++,
+              isDel: 0,
+              createTime: createTime
+            })
+          })
+
+          // 添加上锡价格数据
+          validTinningPrices.forEach(item => {
+            submitData.push({
+              supplier: this.form.supplier,
+              costCableType: 4, // 上锡价格
+              tinningModel: item.tinningModel,
+              tinningPrice: item.tinningPrice,
+              sort: sort++,
+              isDel: 0,
+              createTime: createTime
+            })
+          })
+
+          // 添加SR价格数据
+          validSrPrices.forEach(item => {
+            submitData.push({
+              supplier: this.form.supplier,
+              costCableType: 5, // SR价格
+              srModel: item.srModel,
+              srPrice: item.srPrice,
               sort: sort++,
               isDel: 0,
               createTime: createTime
@@ -541,7 +771,12 @@ export default {
       }]
       this.form.triggerTerminals = [{
         triggerTerminalModel: '',
-        triggerTerminalPrice: undefined
+        triggerTerminalPrice: undefined,
+        tinningPrice: undefined
+      }]
+      this.form.srPrices = [{
+        srModel: '',
+        srPrice: undefined
       }]
     }
   }
@@ -550,6 +785,17 @@ export default {
 
 <style lang="scss" scoped>
 ::v-deep .cable-cost-dialog {
+  // 统一输入框宽度
+  .el-input,
+  .el-input-number {
+    width: 160px!important;
+
+    .el-input__inner {
+      text-align: center;
+      height: 32px;
+    }
+  }
+
   .el-dialog__header {
     padding: 15px 20px 10px;
     border-bottom: 1px solid #ebeef5;
@@ -622,13 +868,21 @@ export default {
 
   .supplier-input-wrapper {
     padding: 18px;
-
-    ::v-deep .el-input__inner {
-      height: 50px;
-      border: 0;
+    
+    ::v-deep .el-select {
+      width: 100%;
       text-align: center;
-      font-weight: 600;
-      font-size: 16px;
+      .el-input{
+        width:100%!important;
+      }
+      .el-input__inner {
+        height: 50px;
+        border: 0;
+        text-align: center;
+        font-weight: 600;
+        font-size: 16px;
+ 
+      }
     }
   }
 }
@@ -695,13 +949,13 @@ export default {
 .cost-item-card {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px;
   background: #fafbfc;
   border: 1px dashed #cfdbf3;
   border-radius: 4px;
   transition: all 0.2s ease;
-
+  position: relative;
   &:hover {
     border-color: #409eff;
     background: #f0f6ff;
@@ -712,15 +966,36 @@ export default {
     flex: 1;
     min-width: 0;
 
-    // 普通输入框也居中
-    ::v-deep .el-input__inner {
-      text-align: center;
+    // 统一所有输入框样式
+    ::v-deep .el-input,
+    ::v-deep .el-select,
+    ::v-deep .el-input-number {
+      width: 100%;
+
+      .el-input__inner {
+        text-align: center;
+        height: 32px;
+      }
+    }
+
+    // 输入框间距
+    .input-field {
+      margin-bottom: 8px;
+    }
+
+    .input-spacing {
+      margin-bottom: 8px;
     }
   }
 
   .cost-item-actions {
+    position: absolute;
+    top: 10px;
+    right: 20px;
     margin-left: 10px;
     flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0;
   }
 }
 
@@ -731,13 +1006,47 @@ export default {
       display: flex;
       align-items: center;
 
+      .el-input,
+      .el-input-number {
+        flex: 1;
+        width: 100%;
+      }
+
       .unit-text {
-        margin-left: 5px;
         color: #606266;
         font-size: 12px;
         white-space: nowrap;
+        min-width: 45px;
+        flex-shrink: 0;
+        text-align: center;
       }
     }
+  }
+}
+
+// 统一的输入框与单位样式
+.input-with-unit {
+  display: flex;
+  align-items: center;
+
+  .el-input,
+  .el-input-number {
+    flex: 1;
+    width: 100%;
+
+    ::v-deep .el-input__inner {
+      text-align: center;
+      height: 32px;
+    }
+  }
+
+  .unit-text {
+    color: #606266;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 45px;
+    flex-shrink: 0;
+    text-align: center;
   }
 }
 
@@ -799,31 +1108,32 @@ export default {
     }
   }
 
-  // 统一输入框宽度
-  .el-input {
-    width: 200px;
+ 
+}
+
+// 移除数字输入框的控制按钮并统一样式
+::v-deep .el-input-number {
+  width: 100%;
+
+  .el-input-number__increase,
+  .el-input-number__decrease {
+    display: none;
   }
-}
 
-// 移除数字输入框的控制按钮
-.number-input ::v-deep .el-input-number__increase,
-.number-input ::v-deep .el-input-number__decrease {
-  display: none;
-}
-
-// 数字输入框内容居中对齐
-.number-input ::v-deep .el-input__inner {
-  text-align: center;
-  padding-right: 15px;
+  .el-input__inner {
+    text-align: center;
+    padding-right: 15px;
+    height: 32px;
+  }
 }
 
 // 单位文字样式
 .unit-text {
-  margin-left: 8px;
   color: #606266;
   font-size: 14px;
   white-space: nowrap;
   min-width: 45px;
+  text-align: center;
 }
 
 // 弹窗底部按钮样式

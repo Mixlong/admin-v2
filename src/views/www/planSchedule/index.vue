@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container flex-app-container">
     <!-- 智能搜索区域 -->
     <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch" @reset="handleReset"
       @field-change="handleFieldChange">
@@ -7,7 +7,7 @@
       <template #field-categoryId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-select v-model="searchForm[field.key]" filterable allow-create clearable @change="changeCategory"
-            style="width: 140px" placeholder="请选择" size="mini">
+            style="width: 140px" placeholder="请选择" size="small">
             <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
           </el-select>
         </el-form-item>
@@ -17,7 +17,7 @@
       <template #field-computerId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-select v-model="searchForm[field.key]" :loading="isCLoading" filterable remote clearable @change="getList"
-            :remote-method="getComputerNameList" style="width: 140px" size="mini" placeholder="请先选择品类">
+            :remote-method="getComputerNameList" style="width: 140px" size="small" placeholder="请先选择品类">
             <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
           </el-select>
         </el-form-item>
@@ -27,7 +27,7 @@
       <template #field-salesOrderNo="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请输入迪太订单号" size="mini" />
+            style="width: 140px" placeholder="请输入迪太订单号" size="small" />
         </el-form-item>
       </template>
 
@@ -35,14 +35,14 @@
       <template #field-no="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请输入排产单号" size="mini" />
+            style="width: 140px" placeholder="请输入排产单号" size="small" />
         </el-form-item>
       </template>
 
       <!-- 自定义排产状态字段渲染 -->
       <template #field-productStatus="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm[field.key]" clearable style="width: 100px" size="mini" placeholder="请选择">
+          <el-select v-model="searchForm[field.key]" clearable size="small" placeholder="请选择">
             <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
           </el-select>
         </el-form-item>
@@ -53,25 +53,25 @@
         <el-form-item :label="field.label" :prop="field.key">
           <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"
-            size="mini"></el-date-picker>
+            size="small"></el-date-picker>
         </el-form-item>
       </template>
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd"
-          size="mini">
+          size="small">
           新 增
         </el-button>
         <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd"
-          size="mini">
+          size="small">
           新 增(旧)
         </el-button>
       </template>
     </IntelligentSearchForm>
 
-    <el-table border v-loading="loading" :height="dynamicTableHeight" :data="list" :cell-class-name="cellClassName"
-      @cell-click="cellClick">
+    <el-table border v-loading="loading" height="100%" :data="list" :cell-class-name="cellClassName"
+      class="table-section" @cell-click="cellClick">
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -97,7 +97,7 @@
       <el-table-column label="排产数量" align="center" prop="num" width="90" />
       <el-table-column label="排产状态" align="center" prop="productStatus" width="85">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
+          <el-tag v-if="row.productStatus !== null" size="small" :type="tagType(row.productStatus)">
             {{ productStatusList[row.productStatus] }}
           </el-tag>
         </template>
@@ -539,7 +539,6 @@ export default {
       handler(route) {
         if (route.name === "PlanSchedule") {
           this.queryParams.salesOrderNo = "";
-
           const { salesOrderNo } = route?.params;
           if (salesOrderNo) {
             this.queryParams.salesOrderNo = salesOrderNo;

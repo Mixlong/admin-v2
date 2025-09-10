@@ -10,28 +10,22 @@
       </div>
       <div class="right-wrapper">
         <el-form :model="loginForm" :rules="loginRules" ref="loginForm">
-          <!-- <div class="qr-btn" @click="changeLoginType"></div> -->
-          <template v-if="isQr == false">
-            <div class="login-title">欢迎登录</div>
-            <el-form-item style="margin-top: 20px" prop="username">
-              <el-input v-model="loginForm.username" size="large" style="width: 300px" placeholder="用户名"
-                prefix-icon="el-icon-user" @keyup.enter.native="handleLogin"></el-input>
-            </el-form-item>
-            <el-form-item style="margin-top: 20px" prop="password">
-              <el-input show-password v-model="loginForm.password" size="large" style="width: 300px" type="password"
-                placeholder="密码" prefix-icon="el-icon-lock" @keyup.enter.native="handleLogin"></el-input>
-            </el-form-item>
-            <el-form-item style="margin-top: 30px">
-              <el-button :loading="loading" type="primary" style="width: 100%; padding: 12px 20px"
-                @click.native.prevent="handleLogin">
-                <span v-if="!loading">登 录</span>
-                <span v-else>登 录 中...</span>
-              </el-button>
-            </el-form-item>
-          </template>
-          <template>
-            <div id="login_container" class="text-center" :class="{ qrHide: isQr == false }"></div>
-          </template>
+          <div class="login-title">欢迎登录</div>
+          <el-form-item style="margin-top: 20px" prop="username">
+            <el-input v-model="loginForm.username" size="large" style="width: 300px" placeholder="用户名"
+              prefix-icon="el-icon-user" @keyup.enter.native="handleLogin"></el-input>
+          </el-form-item>
+          <el-form-item style="margin-top: 20px" prop="password">
+            <el-input show-password v-model="loginForm.password" size="large" style="width: 300px" type="password"
+              placeholder="密码" prefix-icon="el-icon-lock" @keyup.enter.native="handleLogin"></el-input>
+          </el-form-item>
+          <el-form-item style="margin-top: 30px">
+            <el-button :loading="loading" type="primary" style="width: 100%; padding: 12px 20px"
+              @click.native.prevent="handleLogin">
+              <span v-if="!loading">登 录</span>
+              <span v-else>登 录 中...</span>
+            </el-button>
+          </el-form-item>
         </el-form>
       </div>
     </div>
@@ -77,8 +71,7 @@
 import { getCodeImg, getSmsSend, getSmsVerify, getSmsUser } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
-import remoteLoad from "@/utils/remoteLoad";
-import { getToken, setToken, removeToken } from "@/utils/auth";
+import { setToken } from "@/utils/auth";
 import { mapGetters } from "vuex";
 
 export default {
@@ -87,8 +80,6 @@ export default {
     return {
       dataList: [],
       isCodeDiag: false,
-      isQr: false,
-      fixStyle: "",
       codeUrl: "",
       cookiePassword: "",
       getSmsCodeisWaiting: false,
@@ -132,19 +123,7 @@ export default {
       immediate: true,
     },
   },
-  async created() {
-    await remoteLoad(
-      "http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"
-    );
-    var obj = new WxLogin({
-      id: "login_container", //div的id
-      appid: "wx8ae96f6604c020a6",
-      scope: "snsapi_login", //写死
-      redirect_uri: "http://food-chain.kcook.cn",
-      state: "",
-      style: "black", //二维码黑白风格
-      href: "https://某个域名下的css文件",
-    });
+  created() {
     this.getCookie();
   },
   mounted: function () {
@@ -233,18 +212,6 @@ export default {
         }
       });
     },
-    changeLoginType() {
-      this.isQr = !this.isQr;
-      var obj = new WxLogin({
-        id: "login_container", //div的id
-        appid: "wx8ae96f6604c020a6",
-        scope: "snsapi_login", //写死
-        redirect_uri: "http://food-chain.kcook.cn",
-        state: "",
-        style: "black", //二维码黑白风格
-        href: "https://某个域名下的css文件",
-      });
-    },
     // 获取验证码
     getCodeVal() {
       if (!this.codeForm.phone) {
@@ -308,9 +275,6 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scope>
-.qrHide {
-  display: none;
-}
 
 .video-container {
   position: absolute;
@@ -389,17 +353,6 @@ export default {
   border-bottom-right-radius: 5px;
   position: relative;
 
-  .qr-btn {
-    width: 52px;
-    height: 52px;
-    position: absolute;
-    right: 3px;
-    top: 3px;
-    background: url("../assets/image/qr.png") no-repeat;
-    background-size: 120% 120%;
-    background-position: top;
-    cursor: pointer;
-  }
 }
 
 .login-title {

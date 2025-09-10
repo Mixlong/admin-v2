@@ -439,7 +439,7 @@ export default {
       this.queryParams.sn = this.sn;
       this.queryParams.pcbaSn = this.pcbaSn
     }
-
+    this.getCategoryData();
     this.getList();
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;

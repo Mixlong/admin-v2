@@ -1,5 +1,5 @@
 <template>
-  <div class="device-cost-container app-container">
+  <div class="device-cost-container app-container flex-app-container">
     <!-- 搜索区域 -->
     <div class="search-section toolbar">
       <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
@@ -32,7 +32,7 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(30)"
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%"  height="100%"
         @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
         :row-class-name="getRowClassName">
         <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">
@@ -378,7 +378,12 @@ export default {
     // 加载品类选项
     loadCategoryOptions() {
       categoryComputerDict().then((res) => {
-        this.categoryOptions = res.data || []
+        if (res.data) {
+          this.categoryOptions = res.data.filter(item => item.isSample === 1)
+        } else {
+          this.categoryOptions = []
+        }
+        console.log("🚀 ~ file: index.vue:385 ~ this.categoryOptions :", this.categoryOptions)
       }).catch(() => {
         this.$message.error('获取品类数据失败')
       })
