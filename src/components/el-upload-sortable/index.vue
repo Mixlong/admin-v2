@@ -7,10 +7,16 @@
     <draggable
       v-model="imgList"
       :disabled="isDisabled"
-      @start="drag = true"
-      @end="drag = false"
+      :group="dragGroup"
+      @start="onDragStart"
+      @end="onDragEnd"
       @update="updateList(imgList)"
+      @add="handleDragAdd"
+      @remove="handleDragRemove"
       class="el-upload-list el-upload-list--picture-card"
+      :class="{ 'empty-list': imgList.length === 0 }"
+      :style="imgList.length === 0 ? { width: '120px', height: '120px', display: 'flex' } : {}"
+      tag="div"
     >
       <transition-group>
         <div
@@ -41,6 +47,14 @@
               <i class="el-icon-delete"></i>
             </span>
           </span>
+        </div>
+        <!-- 空状态占位元素，确保拖拽区域可见 -->
+        <div
+          v-if="imgList.length === 0"
+          key="empty-placeholder"
+          class="empty-drop-zone"
+          :style="{ minHeight: Math.max(imgH, 80) + 'px', width: '100%' }"
+        >
         </div>
       </transition-group>
     </draggable>
@@ -131,6 +145,15 @@ export default {
       type: String,
       default: "",
     },
+    dragGroup: {
+      type: [String, Object],
+      default: () => ({
+        name: "upload-sortable",
+        pull: true,
+        put: true,
+        revertClone: false
+      })
+    },
   },
   data() {
     return {
@@ -178,6 +201,28 @@ export default {
     },
     updateList(list) {
       this.$emit("input", list.toString());
+    },
+    onDragStart(evt) {
+      this.drag = true;
+      this.$emit('dragstart', evt);
+    },
+    onDragEnd(evt) {
+      this.drag = false;
+      this.$emit('dragend', evt);
+    },
+    handleDragAdd(evt) {
+      // 跨组件拖拽添加文件时触发
+      this.$nextTick(() => {
+        this.$emit("input", this.imgList.toString());
+        this.$emit("drag-add", evt);
+      });
+    },
+    handleDragRemove(evt) {
+      // 跨组件拖拽移除文件时触发
+      this.$nextTick(() => {
+        this.$emit("input", this.imgList.toString());
+        this.$emit("drag-remove", evt);
+      });
     },
     beforeUpload(file) {
       if (file?.name.indexOf("+") !== -1) {

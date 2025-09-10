@@ -17,6 +17,100 @@
     justify-content: center;
     align-items: center;
   }
+
+  // 空列表时提供拖拽目标区域
+  .el-upload-list--picture-card.empty-list {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #d9d9d9;
+    border-radius: 6px;
+    background-color: #fafafa;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-bottom:10px;
+    // 拖拽悬停时的样式
+    &.sortable-chosen,
+    &.sortable-drag-over {
+      border-color: #67c23a !important;
+      background-color: #f0f9ff !important;
+      box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.2);
+    }
+
+    // 拖拽进入时的样式
+    &:hover {
+      border-color: #409eff;
+      background-color: #ecf5ff;
+    }
+
+    // 添加一个伪元素作为提示
+    &::before {
+      content: "拖拽区域";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #c0c4cc;
+      font-size: 12px;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    // 当有拖拽元素悬停时隐藏提示文字
+    &.sortable-chosen::before,
+    &.sortable-drag-over::before {
+      display: none;
+    }
+  }
+
+  // vuedraggable 拖拽样式
+  .sortable-ghost {
+    opacity: 0.5;
+  }
+
+  .sortable-drag {
+    transform: rotate(2deg);
+    opacity: 0.8;
+  }
+
+  // 空状态占位区域样式
+  .empty-drop-zone {
+    width: 80px !important;
+    height: 80px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed transparent;
+    border-radius: 6px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    flex-shrink: 0;
+
+    // 拖拽悬停时显示边框
+    &.sortable-chosen,
+    &.sortable-drag-over {
+      border-color: #67c23a !important;
+      background-color: #f0f9ff !important;
+      box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.2);
+    }
+  }
+
+  // Vue 过渡动画类的宽度修复
+  .empty-drop-zone {
+    &.v-enter,
+    &.v-enter-active,
+    &.v-enter-to,
+    &.v-leave,
+    &.v-leave-active,
+    &.v-leave-to {
+      width: 80px !important;
+      height: 80px !important;
+    }
+  }
 }
 
 .video-box {

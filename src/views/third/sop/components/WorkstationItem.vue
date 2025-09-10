@@ -34,12 +34,21 @@
             :limit="10"
             :disabled="false"
             :show-file-list="true"
+            :drag-group="{ 
+              name: 'workstation-files', 
+              pull: true, 
+              put: true,
+              revertClone: false
+            }"
             list-type="picture-card"
-            css="width: 100%; min-height: 120px;"
+            css="width: 100%; min-height: 80px;"
+            :imgH="80"
             @on-success="onUploadSuccess"
             @on-remove="onFileRemove"
             @on-change="onFileChange"
             @on-exceed="onExceed"
+            @drag-add="onDragAdd"
+            @drag-remove="onDragRemove"
             @dragstart="onDragStart"
             @dragend="onDragEnd"
           />
@@ -176,6 +185,24 @@ export default {
     // 文件变化
     onFileChange() {
       this.$emit('file-change', this.workstation, this.itemIndex, this.processType);
+    },
+    
+    // 拖拽添加文件
+    onDragAdd(evt) {
+      // 延迟执行，确保 vuedraggable 完成数据更新
+      this.$nextTick(() => {
+        this.$emit('file-change', this.workstation, this.itemIndex, this.processType);
+        this.$emit('drag-add', evt, this.itemIndex, this.processType);
+      });
+    },
+    
+    // 拖拽移除文件  
+    onDragRemove(evt) {
+      // 延迟执行，确保 vuedraggable 完成数据更新
+      this.$nextTick(() => {
+        this.$emit('file-change', this.workstation, this.itemIndex, this.processType);
+        this.$emit('drag-remove', evt, this.itemIndex, this.processType);
+      });
     },
     
     // 文件移除
