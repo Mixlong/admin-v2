@@ -9,7 +9,6 @@
       custom-class="modern-dialog"
       @close="handleClose"
     >
-
       <div v-loading="loading" class="modal-body" element-loading-text="加载中...">
         <!-- 基础信息 -->
         <section class="section">

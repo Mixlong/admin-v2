@@ -45,8 +45,8 @@
       background-color: #ecf5ff;
     }
 
-    // 添加一个伪元素作为提示
-    &::before {
+    // 添加一个伪元素作为提示 - 只在启用 sortable 时显示
+    &.sortable-enabled::before {
       content: "拖拽区域";
       position: absolute;
       top: 50%;

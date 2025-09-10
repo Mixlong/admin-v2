@@ -32,6 +32,7 @@
             :action="actionUrl"
             :accept="accept"
             :limit="10"
+            :sortable="true"
             :disabled="false"
             :show-file-list="true"
             :drag-group="{ 

@@ -14,8 +14,8 @@
       @add="handleDragAdd"
       @remove="handleDragRemove"
       class="el-upload-list el-upload-list--picture-card"
-      :class="{ 'empty-list': imgList.length === 0 }"
-      :style="imgList.length === 0 ? { width: '120px', height: '120px', display: 'flex' } : {}"
+      :class="{ 'empty-list': imgList.length === 0 && sortable, 'sortable-enabled': sortable }"
+      :style="imgList.length === 0 && sortable ? { width: '120px', height: '120px', display: 'flex' } : {}"
       tag="div"
     >
       <transition-group>
@@ -50,7 +50,7 @@
         </div>
         <!-- 空状态占位元素，确保拖拽区域可见 -->
         <div
-          v-if="imgList.length === 0"
+          v-if="imgList.length === 0 && sortable"
           key="empty-placeholder"
           class="empty-drop-zone"
           :style="{ minHeight: Math.max(imgH, 80) + 'px', width: '100%' }"
@@ -144,6 +144,10 @@ export default {
     accept: {
       type: String,
       default: "",
+    },
+    sortable: {
+      type: Boolean,
+      default: false,
     },
     dragGroup: {
       type: [String, Object],
