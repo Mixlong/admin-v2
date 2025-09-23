@@ -184,9 +184,8 @@
             <template slot-scope="scope">
               <el-select v-model="scope.row.workStatus" size="mini" @change="updateWorkStatus(scope.row)"
                 style="width: 100%;" popper-class="work-status-dropdown">
-                <el-option label=" 工作日" value="working" />
+                <el-option label=" 工作日" value="working"/>
                 <el-option label="休息日" value="rest" />
-                <el-option label="特殊排班" value="special" />
               </el-select>
             </template>
           </el-table-column>
@@ -583,7 +582,7 @@ export default {
               // 只有周日在有排产数据时才设置为特殊排班，周六是默认上班
               const dayOfWeek = new Date(detail.date).getDay();
               if (dayOfWeek === 0 && detail.num > 0) { // 只有周日才需要特殊处理
-                matchingDay.workStatus = 'special';
+                matchingDay.workStatus = 'working';
               }
             }
           });
@@ -596,7 +595,7 @@ export default {
               plannedNum: detail.num,
               actualNum: 0,
               isWeekend: this.isWeekend(detail.date),
-              workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'special' : (dayOfWeek === 0 ? 'rest' : 'working'),
+              workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'working' : (dayOfWeek === 0 ? 'rest' : 'working'),
               status: 'pending'
             };
           });
@@ -696,7 +695,7 @@ export default {
                 // 只有周日在有排产数据时才设置为特殊排班，周六是默认上班
                 const dayOfWeek = new Date(detail.date).getDay();
                 if (dayOfWeek === 0 && detail.num > 0) { // 只有周日才需要特殊处理
-                  matchingDay.workStatus = 'special';
+                  matchingDay.workStatus = 'working';
                 }
               }
             });
@@ -709,7 +708,7 @@ export default {
                 plannedNum: detail.num,
                 actualNum: 0,
                 isWeekend: this.isWeekend(detail.date),
-                workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'special' : (dayOfWeek === 0 ? 'rest' : 'working'),
+                workStatus: (dayOfWeek === 0 && detail.num > 0) ? 'working' : (dayOfWeek === 0 ? 'rest' : 'working'),
                 status: 'pending'
               };
             });
