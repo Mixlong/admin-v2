@@ -329,15 +329,6 @@
               }}</span>
             </div>
             <br/>
-            <div class="info-item">
-              <span class="info-label">修改人</span>
-              <span class="info-value" :class="{ empty: !detailData.updateBy }">{{ detailData.updateBy || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">修改时间</span>
-              <span class="info-value" :class="{ empty: !detailData.updateTime }">{{ detailData.updateTime || '-'
-              }}</span>
-            </div>
           </div>
         </fieldset>
       </div>

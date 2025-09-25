@@ -4,16 +4,11 @@
       <el-row  style="margin-bottom: 20px;">
         <el-col :span="12">
           <el-form-item label="仪表型号" prop="category">
-            <select-loadMore
+            <TypedSelectLoadMore
               v-model="formData.category"
-              :data="categoryData.data"
-              :page="categoryData.page"
-              :hasMore="categoryData.more"
-              dictLabel="name"
-              dictValue="id"
-              :request="getCategoryData"
-              placeholder="请选择仪表型号"
-              style="width: 100%"
+              type="category"
+              customStyle="width: 150px"
+              size="mini"
             />
           </el-form-item>
         </el-col>

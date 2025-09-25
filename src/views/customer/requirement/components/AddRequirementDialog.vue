@@ -84,8 +84,8 @@
                 :data="userMarketData.data"
                 :page="userMarketData.page"
                 :hasMore="userMarketData.more"
-                dictLabel="displayName"
-                dictValue="userName"
+                dictLabel="dictLabel"
+                dictValue="dictLabel"
                 :request="getUserMarketData"
                 placeholder="请选择市场负责人"
                 size="mini"
@@ -315,7 +315,7 @@ import { getCategoryList } from '@/api/quote-management/quotation'
 import { getCustomerList } from '@/api/order'
 import { getDicts } from '@/api/system/dict/data'
 import { dictUserList } from '@/api/system/user'
-  import { dictPmProject  } from '@/api/third/project'
+  import { dictPmProject, dictMkProject  } from '@/api/third/project'
 import Editor from '@/components/Editor'
 import MyUpload from '@/components/MyUpload'
 
@@ -438,6 +438,10 @@ export default {
     visible(val) {
       if (val) {
         this.initDialog()
+        // 监听对话框打开，防止自动滚动
+        this.$nextTick(() => {
+          this.preventAutoScroll()
+        })
       }
     },
     formData: {
@@ -480,6 +484,10 @@ export default {
   methods: {
     // 初始化对话框
     async initDialog() {
+      // 记录当前滚动位置
+      const dialogContent = document.querySelector('.el-dialog__body')
+      const initialScrollTop = dialogContent ? dialogContent.scrollTop : 0
+
       await Promise.all([
         this.loadCategoryOptions(),
         this.loadCustomerOptions(),
@@ -534,10 +542,15 @@ export default {
         this.addModelConfig()
       }
       
-      // 重置表单验证
+      // 重置表单验证并防止自动滚动
       this.$nextTick(() => {
         if (this.$refs.form) {
           this.$refs.form.clearValidate()
+        }
+        
+        // 恢复滚动位置到顶部，防止自动滚动到底部
+        if (dialogContent) {
+          dialogContent.scrollTop = 0
         }
       })
     },
@@ -911,17 +924,32 @@ export default {
     // 获取市场负责人数据 (用于 select-loadMore 组件)
     getUserMarketData({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
-        dictUserList({
-          p: page,
-          pageSize: 20,
-          nickName: keyword,
-        }).then((res) => {
+        // 字典接口，获取所有数据，无分页
+        dictMkProject().then((res) => {
           if (res && res.data) {
-            let list = res.data.map(user => ({
-              id: user.id,
-              userName: user.userName,
-              displayName: user.nickName || user.userName
-            }));
+            let list = [];
+            // 处理不同的数据结构
+            if (Array.isArray(res.data)) {
+              list = res.data.map(item => ({
+                id: item.id || item.dictValue,
+                userName: item.dictValue || item.userName || item.name,
+                displayName: item.dictLabel || item.nickName || item.userName || item.name
+              }));
+            } else if (res.data.list) {
+              list = res.data.list.map(item => ({
+                id: item.id || item.dictValue,
+                userName: item.dictValue || item.userName || item.name,
+                displayName: item.dictLabel || item.nickName || item.userName || item.name
+              }));
+            }
+
+            // 如果有关键字，进行客户端过滤
+            if (keyword) {
+              list = list.filter(item => 
+                item.displayName.includes(keyword) || 
+                item.userName.includes(keyword)
+              );
+            }
 
             // 去重处理
             const uniqueUsers = [];
@@ -933,15 +961,10 @@ export default {
               }
             });
 
-            if (more) {
-              this.userMarketData.data = [...this.userMarketData.data, ...uniqueUsers];
-            } else {
-              this.userMarketData.data = uniqueUsers;
-            }
-
-            // 计算是否还有更多数据
-            this.userMarketData.more = uniqueUsers.length >= 20;
-            this.userMarketData.page = page;
+            // 字典接口返回所有数据，不需要分页
+            this.userMarketData.data = uniqueUsers;
+            this.userMarketData.more = false; // 没有更多数据
+            this.userMarketData.page = 1;
           } else {
             console.error('获取市场负责人数据失败:', res?.msg);
           }
@@ -1045,6 +1068,30 @@ export default {
       }
     },
     
+    // 防止自动滚动的方法
+    preventAutoScroll() {
+      const dialogContent = document.querySelector('.el-dialog__body')
+      if (!dialogContent) return
+
+      // 只在对话框刚打开时设置滚动位置为顶部
+      dialogContent.scrollTop = 0
+
+      // 监听富文本编辑器的初始化事件，防止编辑器导致的自动滚动
+      this.$nextTick(() => {
+        const editors = document.querySelectorAll('.tox-edit-area iframe')
+        editors.forEach(editor => {
+          editor.addEventListener('load', () => {
+            setTimeout(() => {
+              // 只有当滚动位置接近底部时才重置到顶部（防止编辑器初始化导致的滚动）
+              if (dialogContent && dialogContent.scrollTop > dialogContent.scrollHeight - dialogContent.clientHeight - 100) {
+                dialogContent.scrollTop = 0
+              }
+            }, 100)
+          })
+        })
+      })
+    },
+
     // 关闭对话框
     handleClose() {
       this.$emit('update:visible', false)
@@ -1246,6 +1293,11 @@ export default {
   font-size: 14px;
   font-weight: 500;
   color: #606266;
+}
+
+/* 优化对话框滚动行为 */
+::v-deep .el-dialog__body {
+  scroll-behavior: smooth;
 }
  
  

@@ -2,10 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="产品品类" prop="categoryId">
-        <el-select v-model="queryParams.categoryId" filterable allow-create clearable style="width: 140px"
-          placeholder="请选择产品品类">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-        </el-select>
+        <TypedSelectLoadMore
+              v-model="queryParams.categoryId"
+              type="category"
+              customStyle="width: 150px"
+              size="mini"
+              @change="handleQuery"
+            />
       </el-form-item>
       <el-form-item label="审核状态" prop="state">
         <el-select v-model="queryParams.state" style="width: 140px" clearable placeholder="请选择审核状态">
@@ -17,7 +20,7 @@
       <el-form-item label="版本号" prop="versionCode">
         <el-input v-model.trim="queryParams.versionCode" clearable style="width: 140px" placeholder="请选择版本号"></el-input>
       </el-form-item>
-      <el-form-item>
+    <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
@@ -79,7 +82,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
 
-    <!-- 新增、修改 -->
+  <!-- 新增、修改 -->
     <add-sop ref="isAddSopRef" :visible.sync="isSopAddDia" :dictList="dictList" />
 
     <!-- 详情 -->
@@ -111,11 +114,9 @@
 <script>
 import { sopList, sopDelete, sopState } from "@/api/third/testApi";
 import { mapGetters } from "vuex";
-import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "Sop",
-  mixins: [CategoryMixin],
   components: {
     AddSop: () => import("./components/addSop"),
     sopDetail: () => import("./components/sopDetail"),
@@ -140,10 +141,11 @@ export default {
       // 总条数
       total: 0,
       brandList: [],
+      isNoComputerFlag: true,
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         categoryId: undefined,
         state: undefined,
         versionCode: undefined,

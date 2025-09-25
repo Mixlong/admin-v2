@@ -5,7 +5,7 @@
     v-on="$listeners"
     :close-on-click-modal="false"
     :title="title"
-    :visible.sync="dialogVisible"
+    :visible.sync="visible"
     :width="isDigWidth"
     append-to-body
     top="-5vh"
@@ -99,7 +99,7 @@
           <template v-if="form.dataType === 1">
             <el-col>
               <el-form-item label="属性描述" prop="content">
-                <template v-if="form.type === 'hard_version'">
+                <template v-if="form.type === 'hard_version' && visible">
                   <select-loadMore
                     style="width: 100%"
                     v-model="form.content"
@@ -551,7 +551,7 @@ import { scriptList } from "@/api/third/simulateScript";
 
 export default {
   inheritAttrs: false,
-  props: ["dictList", "isStsType"],
+  props: ["dictList", "isStsType", "value"],
   data() {
     const validateContent = (rule, value, callback) => {
       if (value === "") {
@@ -572,7 +572,7 @@ export default {
     };
     return {
       boleConfig: false,
-      dialogVisible: false,
+
       isLoading: false,
       // 批量同步
       isBatchSync: false,
@@ -704,6 +704,14 @@ export default {
     };
   },
   computed: {
+    visible: {
+      get() {
+        return this.value;
+      },
+      set(val) {
+        this.$emit('input', val);
+      }
+    },
     isHaveTo() {
       return this.form.type === "hard_version";
     },
@@ -862,7 +870,7 @@ export default {
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
-            this.hardData.data = [...this.orderData.data, ...list];
+            this.hardData.data = [...this.hardData.data, ...list];
           } else {
             this.hardData.data = list;
           }
@@ -947,7 +955,7 @@ export default {
       this.form.file = file;
     },
     cancel() {
-      this.dialogVisible = false;
+      this.$emit('input', false);
       this.isLoading = false;
     },
     /** 提交按钮 */
@@ -991,7 +999,7 @@ export default {
                 if (response.code === 200) {
                   const title = this.isBatchSync ? "批量同步成功" : "修改成功";
                   this.msgSuccess(title);
-                  this.dialogVisible = false;
+                  this.$emit('input', false);
                   this.$parent.getList();
                 }
               })
@@ -1003,7 +1011,7 @@ export default {
               .then((response) => {
                 if (response.code === 200) {
                   this.msgSuccess("修改成功");
-                  this.dialogVisible = false;
+                  this.$emit('input', false);
                   this.$parent.getList();
                 }
               })

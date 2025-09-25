@@ -65,7 +65,6 @@
           <span>{{ scope.row.invName || '--' }}</span>
         </template>
       </el-table-column>
-      </el-table-column>
       <el-table-column label="规格1" prop="englishName" align="center" width="140">
       </el-table-column>
       <el-table-column label="供应商" prop="invDefine" align="center" width="100">
@@ -185,7 +184,9 @@
     <DetailView ref="detailView" />
 
     <!-- 审核弹窗 -->
-    <el-dialog :title="authDialogTitle" :visible.sync="authDialogVisible" width="800px" append-to-body top="0vh">
+    <el-dialog :title="authDialogTitle" :visible.sync="authDialogVisible" width="800px"
+    :close-on-click-modal="false"
+    append-to-body top="0vh">
       <el-form ref="authForm" :model="authForm" :rules="authFormRules" label-width="180px">
         <el-form-item label="审核状态" prop="state"
           v-if="!isSystemStateFlag && !isOrderChangeStateFlag && !isWorkOrderChangeStateFlag">
@@ -245,7 +246,7 @@
     </el-dialog>
     <!-- 人员管理弹窗 -->
     <el-dialog title="审核人员管理" :visible.sync="isPeopleManageVisible" width="800px" append-to-body top="0vh"
-      v-if="isPeopleManageVisible">
+      v-if="isPeopleManageVisible" :close-on-click-modal="false">
       <el-row type="flex" justify="center">
         <el-col :xs="24" :span="20">
           <el-form ref="peopleForm" :model="peopleManageForm" :rules="peopleManageRules" label-width="100px"
@@ -327,7 +328,7 @@
     </el-dialog>
 
     <!-- 确认人审核对话框 -->
-    <el-dialog title="确认人审核" :visible.sync="handlerReviewVisible" width="600px" append-to-body>
+    <el-dialog title="确认人审核" :visible.sync="handlerReviewVisible" width="600px" append-to-body :close-on-click-modal="false">
       <el-form :model="handlerForm" ref="handlerForm" label-width="100px">
         <el-form-item label="确认结果" prop="result" :rules="[{required: true, message: '请选择确认结果'}]">
           <el-radio-group v-model="handlerForm.result">
@@ -858,14 +859,6 @@ export default {
 
     // 获取所有类型的人员数据，包括订单变更和工单变更人员
     this.getTotalPeopleData();
-
-    // 测试API导入
-    console.log('=== API函数检查 ===');
-    console.log('bomOrderFirstState:', typeof bomOrderFirstState, bomOrderFirstState);
-    console.log('bomOrderSecondState:', typeof bomOrderSecondState, bomOrderSecondState);
-    console.log('bomOrderSystemState:', typeof bomOrderSystemState, bomOrderSystemState);
-    console.log('bomOrderChangeState:', typeof bomOrderChangeState, bomOrderChangeState);
-    console.log('bomOrderWorkState:', typeof bomOrderWorkState, bomOrderWorkState);
 
     // 如果函数未正确导入，显示错误信息
     if (typeof bomOrderFirstState !== 'function') {

@@ -41,17 +41,17 @@ export const constantRoutes = [
   },
   {
     path: "/login",
-    component: (resolve) => require(["@/views/login"], resolve),
+    component: () => import("@/views/login"),
     hidden: true,
   },
   {
     path: "/404",
-    component: (resolve) => require(["@/views/error/404"], resolve),
+    component: () => import("@/views/error/404"),
     hidden: true,
   },
   {
     path: "/401",
-    component: (resolve) => require(["@/views/error/401"], resolve),
+    component: () => import("@/views/error/401"),
     hidden: true,
   },
   {
@@ -85,7 +85,7 @@ export const constantRoutes = [
       {
         path: "index",
         component: (resolve) => require(["@/views/index"], resolve),
-        name: "首页",
+        name: "Index",
         meta: { title: "首页", icon: "dashboard", noCache: true, affix: true },
       }
     ],

@@ -442,6 +442,7 @@ export default {
   },
   data() {
     return {
+      nickName:"贺武荣",
       open: false,
       // 遮罩层
       loading: true,
@@ -590,7 +591,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId", "nickName"]),
+    ...mapGetters(["userId", ]),
     isFirstStateFlag() {
       return (row) => {
         return (

@@ -317,8 +317,8 @@
                 </el-col>
               </el-row>
               <el-card shadow="nerver" v-if="form.secondState !== 0">
-                <template v-if="form.secondState === 1 && form.finalRemark">
-                  备注： {{ form.finalRemark }}
+                <template v-if="form.secondState === 1 && form.systemRemark">
+                  备注： {{ form.systemRemark }}
                 </template>
                 <template v-if="form.secondState === 2 && form.finalResult">
                   <span class="text-red">拒绝原因：</span>

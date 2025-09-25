@@ -196,7 +196,7 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" :dictList="dictList" :isStsType="isStsType" />
+    <CompUpdate ref="compUpdate" v-model="showUpdateDialog" :dictList="dictList" :isStsType="isStsType" v-if="showUpdateDialog" />
 
     <!-- 任务令 -->
     <task-code :visible.sync="isTaskCodeFlag" :createTaskData="createTaskData"></task-code>
@@ -281,6 +281,7 @@ export default {
       similarList: [],
       disabledName: "",
       fileConfigSnData: {},
+      showUpdateDialog: false,
     };
   },
   computed: {
@@ -669,42 +670,50 @@ export default {
       if (!isBatchSync && this.handleProPermit(row.isLicense)) return;
 
       let copyRow = JSON.parse(JSON.stringify(row));
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
+      
+      // 先打开对话框，然后等待组件创建完成
+      this.showUpdateDialog = true;
+      
+      this.$nextTick(() => {
+        // 确保组件已经创建
+        if (this.$refs.compUpdate) {
+          this.$refs.compUpdate.reset();
+          this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
+          
+          // 蓝牙地址转化
+          const bleVersionList = this.handleBleVersionlist(copyRow);
 
-      // 蓝牙地址转化
-      const bleVersionList = this.handleBleVersionlist(copyRow);
+          // 整机SN的长度转化
+          if (copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
+            const packContentAndLen = copyRow.content.split(",");
 
-      // 整机SN的长度转化
-      if (copyRow.type === "dt_pack_sn" && !this.Is_Empty(copyRow.content)) {
-        const packContentAndLen = copyRow.content.split(",");
+            copyRow.content = packContentAndLen[0];
+            copyRow.packSnLen = packContentAndLen[1];
+          }
 
-        copyRow.content = packContentAndLen[0];
-        copyRow.packSnLen = packContentAndLen[1];
-      }
+          this.$refs.compUpdate.form = Object.assign(
+            { idList: [], content: "", testInfo: [], bleVersionList },
+            copyRow
+          );
 
-      this.$refs.compUpdate.form = Object.assign(
-        { idList: [], content: "", testInfo: [], bleVersionList },
-        copyRow
-      );
-
-      this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf
-        ? copyRow.firmwareConf
-        : {};
-      if (this.$refs.compUpdate.form.firmwareConf.mid) {
-        this.$refs.compUpdate.changeMidValue(
-          this.$refs.compUpdate.form.firmwareConf.mid,
-          false
-        );
-      }
-      this.$refs.compUpdate.form.firmwareConf.fileConfId = copyRow.id;
-      this.$refs.compUpdate.boleConfig =
-        copyRow.type == "boot_file" ||
-        copyRow.type == "app_file" ||
-        copyRow.type == "ui_data";
-      this.$refs.compUpdate.isBatchSync = isBatchSync;
-      this.$refs.compUpdate.dialogVisible = true;
-      this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
+          this.$refs.compUpdate.form.firmwareConf = copyRow.firmwareConf
+            ? copyRow.firmwareConf
+            : {};
+          if (this.$refs.compUpdate.form.firmwareConf.mid) {
+            this.$refs.compUpdate.changeMidValue(
+              this.$refs.compUpdate.form.firmwareConf.mid,
+              false
+            );
+          }
+          this.$refs.compUpdate.form.firmwareConf.fileConfId = copyRow.id;
+          this.$refs.compUpdate.boleConfig =
+            copyRow.type == "boot_file" ||
+            copyRow.type == "app_file" ||
+            copyRow.type == "ui_data";
+          this.$refs.compUpdate.isBatchSync = isBatchSync;
+          this.$refs.compUpdate.title = isBatchSync ? "批量同步" : "修改";
+        }
+      });
     },
     handleRevocation(row) {
       if (this.handleProPermit(row.isLicense)) return;

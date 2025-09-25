@@ -95,7 +95,7 @@
               style="width: 750px"
             />
             <div v-else v-html="form.desc"></div>
-          </el-form-item>
+        </el-form-item>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">

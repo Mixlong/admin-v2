@@ -339,9 +339,9 @@ export default {
     // 获取弹窗标题
     getDialogTitle() {
       if (this.isView) {
-        return '查看质量异常'
+        return '查看'
       }
-      return this.editMode ? '编辑质量异常' : '新增质量异常'
+      return this.editMode ? '编辑' : '新增'
     },
 
     // 初始化表单

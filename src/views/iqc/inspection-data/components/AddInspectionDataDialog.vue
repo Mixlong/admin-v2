@@ -134,7 +134,20 @@
                 </el-input-number>
               </el-form-item>
             </el-col>
-            
+            <el-col :span="12">
+              <el-form-item label="检验结果" prop="testResult">
+                <el-select
+                  v-model="form.testResult"
+                  placeholder="请选择检验结果"
+                  style="width: 100%"
+                  size="mini"
+                  :disabled="isView"
+                  clearable>
+                  <el-option label="PASS" value="PASS"></el-option>
+                  <el-option label="NG" value="NG"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
           </el-row>
         </fieldset>
         
@@ -310,23 +323,7 @@ export default {
       }
     }
 
-    // 不良数量特殊验证（必须用户主动输入，可以是0但不能是默认值）
-    const defectiveQuantityValidator = (rule, value, callback) => {
-      // 检查是否为null、undefined或空字符串
-      if (value === null || value === undefined || value === '') {
-        callback(new Error('请输入不良数量'))
-        return
-      }
-      
-      // 检查是否小于0
-      if (value <=0) {
-        callback(new Error('不良数量不能小于0'))
-        return
-      }
-      
-      // 通过验证
-      callback()
-    }
+ 
 
     return {
       dialogVisible: this.visible,
@@ -346,7 +343,8 @@ export default {
         defectRate: '0.00%',
         testInfo: '',
         defectiveDesc: '',
-        inspectionResult: 'PASS'
+        inspectionResult: 'PASS',
+        testResult: 'PASS'
       },
       rules: {
         batchNo:[
@@ -366,11 +364,11 @@ export default {
           { required: true, message: '请输入抽检数量', trigger: 'blur' },
           { validator: createQuantityValidator('抽检数量'), trigger: 'blur' }
         ],
-        defectiveQuantity: [
-          { required: true, message: '请输入不良数量', trigger: 'blur' },
-          { validator: defectiveQuantityValidator, trigger: 'blur' }
-        ],
+     
         inspectionResult: [
+          { required: true, message: '请选择检验结果', trigger: 'change' }
+        ],
+        testResult: [
           { required: true, message: '请选择检验结果', trigger: 'change' }
         ]
       },

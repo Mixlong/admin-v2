@@ -18,6 +18,7 @@ import VueDraggableResizable from "vue-draggable-resizable";
 // optionally import default styles
 import "vue-draggable-resizable/dist/VueDraggableResizable.css";
 import MacInput from "@/components/MacInput";
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 
 // 全局组件挂载
 const globalComponents = [
@@ -32,7 +33,8 @@ const globalComponents = [
   ModelCategory,
   ScreenFull,
   VueDraggableResizable,
-  MacInput
+  MacInput,
+  TypedSelectLoadMore
 ];
 const install = (Vue) => {
     globalComponents.forEach(item => {

@@ -1454,8 +1454,8 @@ export default {
 
       if (!triggerElement || triggerElement === document.body) {
         console.log('⚠️ 触发元素不存在或为body，使用屏幕中央位置');
-        const centerLeft = (window.innerWidth - 450) / 2;
-        const centerTop = (window.innerHeight - 400) / 2;
+        const centerLeft = Math.max(10, (window.innerWidth - 450) / 2);
+        const centerTop = Math.max(10, (window.innerHeight - 400) / 2);
 
         this.dailySchedulePopover.style = {
           left: `${centerLeft}px`,
@@ -1469,29 +1469,56 @@ export default {
       const rect = triggerElement.getBoundingClientRect();
       const popoverWidth = 450;
       const popoverHeight = 400;
+      const margin = 15;
+      const minMargin = 10;
 
-      let left = rect.right + 15;
+      // 获取可视区域尺寸
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let left = rect.right + margin;
       let top = rect.top - 50;
 
-      // 边界检测和调整
-      if (left + popoverWidth > window.innerWidth) {
-        left = rect.left - popoverWidth - 15; // 左侧显示
+      // 水平位置边界检测和调整
+      if (left + popoverWidth > viewportWidth - minMargin) {
+        // 尝试在左侧显示
+        left = rect.left - popoverWidth - margin;
+        
+        // 如果左侧也超出边界，则居中显示
+        if (left < minMargin) {
+          left = Math.max(minMargin, (viewportWidth - popoverWidth) / 2);
+        }
       }
 
-      if (left < 0) {
-        left = 10; // 左边界
+      // 确保左边界不超出
+      if (left < minMargin) {
+        left = minMargin;
       }
 
-      if (top + popoverHeight > window.innerHeight) {
-        top = rect.bottom + 10; // 下方显示
+      // 垂直位置边界检测和调整
+      if (top + popoverHeight > viewportHeight - minMargin) {
+        // 尝试在下方显示
+        top = rect.bottom + minMargin;
+        
+        // 如果下方也超出边界，则调整到合适位置
+        if (top + popoverHeight > viewportHeight - minMargin) {
+          top = Math.max(minMargin, viewportHeight - popoverHeight - minMargin);
+        }
       }
 
-      if (top < 0) {
-        top = 10; // 顶部边界
+      // 确保顶部边界不超出
+      if (top < minMargin) {
+        top = minMargin;
       }
+
+      // 最终边界检查，确保弹窗完全在可视区域内
+      left = Math.min(left, viewportWidth - popoverWidth - minMargin);
+      top = Math.min(top, viewportHeight - popoverHeight - minMargin);
+      left = Math.max(left, minMargin);
+      top = Math.max(top, minMargin);
 
       this.dailySchedulePopover.style = {
-        left: `${left - 0}px`,
+        left: `${left}px`,
         top: `${top}px`,
         position: 'fixed',
         zIndex: 99999

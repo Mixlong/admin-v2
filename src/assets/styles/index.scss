@@ -1550,7 +1550,7 @@ iframe[data-wujie-flag] {
     margin-top: 0 !important;
   }
   .el-dialog__body {
-    max-height: 75vh;
+    max-height: 65vh;
     overflow-y: auto;
     padding-top: 10px;
   }
@@ -1567,4 +1567,7 @@ iframe[data-wujie-flag] {
   .table-section {
     flex: 1;
   }
+}
+td.el-table__cell {
+  background-color: #fff;
 }

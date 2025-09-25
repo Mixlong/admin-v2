@@ -1028,14 +1028,6 @@ export default {
     // 获取所有类型的人员数据，包括订单变更和工单变更人员
     this.getTotalPeopleData();
 
-    // 测试API导入
-    console.log('=== API函数检查 ===');
-    console.log('bomOrderFirstState:', typeof bomOrderFirstState, bomOrderFirstState);
-    console.log('bomOrderSecondState:', typeof bomOrderSecondState, bomOrderSecondState);
-    console.log('bomOrderSystemState:', typeof bomOrderSystemState, bomOrderSystemState);
-    console.log('bomOrderChangeState:', typeof bomOrderChangeState, bomOrderChangeState);
-    console.log('bomOrderWorkState:', typeof bomOrderWorkState, bomOrderWorkState);
-
     // 如果函数未正确导入，显示错误信息
     if (typeof bomOrderFirstState !== 'function') {
       console.error('❌ bomOrderFirstState 未正确导入');

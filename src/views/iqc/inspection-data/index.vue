@@ -120,6 +120,14 @@
           </template>
         </el-table-column>
         
+        <el-table-column prop="testResult" label="检验结果" align="center" width="100">
+          <template slot-scope="scope">
+            <el-tag :type="getInspectionResultTagType(scope.row.testResult)">
+              {{ getResultText(scope.row.testResult) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        
         <el-table-column prop="defectiveDesc" label="检验结果描述" align="center" >
           <template slot-scope="scope">
             <div v-if="scope.row.defectiveDesc" v-html="scope.row.testInfo" class="rich-text-content"></div>
@@ -130,7 +138,7 @@
          
         <el-table-column label="操作" width="180" align="center" >
           <template slot-scope="scope">
-            <el-button size="mini" type="text"  icon="el-icon-link" v-if="scope.row.defectiveQuantity>0" 
+            <el-button size="mini" type="text"  icon="el-icon-link" v-if="scope.row.testResult === 'NG'" 
             :disabled="scope.row.isEcn==1"
             @click="handleDefectProcessing(scope.row)">特采申请</el-button>
             <el-button size="mini" type="text" @click="handleView(scope.row)" icon="el-icon-view">查看</el-button>
@@ -208,7 +216,8 @@ export default {
       searchForm: {
         inspectionResult: '',
         defectQuantityMin: '',
-        defectQuantityMax: ''
+        defectQuantityMax: '',
+        testResult: ''
       },
       // 表格数据
       tableData: [],
@@ -251,6 +260,17 @@ export default {
           type: 'custom', // 使用自定义插槽
           sort: 2
         },
+        {
+          key: 'testResult',
+          label: '检验结果',
+          type: 'select',
+          options: [
+            { label: 'PASS', value: 'PASS' },
+            { label: 'NG', value: 'NG' }
+          ],
+          placeholder: '请选择检验结果',
+          sort: 3
+        }
       ]
     }
   },
@@ -295,6 +315,7 @@ export default {
       if (this.searchForm.inspectionResult) params.inspectionResult = this.searchForm.inspectionResult
       if (this.searchForm.defectQuantityMin) params.defectQuantityMin = this.searchForm.defectQuantityMin
       if (this.searchForm.defectQuantityMax) params.defectQuantityMax = this.searchForm.defectQuantityMax
+      if (this.searchForm.testResult) params.testResult = this.searchForm.testResult
 
       console.log('IQC检验数据列表请求参数:', params)
 
@@ -332,7 +353,8 @@ export default {
       this.searchForm = {
         inspectionResult: '',
         defectQuantityMin: '',
-        defectQuantityMax: ''
+        defectQuantityMax: '',
+        testResult: ''
       }
       this.pagination.current = 1
       this.fetchData()
@@ -415,20 +437,36 @@ export default {
     },
 
     // 获取不良率标签类型
-    getDefectRateTagType(defectiveRate) {
-      if (!defectiveRate) return 'info'
-      const rate = parseFloat(defectiveRate.replace('%', ''))
-      if (rate === 0) return 'success'
-      if (rate <= 5) return 'warning'
+    getDefectRateTagType(rate) {
+      if (!rate || rate === '0.00%') return 'success'
+      const numRate = parseFloat(rate.replace('%', ''))
+      if (numRate <= 2) return 'success'
+      if (numRate <= 5) return 'warning'
       return 'danger'
     },
 
     // 获取检验结果标签类型
     getInspectionResultTagType(result) {
-      if (!result) return 'info'
-      if (result === 'PASS') return 'success'
-      if (result === 'NG') return 'danger'
-      return 'info'
+      switch (result) {
+        case 'PASS':
+          return 'success'
+        case 'NG':
+          return 'danger'
+        default:
+          return 'info'
+      }
+    },
+
+    // 获取检验结果文本
+    getResultText(result) {
+      switch (result) {
+        case 'PASS':
+          return 'PASS'
+        case 'NG':
+          return 'NG'
+        default:
+          return '--'
+      }
     },
 
     // 分页大小改变

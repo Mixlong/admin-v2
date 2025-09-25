@@ -24,7 +24,7 @@ import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
 import directives from '@/directives'
 // import VueNativeSock from 'vue-native-websocket';
-
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };
@@ -46,6 +46,7 @@ Vue.config.productionTip = false;
 
 Vue.use(plugins)
 Vue.use(MainComponent)
+Vue.use(TypedSelectLoadMore)
 Vue.use(directives) // 注册自定义指令
 Vue.use(WujieVue) // 注册无界组件
 

@@ -85,6 +85,11 @@
             <span>{{ scope.row.schedulingNo || '--' }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="pcbaSn" label="PCBA SN" align="center" width="150">
+          <template slot-scope="scope">
+            <span>{{ scope.row.pcbaSn || '--' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="category" label="机型" align="center" width="120">
           <template slot-scope="scope">
             <span>{{ scope.row.categoryName || '--' }}</span>
@@ -135,6 +140,7 @@
           </template>
         </el-table-column>
                
+        <el-table-column prop="repairMethod" label="维修方案" align="center"     >
           <template slot-scope="scope">
             <div style="max-height:120px;overflow-y:auto;">
               <div v-html="scope.row.repairMethod || '--'" ></div>

@@ -30,6 +30,13 @@ export function dictPmProject () {
     method: 'get',
   });
 }
+
+export function dictMkProject () {
+  return request ({
+    url: '/project/dict/mk',
+    method: 'get',
+  });
+}
 export function detailInfoProject (id) {
   return request ({
     url: '/project/' + id,

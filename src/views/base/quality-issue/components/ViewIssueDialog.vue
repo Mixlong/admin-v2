@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :visible.sync="dialogVisible"
-    title="质量异常详情"
+    title="详情"
     width="1000px"
     :close-on-click-modal="false"
     @close="handleClose"
@@ -194,11 +194,6 @@
           </el-row>
         </div>
       </fieldset>
-    </div>
-
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="handleClose">关闭</el-button>
-      <el-button type="primary" @click="handleEdit" v-if="canEdit">编辑</el-button>
     </div>
   </el-dialog>
 </template>

@@ -28,6 +28,21 @@
               v-model="form.topImg" 
               :accept="'image/*'"
               :showFileList="true"
+                   :sortable="true"
+              listType="picture-card"
+              css="width: 200px; height: 120px;"
+              class="top-img-upload">
+              <div class="upload-placeholder">
+                <i class="el-icon-plus"></i>
+              </div>
+            </ImageUpload>
+          </el-form-item>
+          <el-form-item label="排拉表" prop="sortImg">
+            <ImageUpload 
+              v-model="form.sortImg" 
+              :accept="'image/*'"
+              :showFileList="true"
+              :sortable="true"
               listType="picture-card"
               css="width: 200px; height: 120px;"
               class="top-img-upload">
@@ -381,7 +396,7 @@ export default {
       }
       
       const newWorkstation = {
-        id: `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 唯一ID
+        id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
         indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
         file: "",
         remark: "",
@@ -458,7 +473,7 @@ export default {
       if (workstationList && workstationList[index]) {
         const item = {
           ...workstationList[index],
-          id: `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 新的唯一ID
+          id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 新的唯一ID
           indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
         };
         workstationList.splice(index + 1, 0, item);
@@ -803,7 +818,7 @@ export default {
             } else {
               // 如果没有空项，则添加新项
               const newWorkstation = {
-                id: `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 唯一ID
+                id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
                 indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
                 file: cleanUrl,
                 remark: '',
@@ -843,7 +858,7 @@ export default {
           } else {
             // 如果没有空项，则添加新项
             const newWorkstation = {
-              id: `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 唯一ID
+              id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
               indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
               file: cleanUrl,
               remark: '',
@@ -935,6 +950,11 @@ export default {
               if (item.equipment && Array.isArray(item.equipment)) {
                 // 将装备数组转换为JSON字符串
                 item.equipment = JSON.stringify(item.equipment);
+              }
+
+              // 新增的工位不传ID，让后端自动生成
+              if (item.id && item.id.startsWith('ws_')) {
+                delete item.id;
               }
             });
           }

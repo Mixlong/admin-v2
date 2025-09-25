@@ -357,3 +357,7 @@
     flex-direction: row-reverse;
   }
 }
+
+::v-deep .el-table .cell{
+  position: static;
+}

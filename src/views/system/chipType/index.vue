@@ -43,12 +43,15 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="140">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180">
         <template slot-scope="scope">
           <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:chipType:update']"
             @click="handleUpdate(scope.row)" />
           <Tooltip icon="el-icon-reading" content="详情" v-hasPermi="['third:chipType:detail']"
             @click="handleDetail(scope.row)" />
+          <Tooltip icon="el-icon-delete" content="删除" v-hasPermi="['third:chipType:delete']"
+          class="text-red"
+            @click="handleDelete(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
@@ -58,7 +61,7 @@
 
     <!-- 新增、修改属性 -->
     <el-dialog class="addOrUp-Type-container" :title="title" append-to-body width="900px" center top="5vh"
-      :visible.sync="open" :close-on-click-modal="false">
+      :visible.sync="open" :close-on-click-modal="false" v-if="open">
       <el-form ref="form" inline :model="form" :rules="rules">
         <el-card :body-style="{ paddingBottom: '0px' }">
           <el-form-item label="品类" prop="categoryName">
@@ -131,6 +134,7 @@ import {
   schemeTypeSave,
   schemeTypeUpdate,
   schemeTypePtPick,
+  schemeTypeDelete,
 } from "@/api/system/skipType";
 
 export default {
@@ -339,6 +343,23 @@ export default {
 
       this.$set(this.form, "categoryName", name);
       this.$set(this.form, "categoryId", id);
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const { id, schemeVersion, categoryName } = row;
+      this.$confirm(`确定删除芯片类型"${row.schemeVersion}"吗？`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          schemeTypeDelete({ id }).then(() => {
+            this.msgSuccess("删除成功");
+            this.getList();
+          });
+        })
+        .catch(() => {
+        });
     },
     /** 提交按钮 */
     submitForm() {

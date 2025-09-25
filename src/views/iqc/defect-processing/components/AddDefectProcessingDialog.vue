@@ -671,8 +671,8 @@ export default {
         const params = {
           p: page,
           l: 10,
-          isEcn:0,
-          isDefective:1
+          inspectionResult:'NG',
+          isEcn:0
         }
 
         if (keyword) {

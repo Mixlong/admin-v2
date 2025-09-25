@@ -3,7 +3,7 @@
     <el-dialog 
       :visible.sync="dialogVisible" 
       :title="editMode ? '编辑' : '新增'"
-      width="850px" 
+      width="750px" 
       :close-on-click-modal="false" 
       @close="handleClose"
       top='0vh'
@@ -19,40 +19,24 @@
       
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="任务令" prop="schedulingNo">
+          <el-form-item label="排产单号" prop="schedulingNo">
             <el-input 
               v-model="form.schedulingNo" 
-              placeholder="请扫码任务令，扫码后按回车确认" 
+              placeholder="请扫码任务令或手动输入排产单号，扫码后按回车确认" 
               clearable
+              style="width: 100%;"
               @keyup.enter.native="handleScanEnter">
             </el-input>
           </el-form-item>
         </el-col>
- 
-      </el-row>
-      
-      <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="发现工位" prop="discoverWorkstation">
+          <el-form-item label="PCBA SN" prop="pcbaSn">
             <el-input 
-              v-model="form.discoverWorkstation" 
-              placeholder="请输入发现工位" 
-              clearable>
-            </el-input>
-          </el-form-item>
-        </el-col>
-        
-        <el-col :span="12">
-          <el-form-item label="维修员" prop="repairPerson" v-if="form.id">
-            <TypedSelectLoadMore
-              v-model="form.repairPerson"
-              type="user"
-              dict-label="displayName"
-              dict-value="userName"
-              placeholder="请选择维修员"
+              v-model="form.pcbaSn" 
+              placeholder="请输入PCBA SN 或整机SN" 
               clearable
-              custom-style="width: 100%"
-            />
+              style="width: 100%;">
+            </el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -69,7 +53,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <template v-if="form.id">
+      <template   >
  
       
       <el-row :gutter="20">
@@ -87,7 +71,7 @@
       </el-row>
       
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :span="24">
           <el-form-item label="维修结果" prop="repairTestResult">
             <el-input 
               v-model="form.repairTestResult" 
@@ -99,7 +83,7 @@
           </el-form-item>
         </el-col>
         
-        <el-col :span="12">
+        <el-col :span="24">
           <el-form-item label="责任判定" prop="responsibilityResult">
             <el-input 
               v-model="form.responsibilityResult" 
@@ -149,7 +133,7 @@
     <div slot="footer" class="dialog-footer">
       <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" @click="handleConfirm" :loading="loading">
-        {{ editMode ? '保存' : '添加' }}
+        {{ editMode ? '更新' : '保存' }}
       </el-button>
     </div>
   </el-dialog>
@@ -168,6 +152,7 @@
           v-model="scanForm.scanResult"
           placeholder="请扫码"
           clearable
+          style="width: 100%;"
           autofocus>
         </el-input>
       </el-form-item>
@@ -228,6 +213,7 @@ export default {
       form: {
         id: '',
         schedulingNo: '',
+        pcbaSn: '', // PCBA SN字段
         category: '',
         discoverWorkstation: '',
         repairPerson: '',
@@ -243,29 +229,8 @@ export default {
       },
       rules: {
         schedulingNo: [
-          { required: true, message: '请扫描任务令', trigger: 'blur' }
+          { required: true, message: '请扫码任务令或手动输入排产单号', trigger: 'blur' }
         ],
-        category: [
-          { required: true, message: '请选择机型', trigger: 'change' }
-        ],
-        discoverWorkstation: [
-          { required: true, message: '请输入发现工位', trigger: 'blur' }
-        ],
-        repairPerson: [
-          { required: true, message: '请输入维修员', trigger: 'blur' }
-        ],
-        defectReason: [
-          { required: true, message: '请输入不良描述', trigger: 'blur' }
-        ],
-        repairMethod: [
-          { required: true, message: '请输入维修方案', trigger: 'blur' }
-        ],
-        repairTestResult: [
-          { required: true, message: '请输入维修结果', trigger: 'blur' }
-        ],
-        responsibilityResult: [
-          { required: true, message: '请输入责任判定', trigger: 'blur' }
-        ]
       }
     }
   },
@@ -347,9 +312,10 @@ export default {
         this.form = {
           id: '',
           schedulingNo: '',
+          pcbaSn: '', // PCBA SN字段
           category: '',
           discoverWorkstation: '',
-          repairPerson: '', // 维修员默认为当前用户
+          repairPerson: currentUser?.name || currentUser?.userName || '', // 维修员等于当前用户
           defectReason: '',
           repairMethod: '',
           repairTestResult: '',
@@ -426,6 +392,7 @@ export default {
       // 准备提交数据 - 根据TRepairRecordEntity结构
       const submitData = {
         schedulingNo: this.form.schedulingNo || '',
+        pcbaSn: this.form.pcbaSn || '',
         category: this.form.category || '',
         discoverWorkstation: this.form.discoverWorkstation || '',
         repairPerson: this.form.repairPerson || '',
@@ -462,7 +429,6 @@ export default {
         }
       }).catch((error) => {
         console.error('新增API调用失败:', error)
-        this.$message.error('创建失败，请稍后重试')
       }).finally(() => {
         this.loading = false
       })
@@ -487,7 +453,7 @@ export default {
             repairMethod: this.form.repairMethod || '',
             repairTestResult: this.form.repairTestResult || '',
             productDestination: this.form.productDestination || '',
-            repairPerson: currentUser?.name || currentUser?.userName || '', // 维修员等于创建人
+            repairPerson: currentUser?.name || currentUser?.userName || '', // 维修员等于当前用户
             defectAttribution: this.form.defectAttribution || '',
             consumedMaterials: this.form.consumedMaterials || '',
             repairTime: this.formatDateTime(new Date()), // 维修时间为当前时间
@@ -525,6 +491,7 @@ export default {
       const submitData = {
         id: this.form.id,
         schedulingNo: this.form.schedulingNo || '',
+        pcbaSn: this.form.pcbaSn || '',
         category: this.form.category || '',
         discoverWorkstation: this.form.discoverWorkstation || '',
         repairPerson: this.form.repairPerson || '',

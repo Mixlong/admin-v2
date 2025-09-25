@@ -14,7 +14,9 @@
                   <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth"
                     :class="field.fieldClass" :style="field.fieldStyle">
                     <component :is="field.component || 'el-input'" v-model="searchForm[field.key]"
-                      v-bind="getFieldProps(field)" @change="handleFieldChange(field.key, $event)">
+                      v-bind="getFieldProps(field)" 
+                      @change="handleFieldChangeAndAutoSearch(field, $event)"
+                      @keyup.enter.native="handleSearch">
                       <!-- 为 el-select 组件添加选项渲染 -->
                       <template v-if="field.component === 'el-select' && field.props && field.props.options">
                         <el-option v-for="option in field.props.options" :key="option.value" :label="option.label"
@@ -49,7 +51,9 @@
                       <div class="filter-input">
                         <slot :name="`field-${field.key}`" :field="field" :searchForm="tempSearchForm">
                           <component :is="field.component || 'el-input'" v-model="tempSearchForm[field.key]"
-                            v-bind="getPopoverFieldProps(field)" @change="handleTempFieldChange(field.key, $event)"
+                            v-bind="getPopoverFieldProps(field)" 
+                            @change="handleTempFieldChangeAndAutoConfirm(field, $event)"
+                            @keyup.enter.native="confirmFilter"
                             size="mini">
                             <!-- 为 el-select 组件添加选项渲染 -->
                             <template v-if="field.component === 'el-select' && field.props && field.props.options">
@@ -327,6 +331,44 @@ export default {
       const field = this.allFields.find(f => f.key === fieldKey);
       if (field && field.onChange) field.onChange(value);
       this.$emit('temp-field-change', fieldKey, value);
+    },
+    // 新增：处理字段变化并自动搜索
+    handleFieldChangeAndAutoSearch(field, value) {
+      // 先处理字段变化
+      this.handleFieldChange(field.key, value);
+      // 再处理自动搜索
+      this.handleAutoSearch(field);
+    },
+    // 新增：处理临时字段变化并自动确认
+    handleTempFieldChangeAndAutoConfirm(field, value) {
+      // 先处理临时字段变化
+      this.handleTempFieldChange(field.key, value);
+      // 再处理自动确认
+      this.handleAutoConfirmFilter(field);
+    },
+    // 处理自动搜索（下拉选择后触发）
+    handleAutoSearch(field) {
+      // 如果字段配置了自动搜索，或者是下拉选择组件，则自动触发搜索
+      const isSelectComponent = field.component === 'el-select' || 
+                                field.type === 'select-loadMore' || 
+                                field.component === 'select-loadMore';
+      if (field.autoSearch !== false && (isSelectComponent || field.autoSearch === true)) {
+        this.$nextTick(() => {
+          this.handleSearch();
+        });
+      }
+    },
+    // 处理弹窗中的自动确认过滤（下拉选择后触发）
+    handleAutoConfirmFilter(field) {
+      // 如果字段配置了自动搜索，或者是下拉选择组件，则自动确认过滤
+      const isSelectComponent = field.component === 'el-select' || 
+                                field.type === 'select-loadMore' || 
+                                field.component === 'select-loadMore';
+      if (field.autoSearch !== false && (isSelectComponent || field.autoSearch === true)) {
+        this.$nextTick(() => {
+          this.confirmFilter();
+        });
+      }
     },
     confirmFilter() {
       // 只更新隐藏字段的值，保留可见字段的当前值

@@ -163,10 +163,12 @@
         </el-table-column> -->
       </el-table>
     </el-dialog>
-    <el-dialog :visible.sync="materialsTrackRecord" width="90%" append-to-body title="物料追溯" v-if="materialsTrackRecord"
-      class="dialog-scroll custom-dialog">
-      <MaterialsTrackRecord :searchOrderCode="queryDialogParams.searchOrderCode" />
-    </el-dialog>
+    <!-- 物料追溯记录弹框 -->
+    <MaterialsTrackRecord 
+      v-model="materialsTrackRecord" 
+      :order-code="queryDialogParams.searchOrderCode"
+      :sn="queryDialogParams.sn"
+    />
     <el-dialog :visible.sync="stsTestResult" width="90%" append-to-body :title="stsTestResulTtitle" v-if="stsTestResult"
       class="dialog-scroll custom-dialog" :class="{ 'surface-board': stsTestResulTtitle === '通用仪表2' }">
       <StsTestResult :sn="queryDialogParams.sn" :pcbaSn="queryDialogParams.pcbaSn" />
@@ -188,7 +190,7 @@ export default {
   name: "ProductRecord",
   mixins: [CategoryMixin, dynamicTableHeightMixin],
   components: {
-    MaterialsTrackRecord: () => import("@/views/third/trackRecord/index.vue"),
+    MaterialsTrackRecord: () => import("./components/MaterialsTrackRecord.vue"),
     StsTestResult: () => import("@/views/third/testRecord/index.vue"),
     IntelligentSearchForm: () => import("@/components/IntelligentSearchForm"),
 
@@ -371,12 +373,14 @@ export default {
         });
     },
     openTrackRecord(row) {
-      if (row.orderCode) {
-        this.materialsTrackRecord = true;
-        this.queryDialogParams.searchOrderCode = row.orderCode;
-      } else {
-        this.$message.warning("工单号为空");
+      if (!row.sn) {
+        this.$message.warning("sn为空，无法查看物料追溯记录");
+        return;
       }
+      
+      this.materialsTrackRecord = true;
+      this.queryDialogParams.searchOrderCode = row.orderCode;
+      this.queryDialogParams.sn = row.sn || '';
     },
     openStsTestResult(row) {
       this.stsTestResult = true;

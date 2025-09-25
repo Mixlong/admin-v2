@@ -17,6 +17,17 @@ export function getScheduling(id) {
   })
 }
 
+// 通过排产单号获取排产信息
+export function getSchedulingByCode(code) {
+  return request({
+    url: '/production/scheduling/schedule/by/code',
+    method: 'get',
+    params: {
+      code: code
+    }
+  })
+}
+
 // 新增排产
 export function addScheduling(data) {
   return request({

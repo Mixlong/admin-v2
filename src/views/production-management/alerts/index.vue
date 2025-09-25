@@ -8,7 +8,7 @@
             <template #field-workOrderNo="{ field, searchForm }">
                 <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
                     <el-autocomplete v-model="searchForm[field.key]" :fetch-suggestions="queryWorkOrders"
-                        placeholder="请输入工单号" clearable size="small">
+                        placeholder="请输入工单号" clearable size="mini">
                         <template slot-scope="{ item }">
                             <div class="work-order-item">
                                 <span>{{ item.value }}</span>
@@ -21,7 +21,7 @@
             <!-- 自定义品类字段渲染 -->
             <template #field-categoryName="{ field, searchForm }">
                 <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
-                    <el-select v-model="searchForm[field.key]" placeholder="请选择品类" clearable filterable size="small">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择品类" clearable filterable size="mini">
                         <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
@@ -31,7 +31,7 @@
             <!-- 自定义型号字段渲染 -->
             <template #field-computerName="{ field, searchForm }">
                 <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
-                    <el-select v-model="searchForm[field.key]" placeholder="请选择型号" clearable filterable size="small">
+                    <el-select v-model="searchForm[field.key]" placeholder="请选择型号" clearable filterable size="mini">
                         <el-option v-for="item in computerOptions" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
@@ -52,7 +52,7 @@
             <template #field-responsible="{ field, searchForm }">
                 <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
                     <el-select v-model="searchForm[field.key]" placeholder="请先选择部门" filterable clearable
-                        :disabled="!searchForm.responsibleDept" :loading="computerLoading" size="small"
+                        :disabled="!searchForm.responsibleDept" :loading="computerLoading" size="mini"
                         style="width: 240px;">
                         <el-option v-for="item in applicantList" :key="item.userId" :label="item.nickName"
                             :value="item.nickName" />
@@ -65,14 +65,14 @@
                 <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
                     <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
                         end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 250px"
-                        size="small" />
+                        size="mini" />
                 </el-form-item>
             </template>
 
             <!-- 页面操作按钮 -->
             <template #page-actions>
                 <el-button type="primary" @click="handleAdd" icon="el-icon-plus" v-hasPermi="['production:alerts:add']"
-                    size="small">
+                    size="mini">
                     新增报警
                 </el-button>
             </template>
@@ -113,7 +113,7 @@
                 <el-table-column prop="processType" label="处理状态" align="center" width="130">
                     <template slot-scope="scope">
                         <div class="status-cell">
-                            <el-tag :type="getProcessTypeColor(scope.row.processType)" size="small" effect="dark">
+                            <el-tag :type="getProcessTypeColor(scope.row.processType)" size="mini" effect="dark">
                                 <i :class="getProcessTypeIcon(scope.row.processType)" style="margin-right: 4px;"></i>
                                 {{ getProcessTypeLabel(scope.row.processType) }}
                             </el-tag>
@@ -132,7 +132,7 @@
 
                 <el-table-column prop="reporter" label="上报人" align="center" width="100" />
 
-                <el-table-column prop="createdTime" label="创建时间" align="center" width="160" sortable>
+                <el-table-column prop="createdTime" label="创建时间" align="center" width="160">
                     <template slot-scope="scope">
                         <div class="time-cell">
                             <div>{{ formatDateTime(scope.row.createdTime) }}</div>
@@ -142,34 +142,34 @@
 
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-button size="small" type="text" v-hasPermi="['production:alerts:view']"
+                        <el-button size="mini" type="text" v-hasPermi="['production:alerts:view']"
                             @click="handleView(scope.row)" icon="el-icon-view">
                             查看
                         </el-button>
-                        <el-button size="small" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
+                        <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
                             v-hasPermi="['production:alerts:edit']" :disabled="scope.row.processType === 4">
                             编辑
                         </el-button>
 
                         <!-- 开始处理按钮 - 状态为待处理(1)且当前用户部门与责任部门匹配时显示 -->
-                        <el-button v-if="canStartProcess(scope.row)" size="small" type="text"
+                        <el-button v-if="canStartProcess(scope.row)" size="mini" type="text"
                             @click="handleStartProcess(scope.row)" icon="el-icon-video-play" style="color: #409EFF;">
                             开始处理
                         </el-button>
 
                         <!-- 完成处理按钮 - 状态为处理中(2)且当前用户是处理人时显示 -->
-                        <el-button v-if="canCompleteProcess(scope.row)" size="small" type="text"
+                        <el-button v-if="canCompleteProcess(scope.row)" size="mini" type="text"
                             @click="handleCompleteProcess(scope.row)" icon="el-icon-check" style="color: #67C23A;">
                             完成处理
                         </el-button>
 
                         <!-- 验证按钮 - 状态为已处理待验证(3)且当前用户是责任人时显示 -->
-                        <el-button v-if="canVerifyProcess(scope.row)" size="small" type="text"
+                        <el-button v-if="canVerifyProcess(scope.row)" size="mini" type="text"
                             @click="handleVerifyProcess(scope.row)" icon="el-icon-finished" style="color: #E6A23C;">
                             验证
                         </el-button>
 
-                        <el-button size="small" type="text" class="text-red" @click="handleDelete(scope.row)"
+                        <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)"
                             icon="el-icon-delete" v-if="canDelete(scope.row)">
                             删除
                         </el-button>
