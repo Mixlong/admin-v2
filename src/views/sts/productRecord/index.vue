@@ -98,7 +98,7 @@
         <template slot-scope="{ row }">
           <el-tooltip effect="dark" content="点击跳转物料追踪" placement="top" :disabled="Is_Empty(row.orderCode)">
             <el-link type="primary" :underline="!Is_Empty(row.orderCode)" :disabled="Is_Empty(row.orderCode)" @click="
-              handleNameToPage('TrackRecord', {
+              handleNameToPage('Parts', {
                 orderCode: row.orderCode,
               })
               ">

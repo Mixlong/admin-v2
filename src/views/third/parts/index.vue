@@ -100,9 +100,12 @@ export default {
     });
   },
   activated() {
-    const { recordId, sn } = this.$route.query;
+    const { recordId, sn,  } = this.$route.query;
     this.queryParams.recordId = recordId;
     this.queryParams.sn = sn;
+    if(this.$route.params.orderCode){
+      this.queryParams.orderCode = this.$route.params.orderCode;
+    }
   },
   mounted() {
     this.loadCategoryAndComputerOptions();

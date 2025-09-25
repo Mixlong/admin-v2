@@ -9,9 +9,13 @@
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="品类" prop="categoryId">
-                <el-select v-model="form.categoryId" filterable allow-create clearable placeholder="请选择品类">
-                  <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-                </el-select>
+                <TypedSelectLoadMore
+              v-model="form.categoryId"
+              type="category"
+              customStyle="width: 100%"
+              size="mini"
+              @change="handleQuery"
+            />
               </el-form-item>
             </el-col>
             <el-col :span="12">

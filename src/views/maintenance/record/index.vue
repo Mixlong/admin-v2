@@ -75,9 +75,9 @@
         style="width: 100%" 
         :height="tableHeight(-50)"
         row-key="id">
-        <el-table-column prop="repairTime" label="日期" align="center" width="120">
+        <el-table-column prop="createTime" label="日期" align="center" width="120">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.repairTime, '{y}-{m}-{d}') || '--' }}</span>
+            <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') || '--' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="schedulingNo" label="排产单号" align="center" width="150">
@@ -85,7 +85,7 @@
             <span>{{ scope.row.schedulingNo || '--' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="pcbaSn" label="PCBA SN" align="center" width="150">
+        <el-table-column prop="pcbaSn" label="PCBA SN" align="center" width="200">
           <template slot-scope="scope">
             <span>{{ scope.row.pcbaSn || '--' }}</span>
           </template>
@@ -169,9 +169,9 @@
             <span>{{ scope.row.createBy || '--' }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column prop="repairPerson" label="维修员" align="center" width="100">
+        <el-table-column prop="createBy" label="维修员" align="center" width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.repairPerson || '--' }}</span>
+            <span>{{ scope.row.createBy || '--' }}</span>
           </template>
         </el-table-column>      
  
@@ -244,7 +244,7 @@ export default {
       // 分页信息
       pagination: {
         current: 1,
-        size: 10,
+        size: 20,
         total: 0
       },
       // 选中的行

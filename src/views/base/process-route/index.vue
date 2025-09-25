@@ -65,6 +65,11 @@
         @sort-change="handleSortChange">
         
         <!-- 仪表型号 -->
+        <el-table-column label="序号" width="58" type="index" align="center">
+            <template slot-scope="scope">      
+              {{ (queryParams.pageNum - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>
+          </el-table-column>
         <el-table-column label="仪表型号" align="center" prop="categoryName" width="100" />
         <el-table-column label="版本号" align="center" prop="versionCode" width="120" />
         <!-- 动态生成工序类型分组 -->
