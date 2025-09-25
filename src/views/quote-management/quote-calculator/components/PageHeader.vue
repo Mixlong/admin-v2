@@ -15,10 +15,10 @@
     </div>
 
     <div class="header-actions">
-      <el-button type="primary" icon="el-icon-download" @click="handleExport" v-hasPermi="['quote:calculation:export']">
+      <el-button type="success" icon="el-icon-download" @click="handleExport" v-hasPermi="['quote:calculation:export']">
         导出
       </el-button>
-      <el-button type="success" icon="el-icon-plus" @click="handleAddNew" v-hasPermi="['quote:calculation:add']">
+      <el-button type="primary" icon="el-icon-plus" @click="handleAddNew" v-hasPermi="['quote:calculation:add']">
         新增
       </el-button>
     </div>

@@ -2,40 +2,16 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="key">
-        <el-select
-          v-model="queryParams.key"
-          @change="changeCategory"
-          filterable
-          allow-create
-          clearable
-          placeholder="请选择品类"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.id"
-          />
+        <el-select v-model="queryParams.key" @change="changeCategory" filterable allow-create clearable
+          placeholder="请选择品类">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="仪表型号" prop="computerId">
-        <el-select
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          v-model="queryParams.computerId"
-          placeholder="请选择仪表型号"
-          @change="getList()"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.model"
-          />
+        <el-select :loading="isCLoading" filterable remote clearable v-model="queryParams.computerId"
+          placeholder="请选择仪表型号" @change="getList()" :remote-method="getComputerNameList">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
         </el-select>
       </el-form-item>
 
@@ -45,13 +21,8 @@
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
       </el-form-item>
-      <el-button
-        class="fr"
-        type="primary"
-        icon="el-icon-plus"
-        v-hasPermi="['third:productFamily:add']"
-        @click="handleAdd"
-      >
+      <el-button class="fr" type="primary" icon="el-icon-plus" v-hasPermi="['third:productFamily:add']"
+        @click="handleAdd">
         新增
       </el-button>
     </el-form>
@@ -61,94 +32,47 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="产品型号"
-        prop="name"
-        align="center"
-        width="140"
-      />
+      <el-table-column label="产品型号" prop="name" align="center" width="140" />
       <el-table-column label="描述" prop="desc" align="center">
         <span slot-scope="scope" v-NoData="scope.row.desc" />
       </el-table-column>
       <el-table-column label="状态" align="center" width="100">
         <template slot-scope="scope">
-          <el-switch
-            v-model="scope.row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatus(scope.row)"
-          ></el-switch>
+          <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1"
+            @change="handleStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="STS" align="center" width="100">
         <template slot-scope="{ row }">
           <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{
             row.isSts === 1 ? "是" : "否"
-          }}</el-tag>
+            }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        prop="createBy"
-        align="center"
-        width="100"
-      />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="140"
-        sortable
-      />
+      <el-table-column label="创建人" prop="createBy" align="center" width="100" />
+      <el-table-column label="创建时间" prop="createTime" align="center" width="140" sortable />
       <el-table-column label="操作" align="center" width="120">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:productFamily:update']"
-            @click="handleUpdate(scope.row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:productFamily:update']"
+            @click="handleUpdate(scope.row)" />
 
-          <el-popconfirm
-            title="确定要删除吗？"
-            @confirm="handleDelete(scope.row)"
-          >
-            <Tooltip
-              style="margin: 0 5px"
-              icon="el-icon-delete"
-              slot="reference"
-              :className="['text-red']"
-              content="删除"
-            v-hasPermi="['third:productFamily:delete']"
-            />
+          <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
+            <Tooltip style="margin: 0 5px" icon="el-icon-delete" slot="reference" :className="['text-red']" content="删除"
+              v-hasPermi="['third:productFamily:delete']" />
           </el-popconfirm>
 
-          <el-popconfirm
-            title="确定要转生产吗？"
-             v-hasPermi="['sampleThird:productFamily:product']"
-            @confirm="handleProd(scope.row.id)"
-            v-if="scope.row.status === 0"
-          >
-            <Tooltip
-              style="margin: 0 5px"
-              icon="el-icon-box"
-              slot="reference"
-              content="转生产"
-            />
+          <el-popconfirm title="确定要转生产吗？" v-hasPermi="['sampleThird:productFamily:product']"
+            @confirm="handleProd(scope.row.id)" v-if="scope.row.status === 0">
+            <Tooltip style="margin: 0 5px" icon="el-icon-box" slot="reference" content="转生产" />
           </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <CompUpdate ref="compUpdate" />
+    <CompUpdate ref="compUpdate" @refresh-list="handleRefreshList" />
   </div>
 </template>
 
@@ -206,6 +130,9 @@ export default {
     this.handleCacheLink();
   },
   methods: {
+    handleRefreshList() {
+      this.$emit('refresh-list');
+    },
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
       const { categoryId, computerId } = this.$route.params;

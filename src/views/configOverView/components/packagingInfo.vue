@@ -10,11 +10,10 @@
         </el-table-column>
         <el-table-column label="内容" width="280">
           <template slot-scope="scope">
-   
-                <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
-                v-if="scope.row.content === item.id"
-                  >{{ item.label }}</span>
-           
+
+            <span v-for="(item, index) in scope.row.contentOptions" :key="`${scope.$index}-${index}-${item.id}`"
+              v-if="scope.row.content === item.id">{{ item.label }}</span>
+
           </template>
         </el-table-column>
         <el-table-column label="详情">
@@ -46,46 +45,56 @@ export default {
           checkItem: { id: 'ditaiStandardNoLockAttachment', label: '支架螺丝安装要求' },
           content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
             { id: 'customerSpecifiedNoLock', label: '客户指定：锁上，但不锁紧' },
-            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' }
+            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'accessoryPackingRequirements', label: '附件装箱要求' },
           content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
-            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放尾数箱' },
+            { id: 'customerSpecified', label: '所有附件统一放每箱内' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'packagingRequirementsCardboardWaterproofBag', label: '包装要求 (卡板、防水袋)' },
           content: 'accordingToBOM', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'accordingToBOM', label: '依据BOM' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'boxMarkRequirements', label: '箱唛要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
             { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'inspectionReportRequirements', label: '检验报告要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
       ],
@@ -103,7 +112,7 @@ export default {
   methods: {
     // 初始化表格数据
     initializeTableData() {
-      let processedData ;
+      let processedData;
       if (!this.packagingInfo) {
         this.tableData = [];
         return;
@@ -148,6 +157,10 @@ export default {
         console.log("🚀 ~ file: packagingInfo.vue:174 ~ element:", element)
         this.defaultTableData[i].content = element.contentId;
         this.defaultTableData[i].details = element.details;
+        // 处理文件URL字段（如果存在）
+        if (element.fileUrl !== undefined) {
+          this.defaultTableData[i].fileUrl = element.fileUrl;
+        }
       }
       return this.defaultTableData
     },

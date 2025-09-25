@@ -5,6 +5,7 @@ Vue.use(Router);
 /* Layout */
 import Layout from "@/layout";
 import StaticRoutes from "./static-routes"
+import MicroAppContainer from "@/components/MicroAppContainer"
 
 
 /**
@@ -40,17 +41,17 @@ export const constantRoutes = [
   },
   {
     path: "/login",
-    component: (resolve) => require(["@/views/login"], resolve),
+    component: () => import("@/views/login"),
     hidden: true,
   },
   {
     path: "/404",
-    component: (resolve) => require(["@/views/error/404"], resolve),
+    component: () => import("@/views/error/404"),
     hidden: true,
   },
   {
     path: "/401",
-    component: (resolve) => require(["@/views/error/401"], resolve),
+    component: () => import("@/views/error/401"),
     hidden: true,
   },
   {
@@ -84,7 +85,7 @@ export const constantRoutes = [
       {
         path: "index",
         component: (resolve) => require(["@/views/index"], resolve),
-        name: "首页",
+        name: "Index",
         meta: { title: "首页", icon: "dashboard", noCache: true, affix: true },
       }
     ],
@@ -189,7 +190,20 @@ export const constantRoutes = [
         meta: { title: "流程详情", activeMenu: "/work/own" },
       },
     ],
-  }
+  },
+  // 全屏微应用路由配置 - 不使用Layout嵌套
+  {
+    path: "/app-scheduling",
+    component: MicroAppContainer,
+    name: "FullscreenScheduling",
+    hidden: true,
+    meta: { 
+      title: "调度管理", 
+      noCache: true,
+      microApp: ' micro:ruoyi-admin:schedule'
+    }
+  },
+ 
 ];
 
 /**

@@ -1,60 +1,77 @@
 <template>
-  <div class="app-container">
-    <transition name="fade-transform-tb">
-      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
-        <el-form-item label="所属品类" prop="categoryId">
-          <el-select v-model="queryParams.categoryId" filterable allow-create clearable @change="changeCategory"
-            style="width: 140px" placeholder="请选择">
+  <div class="app-container flex-app-container">
+    <!-- 智能搜索区域 -->
+    <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch" @reset="handleReset"
+      @field-change="handleFieldChange">
+      <!-- 自定义所属品类字段渲染 -->
+      <template #field-categoryId="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" filterable allow-create clearable @change="changeCategory"
+            style="width: 140px" placeholder="请选择" size="small">
             <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="仪表型号" prop="computerId">
-          <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
-            @change="getList" :remote-method="getComputerNameList" style="width: 140px">
+      </template>
+
+      <!-- 自定义仪表型号字段渲染 -->
+      <template #field-computerId="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" :loading="isCLoading" filterable remote clearable @change="getList"
+            :remote-method="getComputerNameList" style="width: 140px" size="small" placeholder="请先选择品类">
             <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
           </el-select>
         </el-form-item>
-        <el-form-item label="迪太订单号" prop="salesOrderNo">
-          <el-input v-model.trim="queryParams.salesOrderNo" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请选择" />
+      </template>
+
+      <!-- 自定义迪太订单号字段渲染 -->
+      <template #field-salesOrderNo="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
+            style="width: 140px" placeholder="请输入迪太订单号" size="small" />
         </el-form-item>
-        <el-form-item label="排产单号" prop="no">
-          <el-input v-model.trim="queryParams.no" clearable @keyup.native.enter="handleQuery" style="width: 140px"
-            placeholder="请选择" />
+      </template>
+
+      <!-- 自定义排产单号字段渲染 -->
+      <template #field-no="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
+            style="width: 140px" placeholder="请输入排产单号" size="small" />
         </el-form-item>
-        <el-form-item label="排产状态" prop="productStatus">
-          <el-select v-model="queryParams.productStatus" clearable style="width: 100px">
+      </template>
+
+      <!-- 自定义排产状态字段渲染 -->
+      <template #field-productStatus="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable size="small" placeholder="请选择">
             <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
           </el-select>
         </el-form-item>
-        <el-form-item label="生产日期">
+      </template>
+
+      <!-- 自定义生产日期字段渲染 -->
+      <template #field-dateRange="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
           <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
-            range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
+            range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"
+            size="small"></el-date-picker>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
-            搜 索
-          </el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-            重 置
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </transition>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd">
+      </template>
+
+      <!-- 页面操作按钮 -->
+      <template #page-actions>
+        <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd"
+          size="small">
           新 增
         </el-button>
-        <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd">
+        <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd"
+          size="small">
           新 增(旧)
         </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
-    </el-row>
+      </template>
+    </IntelligentSearchForm>
 
-    <el-table border v-loading="loading" :height="tableHeight()" :data="list" :cell-class-name="cellClassName"
-      @cell-click="cellClick">
+    <el-table border v-loading="loading" height="100%" :data="list" :cell-class-name="cellClassName"
+      class="table-section" @cell-click="cellClick">
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -69,7 +86,7 @@
       <el-table-column label="排产单号" align="center" prop="no" min-width="150" />
       <el-table-column label="订单编号" align="center" prop="orderCode" min-width="150" />
       <el-table-column label="生产地点" align="center" prop="address" width="90" />
-      <el-table-column label="生产日期" align="center" prop="date" width="90">
+      <el-table-column label="生产日期" align="center" prop="date">
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.date, '{y}-{m}-{d}')" :class="{ 'text-red': isDisabled(row.date) }"
             :title="isDisabled(row.date) ? '已过期' : ''"></span>
@@ -80,7 +97,7 @@
       <el-table-column label="排产数量" align="center" prop="num" width="90" />
       <el-table-column label="排产状态" align="center" prop="productStatus" width="85">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
+          <el-tag v-if="row.productStatus !== null" size="small" :type="tagType(row.productStatus)">
             {{ productStatusList[row.productStatus] }}
           </el-tag>
         </template>
@@ -96,12 +113,12 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" fixed="right">
         <div class="flex align-center justify-between" slot-scope="{ row }">
-          <el-button v-if="row.salesOrderNo" v-hasPermi="['www:planSchedule:update']"
-            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']" type="text" @click="handleUpdate(row)">
+          <el-button v-if="row.salesOrderNo" v-hasPermi="['www:planSchedule:update']" type="text"
+            @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="!row.salesOrderNo" v-hasPermi="['www:planSchedule:oldUpdate']"
-            :class="[isDisabled(row.date) ? 'text-gray' : 'text-blue']" type="text" @click="handleOldUpdate(row)">
+          <el-button v-if="!row.salesOrderNo" v-hasPermi="['www:planSchedule:oldUpdate']" type="text"
+            @click="handleOldUpdate(row)">
             编辑(旧)
           </el-button>
           <el-button class="mlZero" v-show="row.qrCode" type="text" v-hasPermi="['www:planSchedule:taskOrder']"
@@ -164,7 +181,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
 
-    <CompUpdate ref="compUpdate" :title="title" :dictList="dictList" :modelList="modelList"
+    <CompUpdate v-if="showUpdateComponent" ref="compUpdate" :title="title" :dictList="dictList" :modelList="modelList"
       :operationList="operationList" :isExcelFile.sync="isExcelFile" @getData="getList" />
 
     <old-comUpdate ref="oldCompUpdate" :title="title" :dictList="dictList" :modelList="modelList"
@@ -330,12 +347,14 @@ import "./table2excel";
 import reqUrl from "@/utils/requestUrl";
 import axios from "axios";
 import { commonData } from "./mixins/common";
-
+import IntelligentSearchForm from '@/components/IntelligentSearchForm';
+import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
 export default {
   name: "PlanSchedule",
-  mixins: [commonData],
+  mixins: [commonData, dynamicTableHeightMixin],
   components: {
     VueQr,
+    IntelligentSearchForm,
     CompUpdate: () => import("./components/update.vue"),
     OldComUpdate: () => import("./components/oldUpdate.vue"),
     EditLog: () => import("./components/log.vue"),
@@ -346,6 +365,8 @@ export default {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
       isExcelFile: false,
+      // ✅ 控制更新组件的销毁和重建
+      showUpdateComponent: true,
       // 显示搜索条件
       showSearch: true,
       // 遮罩层
@@ -386,7 +407,57 @@ export default {
         startDate: "",
         endDate: "",
         operation: "",
+        productStatus: ""
       },
+
+      // IntelligentSearchForm 搜索表单数据
+      searchForm: {
+        categoryId: "",
+        computerId: "",
+        salesOrderNo: "",
+        no: "",
+        productStatus: ""
+      },
+
+      // IntelligentSearchForm 搜索字段配置
+      searchFields: [
+        {
+          key: 'categoryId',
+          label: '所属品类',
+          component: 'el-select',
+          sort: 1     // 第1位 - 品类最重要
+        },
+        {
+          key: 'computerId',
+          label: '仪表型号',
+          component: 'el-select',
+          sort: 2     // 第2位 - 型号重要
+        },
+        {
+          key: 'salesOrderNo',
+          label: '迪太订单号',
+          component: 'el-input',
+          sort: 3     // 第3位 - 订单号
+        },
+        {
+          key: 'no',
+          label: '排产单号',
+          component: 'el-input',
+          sort: 4     // 第4位 - 排产单号
+        },
+        {
+          key: 'productStatus',
+          label: '排产状态',
+          component: 'el-select',
+          sort: 5     // 第5位 - 状态
+        },
+        {
+          key: 'dateRange',
+          label: '生产日期',
+          component: 'el-date-picker',
+          sort: 6     // 第6位 - 日期范围
+        }
+      ],
       isBoxInfoLoading: false,
       isBoxInfoShow: false,
       boxInfoData: [],
@@ -468,7 +539,6 @@ export default {
       handler(route) {
         if (route.name === "PlanSchedule") {
           this.queryParams.salesOrderNo = "";
-
           const { salesOrderNo } = route?.params;
           if (salesOrderNo) {
             this.queryParams.salesOrderNo = salesOrderNo;
@@ -663,9 +733,16 @@ export default {
     uploadFile(row) {
       this.title = "资料清单";
       this.isExcelFile = true;
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign({}, row);
-      this.$refs.compUpdate.dialogVisible = true;
+      // ✅ 销毁并重建组件确保全新状态
+      this.showUpdateComponent = false;
+      this.$nextTick(() => {
+        this.showUpdateComponent = true;
+        this.$nextTick(() => {
+          this.$refs.compUpdate.reset();
+          this.$refs.compUpdate.form = Object.assign({}, row);
+          this.$refs.compUpdate.dialogVisible = true;
+        });
+      });
     },
     changeCategory(val) {
       if (!val) return;
@@ -721,8 +798,15 @@ export default {
     },
     handleAdd() {
       this.title = "新增计划";
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.dialogVisible = true;
+      // ✅ 销毁并重建组件确保全新状态
+      this.showUpdateComponent = false;
+      this.$nextTick(() => {
+        this.showUpdateComponent = true;
+        this.$nextTick(() => {
+          this.$refs.compUpdate.reset();
+          this.$refs.compUpdate.dialogVisible = true;
+        });
+      });
     },
     handleOldAdd() {
       this.title = "新增计划";
@@ -731,13 +815,20 @@ export default {
     },
     handleUpdate(row) {
       this.title = "编辑计划";
-      this.$refs.compUpdate.reset();
-      this.$refs.compUpdate.form = Object.assign({}, row);
+      // ✅ 销毁并重建组件确保全新状态
+      this.showUpdateComponent = false;
+      this.$nextTick(() => {
+        this.showUpdateComponent = true;
+        this.$nextTick(() => {
+          this.$refs.compUpdate.reset();
+          this.$refs.compUpdate.dialogVisible = true;
 
-      const { id, ...data } = row;
-      this.$refs.compUpdate.orderData = [{ ...data }];
+          // 使用 loadScheduleData 方法正确处理编辑数据
+          console.log('🚀 开始编辑，原始数据:', row);
+          this.$refs.compUpdate.loadScheduleData(row);
+        });
+      });
       this.$refs.compUpdate.cloneForm = Object.assign({}, row);
-      this.$refs.compUpdate.dialogVisible = true;
     },
     handleOldUpdate(row) {
       this.title = "编辑计划";
@@ -765,6 +856,84 @@ export default {
       this.modelList = [];
       this.resetForm("queryForm");
       this.handleQuery();
+    },
+
+    // ==================== IntelligentSearchForm 相关方法 ====================
+
+    /** 智能搜索表单搜索操作 */
+    handleSearch(searchData) {
+      console.log('🔍 搜索数据:', searchData)
+
+      // 将搜索表单数据同步到queryParams
+      this.queryParams.categoryId = searchData.categoryId || ""
+      this.queryParams.computerId = searchData.computerId || ""
+      this.queryParams.salesOrderNo = searchData.salesOrderNo || ""
+      this.queryParams.no = searchData.no || ""
+      this.queryParams.productStatus = searchData.productStatus || ""
+
+      // 重置其他参数
+      this.queryParams.orderId = ""
+      this.queryParams.id = ""
+      this.queryParams.p = 1
+
+      // 处理日期范围
+      if (this.dateRange && this.dateRange.length === 2) {
+        this.queryParams.startDate = this.dateRange[0]
+        this.queryParams.endDate = this.dateRange[1]
+      } else {
+        this.queryParams.startDate = ""
+        this.queryParams.endDate = ""
+      }
+
+      this.getList()
+    },
+
+    /** 智能搜索表单重置操作 */
+    handleReset() {
+      console.log('🔄 重置搜索表单')
+
+      // 重置搜索表单数据
+      this.searchForm = {
+        categoryId: "",
+        computerId: "",
+        salesOrderNo: "",
+        no: "",
+        productStatus: ""
+      }
+
+      // 重置日期范围
+      this.dateRange = []
+
+      // 重置型号选项
+      this.computerOptions = []
+
+      // 重置查询参数
+      this.queryParams = {
+        p: 1,
+        l: 20,
+        categoryId: "",
+        computerId: "",
+        salesOrderNo: "",
+        no: "",
+        startDate: "",
+        endDate: "",
+        operation: "",
+        productStatus: ""
+      }
+
+      this.getList()
+    },
+
+    /** 智能搜索表单字段变更处理 */
+    handleFieldChange(field, value) {
+      console.log(`🔄 字段变更: ${field} = ${value}`)
+
+      // 处理品类变更
+      if (field === 'categoryId') {
+        this.changeCategory(value)
+        // 清空型号选择
+        this.searchForm.computerId = ""
+      }
     },
     // 删除
     handleDelete(row) {

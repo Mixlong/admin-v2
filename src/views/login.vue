@@ -2,118 +2,57 @@
   <div class="login-wrapper" style="overflow: hidden">
     <div class="bg-wrapper">
       <div class="left-wrapper">
-        <h1 id="text3d">Digitech</h1>
+        <!-- id="text3d" -->
+        <h1 class="logo">
+          <img src="@/assets/logo/logo.png" alt="" />
+        </h1>
         <span class="title">迪太云</span>
       </div>
       <div class="right-wrapper">
         <el-form :model="loginForm" :rules="loginRules" ref="loginForm">
-          <!-- <div class="qr-btn" @click="changeLoginType"></div> -->
-          <template v-if="isQr == false">
-            <div class="login-title">欢迎登录</div>
-            <el-form-item style="margin-top: 20px" prop="username">
-              <el-input
-                v-model="loginForm.username"
-                size="large"
-                style="width: 300px"
-                placeholder="用户名"
-                prefix-icon="el-icon-user"
-                @keyup.enter.native="handleLogin"
-              ></el-input>
-            </el-form-item>
-            <el-form-item style="margin-top: 20px" prop="password">
-              <el-input
-                show-password
-                v-model="loginForm.password"
-                size="large"
-                style="width: 300px"
-                type="password"
-                placeholder="密码"
-                prefix-icon="el-icon-lock"
-                @keyup.enter.native="handleLogin"
-              ></el-input>
-            </el-form-item>
-            <el-form-item style="margin-top: 30px">
-              <el-button
-                :loading="loading"
-                type="primary"
-                style="width: 100%; padding: 12px 20px"
-                @click.native.prevent="handleLogin"
-              >
-                <span v-if="!loading">登 录</span>
-                <span v-else>登 录 中...</span>
-              </el-button>
-            </el-form-item>
-          </template>
-          <template>
-            <div
-              id="login_container"
-              class="text-center"
-              :class="{ qrHide: isQr == false }"
-            ></div>
-          </template>
+          <div class="login-title">欢迎登录</div>
+          <el-form-item style="margin-top: 20px" prop="username">
+            <el-input v-model="loginForm.username" size="large" style="width: 300px" placeholder="用户名"
+              prefix-icon="el-icon-user" @keyup.enter.native="handleLogin"></el-input>
+          </el-form-item>
+          <el-form-item style="margin-top: 20px" prop="password">
+            <el-input show-password v-model="loginForm.password" size="large" style="width: 300px" type="password"
+              placeholder="密码" prefix-icon="el-icon-lock" @keyup.enter.native="handleLogin"></el-input>
+          </el-form-item>
+          <el-form-item style="margin-top: 30px">
+            <el-button :loading="loading" type="primary" style="width: 100%; padding: 12px 20px"
+              @click.native.prevent="handleLogin">
+              <span v-if="!loading">登 录</span>
+              <span v-else>登 录 中...</span>
+            </el-button>
+          </el-form-item>
         </el-form>
       </div>
     </div>
 
     <!-- 验证码 -->
-    <el-dialog
-      title="验证码"
-      :visible.sync="isCodeDiag"
-      width="470px"
-      center
-      append-to-body
-      :close-on-click-modal="false"
-    >
-      <el-form
-        :model="codeForm"
-        ref="codeForm"
-        :inline="true"
-        label-width="92px"
-        label-position="left"
-        @submit.native.prevent="submitCode"
-      >
-        <el-form-item
-          label="选择管理员"
-          style="min-width: 150px"
-          prop="phone"
-          :rules="[
-            {
-              required: true,
-              message: '请选择接收验证码用户',
-              trigger: 'change',
-            },
-          ]"
-        >
+    <el-dialog title="验证码" :visible.sync="isCodeDiag" width="470px" center append-to-body :close-on-click-modal="false">
+      <el-form :model="codeForm" ref="codeForm" :inline="true" label-width="92px" label-position="left"
+        @submit.native.prevent="submitCode">
+        <el-form-item label="选择管理员" style="min-width: 150px" prop="phone" :rules="[
+          {
+            required: true,
+            message: '请选择接收验证码用户',
+            trigger: 'change',
+          },
+        ]">
           <el-radio-group v-model="codeForm.phone">
-            <el-radio
-              :label="item.dictValue"
-              v-for="(item, index) in dataList"
-              :key="index"
-              >{{ item.dictLabel }}</el-radio
-            >
+            <el-radio :label="item.dictValue" v-for="(item, index) in dataList" :key="index">{{ item.dictLabel
+            }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item
-          label="验证码"
-          prop="code"
-          :rules="[
-            { required: true, message: '请输入验证码', trigger: 'change' },
-          ]"
-        >
-          <el-input
-            size="small"
-            clearable
-            v-model="codeForm.code"
-            placeholder="请输入验证码"
-          ></el-input>
+        <el-form-item label="验证码" prop="code" :rules="[
+          { required: true, message: '请输入验证码', trigger: 'change' },
+        ]">
+          <el-input size="small" clearable v-model="codeForm.code" placeholder="请输入验证码"></el-input>
         </el-form-item>
         <el-form-item v-if="isNODE_ENV">
-          <el-button
-            size="small"
-            type="primary"
-            :disabled="getSmsCodeisWaiting"
-            @click="getCodeVal"
-          >
+          <el-button size="small" type="primary" :disabled="getSmsCodeisWaiting" @click="getCodeVal">
             {{ codeValTitle }}
           </el-button>
         </el-form-item>
@@ -132,8 +71,7 @@
 import { getCodeImg, getSmsSend, getSmsVerify, getSmsUser } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
-import remoteLoad from "@/utils/remoteLoad";
-import { getToken, setToken, removeToken } from "@/utils/auth";
+import { setToken } from "@/utils/auth";
 import { mapGetters } from "vuex";
 
 export default {
@@ -142,8 +80,6 @@ export default {
     return {
       dataList: [],
       isCodeDiag: false,
-      isQr: false,
-      fixStyle: "",
       codeUrl: "",
       cookiePassword: "",
       getSmsCodeisWaiting: false,
@@ -187,19 +123,7 @@ export default {
       immediate: true,
     },
   },
-  async created() {
-    await remoteLoad(
-      "http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"
-    );
-    var obj = new WxLogin({
-      id: "login_container", //div的id
-      appid: "wx8ae96f6604c020a6",
-      scope: "snsapi_login", //写死
-      redirect_uri: "http://food-chain.kcook.cn",
-      state: "",
-      style: "black", //二维码黑白风格
-      href: "https://某个域名下的css文件",
-    });
+  created() {
     this.getCookie();
   },
   mounted: function () {
@@ -288,18 +212,6 @@ export default {
         }
       });
     },
-    changeLoginType() {
-      this.isQr = !this.isQr;
-      var obj = new WxLogin({
-        id: "login_container", //div的id
-        appid: "wx8ae96f6604c020a6",
-        scope: "snsapi_login", //写死
-        redirect_uri: "http://food-chain.kcook.cn",
-        state: "",
-        style: "black", //二维码黑白风格
-        href: "https://某个域名下的css文件",
-      });
-    },
     // 获取验证码
     getCodeVal() {
       if (!this.codeForm.phone) {
@@ -363,20 +275,20 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scope>
-.qrHide {
-  display: none;
-}
+
 .video-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+
   video {
     width: 100%;
     height: 100%;
   }
 }
+
 .login-wrapper {
   position: relative;
   width: 100%;
@@ -410,10 +322,24 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   .title {
     color: white;
     font-size: 38px;
     margin-top: 30px;
+  }
+
+  .logo {
+    margin: 0;
+
+    img {
+      height: 50px;
+      width: auto;
+      margin: 0;
+      user-drag: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
   }
 }
 
@@ -426,17 +352,7 @@ export default {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   position: relative;
-  .qr-btn {
-    width: 52px;
-    height: 52px;
-    position: absolute;
-    right: 3px;
-    top: 3px;
-    background: url("../assets/image/qr.png") no-repeat;
-    background-size: 120% 120%;
-    background-position: top;
-    cursor: pointer;
-  }
+
 }
 
 .login-title {
@@ -447,9 +363,15 @@ export default {
 }
 
 #text3d {
+  img {
+    width: 100%;
+    height: 100%;
+  }
+
   width: 100%;
   margin: 0 auto 0 auto;
-  font-family: "Lato", sans-serif;
+  font-family: "Lato",
+  sans-serif;
 
   font-size: 3rem;
 
@@ -472,38 +394,26 @@ export default {
   left: 10px;
   transform: rotate(55deg);
   background: rgba(206, 188, 155, 0.7);
-  background: -moz-linear-gradient(
-    left,
-    rgba(206, 188, 155, 0.7) 0%,
-    rgba(42, 31, 25, 0) 65%
-  );
-  background: -webkit-gradient(
-    left top,
-    right top,
-    color-stop(0%, rgba(206, 188, 155, 0.7)),
-    color-stop(65%, rgba(42, 31, 25, 0))
-  );
-  background: -webkit-linear-gradient(
-    left,
-    rgba(206, 188, 155, 0.7) 0%,
-    rgba(42, 31, 25, 0) 65%
-  );
-  background: -o-linear-gradient(
-    left,
-    rgba(206, 188, 155, 0.7) 0%,
-    rgba(42, 31, 25, 0) 65%
-  );
-  background: -ms-linear-gradient(
-    left,
-    rgba(206, 188, 155, 0.7) 0%,
-    rgba(42, 31, 25, 0) 65%
-  );
-  background: linear-gradient(
-    to right,
-    rgba(206, 188, 155, 0.7) 0%,
-    rgba(42, 31, 25, 0) 65%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cebc9b', endColorstr='#2a1f19', GradientType=0.7 );
+  background: -moz-linear-gradient(left,
+      rgba(206, 188, 155, 0.7) 0%,
+      rgba(42, 31, 25, 0) 65%);
+  background: -webkit-gradient(left top,
+      right top,
+      color-stop(0%, rgba(206, 188, 155, 0.7)),
+      color-stop(65%, rgba(42, 31, 25, 0)));
+  background: -webkit-linear-gradient(left,
+      rgba(206, 188, 155, 0.7) 0%,
+      rgba(42, 31, 25, 0) 65%);
+  background: -o-linear-gradient(left,
+      rgba(206, 188, 155, 0.7) 0%,
+      rgba(42, 31, 25, 0) 65%);
+  background: -ms-linear-gradient(left,
+      rgba(206, 188, 155, 0.7) 0%,
+      rgba(42, 31, 25, 0) 65%);
+  background: linear-gradient(to right,
+      rgba(206, 188, 155, 0.7) 0%,
+      rgba(42, 31, 25, 0) 65%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#cebc9b', endColorstr='#2a1f19', GradientType=0.7);
 }
 
 /*	

@@ -2,54 +2,24 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          placeholder="请选择品类"
-          clearable
-          style="max-width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.categoryName" placeholder="请选择品类" clearable style="max-width: 140px"
+          @change="changeCategory">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="型号" prop="computerName">
-        <el-select
-          v-model="queryParams.computerName"
-          clearable
-          placeholder="请选择型号"
-          @change="getList"
-          style="width: 160px"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.computerName" clearable placeholder="请选择型号" @change="getList"
+          style="width: 160px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="整机SN" prop="sn">
-        <el-input
-          v-model="queryParams.sn"
-          placeholder="请输入整机SN"
-          clearable
-          style="max-width: 130px"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.sn" placeholder="请输入整机SN" clearable style="max-width: 130px"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="工单号" prop="orderCode">
-        <el-input
-          v-model="queryParams.orderCode"
-          placeholder="请选择工单号"
-          clearable
-          style="max-width: 130px"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.orderCode" placeholder="请选择工单号" clearable style="max-width: 130px"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
@@ -62,12 +32,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-    >
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -79,21 +44,11 @@
       <el-table-column label="工单类型" prop="typeName" align="center" />
       <el-table-column label="整机 SN" prop="sn" align="center" />
       <el-table-column label="批次号" prop="batchNumber" align="center" />
-      <el-table-column
-        label="创建时间"
-        prop="createTime"
-        align="center"
-        width="135"
-      />
+      <el-table-column label="创建时间" prop="createTime" align="center" width="135" />
     </el-table>
 
-    <pagination
-      v-if="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-if="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -114,6 +69,7 @@ export default {
       brandList: [],
       partsList: [],
       computerOptions: [],
+      allComputerOptions: [], // 存储所有型号选项
       // 查询参数
       queryParams: {
         p: 1,
@@ -144,31 +100,33 @@ export default {
     });
   },
   activated() {
-    const { recordId, sn } = this.$route.query;
+    const { recordId, sn,  } = this.$route.query;
     this.queryParams.recordId = recordId;
     this.queryParams.sn = sn;
+    if(this.$route.params.orderCode){
+      this.queryParams.orderCode = this.$route.params.orderCode;
+    }
   },
   mounted() {
-    categoryComputerDict().then((response) => {
-      this.dictList = response.data;
-      let type = this.$route.query.type;
-      if (type) {
-        this.queryParams.type = type;
-      }
-      let { categoryId, status } = this.$route.query;
+    this.loadCategoryAndComputerOptions();
 
-      if (categoryId) {
-        this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
-        }
+    let type = this.$route.query.type;
+    if (type) {
+      this.queryParams.type = type;
+    }
+    let { categoryId, status } = this.$route.query;
+
+    if (categoryId) {
+      this.queryParams.categoryId = categoryId;
+      this.changeCategory(categoryId);
+      let computerId = this.$route.query.model;
+      if (computerId) {
+        this.queryParams.computerId = computerId;
       }
-      if (status) {
-        this.queryParams.status = status;
-      }
-    });
+    }
+    if (status) {
+      this.queryParams.status = status;
+    }
   },
   methods: {
     /** 查询品牌列表 */
@@ -180,13 +138,66 @@ export default {
         this.loading = false;
       });
     },
+    // 加载品类和型号选项
+    async loadCategoryAndComputerOptions() {
+      try {
+        const response = await categoryComputerDict();
+
+        if (response.code === 200) {
+          const rawData = response.data;
+
+          if (Array.isArray(rawData) && rawData.length > 0) {
+            this.dictList = rawData;
+
+            // 提取所有型号选项
+            const allComputers = [];
+            rawData.forEach(category => {
+              if (category.computerList && Array.isArray(category.computerList)) {
+                category.computerList.forEach(computer => {
+                  allComputers.push({
+                    ...computer,
+                    categoryName: category.name
+                  });
+                });
+              }
+            });
+            this.allComputerOptions = allComputers;
+            this.computerOptions = allComputers;
+          } else {
+            this.dictList = [];
+            this.computerOptions = [];
+            this.allComputerOptions = [];
+          }
+        } else {
+          this.dictList = [];
+          this.computerOptions = [];
+          this.allComputerOptions = [];
+        }
+      } catch (error) {
+        this.dictList = [];
+        this.computerOptions = [];
+        this.allComputerOptions = [];
+      }
+    },
+
     changeCategory(categoryName) {
-      if (!categoryName) return;
+      if (!categoryName) {
+        this.computerOptions = this.allComputerOptions || [];
+        this.queryParams.computerName = "";
+        this.getList();
+        return;
+      }
+
       this.queryParams.computerName = "";
       this.getList();
-      this.computerOptions = this.dictList.filter(
-        (item) => item.name === categoryName
-      )[0].computerList;
+
+      // 根据品类过滤型号
+      const selectedCategory = this.dictList.find(item => item.name === categoryName);
+      if (selectedCategory && selectedCategory.computerList) {
+        this.computerOptions = selectedCategory.computerList;
+      } else {
+        this.computerOptions = [];
+      }
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -207,7 +218,7 @@ export default {
         return partExport(this.queryParams);
       }).then(response => {
         if (response.code === 200 && response.msg) {
-           this.download(response.msg);
+          this.download(response.msg);
         }
         this.loading = false;
       }).catch(() => {

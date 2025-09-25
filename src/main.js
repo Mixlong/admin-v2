@@ -12,9 +12,9 @@ import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/styles/index.scss'; // global css
 import '@/assets/styles/ruoyi.scss'; // ruoyi css
 import 'normalize.css/normalize.css'; // a modern alternative to CSS resets
+// 延迟加载非必需CSS
 import "viewerjs/dist/viewer.css";
-// 引入样式
-import "vue-easytable/libs/theme-default/index.css";
+// import "vue-easytable/libs/theme-default/index.css";
 import '@/assets/icons'; // icon
 import '@/permission'; // permission control
 
@@ -22,8 +22,9 @@ import '@/utils/sticky';
 import '@/utils/mainOperation/mainDirective'
 import MainComponent from '@/utils/mainOperation/mainComponent';
 import '@/utils/mainOperation/mainFn'
+import directives from '@/directives'
 // import VueNativeSock from 'vue-native-websocket';
-
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };
@@ -45,6 +46,8 @@ Vue.config.productionTip = false;
 
 Vue.use(plugins)
 Vue.use(MainComponent)
+Vue.use(TypedSelectLoadMore)
+Vue.use(directives) // 注册自定义指令
 Vue.use(WujieVue) // 注册无界组件
 
 // 微应用预加载（已禁用以避免多余iframe）

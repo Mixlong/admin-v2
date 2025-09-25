@@ -50,39 +50,75 @@
                                     </el-radio-group>
                                 </div>
 
-                                <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
+                                <!-- 线缆详细配置 - 只有选择迪太提供时才显示 -->
                                 <div class="cable-details" v-if="mainProduct.cableType === 2">
-                                    <el-form-item prop="supplierCode" class="cable-detail-item">
+                                    <el-form-item class="cable-detail-item">
                                         <label class="cable-label">供应商：</label>
                                         <el-select v-model="mainProduct.supplierCode" class="cable-select"
-                                            placeholder="请选择供应商" @change="handleMainProductSupplierChange">
+                                            placeholder="请选择供应商" @change="handleMainProductSupplierChange" clearable>
                                             <el-option v-for="(supplier, index) in supplierOptions"
                                                 :key="`main-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
                                                 :label="supplier.dictLabel" :value="String(supplier.dictCode)">
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                    <el-row class="mb20">
+                                        <el-col :span="12">
+                                            <el-form-item class="cable-detail-item">
+                                                <label class="cable-label">防水头型号：</label>
+                                                <el-select v-model="mainProduct.waterproofHeadId" class="cable-select"
+                                                    placeholder="请选择防水头型号" :disabled="!mainProduct.supplierCode"
+                                                    clearable>
+                                                    <el-option v-for="(option, index) in waterproofHeadOptions"
+                                                        :key="`main-waterproof-${option.id || index}-${index}-${option.cableModel}`"
+                                                        :label="option.cableModel" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
 
-                                    <el-form-item prop="cableId" class="cable-detail-item">
-                                        <label class="cable-label">防水头型号：</label>
-                                        <el-select v-model="mainProduct.cableId" class="cable-select"
-                                            placeholder="请选择防水头型号" :disabled="!mainProduct.supplierCode">
-                                            <el-option v-for="(option, index) in waterproofHeadOptions"
-                                                :key="`main-waterproof-${option.id || index}-${index}-${option.cableModel}`"
-                                                :label="option.cableModel" :value="String(option.id)">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
+                                        </el-col>
+                                        <el-col :span="12">
 
-                                    <el-form-item prop="cableLong" class="cable-detail-item">
-                                        <label class="cable-label">线长：</label>
-                                        <div class="input-with-unit">
-                                            <el-input-number v-model="mainProduct.cableLong" :min="1" :max="10000000"
-                                                :step="1000" :precision="0" :controls="false" class="cable-length-input"
-                                                placeholder="请输入线长" />
-                                        </div>
-                                        <span class="unit-text">mm</span>
-                                    </el-form-item>
+                                            <el-form-item class="cable-detail-item">
+                                                <label class="cable-label">端子型号：</label>
+                                                <el-select v-model="mainProduct.triggerTerminalCableId"
+                                                    class="cable-select" placeholder="请选择端子型号"
+                                                    :disabled="!mainProduct.supplierCode" clearable>
+                                                    <el-option v-for="(option, index) in terminalOptions"
+                                                        :key="`main-terminal-${option.id || index}-${index}-${option.triggerTerminalModel}`"
+                                                        :label="option.triggerTerminalModel" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+
+                                    <el-row>
+                                        <el-col :span="12">
+                                            <el-form-item prop="wireCableId" class="cable-detail-item">
+                                                <label class="cable-label">线缆型号：</label>
+                                                <el-select v-model="mainProduct.wireCableId" class="cable-select"
+                                                    placeholder="请选择线缆型号" :disabled="!mainProduct.supplierCode"
+                                                    clearable>
+                                                    <el-option v-for="(option, index) in cableModelOptions"
+                                                        :key="`main-cable-${option.id || index}-${index}`"
+                                                        :label="getCableOptionLabel(option)" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+
+                                        <el-col :span="12">
+                                            <el-form-item prop="cableLong" class="cable-detail-item">
+                                                <label class="cable-label">线长：</label>
+                                                <div class="input-with-unit">
+                                                    <el-input v-model="mainProduct.cableLong" class="cable-length-input"
+                                                        placeholder="请输入线长mm" :disabled="!mainProduct.wireCableId"
+                                                        @input="handleMainProductCableLongInput" />
+                                                </div>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
                                 </div>
                             </div>
                         </el-form-item>
@@ -183,39 +219,76 @@
                                     </el-radio-group>
                                 </div>
 
-                                <!-- 线缆详细配置 - 只有选择客供线缆时才显示 -->
+                                <!-- 线缆详细配置 - 只有选择迪太提供时才显示 -->
                                 <div class="cable-details" v-if="buttonProduct.cableType === 2 && buttonEnabled">
-                                    <el-form-item prop="supplierCode" class="cable-detail-item">
+                                    <el-form-item class="cable-detail-item">
                                         <label class="cable-label">供应商：</label>
                                         <el-select v-model="buttonProduct.supplierCode" class="cable-select"
-                                            placeholder="请选择供应商" @change="handleButtonSupplierChange">
+                                            placeholder="请选择供应商" @change="handleButtonSupplierChange" clearable>
                                             <el-option v-for="(supplier, index) in supplierOptions"
                                                 :key="`button-supplier-${supplier.dictCode || index}-${index}-${supplier.dictLabel}`"
                                                 :label="supplier.dictLabel" :value="String(supplier.dictCode)">
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                    <el-row class="mb20">
+                                        <el-col :span="12">
+                                            <el-form-item class="cable-detail-item">
+                                                <label class="cable-label">防水头型号：</label>
+                                                <el-select v-model="buttonProduct.waterproofHeadId" class="cable-select"
+                                                    placeholder="请选择防水头型号" :disabled="!buttonProduct.supplierCode"
+                                                    clearable>
+                                                    <el-option v-for="(option, index) in waterproofHeadOptions"
+                                                        :key="`button-waterproof-${option.id || index}-${index}-${option.cableModel}`"
+                                                        :label="option.cableModel" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
 
-                                    <el-form-item prop="cableId" class="cable-detail-item">
-                                        <label class="cable-label">防水头型号：</label>
-                                        <el-select v-model="buttonProduct.cableId" class="cable-select"
-                                            placeholder="请选择防水头型号" :disabled="!buttonProduct.supplierCode">
-                                            <el-option v-for="(option, index) in waterproofHeadOptions"
-                                                :key="`button-waterproof-${option.id || index}-${index}-${option.cableModel}`"
-                                                :label="option.cableModel" :value="String(option.id)">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
+                                        </el-col>
 
-                                    <el-form-item prop="cableLong" class="cable-detail-item">
-                                        <label class="cable-label">线长：</label>
-                                        <div class="input-with-unit">
-                                            <el-input-number v-model="buttonProduct.cableLong" :min="1" :max="10000000"
-                                                :step="1000" :precision="0" :controls="false" class="cable-length-input"
-                                                placeholder="请输入线长" />
-                                        </div>
-                                        <span class="unit-text">mm</span>
-                                    </el-form-item>
+                                        <el-col :span="12">
+
+                                            <el-form-item class="cable-detail-item">
+                                                <label class="cable-label">端子型号：</label>
+                                                <el-select v-model="buttonProduct.triggerTerminalCableId"
+                                                    class="cable-select" placeholder="请选择端子型号"
+                                                    :disabled="!buttonProduct.supplierCode" clearable>
+                                                    <el-option v-for="(option, index) in terminalOptions"
+                                                        :key="`button-terminal-${option.id || index}-${index}-${option.triggerTerminalModel}`"
+                                                        :label="option.triggerTerminalModel" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+
+                                    <el-row>
+                                        <el-col :span="12">
+                                            <el-form-item prop="wireCableId" class="cable-detail-item">
+                                                <label class="cable-label">线缆型号：</label>
+                                                <el-select v-model="buttonProduct.wireCableId" class="cable-select"
+                                                    placeholder="请选择线缆型号" :disabled="!buttonProduct.supplierCode"
+                                                    clearable>
+                                                    <el-option v-for="(option, index) in cableModelOptions"
+                                                        :key="`button-cable-${option.id || index}-${index}`"
+                                                        :label="getCableOptionLabel(option)" :value="String(option.id)">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-form-item prop="cableLong" class="cable-detail-item">
+                                                <label class="cable-label">线长：</label>
+                                                <div class="input-with-unit">
+                                                    <el-input v-model="buttonProduct.cableLong"
+                                                        class="cable-length-input" placeholder="请输入线长mm"
+                                                        :disabled="!buttonProduct.wireCableId"
+                                                        @input="handleButtonProductCableLongInput" />
+                                                </div>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
                                 </div>
                             </div>
                         </el-form-item>
@@ -346,10 +419,10 @@
                 <div class="footer-info">
                 </div>
                 <div class="footer-buttons">
-                    <el-button @click="handleCancel" size="medium" icon="el-icon-close">
+                    <el-button @click="handleCancel" size="medium">
                         取 消
                     </el-button>
-                    <el-button type="primary" @click="handleSave" :loading="saving" size="medium" icon="el-icon-check">
+                    <el-button type="primary" @click="handleSave" :loading="saving" size="medium">
                         {{ saving ? '保存中...' : '确 定' }}
                     </el-button>
                 </div>
@@ -368,7 +441,7 @@ import {
     getCostProjectDict
 } from '@/api/quote-management/quotation'
 import { getCableCostList } from '@/api/quote-management/cableCost'
-
+import { getDicts } from "@/api/system/dict/data";
 export default {
     name: 'AddQuoteDialogRefactored',
     props: {
@@ -413,7 +486,11 @@ export default {
             },
 
             // Loading 状态
-
+            mainProductDiCode: '',
+            btnDiCode: '',
+            // 支持多个dictCode匹配
+            mainProductDiCodes: [],
+            btnDiCodes: [],
             // UI辅助状态
             buttonEnabled: false,
             mainProductIdCostSharing: false,
@@ -427,6 +504,8 @@ export default {
             buttonOptions: [],
             supplierOptions: [],
             waterproofHeadOptions: [],
+            terminalOptions: [],
+            cableModelOptions: [],
             costCategoryOptions: [],
             costProjectOptions: [],
 
@@ -445,43 +524,42 @@ export default {
                 categoryId: [
                     { required: true, message: '请选择产品品类', trigger: 'change' }
                 ],
-                supplierCode: [
-                    {
-                        validator: function (rule, value, callback) {
-                            var mainProduct = this.mainProduct
-                            if (mainProduct && mainProduct.cableType === 2 && !value) {
-                                callback(new Error('选择迪太云线缆时，供应商为必填'))
-                            } else {
-                                callback()
-                            }
-                        }.bind(this),
-                        trigger: 'change'
-                    }
-                ],
-                cableId: [
-                    {
-                        validator: function (rule, value, callback) {
-                            var mainProduct = this.mainProduct
-                            if (mainProduct && mainProduct.cableType === 2 && !value) {
-                                callback(new Error('选择迪太云线缆时，防水头型号为必填'))
-                            } else {
-                                callback()
-                            }
-                        }.bind(this),
-                        trigger: 'change'
-                    }
-                ],
                 cableLong: [
                     {
                         validator: function (rule, value, callback) {
                             var mainProduct = this.mainProduct
-                            if (mainProduct && mainProduct.cableType === 2 && (!value || value <= 0)) {
-                                callback(new Error('选择迪太云线缆时，线长为必填且必须大于0'))
+                            if (mainProduct) {
+                                // 双向捆绑校验
+                                if (mainProduct.wireCableId && (value === null || value === undefined || value === '')) {
+                                    callback(new Error('选择线缆型号后，线长为必填'))
+                                } else if (!mainProduct.wireCableId && (value !== null && value !== undefined && value !== '')) {
+                                    callback(new Error('输入线长前，请先选择线缆型号'))
+                                } else {
+                                    callback()
+                                }
                             } else {
                                 callback()
                             }
                         }.bind(this),
                         trigger: 'blur'
+                    }
+                ],
+                wireCableId: [
+                    {
+                        validator: function (rule, value, callback) {
+                            var mainProduct = this.mainProduct
+                            if (mainProduct) {
+                                // 双向捆绑校验：如果有线长但没有线缆型号
+                                if (!value && (mainProduct.cableLong !== null && mainProduct.cableLong !== undefined)) {
+                                    callback(new Error('输入了线长后，线缆型号为必填'))
+                                } else {
+                                    callback()
+                                }
+                            } else {
+                                callback()
+                            }
+                        }.bind(this),
+                        trigger: 'change'
                     }
                 ]
             },
@@ -533,20 +611,52 @@ export default {
 
         // 主产品数据
         mainProduct: function () {
-            return (this.quotationData.list || []).find(function (item) { return item.productType === 1 }) || {}
+            if (!this.mainProductDiCodes || this.mainProductDiCodes.length === 0) return {}
+            var self = this
+            return (this.quotationData.list || []).find(function (item) {
+                return self.mainProductDiCodes.includes(item.productType) ||
+                    self.mainProductDiCodes.includes(Number(item.productType)) ||
+                    self.mainProductDiCodes.includes(String(item.productType)) ||
+                    item.productType === 1 ||
+                    item.productType === '1'
+            }) || {}
         },
 
         mainProductIndex: function () {
-            return (this.quotationData.list || []).findIndex(function (item) { return item.productType === 1 })
+            if (!this.mainProductDiCodes || this.mainProductDiCodes.length === 0) return -1
+            var self = this
+            return (this.quotationData.list || []).findIndex(function (item) {
+                return self.mainProductDiCodes.includes(item.productType) ||
+                    self.mainProductDiCodes.includes(Number(item.productType)) ||
+                    self.mainProductDiCodes.includes(String(item.productType)) ||
+                    item.productType === 1 ||
+                    item.productType === '1'
+            })
         },
 
         // 按键产品数据
         buttonProduct: function () {
-            return (this.quotationData.list || []).find(function (item) { return item.productType === 2 }) || {}
+            if (!this.btnDiCodes || this.btnDiCodes.length === 0) return {}
+            var self = this
+            return (this.quotationData.list || []).find(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === 2 ||
+                    item.productType === '2'
+            }) || {}
         },
 
         buttonProductIndex: function () {
-            return (this.quotationData.list || []).findIndex(function (item) { return item.productType === 2 })
+            if (!this.btnDiCodes || this.btnDiCodes.length === 0) return -1
+            var self = this
+            return (this.quotationData.list || []).findIndex(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === 2 ||
+                    item.productType === '2'
+            })
         },
 
         // 是否有未保存的更改
@@ -576,11 +686,51 @@ export default {
                             },
                             trigger: 'blur'
                         }
+                    ],
+                    cableLong: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var buttonProduct = this.buttonProduct
+                                if (buttonProduct) {
+                                    // 双向捆绑校验
+                                    if (buttonProduct.wireCableId && (value === null || value === undefined || value === '')) {
+                                        callback(new Error('选择线缆型号后，线长为必填'))
+                                    } else if (!buttonProduct.wireCableId && (value !== null && value !== undefined && value !== '')) {
+                                        callback(new Error('输入线长前，请先选择线缆型号'))
+                                    } else {
+                                        callback()
+                                    }
+                                } else {
+                                    callback()
+                                }
+                            }.bind(this),
+                            trigger: 'blur'
+                        }
+                    ],
+                    wireCableId: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var buttonProduct = this.buttonProduct
+                                if (buttonProduct) {
+                                    // 双向捆绑校验：如果有线长但没有线缆型号
+                                    if (!value && (buttonProduct.cableLong !== null && buttonProduct.cableLong !== undefined)) {
+                                        callback(new Error('输入了线长后，线缆型号为必填'))
+                                    } else {
+                                        callback()
+                                    }
+                                } else {
+                                    callback()
+                                }
+                            }.bind(this),
+                            trigger: 'change'
+                        }
                     ]
                 }
             } else {
                 return {
-                    categoryId: []
+                    categoryId: [],
+                    cableLong: [],
+                    wireCableId: []
                 }
             }
         },
@@ -675,19 +825,16 @@ export default {
         'mainProduct.cableType': function (newVal, oldVal) {
             if (newVal !== oldVal && this.mainProduct) {
                 if (newVal !== 2) {
-                    // 不是客供线缆，清空相关字段
+                    // 不是迪太提供，清空相关字段
                     this.mainProduct.supplierCode = null
-                    this.mainProduct.cableId = null
+                    this.mainProduct.waterproofHeadId = null
+                    this.mainProduct.triggerTerminalCableId = null
+                    this.mainProduct.wireCableId = null
                     this.mainProduct.cableLong = null
                     this.waterproofHeadOptions = []
+                    this.terminalOptions = []
+                    this.cableModelOptions = []
                 }
-                // 触发表单验证
-                var self = this
-                this.$nextTick(function () {
-                    if (self.$refs.mainProductForm) {
-                        self.$refs.mainProductForm.validateField(['supplierCode', 'cableId', 'cableLong'])
-                    }
-                })
             }
         },
 
@@ -695,9 +842,11 @@ export default {
         'buttonProduct.cableType': function (newVal, oldVal) {
             if (newVal !== oldVal && this.buttonProduct) {
                 if (newVal !== 2) {
-                    // 不是客供线缆，清空相关字段
+                    // 不是迪太提供，清空相关字段
                     this.buttonProduct.supplierCode = null
-                    this.buttonProduct.cableId = null
+                    this.buttonProduct.waterproofHeadId = null
+                    this.buttonProduct.triggerTerminalCableId = null
+                    this.buttonProduct.wireCableId = null
                     this.buttonProduct.cableLong = null
                 }
             }
@@ -706,16 +855,72 @@ export default {
         // 监听主产品供应商变化 - 用于编辑时的回显
         'mainProduct.supplierCode': async function (newVal) {
             if (newVal && this.isLoadingEditData) {
-                // 编辑时自动加载防水头选项
-                await this.loadWaterproofHeadOptions(newVal)
+                // 编辑时自动加载线缆选项
+                await this.loadCableOptions(newVal)
             }
         },
 
         // 监听按键供应商变化 - 用于编辑时的回显
         'buttonProduct.supplierCode': async function (newVal) {
             if (newVal && this.isLoadingEditData && this.buttonEnabled) {
-                // 编辑时自动加载防水头选项
-                await this.loadWaterproofHeadOptions(newVal)
+                // 编辑时自动加载线缆选项
+                await this.loadCableOptions(newVal)
+            }
+        },
+
+        // 监听主产品线缆型号变化 - 捆绑线长验证
+        'mainProduct.wireCableId': function (newVal, oldVal) {
+            if (newVal !== oldVal) {
+                var self = this
+                this.$nextTick(function () {
+                    if (self.$refs.mainProductForm) {
+                        self.$refs.mainProductForm.validateField('cableLong')
+                    }
+                })
+                // 如果清空线缆型号，也清空线长
+                if (!newVal && this.mainProduct) {
+                    this.mainProduct.cableLong = null
+                }
+            }
+        },
+
+        // 监听按键线缆型号变化 - 捆绑线长验证
+        'buttonProduct.wireCableId': function (newVal, oldVal) {
+            if (newVal !== oldVal && this.buttonEnabled) {
+                var self = this
+                this.$nextTick(function () {
+                    if (self.$refs.buttonForm) {
+                        self.$refs.buttonForm.validateField('cableLong')
+                    }
+                })
+                // 如果清空线缆型号，也清空线长
+                if (!newVal && this.buttonProduct) {
+                    this.buttonProduct.cableLong = null
+                }
+            }
+        },
+
+        // 监听主产品线长变化 - 捆绑线缆型号验证
+        'mainProduct.cableLong': function (newVal, oldVal) {
+            if (newVal !== oldVal) {
+                var self = this
+                this.$nextTick(function () {
+                    if (self.$refs.mainProductForm) {
+                        self.$refs.mainProductForm.validateField('wireCableId')
+                    }
+                })
+            }
+        },
+
+        // 监听按键线长变化 - 捆绑线缆型号验证
+        'buttonProduct.cableLong': function (newVal, oldVal) {
+            if (newVal !== oldVal && this.buttonEnabled) {
+                var self = this
+                this.$nextTick(function () {
+                    if (self.$refs.buttonForm) {
+                        self.$refs.buttonForm.validateField('wireCableId')
+                    }
+                })
             }
         }
     },
@@ -749,10 +954,11 @@ export default {
         loadInitialData: async function () {
             try {
                 this.loading = true
+                // 先加载字典数据，然后再加载品类列表
+                await this.loadCostDictionaries()
                 await Promise.all([
                     this.loadCategoryList(),
-                    this.loadSupplierOptions(),
-                    this.loadCostDictionaries()
+                    this.loadSupplierOptions()
                 ])
             } catch (error) {
                 console.error('加载初始数据失败:', error)
@@ -767,24 +973,12 @@ export default {
             try {
                 var response = await getCategoryList()
                 if (response.code === 200) {
-                    this.categoryList = response.data || []
-                    // 根据productType过滤品类：1=仪表类，2=按键类
-                    var mainProductCategories = this.categoryList.filter(function (cat) {
-                        return cat.productType === 1   // 仪表类品类
-                    })
-                    var buttonCategories = this.categoryList.filter(function (cat) {
-                        return cat.productType === 2 // 按键类品类
-                    })
+                    this.categoryList = response.data.filter(item => item.isSample === 1) || []
 
-                    this.$set(this, 'filteredMainProductCategories', mainProductCategories)
-                    this.$set(this, 'filteredButtonCategories', buttonCategories)
-
-
-                    console.log('品类过滤结果:', {
-                        total: this.categoryList.length,
-                        mainProduct: mainProductCategories.length,
-                        button: buttonCategories.length
-                    })
+                    // 只有在字典数据已加载时才进行过滤
+                    if (this.mainProductDiCodes.length > 0 && this.btnDiCodes.length > 0) {
+                        this.filterCategories()
+                    }
                 } else {
                     this.$message.error(response.msg || '获取品类列表失败')
                 }
@@ -806,10 +1000,22 @@ export default {
         loadCostDictionaries: async function () {
             var results = await Promise.all([
                 getCostCategoryDict(),
-                getCostProjectDict()
+                getCostProjectDict(),
+                getDicts('product_type')
             ])
             var categoryRes = results[0]
             var projectRes = results[1]
+            // 找到按键类型（dictValue === '2'）
+            var buttonTypes = results[2].data.filter(item => item.dictValue === '2')
+            this.btnDiCodes = buttonTypes.map(item => item.dictCode)
+            this.btnDiCode = buttonTypes[0]?.dictCode || ''
+            console.log("🚀 ~ file: AddQuoteDialogRefactored.vue:1037 ~ btnDiCode:", this.btnDiCode)
+
+            // 找到主产品类型（dictValue === '1'）- 获取所有仪表类型的dictCode
+            var instrumentTypes = results[2].data.filter(item => item.dictValue === '1')
+            this.mainProductDiCodes = instrumentTypes.map(item => item.dictCode)
+            this.mainProductDiCode = instrumentTypes[0]?.dictCode || ''
+
 
             if (categoryRes.code === 200) {
                 this.costCategoryOptions = (categoryRes.data || []).map(function (item) {
@@ -831,14 +1037,58 @@ export default {
                     }
                 })
             }
+
+            // 如果品类列表已加载，进行过滤
+            if (this.categoryList.length > 0) {
+                this.filterCategories()
+            }
+        },
+
+        // 过滤品类列表
+        filterCategories: function () {
+            var self = this
+            var mainProductCategories = this.categoryList.filter(function (cat) {
+                return self.mainProductDiCodes.includes(cat.productType) ||
+                    self.mainProductDiCodes.includes(Number(cat.productType)) ||
+                    self.mainProductDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 1 ||
+                    cat.productType === '1'   // 仪表类品类
+            })
+
+            var buttonCategories = this.categoryList.filter(function (cat) {
+                return self.btnDiCodes.includes(cat.productType) ||
+                    self.btnDiCodes.includes(Number(cat.productType)) ||
+                    self.btnDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 2 ||
+                    cat.productType === '2' // 按键类品类
+            }).sort(function (a, b) {
+                // 按创建时间排序，最新的在前面
+                return new Date(b.createTime) - new Date(a.createTime)
+            })
+
+            this.$set(this, 'filteredMainProductCategories', mainProductCategories)
+            this.$set(this, 'filteredButtonCategories', buttonCategories)
+
+            console.log('品类过滤结果:', {
+                total: this.categoryList.length,
+                mainProduct: mainProductCategories.length,
+                button: buttonCategories.length,
+                mainProductDiCodes: this.mainProductDiCodes,
+                btnDiCodes: this.btnDiCodes
+            })
         },
 
         // 搜索主产品品类
         searchMainProductCategory: function (query) {
             this.searchMainProductQuery = query
-            // 先获取仪表类品类
+            // 先获取仪表类品类 - 使用多个dictCode匹配
+            var self = this
             var mainProductCategories = this.categoryList.filter(function (cat) {
-                return cat.productType === 1 // 仅仪表类品类
+                return self.mainProductDiCodes.includes(cat.productType) ||
+                    self.mainProductDiCodes.includes(Number(cat.productType)) ||
+                    self.mainProductDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 1 ||
+                    cat.productType === '1' // 仪表类品类
             })
 
             if (query) {
@@ -855,8 +1105,12 @@ export default {
 
         // 过滤主产品品类
         filterMainProductCategory: function (val) {
-            // 首先确保是仪表类品类
-            if (val.productType !== 1) return false
+            // 首先确保是仪表类品类 - 使用多个dictCode匹配
+            if (!this.mainProductDiCodes.includes(val.productType) &&
+                !this.mainProductDiCodes.includes(Number(val.productType)) &&
+                !this.mainProductDiCodes.includes(String(val.productType)) &&
+                val.productType !== 1 &&
+                val.productType !== '1') return false
 
             var query = this.searchMainProductQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
@@ -867,9 +1121,15 @@ export default {
         // 搜索按键品类
         searchButtonCategory: function (query) {
             this.searchButtonQuery = query
-            // 先获取按键类品类
+            // 先获取按键类品类 - 使用多个dictCode匹配
+            var self = this
+            console.log("🚀 ~ file: AddQuoteDialogRefactored.vue:1111 ~ self.btnDiCodes:", self.btnDiCodes)
             var buttonCategories = this.categoryList.filter(function (cat) {
-                return cat.productType === 2 // 仅按键类品类
+                return self.btnDiCodes.includes(cat.productType) ||
+                    self.btnDiCodes.includes(Number(cat.productType)) ||
+                    self.btnDiCodes.includes(String(cat.productType)) ||
+                    cat.productType === 2 ||
+                    cat.productType === '2' // 按键类品类
             })
 
             if (query) {
@@ -886,8 +1146,12 @@ export default {
 
         // 过滤按键品类
         filterButtonCategory: function (val) {
-            // 首先确保是按键类品类
-            if (val.productType !== 2) return false
+            // 首先确保是按键类品类 - 使用多个dictCode匹配
+            if (!this.btnDiCodes.includes(val.productType) &&
+                !this.btnDiCodes.includes(Number(val.productType)) &&
+                !this.btnDiCodes.includes(String(val.productType)) &&
+                val.productType !== 2 &&
+                val.productType !== '2') return false
 
             var query = this.searchButtonQuery.toLowerCase()
             return (val.name && val.name.toLowerCase().includes(query)) ||
@@ -898,7 +1162,7 @@ export default {
         // 初始化表单
         initializeForm: async function () {
             // 确保基础数据已加载
-            if (this.categoryList.length === 0 || this.supplierOptions.length === 0) {
+            if (this.categoryList.length === 0 || this.supplierOptions.length === 0 || this.mainProductDiCodes.length === 0 || this.btnDiCodes.length === 0) {
                 await this.loadInitialData()
             }
 
@@ -933,10 +1197,12 @@ export default {
                 list: [
                     {
                         categoryId: null,
-                        productType: 1, // 主产品
+                        productType: this.mainProductDiCodes[0] || this.mainProductDiCode || 1, // 主产品，使用动态dictCode数组第一个或默认值
                         deviceOptional: [],
-                        cableId: null,
-                        cableLong: 1,
+                        wireCableId: null,
+                        waterproofHeadId: null, // 防水头型号ID
+                        triggerTerminalCableId: null, // 端子型号ID
+                        cableLong: null,
                         cableType: 2,
                         supplierCode: null,
                         wireType: 1,
@@ -957,21 +1223,14 @@ export default {
             this.mainProductOptions = []
             this.buttonOptions = []
             this.waterproofHeadOptions = []
+            this.terminalOptions = []
+            this.cableModelOptions = []
             this.mainProductAllData = []
             this.buttonAllData = []
 
             // 确保过滤列表已初始化
-            if (this.categoryList.length > 0) {
-                // 根据productType过滤品类
-                var mainProductCategories = this.categoryList.filter(function (cat) {
-                    return cat.productType === 1 // 仪表类品类
-                })
-                var buttonCategories = this.categoryList.filter(function (cat) {
-                    return cat.productType === 2 // 按键类品类
-                })
-
-                this.$set(this, 'filteredMainProductCategories', mainProductCategories)
-                this.$set(this, 'filteredButtonCategories', buttonCategories)
+            if (this.categoryList.length > 0 && this.mainProductDiCodes.length > 0 && this.btnDiCodes.length > 0) {
+                this.filterCategories()
             }
         },
 
@@ -990,7 +1249,14 @@ export default {
 
 
             // 设置UI状态
-            var buttonProduct = this.quotationData.list.find(function (item) { return item.productType === 2 })
+            var self = this
+            var buttonProduct = this.quotationData.list.find(function (item) {
+                return self.btnDiCodes.includes(item.productType) ||
+                    self.btnDiCodes.includes(Number(item.productType)) ||
+                    self.btnDiCodes.includes(String(item.productType)) ||
+                    item.productType === '2' ||
+                    item.productType === 2
+            })
             this.buttonEnabled = !!buttonProduct
 
             var mainProduct = this.mainProduct
@@ -1017,14 +1283,14 @@ export default {
             // 等待一下确保供应商数据已经设置
             await this.$nextTick()
 
-            // 加载防水头选项 - 主产品
+            // 加载线缆选项 - 主产品
             if (mainProduct && mainProduct.supplierCode && mainProduct.cableType === 2) {
-                await this.loadWaterproofHeadOptions(mainProduct.supplierCode)
+                await this.loadCableOptions(mainProduct.supplierCode)
             }
 
-            // 加载防水头选项 - 按键产品
+            // 加载线缆选项 - 按键产品
             if (buttonProduct && buttonProduct.supplierCode && buttonProduct.cableType === 2) {
-                await this.loadWaterproofHeadOptions(buttonProduct.supplierCode)
+                await this.loadCableOptions(buttonProduct.supplierCode)
             }
 
             this.isLoadingEditData = false // 加载完成
@@ -1120,23 +1386,44 @@ export default {
         // 主产品供应商变化
         handleMainProductSupplierChange: function (supplierCode) {
             if (supplierCode) {
-                this.loadWaterproofHeadOptions(supplierCode)
-                // 清空防水头型号
-                this.mainProduct.cableId = null
+                this.loadCableOptions(supplierCode)
+                // 清空所有下级选项
+                this.mainProduct.waterproofHeadId = null
+                this.mainProduct.triggerTerminalCableId = null
+                this.mainProduct.wireCableId = null
+                this.mainProduct.cableLong = null
+            } else {
+                // 清空所有选项
+                this.waterproofHeadOptions = []
+                this.terminalOptions = []
+                this.cableModelOptions = []
+                this.mainProduct.waterproofHeadId = null
+                this.mainProduct.triggerTerminalCableId = null
+                this.mainProduct.wireCableId = null
+                this.mainProduct.cableLong = null
             }
         },
 
         // 按键供应商变化
         handleButtonSupplierChange: function (supplierCode) {
             if (supplierCode) {
-                this.loadWaterproofHeadOptions(supplierCode)
-                // 清空防水头型号
-                this.buttonProduct.cableId = null
+                this.loadCableOptions(supplierCode)
+                // 清空所有下级选项
+                this.buttonProduct.waterproofHeadId = null
+                this.buttonProduct.triggerTerminalCableId = null
+                this.buttonProduct.wireCableId = null
+                this.buttonProduct.cableLong = null
+            } else {
+                // 清空所有选项
+                this.buttonProduct.waterproofHeadId = null
+                this.buttonProduct.triggerTerminalCableId = null
+                this.buttonProduct.wireCableId = null
+                this.buttonProduct.cableLong = null
             }
         },
 
-        // 加载防水头型号选项
-        loadWaterproofHeadOptions: async function (supplierCode) {
+        // 加载线缆相关选项（防水头、端子、线缆型号）
+        loadCableOptions: async function (supplierCode) {
             try {
                 var params = {
                     supplier: supplierCode,
@@ -1144,12 +1431,54 @@ export default {
                     pageSize: 999
                 }
                 var response = await getCableCostList(params)
-                if (response.code === 200) {
-                    this.waterproofHeadOptions = (response.data && response.data.list) || []
+                console.log("🚀 ~ 线缆成本列表响应:", response)
+                if (response.code === 200 && response.data && response.data.list) {
+                    var cableList = response.data.list[0] // 获取第一个供应商的数据
+                    if (cableList && cableList.list) {
+                        // 分类处理不同类型的线缆数据
+                        this.waterproofHeadOptions = cableList.list.filter(function (item) {
+                            return item.costCableType === 1 && item.cableModel // 防水头
+                        })
+
+                        this.terminalOptions = cableList.list.filter(function (item) {
+                            return item.costCableType === 3 && item.triggerTerminalModel // 端子
+                        })
+
+                        this.cableModelOptions = cableList.list.filter(function (item) {
+                            return item.costCableType === 2 && (item.commonLinearPrice || item.ulLinearPrice) // 线缆
+                        })
+
+                        console.log('防水头选项:', this.waterproofHeadOptions.length)
+                        console.log('端子选项:', this.terminalOptions.length)
+                        console.log('线缆型号选项:', this.cableModelOptions.length)
+                    }
                 }
             } catch (error) {
-                console.error('加载防水头型号失败:', error)
+                console.error('加载线缆选项失败:', error)
             }
+        },
+
+        // 获取线缆选项标签（不显示价格）
+        getCableOptionLabel: function (option) {
+            if (!option) return ''
+
+            // 根据线缆类型显示：类型 - 型号
+            var label = ''
+            var model = option.linearModel || '未知型号'
+
+            if (option.commonLinearPrice) {
+                label = `普通线 - ${model}`
+            } else if (option.ulLinearPrice) {
+                label = `UL线 - ${model}`
+            } else {
+                label = `未知线缆类型 - ${model}`
+            }
+            return label
+        },
+
+        // 保持向后兼容的方法名
+        loadWaterproofHeadOptions: async function (supplierCode) {
+            await this.loadCableOptions(supplierCode)
         },
 
         // 费用分摊处理方法
@@ -1228,10 +1557,12 @@ export default {
                     // 如果 list 中没有按键产品，创建一个新的
                     var newButtonProduct = {
                         categoryId: null,
-                        productType: 2, // 按键
+                        productType: this.btnDiCodes[0] || this.btnDiCode || 2, // 按键，使用动态dictCode数组第一个或默认值
                         deviceOptional: [],
-                        cableId: null,
-                        cableLong: 1,
+                        wireCableId: null,
+                        waterproofHeadId: null, // 防水头型号ID
+                        triggerTerminalCableId: null, // 端子型号ID
+                        cableLong: null,
                         cableType: 2,
                         supplierCode: null,
                         wireType: 1,
@@ -1554,6 +1885,22 @@ export default {
             var projectNameEn = costProjectItem ? (costProjectItem.remark || costProjectItem.label || 'Unknown Project(' + option.costProject + ')') : 'Unknown Project(' + option.costProject + ')'
 
             return categoryNameEn + '-' + projectNameEn
+        },
+
+        // 主产品线长输入过滤 - 只允许数字
+        handleMainProductCableLongInput: function (value) {
+            // 过滤非数字字符，保留数字
+            var filteredValue = value.replace(/[^\d]/g, '')
+            // 转换为数字类型，如果为空字符串则设为null
+            this.mainProduct.cableLong = filteredValue === '' ? null : parseInt(filteredValue)
+        },
+
+        // 按键产品线长输入过滤 - 只允许数字
+        handleButtonProductCableLongInput: function (value) {
+            // 过滤非数字字符，保留数字
+            var filteredValue = value.replace(/[^\d]/g, '')
+            // 转换为数字类型，如果为空字符串则设为null
+            this.buttonProduct.cableLong = filteredValue === '' ? null : parseInt(filteredValue)
         },
 
         // 清除表单验证错误

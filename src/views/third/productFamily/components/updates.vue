@@ -1,405 +1,138 @@
 <template>
   <div>
-    <el-dialog
-      class="instrument_box"
-      :title="title"
-      :visible.sync="dialogVisible"
-      :close-on-click-modal="false"
-      :top="dialogTop()"
-      fullscreen
-      append-to-body
-      center
-    >
-      <el-form :model="queryParams" ref="queryParams" :inline="true">
-        <el-form-item label="所属品类" prop="categoryId">
-          <el-select
-            v-model="queryParams.categoryId"
-            filterable
-            allow-create
-            clearable
-            placeholder="请选择品类"
-            style="width: 160px"
-            @change="changeCategory(queryParams.categoryId, false)"
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.name"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="仪表型号" prop="computerId">
-          <el-select
-            v-model="queryParams.computerId"
-            :loading="isCLoading"
-            filterable
-            remote
-            clearable
-            :disabled="!queryParams.categoryId"
-            placeholder="请选择仪表型号"
-            :remote-method="getComputerNameList"
-            style="width: 160px"
-          >
-            <el-option
-              v-for="dict in computerOptions"
-              :key="dict.model"
-              :label="dict.name"
-              :value="dict.model"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            :disabled="!queryParams.computerId"
-            @click="handleCopy"
-          >
-            复制
-          </el-button>
-        </el-form-item>
-      </el-form>
+    <el-dialog class="instrument_box" :title="title" :visible.sync="dialogVisible" :close-on-click-modal="false"
+      :top="dialogTop()" :fullscreen="!isPackage" append-to-body center>
 
-      <el-switch
-        class="margin-bottom-sm"
-        v-model="form.isSts"
-        :active-value="1"
-        :inactive-value="0"
-        active-color="#13ce66"
-        inactive-color="#ff4949"
-        active-text="STS"
-        inactive-text="非STS"
-      >
-      </el-switch>
-
-      <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
-        <fieldset>
-          <legend class="text-red">基础配置</legend>
-          <el-row :gutter="10">
-            <el-col :span="6">
-              <el-form-item
-                label="产品品类"
-                prop="categoryId"
-                :rules="[
+      <template v-if="!isPackage">
+        <el-form :model="queryParams" ref="queryParams" :inline="true">
+          <el-form-item label="所属品类" prop="categoryId">
+            <el-select v-model="queryParams.categoryId" filterable allow-create clearable placeholder="请选择品类"
+              style="width: 160px" @change="changeCategory(queryParams.categoryId, false)">
+              <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="仪表型号" prop="computerId">
+            <el-select v-model="queryParams.computerId" :loading="isCLoading" filterable remote clearable
+              :disabled="!queryParams.categoryId" placeholder="请选择仪表型号" :remote-method="getComputerNameList"
+              style="width: 160px">
+              <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :disabled="!queryParams.computerId" @click="handleCopy">
+              复制
+            </el-button>
+          </el-form-item>
+        </el-form>
+        <div class="flex margin-bottom-sm">
+          <div class="flex items-center" style="align-items: center;">
+            <span class="mr5"> 是否配置</span>
+            <el-switch v-model="form.isSts" :active-value="1" :inactive-value="0" active-color="#13ce66"
+              inactive-color="#ff4949">
+            </el-switch>
+          </div>
+          <span style="margin-left: 50px;"></span>
+          <div class="flex items-center" style="align-items: center;">
+            <span class="mr5"> BIST型号</span>
+            <el-switch v-model="form.isBist" :active-value="1" :inactive-value="0" active-color="#13ce66"
+              inactive-color="#ff4949">
+            </el-switch>
+          </div>
+        </div>
+        <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
+          <fieldset>
+            <legend class="text-red">基础配置</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item label="产品品类" prop="categoryId" :rules="[
                   {
                     required: true,
                     message: '请选择产品品类',
                     trigger: 'blur',
                   },
-                ]"
-              >
-                <el-select
-                  v-model="form.categoryId"
-                  placeholder="请选择产品品类"
-                  filterable
-                  :disabled="disabled"
-                  class="w100"
-                >
-                  <el-option
-                    v-for="item in modelList"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-
-            <template v-if="form.id">
-              <el-col :span="6">
-                <el-form-item label="型号" prop="name">
-                  <el-input v-model="form.name" placeholder="型号" clearable />
-                </el-form-item>
-              </el-col>
-
-              <el-col :span="6">
-                <el-form-item label="描述" prop="desc">
-                  <el-input
-                    v-model="form.desc"
-                    clearable
-                    placeholder="仪表描述"
-                  />
-                </el-form-item>
-              </el-col>
-
-              <el-col :span="6">
-                <el-form-item label="ERP编码" prop="erp">
-                  <el-input
-                    v-model="form.erp"
-                    placeholder="ERP编码"
-                    clearable
-                  />
-                </el-form-item>
-              </el-col>
-            </template>
-
-            <el-col :span="6">
-              <el-form-item label="SN" prop="instrumentModel.sn">
-                <el-input
-                  v-model.trim="form.instrumentModel.sn"
-                  clearable
-                  placeholder="请输入SN号"
-                />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="6">
-              <el-form-item label="pcbaSn" prop="instrumentModel.pcbaSn">
-                <el-input
-                  v-model.trim="form.instrumentModel.pcbaSn"
-                  clearable
-                  placeholder="请输入pcbaSn"
-                />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="6">
-              <el-form-item
-                label="实际客户车名"
-                prop="instrumentModel.customerCarName"
-              >
-                <el-input
-                  v-model="form.instrumentModel.customerCarName"
-                  placeholder="请输入实际客户车名"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="6">
-              <el-form-item
-                label="客户料号"
-                prop="instrumentModel.customerMaterialNum"
-              >
-                <el-input
-                  v-model="form.instrumentModel.customerMaterialNum"
-                  placeholder="请输入客户料号"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="6">
-              <el-form-item
-                label="客户名称"
-                prop="instrumentModel.customerName"
-              >
-                <select-loadMore
-                  v-model="form.instrumentModel.customerName"
-                  class="w100"
-                  :data="customerNameData.data"
-                  :page="customerNameData.page"
-                  :hasMore="customerNameData.more"
-                  dictLabel="name"
-                  dictValue="name"
-                  :request="getCustomerNameList"
-                  placeholder="请选择客户名称"
-                >
-                </select-loadMore>
-              </el-form-item>
-            </el-col>
-
-            <template v-if="form.isSts === 1">
-              <el-col :span="6">
-                <el-form-item label="最高档位" prop="instrumentModel.topGear">
-                  <el-input
-                    v-minMaxValue="{ min: 0, max: 255 }"
-                    v-model="form.instrumentModel.topGear"
-                    oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                    placeholder="请输入最高档位"
-                    clearable
-                  />
-                </el-form-item>
-              </el-col>
-              <!-- 限速范围 -->
-              <el-col :span="6">
-                <el-form-item
-                  label="限速范围"
-                  prop="instrumentModel.speedLimitRang"
-                >
-                  <el-input
-                    v-model="form.instrumentModel.speedLimitRang"
-                    placeholder="请输入限速范围"
-                    clearable
-                  />
-                </el-form-item>
-              </el-col>
-
-              <!-- 车把尺寸 -->
-              <el-col :span="6">
-                <el-form-item
-                  label="车把尺寸"
-                  prop="instrumentModel.handlebarSize"
-                >
-                  <el-select
-                    v-model="form.instrumentModel.handlebarSize"
-                    placeholder="请选择车把尺寸"
-                    clearable
-                    class="w100"
-                  >
-                    <el-option
-                      v-for="(item, index) in handlebarSizeData"
-                      :key="index"
-                      :label="item.dictLabel"
-                      :value="item.dictValue"
-                    >
-                      <span style="float: left">
-                        <b>展示值：</b>
-                        {{ item.dictLabel }}
-                      </span>
-                      <span style="float: right">
-                        <b>实际值：</b>
-                        {{ item.dictValue }}
-                      </span>
+                ]">
+                  <el-select v-model="form.categoryId" placeholder="请选择产品品类" filterable :disabled="disabled"
+                    class="w100">
+                    <el-option v-for="item in modelList" :key="item.id" :label="item.name" :value="item.id">
                     </el-option>
                   </el-select>
                 </el-form-item>
               </el-col>
-            </template>
-          </el-row>
 
-          <el-row :gutter="10">
-            <el-col :span="6" v-if="form.isSts === 1">
-              <el-form-item label="APP" prop="instrumentModel.app">
-                <el-radio-group v-model="form.instrumentModel.app">
-                  <div class="flex">
-                    <el-radio :label="1">YES</el-radio>
-                    <el-radio :label="0">NO</el-radio>
-                  </div>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="6" v-if="form.isSts === 1">
-              <el-form-item label="USB" prop="instrumentModel.usb">
-                <el-radio-group v-model="form.instrumentModel.usb">
-                  <div class="flex">
-                    <el-radio :label="1">YES</el-radio>
-                    <el-radio :label="0">NO</el-radio>
-                  </div>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-          </el-row>
-
-          <fieldset class="margin-top">
-            <legend class="text-green">仪表配置区</legend>
-            <el-row :gutter="10">
-              <el-col :span="6">
-                <el-form-item
-                  label="通讯方式"
-                  prop="instrumentModel.serialLevel"
-                  :rules="isCheckConfigItem({ message: '通讯方式' })"
-                >
-                  <el-select
-                    v-model="form.instrumentModel.serialLevel"
-                    placeholder="请选择通讯方式"
-                    class="w100"
-                    clearable
-                    @change="clearRateOrType"
-                  >
-                    <el-option
-                      v-for="(item, index) in dicts_communication_type"
-                      :key="index"
-                      :label="item.dictLabel"
-                      :value="+item.dictValue"
-                    >
-                      <span style="float: left">
-                        <b>展示值：</b>
-                        {{ item.dictLabel }}
-                      </span>
-                      <span style="float: right">
-                        <b>实际值：</b>
-                        {{ item.dictValue }}
-                      </span>
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="6">
-                <el-form-item
-                  label="串口波特率"
-                  prop="instrumentModel.baudRate"
-                  :rules="isCheckConfigItem({ message: '串口波特率' })"
-                >
-                  <el-select
-                    v-model="form.instrumentModel.baudRate"
-                    placeholder="请选择串口波特率"
-                    class="w100"
-                    clearable
-                  >
-                    <el-option
-                      v-for="(value, key) in baudRateList"
-                      :label="value"
-                      :value="+value"
-                      :key="key"
-                    >
-                      <span style="float: left">
-                        <b>展示值：</b>
-                        {{ value }}
-                      </span>
-                      <span style="float: right">
-                        <b>实际值：</b>
-                        {{ value }}
-                      </span>
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="6">
-                <el-form-item
-                  label="通讯协议"
-                  prop="instrumentModel.sysProtocol"
-                  :rules="isCheckConfigItem({ message: '通讯协议' })"
-                >
-                  <el-select
-                    v-model="form.instrumentModel.sysProtocol"
-                    placeholder="请选择通讯协议"
-                    class="w100"
-                    clearable
-                  >
-                    <el-option
-                      v-for="item in sysProtocolList"
-                      :label="item.dictLabel"
-                      :value="+item.dictValue"
-                      :key="item.dictValue"
-                    >
-                      <span style="float: left">
-                        <b>展示值：</b>
-                        {{ item.dictLabel }}
-                      </span>
-                      <span style="float: right">
-                        <b>实际值：</b>
-                        {{ item.dictValue }}
-                      </span>
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <template v-if="form.instrumentModel.serialLevel === 2">
+              <template v-if="form.id">
                 <el-col :span="6">
-                  <el-form-item
-                    label="帧类型"
-                    prop="instrumentModel.msgType"
-                    :rules="isCheckConfigItem({ message: '帧类型' })"
-                  >
-                    <el-select
-                      v-model.number="form.instrumentModel.msgType"
-                      filterable
-                      clearable
-                      placeholder="请选择帧类型"
-                      class="w100"
-                    >
-                      <el-option
-                        v-for="item in [
-                          { dictLabel: '标准帧', dictValue: 0 },
-                          { dictLabel: '扩展帧', dictValue: 1 },
-                        ]"
-                        :label="item.dictLabel"
-                        :value="item.dictValue"
-                        :key="item.dictValue"
-                      >
+                  <el-form-item label="型号" prop="name">
+                    <el-input v-model="form.name" placeholder="型号" clearable />
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6">
+                  <el-form-item label="描述" prop="desc">
+                    <el-input v-model="form.desc" clearable placeholder="仪表描述" />
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6">
+                  <el-form-item label="ERP编码" prop="erp">
+                    <el-input v-model="form.erp" placeholder="ERP编码" clearable />
+                  </el-form-item>
+                </el-col>
+              </template>
+
+              <el-col :span="6">
+                <el-form-item label="SN" prop="instrumentModel.sn">
+                  <el-input v-model.trim="form.instrumentModel.sn" clearable placeholder="请输入SN号" />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
+                <el-form-item label="pcbaSn" prop="instrumentModel.pcbaSn">
+                  <el-input v-model.trim="form.instrumentModel.pcbaSn" clearable placeholder="请输入pcbaSn" />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
+                <el-form-item label="实际客户车名" prop="instrumentModel.customerCarName">
+                  <el-input v-model="form.instrumentModel.customerCarName" placeholder="请输入实际客户车名" clearable />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
+                <el-form-item label="客户料号" prop="instrumentModel.customerMaterialNum">
+                  <el-input v-model="form.instrumentModel.customerMaterialNum" placeholder="请输入客户料号" clearable />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="6">
+                <el-form-item label="客户名称" prop="instrumentModel.customerName">
+                  <select-loadMore v-model="form.instrumentModel.customerName" class="w100"
+                    :data="customerNameData.data" :page="customerNameData.page" :hasMore="customerNameData.more"
+                    dictLabel="name" dictValue="name" :request="getCustomerNameList" placeholder="请选择客户名称">
+                  </select-loadMore>
+                </el-form-item>
+              </el-col>
+
+              <template v-if="form.isSts === 1">
+                <el-col :span="6">
+                  <el-form-item label="最高档位" prop="instrumentModel.topGear">
+                    <el-input v-minMaxValue="{ min: 0, max: 255 }" v-model="form.instrumentModel.topGear"
+                      oninput="value=value.replace(/^\.+|[^\d.]/g, '')" placeholder="请输入最高档位" clearable />
+                  </el-form-item>
+                </el-col>
+                <!-- 限速范围 -->
+                <el-col :span="6">
+                  <el-form-item label="限速范围" prop="instrumentModel.speedLimitRang">
+                    <el-input v-model="form.instrumentModel.speedLimitRang" placeholder="请输入限速范围" clearable />
+                  </el-form-item>
+                </el-col>
+
+                <!-- 车把尺寸 -->
+                <el-col :span="6">
+                  <el-form-item label="车把尺寸" prop="instrumentModel.handlebarSize">
+                    <el-select v-model="form.instrumentModel.handlebarSize" placeholder="请选择车把尺寸" clearable
+                      class="w100">
+                      <el-option v-for="(item, index) in handlebarSizeData" :key="index" :label="item.dictLabel"
+                        :value="item.dictValue">
                         <span style="float: left">
                           <b>展示值：</b>
                           {{ item.dictLabel }}
@@ -407,138 +140,48 @@
                         <span style="float: right">
                           <b>实际值：</b>
                           {{ item.dictValue }}
-                        </span>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item
-                    label="CAN波特率"
-                    prop="instrumentModel.canRate"
-                    :rules="isCheckConfigItem({ message: 'CAN波特率' })"
-                  >
-                    <el-select
-                      v-model="form.instrumentModel.canRate"
-                      placeholder="请选择CAN波特率"
-                      class="w100"
-                      clearable
-                    >
-                      <el-option
-                        v-for="(value, key) in canRateList"
-                        :key="key"
-                        :label="value"
-                        :value="+key"
-                      >
-                        <span style="float: left">
-                          <b>展示值：</b>
-                          {{ value }}
-                        </span>
-                        <span style="float: right">
-                          <b>实际值：</b>
-                          {{ key }}
                         </span>
                       </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
               </template>
-              <el-col :span="6">
-                <el-form-item label="标签规则" prop="instrumentModel.labelRule">
-                  <el-select
-                    v-model="form.instrumentModel.labelRule"
-                    clearable
-                    @change="handleLabelRule"
-                    class="w100"
-                  >
-                    <el-option label="通用" :value="1"></el-option>
-                    <el-option label="图片" :value="2"></el-option>
-                  </el-select>
+            </el-row>
+
+            <el-row :gutter="10">
+              <el-col :span="6" v-if="form.isSts === 1">
+                <el-form-item label="APP" prop="instrumentModel.app">
+                  <el-radio-group v-model="form.instrumentModel.app">
+                    <div class="flex">
+                      <el-radio :label="1">YES</el-radio>
+                      <el-radio :label="0">NO</el-radio>
+                    </div>
+                  </el-radio-group>
                 </el-form-item>
               </el-col>
 
-              <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
-                <el-form-item
-                  label="标签图片"
-                  prop="instrumentModel.labelRuleImg"
-                  :rules="isCheckConfigItem({ message: '标签图片' })"
-                >
-                  <el-upload-sortable
-                    v-model="form.instrumentModel.labelRuleImg"
-                    :imgW="80"
-                    :imgH="80"
-                    :isLimit="1"
-                    :max="1"
-                  />
-                </el-form-item>
-              </el-col>
-
-              <el-col>
-                <el-form-item
-                  label="包装信息"
-                  prop="instrumentModel.packagingInfo"
-                >
-                  <modelInfoTable ref="modelInfoTable" v-if="dialogVisible" :data="form.instrumentModel.packagingInfo" />
+              <el-col :span="6" v-if="form.isSts === 1">
+                <el-form-item label="USB" prop="instrumentModel.usb">
+                  <el-radio-group v-model="form.instrumentModel.usb">
+                    <div class="flex">
+                      <el-radio :label="1">YES</el-radio>
+                      <el-radio :label="0">NO</el-radio>
+                    </div>
+                  </el-radio-group>
                 </el-form-item>
               </el-col>
             </el-row>
-          </fieldset>
-          <template>
+
             <fieldset class="margin-top">
-              <legend class="text-green">控制器、按键配置区</legend>
+              <legend class="text-green">仪表配置区</legend>
               <el-row :gutter="10">
                 <el-col :span="6">
-                  <el-form-item
-                    label="控制器接头"
-                    prop="instrumentModel.controlConnect"
-                  >
-                    <el-select
-                      v-model="form.instrumentModel.controlConnect"
-                      placeholder="请选择控制器接头"
-                      filterable
-                      allow-create
-                      clearable
-                      class="w100"
-                    >
-                      <el-option
-                        v-for="(item, index) in dicts_controller_joint"
-                        :key="index"
-                        :label="item.dictValue"
-                        :value="item.dictValue"
-                      >
-                        <span style="float: left">
-                          <b>展示值：</b>
-                          {{ item.dictValue }}
-                        </span>
-                        <span style="float: right">
-                          <b>实际值：</b>
-                          {{ item.dictValue }}
-                        </span>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item
-                    label="控制器头"
-                    prop="instrumentModel.controlHead"
-                  >
-                    <el-select
-                      v-model.number="form.instrumentModel.controlHead"
-                      filterable
-                      clearable
-                      placeholder="请选择控制器头"
-                      class="w100"
-                    >
-                      <el-option
-                        v-for="item in [
-                          { dictLabel: '不含头', dictValue: 0 },
-                          { dictLabel: '含头', dictValue: 1 },
-                        ]"
-                        :label="item.dictLabel"
-                        :value="item.dictValue"
-                        :key="item.dictValue"
-                      >
+                  <el-form-item label="通讯方式" prop="instrumentModel.serialLevel"
+                    :rules="isCheckConfigItem({ message: '通讯方式' })">
+                    <el-select v-model="form.instrumentModel.serialLevel" placeholder="请选择通讯方式" class="w100" clearable
+                      @change="clearRateOrType">
+                      <el-option v-for="(item, index) in dicts_communication_type" :key="index" :label="item.dictLabel"
+                        :value="+item.dictValue">
                         <span style="float: left">
                           <b>展示值：</b>
                           {{ item.dictLabel }}
@@ -552,36 +195,28 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="6">
-                  <el-form-item
-                    label="控制器出线线长(mm)"
-                    prop="instrumentModel.notControllerJointString"
-                  >
-                    <el-input
-                      v-model.number="
-                        form.instrumentModel.notControllerJointString
-                      "
-                      placeholder="请输入控制器出线线长"
-                      oninput="value=value.replace(/[^\d.]/g, '')"
-                      clearable
-                    />
+                  <el-form-item label="串口波特率" prop="instrumentModel.baudRate"
+                    :rules="isCheckConfigItem({ message: '串口波特率' })">
+                    <el-select v-model="form.instrumentModel.baudRate" placeholder="请选择串口波特率" class="w100" clearable>
+                      <el-option v-for="(value, key) in baudRateList" :label="value" :value="+value" :key="key">
+                        <span style="float: left">
+                          <b>展示值：</b>
+                          {{ value }}
+                        </span>
+                        <span style="float: right">
+                          <b>实际值：</b>
+                          {{ value }}
+                        </span>
+                      </el-option>
+                    </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="6">
-                  <el-form-item label="按键型号" prop="instrumentModel.keyType">
-                    <el-select
-                      v-model="form.instrumentModel.keyType"
-                      placeholder="请选择按键型号"
-                      clearable
-                      class="w100"
-                      filterable
-                      allow-create
-                    >
-                      <el-option
-                        v-for="(item, index) in dicts_keyType_list"
-                        :key="index"
-                        :label="item.dictLabel"
-                        :value="+item.dictValue"
-                      >
+                  <el-form-item label="通讯协议" prop="instrumentModel.sysProtocol"
+                    :rules="isCheckConfigItem({ message: '通讯协议' })">
+                    <el-select v-model="form.instrumentModel.sysProtocol" placeholder="请选择通讯协议" class="w100" clearable>
+                      <el-option v-for="item in sysProtocolList" :label="item.dictLabel" :value="+item.dictValue"
+                        :key="item.dictValue">
                         <span style="float: left">
                           <b>展示值：</b>
                           {{ item.dictLabel }}
@@ -594,1063 +229,720 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :span="6">
-                  <el-form-item
-                    label="按键连接类型"
-                    prop="instrumentModel.keyLinkType"
-                  >
-                    <el-select
-                      v-model.number="form.instrumentModel.keyLinkType"
-                      filterable
-                      clearable
-                      placeholder="请选择按键连接类型"
-                      class="w100"
-                    >
-                      <el-option
-                        v-for="item in [
-                          { dictLabel: '直连', dictValue: 0 },
-                          { dictLabel: '快拆', dictValue: 1 },
-                        ]"
-                        :label="item.dictLabel"
-                        :value="item.dictValue"
-                        :key="item.dictValue"
-                      >
-                        <span style="float: left">
-                          <b>展示值：</b>
-                          {{ item.dictLabel }}
-                        </span>
-                        <span style="float: right">
-                          <b>实际值：</b>
-                          {{ item.dictValue }}
-                        </span>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <template v-if="form.instrumentModel.keyLinkType === 1">
+                <template v-if="form.instrumentModel.serialLevel === 2">
                   <el-col :span="6">
-                    <el-form-item
-                      label="按键【仪表端】接头"
-                      prop="instrumentModel.modelEndHead"
-                    >
-                      <el-input
-                        v-model="form.instrumentModel.modelEndHead"
-                        placeholder="请输入按键【仪表端】接头"
-                        clearable
-                      />
+                    <el-form-item label="帧类型" prop="instrumentModel.msgType"
+                      :rules="isCheckConfigItem({ message: '帧类型' })">
+                      <el-select v-model.number="form.instrumentModel.msgType" filterable clearable placeholder="请选择帧类型"
+                        class="w100">
+                        <el-option v-for="item in [
+                          { dictLabel: '标准帧', dictValue: 0 },
+                          { dictLabel: '扩展帧', dictValue: 1 },
+                        ]" :label="item.dictLabel" :value="item.dictValue" :key="item.dictValue">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ item.dictLabel }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                        </el-option>
+                      </el-select>
                     </el-form-item>
                   </el-col>
                   <el-col :span="6">
-                    <el-form-item
-                      label="按键【按键端】接头"
-                      prop="instrumentModel.keyEndHead"
-                    >
-                      <el-input
-                        v-model="form.instrumentModel.keyEndHead"
-                        placeholder="请输入按键【按键端】接头"
-                        clearable
-                      />
+                    <el-form-item label="CAN波特率" prop="instrumentModel.canRate"
+                      :rules="isCheckConfigItem({ message: 'CAN波特率' })">
+                      <el-select v-model="form.instrumentModel.canRate" placeholder="请选择CAN波特率" class="w100" clearable>
+                        <el-option v-for="(value, key) in canRateList" :key="key" :label="value" :value="+key">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ value }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ key }}
+                          </span>
+                        </el-option>
+                      </el-select>
                     </el-form-item>
                   </el-col>
                 </template>
                 <el-col :span="6">
-                  <el-form-item
-                    label="按键线长(mm)"
-                    prop="instrumentModel.keyLineLen"
-                  >
-                    <el-input
-                      v-model.number="form.instrumentModel.keyLineLen"
-                      placeholder="请输入按键线长"
-                      oninput="value=value.replace(/[^\d.]/g, '')"
-                      clearable
-                    />
+                  <el-form-item label="标签规则" prop="instrumentModel.labelRule">
+                    <el-select v-model="form.instrumentModel.labelRule" clearable @change="handleLabelRule"
+                      class="w100">
+                      <el-option label="通用" :value="1"></el-option>
+                      <el-option label="图片" :value="2"></el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
+                  <el-form-item label="标签图片" prop="instrumentModel.labelRuleImg"
+                    :rules="isCheckConfigItem({ message: '标签图片' })">
+                    <el-upload-sortable v-model="form.instrumentModel.labelRuleImg" :imgW="80" :imgH="80" :isLimit="1"
+                      :max="1" />
+                  </el-form-item>
+                </el-col>
+
+                <el-col>
+                  <el-form-item label="包装信息" prop="instrumentModel.packagingInfo">
+                    <modelInfoTable ref="modelInfoTable" v-if="dialogVisible"
+                      :data="form.instrumentModel.packagingInfo" />
                   </el-form-item>
                 </el-col>
               </el-row>
             </fieldset>
+            <template>
+              <fieldset class="margin-top">
+                <legend class="text-green">控制器、按键配置区</legend>
+                <el-row :gutter="10">
+                  <el-col :span="6">
+                    <el-form-item label="控制器接头" prop="instrumentModel.controlConnect">
+                      <el-select v-model="form.instrumentModel.controlConnect" placeholder="请选择控制器接头" filterable
+                        allow-create clearable class="w100">
+                        <el-option v-for="(item, index) in dicts_controller_joint" :key="index" :label="item.dictValue"
+                          :value="item.dictValue">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-form-item label="控制器头" prop="instrumentModel.controlHead">
+                      <el-select v-model.number="form.instrumentModel.controlHead" filterable clearable
+                        placeholder="请选择控制器头" class="w100">
+                        <el-option v-for="item in [
+                          { dictLabel: '不含头', dictValue: 0 },
+                          { dictLabel: '含头', dictValue: 1 },
+                        ]" :label="item.dictLabel" :value="item.dictValue" :key="item.dictValue">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ item.dictLabel }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-form-item label="控制器出线线长(mm)" prop="instrumentModel.notControllerJointString">
+                      <el-input v-model.number="form.instrumentModel.notControllerJointString
+                        " placeholder="请输入控制器出线线长" oninput="value=value.replace(/[^\d.]/g, '')" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-form-item label="按键型号" prop="instrumentModel.keyType">
+                      <el-select v-model="form.instrumentModel.keyType" placeholder="请选择按键型号" clearable class="w100"
+                        filterable allow-create>
+                        <el-option v-for="(item, index) in dicts_keyType_list" :key="index" :label="item.dictLabel"
+                          :value="+item.dictValue">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ item.dictLabel }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-form-item label="按键连接类型" prop="instrumentModel.keyLinkType">
+                      <el-select v-model.number="form.instrumentModel.keyLinkType" filterable clearable
+                        placeholder="请选择按键连接类型" class="w100">
+                        <el-option v-for="item in [
+                          { dictLabel: '直连', dictValue: 0 },
+                          { dictLabel: '快拆', dictValue: 1 },
+                        ]" :label="item.dictLabel" :value="item.dictValue" :key="item.dictValue">
+                          <span style="float: left">
+                            <b>展示值：</b>
+                            {{ item.dictLabel }}
+                          </span>
+                          <span style="float: right">
+                            <b>实际值：</b>
+                            {{ item.dictValue }}
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <template v-if="form.instrumentModel.keyLinkType === 1">
+                    <el-col :span="6">
+                      <el-form-item label="按键【仪表端】接头" prop="instrumentModel.modelEndHead">
+                        <el-input v-model="form.instrumentModel.modelEndHead" placeholder="请输入按键【仪表端】接头" clearable />
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                      <el-form-item label="按键【按键端】接头" prop="instrumentModel.keyEndHead">
+                        <el-input v-model="form.instrumentModel.keyEndHead" placeholder="请输入按键【按键端】接头" clearable />
+                      </el-form-item>
+                    </el-col>
+                  </template>
+                  <el-col :span="6">
+                    <el-form-item label="按键线长(mm)" prop="instrumentModel.keyLineLen">
+                      <el-input v-model.number="form.instrumentModel.keyLineLen" placeholder="请输入按键线长"
+                        oninput="value=value.replace(/[^\d.]/g, '')" clearable />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </fieldset>
 
-            <fieldset class="margin-top">
-              <legend class="text-green">图片配置区</legend>
-              <el-row :gutter="10">
-                <el-col :span="6">
-                  <el-form-item
-                    label="按键图片"
-                    prop="instrumentModel.keyImgUrl"
-                  >
-                    <el-upload-sortable
-                      v-model="form.instrumentModel.keyImgUrl"
-                      :imgW="80"
-                      :imgH="80"
-                      :isLimit="1"
-                      :max="1"
-                    />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="6">
-                  <el-form-item
-                    label="开机logo"
-                    prop="instrumentModel.powerLogo"
-                  >
-                    <el-upload-sortable
-                      v-model="form.instrumentModel.powerLogo"
-                      :imgW="80"
-                      :imgH="80"
-                      :isLimit="1"
-                      :max="1"
-                    />
-                  </el-form-item>
-                </el-col>
+              <fieldset class="margin-top">
+                <legend class="text-green">图片配置区</legend>
+                <el-row :gutter="10">
+                  <el-col :span="6">
+                    <el-form-item label="按键图片" prop="instrumentModel.keyImgUrl">
+                      <el-upload-sortable v-model="form.instrumentModel.keyImgUrl" :imgW="80" :imgH="80" :isLimit="1"
+                        :max="1" />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-form-item label="开机logo" prop="instrumentModel.powerLogo">
+                      <el-upload-sortable v-model="form.instrumentModel.powerLogo" :imgW="80" :imgH="80" :isLimit="1"
+                        :max="1" />
+                    </el-form-item>
+                  </el-col>
 
-                <el-col :span="24">
-                  <el-form-item
-                    label="规格书"
-                    prop="instrumentModel.specification"
-                  >
-                    <el-upload-sortable
-                      v-model="form.instrumentModel.specification"
-                      :imgW="80"
-                      :imgH="80"
-                      :max="20"
-                    />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </fieldset>
-          </template>
-        </fieldset>
+                  <el-col :span="24">
+                    <el-form-item label="规格书" prop="instrumentModel.specification">
+                      <el-upload-sortable v-model="form.instrumentModel.specification" :imgW="80" :imgH="80"
+                        :max="20" />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </fieldset>
+            </template>
+          </fieldset>
 
-        <fieldset class="margin-top" v-if="form.isSts === 1">
-          <legend class="text-red">车型配置</legend>
-          <el-row :gutter="10">
-            <el-col :span="6">
-              <el-form-item
-                label="背光亮度"
-                prop="instrumentModel.backlightBrightness"
-              >
-                <el-select
-                  v-model="form.instrumentModel.backlightBrightness"
-                  placeholder="请选择背光亮度"
-                  clearable
-                  class="w100"
-                  filterable
-                  allow-create
-                >
-                  <el-option
-                    v-for="(value, key) in backlightBrightnessList"
-                    :key="key"
-                    :label="value"
-                    :value="+key"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ value }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ key }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+          <fieldset class="margin-top" v-if="form.isSts === 1">
+            <legend class="text-red">车型配置</legend>
+            <el-row :gutter="10">
+              <el-col :span="6">
+                <el-form-item label="背光亮度" prop="instrumentModel.backlightBrightness">
+                  <el-select v-model="form.instrumentModel.backlightBrightness" placeholder="请选择背光亮度" clearable
+                    class="w100" filterable allow-create>
+                    <el-option v-for="(value, key) in backlightBrightnessList" :key="key" :label="value" :value="+key">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ value }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ key }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="休眠时间(min)"
-                prop="instrumentModel.sleepTime"
-              >
-                <el-select
-                  v-model="form.instrumentModel.sleepTime"
-                  placeholder="请选择休眠时间"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="(item, index) in sleepTimeList"
-                    :key="index"
-                    :label="item"
-                    :value="item"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="休眠时间(min)" prop="instrumentModel.sleepTime">
+                  <el-select v-model="form.instrumentModel.sleepTime" placeholder="请选择休眠时间" class="w100" clearable>
+                    <el-option v-for="(item, index) in sleepTimeList" :key="index" :label="item" :value="item">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item label="系统电压(V)" prop="instrumentModel.voltage">
-                <el-select
-                  v-model="form.instrumentModel.voltage"
-                  placeholder="请选择系统电压"
-                  @change="changeVoltage"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="(item, index) in dicts_voltage"
-                    :key="index"
-                    :label="item"
-                    :value="item"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="系统电压(V)" prop="instrumentModel.voltage">
+                  <el-select v-model="form.instrumentModel.voltage" placeholder="请选择系统电压" @change="changeVoltage"
+                    class="w100" clearable>
+                    <el-option v-for="(item, index) in dicts_voltage" :key="index" :label="item" :value="item">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="欠压门限(V)"
-                prop="instrumentModel.undervoltage"
-              >
-                <el-input-number
-                  class="el-input-number-box w100"
-                  v-model.number="form.instrumentModel.undervoltage"
-                  :precision="1"
-                  :min="0"
-                  :controls="false"
-                  placeholder="请输入欠压门限"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="欠压门限(V)" prop="instrumentModel.undervoltage">
+                  <el-input-number class="el-input-number-box w100" v-model.number="form.instrumentModel.undervoltage"
+                    :precision="1" :min="0" :controls="false" placeholder="请输入欠压门限" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="助力档位数"
-                prop="instrumentModel.powerGear"
-                :rules="isCheckConfigItem({ message: '助力档位数' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.powerGear"
-                  placeholder="请选择助力档位数"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="(item, index) in powerGearData"
-                    :key="index"
-                    :label="item"
-                    :value="item"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="助力档位数" prop="instrumentModel.powerGear"
+                  :rules="isCheckConfigItem({ message: '助力档位数' })">
+                  <el-select v-model="form.instrumentModel.powerGear" placeholder="请选择助力档位数" class="w100" clearable>
+                    <el-option v-for="(item, index) in powerGearData" :key="index" :label="item" :value="item">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="助力开始磁钢数"
-                prop="instrumentModel.assistStartMagnetNumber"
-                :rules="isCheckConfigItem({ message: '助力开始磁钢数' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.assistStartMagnetNumber"
-                  placeholder="请选择助力开始磁钢数"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in assistStartMagnetNumberData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="助力开始磁钢数" prop="instrumentModel.assistStartMagnetNumber"
+                  :rules="isCheckConfigItem({ message: '助力开始磁钢数' })">
+                  <el-select v-model="form.instrumentModel.assistStartMagnetNumber" placeholder="请选择助力开始磁钢数"
+                    class="w100" clearable>
+                    <el-option v-for="item in assistStartMagnetNumberData" :key="item" :label="item"
+                      :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="助力比例"
-                prop="instrumentModel.assistPercentage"
-                :rules="
-                  isCheckConfigItem({
-                    message: '助力开始磁钢数',
-                    trigger: 'blur',
-                  })
-                "
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  v-model.number="form.instrumentModel.assistPercentage"
-                  oninput="value=value.replace(/[^\d]/g, '')"
-                  placeholder="请输入助力比例"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="助力比例" prop="instrumentModel.assistPercentage" :rules="isCheckConfigItem({
+                  message: '助力开始磁钢数',
+                  trigger: 'blur',
+                })
+                  ">
+                  <el-input type="number" v-minMaxValue="{ min: 0 }"
+                    v-model.number="form.instrumentModel.assistPercentage" oninput="value=value.replace(/[^\d]/g, '')"
+                    placeholder="请输入助力比例" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="限流门限(A)"
-                prop="instrumentModel.currentlimiting"
-                :rules="
-                  isCheckConfigItem({ message: '限流门限', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  v-model.number="form.instrumentModel.currentlimiting"
-                  oninput="value=value.replace(/[^\d]/g, '')"
-                  placeholder="请输入限流门限"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="限流门限(A)" prop="instrumentModel.currentlimiting" :rules="isCheckConfigItem({ message: '限流门限', trigger: 'blur' })
+                  ">
+                  <el-input type="number" v-minMaxValue="{ min: 0 }"
+                    v-model.number="form.instrumentModel.currentlimiting" oninput="value=value.replace(/[^\d]/g, '')"
+                    placeholder="请输入限流门限" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="助力限速门限(km/h)"
-                prop="instrumentModel.assistLimit"
-                :rules="isCheckConfigItem({ message: '助力限速门限' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.assistLimit"
-                  placeholder="请选择助力限速门限"
-                  class="w100"
-                  filterable
-                  clearable
-                >
-                  <el-option
-                    v-for="item in assistLimitData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="助力限速门限(km/h)" prop="instrumentModel.assistLimit"
+                  :rules="isCheckConfigItem({ message: '助力限速门限' })">
+                  <el-select v-model="form.instrumentModel.assistLimit" placeholder="请选择助力限速门限" class="w100" filterable
+                    clearable>
+                    <el-option v-for="item in assistLimitData" :key="item" :label="item" :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="显示轮径"
-                prop="instrumentModel.showWheelsize"
-                :rules="
-                  isCheckConfigItem({ message: '显示轮径', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  v-model.number="form.instrumentModel.showWheelsize"
-                  oninput="value=value.replace(/[^\d]/g, '')"
-                  clearable
-                  placeholder="显示轮径"
-                />
-              </el-form-item>
+                <el-form-item label="显示轮径" prop="instrumentModel.showWheelsize" :rules="isCheckConfigItem({ message: '显示轮径', trigger: 'blur' })
+                  ">
+                  <el-input type="number" v-minMaxValue="{ min: 0 }" v-model.number="form.instrumentModel.showWheelsize"
+                    oninput="value=value.replace(/[^\d]/g, '')" clearable placeholder="显示轮径" />
+                </el-form-item>
 
-              <el-form-item
-                label="车轮宽度"
-                prop="instrumentModel.tiresSize"
-                :rules="
-                  isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  v-model="form.instrumentModel.tiresSize"
-                  v-minMaxValue="{ min: 0 }"
-                  oninput="value=value.replace(/[^\d]/g, '')"
-                  placeholder="请输入车轮宽度"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
+                <el-form-item label="车轮宽度" prop="instrumentModel.tiresSize" :rules="isCheckConfigItem({ message: '车轮宽度', trigger: 'blur' })
+                  ">
+                  <el-input v-model="form.instrumentModel.tiresSize" v-minMaxValue="{ min: 0 }"
+                    oninput="value=value.replace(/[^\d]/g, '')" placeholder="请输入车轮宽度" clearable />
+                </el-form-item>
+              </el-col>
 
-            <el-col :span="6">
-              <el-form-item
-                label="缓启动"
-                prop="instrumentModel.slowStart"
-                :rules="isCheckConfigItem({ message: '缓启动' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.slowStart"
-                  placeholder="请选择缓启动"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in slowStartData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+              <el-col :span="6">
+                <el-form-item label="缓启动" prop="instrumentModel.slowStart"
+                  :rules="isCheckConfigItem({ message: '缓启动' })">
+                  <el-select v-model="form.instrumentModel.slowStart" placeholder="请选择缓启动" filterable class="w100"
+                    clearable>
+                    <el-option v-for="item in slowStartData" :key="item" :label="item" :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="配置轮径(inch)"
-                prop="instrumentModel.wheelDiameter"
-                :rules="isCheckConfigItem({ message: '配置轮径' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.wheelDiameter"
-                  placeholder="请选择配置轮径"
-                  filterable
-                  class="w100"
-                  clearable
-                  @change="changeCountPerimeter"
-                >
-                  <el-option
-                    v-for="(value, key) in wheelDiameterData"
-                    :key="key"
-                    :label="value"
-                    :value="+key"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ value }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ key }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="配置轮径(inch)" prop="instrumentModel.wheelDiameter"
+                  :rules="isCheckConfigItem({ message: '配置轮径' })">
+                  <el-select v-model="form.instrumentModel.wheelDiameter" placeholder="请选择配置轮径" filterable class="w100"
+                    clearable @change="changeCountPerimeter">
+                    <el-option v-for="(value, key) in wheelDiameterData" :key="key" :label="value" :value="+key">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ value }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ key }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="实际轮径(inch)"
-                prop="instrumentModel.showWheelDiameter"
-                :rules="isCheckConfigItem({ message: '实际轮径' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.showWheelDiameter"
-                  placeholder="请选择实际轮径"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="(value, key) in wheelDiameterData"
-                    :key="key"
-                    :label="value"
-                    :value="value"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="实际轮径(inch)" prop="instrumentModel.showWheelDiameter"
+                  :rules="isCheckConfigItem({ message: '实际轮径' })">
+                  <el-select v-model="form.instrumentModel.showWheelDiameter" placeholder="请选择实际轮径" filterable
+                    class="w100" clearable>
+                    <el-option v-for="(value, key) in wheelDiameterData" :key="key" :label="value" :value="value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
-                <el-input
-                  v-minMaxValue="{ min: 0 }"
-                  v-model.number="form.instrumentModel.perimeter"
-                  oninput="value=value.replace(/[^\d]/, '')"
-                  placeholder="请输入周长"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="周长(mm)" prop="instrumentModel.perimeter">
+                  <el-input v-minMaxValue="{ min: 0 }" v-model.number="form.instrumentModel.perimeter"
+                    oninput="value=value.replace(/[^\d]/, '')" placeholder="请输入周长" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="显示单位"
-                prop="instrumentModel.unit"
-                :rules="isCheckConfigItem({ message: '显示单位' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.unit"
-                  placeholder="请选择显示单位"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in dicts_unit"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="+item.dictValue"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item.dictLabel }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item.dictValue }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="显示单位" prop="instrumentModel.unit" :rules="isCheckConfigItem({ message: '显示单位' })">
+                  <el-select v-model="form.instrumentModel.unit" placeholder="请选择显示单位" class="w100" clearable>
+                    <el-option v-for="item in dicts_unit" :key="item.dictValue" :label="item.dictLabel"
+                      :value="+item.dictValue">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="配置协议"
-                prop="instrumentModel.agreement"
-                :rules="isCheckConfigItem({ message: '配置协议' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.agreement"
-                  placeholder="请选择配置协议"
-                  class="w100"
-                  clearable
-                  @change="onChangeAgreement"
-                >
-                  <el-option
-                    v-for="item in dicts_agreement"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="+item.dictValue"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item.dictLabel }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item.dictValue }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="配置协议" prop="instrumentModel.agreement"
+                  :rules="isCheckConfigItem({ message: '配置协议' })">
+                  <el-select v-model="form.instrumentModel.agreement" placeholder="请选择配置协议" class="w100" clearable
+                    @change="onChangeAgreement">
+                    <el-option v-for="item in dicts_agreement" :key="item.dictValue" :label="item.dictLabel"
+                      :value="+item.dictValue">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="实际协议"
-                prop="instrumentModel.showAgreement"
-                :rules="isCheckConfigItem({ message: '实际协议' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.showAgreement"
-                  placeholder="请选择实际协议"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in dicts_agreement"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="item.dictLabel"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="实际协议" prop="instrumentModel.showAgreement"
+                  :rules="isCheckConfigItem({ message: '实际协议' })">
+                  <el-select v-model="form.instrumentModel.showAgreement" placeholder="请选择实际协议" class="w100" clearable>
+                    <el-option v-for="item in dicts_agreement" :key="item.dictValue" :label="item.dictLabel"
+                      :value="item.dictLabel">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="电量计算方式"
-                prop="instrumentModel.power"
-                :rules="isCheckConfigItem({ message: '电量计算方式' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.power"
-                  placeholder="请选择电量计算方式"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in dicts_power"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                    <span style="float: left" class="margin-right-sm">
-                      <b>展示值：</b>
-                      {{ item.dictLabel }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item.dictValue }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="电量计算方式" prop="instrumentModel.power"
+                  :rules="isCheckConfigItem({ message: '电量计算方式' })">
+                  <el-select v-model="form.instrumentModel.power" placeholder="请选择电量计算方式" class="w100" clearable>
+                    <el-option v-for="item in dicts_power" :key="item.dictValue" :label="item.dictLabel"
+                      :value="item.dictValue">
+                      <span style="float: left" class="margin-right-sm">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="测速磁钢数"
-                prop="instrumentModel.speedSteel"
-                :rules="isCheckConfigItem({ message: '测速磁钢数' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.speedSteel"
-                  placeholder="请选择测速磁钢数"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in speedSteelData"
-                    :key="item"
-                    :label="item"
-                    :value="item"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="测速磁钢数" prop="instrumentModel.speedSteel"
+                  :rules="isCheckConfigItem({ message: '测速磁钢数' })">
+                  <el-select v-model="form.instrumentModel.speedSteel" placeholder="请选择测速磁钢数" filterable class="w100"
+                    clearable>
+                    <el-option v-for="item in speedSteelData" :key="item" :label="item" :value="item">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="电量变化时间(s)"
-                prop="instrumentModel.batteryVoltageChangeTime"
-                :rules="isCheckConfigItem({ message: '电量变化时间' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.batteryVoltageChangeTime"
-                  placeholder="请选择电量变化时间"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in batteryVoltageChangeTimeData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="电量变化时间(s)" prop="instrumentModel.batteryVoltageChangeTime"
+                  :rules="isCheckConfigItem({ message: '电量变化时间' })">
+                  <el-select v-model="form.instrumentModel.batteryVoltageChangeTime" placeholder="请选择电量变化时间" filterable
+                    class="w100" clearable>
+                    <el-option v-for="item in batteryVoltageChangeTimeData" :key="item" :label="item"
+                      :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="速度平滑等级"
-                prop="instrumentModel.smoothLevel"
-                :rules="isCheckConfigItem({ message: '速度平滑等级' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.smoothLevel"
-                  placeholder="请选择速度平滑等级"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in smoothLevelData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
+                <el-form-item label="速度平滑等级" prop="instrumentModel.smoothLevel"
+                  :rules="isCheckConfigItem({ message: '速度平滑等级' })">
+                  <el-select v-model="form.instrumentModel.smoothLevel" placeholder="请选择速度平滑等级" filterable class="w100"
+                    clearable>
+                    <el-option v-for="item in smoothLevelData" :key="item" :label="item" :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
 
-            <el-col :span="6">
-              <el-form-item
-                label="车名"
-                prop="instrumentModel.ebikeName"
-                :rules="isCheckConfigItem({ message: '车名' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.ebikeName"
-                  placeholder="请选择车名"
-                  class="w100"
-                  clearable
-                  filterable
-                >
-                  <el-option
-                    v-for="(value, key) in dicts_ebike"
-                    :key="+key"
-                    :label="value"
-                    :value="+key"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ value }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ key }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+              <el-col :span="6">
+                <el-form-item label="车名" prop="instrumentModel.ebikeName" :rules="isCheckConfigItem({ message: '车名' })">
+                  <el-select v-model="form.instrumentModel.ebikeName" placeholder="请选择车名" class="w100" clearable
+                    filterable>
+                    <el-option v-for="(value, key) in dicts_ebike" :key="+key" :label="value" :value="+key">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ value }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ key }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="车型"
-                prop="instrumentModel.carModel"
-                :rules="isCheckConfigItem({ message: '车型', trigger: 'blur' })"
-              >
-                <el-input
-                  maxlength="2"
-                  v-model="form.instrumentModel.carModel"
-                  placeholder="请输入车型"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="车型" prop="instrumentModel.carModel"
+                  :rules="isCheckConfigItem({ message: '车型', trigger: 'blur' })">
+                  <el-input maxlength="2" v-model="form.instrumentModel.carModel" placeholder="请输入车型" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="默认档位"
-                prop="instrumentModel.defaultGear"
-                :rules="
-                  isCheckConfigItem({ message: '默认档位', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  v-minMaxValue="{ min: 0 }"
-                  v-model="form.instrumentModel.defaultGear"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  clearable
-                  placeholder="请输入默认档位"
-                />
-              </el-form-item>
+                <el-form-item label="默认档位" prop="instrumentModel.defaultGear" :rules="isCheckConfigItem({ message: '默认档位', trigger: 'blur' })
+                  ">
+                  <el-input v-minMaxValue="{ min: 0 }" v-model="form.instrumentModel.defaultGear"
+                    oninput="value=value.replace(/[^\d.]/g, '')" clearable placeholder="请输入默认档位" />
+                </el-form-item>
 
-              <el-form-item
-                label="Logo界面"
-                prop="instrumentModel.logo"
-                :rules="isCheckConfigItem({ message: 'Logo界面' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.logo"
-                  placeholder="请选择Logo界面"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in dicts_logo"
-                    :key="item.dictValue"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item.dictLabel }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item.dictValue }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="Logo界面" prop="instrumentModel.logo"
+                  :rules="isCheckConfigItem({ message: 'Logo界面' })">
+                  <el-select v-model="form.instrumentModel.logo" placeholder="请选择Logo界面" class="w100" clearable>
+                    <el-option v-for="item in dicts_logo" :key="item.dictValue" :label="item.dictLabel"
+                      :value="item.dictValue">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item.dictLabel }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item.dictValue }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="开机密码"
-                prop="instrumentModel.startupPasswd"
-                :rules="
-                  isCheckConfigItem({ message: '开机密码', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  type="number"
-                  clearable
-                  v-minMaxValue="{ min: 0 }"
-                  v-model="form.instrumentModel.startupPasswd"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  placeholder="请输入开机密码"
-                />
-              </el-form-item>
+                <el-form-item label="开机密码" prop="instrumentModel.startupPasswd" :rules="isCheckConfigItem({ message: '开机密码', trigger: 'blur' })
+                  ">
+                  <el-input type="number" clearable v-minMaxValue="{ min: 0 }"
+                    v-model="form.instrumentModel.startupPasswd" oninput="value=value.replace(/[^\d.]/g, '')"
+                    placeholder="请输入开机密码" />
+                </el-form-item>
 
-              <el-form-item
-                label="高级菜单密码"
-                prop="instrumentModel.highMenuPasswd"
-                :rules="
-                  isCheckConfigItem({
-                    message: '高级菜单密码',
-                    trigger: 'blur',
-                  })
-                "
-              >
-                <el-input
-                  v-model="form.instrumentModel.highMenuPasswd"
-                  clearable
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  placeholder="请输入高级菜单密码"
-                />
-              </el-form-item>
+                <el-form-item label="高级菜单密码" prop="instrumentModel.highMenuPasswd" :rules="isCheckConfigItem({
+                  message: '高级菜单密码',
+                  trigger: 'blur',
+                })
+                  ">
+                  <el-input v-model="form.instrumentModel.highMenuPasswd" clearable type="number"
+                    v-minMaxValue="{ min: 0 }" oninput="value=value.replace(/[^\d.]/g, '')" placeholder="请输入高级菜单密码" />
+                </el-form-item>
 
-              <el-form-item
-                label="电机功率(W)"
-                prop="instrumentModel.motorSys"
-                :rules="
-                  isCheckConfigItem({ message: '电机功率', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  v-model="form.instrumentModel.motorSys"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  clearable
-                  placeholder="请输入电机功率"
-                />
-              </el-form-item>
+                <el-form-item label="电机功率(W)" prop="instrumentModel.motorSys" :rules="isCheckConfigItem({ message: '电机功率', trigger: 'blur' })
+                  ">
+                  <el-input type="number" v-minMaxValue="{ min: 0 }" v-model="form.instrumentModel.motorSys"
+                    oninput="value=value.replace(/[^\d.]/g, '')" clearable placeholder="请输入电机功率" />
+                </el-form-item>
 
-              <el-form-item
-                label="电池容量"
-                prop="instrumentModel.batteryCap"
-                :rules="
-                  isCheckConfigItem({ message: '电池容量', trigger: 'blur' })
-                "
-              >
-                <el-input
-                  type="number"
-                  v-minMaxValue="{ min: 0 }"
-                  v-model="form.instrumentModel.batteryCap"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  clearable
-                  placeholder="电池容量"
-                />
-              </el-form-item>
+                <el-form-item label="电池容量" prop="instrumentModel.batteryCap" :rules="isCheckConfigItem({ message: '电池容量', trigger: 'blur' })
+                  ">
+                  <el-input type="number" v-minMaxValue="{ min: 0 }" v-model="form.instrumentModel.batteryCap"
+                    oninput="value=value.replace(/[^\d.]/g, '')" clearable placeholder="电池容量" />
+                </el-form-item>
 
-              <el-form-item
-                label="高速蜂鸣器提醒"
-                prop="instrumentModel.highSpeedBuzzerRemind"
-                :rules="
-                  isCheckConfigItem({
-                    message: '高速蜂鸣器提醒',
-                    trigger: 'blur',
-                  })
-                "
-              >
-                <el-input
-                  v-model="form.instrumentModel.highSpeedBuzzerRemind"
-                  v-minMaxValue="{ min: 0 }"
-                  oninput="value=value.replace(/[^\d.]/g, '')"
-                  placeholder="请输入高速蜂鸣器提醒"
-                  clearable
-                />
-              </el-form-item>
+                <el-form-item label="高速蜂鸣器提醒" prop="instrumentModel.highSpeedBuzzerRemind" :rules="isCheckConfigItem({
+                  message: '高速蜂鸣器提醒',
+                  trigger: 'blur',
+                })
+                  ">
+                  <el-input v-model="form.instrumentModel.highSpeedBuzzerRemind" v-minMaxValue="{ min: 0 }"
+                    oninput="value=value.replace(/[^\d.]/g, '')" placeholder="请输入高速蜂鸣器提醒" clearable />
+                </el-form-item>
 
-              <el-form-item
-                label="串口通讯电平"
-                prop="instrumentModel.serialLevelLog"
-                :rules="isCheckConfigItem({ message: '串口通讯电平' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.serialLevelLog"
-                  placeholder="请选择串口通讯电平"
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="(value, key) in serialLevelLogData"
-                    :key="key"
-                    :label="value"
-                    :value="+key"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ value }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ key }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
+                <el-form-item label="串口通讯电平" prop="instrumentModel.serialLevelLog"
+                  :rules="isCheckConfigItem({ message: '串口通讯电平' })">
+                  <el-select v-model="form.instrumentModel.serialLevelLog" placeholder="请选择串口通讯电平" class="w100"
+                    clearable>
+                    <el-option v-for="(value, key) in serialLevelLogData" :key="key" :label="value" :value="+key">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ value }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ key }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
 
-              <el-form-item
-                label="总线故障超时时间(s)"
-                prop="instrumentModel.allLineErrTimeOut"
-                :rules="isCheckConfigItem({ message: '总线故障超时时间' })"
-              >
-                <el-select
-                  v-model="form.instrumentModel.allLineErrTimeOut"
-                  placeholder="请选择总线故障超时时间"
-                  filterable
-                  class="w100"
-                  clearable
-                >
-                  <el-option
-                    v-for="item in allLineErrTimeOutData"
-                    :key="item"
-                    :label="item"
-                    :value="String(item)"
-                  >
-                    <span style="float: left">
-                      <b>展示值：</b>
-                      {{ item }}
-                    </span>
-                    <span style="float: right">
-                      <b>实际值：</b>
-                      {{ item }}
-                    </span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
+                <el-form-item label="总线故障超时时间(s)" prop="instrumentModel.allLineErrTimeOut"
+                  :rules="isCheckConfigItem({ message: '总线故障超时时间' })">
+                  <el-select v-model="form.instrumentModel.allLineErrTimeOut" placeholder="请选择总线故障超时时间" filterable
+                    class="w100" clearable>
+                    <el-option v-for="item in allLineErrTimeOutData" :key="item" :label="item" :value="String(item)">
+                      <span style="float: left">
+                        <b>展示值：</b>
+                        {{ item }}
+                      </span>
+                      <span style="float: right">
+                        <b>实际值：</b>
+                        {{ item }}
+                      </span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
 
-            <el-col :span="6">
-              <el-form-item
-                label="蓝牙"
-                prop="instrumentModel.bluetooth"
-                :rules="isCheckConfigItem({ message: '蓝牙' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.bluetooth">
-                  <el-radio :label="1"> YES </el-radio>
-                  <el-radio :label="0"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="推车助力"
-                prop="instrumentModel.driveAssist"
-                :rules="isCheckConfigItem({ message: '推车助力' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.driveAssist">
-                  <el-radio :label="1">YES</el-radio>
-                  <el-radio :label="0">NO</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="恢复出厂设置"
-                prop="instrumentModel.factoryReset"
-                :rules="isCheckConfigItem({ message: '恢复出厂设置' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.factoryReset">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="转把分档"
-                prop="instrumentModel.rotateHandle"
-                :rules="isCheckConfigItem({ message: '转把分档' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.rotateHandle">
-                  <el-radio :label="1"> YES </el-radio>
-                  <el-radio :label="0"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="蜂鸣器开关"
-                prop="instrumentModel.buzzerSwitch"
-                :rules="isCheckConfigItem({ message: '蜂鸣器开关' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.buzzerSwitch">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="定速巡航功能"
-                prop="instrumentModel.cruise"
-                :rules="isCheckConfigItem({ message: '定速巡航功能' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.cruise">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="开机密码"
-                prop="instrumentModel.turnOnPasswd"
-                :rules="isCheckConfigItem({ message: '开机密码' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.turnOnPasswd">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="菜单密码"
-                prop="instrumentModel.menuPassword"
-                :rules="isCheckConfigItem({ message: '菜单密码' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.menuPassword">
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
+              <el-col :span="6">
+                <el-form-item label="蓝牙" prop="instrumentModel.bluetooth" :rules="isCheckConfigItem({ message: '蓝牙' })">
+                  <el-radio-group v-model="form.instrumentModel.bluetooth">
+                    <el-radio :label="1"> YES </el-radio>
+                    <el-radio :label="0"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="推车助力" prop="instrumentModel.driveAssist"
+                  :rules="isCheckConfigItem({ message: '推车助力' })">
+                  <el-radio-group v-model="form.instrumentModel.driveAssist">
+                    <el-radio :label="1">YES</el-radio>
+                    <el-radio :label="0">NO</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="恢复出厂设置" prop="instrumentModel.factoryReset"
+                  :rules="isCheckConfigItem({ message: '恢复出厂设置' })">
+                  <el-radio-group v-model="form.instrumentModel.factoryReset">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="转把分档" prop="instrumentModel.rotateHandle"
+                  :rules="isCheckConfigItem({ message: '转把分档' })">
+                  <el-radio-group v-model="form.instrumentModel.rotateHandle">
+                    <el-radio :label="1"> YES </el-radio>
+                    <el-radio :label="0"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="蜂鸣器开关" prop="instrumentModel.buzzerSwitch"
+                  :rules="isCheckConfigItem({ message: '蜂鸣器开关' })">
+                  <el-radio-group v-model="form.instrumentModel.buzzerSwitch">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="定速巡航功能" prop="instrumentModel.cruise"
+                  :rules="isCheckConfigItem({ message: '定速巡航功能' })">
+                  <el-radio-group v-model="form.instrumentModel.cruise">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="开机密码" prop="instrumentModel.turnOnPasswd"
+                  :rules="isCheckConfigItem({ message: '开机密码' })">
+                  <el-radio-group v-model="form.instrumentModel.turnOnPasswd">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="菜单密码" prop="instrumentModel.menuPassword"
+                  :rules="isCheckConfigItem({ message: '菜单密码' })">
+                  <el-radio-group v-model="form.instrumentModel.menuPassword">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
 
-              <el-form-item
-                label="有无高级菜单"
-                prop="instrumentModel.isHighMenuPassword"
-                :rules="isCheckConfigItem({ message: '高级菜单' })"
-              >
-                <el-radio-group
-                  v-model="form.instrumentModel.isHighMenuPassword"
-                >
-                  <el-radio :label="0"> YES </el-radio>
-                  <el-radio :label="1"> NO </el-radio>
-                </el-radio-group>
-              </el-form-item>
+                <el-form-item label="有无高级菜单" prop="instrumentModel.isHighMenuPassword"
+                  :rules="isCheckConfigItem({ message: '高级菜单' })">
+                  <el-radio-group v-model="form.instrumentModel.isHighMenuPassword">
+                    <el-radio :label="0"> YES </el-radio>
+                    <el-radio :label="1"> NO </el-radio>
+                  </el-radio-group>
+                </el-form-item>
 
-              <el-form-item
-                label="转把限速"
-                prop="instrumentModel.rotateHandleSpeedLimit"
-                :rules="isCheckConfigItem({ message: '转把限速' })"
-              >
-                <el-radio-group
-                  v-model="form.instrumentModel.rotateHandleSpeedLimit"
-                >
-                  <div class="flex">
-                    <el-radio :label="0">正常</el-radio>
-                    <el-radio :label="1">限速6Km</el-radio>
-                  </div>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item
-                label="助力正反"
-                prop="instrumentModel.assist"
-                :rules="isCheckConfigItem({ message: '助力正反' })"
-              >
-                <el-radio-group v-model="form.instrumentModel.assist">
-                  <div class="flex">
-                    <el-radio :label="0">助力正</el-radio>
-                    <el-radio :label="1">助力反</el-radio>
-                  </div>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </fieldset>
-      </el-form>
-
-      <div
-        slot="footer"
-        class="dialog-footer flex justify-center product-btn-box"
-      >
+                <el-form-item label="转把限速" prop="instrumentModel.rotateHandleSpeedLimit"
+                  :rules="isCheckConfigItem({ message: '转把限速' })">
+                  <el-radio-group v-model="form.instrumentModel.rotateHandleSpeedLimit">
+                    <div class="flex">
+                      <el-radio :label="0">正常</el-radio>
+                      <el-radio :label="1">限速6Km</el-radio>
+                    </div>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="助力正反" prop="instrumentModel.assist"
+                  :rules="isCheckConfigItem({ message: '助力正反' })">
+                  <el-radio-group v-model="form.instrumentModel.assist">
+                    <div class="flex">
+                      <el-radio :label="0">助力正</el-radio>
+                      <el-radio :label="1">助力反</el-radio>
+                    </div>
+                  </el-radio-group>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </fieldset>
+        </el-form>
+      </template>
+      <template v-else>
+        <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
+          <modelInfoTable ref="modelInfoTable" v-if="dialogVisible && isPackage"
+            :data="form.instrumentModel.packagingInfo" />
+        </el-form>
+      </template>
+      <div slot="footer" class="dialog-footer flex justify-center" :class="{ 'product-btn-box': !isPackage }">
         <div>
-          <el-button
-            v-if="form.id && !isCopyProduct"
-            type="primary"
-            @click="submitForm('form')"
-            :loading="isSubmitLoading"
-          >
+          <el-button v-if="form.id && !isCopyProduct" type="primary" @click="submitForm('form')"
+            :loading="isSubmitLoading">
             修改
           </el-button>
           <el-button type="primary" @click="submitOpen" v-else>
@@ -1661,24 +953,9 @@
       </div>
     </el-dialog>
 
-    <el-dialog
-      :close-on-click-modal="false"
-      title="添加型号"
-      :visible.sync="open"
-      width="540px"
-      append-to-body
-    >
-      <el-form
-        ref="finalForm"
-        :model="form"
-        label-width="150px"
-        @submit.native.prevent
-      >
-        <el-form-item
-          label="仪表型号:"
-          prop="name"
-          :rules="isCheckConfigItem({ message: '仪表型号', trigger: 'blur' })"
-        >
+    <el-dialog :close-on-click-modal="false" title="添加型号" :visible.sync="open" width="540px" append-to-body>
+      <el-form ref="finalForm" :model="form" label-width="150px" @submit.native.prevent>
+        <el-form-item label="仪表型号:" prop="name" :rules="isCheckConfigItem({ message: '仪表型号', trigger: 'blur' })">
           <el-input v-model.trim="form.name" placeholder="仪表型号" />
         </el-form-item>
 
@@ -1686,21 +963,12 @@
           <el-input v-model.trim="form.erp" placeholder="ERP编码" />
         </el-form-item>
         <el-form-item label="描述" prop="desc" style="width: 100%">
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 5, maxRows: 8 }"
-            v-model="form.desc"
-            placeholder="仪表描述"
-          />
+          <el-input type="textarea" :autosize="{ minRows: 5, maxRows: 8 }" v-model="form.desc" placeholder="仪表描述" />
         </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button
-          type="primary"
-          :loading="isSubmitLoading"
-          @click="submitForm('finalForm')"
-        >
+        <el-button type="primary" :loading="isSubmitLoading" @click="submitForm('finalForm')">
           确 定
         </el-button>
         <el-button @click="onResetForm">取 消</el-button>
@@ -1724,7 +992,12 @@ import tinymce from "@/views/components/Editor";
 import modelInfoTable from "./modelInfoTable";
 export default {
   mixins: [mixin, commonData],
- 
+  props: {
+    isPackage: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     // 背光亮度
     const validateBacklightBrightness = (rule, value, callback) => {
@@ -1801,7 +1074,7 @@ export default {
       }
     };
     return {
-      modelInfoTable:null,
+      modelInfoTable: null,
       isSubmitLoading: false,
       isCopyProduct: false,
       isEditCopy: false,
@@ -2404,10 +1677,10 @@ export default {
             // STS
             const configJsonString = this.configToJsonString();
             this.form.jsonStr = configJsonString;
-            console.log("🚀 ~ file: updates.vue:2419 ~  this.form:",  this.form)
+            console.log("🚀 ~ file: updates.vue:2419 ~  this.form:", this.form)
           }
           this.form.instrumentModel.packagingInfo = this.$refs.modelInfoTable.exportSelectedJson()
-          console.log( this.form)
+          console.log(this.form)
           if (this.form.id && !this.isCopyProduct) {
             this.handleSubmitEdit();
           } else {
@@ -2427,7 +1700,7 @@ export default {
           if (response.code === 200) {
             this.msgSuccess("添加成功");
             this.dialogVisible = false;
-            this.$parent.getList();
+            this.$emit('refresh-list');
             this.open = false;
           }
         })
@@ -2450,21 +1723,21 @@ export default {
                 if (response.code === 200) {
                   this.msgSuccess("拷贝成功");
                   this.dialogVisible = false;
-                  this.$parent.getList();
+                  this.$emit('refresh-list');
                 }
               })
               .finally(() => {
                 this.isSubmitLoading = false;
               });
           })
-          .catch(() => {});
+          .catch(() => { });
       } else {
         editComputer(this.form)
           .then((response) => {
             if (response.code === 200) {
               this.msgSuccess("修改成功");
               this.dialogVisible = false;
-              this.$parent.getList();
+              this.$emit('refresh-list');
             }
           })
           .finally(() => {
@@ -2489,11 +1762,13 @@ export default {
 .dispaly {
   display: none;
 }
+
 .form-data-in {
   .el-input-number .el-input__inner {
     text-align: left;
   }
 }
+
 .posi-left {
   position: relative;
   right: -253px;
@@ -2512,6 +1787,7 @@ export default {
     overflow-y: auto;
   }
 }
+
 .product-btn-box {
   position: fixed;
   left: 0;
@@ -2523,8 +1799,7 @@ export default {
   display: none !important;
 }
 
-/deep/.el-radio:focus:not(.is-focus):not(:active):not(.is-disabled)
-  .el-radio__inner {
+/deep/.el-radio:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio__inner {
   box-shadow: none !important;
 }
 </style>

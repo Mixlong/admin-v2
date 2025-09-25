@@ -1,83 +1,40 @@
 <template>
   <div class="app-container chip-type-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      v-show="showSearch"
-      :inline="true"
-    >
-      <el-form-item label="品类" prop="categoryId">
-        <ModelCategory
-          v-model="queryParams.categoryId"
-          dictLabel="name"
-          dictValue="id"
-        ></ModelCategory>
-      </el-form-item>
-      <el-form-item label="芯片类型" prop="label">
-        <el-select
-          v-model="queryParams.label"
-          placeholder="请选择芯片类型"
-          clearable
-          filterable
-          style="width: 185px"
-        >
-          <el-option
-            v-for="dict in chipTypeList"
-            :key="dict.dictCode"
-            :label="dict.dictLabel"
-            :value="dict.dictLabel"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="cyan"
-          icon="el-icon-search"
-          @click="handleQuery"
-        >
-          搜索
-        </el-button>
-        <el-button
-          icon="el-icon-refresh"
-          size="mini"
-          @click="resetQuery"
-        >
-          重置
-        </el-button>
-      </el-form-item>
-    </el-form>
+    <div class="toolbar">
+      <el-form :model="queryParams" ref="queryForm" v-show="showSearch" :inline="true" class="search-form">
+        <el-form-item label="品类" prop="categoryId">
+          <ModelCategory v-model="queryParams.categoryId" dictLabel="name" dictValue="id"></ModelCategory>
+        </el-form-item>
+        <el-form-item label="芯片类型" prop="label">
+          <el-select v-model="queryParams.label" placeholder="请选择芯片类型" clearable filterable style="width: 185px">
+            <el-option v-for="dict in chipTypeList" :key="dict.dictCode" :label="dict.dictLabel"
+              :value="dict.dictLabel" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="cyan" icon="el-icon-search" @click="handleQuery">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form> 
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          v-hasPermi="['third:chipType:add']"
-          @click="handleAdd"
-        >
-          新增
-        </el-button>
-      </el-col>
-      <right-toolbar
-        :showSearch.sync="showSearch"
-        @queryTable="getList"
-      ></right-toolbar>
-    </el-row>
+      <el-row :gutter="10">
+        <el-col :span="1.5">
+          <el-button type="primary" icon="el-icon-plus" v-hasPermi="['third:chipType:add']" @click="handleAdd">
+            新增
+          </el-button>
+        </el-col>
+      </el-row>
 
-    <el-table
-      v-loading="loading"
-      :data="chipList"
-      :height="tableHeight()"
-      border
-    >
+    </div>
+
+    <el-table v-loading="loading" :data="chipList" :height="tableHeight()" border>
       <el-table-column label="品类" align="center" prop="categoryName" />
       <el-table-column label="芯片类型" align="center" prop="schemeVersion" />
-      <el-table-column
-        label="资料类型"
-        align="center"
-        prop="type"
-        :formatter="onTypeFormatter"
-      />
+      <el-table-column label="资料类型" align="center" prop="type" :formatter="onTypeFormatter" />
       <el-table-column label="创建人" align="center" prop="createBy">
         <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
       </el-table-column>
@@ -86,81 +43,40 @@
           {{ parseTime(scope.row.createTime) }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-        width="140"
-      >
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180">
         <template slot-scope="scope">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:chipType:update']"
-            @click="handleUpdate(scope.row)"
-          />
-          <Tooltip
-            icon="el-icon-reading"
-            content="详情"
-            v-hasPermi="['third:chipType:detail']"
-            @click="handleDetail(scope.row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:chipType:update']"
+            @click="handleUpdate(scope.row)" />
+          <Tooltip icon="el-icon-reading" content="详情" v-hasPermi="['third:chipType:detail']"
+            @click="handleDetail(scope.row)" />
+          <Tooltip icon="el-icon-delete" content="删除" v-hasPermi="['third:chipType:delete']"
+          class="text-red"
+            @click="handleDelete(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
     <!-- 新增、修改属性 -->
-    <el-dialog
-      class="addOrUp-Type-container"
-      :title="title"
-      append-to-body
-      width="900px"
-      center
-      top="5vh"
-      :visible.sync="open"
-      :close-on-click-modal="false"
-    >
+    <el-dialog class="addOrUp-Type-container" :title="title" append-to-body width="900px" center top="5vh"
+      :visible.sync="open" :close-on-click-modal="false" v-if="open">
       <el-form ref="form" inline :model="form" :rules="rules">
         <el-card :body-style="{ paddingBottom: '0px' }">
           <el-form-item label="品类" prop="categoryName">
-            <ModelCategory
-              v-model="form.categoryName"
-              :disabled="!!form.id"
-              dictLabel="name"
-              :moreParams="true"
-              @getChange="getChange"
-            ></ModelCategory>
+            <ModelCategory v-model="form.categoryName" :disabled="!!form.id" dictLabel="name" :moreParams="true"
+              @getChange="getChange"></ModelCategory>
           </el-form-item>
           <el-form-item label="芯片类型：" prop="schemeVersion">
-            <el-select
-              v-model="form.schemeVersion"
-              placeholder="请选择芯片类型"
-              clearable
-              filterable
-              style="width: 200px"
-              :disabled="!!form.id"
-            >
-              <el-option
-                v-for="dict in chipTypeList"
-                :key="dict.dictCode"
-                :label="dict.dictLabel"
-                :value="dict.dictLabel"
-              />
+            <el-select v-model="form.schemeVersion" placeholder="请选择芯片类型" clearable filterable style="width: 200px"
+              :disabled="!!form.id">
+              <el-option v-for="dict in chipTypeList" :key="dict.dictCode" :label="dict.dictLabel"
+                :value="dict.dictLabel" />
             </el-select>
           </el-form-item>
         </el-card>
-        <div
-          class="flex justify-around type_container margin-top-xs"
-          v-loading="isAddOrUpLoading"
-        >
+        <div class="flex justify-around type_container margin-top-xs" v-loading="isAddOrUpLoading">
           <el-card class="flex-sub">
             <div slot="header" class="clearfix">
               <span class="type_title">软件属性</span>
@@ -169,15 +85,9 @@
           </el-card>
           <el-card class="flex-sub margin-left-xs margin-right-xs">
             <div slot="header" class="clearfix">
-              <span class="type_title">硬件属性</span>
+              <span class="type_title">软件属性（bist）</span>
             </div>
-            <ChooseType v-model="form.hardValue" :typeList="hardType" />
-          </el-card>
-          <el-card class="flex-sub">
-            <div slot="header" class="clearfix">
-              <span class="type_title">工程属性</span>
-            </div>
-            <ChooseType v-model="form.projectValue" :typeList="epcType" />
+            <ChooseType v-model="form.bistValue" :typeList="softwareType" />
           </el-card>
         </div>
       </el-form>
@@ -190,67 +100,24 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog
-      class="detail-type-container"
-      title="详情"
-      append-to-body
-      width="1000px"
-      center
-      top="3vh"
-      :visible.sync="isDetail"
-      :close-on-click-modal="false"
-    >
-      <el-descriptions
-        :title="`芯片类型:  ${isDetailTypeName}`"
-        direction="vertical"
-        :column="3"
-        border
-        v-loading="isDetailLoading"
-      >
-        <el-descriptions-item
-          label="软件属性"
-          :labelStyle="{ textAlign: 'center' }"
-          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }"
-        >
+    <el-dialog class="detail-type-container" title="详情" append-to-body width="1000px" center top="3vh"
+      :visible.sync="isDetail" :close-on-click-modal="false">
+      <el-descriptions :title="`芯片类型:  ${isDetailTypeName}`" direction="vertical" :column="3" border
+        v-loading="isDetailLoading">
+        <el-descriptions-item label="软件属性" :labelStyle="{ textAlign: 'center' }"
+          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }">
           <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(typeName, index) in detailData.softwareType"
-              :key="index"
-            >
+            <el-tag size="small" class="margin-right-xs margin-bottom-xs"
+              v-for="(typeName, index) in detailData.softwareType" :key="index">
               {{ typeName }}
             </el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item
-          label="硬件属性"
-          :labelStyle="{ textAlign: 'center' }"
-          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }"
-        >
+        <el-descriptions-item label="软件属性（bist）" :labelStyle="{ textAlign: 'center' }"
+          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }">
           <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(typeName, index) in detailData.hardType"
-              :key="index"
-            >
-              {{ typeName }}
-            </el-tag>
-          </div>
-        </el-descriptions-item>
-        <el-descriptions-item
-          label="工程属性"
-          :labelStyle="{ textAlign: 'center' }"
-          :contentStyle="{ width: '33.333%', verticalAlign: 'top' }"
-        >
-          <div class="detail_item_box">
-            <el-tag
-              size="small"
-              class="margin-right-xs margin-bottom-xs"
-              v-for="(typeName, index) in detailData.epcType"
-              :key="index"
-            >
+            <el-tag size="small" class="margin-right-xs margin-bottom-xs"
+              v-for="(typeName, index) in detailData.bistType" :key="index">
               {{ typeName }}
             </el-tag>
           </div>
@@ -267,6 +134,7 @@ import {
   schemeTypeSave,
   schemeTypeUpdate,
   schemeTypePtPick,
+  schemeTypeDelete,
 } from "@/api/system/skipType";
 
 export default {
@@ -303,6 +171,7 @@ export default {
         categoryName: "",
         schemeVersion: "",
         softValue: [],
+        bistValue: [],
         hardValue: [],
         projectValue: [],
       },
@@ -311,6 +180,7 @@ export default {
       isDetailTypeName: "",
       detailData: {
         softwareType: [],
+        bistType: [],
         hardType: [],
         epcType: [],
       },
@@ -371,6 +241,7 @@ export default {
         categoryName: "",
         schemeVersion: "",
         softValue: [],
+        bistValue: [],
         hardValue: [],
         projectValue: [],
       };
@@ -406,11 +277,12 @@ export default {
       this.form.id = id;
       this.isAddOrUpLoading = true;
 
-      const { softList, hardList, projectList } = await this.getChipType(
+      const { softList, bistList, hardList, projectList } = await this.getChipType(
         schemeVersion,
         categoryId
       );
       this.form.softValue = softList;
+      this.form.bistValue = bistList;
       this.form.hardValue = hardList;
       this.form.projectValue = projectList;
     },
@@ -422,6 +294,7 @@ export default {
           this.isDetailLoading = false;
           resolve({
             softList: res.data[1] || [],
+            bistList: res.data[4] || [],
             hardList: res.data[2] || [],
             projectList: res.data[3] || [],
           });
@@ -434,7 +307,7 @@ export default {
       const { schemeVersion, categoryId } = row;
       this.isDetailTypeName = schemeVersion;
       this.isDetailLoading = true;
-      const { softList, hardList, projectList } = await this.getChipType(
+      const { softList, bistList, hardList, projectList } = await this.getChipType(
         schemeVersion,
         categoryId
       );
@@ -442,6 +315,11 @@ export default {
       this.detailData.softwareType = this.handleTransType(
         this.softwareType,
         softList
+      );
+      // 软件（bist）
+      this.detailData.bistType = this.handleTransType(
+        this.softwareType,
+        bistList
       );
       // 硬件
       this.detailData.hardType = this.handleTransType(this.hardType, hardList);
@@ -466,13 +344,31 @@ export default {
       this.$set(this.form, "categoryName", name);
       this.$set(this.form, "categoryId", id);
     },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const { id, schemeVersion, categoryName } = row;
+      this.$confirm(`确定删除芯片类型"${row.schemeVersion}"吗？`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          schemeTypeDelete({ id }).then(() => {
+            this.msgSuccess("删除成功");
+            this.getList();
+          });
+        })
+        .catch(() => {
+        });
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          const { projectValue, hardValue, softValue } = this.form;
+          const { projectValue, hardValue, softValue, bistValue } = this.form;
           const dataFlag = [
             this.Is_Empty(softValue),
+            this.Is_Empty(bistValue),
             this.Is_Empty(hardValue),
             this.Is_Empty(projectValue),
           ].every((item) => item === true);
@@ -529,6 +425,7 @@ export default {
     }
   }
 }
+
 .detail-type-container {
   .detail_item_box {
     min-height: 150px;

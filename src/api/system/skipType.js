@@ -52,6 +52,15 @@ export function schemeTypeUpdate(data) {
   });
 }
 
+// 删除
+export function schemeTypeDelete(data) {
+  return request({
+    url: `/scheme/type/delete/${data.id}`,
+    method: "delete",
+    data,
+  });
+}
+
 /***
  *  生产资料归类
  */

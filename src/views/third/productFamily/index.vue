@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
+  <!-- <div class="app-container"> -->
+  <!-- <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="key">
         <el-select v-model="queryParams.key" @change="changeCategory" filterable allow-create clearable
           placeholder="请选择品类">
@@ -34,40 +34,41 @@
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
-      </el-table-column>
-      <el-table-column label="产品型号" prop="name" align="center" width="140" />
-      <el-table-column label="描述" prop="desc" align="center">
-        <span slot-scope="scope" v-NoData="scope.row.desc" />
-      </el-table-column>
-      <el-table-column label="状态" align="center" width="100">
-        <template slot-scope="scope">
+</el-table-column>
+<el-table-column label="产品型号" prop="name" align="center" width="140" />
+<el-table-column label="描述" prop="desc" align="center">
+  <span slot-scope="scope" v-NoData="scope.row.desc" />
+</el-table-column>
+<el-table-column label="状态" align="center" width="100">
+  <template slot-scope="scope">
           <el-switch v-model="scope.row.status" :active-value="0" :inactive-value="1"
             @change="handleStatus(scope.row)"></el-switch>
         </template>
-      </el-table-column>
-      <el-table-column label="STS" align="center" width="100">
-        <template slot-scope="{ row }">
+</el-table-column>
+<el-table-column label="STS" align="center" width="100">
+  <template slot-scope="{ row }">
           <el-tag :type="row.isSts === 1 ? 'success' : 'danger'">{{
             row.isSts === 1 ? "是" : "否"
             }}</el-tag>
         </template>
-      </el-table-column>
-      <el-table-column label="创建人" prop="createBy" align="center" width="100" />
-      <el-table-column label="创建时间" prop="createTime" align="center" width="140" sortable />
-      <el-table-column label="操作" align="center" width="120">
-        <template slot-scope="scope">
+</el-table-column>
+<el-table-column label="创建人" prop="createBy" align="center" width="100" />
+<el-table-column label="创建时间" prop="createTime" align="center" width="140" sortable />
+<el-table-column label="操作" align="center" width="120">
+  <template slot-scope="scope">
           <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:productFamily:update']"
             @click="handleUpdate(scope.row)" />
           <Tooltip icon="el-icon-delete" :className="['text-red']" content="删除"
             v-hasPermi="['third:productFamily:delete']" @click="handleDelete(scope.row)" />
         </template>
-      </el-table-column>
-    </el-table>
+</el-table-column>
+</el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
-      @pagination="getList" />
-
-    <CompUpdate ref="compUpdate" />
+<pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+  @pagination="getList" /> -->
+  <!-- </div> -->
+  <div>
+    <CompUpdate ref="compUpdate" :isPackage="isPackage" @refresh-list="handleRefreshList" />
   </div>
 </template>
 
@@ -112,6 +113,7 @@ export default {
         key: "",
         computerId: "",
       },
+      isPackage: false,
     };
   },
   async created() {
@@ -124,6 +126,9 @@ export default {
     this.handleCacheLink();
   },
   methods: {
+    handleRefreshList() {
+      this.$emit('refresh-list');
+    },
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
       const { categoryId, computerId } = this.$route.params;

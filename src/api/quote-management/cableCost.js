@@ -55,7 +55,7 @@ export function deleteCableCosts(ids) {
     url: '/cost/del/cable',
     method: 'put',
     data: ids.map(id => ({
-      id,
+      id:id+'',
       status: 1,
       why: '用户手动删除'
     }))
@@ -65,8 +65,8 @@ export function deleteCableCosts(ids) {
 // 新增线缆成本
 export function addCableCost(data) {
   return request({
-    url: '/cost/add/cable',
-    method: 'post',
+    url: '/cost/save/cable',
+    method: 'put',
     data
   })
 }

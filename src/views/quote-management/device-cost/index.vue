@@ -1,7 +1,7 @@
 <template>
-  <div class="device-cost-container app-container">
+  <div class="device-cost-container app-container flex-app-container">
     <!-- 搜索区域 -->
-    <div class="search-section">
+    <div class="search-section toolbar">
       <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
         <el-form-item label="所属品类" prop="categoryId">
           <el-select v-model="searchForm.categoryId" @change="handleSearch" filterable allow-create clearable
@@ -32,31 +32,23 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(-30)"
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%"  height="100%"
         @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
         :row-class-name="getRowClassName">
         <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">
         </el-table-column>
-        <el-table-column label="层级" width="120" align="left">
+        <el-table-column prop="categoryId" label="品类" align="center" width="140">
           <template slot-scope="scope">
-            <div :style="{ paddingLeft: scope.row.level * 20 + 'px' }" class="level-cell">
+            <div v-if="scope.row.isParent" class="supplier-cell">
               <i v-if="scope.row.hasChildren && scope.row.list && scope.row.list.length > 1"
                 :class="isRowExpanded(scope.row.id) ? 'el-icon-minus' : 'el-icon-plus'" class="expand-icon"
                 @click.stop="toggleExpand(scope.row)"></i>
-              <span v-else class="level-indicator">└</span>
-              <span class="level-text">{{ scope.row.level === 0 ? '主项' : '成本项' }}</span>
+              <span class="supplier-name">{{ formatCategory(scope.row) }}</span>
             </div>
-          </template>
-        </el-table-column>
-        <!-- <el-table-column type="index" label="序号" width="60" align="center" :index="(index) => {
-          return (pagination.current - 1) * pagination.size + index + 1
-        }">
-        </el-table-column> -->
-        <el-table-column prop="categoryId" label="品类" align="center">
-          <template slot-scope="scope">
-            <!-- 主记录显示品类，子记录不显示 -->
-            <span v-if="scope.row.isParent">{{ formatCategory(scope.row) }}</span>
-            <span v-else class="sub-item-note">-</span>
+            <div v-else class="child-supplier">
+              <span class="sub-item-indicator">└</span>
+              <span class="sub-item-note"></span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="costTypeName" label="成本类型" align="center">
@@ -91,7 +83,7 @@
         <el-table-column prop="createTime" label="创建时间" align="center">
           <template slot-scope="scope">
             <!-- 主记录显示创建时间，子记录不显示 -->
-            <span v-if="scope.row.isParent">{{ scope.row.createTime | formatDate }}</span>
+            <span v-if="scope.row.isParent">{{ scope.row.createTime }}</span>
             <span v-else class="sub-item-note">-</span>
           </template>
         </el-table-column>
@@ -386,7 +378,12 @@ export default {
     // 加载品类选项
     loadCategoryOptions() {
       categoryComputerDict().then((res) => {
-        this.categoryOptions = res.data || []
+        if (res.data) {
+          this.categoryOptions = res.data.filter(item => item.isSample === 1)
+        } else {
+          this.categoryOptions = []
+        }
+        console.log("🚀 ~ file: index.vue:385 ~ this.categoryOptions :", this.categoryOptions)
       }).catch(() => {
         this.$message.error('获取品类数据失败')
       })
@@ -620,9 +617,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
     border-radius: 8px;
-    margin-bottom: 20px;
 
     .search-form {
       .el-form-item {
@@ -717,6 +712,46 @@ export default {
 
   .item-amount {
     color: #606266;
+  }
+
+  // 品类列样式
+  .supplier-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .expand-icon {
+      cursor: pointer;
+      margin-right: 8px;
+      color: #409EFF;
+      font-size: 14px;
+
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+
+    .supplier-name {
+      font-weight: 600;
+      color: #303133;
+    }
+  }
+
+  .child-supplier {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .sub-item-indicator {
+      margin-right: 4px;
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .sub-item-note {
+      color: #909399;
+      font-size: 12px;
+    }
   }
 
   // 子项备注样式

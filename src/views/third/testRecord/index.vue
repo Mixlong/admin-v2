@@ -2,76 +2,31 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          clearable
-          filterable
-          style="max-width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.categoryName" clearable filterable style="max-width: 140px"
+          @change="changeCategory">
+          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="型号" prop="computerName">
-        <el-select
-          v-model="queryParams.computerName"
-          clearable
-          filterable
-          @change="getList"
-          style="width: 140px"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
+        <el-select v-model="queryParams.computerName" clearable filterable @change="getList" style="width: 140px">
+          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
         </el-select>
       </el-form-item>
       <el-form-item label="PCBA SN" prop="pcbaSn">
-        <el-input
-          v-model="queryParams.pcbaSn"
-          placeholder="请输入"
-          clearable
-          style="width: 140px"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.pcbaSn" placeholder="请输入" clearable style="width: 140px"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="整机SN" prop="sn">
-        <el-input
-          v-model="queryParams.sn"
-          placeholder="请输入"
-          clearable
-          style="width: 140px"
-          @keyup.enter.native="handleQuery"
-        />
+        <el-input v-model="queryParams.sn" placeholder="请输入" clearable style="width: 140px"
+          @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="测试环节" prop="processName">
-        <el-select
-          v-model="queryParams.processName"
-          clearable
-          style="max-width: 140px"
-        >
-          <el-option
-            v-for="dict in testList"
-            :key="dict.dictCode"
-            :label="dict.dictLabel"
-            :value="dict.dictLabel"
-          />
+        <el-select v-model="queryParams.processName" clearable style="max-width: 140px">
+          <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
         </el-select>
       </el-form-item>
       <el-form-item label="判定结果" prop="result">
-        <el-select
-          v-model="queryParams.result"
-          placeholder="请选择"
-          clearable
-          style="max-width: 140px"
-        >
+        <el-select v-model="queryParams.result" placeholder="请选择" clearable style="max-width: 140px">
           <el-option label="OK" value="OK"></el-option>
           <el-option label="NG" value="NG"></el-option>
         </el-select>
@@ -81,82 +36,34 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button
-          class="float-right"
-          type="warning"
-          icon="el-icon-download"
-          @click="handleExport"
-        >
+        <el-button class="float-right" type="warning" icon="el-icon-download" @click="handleExport">
           导 出
         </el-button>
       </el-form-item>
     </el-form>
 
-    <el-table
-      v-loading="loading"
-      :data="brandList"
-      :height="tableHeight()"
-      border
-    >
-      <el-table-column
-        label="序号"
-        width="58"
-        type="index"
-        align="center"
-        fixed="left"
-      >
+    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border>
+      <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="品类"
-        prop="categoryName"
-        align="center"
-        width="120"
-        fixed="left"
-      />
-      <el-table-column
-        label="型号"
-        prop="computerName"
-        align="center"
-        width="140"
-        fixed="left"
-      />
-      <el-table-column
-        label="PCBA SN"
-        prop="pcbaSn"
-        align="center"
-        width="190"
-      />
-      <el-table-column label="整机SN" prop="sn" align="center" width="250">
+      <el-table-column label="品类" prop="categoryName" align="center" width="120" fixed="left" />
+      <el-table-column label="型号" prop="computerName" align="center" width="140" fixed="left" />
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
+      <el-table-column label="整机SN" prop="sn" align="center">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center" width="240">
+      <el-table-column label="箱号" prop="boxNo" align="center">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
       </el-table-column>
-      <el-table-column
-        label="测试环节"
-        prop="processName"
-        align="center"
-        width="100"
-      />
-      <el-table-column
-        label="判断结果"
-        prop="result"
-        align="center"
-        width="100"
-      >
+      <el-table-column label="测试环节" prop="processName" align="center" width="100" />
+      <el-table-column label="判断结果" prop="result" align="center" width="100">
         <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
       </el-table-column>
-      <el-table-column
-        label="测试设备SN"
-        prop="cpuId"
-        align="center"
-        width="120"
-      >
+      <el-table-column label="测试设备SN" prop="cpuId" align="center" width="120">
         <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
       </el-table-column>
       <el-table-column label="测试时长" prop="time" align="center" width="100">
@@ -164,62 +71,31 @@
           {{ formattedTime({ time: row.time, timeType: "ms" }) }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="测试时间"
-        prop="testTime"
-        align="center"
-        width="150"
-        sortable
-      >
+      <el-table-column label="测试时间" prop="testTime" align="center" width="150" sortable>
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="测试详情"
-        align="center"
-        width="100"
-        fixed="right"
-      >
+      <el-table-column label="测试详情" align="center" width="100" fixed="right">
         <template slot-scope="scope">
           <el-button type="text" @click="seeDetail(scope.row)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-if="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-if="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <el-dialog
-      title="测试详情"
-      :visible.sync="isStsDetailShow"
-      width="800px"
-      center
-      append-to-body
-      top="1vh"
-    >
+    <el-dialog title="测试详情" :visible.sync="isStsDetailShow" width="800px" center append-to-body top="1vh">
       <el-descriptions direction="vertical" :column="2" border>
-        <el-descriptions-item
-          label="测试环节"
-          label-class-name="text-center"
-          content-class-name="text-center font20"
-          :contentStyle="contentStyle"
-        >
+        <el-descriptions-item label="测试环节" label-class-name="text-center" content-class-name="text-center font20"
+          :contentStyle="contentStyle">
           <span class="text-success">
             {{ stsDetail.processName || "--" }}
           </span>
         </el-descriptions-item>
-        <el-descriptions-item
-          label="测试结果"
-          label-class-name="text-center"
-          :content-class-name="['text-center font20']"
-          :contentStyle="contentStyle"
-        >
+        <el-descriptions-item label="测试结果" label-class-name="text-center" :content-class-name="['text-center font20']"
+          :contentStyle="contentStyle">
           <span :class="stsResultStyle(stsDetail.result)">
             {{ stsDetail.result || "--" }}
           </span>
@@ -227,39 +103,19 @@
       </el-descriptions>
       <p class="margin-top-sm">测试过程</p>
 
-      <el-table
-        v-show="stsDetail.processName !== '防水'"
-        :data="stsDetail.detail"
-        bordered
-        height="450"
-      >
+      <el-table v-show="stsDetail.processName !== '防水'" :data="stsDetail.detail" bordered height="450">
         <el-table-column label="序号" width="58" type="index" align="center">
           <template slot-scope="scope">
             {{ scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column
-          label="测试项"
-          prop="typeName"
-          width="120"
-          align="center"
-        />
-        <el-table-column
-          label="测试结果"
-          prop="testResult"
-          width="100"
-          align="center"
-        />
+        <el-table-column label="测试项" prop="typeName" width="120" align="center" />
+        <el-table-column label="测试结果" prop="testResult" width="100" align="center" />
         <el-table-column label="期望值" prop="desiredValue" align="center" />
         <el-table-column label="实测值" prop="measureValue" align="center" />
       </el-table>
 
-      <el-table
-        v-show="stsDetail.processName === '防水'"
-        :data="stsDetail.detail"
-        border
-        default-expand-all
-      >
+      <el-table v-show="stsDetail.processName === '防水'" :data="stsDetail.detail" border default-expand-all>
         <el-table-column type="expand">
           <div slot-scope="{ row }">
             <template v-if="row.tightnessJson">
@@ -277,24 +133,12 @@
                     <div slot="header">
                       <span>测试时间参数(S)</span>
                     </div>
-                    <div
-                      class="flex align-center justify-between"
-                      v-for="(item, index) in testTimeData"
-                      :key="index"
-                    >
-                      <el-tag
-                        color="#00aadc"
-                        effect="dark"
-                        size="medium"
-                        style="border: none; display: flex; align-items: center"
-                      >
+                    <div class="flex align-center justify-between" v-for="(item, index) in testTimeData" :key="index">
+                      <el-tag color="#00aadc" effect="dark" size="medium"
+                        style="border: none; display: flex; align-items: center">
                         {{ item.label }}
                       </el-tag>
-                      <el-input
-                        v-model="item.value"
-                        readonly
-                        style="width: 100px"
-                      />
+                      <el-input v-model="item.value" readonly style="width: 100px" />
                     </div>
                   </el-card>
                 </el-col>
@@ -303,25 +147,14 @@
                     <div slot="header">
                       <span>测试压力参数</span>
                     </div>
-                    <div
-                      class="flex align-center justify-between"
-                      v-for="(item, index) in testPressureData"
-                      :key="index"
-                    >
-                      <el-tag
-                        color="#00aadc"
-                        effect="dark"
-                        size="medium"
-                        style="border: none; display: flex; align-items: center"
-                      >
+                    <div class="flex align-center justify-between" v-for="(item, index) in testPressureData"
+                      :key="index">
+                      <el-tag color="#00aadc" effect="dark" size="medium"
+                        style="border: none; display: flex; align-items: center">
                         {{ item.label }}
                       </el-tag>
                       <div class="flex align-center space-between">
-                        <el-input
-                          v-model="item.value"
-                          readonly
-                          style="width: 100px"
-                        />
+                        <el-input v-model="item.value" readonly style="width: 100px" />
                         <div class="unit-box">{{ item.unit }}</div>
                       </div>
                     </div>
@@ -332,48 +165,22 @@
                     <div slot="header">
                       <span>测试前外部输出状态(S)</span>
                     </div>
-                    <div
-                      class="flex align-center justify-between"
-                      v-for="(item, index) in testFrongData"
-                      :key="index"
-                    >
-                      <el-tag
-                        type="warning"
-                        effect="dark"
-                        size="medium"
-                        style="width: 70px; text-align: center"
-                      >
+                    <div class="flex align-center justify-between" v-for="(item, index) in testFrongData" :key="index">
+                      <el-tag type="warning" effect="dark" size="medium" style="width: 70px; text-align: center">
                         {{ item.label }}
                       </el-tag>
-                      <el-input
-                        v-model="item.value"
-                        readonly
-                        style="width: 100px"
-                      />
+                      <el-input v-model="item.value" readonly style="width: 100px" />
                     </div>
                   </el-card>
                   <el-card shadow="nerver" class="el-card-box">
                     <div slot="header">
                       <span>测试后外部输出状态(S)</span>
                     </div>
-                    <div
-                      class="flex align-center justify-between"
-                      v-for="(item, index) in testEndData"
-                      :key="index"
-                    >
-                      <el-tag
-                        type="success"
-                        effect="dark"
-                        size="medium"
-                        style="width: 70px; text-align: center"
-                      >
+                    <div class="flex align-center justify-between" v-for="(item, index) in testEndData" :key="index">
+                      <el-tag type="success" effect="dark" size="medium" style="width: 70px; text-align: center">
                         {{ item.label }}
                       </el-tag>
-                      <el-input
-                        v-model="item.value"
-                        readonly
-                        style="width: 100px"
-                      />
+                      <el-input v-model="item.value" readonly style="width: 100px" />
                     </div>
                   </el-card>
                 </el-col>
@@ -385,38 +192,15 @@
           </div>
         </el-table-column>
         <el-table-column label="迪太SN" prop="dtSn" align="center" />
-        <el-table-column
-          label="测试压力(KPa)"
-          prop="testPressure"
-          align="center"
-        />
+        <el-table-column label="测试压力(KPa)" prop="testPressure" align="center" />
         <el-table-column label="小泄漏(KPa)" prop="leakValue" align="center" />
-        <el-table-column
-          label="耗时"
-          prop="consumeTime"
-          align="center"
-          sortable
-        >
-          <span
-            slot-scope="{ row }"
-            v-NoData="formattedTime({ time: row.consumeTime, timeType: 'ms' })"
-          />
+        <el-table-column label="耗时" prop="consumeTime" align="center" sortable>
+          <span slot-scope="{ row }" v-NoData="formattedTime({ time: row.consumeTime, timeType: 'ms' })" />
         </el-table-column>
-        <el-table-column
-          label="测试时间"
-          prop="time"
-          align="center"
-          sortable
-          width="140px"
-        >
+        <el-table-column label="测试时间" prop="time" align="center" sortable width="140px">
           <span slot-scope="{ row }" v-NoData="parseTime(row.time)" />
         </el-table-column>
-        <el-table-column
-          label="测试结果"
-          prop="testResult"
-          align="center"
-          width="100"
-        >
+        <el-table-column label="测试结果" prop="testResult" align="center" width="100">
           <el-tag :type="gasTestResultTag[row.testResult]" slot-scope="{ row }">
             {{ gasTestResultData[row.testResult] }}
           </el-tag>
@@ -433,6 +217,16 @@ import { CategoryMixin } from "@/mixins/common";
 export default {
   name: "StsTestResult",
   mixins: [CategoryMixin],
+  props: {
+    sn: {
+      type: String,
+      default: "",
+    },
+    pcbaSn: {
+      type: String,
+      default: "",
+    },
+  },
   data() {
     return {
       isStsDetailShow: false,
@@ -601,7 +395,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 40,
         categoryName: "",
         computerName: "",
         pcbaSn: "",
@@ -628,27 +422,25 @@ export default {
       };
     },
   },
-  watch: {
-    $route: {
-      handler(route) {
-        if (route.name !== "StsTestResult") return;
-        const { params, query } = route;
-        const { type, categoryId, status, model } = query;
-        this.queryParams.type = type ?? "";
-        this.queryParams.categoryId = categoryId ?? "";
-        this.queryParams.status = status ?? "";
-        this.queryParams.computerId = model ?? "";
-
-        const { sn, recordId } = params;
-        this.queryParams.sn = sn;
-        this.queryParams.recordId = recordId;
-
-        this.getList();
-      },
-      immediate: true,
-    },
-  },
   created() {
+    // 处理路由参数
+    if (this.$route.name === "StsTestResult") {
+      const { params, query } = this.$route;
+      const { type, categoryId, status, model } = query;
+      this.queryParams.type = type ?? "";
+      this.queryParams.categoryId = categoryId ?? "";
+      this.queryParams.status = status ?? "";
+      this.queryParams.computerId = model ?? "";
+
+      const { sn, recordId } = params;
+      this.queryParams.sn = sn;
+      this.queryParams.recordId = recordId;
+    } else {
+      this.queryParams.sn = this.sn;
+      this.queryParams.pcbaSn = this.pcbaSn
+    }
+    this.getCategoryData();
+    this.getList();
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
@@ -660,6 +452,7 @@ export default {
       stsTestList(this.queryParams).then((response) => {
         this.brandList = response.data.list;
         this.total = response.data.total;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -756,10 +549,13 @@ export default {
   /* height: 440px; */
   height: 240px;
   margin-bottom: 20px;
+
   .el-col {
     height: 100%;
+
     .el-card-box {
       height: 100%;
+
       /deep/ .el-card__header {
         background: #00aaaa;
         color: #fff;
@@ -769,6 +565,7 @@ export default {
         justify-content: center;
         align-items: center;
       }
+
       /deep/ .el-card__body {
         padding: 10px;
         height: calc(100% - 40px);

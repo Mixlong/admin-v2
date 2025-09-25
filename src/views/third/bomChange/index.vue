@@ -1,37 +1,43 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" size="small" class="search-form">
-      <div>
-        <el-form-item label="客户单号" prop="customerNo">
-          <el-input v-model="queryParams.customerNo" placeholder="请输入客户单号" clearable @keyup.enter.native="handleQuery"
-            style="width: 200px" />
-        </el-form-item>
+    <!-- 智能搜索区域 -->
+    <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" 
+      
+    @search="handleSearch"
+        :defaultVisibleCount="4" @reset="handleReset" @field-change="handleFieldChange">
+        
+        <!-- 自定义客户字段渲染 -->
+        <template #field-customer="{ field, searchForm }">
+            <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+                <select-loadMore v-model="searchForm[field.key]" :data="customerData.data" :page="customerData.page"
+                  :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData" size="mini"
+                    placeholder="请选择客户名称" style="width: 100%;">
+                </select-loadMore>
+            </el-form-item>
+        </template>
 
-        <el-form-item label="U8单号" prop="uNo">
-          <el-input v-model="queryParams.uNo" placeholder="请输入U8单号" clearable @keyup.enter.native="handleQuery"
-            style="width: 200px" />
-        </el-form-item>
+        <!-- 自定义配置型号字段渲染 -->
+        <template #field-configModel="{ field, searchForm }">
+            <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+                <el-select filterable remote clearable v-model="searchForm[field.key]" placeholder="请选择配置型号"
+                    :remote-method="getComputerNameList" size="mini" style="width: 100%">
+                    <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+                </el-select>
+            </el-form-item>
+        </template>
 
-        <el-form-item label="E树单号" prop="eNo">
-          <el-input v-model="queryParams.eNo" placeholder="请输入E树单号" clearable @keyup.enter.native="handleQuery"
-            style="width: 200px" />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleQuery">搜索</el-button>
-          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-
-      </div>
-      <div class="operation-btns">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd"
-          v-hasPermi="['bomChange:add']">新增变更申请</el-button>
-
-        <el-button type="info" plain icon="el-icon-user" @click="handleAddPeople"
-          v-hasPermi="['bomChange:people']">人员管理</el-button>
-
-      </div>
-    </el-form>
+        <!-- 页面操作按钮 -->
+        <template #page-actions>
+            <el-button type="primary" @click="handleAdd" icon="el-icon-plus" size="mini" v-hasPermi="['bomChange:add']"
+             >
+                新增变更申请
+            </el-button>
+            <el-button type="info" plain @click="handleAddPeople" icon="el-icon-user" v-hasPermi="['bomChange:people']"
+                size="mini">
+                人员管理
+            </el-button>
+        </template>
+    </IntelligentSearchForm>
 
     <el-table v-loading="loading" :data="bomChangeList" :height="tableHeight()" border>
       <el-table-column label="序号" type="index" width="50" align="center">
@@ -55,7 +61,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="会审状态" prop="list" align="center" width="220">
+      <el-table-column label="会审状态" prop="list" align="center" width="200">
         <template slot-scope="{ row }">
           <div class="compact-review-status">
             <div v-for="(group, field) in getReviewStatusByField(row.list)" :key="field" class="review-group">
@@ -191,7 +197,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" fixed="right" width="100">
+      <el-table-column label="操作" align="center" fixed="right" width="120">
         <template slot-scope="{ row }">
           <el-button size="mini" type="primary" icon="el-icon-view" @click="handleView(row)">查看</el-button>
 
@@ -203,7 +209,8 @@
           <!-- 会审按钮 - 优化逻辑 -->
           <template v-for="(item, index) in (row && row.list ? row.list : [])">
             <!-- 会审按钮 -->
-            <el-tooltip v-if="item.state === 0 && item.fieldName === nickName && row.firstState === 0"
+            <el-tooltip
+              v-if="item.state === 0 && item.fieldName === nickName && row.firstState === 0 && canShowReviewButton(row, item.field)"
               :content="`${TriageList[item.field]}会审`" placement="top" :key="'review-' + index">
               <el-button size="mini" type="primary" @click="handleAuthFlag(item, 2, item.field)">
                 <i class="el-icon-check"></i> {{ TriageList[item.field] }}会审
@@ -211,7 +218,8 @@
             </el-tooltip>
 
             <!-- 撤回会审按钮 -->
-            <el-tooltip v-if="item.state === 1 && item.fieldName === nickName && row.firstState === 0"
+            <el-tooltip
+              v-if="item.state === 1 && item.fieldName === nickName && row.firstState === 0 && canRevokeReview(row, item.field)"
               :content="`撤销${TriageList[item.field]}会审`" placement="top" :key="'reset-' + index">
               <el-button size="mini" type="danger" @click="handleResetCheck(item, 2, item.field)">
                 <i class="el-icon-refresh-left"></i> 撤回{{ TriageList[item.field] }}会审
@@ -278,7 +286,7 @@
     <DetailView ref="detailView" />
 
     <!-- 审核弹窗 -->
-    <el-dialog :title="authDialogTitle" :visible.sync="authDialogVisible" width="800px" append-to-body>
+    <el-dialog :title="authDialogTitle" :visible.sync="authDialogVisible" width="800px" append-to-body top="0vh">
       <el-form ref="authForm" :model="authForm" :rules="authFormRules" label-width="180px">
         <el-form-item label="审核状态" prop="state"
           v-if="!isSystemStateFlag && !isOrderChangeStateFlag && !isWorkOrderChangeStateFlag">
@@ -345,6 +353,51 @@
           </el-radio-group>
         </el-form-item>
 
+        <!-- 部门特定方案字段 - 会审时显示 -->
+        <template v-if="isFieldStateFlag">
+          <!-- PMC部门方案 -->
+          <template v-if="isAuthAlterData.field === 10">
+            <el-form-item label="在制产品处理方案" prop="programme">
+              <Editor v-model="authForm.programme" :min-height="150" placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写">
+              </Editor>
+            </el-form-item>
+          </template>
+
+          <!-- 采购部门方案 -->
+          <template v-if="isAuthAlterData.field === 2">
+            <el-form-item label="在途物料处理方案" prop="programme">
+              <Editor v-model="authForm.programme" :min-height="150" placeholder="订单暂停、订单取消、物料变更及数量减少情况下涉及填写"></Editor>
+            </el-form-item>
+          </template>
+
+          <!-- 研发部门方案 -->
+          <template v-if="isAuthAlterData.field === 6">
+            <el-form-item label="涉及更新的文件" prop="programme">
+              <Editor v-model="authForm.programme" :min-height="150" placeholder="物料变更及软件变更情况下涉及填写"></Editor>
+            </el-form-item>
+          </template>
+
+          <!-- 市场部门方案 -->
+          <template v-if="isAuthAlterData.field === 8">
+            <el-form-item label="在库成品处理方案" prop="programme">
+              <Editor v-model="authForm.programme" :min-height="150" placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写">
+              </Editor>
+            </el-form-item>
+
+            <el-form-item label="在库物料处理方案" prop="treatment">
+              <Editor v-model="authForm.treatment" :min-height="150" placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写">
+              </Editor>
+            </el-form-item>
+          </template>
+
+          <!-- 通用附件上传字段 - 所有部门会审时都显示 -->
+          <el-form-item label="相关附件" prop="annexUrl">
+            <DrUpload v-model="authForm.annexUrl" :drag="true" :multiple="true" :limit="5" accept="*"
+              :css="{ width: '100%' }" class="modern-upload">
+            </DrUpload>
+          </el-form-item>
+        </template>
+
         <!-- 通用备注和不通过理由字段 -->
         <el-form-item
           v-if="authForm.state === 1 && !isSystemStateFlag && !isOrderChangeStateFlag && !isWorkOrderChangeStateFlag"
@@ -363,7 +416,7 @@
       </div>
     </el-dialog>
     <!-- 人员管理弹窗 -->
-    <el-dialog title="BOM变更审核人员管理" :visible.sync="isPeopleManageVisible" width="800px" append-to-body top="5vh"
+    <el-dialog title="BOM变更审核人员管理" :visible.sync="isPeopleManageVisible" width="800px" append-to-body top="0vh"
       v-if="isPeopleManageVisible">
       <el-row type="flex" justify="center">
         <el-col :xs="24" :span="20">
@@ -508,6 +561,9 @@
 <script>
 import BomChangeForm from './components/BomChangeForm'
 import DetailView from './components/DetailView'
+import DrUpload from "@/components/MyUpload"
+import Editor from "@/components/Editor"
+import IntelligentSearchForm from '@/components/IntelligentSearchForm'
 import {
   getBomOrderChangeList,
   addBomOrderChange,
@@ -525,15 +581,30 @@ import {
 import { ecnFieldState, BomPersonList, personBomEdit } from "@/api/third/ecn"
 import { dictUserList } from "@/api/system/user"
 import { listDept } from "@/api/system/dept"
+import {
+  getCustomerList,
+} from "@/api/order";
+import { computerNameList } from "@/api/third/fileConfig";
 import { mapGetters } from "vuex";
 export default {
   name: "BomChange",
   components: {
     BomChangeForm,
-    DetailView
+    DetailView,
+    DrUpload,
+    Editor,
+    IntelligentSearchForm
   },
   data() {
     return {
+ 
+      // 型号
+      computerOptions: [],
+      customerData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       peopleManageObject: {},
       // 遮罩层
       loading: true,
@@ -555,10 +626,67 @@ export default {
         p: 1,        // 第几页
         l: 10,       // 多少个
         processCode: null,  // ECN编号
+        customer: null,     // 客户名称
         customerNo: null,   // 客户单号
         uNo: null,         // U8单号
-        eNo: null          // E树单号
+        eNo: null,         // E树单号
+        configModel: null   // 配置型号
       },
+
+      // IntelligentSearchForm 搜索表单
+      searchForm: {
+        customer: null,     // 客户名称
+        customerNo: null,   // 客户单号
+        uNo: null,         // U8单号
+        eNo: null,         // E树单号
+        configModel: null   // 配置型号
+      },
+
+      // IntelligentSearchForm 字段配置
+      searchFields: [
+        {
+          key: 'customer',
+          label: '客户',
+          component: 'custom', // 使用自定义slot
+          sort: 1
+        },
+        {
+          key: 'customerNo',
+          label: '客户单号',
+          component: 'el-input',
+          sort: 2,
+          props: {
+            placeholder: '请输入客户单号',
+            clearable: true
+          }
+        },
+        {
+          key: 'uNo',
+          label: 'U8单号',
+          component: 'el-input',
+          sort: 3,
+          props: {
+            placeholder: '请输入U8单号',
+            clearable: true
+          }
+        },
+        {
+          key: 'eNo',
+          label: 'E树单号',
+          component: 'el-input',
+          sort: 5,
+          props: {
+            placeholder: '请输入E树单号',
+            clearable: true
+          }
+        },
+        {
+          key: 'configModel',
+          label: '配置型号',
+          component: 'custom', // 使用自定义slot
+          sort: 4
+        }
+      ],
       TriageList: {
         2: "采购",
         3: "品质",
@@ -729,8 +857,8 @@ export default {
         state: 1,
         remark: '',
         result: '',
-        isCorrelation: '',
-        isComplete: '',
+        isCorrelation: '是', // 默认值：是
+        isComplete: '是',    // 默认值：是
         // 系统变更专用字段
         beforeOrderBom: '',
         afterOrderBom: '',
@@ -742,11 +870,15 @@ export default {
         // 工单变更专用字段
         workOrderChangePerson: '',
         workOrderChangeStatus: '',
-        workOrderChangeResult: ''
+        workOrderChangeResult: '',
+        // 部门特定方案字段
+        programme: '',
+        treatment: '',
+        // 附件字段
+        annexUrl: ''
       },
       authFormRules: {
         state: [{ required: true, message: '请选择审核状态', trigger: 'change' }],
-        remark: [{ required: true, message: '请输入备注', trigger: 'blur' }],
         result: [{ required: true, message: '请输入不通过理由', trigger: 'blur' }],
         isCorrelation: [{ required: true, message: '请选择相关性', trigger: 'change' }],
         isComplete: [{ required: true, message: '请选择是否完成', trigger: 'change' }],
@@ -762,7 +894,39 @@ export default {
         // 工单变更专用字段验证
         workOrderChangePerson: [{ required: true, message: '请选择工单变更人员', trigger: 'change' }],
         workOrderChangeStatus: [{ required: true, message: '请选择工单是否已做变更', trigger: 'change' }],
-        workOrderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }]
+        workOrderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }],
+        // 部门特定方案字段验证（会审时使用 - 动态验证）
+        programme: [{
+          validator: (rule, value, callback) => {
+            if (this.isFieldStateFlag) {
+              if (this.isRichTextEmpty(value)) {
+                const fieldMap = {
+                  10: '请输入在制产品处理方案',
+                  2: '请输入在途物料处理方案',
+                  6: '请输入涉及更新的文件',
+                  8: '请输入在库成品处理方案'
+                };
+                const message = fieldMap[this.isAuthAlterData.field] || '请输入处理方案';
+                callback(new Error(message));
+                return;
+              }
+            }
+            callback();
+          },
+          trigger: 'blur'
+        }],
+        treatment: [{
+          validator: (rule, value, callback) => {
+            if (this.isFieldStateFlag && this.isAuthAlterData.field === 8) {
+              if (this.isRichTextEmpty(value)) {
+                callback(new Error('请输入在库物料处理方案'));
+                return;
+              }
+            }
+            callback();
+          },
+          trigger: 'blur'
+        }]
       },
       // 人员管理相关
       isPeopleManageVisible: false,
@@ -774,7 +938,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId", "nickName"]),
+    ...mapGetters(["userId","nickName"]),
     // 判断是否为初审状态
     isFirstStateFlag() {
       return this.isAuthFlag === 1;
@@ -864,14 +1028,6 @@ export default {
     // 获取所有类型的人员数据，包括订单变更和工单变更人员
     this.getTotalPeopleData();
 
-    // 测试API导入
-    console.log('=== API函数检查 ===');
-    console.log('bomOrderFirstState:', typeof bomOrderFirstState, bomOrderFirstState);
-    console.log('bomOrderSecondState:', typeof bomOrderSecondState, bomOrderSecondState);
-    console.log('bomOrderSystemState:', typeof bomOrderSystemState, bomOrderSystemState);
-    console.log('bomOrderChangeState:', typeof bomOrderChangeState, bomOrderChangeState);
-    console.log('bomOrderWorkState:', typeof bomOrderWorkState, bomOrderWorkState);
-
     // 如果函数未正确导入，显示错误信息
     if (typeof bomOrderFirstState !== 'function') {
       console.error('❌ bomOrderFirstState 未正确导入');
@@ -881,6 +1037,167 @@ export default {
     }
   },
   methods: {
+    // IntelligentSearchForm 搜索处理
+    handleSearch() {
+      // 将searchForm的值同步到queryParams
+      this.queryParams.customer = this.searchForm.customer
+      this.queryParams.customerNo = this.searchForm.customerNo
+      this.queryParams.uNo = this.searchForm.uNo
+      this.queryParams.eNo = this.searchForm.eNo
+      this.queryParams.configModel = this.searchForm.configModel
+      
+      this.queryParams.p = 1
+      this.getList()
+    },
+
+    // IntelligentSearchForm 重置处理
+    handleReset() {
+      // 重置搜索表单
+      this.searchForm = {
+        customer: null,
+        customerNo: null,
+        uNo: null,
+        eNo: null,
+        configModel: null
+      }
+      
+      // 重置查询参数
+      this.queryParams.customer = null
+      this.queryParams.customerNo = null
+      this.queryParams.uNo = null
+      this.queryParams.eNo = null
+      this.queryParams.configModel = null
+      
+      this.queryParams.p = 1
+      this.getList()
+    },
+
+    // IntelligentSearchForm 字段变化处理
+    handleFieldChange(fieldKey, value) {
+      // 可以在这里处理特定字段的变化逻辑
+      console.log(`字段 ${fieldKey} 变化为:`, value)
+    },
+    // 型号
+    getComputerNameList(name) {
+      if (name) {
+        this.isCLoading = false;
+        computerNameList({
+          name,
+        }).then((res) => {
+          this.computerOptions = res.data;
+        });
+      } else {
+        this.computerOptions = [];
+      }
+    },
+    // 检查富文本内容是否为空
+    isRichTextEmpty(value) {
+      if (!value) return true;
+
+      // 移除HTML标签，只保留文本内容
+      const textContent = value.replace(/<[^>]*>/g, '').trim();
+
+      // 检查是否只包含空白字符、换行符等
+      return textContent === '' || textContent === '\n' || /^\s*$/.test(textContent);
+    },
+
+    getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          list.filter((item) => item.status === 0);
+
+          if (more) {
+            this.customerData.data = [...this.customerData.data, ...list];
+          } else {
+            this.customerData.data = list;
+          }
+          this.customerData.more = pageNum * pageSize < total;
+          this.customerData.page = pageNum;
+          resolve();
+        });
+      });
+    },
+    /** 检查会审流程前置条件 - PMC -> 采购 -> 研发 -> 市场 */
+    canShowReviewButton(row, currentField) {
+      if (!row.list || row.list.length === 0) return false;
+
+      // 定义会审流程顺序：PMC(10) -> 采购(2) -> 研发(6) -> 市场(8)
+      const reviewOrder = [10, 2, 6, 8];
+      const currentIndex = reviewOrder.indexOf(currentField);
+
+      if (currentIndex === -1) return false; // 无效的部门字段
+
+      // 如果是第一个部门(PMC)，直接允许
+      if (currentIndex === 0) return true;
+
+      // 检查前面所有部门是否都已完成会审
+      for (let i = 0; i < currentIndex; i++) {
+        const previousField = reviewOrder[i];
+        const previousReviews = row.list.filter(item => item.field === previousField);
+
+        // 如果前面的部门没有人员配置，跳过
+        if (previousReviews.length === 0) continue;
+
+        // 检查前面部门的所有人员是否都已通过会审
+        const allPassed = previousReviews.every(item => item.state === 1);
+        if (!allPassed) return false;
+      }
+
+      return true;
+    },
+
+    /** 检查是否可以撤回会审 - 只有当后面的部门都未开始会审时才能撤回 */
+    canRevokeReview(row, currentField) {
+      if (!row.list || row.list.length === 0) return false;
+
+      // 定义会审流程顺序：PMC(10) -> 采购(2) -> 研发(6) -> 市场(8)
+      const reviewOrder = [10, 2, 6, 8];
+      const currentIndex = reviewOrder.indexOf(currentField);
+
+      if (currentIndex === -1) return false; // 无效的部门字段
+
+      // 检查后面所有部门是否都还未开始会审（状态为0）
+      for (let i = currentIndex + 1; i < reviewOrder.length; i++) {
+        const nextField = reviewOrder[i];
+        const nextReviews = row.list.filter(item => item.field === nextField);
+
+        // 如果后面的部门没有人员配置，跳过
+        if (nextReviews.length === 0) continue;
+
+        // 检查后面部门是否有人已经开始会审（状态不为0）
+        const hasStarted = nextReviews.some(item => item.state !== 0);
+        if (hasStarted) return false;
+      }
+
+      return true;
+    },
+
+    /** 测试会审流程控制逻辑 - 开发调试用 */
+    testReviewFlow() {
+      // 模拟测试数据
+      const testRow = {
+        list: [
+          { field: 10, fieldName: 'PMC用户', state: 1 }, // PMC已完成
+          { field: 2, fieldName: '采购用户', state: 0 },  // 采购待审核
+          { field: 6, fieldName: '研发用户', state: 0 },  // 研发待审核
+          { field: 8, fieldName: '市场用户', state: 0 }   // 市场待审核
+        ]
+      };
+
+      console.log('=== 会审流程控制测试 ===');
+      console.log('PMC可以会审:', this.canShowReviewButton(testRow, 10)); // true
+      console.log('采购可以会审:', this.canShowReviewButton(testRow, 2));  // true (PMC已完成)
+      console.log('研发可以会审:', this.canShowReviewButton(testRow, 6));  // false (采购未完成)
+      console.log('市场可以会审:', this.canShowReviewButton(testRow, 8));  // false (前面未完成)
+
+      console.log('PMC可以撤回:', this.canRevokeReview(testRow, 10)); // true (后面都未开始)
+      console.log('采购可以撤回:', this.canRevokeReview(testRow, 2));  // true (后面都未开始)
+    },
+
     /** 判断审核是否禁用 */
     isAuditDisabled(row, config) {
       // 检查前置条件
@@ -1380,6 +1697,12 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
+      // 重置额外的表单字段
+      this.queryParams.customer = null;
+      this.queryParams.configModel = null;
+      // 清空客户数据和配置型号选项
+      this.customerData.data = [];
+      this.computerOptions = [];
       this.handleQuery();
     },
 
@@ -1789,12 +2112,24 @@ export default {
       }
 
       if (isAuthFlag === 2) {
+        // 从 row 或 list 中查找当前用户对应的审核记录
+        let existingReview = null;
+        if (row && row.list && Array.isArray(row.list)) {
+          existingReview = row.list.find(item =>
+            item.fieldName === this.nickName && item.field === field
+          );
+        }
+
         this.authForm = {
-          state: 1,
-          remark: '',
-          result: '',
-          isCorrelation: '',
-          isComplete: '',
+          state: existingReview ? existingReview.state || 1 : 1,
+          remark: existingReview ? existingReview.remark || '' : '',
+          result: existingReview ? existingReview.result || '' : '',
+          isCorrelation: existingReview ? existingReview.isCorrelation || '是' : '是', // 默认值：是
+          isComplete: existingReview ? existingReview.isComplete || '是' : '是',     // 默认值：是
+          // 部门特定字段 - 从现有记录中获取
+          programme: existingReview ? existingReview.programme || '' : '',
+          treatment: existingReview ? existingReview.treatment || '' : '',
+          annexUrl: existingReview ? existingReview.annexUrl || '' : ''
         };
       }
 
@@ -1943,8 +2278,8 @@ export default {
         state: 1,
         remark: '',
         result: '',
-        isCorrelation: '',
-        isComplete: '',
+        isCorrelation: '是', // 默认值：是
+        isComplete: '是',    // 默认值：是
         // 系统变更专用字段
         systemPerson: '',
         beforeBomCode: '',
@@ -1957,7 +2292,12 @@ export default {
         // 工单变更专用字段
         workOrderChangePerson: '',
         workOrderChangeStatus: '',
-        workOrderChangeResult: ''
+        workOrderChangeResult: '',
+        // 部门特定方案字段
+        programme: '',
+        treatment: '',
+        // 附件字段
+        annexUrl: ''
       };
       this.resetForm("authForm");
     },
@@ -2093,8 +2433,6 @@ export default {
 .app-container {
   .search-form {
     background: #fff;
-    padding: 20px;
-    margin-bottom: 10px;
     border-radius: 4px;
     display: flex;
     justify-content: space-between;

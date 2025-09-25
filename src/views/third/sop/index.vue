@@ -2,10 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" inline>
       <el-form-item label="产品品类" prop="categoryId">
-        <el-select v-model="queryParams.categoryId" filterable allow-create clearable style="width: 140px"
-          placeholder="请选择产品品类">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-        </el-select>
+        <TypedSelectLoadMore
+              v-model="queryParams.categoryId"
+              type="category"
+              customStyle="width: 150px"
+              size="mini"
+              @change="handleQuery"
+            />
       </el-form-item>
       <el-form-item label="审核状态" prop="state">
         <el-select v-model="queryParams.state" style="width: 140px" clearable placeholder="请选择审核状态">
@@ -17,7 +20,7 @@
       <el-form-item label="版本号" prop="versionCode">
         <el-input v-model.trim="queryParams.versionCode" clearable style="width: 140px" placeholder="请选择版本号"></el-input>
       </el-form-item>
-      <el-form-item>
+    <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
         </el-button>
@@ -68,7 +71,7 @@
             <el-button v-hasPermi="['sop:delete:btn']" class="text-red" type="text" @click="handleDelete(row)">
               删除
             </el-button>
-            <el-button  v-if="row.historyFile" class="text-blue" type="text" @click="handleHistory(row)">
+            <el-button v-if="row.historyFile" class="text-blue" type="text" @click="handleHistory(row)">
               历史文件
             </el-button>
           </div>
@@ -79,14 +82,14 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
       @pagination="getList" />
 
-    <!-- 新增、修改 -->
+  <!-- 新增、修改 -->
     <add-sop ref="isAddSopRef" :visible.sync="isSopAddDia" :dictList="dictList" />
 
     <!-- 详情 -->
     <sop-detail ref="isSopDetailRef" :visible.sync="isSopDetailDia" />
 
     <!-- 历史文件弹出框 -->
-    <el-dialog title="历史文件" :visible.sync="historyFileDialogVisible" width="1000px" append-to-body top="10vh">
+    <el-dialog title="历史文件" :visible.sync="historyFileDialogVisible" width="1000px" append-to-body top="0vh">
       <el-table :data="historyFileList" border>
         <el-table-column prop="name" label="文件名" min-width="200" align="center">
           <template slot-scope="scope">
@@ -104,9 +107,6 @@
           </template>
         </el-table-column>
       </el-table>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="historyFileDialogVisible = false">关 闭</el-button>
-      </div>
     </el-dialog>
   </div>
 </template>
@@ -114,11 +114,9 @@
 <script>
 import { sopList, sopDelete, sopState } from "@/api/third/testApi";
 import { mapGetters } from "vuex";
-import { CategoryMixin } from "@/mixins/common";
 
 export default {
   name: "Sop",
-  mixins: [CategoryMixin],
   components: {
     AddSop: () => import("./components/addSop"),
     sopDetail: () => import("./components/sopDetail"),
@@ -143,10 +141,11 @@ export default {
       // 总条数
       total: 0,
       brandList: [],
+      isNoComputerFlag: true,
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         categoryId: undefined,
         state: undefined,
         versionCode: undefined,
@@ -240,6 +239,10 @@ export default {
     // 新增
     handleAdd() {
       this.isSopAddDia = true;
+      // 新增时重置表单，避免显示上一次编辑的数据
+      this.$nextTick(() => {
+        this.$refs.isAddSopRef.reset();
+      });
     },
     // 修改
     handleUpdate(row) {
@@ -292,10 +295,10 @@ export default {
     },
     // 查看历史文件
     handleHistory(row) {
-        if (row.historyFile) {
-          this.historyFileList =  JSON.parse(row.historyFile);;
+      if (row.historyFile) {
+        this.historyFileList = JSON.parse(row.historyFile);;
         this.historyFileDialogVisible = true;
-        }
+      }
     },
   },
 };

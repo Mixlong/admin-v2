@@ -1,0 +1,124 @@
+// 全局工具栏布局样式类
+.search-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  // 搜索表单区域
+  .search-form {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    .el-form-item--mini.el-form-item{
+      margin-bottom: 0;
+    }
+    .el-form {
+      .el-form-item {
+        margin-bottom: 0;
+        margin-right: 16px;
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+  }
+
+  // 操作按钮区域
+  .action-buttons {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    .el-button {
+      white-space: nowrap;
+    }
+  }
+}
+
+// 响应式布局
+@media (max-width: 1200px) {
+  .search-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    .action-buttons {
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+  }
+}
+
+// 兼容原有的toolbar类名
+.toolbar {
+  @extend .search-toolbar;
+
+  .search-form {
+    flex: 1;
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .right-button {
+    @extend .action-buttons;
+  }
+}
+
+// 紧凑模式
+.search-toolbar.compact {
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .search-form .el-form {
+    .el-form-item {
+      margin-right: 8px;
+    }
+  }
+
+  .action-buttons {
+    gap: 4px;
+  }
+}
+
+// 工具类
+.flex-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.toolbar-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-right {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.vue-treeselect {
+  .vue-treeselect__control {
+    line-height: 28px;
+    height: 28px;
+  }
+  .vue-treeselect__single-value,
+  .vue-treeselect__placeholder {
+    line-height: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}

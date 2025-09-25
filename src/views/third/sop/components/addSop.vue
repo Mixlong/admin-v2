@@ -1,166 +1,205 @@
 <template>
-  <!-- 添加售后 -->
-  <el-dialog class="after-sale-box sop-form-dialog premium-dialog" :title="isTitle" :visible="visible" width="950px"
-    append-to-body center top="2vh" :close-on-click-modal="false" @close="close">
-    <el-form ref="form" :model="form" :rules="rules" label-width="120px" label-position="left">
-      <el-row :gutter="24" class="form-header-section">
-        <el-col :span="12">
-          <el-form-item label="品类" prop="categoryId">
-            <el-select v-model="form.categoryId" filterable allow-create clearable style="width: 100%"
-              placeholder="请选择品类">
-              <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="版本号" prop="versionCode">
-            <el-input v-model="form.versionCode" clearable style="width: 100%" placeholder="请输入版本号" />
-          </el-form-item>
-        </el-col>
-        <el-col>
+  <el-dialog class="sop-form-dialog" :title="isTitle" :visible="visible" width="1000px" append-to-body center top="0vh"
+    :close-on-click-modal="false" @close="close">
+    <el-form ref="form" :model="form" :rules="rules" label-width="80px" class="sop-form" v-form-scroll-error>
+      <!-- 基本信息 -->
+      <fieldset class="form-fieldset">
+        <legend class="fieldset-legend">基本信息</legend>
+        <div class="fieldset-content">
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="品类" prop="categoryId">
+                <TypedSelectLoadMore
+              v-model="form.categoryId"
+              type="category"
+              customStyle="width: 100%"
+              size="mini"
+              @change="handleQuery"
+            />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="版本号" prop="versionCode">
+                <el-input v-model="form.versionCode" clearable placeholder="请输入版本号" />
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-form-item label="版本描述" prop="desc">
-            <el-input v-model="form.desc" type="textarea" clearable :rows="4" style="width: 100%"
-              placeholder="请输入版本描述" />
+            <el-input v-model="form.desc" type="textarea" clearable :rows="3" placeholder="请输入版本描述" />
           </el-form-item>
-        </el-col>
-      </el-row>
-      <el-form-item label="上传历史文件" prop="versionCode" label-width="140px">
-        <DrUpload v-model="form.historyFile" :useObjectFormat="true" />
-      </el-form-item>
-      <el-row class="workspace-files">
-        <el-form-item label="添加工位文件：" required label-width="140px" class="add-file-sticky">
-          <div class="upload-section">
-            <div class="file-upload-area">
-              <!-- <el-button
-                class="save-btn"
-                v-if="form.list.length < 100"
-                type="primary"
-                icon="el-icon-plus"
-                circle
-                size="medium"
-                @click="onAddStationFile"
-              /> -->
-              <el-button class="save-btn upload-btn" type="primary" size="medium" :disabled="isSubLoading"
-                @click="handlePdfUpload">
-                <i v-if="isSubLoading" class="el-icon-loading"></i>
+          <el-form-item label="封面图" prop="topImg">
+            <ImageUpload 
+              v-model="form.topImg" 
+              :accept="'image/*'"
+              :showFileList="true"
+                   :sortable="true"
+              listType="picture-card"
+              css="width: 200px; height: 120px;"
+              class="top-img-upload">
+              <div class="upload-placeholder">
+                <i class="el-icon-plus"></i>
+              </div>
+            </ImageUpload>
+          </el-form-item>
+          <el-form-item label="排拉表" prop="sortImg">
+            <ImageUpload 
+              v-model="form.sortImg" 
+              :accept="'image/*'"
+              :showFileList="true"
+              :sortable="true"
+              listType="picture-card"
+              css="width: 200px; height: 120px;"
+              class="top-img-upload">
+              <div class="upload-placeholder">
+                <i class="el-icon-plus"></i>
+              </div>
+            </ImageUpload>
+          </el-form-item>
+        </div>
+      </fieldset>
 
-                <i class="el-icon-upload el-icon--left"></i> 上传PDF
-              </el-button>
-              
+      <!-- 历史文件 -->
+      <fieldset class="form-fieldset">
+        <legend class="fieldset-legend">
+          历史文件
+          <DrUpload v-model="form.historyFile" :useObjectFormat="true" :showFileList="false" class="legend-upload">
+            <el-button size="small" type="text">
+              点击上传
+            </el-button>
+          </DrUpload>
+        </legend>
+        <div class="fieldset-content">
+          <!-- 用表格展示已上传的文件 -->
+          <el-table :data="historyFileList" border style="width: 100%" empty-text="暂无历史文件">
+            <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+            <el-table-column prop="name" label="文件名" min-width="200" align="center">
+              <template slot-scope="{ row }">
+                <el-link :href="row.url" target="_blank" type="primary" :underline="false">
+                  <i class="el-icon-document"></i>
+                  {{ row.name }}
+                </el-link>
+              </template>
+            </el-table-column>
+            <el-table-column label="上传时间" width="160" align="center">
+              <template slot-scope="{ row }">
+                {{ formatUploadTime(row.uploadTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120" align="center">
+              <template slot-scope="{ row, $index }">
+                <el-button size="mini" type="text" @click="previewFile(row)">预览</el-button>
+                <el-button size="mini" type="text" style="color: #f56c6c;"
+                  @click="removeHistoryFile($index)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </fieldset>
+      <!-- 工位管理 -->
+      <div ref="stationBoxRef" v-loading="isSubLoading" element-loading-text="处理中...">
+        <!-- 工序类型tabs -->
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <el-tabs v-model="activeProcessType" type="border-card" class="process-tabs">
+              <el-tab-pane 
+                v-for="processType in processTypeOptions" 
+                :key="processType.dictValue"
+                :label="processType.dictLabel" 
+                :name="processType.dictValue">
+                
+                <!-- 每个tab的工位列表 -->
+                <div class="workstation-list">
+                  <transition-group name="workstation-list" tag="div" class="workstation-transition-group">
+                    <WorkstationItem
+                      v-for="(workstation, index) in form.workstations[processType.dictValue] || []"
+                      :key="`${processType.dictValue}_${workstation.id || index}_${workstation._renderKey || ''}`"
+                      :workstation="workstation"
+                      :item-index="index"
+                      :process-type="processType.dictValue"
+                      :equipment-options="equipmentOptions"
+                      :process-type-options="processTypeOptions"
+                      :total-items-in-process="(form.workstations[processType.dictValue] || []).length"
+                      :is-focused="focusedWorkstationId === workstation.id"
+                      :rules="rules"
+                      :action-url="actionUrl"
+                      :accept="accept"
+                      @drag-start="onDragStart"
+                      @drag-end="onDragEnd"
+                      @file-change="onFileChange"
+                      @move-up="onMoveUp"
+                      @move-down="onMoveDown"
+                      @move-to-process="onMoveToProcess"
+                      @copy-item="onCopyItem"
+                      @remove-item="onRemoveItem"
+                      @save-item="onSaveItem"
+                      @index-num-input="handleIndexNumInput"
+                      @spend-time-input="handleSpendTimeInput"
+                      @number-keypress="handleNumberKeypress"
+                      @validate-field="validateField"
+                    />
+                  </transition-group>
+                  
+                  <!-- 添加工位按钮 -->
+                  <div class="add-workstation-btn">
+                    <el-button type="dashed" size="large" @click="addWorkstation(processType.dictValue)" icon="el-icon-plus">
+                      添加{{ processType.dictLabel }}工位
+                    </el-button>
+                  </div>
+                </div>
+                
+              </el-tab-pane>
+            </el-tabs>
+            
+            <!-- PDF上传按钮 (Element UI 2.3兼容版本) -->
+            <div class="pdf-upload-container">
+              <el-tooltip 
+                :content="`上传PDF到${getProcessTypeLabel(activeProcessType)}工序`" 
+                placement="bottom">
+                <el-button 
+                  type="primary" 
+                  size="small" 
+                  :disabled="isSubLoading" 
+                  @click="handlePdfUpload" 
+                  icon="el-icon-upload2">
+                  {{ isSubLoading ? '上传中...' : '上传PDF' }}
+                </el-button>
+              </el-tooltip>
               <input ref="pdfFileInput" type="file" accept="application/pdf" style="display: none"
                 @change="onPdfFileSelected">
             </div>
           </div>
-        </el-form-item>
-
-        <div ref="stationBoxRef" class="station_box" v-loading="isSubLoading" element-loading-text="处理中..."
-          element-loading-spinner="el-icon-loading">
-          <transition-group name="fade-transform-sop" tag="div">
-            <el-row type="flex" justify="space-between" align="middle" :gutter="5" v-for="(item, index) in form.list"
-              :key="index">
-              <!-- <el-col :span="1" class="text-center">
-                {{ index + 1 }}
-              </el-col> -->
-              <el-col :span="23">
-                <el-row type="flex" :gutter="10" align="middle" class="file_list_box">
-                  <el-col :span="3">
-                    <el-form-item label="" label-width="0" :prop="`list[${index}].indexNum`" :rules="rules.indexNum">
-                      <el-input-number v-model="item.indexNum" clearable :min="0" controls-position="right"
-                        style="width: 100%" />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="14">
-                    <el-form-item label="" label-width="0" :prop="`list[${index}].file`" :rules="rules.file"
-                      :style="{ marginBottom: item.file ? 0 : '18px' }" class="custom-upload-item">
-                      <!-- 使用 draggable 包装每个上传组件，实现跨行拖拽 -->
-                      <div class="file-list-container">
-                        <draggable :list="getFileList(item.file)" 
-                        :group="{ name: 'images', pull: true, put: true }" 
-                         :item-key="getItemKey" animation="300"
-                          ghost-class="sortable-ghost" chosen-class="sortable-chosen" drag-class="sortable-drag"
-                          @start="onDragStart($event, index)" @end="onDragEnd" @change="onFileListChange($event, index)"
-                          class="draggable-container">
-                          <div class="file-item" :key="element.id"
-                            v-for="(element, fileIndex) in getFileList(item.file)">
-                            <el-image
-                              :src="element.url"
-                              :preview-src-list="getFileList(item.file).map(item=>item.url)"
-                              class="file-preview"
-                              fit="cover">
-                            </el-image>
-                            <div class="file-info">
-                            </div>
-                            <div class="file-actions">
-                              <el-button type="danger" size="mini" icon="el-icon-delete" circle
-                                @click="removeFile(index, fileIndex)" />
-                            </div>
-                          </div>
-                          <div style="width: 100%;height: 98px;flex:1;" v-if="getFileList(item.file).length === 0"></div>
-                        </draggable>
-                        <!-- 上传按钮 -->
-                        <el-upload :action="actionUrl" :show-file-list="false"
-                       :accept="accept"
-                          :on-success="(response) => onUploadSuccess(response, index)" :before-upload="beforeUpload"
-                          class="upload-trigger">
-                          <div class="upload-button">
-                            <i class="el-icon-plus"></i>
-                          </div>
-                        </el-upload>
-                      </div>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="8">
-                    <el-form-item label="" label-width="0" :prop="`list[${index}].remark`" :rules="rules.remark">
-                      <el-input v-model="item.remark" clearable placeholder="请输入工位文件描述" style="width: 100%"
-                        @blur="onSaveItem(item)" />
-                    </el-form-item>
-                    <!-- 保存 -->
-                    <div class="action-buttons">
-                      <!-- 复制 -->
-                      <el-button type="warning" size="small" class="action-btn"
-                        @click="onCopyItem(index)">复制</el-button>
-                      <el-button type="danger" size="small" class="action-btn"
-                        @click="removeSopData(item)">删除</el-button>
-                    </div>
-                  </el-col>
-                </el-row>
-              </el-col>
-              <!-- <el-col :span="1" class="text-center">
-                <el-button
-                  v-if="index !== 0"
-                  type="danger"
-                  icon="el-icon-delete"
-                  circle
-                  class="delete-btn"
-                  @click="removeSopData(item)"
-                />
-              </el-col> -->
-            </el-row>
-          </transition-group>
         </div>
-      </el-row>
+      </div>
     </el-form>
-    <div slot="footer" class="dialog-footer form-actions">
+
+    <!-- 底部操作区 -->
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="close">取消</el-button>
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
-        确 定
+        {{ isSubLoading ? '保存中...' : '确定' }}
       </el-button>
-      <el-button @click="close">取 消</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
 import { sopSave, sopUpdate } from "@/api/third/testApi";
+import { getDicts } from "@/api/system/dict/data";
 import axios from "axios";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import reqUrl from "@/utils/requestUrl";
 import draggable from "vuedraggable";
 import _ from "lodash";
-
+import DrUpload from "@/components/Upload";
+import ImageUpload from "@/components/el-upload-sortable/index.vue";
+import WorkstationItem from "./WorkstationItem.vue";
 export default {
   components: {
     draggable,
     ElUploadSortable,
+    DrUpload,
+    ImageUpload,
+    WorkstationItem,
   },
   props: {
     dictList: Array,
@@ -177,24 +216,33 @@ export default {
       dragImageIndex: -1, // 拖拽图片索引
       dragOverIndex: -1, // 拖拽目标行索引
       actionUrl: reqUrl + "/oss/batch-upload",
-      accept: "image/*",
+      accept: "image/*,video/*",
       // 提交loading
       isSubLoading: false,
+      historyFileList: [], // 历史文件表格数据
+      uploadingItems: {}, // 上传中的文件信息 {[index]: {name, type, preview, percentage, loaded, total}}
+      pendingUpload: null, // 待上传文件信息
+      equipmentOptions: [], // 装备字典选项
+      processTypeOptions: [ // 工序类型字典选项（默认值，避免模板报错）
+ 
+      ],
+      activeProcessType: '1', // 当前激活的工序类型tab
+      focusedWorkstationId: null, // 当前聚焦的工位ID
       // 表单参数
       form: {
         categoryId: "",
         versionCode: "",
         desc: "",
+        topImg: "", // 封面图
         historyFile: [], // 历史文件对象数组格式
-        list: [
-          {
-            indexNum: undefined,
-            file: "",
-            remark: "",
-          },
-        ],
+        workstations: {
+          '1': [], // 生产工位
+          '2': [], // 组装工位  
+          '3': [], // 包装工位
+        },
       },
       cloneForm: {},
+      originalForm: {}, // 保存原始表单数据用于对比
       isCLoading: false,
       // 表单校验
       rules: {
@@ -202,21 +250,65 @@ export default {
           { required: true, message: "请选择品类", trigger: "change" },
         ],
         versionCode: [
-          { required: true, message: "请输入版本号", trigger: "blur" },
+          { required: true, message: "请输入版本号", trigger: ["blur", "change"] },
         ],
-        desc: [{ required: true, message: "请输入版本描述", trigger: "blur" }],
+        desc: [{ required: true, message: "请输入版本描述", trigger: ["blur", "change"] }],
+        topImg: [
+          { required: true, message: "请上传封面图", trigger: ["blur", "change"] }
+        ],
         indexNum: [
           { required: true, message: "请输入序号", trigger: "change" },
         ],
         file: [
           {
-            required: false,
-            message: "工位文件不能为空",
+            required: true,
+            message: "请上传图片或视频文件",
             trigger: ["change", "blur"],
+            validator: (rule, value, callback) => {
+              if (!value || value.trim() === '') {
+                callback(new Error('请上传图片或视频文件'));
+                return;
+              }
+              
+              // 简单检查文件字符串是否包含有效URL
+              const urls = value.split(',').filter(url => url.trim());
+              if (urls.length === 0) {
+                callback(new Error('请上传图片或视频文件'));
+                return;
+              }
+              
+              // 检查是否有有效的URL格式
+              const hasValidUrl = urls.some(url => {
+                const trimmedUrl = url.trim();
+                return trimmedUrl && (trimmedUrl.startsWith('http') || trimmedUrl.startsWith('//'));
+              });
+              
+              if (!hasValidUrl) {
+                callback(new Error('文件无效，请重新上传'));
+                return;
+              }
+              
+              callback();
+            }
           },
         ],
         remark: [
-          { required: false, message: "工位文件描述为空", trigger: "blur" },
+          { required: false, message: "工位文件描述为空", trigger: ["blur", "change"] },
+        ],
+        spendTime: [
+          {
+            validator: (rule, value, callback) => {
+              // 工时必填
+              if (value === null || value === undefined || value === '') {
+                callback(new Error('请输入工时'));
+              } else if (isNaN(value) || parseFloat(value) <= 0) {
+                callback(new Error('工时必须大于0'));
+              } else {
+                callback();
+              }
+            },
+            trigger: ["blur", "change"]
+          }
         ]
       },
     };
@@ -233,7 +325,48 @@ export default {
       }
     },
   },
+  watch: {
+    // 监听 form.historyFile 的变化，同步更新表格数据
+    'form.historyFile': {
+      handler(newFileList) {
+        console.log('form.historyFile 变化:', newFileList);
+        if (Array.isArray(newFileList)) {
+          this.updateHistoryFileList(newFileList);
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
+  created() {
+    // 加载装备字典数据
+    this.loadEquipmentDict();
+  },
   methods: {
+    // 加载装备字典数据
+    async loadEquipmentDict() {
+      try {
+        const [response, response2] = await Promise.all([
+          getDicts('sop_equipment'),
+          getDicts('sop_process_type')
+        ])
+         
+        if (response && response.data) {
+          this.equipmentOptions = response.data;
+        }
+        if(response2 && response2.data) {
+          this.processTypeOptions = response2.data;
+          // 字典数据加载完成后，重新排序工位序号
+          this.$nextTick(() => {
+            this.reorderAllWorkstationIndexes();
+          });
+        }
+      } catch (error) {
+        console.error('加载装备字典数据失败:', error);
+        this.equipmentOptions = [];
+        // 保持默认的processTypeOptions，不清空
+      }
+    },
     close() {
       this.$emit("update:visible", false);
     },
@@ -243,40 +376,277 @@ export default {
         categoryId: "",
         versionCode: "",
         desc: "",
+        topImg: "", // 重置封面图
         historyFile: [],
-        list: [
-          {
-            indexNum: undefined,
-            file: "",
-            remark: "",
-          },
-        ],
+        workstations: {
+          '1': [], // 生产工位
+          '2': [], // 组装工位  
+          '3': [], // 包装工位
+        },
       };
-      this.resetForm("form");
+      this.historyFileList = []; // 重置历史文件表格数据
+      this.activeProcessType = '1'; // 重置到第一个tab
+      // 确保表单引用存在后再重置
+      this.$nextTick(() => {
+        if (this.$refs.form) {
+          this.$refs.form.resetFields();
+        }
+      });
     },
-    // 新增工位文件
-    onAddStationFile() {
-      this.form.list.push({
-        indexNum: undefined,
+    // 新增工位文件（按工序类型）
+    addWorkstation(processType) {
+      if (!this.form.workstations[processType]) {
+        this.form.workstations[processType] = [];
+      }
+      
+      const newWorkstation = {
+        id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+        indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
         file: "",
         remark: "",
-      });
-
+        spendTime: null,
+        equipment: [], // 装备字段（多选）
+        processType: processType, // 工序类型
+        isProcess: 0, // 默认未发布
+      };
+      
+      this.form.workstations[processType].push(newWorkstation);
+      // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+      this.reorderAllWorkstationIndexes();
       this.onSetStationBoxRef();
     },
+
+    // 将分组工位数据转换为列表格式
+    convertWorkstationsToList(workstations) {
+      let list = [];
+      
+      // 遍历所有工序类型
+      this.processTypeOptions.forEach(processType => {
+        const processValue = processType.dictValue;
+        const workstationList = workstations[processValue] || [];
+        
+        workstationList.forEach((workstation) => {
+          list.push({
+            ...workstation,
+            processType: processValue,
+            isProcess: workstation.isProcess || 0,
+            indexNum: workstation.indexNum, // 使用已经排序好的连续序号
+          });
+        });
+      });
+      
+      return list;
+    },
+
+    // 将列表数据转换为分组格式
+    convertListToWorkstations(list) {
+      const workstations = {
+        '1': [],
+        '2': [],
+        '3': [],
+      };
+      
+      if (list && list.length > 0) {
+        list.forEach(item => {
+          const processType = item.processType || '1'; // 默认生产工序
+          if (!workstations[processType]) {
+            workstations[processType] = [];
+          }
+          workstations[processType].push({
+            ...item,
+            id: item.id || `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 确保有ID
+            equipment: this.processEquipmentField(item.equipment),
+          });
+        });
+      }
+      
+      // 重新编排序号
+      this.reorderWorkstationsIndexes(workstations);
+      
+      return workstations;
+    },
+
+    // WorkstationItem组件事件处理方法
+    onFileChange(workstation, index, processType) {
+      // 文件变化时触发，可以在这里添加额外的业务逻辑
+      console.log('文件变化:', workstation, index, processType);
+    },
+
+    onCopyItem(index, processType) {
+      const workstationList = this.form.workstations[processType];
+      if (workstationList && workstationList[index]) {
+        const item = {
+          ...workstationList[index],
+          id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 新的唯一ID
+          indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
+        };
+        workstationList.splice(index + 1, 0, item);
+        // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+        this.reorderAllWorkstationIndexes();
+      }
+    },
+
+    onMoveUp(index, processType) {
+      const workstationList = this.form.workstations[processType];
+      if (workstationList && index > 0) {
+        // 获取被移动工位的ID
+        const movedWorkstationId = workstationList[index].id;
+        
+        // 交换位置
+        const temp = workstationList[index];
+        this.$set(workstationList, index, workstationList[index - 1]);
+        this.$set(workstationList, index - 1, temp);
+        
+        // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+        this.reorderAllWorkstationIndexes();
+        
+        // 设置聚焦状态
+        this.setWorkstationFocus(movedWorkstationId);
+      }
+    },
+
+    onMoveDown(index, processType) {
+      const workstationList = this.form.workstations[processType];
+      if (workstationList && index < workstationList.length - 1) {
+        // 获取被移动工位的ID
+        const movedWorkstationId = workstationList[index].id;
+        
+        // 交换位置
+        const temp = workstationList[index];
+        this.$set(workstationList, index, workstationList[index + 1]);
+        this.$set(workstationList, index + 1, temp);
+        
+        // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+        this.reorderAllWorkstationIndexes();
+        
+        // 设置聚焦状态
+        this.setWorkstationFocus(movedWorkstationId);
+      }
+    },
+
+    onMoveToProcess(index, sourceProcessType, targetProcessType) {
+      const sourceList = this.form.workstations[sourceProcessType];
+      const targetList = this.form.workstations[targetProcessType];
+      
+      if (sourceList && targetList && sourceList[index]) {
+        // 从源列表中移除工位
+        const workstation = sourceList.splice(index, 1)[0];
+        
+        // 更新工序类型
+        workstation.processType = targetProcessType;
+        
+        // 添加到目标列表
+        targetList.push(workstation);
+        
+        // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+        this.reorderAllWorkstationIndexes();
+        
+        // 切换到目标tab
+        this.activeProcessType = targetProcessType;
+        
+        this.$message.success(`工位已移动到${this.getProcessTypeLabel(targetProcessType)}`);
+      }
+    },
+
+    // 获取工序类型标签
+    getProcessTypeLabel(processType) {
+      const option = this.processTypeOptions.find(opt => opt.dictValue === processType);
+      return option ? option.dictLabel : processType;
+    },
+
+    // 设置工位聚焦状态
+    setWorkstationFocus(workstationId) {
+      this.focusedWorkstationId = workstationId;
+      
+      // 2秒后自动清除聚焦状态
+      setTimeout(() => {
+        if (this.focusedWorkstationId === workstationId) {
+          this.focusedWorkstationId = null;
+        }
+      }, 2000);
+    },
+
+    // 重新编排所有工位的序号，从第一个tabs开始连续编号
+    reorderAllWorkstationIndexes() {
+      let globalIndex = 1;
+      
+      // 如果processTypeOptions还没加载完成，使用默认顺序
+      const processTypes = this.processTypeOptions.length > 0 
+        ? this.processTypeOptions 
+        : [
+            { dictValue: '1', dictLabel: '生产' },
+            { dictValue: '2', dictLabel: '组装' },
+            { dictValue: '3', dictLabel: '包装' }
+          ];
+      
+      // 按照工序类型的顺序重新编号
+      processTypes.forEach(processType => {
+        const processValue = processType.dictValue;
+        const workstationList = this.form.workstations[processValue] || [];
+        
+        workstationList.forEach(workstation => {
+          workstation.indexNum = globalIndex++;
+        });
+      });
+    },
+
+    // 重新编排工位对象的序号（用于数据加载时）
+    reorderWorkstationsIndexes(workstations) {
+      let globalIndex = 1;
+      
+      // 如果processTypeOptions还没加载完成，使用默认顺序
+      const processTypes = this.processTypeOptions.length > 0 
+        ? this.processTypeOptions 
+        : [
+            { dictValue: '1', dictLabel: '生产' },
+            { dictValue: '2', dictLabel: '组装' },
+            { dictValue: '3', dictLabel: '包装' }
+          ];
+      
+      // 按照工序类型的顺序重新编号
+      processTypes.forEach(processType => {
+        const processValue = processType.dictValue;
+        const workstationList = workstations[processValue] || [];
+        
+        workstationList.forEach(workstation => {
+          workstation.indexNum = globalIndex++;
+        });
+      });
+    },
+
+    onRemoveItem(index, processType) {
+      const workstationList = this.form.workstations[processType];
+      if (workstationList && workstationList[index]) {
+        workstationList.splice(index, 1);
+        // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+        this.reorderAllWorkstationIndexes();
+      }
+    },
+
+    onSaveItem(workstation, index, processType) {
+      // 保存工位时的回调，可以添加业务逻辑
+      console.log('保存工位:', workstation, index, processType);
+    },
+
+    validateField(fieldProp) {
+      if (this.$refs.form && this.$refs.form.validateField) {
+        this.$refs.form.validateField(fieldProp);
+      }
+    },
+
     onSetStationBoxRef() {
       // 检查 stationBoxRef 是否存在
       if (!this.$refs.stationBoxRef) {
         console.warn('stationBoxRef 不存在，跳过滚动操作');
         return;
       }
-      
+
       const scrollRef = this.$refs.stationBoxRef.$el;
       if (!scrollRef) {
         console.warn('stationBoxRef.$el 不存在，跳过滚动操作');
         return;
       }
-      
+
       const scrollHeight = scrollRef.scrollHeight;
 
       this.$nextTick(() => {
@@ -284,39 +654,6 @@ export default {
           scrollRef.scrollTop = scrollHeight;
         }
       });
-    },
-    // 删除物料损耗项
-    removeSopData(item) {
-      const index = this.form.list.indexOf(item);
-      if (index !== -1) {
-        this.form.list.splice(index, 1);
-      }
-    },
-    /** 保存 */
-    onSaveItem(item) {
-      // for (const key in item) {
-      //   if (this.Is_Empty(item[key])) {
-      //     return this.msgError("请填入必要信息");
-      //   }
-      // }
-      // this.$refs["form"].validate((valid) => {
-      //   if (valid) {
-      //     if (this.form.id) {
-      //       sopUpdate(this.form).then(() => {
-      //         this.msgSuccess("保存成功");
-      //       });
-      //     } else {
-      //       sopSave(this.form).then(() => {
-      //         this.msgSuccess("保存成功");
-      //       });
-      //     }
-      //   }
-      // })
-    },
-    /** 复制 */
-    onCopyItem(index) {
-      const item = { ...this.form.list[index], id: "" };
-      this.form.list.splice(index + 1, 0, item);
     },
     /** 获取文件列表 - 将字符串转换为对象数组 */
     getFileList(fileString) {
@@ -346,88 +683,68 @@ export default {
       this.dragSourceIndex = -1;
     },
 
-    /** 文件列表变化事件 */
-    onFileListChange(evt, rowIndex) {
-      console.log('文件列表变化:', evt, '行索引:', rowIndex);
-
-      // 更新对应行的文件字符串
-      const fileList = this.getFileList(this.form.list[rowIndex].file);
-      const urls = fileList.map(file => file.url);
-      this.form.list[rowIndex].file = urls.join(',');
-
-      // 如果是添加操作，更新文件列表
-      if (evt.added) {
-        const newUrls = [...urls, evt.added.element.url];
-        this.form.list[rowIndex].file = newUrls.join(',');
-      }
-
-      // 如果是移除操作，从文件列表中删除
-      if (evt.removed) {
-        const filteredUrls = urls.filter(url => url !== evt.removed.element.url);
-        this.form.list[rowIndex].file = filteredUrls.join(',');
-      }
-
-      // 如果是移动操作，重新排序
-      if (evt.moved) {
-        const reorderedUrls = fileList.map(file => file.url);
-        this.form.list[rowIndex].file = reorderedUrls.join(',');
-      }
-    },
-
-    /** 移除文件 */
-    removeFile(rowIndex, fileIndex) {
-      const fileList = this.getFileList(this.form.list[rowIndex].file);
-      fileList.splice(fileIndex, 1);
-      const urls = fileList.map(file => file.url);
-      this.form.list[rowIndex].file = urls.join(',');
-    },
-
-    /** 上传成功处理 */
-    onUploadSuccess(response, rowIndex) {
-      if (response.code === 200 && response.data) {
-        const currentFiles = this.form.list[rowIndex].file;
-        const newUrl = response.data[0].url;
-
-        if (currentFiles) {
-          this.form.list[rowIndex].file = currentFiles + ',' + newUrl;
-        } else {
-          this.form.list[rowIndex].file = newUrl;
-        }
-
-        this.msgSuccess('文件上传成功');
-      } else {
-        this.msgError('文件上传失败');
-      }
-    },
-
-    /** 上传前验证 */
-    beforeUpload(file) {
-      const isImage = file.type.indexOf('image/') === 0;
-      const isLt10M = file.size / 1024 / 1024 < 10;
-
-      if (!isImage) {
-        this.msgError('只能上传图片文件!');
-        return false;
-      }
-      if (!isLt10M) {
-        this.msgError('上传文件大小不能超过 10MB!');
-        return false;
-      }
-      return true;
-    },
-
-  
 
     checkListItem() {
       let arr = [];
-      for (const { indexNum } of this.form.list) {
-        if (arr.includes(indexNum)) {
-          this.msgError("工位序号不能重复");
-          return true;
-        } else {
-          arr.push(indexNum);
+      
+      // 遍历所有工序类型的工位
+      for (const processType of this.processTypeOptions) {
+        const processValue = processType.dictValue;
+        const workstationList = this.form.workstations[processValue] || [];
+        
+        for (const { indexNum } of workstationList) {
+          if (arr.includes(indexNum)) {
+            this.msgError("工位序号不能重复");
+            return true;
+          } else {
+            arr.push(indexNum);
+          }
         }
       }
+      return false;
+    },
+
+    /** 验证工序文件 */
+    checkWorkStationFiles() {
+      let workstationIndex = 1;
+      
+      // 遍历所有工序类型
+      for (const processType of this.processTypeOptions) {
+        const processValue = processType.dictValue;
+        const workstationList = this.form.workstations[processValue] || [];
+        
+        for (let i = 0; i < workstationList.length; i++) {
+          const item = workstationList[i];
+          
+          // 检查文件是否为空
+          if (!item.file || item.file.trim() === '') {
+            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`);
+            return true;
+          }
+          
+          // 检查文件是否有效（有实际的URL）
+          const fileList = this.getFileList(item.file);
+          if (fileList.length === 0) {
+            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`);
+            return true;
+          }
+          
+          // 验证每个文件URL是否有效
+          const hasValidFile = fileList.some(file => {
+            const url = file.url && file.url.trim();
+            return url && url !== '';
+          });
+          
+          if (!hasValidFile) {
+            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）的文件无效，请重新上传`);
+            return true;
+          }
+          
+          workstationIndex++;
+        }
+      }
+      
+      return false; // 验证通过
     },
     /** 触发PDF文件选择 */
     handlePdfUpload() {
@@ -473,7 +790,9 @@ export default {
         if (Array.isArray(data.data)) {
           // 查找当前最大序号
           let maxIndexNum = 0;
-          this.form.list.forEach(item => {
+          // 查找当前工序类型的所有工位的最大序号
+          const currentWorkstationList = this.form.workstations[this.activeProcessType] || [];
+          currentWorkstationList.forEach(item => {
             if (item.indexNum && parseInt(item.indexNum) > maxIndexNum) {
               maxIndexNum = parseInt(item.indexNum);
             }
@@ -488,23 +807,40 @@ export default {
             }
 
             // 查找空项或添加新项
-            const emptyIndex = this.form.list.findIndex(item => !item.file);
+            const emptyIndex = currentWorkstationList.findIndex(item => !item.file);
             if (emptyIndex !== -1) {
               // 更新空项
-              this.form.list[emptyIndex].file = cleanUrl;
-              // 如果序号未定义，则自动设置序号
-              if (!this.form.list[emptyIndex].indexNum) {
-                this.form.list[emptyIndex].indexNum = maxIndexNum + idx + 1;
+              currentWorkstationList[emptyIndex].file = cleanUrl;
+              // 序号会通过reorderAllWorkstationIndexes重新计算
+              if (!currentWorkstationList[emptyIndex].indexNum) {
+                currentWorkstationList[emptyIndex].indexNum = 1; // 临时序号
               }
+              // 触发验证以清除错误提示
+              this.$nextTick(() => {
+                this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${emptyIndex}].file`);
+              });
             } else {
-              // 如果没有空项，则添加新项，并设置自增序号
-              this.form.list.push({
-                indexNum: maxIndexNum + idx + 1, // 从最大序号+1开始
+              // 如果没有空项，则添加新项
+              const newWorkstation = {
+                id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+                indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
                 file: cleanUrl,
-                remark: ''
+                remark: '',
+                spendTime: null,
+                equipment: [], // 装备字段（多选）
+                processType: this.activeProcessType,
+                isProcess: 0,
+              };
+              currentWorkstationList.push(newWorkstation);
+              const newIndex = currentWorkstationList.length - 1;
+              // 触发验证以清除错误提示
+              this.$nextTick(() => {
+                this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${newIndex}].file`);
               });
             }
           });
+          // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+          this.reorderAllWorkstationIndexes();
           // 更新站位盒子引用
           this.onSetStationBoxRef();
           this.msgSuccess('PDF转换成功');
@@ -515,28 +851,86 @@ export default {
             cleanUrl = cleanUrl.replace(/`/g, '').trim();
           }
 
-          const emptyIndex = this.form.list.findIndex(item => !item.file);
+          const currentWorkstationList = this.form.workstations[this.activeProcessType] || [];
+          const emptyIndex = currentWorkstationList.findIndex(item => !item.file);
           if (emptyIndex !== -1) {
-            this.form.list[emptyIndex].file = cleanUrl;
+            currentWorkstationList[emptyIndex].file = cleanUrl;
+            // 触发验证以清除错误提示
+            this.$nextTick(() => {
+              this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${emptyIndex}].file`);
+            });
           } else {
             // 如果没有空项，则添加新项
-            this.form.list.push({
-              indexNum: undefined,
+            const newWorkstation = {
+              id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+              indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
               file: cleanUrl,
-              remark: ''
+              remark: '',
+              spendTime: null,
+              equipment: [], // 装备字段（多选）
+              processType: this.activeProcessType,
+              isProcess: 0,
+            };
+            currentWorkstationList.push(newWorkstation);
+            const newIndex = currentWorkstationList.length - 1;
+            // 触发验证以清除错误提示
+            this.$nextTick(() => {
+              this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${newIndex}].file`);
             });
-            this.onSetStationBoxRef();
           }
+          // 重新排序所有工位的序号（从第一个tabs开始连续编号）
+          this.reorderAllWorkstationIndexes();
+          this.onSetStationBoxRef();
           this.msgSuccess('PDF转换成功');
         }
       } else {
         this.msgError(data.msg || 'PDF转换失败');
       }
     },
- 
+
+    /** 处理装备字段格式转换 */
+    processEquipmentField(equipment) {
+      if (!equipment) return [];
+
+      if (Array.isArray(equipment)) {
+        return equipment;
+      }
+
+      if (typeof equipment === 'string') {
+        // 尝试解析JSON
+        try {
+          const parsed = JSON.parse(equipment);
+          return Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          // JSON解析失败，尝试按逗号分割
+          return equipment.split(',').filter(code => code.trim()).map(code => code.trim());
+        }
+      }
+
+      // 其他情况转换为数组
+      return [equipment];
+    },
+
+    /** 获取装备字段的显示文本 */
+    getEquipmentDisplayText(equipment) {
+      if (!equipment || !Array.isArray(equipment) || equipment.length === 0) {
+        return '暂无装备';
+      }
+
+      const labels = equipment.map(code => {
+        const option = this.equipmentOptions.find(opt => opt.dictCode === code);
+        return option ? option.dictLabel : code;
+      });
+
+      return labels.join('、');
+    },
+
     /** 提交按钮 */
     submitForm: function () {
       if (this.checkListItem()) return;
+      
+      // 验证每个工序都必须有文件
+      if (this.checkWorkStationFiles()) return;
 
       this.$refs["form"].validate((valid) => {
         if (valid) {
@@ -549,6 +943,29 @@ export default {
           if (submitData.historyFile && Array.isArray(submitData.historyFile)) {
             submitData.historyFile = JSON.stringify(submitData.historyFile)
           }
+
+          // 将分组的工位数据转换为列表格式
+          submitData.list = this.convertWorkstationsToList(submitData.workstations);
+          delete submitData.workstations; // 删除分组数据，使用list格式
+
+          // 处理装备字段的提交格式
+          if (submitData.list && submitData.list.length > 0) {
+            submitData.list.forEach(item => {
+              if (item.equipment && Array.isArray(item.equipment)) {
+                // 将装备数组转换为JSON字符串
+                item.equipment = JSON.stringify(item.equipment);
+              }
+
+              // 新增的工位不传ID，让后端自动生成
+              if (item.id && item.id.startsWith('ws_')) {
+                delete item.id;
+              }
+            });
+          }
+
+          // 添加isModified字段，告诉后端是否修改了SOP
+          submitData.isModified = this.checkDataModified() ? 1 : 0;
+
           if (this.form.id) {
             sopUpdate(submitData)
               .then(() => {
@@ -571,6 +988,7 @@ export default {
               });
           }
         }
+        // 指令会自动处理校验失败时的滚动，这里不需要额外代码
       });
     },
 
@@ -580,502 +998,736 @@ export default {
       console.log("🚀 ~ setFormData ~  formData.historyFile:", formData.historyFile)
       formData.historyFile = formData.historyFile ? JSON.parse(formData.historyFile) : [];
       console.log("🚀 ~ setFormData ~ formData.historyFile:", formData.historyFile)
+
+      // 设置历史文件表格数据
+      this.historyFileList = formData.historyFile.map((file, index) => ({
+        name: file.name,
+        url: file.url,
+        size: file.size || 0,
+        uploadTime: file.uploadTime || new Date(),
+        id: file.id || (Date.now() + index)
+      }));
+
+      // 将列表数据转换为分组数据
+      if (formData.list && formData.list.length > 0) {
+        // 确保工时是数字格式，处理装备字段的多选格式
+        formData.list.forEach(item => {
+          if (item.spendTime && typeof item.spendTime === 'string') {
+            item.spendTime = parseFloat(item.spendTime) || null;
+          }
+
+          // 处理装备字段的多选格式
+          item.equipment = this.processEquipmentField(item.equipment);
+        });
+        
+        // 转换为分组格式
+        formData.workstations = this.convertListToWorkstations(formData.list);
+        delete formData.list; // 删除原来的list字段
+      } else {
+        // 如果没有list数据，初始化为空的分组结构
+        formData.workstations = {
+          '1': [],
+          '2': [],
+          '3': [],
+        };
+      }
+
       this.form = formData;
+      // 保存原始数据副本用于对比
+      this.originalForm = _.cloneDeep(formData);
+      
+      // 确保数据加载后重新排序工位序号（连续编号）
+      this.$nextTick(() => {
+        this.reorderAllWorkstationIndexes();
+      });
     },
+
+    /** 格式化工时显示 */
+    formatSpendTime(seconds) {
+      if (!seconds || seconds === 0) return '';
+
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+
+      let result = [];
+      if (hours > 0) result.push(`${hours}时`);
+      if (minutes > 0) result.push(`${minutes}分`);
+      if (remainingSeconds > 0 || result.length === 0) result.push(`${remainingSeconds}秒`);
+
+      return result.join('');
+    },
+
+    /** 处理工时输入，只允许数字 */
+    handleSpendTimeInput(value, index, processType) {
+      // 移除非数字字符（保留小数点）
+      const numericValue = value.replace(/[^\d.]/g, '');
+
+      // 转换为数字，如果为空则设为null
+      const numberValue = numericValue === '' ? null : parseFloat(numericValue);
+
+      // 更新对应工序类型的工位数据
+      if (this.form.workstations[processType] && this.form.workstations[processType][index]) {
+        this.form.workstations[processType][index].spendTime = numberValue;
+      }
+    },
+
+    /** 处理序号输入，只允许数字 */
+    handleIndexNumInput(value, index, processType) {
+      // 移除非数字字符
+      const numericValue = value.replace(/[^\d]/g, '');
+
+      // 转换为数字，如果为空则设为null
+      const numberValue = numericValue === '' ? null : parseInt(numericValue, 10);
+
+      // 更新对应工序类型的工位数据
+      if (this.form.workstations[processType] && this.form.workstations[processType][index]) {
+        this.form.workstations[processType][index].indexNum = numberValue;
+      }
+    },
+
+    /** 限制只能输入数字 */
+    handleNumberKeypress(event) {
+      // 允许数字键和一些控制键
+      const allowedKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
+
+      if (!allowedKeys.includes(event.key)) {
+        event.preventDefault();
+      }
+    },
+
+    /** 更新历史文件表格数据 */
+    updateHistoryFileList(fileList) {
+      console.log('更新历史文件表格数据:', fileList);
+
+      // 将 DrUpload 组件的文件列表转换为表格数据
+      this.historyFileList = (fileList || []).map((file, index) => ({
+        name: file.name || file.fileName || file.originalName || '未知文件',
+        url: file.url || file.fileUrl || file.downloadUrl,
+        size: file.size || file.fileSize || 0,
+        uploadTime: file.uploadTime || file.createTime || file.time || new Date(),
+        id: file.id || file.fileId || (Date.now() + index)
+      }));
+
+      console.log('转换后的表格数据:', this.historyFileList);
+    },
+
+    /** 删除历史文件 */
+    removeHistoryFile(index) {
+      this.historyFileList.splice(index, 1);
+      this.form.historyFile.splice(index, 1);
+      this.$message.success('删除成功');
+    },
+
+    /** 预览文件 */
+    previewFile(file) {
+      window.open(file.url, '_blank');
+    },
+
+    /** 格式化文件大小 */
+    formatFileSize(size) {
+      if (!size) return '-';
+      if (size < 1024) {
+        return size + ' B';
+      } else if (size < 1048576) {
+        return (size / 1024).toFixed(1) + ' KB';
+      } else {
+        return (size / 1048576).toFixed(1) + ' MB';
+      }
+    },
+
+    /** 格式化上传时间 */
+    formatUploadTime(time) {
+      if (!time) return '-';
+      const date = new Date(time);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+
+
+    /** 判断是否为视频文件 */
+    isVideoFile(url) {
+      if (!url) return false;
+      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.m4v'];
+      const extension = url.toLowerCase().substring(url.lastIndexOf('.'));
+      return videoExtensions.includes(extension);
+    },
+
+    /** 获取图片URL列表（用于预览，排除视频） */
+    getImageUrls(fileString) {
+      const fileList = this.getFileList(fileString);
+      return fileList.filter(file => !this.isVideoFile(file.url)).map(img => img.url);
+    },
+
+    /** 检测数据是否被修改 */
+    checkDataModified() {
+      // 新增模式，直接返回false
+      if (!this.form.id) {
+        return false;
+      }
+
+      // 检测品类ID是否变更
+      if (this.originalForm.categoryId !== this.form.categoryId) {
+        return true;
+      }
+
+      // 检测workstations数据是否变化
+      const originalList = this.convertWorkstationsToList(this.originalForm.workstations || { '1': [], '2': [], '3': [] });
+      const currentList = this.convertWorkstationsToList(this.form.workstations || { '1': [], '2': [], '3': [] });
+      
+      // 检测list数组长度是否变化（新增数据）
+      if (originalList.length !== currentList.length) {
+        return true;
+      }
+
+      // 检测list中的spendTime和indexNum是否变更
+      for (let i = 0; i < currentList.length; i++) {
+        const original = originalList[i];
+        const current = currentList[i];
+
+        if (!original || !current) {
+          return true; // 数据结构不匹配，认为有变更
+        }
+
+        // 检测spendTime变化
+        if (original.spendTime !== current.spendTime) {
+          return true;
+        }
+
+        // 检测indexNum变化
+        if (original.indexNum !== current.indexNum) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.after-sale-box {
-  .el-dialog__body {
-    max-height: 80vh;
-    overflow: hidden;
+.sop-form-dialog {
+  ::v-deep .el-dialog {
+    border-radius: 4px;
+  }
+
+  ::v-deep .el-dialog__header {
+    padding: 16px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+
+    .el-dialog__title {
+      color: #333333;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  ::v-deep .el-dialog__body {
+    padding: 20px;
+    max-height: 75vh;
     overflow-y: auto;
-    padding: 25px 30px;
-    background-color: #ffffff;
-
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-    }
   }
 
-  .el-dialog__header {
-    padding: 18px 25px;
-    border-bottom: 1px solid #ebeef5;
-    background: linear-gradient(to right, #f8f9fc, #f2f6fc);
-    margin-bottom: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-    position: relative;
+  ::v-deep .el-dialog__footer {
+    padding: 16px 20px;
+    background: #ffffff;
+    border-top: 1px solid #e8e8e8;
+    text-align: right;
+  }
+}
+
+// 对话框内容区域
+.dialog-content {
+  padding: 24px;
+  max-height: 75vh;
+  overflow-y: auto;
+  background: #f8fafc;
+
+  &::-webkit-scrollbar {
+    width: 6px;
   }
 
-  .el-dialog__title {
-    font-weight: 600;
-    color: #303133;
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .el-dialog__footer {
-    border-top: 1px solid #ebeef5;
-    padding: 15px 25px;
-    background-color: #f8f9fc;
-  }
-
-  .step-wrap {
-    .title-top {
-      position: absolute;
-      top: -38px;
-      left: 0;
-      width: 100%;
-      height: 38px;
-    }
-
-    .wrap-click {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 24px;
-      z-index: 10;
-      // cursor: pointer;
-    }
-
-    .el-step__description {
-      padding-top: 15px;
-    }
-
-    .el-form-item__error {
-      min-width: auto;
-    }
-  }
-
-  .save-btn {
-    width: 22px;
-    height: 22px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .file_list_box {
-    box-sizing: border-box;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: all 0.3s;
-    position: relative;
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
 
     &:hover {
-      background-color: #f8f9fc;
-      // box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+      background: #a0aec0;
     }
+  }
+}
 
-    &:before {
-      content: '';
+// 简洁表单样式
+.sop-form {
+  .el-form-item {
+    margin-bottom: 18px;
+  }
+
+  .el-form-item__label {
+    color: #666666;
+    font-weight: normal;
+  }
+}
+
+// 简洁的区块样式
+.form-fieldset {
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  background: #ffffff;
+  position: relative;
+
+  .fieldset-legend {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    padding: 12px 16px;
+    background: #fff;
+
+    .legend-upload {
       position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 70%;
-      background-color: #409EFF;
-      border-radius: 0 3px 3px 0;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
+      right: 16px;
+      top: 12px;
+      z-index: 10;
+      font-size: 14px;
+      padding: 0 20px;
+      background: #fff;
 
-    &:hover:before {
-      opacity: 1;
+      // 覆盖按钮样式，显示为纯文字
+      ::v-deep .el-button {
+        border: none;
+        background: none;
+        padding: 0;
+        font-size: 14px;
+        color: #409EFF;
+
+        &:hover {
+          background: none;
+          color: #66b1ff;
+        }
+
+        &:focus,
+        &:active {
+          background: none;
+          border: none;
+          outline: none;
+        }
+
+        .el-icon-upload {
+          display: none;
+        }
+      }
     }
   }
 
-  .move-tag {
-    width: 30px;
-    height: 30px;
-    cursor: move;
-    font-size: 18px;
+  .fieldset-content {
+    padding: 16px;
   }
+}
 
-  .section-header {
+// 工位项目样式
+.workspace-item {
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #ffffff;
+
+  .item-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .item-number {
+      background: #333333;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  .workspace-item-content {
+    display: flex;
+    align-items: center;
+
+    // 检查最后一个表单项，去除其下边距
+    .el-form-item:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// 简单图片上传区域
+.simple-upload-area {
+  border-right: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 100px;
+
+  .image-list {
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-  }
+    margin-bottom: 8px;
 
-  .section-icon {
-    font-size: 18px;
-    color: #409EFF;
-    background-color: rgba(64, 158, 255, 0.1);
-    padding: 8px;
-    border-radius: 50%;
-  }
+    .image-item {
+      position: relative;
 
-  .section-title {
-    font-size: 16px;
-    color: #409EFF;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
+      .image-preview {
+        width: 80px;
+        height: 80px;
+        border: 1px solid #e8e8e8;
+        border-radius: 4px;
+        object-fit: cover;
+      }
 
-  .form-header-section {
-    margin-bottom: 15px;
-  }
+      // 视频元素样式
+      video.image-preview {
+        width: 80px;
+        height: 80px;
+        border: 1px solid #e8e8e8;
+        border-radius: 4px;
+        object-fit: cover;
+        background: #000;
+      }
 
-  .workspace-files {
-    margin-top: 10px;
-  }
-
-  .upload-section {
-    border-radius: 10px;
-    position: relative;
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(to right, #409EFF, #53a8ff);
-      border-radius: 10px 10px 0 0;
-      opacity: 0;
-      transition: opacity 0.3s;
+      .delete-btn {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+      }
     }
   }
 
   .upload-btn {
-    padding: 10px 22px !important;
-    font-size: 14px !important;
-    height: auto !important;
-    width: fit-content !important;
-    transition: all 0.3s;
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.3px;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 100%);
-      transition: all 0.4s;
-      z-index: -1;
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-
-      &:before {
-        left: 100%;
-      }
-    }
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 5px;
-  }
-
-  .action-btn {
-    padding: 6px 14px;
-    font-size: 12px;
-    border-radius: 6px;
-    letter-spacing: 0.3px;
-    font-weight: 500;
-    position: relative;
-    overflow: hidden;
-
-    &:after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 5px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.5);
-      opacity: 0;
-      border-radius: 100%;
-      transform: scale(1, 1) translate(-50%);
-      transform-origin: 50% 50%;
-    }
-
-    &:hover:after {
-      animation: ripple 1s ease-out;
-    }
-
-    @keyframes ripple {
-      0% {
-        transform: scale(0, 0);
-        opacity: 0.5;
-      }
-
-      100% {
-        transform: scale(20, 20);
-        opacity: 0;
-      }
-    }
-  }
-
-  .delete-btn {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    transition: all 0.3s;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
-
-  .form-actions {
-    text-align: right;
-  }
-
-  .el-button.is-circle {
-    width: 36px !important;
-    height: 36px !important;
-    padding: 0 !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-
-    &:hover {
-      transform: rotate(5deg);
-    }
-  }
-
-  .file-upload-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .custom-upload-item {
-    margin: 10px 0;
-    transition: all 0.3s;
-    .file-list-container {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-  }
-
-  .enhanced-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 10px;
-    padding: 10px;
-    background-color: #ffffff;
-    transition: all 0.3s;
-    display: flex;
-    justify-content: flex-start;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
-    position: relative;
-    overflow: hidden;
-
-    &:after {
-      content: '';
-      position: absolute;
-      top: -100%;
-      left: -100%;
-      width: 50%;
-      height: 50%;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 100%);
-      transform: rotate(35deg);
-      transition: all 0.55s;
-      opacity: 0;
-    }
-  }
-
-  .enhanced-upload:hover {
-    border-color: #409EFF;
-    box-shadow: 0 0 12px rgba(64, 158, 255, 0.2);
-    transform: translateY(-1px);
-
-    &:after {
-      top: 100%;
-      left: 100%;
-      opacity: 1;
-    }
-  }
-
-  // .add-file-sticky {
-  //   position: sticky;
-  //   top: -24px;
-  //   z-index: 666;
-  //   background: #fff;
-  // }
-
-  .fade-transform-sop-leave-to {
-    opacity: 0;
-    transform: translateX(60px);
-  }
-
-  .fade-transform-sop-leave-active {
-    transition: all 0.3s ease-in-out;
-  }
-
-  .station_box {
-    max-height: 500px;
-    overflow: hidden;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    padding-right: 10px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    position: relative;
-    border-radius: 8px;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-      height: 0;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-      border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-      transition: all 0.3s;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  // 拖拽相关样式
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px;
-    border: 1px solid #e4e7ed;
-    border-radius: 6px;
-    background: #fff;
-    margin-bottom: 8px;
-    transition: all 0.3s;
-    cursor: move;
-
-    &:hover {
-      border-color: #409eff;
-      box-shadow: 0 2px 8px rgba(64, 158, 255, 0.15);
-    }
-
-    &.sortable-ghost {
-      opacity: 0.5;
-      background: #f5f7fa;
-    }
-
-    &.sortable-chosen {
-      border-color: #409eff;
-      box-shadow: 0 2px 12px rgba(64, 158, 255, 0.3);
-    }
-
-    &.sortable-drag {
-      opacity: 0.8;
-      transform: rotate(5deg);
-    }
-  }
-
-  .file-preview {
     width: 80px;
     height: 80px;
-    border-radius: 4px;
-    object-fit: cover;
-    border: 1px solid #e4e7ed;
-  }
-
-  .file-info {
-    flex: 1;
-    min-width: 0;
-
-    .file-name {
-      font-size: 14px;
-      color: #303133;
-      margin-bottom: 2px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .file-url {
-      font-size: 12px;
-      color: #909399;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .file-actions {
-    display: flex;
-    gap: 4px;
-  }
-
-  .draggable-container {
-    min-height: 60px;
-    border: 2px dashed transparent;
-    border-radius: 8px;
-    padding: 8px;
-    transition: all 0.3s;
-    display: flex;
-    gap: 20px;
-    flex:1;
-    flex-wrap: wrap;
-    &.drag-over {
-      border-color: #409eff;
-      background: rgba(64, 158, 255, 0.05);
-    }
-  }
-
-  .upload-button {
-    width: 100%;
-    height: 60px;
     border: 1px dashed #d9d9d9;
-    border-radius: 8px;
-    background: #fafafa;
-    color: #909399;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 20px;
-    min-height:58px;
-    min-width:58px;
-    box-sizing: border-box;
+    cursor: pointer;
+
     &:hover {
       border-color: #409eff;
       color: #409eff;
-      background: rgba(64, 158, 255, 0.05);
     }
 
-    .el-icon {
+    i {
       font-size: 20px;
+    }
+  }
+
+  // 上传进度遮罩层
+  .upload-progress-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+
+    .upload-progress-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 200px;
+      padding: 16px;
+
+      .upload-preview {
+        margin-bottom: 12px;
+
+        .preview-image,
+        .preview-video {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 4px;
+          border: 1px solid #e8e8e8;
+        }
+
+        .preview-file {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #606266;
+
+          i {
+            font-size: 32px;
+            margin-bottom: 4px;
+          }
+
+          span {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-all;
+          }
+        }
+      }
+
+      .upload-info {
+        width: 100%;
+
+        .file-name {
+          font-size: 12px;
+          color: #303133;
+          margin-bottom: 8px;
+          text-align: center;
+          word-break: break-all;
+        }
+
+        .upload-size {
+          font-size: 11px;
+          color: #909399;
+          text-align: center;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+}
+
+// 时间显示
+.time-display {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666666;
+  text-align: center;
+}
+
+// 封面图上传样式
+.top-img-upload {
+  .my-upload-demo{
+    width: 100%!important;
+    height: auto!important;
+  }
+  ::v-deep .el-upload-list {
+    display: flex;
+    gap: 10px;
+    .el-upload-list__item {
+      margin: 0!important;
+      margin-right: 10px!important;
+    }
+  }
+  
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    
+    i {
+      font-size: 32px;
+      color: #c0c4cc;
+      transition: color 0.3s;
+    }
+    
+    &:hover i {
+      color: #409eff;
+    }
+  }
+}
+
+// 工位文件上传hover效果
+::v-deep .workspace-item-content {
+  .el-upload-list__item:hover {
+    .el-upload-list__item-actions {
+      opacity: 1 !important;
+    }
+  }
+  
+  .el-upload-list__item-actions {
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+  }
+}
+
+// 响应式布局
+@media (max-width: 768px) {
+  .form-fieldset {
+    margin-bottom: 12px;
+
+    .fieldset-legend {
+      font-size: 13px;
+      padding: 10px 12px;
+    }
+
+    .fieldset-content {
+      padding: 12px;
+    }
+  }
+
+  .workspace-item {
+    .item-header {
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+  }
+
+  .simple-upload-area {
+    .image-list {
+      justify-content: center;
+    }
+  }
+}
+
+// tabs容器和头部布局
+.tabs-container {
+  position: relative;
+}
+
+.tabs-header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+// 工序类型tabs样式
+.process-tabs {
+  flex: 1;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: #fff;
+  
+  ::v-deep .el-tabs__header {
+    margin: 0;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    
+    .el-tabs__nav-wrap {
+      padding: 0 16px;
+    }
+    
+    .el-tabs__item {
+      font-weight: 500;
+      color: #606266;
+      
+      &.is-active {
+        color: #409eff;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  ::v-deep .el-tabs__content {
+    padding: 20px;
+  }
+}
+
+// PDF上传按钮容器 (Element UI 2.3兼容版本)
+.pdf-upload-container {
+  position: absolute;
+  top: 4px;
+  right: 16px;
+  z-index: 10;
+  
+  .el-button {
+    height: 32px;
+    padding: 8px 15px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+}
+
+.workstation-list {
+  min-height: 200px;
+}
+
+.workstation-transition-group {
+  position: relative;
+}
+
+/* 工位列表移动动画 */
+.workstation-list-move {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workstation-list-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workstation-list-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  width: 100%;
+}
+
+.workstation-list-enter {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+}
+
+.workstation-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+/* 移动时保持平滑过渡 */
+.workstation-list-move .workspace-item {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-workstation-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+  
+  .el-button {
+    min-width: 200px;
+    height: 60px;
+    font-size: 16px;
+    border: 2px dashed #d9d9d9;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: #409eff;
+      background: #ecf5ff;
+      color: #409eff;
+    }
+    
+    .el-icon-plus {
+      font-size: 20px;
+      margin-right: 8px;
     }
   }
 }

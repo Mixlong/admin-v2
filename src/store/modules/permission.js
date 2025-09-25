@@ -51,6 +51,7 @@ function filterAsyncRouter(asyncRouterMap) {
         console.log('检测到微应用路径:', route.component);
         const originalComponent = route.component.trim();
         route.component = MicroAppContainer;
+        
         // 解析微应用配置
         route.meta = route.meta || {};
         route.meta.microApp = parseMicroAppConfig(originalComponent, route.path);

@@ -1,7 +1,7 @@
 <template>
   <div class="cable-cost-container app-container">
     <!-- 搜索区域 -->
-    <div class="search-section">
+    <div class="toolbar">
       <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form">
         <el-form-item label="线缆型号" prop="cableModel">
           <el-input v-model="searchForm.cableModel" placeholder="请输入线缆型号" clearable></el-input>
@@ -25,8 +25,8 @@
       <div class="action-section">
         <el-button type="success" @click="handleSupplierManage" icon="el-icon-user"
           v-hasPermi="['quote:cable:supplier']">供应商管理</el-button>
-        <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2"
-          v-hasPermi="['quote:cable:import']">批量导入</el-button>
+        <!-- <el-button type="warning" @click="handleBatchImport" icon="el-icon-upload2"
+          v-hasPermi="['quote:cable:import']">批量导入</el-button> -->
         <el-button type="danger" @click="handleBatchDelete" icon="el-icon-delete" :disabled="selectedRows.length === 0"
           v-hasPermi="['quote:cable:remove']">批量删除</el-button>
         <el-button type="primary" @click="handleAdd" icon="el-icon-plus"
@@ -36,51 +36,76 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table ref="table" :data="tableData" v-loading="loading" element-loading-text="加载中..."
-        :height="tableHeight(-30)" @selection-change="handleSelectionChange" element-loading-spinner="el-icon-loading"
-        border stripe style="width: 100%" empty-text="暂无数据">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
-        <el-table-column prop="supplierName" label="供应商" align="center" show-overflow-tooltip>
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%" :height="tableHeight(30)"
+        @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
+        :row-class-name="getRowClassName">
+        <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">
+        </el-table-column>
+        <el-table-column prop="supplier" label="供应商" align="center" width="140">
           <template slot-scope="scope">
-            <span>{{ getSupplierName(scope.row.supplier) }}</span>
+            <div v-if="scope.row.isParent" class="supplier-cell">
+              <i v-if="scope.row.hasChildren && scope.row.list && scope.row.list.length > 0"
+                :class="isRowExpanded(scope.row.id) ? 'el-icon-minus' : 'el-icon-plus'" class="expand-icon"
+                @click.stop="toggleExpand(scope.row)"></i>
+              <span class="supplier-name">{{ getSupplierName(scope.row.supplier) }}</span>
+            </div>
+            <div v-else class="child-supplier">
+              <span class="sub-item-indicator">└</span>
+              <span class="sub-item-note"></span>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column prop="commonLinearPrice" label="防水头盔型号" align="center">
+        <el-table-column prop="costType" label="类型" align="center" width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.cableModel }}</span>
+            <div v-if="scope.row.isParent" class="parent-summary">
+              <span class="summary-text">汇总</span>
+            </div>
+            <span v-else class="cost-type-tag" :class="getCostTypeClass(scope.row)">
+              {{ formatCostType(scope.row) }}
+            </span>
           </template>
         </el-table-column>
-        <el-table-column prop="waterproofHeadPrice" label="防水头价格" align="center">
+        <el-table-column prop="itemInfo" label="型号" align="center" min-width="150">
           <template slot-scope="scope">
-            <span class="text-red">{{ scope.row.waterproofHeadPrice }}</span>
+            <div v-if="scope.row.isParent" class="parent-summary">
+              <span class="summary-text">{{ getParentSummary(scope.row) }}</span>
+            </div>
+            <div v-else class="item-detail">
+              {{ formatItemInfo(scope.row) }}
+            </div>
           </template>
         </el-table-column>
-        <el-table-column prop="cableModel" label="线缆型号" align="center" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="commonLinearPrice" label="普通线价格(元/米)" align="center">
+        <el-table-column prop="price" label="价格" align="center" width="120">
           <template slot-scope="scope">
-            <span class="text-red">{{ scope.row.commonLinearPrice | currency }}</span>
+            <div v-if="scope.row.isParent" class="parent-summary">
+              <span class="summary-text">-</span>
+            </div>
+            <span v-else class="item-price">
+              {{ formatPrice(scope.row) }}
+            </span>
           </template>
         </el-table-column>
-
-
-        <el-table-column prop="ulLinearPrice" label="UL线价格(元/米)" align="center">
-          <template slot-scope="scope">
-            <span class="text-red">{{ scope.row.ulLinearPrice | currency }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createBy" label="创建人" align="center" show-overflow-tooltip></el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center">
           <template slot-scope="scope">
-            <span>{{ scope.row.createTime | formatDate }}</span>
+            <span v-if="scope.row.isParent">{{ scope.row.createTime }}</span>
+            <span v-else class="sub-item-note">-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" align="center" fixed="right">
+        <el-table-column prop="createBy" label="创建人" align="center">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)"
-              v-hasPermi="['quote:cable:edit']">编辑</el-button>
-            <el-button size="mini" type="text" icon="el-icon-delete" class="text-red" @click="handleDelete(scope.row)"
-              v-hasPermi="['quote:cable:remove']">删除</el-button>
+            <span v-if="scope.row.isParent">{{ scope.row.createBy }}</span>
+            <span v-else class="sub-item-note">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center">
+          <template slot-scope="scope">
+            <template v-if="scope.row.isParent">
+              <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
+                v-hasPermi="['quote:cable:edit']">编辑</el-button>
+              <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)" icon="el-icon-delete"
+                v-hasPermi="['quote:cable:remove']">删除</el-button>
+            </template>
+            <span v-else class="sub-item-note">--</span>
           </template>
         </el-table-column>
       </el-table>
@@ -96,7 +121,7 @@
 
     <!-- 新增线缆成本弹窗 -->
     <AddCableCostDialog :visible.sync="addDialogVisible" :editData="editData" :supplierOptions="supplierOptions"
-      @success="handleDialogSuccess">
+      :existingSuppliers="existingSuppliers" @success="handleDialogSuccess">
     </AddCableCostDialog>
 
     <!-- 批量导入弹窗 -->
@@ -132,6 +157,7 @@ export default {
       },
       // 表格数据
       tableData: [],
+      expandedRows: [], // 存储展开的行ID
       loading: false,
       // 分页信息
       pagination: {
@@ -150,6 +176,31 @@ export default {
       // 编辑数据
       editData: null,
       selectedRows: [], // 新增：选中的行数据
+    }
+  },
+  computed: {
+    // 根据展开状态过滤显示的表格数据
+    displayTableData() {
+      return this.tableData.filter(row => {
+        if (row.isParent) {
+          // 主记录总是显示
+          return true
+        } else {
+          // 子记录只有在父记录展开时才显示
+          return this.expandedRows.includes(row.parentId)
+        }
+      })
+    },
+
+    // 获取已存在的供应商列表
+    existingSuppliers() {
+      const suppliers = []
+      this.tableData.forEach(row => {
+        if (row.isParent && row.supplier) {
+          suppliers.push(row.supplier)
+        }
+      })
+      return [...new Set(suppliers)] // 去重
     }
   },
   filters: {
@@ -212,8 +263,10 @@ export default {
 
       getCableCostList(params).then((res) => {
         if (res && res.code === 200) {
-          this.tableData = res.data?.list || []
+          this.tableData = this.flattenTableData(res.data?.list || [])
           this.pagination.total = res.data?.total || 0
+          // 清空展开状态
+          this.expandedRows = []
         } else {
           this.$message.error(res?.msg || '获取数据失败')
           this.tableData = []
@@ -269,13 +322,18 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        const ids = this.selectedRows.map(row => row.id)
+        // 根据API文档，删除要用supplier代理商ID
+        const supplierIds = this.selectedRows.map(row => row.supplier).filter(id => id)
 
-        deleteCableCosts(ids).then(res => {
+        if (supplierIds.length === 0) {
+          this.$message.error('选中的记录中没有有效的供应商信息，无法删除')
+          return
+        }
+
+        deleteCableCosts(supplierIds).then(res => {
           if (res.code === 200) {
             this.$message.success('删除成功')
             this.selectedRows = [] // 清空选中的行
-            this.$refs.table.clearSelection() // 清空表格选择
             this.fetchData()
           } else {
             this.$message.error(res.msg || '删除失败')
@@ -295,7 +353,14 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteCableCosts([row.id]).then((res) => {
+        // 根据API文档，删除要用supplier代理商ID
+        const supplierId = row.supplier
+        if (!supplierId) {
+          this.$message.error('无效的供应商信息，无法删除')
+          return
+        }
+
+        deleteCableCosts([supplierId]).then((res) => {
           if (res.code === 200) {
             this.$message.success('删除成功')
             this.fetchData()
@@ -359,6 +424,235 @@ export default {
           break
       }
     },
+    // 扁平化表格数据，处理嵌套结构
+    flattenTableData(rawData) {
+      const flatData = []
+
+      rawData.forEach((item, index) => {
+        // 获取所有子项，不过滤任何项目，并按照指定顺序排序
+        const allChildren = item.list && Array.isArray(item.list) ? item.list : []
+        
+        // 按照指定顺序排序：防水头-普通线-UL线-线缆-上锡价格-SR价格-插线端子
+        const sortOrder = {
+          1: 1, // 防水头
+          2: 2, // 线缆（普通线和UL线都是类型2，后面会细分）
+          4: 5, // 上锡价格
+          5: 6, // SR价格
+          3: 7  // 插线端子
+        }
+        
+        allChildren.sort((a, b) => {
+          const orderA = sortOrder[a.costCableType] || 999
+          const orderB = sortOrder[b.costCableType] || 999
+          
+          // 如果都是线缆类型（costCableType === 2），按照普通线优先
+          if (a.costCableType === 2 && b.costCableType === 2) {
+            const aHasCommon = a.commonLinearPrice > 0
+            const bHasCommon = b.commonLinearPrice > 0
+            const aHasUL = a.ulLinearPrice > 0
+            const bHasUL = b.ulLinearPrice > 0
+            
+            if (aHasCommon && !bHasCommon) return -1 // a是普通线，b不是普通线
+            if (!aHasCommon && bHasCommon) return 1  // b是普通线，a不是普通线
+            if (aHasUL && !bHasUL) return 1          // a是UL线，b不是UL线
+            if (!aHasUL && bHasUL) return -1         // b是UL线，a不是UL线
+          }
+          
+          return orderA - orderB
+        })
+
+        const hasValidChildren = allChildren.length > 0
+
+        // 添加主记录（代表整个供应商的成本汇总）
+        const mainRecord = {
+          ...item,
+          isParent: true,
+          level: 0,
+          hasChildren: hasValidChildren,
+          // 确保主记录有唯一ID
+          originalId: item.id,
+          displayId: `parent-${index}-${item.id}`,
+          id: `parent-${index}-${item.id}`  // 使用displayId作为表格的row-key
+        }
+        flatData.push(mainRecord)
+
+        // 添加所有子记录（显示list中的所有项目）
+        if (hasValidChildren) {
+          allChildren.forEach((subItem, subIndex) => {
+            const subRecord = {
+              ...subItem,
+              isParent: false,
+              level: 1,
+              parentId: mainRecord.id,
+              hasChildren: false,
+              // 为子记录生成唯一ID，确保即使ID相同也有不同的显示ID
+              id: `child-${index}-${subIndex}-${subItem.id || subIndex}`,
+              originalId: subItem.id
+            }
+            flatData.push(subRecord)
+          })
+        }
+      })
+
+      return flatData
+    },
+
+    // 获取行的CSS类名
+    getRowClassName({ row }) {
+      if (row.level === 1) {
+        return 'child-row'
+      } else {
+        // 父行，检查是否可展开
+        const isExpandable = row.isParent && row.hasChildren && row.list && row.list.length > 0
+        return isExpandable ? 'parent-row expandable-row' : 'parent-row'
+      }
+    },
+
+    // 检查行是否已展开
+    isRowExpanded(rowId) {
+      return this.expandedRows.includes(rowId)
+    },
+
+    // 处理行点击事件
+    handleRowClick(row) {
+      // 只有父行且有子项时才允许点击展开
+      if (row.isParent && row.hasChildren && row.list && row.list.length > 0) {
+        this.toggleExpand(row)
+      }
+    },
+
+    // 切换行展开状态
+    toggleExpand(row) {
+      const rowId = row.id
+      const index = this.expandedRows.indexOf(rowId)
+      if (index > -1) {
+        this.expandedRows.splice(index, 1)
+      } else {
+        this.expandedRows.push(rowId)
+      }
+    },
+
+    // 格式化成本类型
+    formatCostType(row) {
+      if (row.costCableType === 1) {
+        return '防水头'
+      } else if (row.costCableType === 2) {
+        if (row.commonLinearPrice > 0) return '普通线'
+        if (row.ulLinearPrice > 0) return 'UL线'
+        return '线缆'
+      } else if (row.costCableType === 3) {
+        return '插线端子'
+      } else if (row.costCableType === 4) {
+        return '上锡价格'
+      } else if (row.costCableType === 5) {
+        return 'SR价格'
+      }
+      return '-'
+    },
+
+    // 获取成本类型样式类名
+    getCostTypeClass(row) {
+      if (row.costCableType === 1) {
+        return 'waterproof-type'
+      } else if (row.costCableType === 2) {
+        return 'cable-type'
+      } else if (row.costCableType === 3) {
+        return 'terminal-type'
+      } else if (row.costCableType === 4) {
+        return 'tinning-type'
+      } else if (row.costCableType === 5) {
+        return 'sr-type'
+      }
+      return ''
+    },
+
+    // 格式化规格信息
+    formatItemInfo(row) {
+      if (row.costCableType === 1) {
+        // 防水头：显示型号
+        return row.cableModel || '-'
+      } else if (row.costCableType === 2) {
+        // 线缆：显示型号
+        return row.linearModel || '-'
+      } else if (row.costCableType === 3) {
+        // 插线端子：显示型号
+        return row.triggerTerminalModel || '-'
+      } else if (row.costCableType === 4) {
+        // 上锡价格：显示上锡型号
+        return row.tinningModel || '-'
+      } else if (row.costCableType === 5) {
+        // SR价格：显示SR型号
+        return row.srModel || '-'
+      }
+      return '-'
+    },
+
+    // 格式化价格信息
+    formatPrice(row) {
+      if (row.costCableType === 1) {
+        // 防水头价格
+        return `¥${(row.waterproofHeadPrice || 0).toFixed(2)}`
+      } else if (row.costCableType === 2) {
+        // 线缆价格
+        if (row.commonLinearPrice > 0) {
+          return `¥${(row.commonLinearPrice || 0).toFixed(2)}/米`
+        } else if (row.ulLinearPrice > 0) {
+          return `¥${(row.ulLinearPrice || 0).toFixed(2)}/米`
+        }
+        return '-'
+      } else if (row.costCableType === 3) {
+        // 插线端子价格
+        return `¥${(row.triggerTerminalPrice || 0).toFixed(2)}`
+      } else if (row.costCableType === 4) {
+        // 上锡价格
+        return `¥${(row.tinningPrice || 0).toFixed(2)}`
+      } else if (row.costCableType === 5) {
+        // SR价格
+        return `¥${(row.srPrice || 0).toFixed(2)}`
+      }
+      return '-'
+    },
+
+    // 获取父行汇总信息
+    getParentSummary(row) {
+      if (!row.list || row.list.length === 0) return '-'
+
+      // 基于list中的所有项目进行统计
+      const allItems = row.list
+
+      const types = []
+      const waterproof = allItems.filter(item => item.costCableType === 1)
+      const cables = allItems.filter(item => item.costCableType === 2)
+      const terminals = allItems.filter(item => item.costCableType === 3)
+
+      if (waterproof.length > 0) types.push(`防水头×${waterproof.length}`)
+      if (cables.length > 0) types.push(`线缆×${cables.length}`)
+      if (terminals.length > 0) types.push(`端子×${terminals.length}`)
+
+      return types.join(' | ') || '-'
+    },
+
+    // 格式化总价格
+    formatTotalPrice(row) {
+      if (!row.list || row.list.length === 0) return '-'
+
+      // 基于list中的所有项目进行价格计算
+      const allItems = row.list
+
+      let total = 0
+      allItems.forEach(item => {
+        if (item.costCableType === 1) {
+          total += (item.waterproofHeadPrice || 0)
+        } else if (item.costCableType === 2) {
+          total += (item.commonLinearPrice || 0) + (item.ulLinearPrice || 0)
+        } else if (item.costCableType === 3) {
+          total += (item.triggerTerminalPrice || 0)
+        }
+      })
+
+      return `¥${total.toFixed(2)}`
+    },
+
     // 获取分类名称
     getCategoryName(categoryId) {
       if (!categoryId) return '-'
@@ -419,6 +713,142 @@ export default {
   .pagination-section {
     margin-top: 20px;
     text-align: right;
+  }
+
+  // 供应商列样式
+  .supplier-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .expand-icon {
+      cursor: pointer;
+      margin-right: 8px;
+      color: #409EFF;
+      font-size: 14px;
+
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+
+    .supplier-name {
+      font-weight: 600;
+      color: #303133;
+    }
+  }
+
+  .child-supplier {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .sub-item-indicator {
+      margin-right: 4px;
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .sub-item-note {
+      color: #909399;
+      font-size: 12px;
+    }
+  }
+
+  // 表格行样式
+  ::v-deep .parent-row {
+    font-weight: bold;
+    background-color: #fff;
+
+    &.expandable-row {
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f5f7fa;
+      }
+    }
+  }
+
+  ::v-deep .child-row {
+    background-color: #f5f7fa;
+
+    td {
+      border-top: 1px dashed #e4e7ed;
+    }
+
+    // 隐藏子行的复选框
+    .el-checkbox {
+      display: none;
+    }
+  }
+
+  // 汇总信息样式
+  .parent-summary {
+    .summary-text {
+      color: #909399;
+      font-size: 12px;
+    }
+  }
+
+  // 金额显示样式
+  .total-amount {
+    font-weight: bold;
+    color: #E6A23C;
+    font-size: 14px;
+  }
+
+  .item-amount {
+    color: #606266;
+  }
+
+  // 子项备注样式
+  .sub-item-note {
+    color: #909399;
+    font-size: 12px;
+  }
+
+  // 成本类型标签样式
+  .cost-type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+
+    &.waterproof-type {
+      background-color: #67C23A;
+    }
+
+    &.cable-type {
+      background-color: #409EFF;
+    }
+
+    &.terminal-type {
+      background-color: #E6A23C;
+    }
+
+    &.tinning-type {
+      background-color: #9C27B0; // 紫色 - 上锡价格
+    }
+
+    &.sr-type {
+      background-color: #FF5722; // 橙红色 - SR价格
+    }
+  }
+
+  // 规格信息样式
+  .item-detail {
+    font-size: 13px;
+    color: #606266;
+    line-height: 1.4;
+  }
+
+  // 价格信息样式
+  .item-price {
+    font-weight: 600;
+    color: #E6A23C;
+    font-size: 13px;
   }
 }
 </style>

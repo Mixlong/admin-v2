@@ -1,6 +1,6 @@
 <template>
   <el-dialog :title="title" :visible.sync="open" width="70%" append-to-body :close-on-click-modal="false" top="0vh"
-    custom-class="bom-change-dialog">
+    custom-class="  dialog-scroll">
     <div class="form-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="140px" @submit.native.prevent class="modern-form">
         <!-- 基本信息卡片 -->
@@ -204,10 +204,10 @@
                     </el-select>
                   </el-form-item>
 
-                  <el-form-item label="在制产品处理方案" prop="pmcTxt">
+                  <!-- <el-form-item label="在制产品处理方案" prop="pmcTxt">
                     <el-input v-model="form.pmcTxt" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
                       type="textarea" :rows="4" class="modern-textarea"></el-input>
-                  </el-form-item>
+                  </el-form-item> -->
                 </div>
               </div>
 
@@ -226,11 +226,11 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-
+                  <!-- 
                   <el-form-item label="在途物料处理方案" prop="buyerTxt">
                     <el-input v-model="form.buyerTxt" clearable placeholder="订单暂停、订单取消、物料变更及数量减少情况下涉及填写" type="textarea"
                       :rows="4" class="modern-textarea"></el-input>
-                  </el-form-item>
+                  </el-form-item> -->
                 </div>
               </div>
 
@@ -250,10 +250,10 @@
                     </el-select>
                   </el-form-item>
 
-                  <el-form-item label="涉及更新的文件" prop="researchDataTxt">
+                  <!-- <el-form-item label="涉及更新的文件" prop="researchDataTxt">
                     <el-input v-model="form.researchDataTxt" clearable placeholder="物料变更及软件变更情况下涉及填写" type="textarea"
                       :rows="9" class="modern-textarea"></el-input>
-                  </el-form-item>
+                  </el-form-item> -->
                 </div>
               </div>
 
@@ -272,7 +272,7 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-
+                  <!-- 
                   <el-form-item label="在库成品处理方案" prop="finishedHandleTxt">
                     <el-input v-model="form.finishedHandleTxt" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
                       type="textarea" :rows="4" class="modern-textarea"></el-input>
@@ -281,7 +281,7 @@
                   <el-form-item label="在库物料处理方案" prop="warehouseDataTxt">
                     <el-input v-model="form.warehouseDataTxt" clearable placeholder="订单暂停、订单取消、物料变更、数量减少、软件变更情况下涉及填写"
                       type="textarea" :rows="4" class="modern-textarea"></el-input>
-                  </el-form-item>
+                  </el-form-item> -->
                 </div>
               </div>
             </div>
@@ -1486,14 +1486,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 主容器样式
-.form-container {
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
 // 现代化表单样式
 .modern-form {
+  padding-top: 20px;
+
   .el-form-item__label {
     font-weight: 600;
     color: #2c3e50;
@@ -1505,19 +1501,20 @@ export default {
 .form-section {
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
-  overflow: hidden;
   border: 1px solid #e8f4fd;
+  overflow: visible;
 }
 
 // 区块头部样式
 .section-header {
-  background: linear-gradient(135deg, #409EFF 0%, #66b1ff 100%);
   padding: 16px 24px;
   display: flex;
   align-items: center;
-  color: white;
+  position: absolute;
+  top: -25px;
+  left: 3px;
+  background: #fff;
 
   .header-left {
     display: flex;
@@ -1696,6 +1693,7 @@ export default {
 // 区块内容样式
 .section-content {
   padding: 24px;
+
 }
 
 // 部门网格布局
@@ -1716,8 +1714,7 @@ export default {
 .department-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e4e7ed;
+  border: 1px dashed #e4e7ed;
 }
 
 // 部门头部样式
@@ -1896,23 +1893,6 @@ export default {
   text-align: center;
   padding: 20px 24px;
   border-top: 1px solid #e8f4fd;
-
-  .el-button {
-    min-width: 100px;
-    border-radius: 8px;
-    font-weight: 500;
-
-    &.cancel-btn {
-      background: #ffffff;
-      color: #666666;
-    }
-
-    &.submit-btn {
-      background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-      border: none;
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-    }
-  }
 }
 
 // 对话框自定义样式
@@ -2014,6 +1994,7 @@ export default {
 
 .form-section {
   animation: fadeInUp 0.6s ease-out;
+  position: relative;
 }
 
 // 滚动条样式

@@ -14,27 +14,25 @@
         </el-table-column>
         <el-table-column label="详情/附件" align="center">
           <template slot-scope="scope">
+            <!-- 需要上传功能的选项：客户指定 + 迪太英文标准 -->
             <div
-              v-if="(scope.row.checkItem.id === 'accessoryPackingRequirements' || scope.row.checkItem.id === 'boxMarkRequirements') && scope.row.content === 'customerSpecified'">
+              v-if="((scope.row.checkItem.id === 'accessoryPackingRequirements' || scope.row.checkItem.id === 'boxMarkRequirements') && scope.row.content === 'customerSpecified') || scope.row.content === 'ditaiEnglishIndicators'">
               <!-- <MyUpload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
                 v-model="scope.row.details" :multiple="false" :limit="1">
                 <el-button size="small" type="primary">点击上传</el-button>
                 <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
               </MyUpload> -->
-                  <DrUpload
-             v-model="scope.row.details"
-              :limit="1"
-              :isOnePic="1"
-              class="flex-direction align-start"
-            >
-              <div class="text-left">
-                <el-button type="primary" size="small">
-                  上传
-                  <i class="el-icon-upload el-icon--right"></i>
-                </el-button>
-              </div>
-            </DrUpload>
+              <DrUpload v-model="scope.row.details" :limit="1"
+                :isOnePic="scope.row.content === 'ditaiEnglishIndicators' ? 0 : 1" class="flex-direction align-start">
+                <div class="text-left">
+                  <el-button type="primary" size="small">
+                    上传
+                    <i class="el-icon-upload el-icon--right"></i>
+                  </el-button>
+                </div>
+              </DrUpload>
             </div>
+            <!-- 其他情况显示文本输入 -->
             <div v-else>
               <el-input type="textarea" v-model="scope.row.details"></el-input>
             </div>
@@ -62,46 +60,56 @@ export default {
           checkItem: { id: 'ditaiStandardNoLockAttachment', label: '支架螺丝安装要求' },
           content: 'ditaiStandardNoLockAttachment', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiStandardNoLockAttachment', label: '迪太标准：不锁，作为附件' },
             { id: 'customerSpecifiedNoLock', label: '客户指定：锁上，但不锁紧' },
-            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' }
+            { id: 'customerSpecifiedNormalLock', label: '客户指定：锁上，正常锁紧' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'accessoryPackingRequirements', label: '附件装箱要求' },
           content: 'ditaiStandardAllAccessoriesUnifiedTailNumber', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
-            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放置尾数' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'ditaiStandardAllAccessoriesUnifiedTailNumber', label: '迪太标准：所有附件统一放尾数箱' },
+            { id: 'customerSpecified', label: '所有附件统一放每箱内' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'packagingRequirementsCardboardWaterproofBag', label: '包装要求 (卡板、防水袋)' },
           content: 'accordingToBOM', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'accordingToBOM', label: '依据BOM' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'boxMarkRequirements', label: '箱唛要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
             { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
         {
           checkItem: { id: 'inspectionReportRequirements', label: '检验报告要求' },
           content: 'ditaiTemplate', // 默认选择第一个选项的id
           details: '',
+
           contentOptions: [
             { id: 'ditaiTemplate', label: '迪太模板' },
-            { id: 'customerSpecified', label: '客户指定' }
+            { id: 'customerSpecified', label: '客户指定' },
+            { id: 'ditaiEnglishIndicators', label: '迪太英文标准' }
           ],
         },
       ],
@@ -152,12 +160,12 @@ export default {
         // 没有数据，使用默认数据
         this.tableData = JSON.parse(JSON.stringify(this.defaultTableData));
       }
-      
+
       // 确保每行的content都默认选择第一个选项
       this.ensureDefaultContentSelection();
       console.log("🚀 ~ initializeTableData ~ this.tableData:", this.tableData)
     },
-    
+
     // 确保每行的content都默认选择第一个选项
     ensureDefaultContentSelection() {
       this.tableData.forEach(row => {
@@ -205,6 +213,27 @@ export default {
   h1 {
     text-align: center;
     margin-bottom: 20px;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .el-button--text {
+      color: #409EFF;
+      padding: 0;
+
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+  }
+
+  .no-file {
+    color: #909399;
+    font-size: 12px;
+    font-style: italic;
   }
 }
 </style>

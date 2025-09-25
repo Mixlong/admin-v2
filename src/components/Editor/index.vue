@@ -56,6 +56,13 @@ export default {
     type: {
       type: String,
       default: "url",
+    },
+    /* 上传请求头 */
+    headers: {
+      type: Object,
+      default: () => ({
+        Authorization: "Bearer " + getToken()
+      })
     }
   },
   data() {

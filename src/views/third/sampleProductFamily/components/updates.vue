@@ -1492,32 +1492,32 @@ export default {
       }
     },
     async handleCopy2(computerId) {
-            try {
-                const { data } = await detailComputer(computerId);
-                data.instrumentModel = data.instrumentModel ?? {};
-                this.msgSuccess("操作成功");
-                // 编辑拷贝
-                if (this.form.id) {
-                    this.isEditCopy = true;
-                    const { id, categoryId, name, instrumentModel } = this.form;
+      try {
+        const { data } = await detailComputer(computerId);
+        data.instrumentModel = data.instrumentModel ?? {};
+        this.msgSuccess("操作成功");
+        // 编辑拷贝
+        if (this.form.id) {
+          this.isEditCopy = true;
+          const { id, categoryId, name, instrumentModel } = this.form;
 
-                    const copyData = Object.assign({}, data);
-                    copyData.id = id;
-                    copyData.categoryId = categoryId;
-                    copyData.name = name;
-                    copyData.instrumentModel.id = instrumentModel?.id;
-                    copyData.instrumentModel.categoryId = instrumentModel?.categoryId;
-                    copyData.instrumentModel.computerId = instrumentModel?.computerId;
-                    this.form = copyData;
-                } else {
-                    // 新增拷贝
-                    this.form = Object.assign({}, data);
-                }
-            } catch (error) {
-                this.msgError("操作失败");
-                console.error(error);
-            }
-        },
+          const copyData = Object.assign({}, data);
+          copyData.id = id;
+          copyData.categoryId = categoryId;
+          copyData.name = name;
+          copyData.instrumentModel.id = instrumentModel?.id;
+          copyData.instrumentModel.categoryId = instrumentModel?.categoryId;
+          copyData.instrumentModel.computerId = instrumentModel?.computerId;
+          this.form = copyData;
+        } else {
+          // 新增拷贝
+          this.form = Object.assign({}, data);
+        }
+      } catch (error) {
+        this.msgError("操作失败");
+        console.error(error);
+      }
+    },
     configToJsonString() {
       const {
         backlightBrightness,
@@ -1706,7 +1706,7 @@ export default {
           if (response.code === 200) {
             this.msgSuccess("添加成功");
             this.dialogVisible = false;
-            this.$parent.getList();
+            this.$emit('refresh-list');
             this.open = false;
           }
         })
@@ -1729,7 +1729,7 @@ export default {
                 if (response.code === 200) {
                   this.msgSuccess("拷贝成功");
                   this.dialogVisible = false;
-                  this.$parent.getList();
+                  this.$emit('refresh-list');
                 }
               })
               .finally(() => {
@@ -1743,7 +1743,7 @@ export default {
             if (response.code === 200) {
               this.msgSuccess("修改成功");
               this.dialogVisible = false;
-              this.$parent.getList();
+              this.$emit('refresh-list');
             }
           })
           .finally(() => {

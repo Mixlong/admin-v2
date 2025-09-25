@@ -7,8 +7,8 @@
       </el-form-item>
       <el-form-item label="产品类型" prop="productType">
         <el-select v-model="queryParams.productType" placeholder="请选择产品类型" clearable size="small" style="width: 185px">
-          <el-option v-for="item in productTypeOptions" :key="item.dictValue" :label="item.dictLabel"
-            :value="item.dictValue">
+          <el-option v-for="item in productTypeOptions" :key="item.dictCode" :label="item.dictLabel"
+            :value="item.dictCode">
           </el-option>
         </el-select>
       </el-form-item>
@@ -47,8 +47,8 @@
       </el-table-column>
       <el-table-column label="开启送样" align="center" width="100">
         <template slot-scope="{ row }">
-          <el-tag :type="row.isSample === '1' ? 'success' : 'danger'">
-            {{ row.isSample === "1" ? "是" : "否" }}
+          <el-tag :type="row.isSample === 1 ? 'success' : 'danger'">
+            {{ row.isSample === 1 ? "是" : "否" }}
           </el-tag>
         </template>
       </el-table-column>
@@ -76,7 +76,7 @@
         <el-form-item label="产品类型:" prop="productType">
           <el-select v-model="form.productType" placeholder="请选择产品类型" clearable style="width: 100%">
             <el-option v-for="item in productTypeOptions" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictValue">
+              :value="item.dictCode + ''">
             </el-option>
           </el-select>
         </el-form-item>
@@ -87,10 +87,9 @@
           <el-upload-sortable v-model="form.img" :max="1" />
         </el-form-item>
         <el-form-item label="开启送样:">
-          <el-radio-group v-model="form.isSample">
-            <el-radio label="1">是</el-radio>
-            <el-radio label="0">否</el-radio>
-          </el-radio-group>
+          <el-switch v-model="form.isSample" :active-value="1" :inactive-value="0" active-color="#13ce66"
+            inactive-color="#ff4949">
+          </el-switch>
         </el-form-item>
       </el-form>
 
@@ -212,14 +211,8 @@ export default {
       // 转换为字符串进行比较
       const valueStr = String(value);
 
-      // 先按dictValue查找
-      let option = this.productTypeOptions.find(item => String(item.dictValue) === valueStr);
-      if (option) {
-        return option.dictLabel;
-      }
-
-      // 如果没找到，再按dictLabel查找（可能后端直接返回了标签）
-      option = this.productTypeOptions.find(item => String(item.dictLabel) === valueStr);
+      // 先按dictCode查找
+      let option = this.productTypeOptions.find(item => String(item.dictCode) == valueStr);
       if (option) {
         return option.dictLabel;
       }

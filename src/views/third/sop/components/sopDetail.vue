@@ -23,11 +23,23 @@
         :label="index + 1"
         name="index"
       >
+        <!-- 视频文件显示 -->
+        <video
+          v-if="item.file && isVideoFile(item.file)"
+          :src="item.file"
+          class="course-video"
+          controls
+          preload="metadata"
+          @click.stop
+        >
+          您的浏览器不支持视频播放
+        </video>
+        <!-- 图片文件显示 -->
         <el-image
-          v-show="item.file"
+          v-else-if="item.file && !isVideoFile(item.file)"
           class="course-img"
           :src="item.file"
-          :preview-src-list="[item.file]"
+          :preview-src-list="getImageUrls()"
           fit="cover"
         />
         <div class="sop-intro-box">
@@ -60,6 +72,21 @@ export default {
       detailInfo: [],
     };
   },
+  watch: {
+    detailId: {
+      immediate: true,
+      handler(newId) {
+        if (newId && this.visible) {
+          this.getSopInfo(newId);
+        }
+      }
+    },
+    visible(newVal) {
+      if (newVal && this.detailId) {
+        this.getSopInfo(this.detailId);
+      }
+    }
+  },
   methods: {
     close() {
       this.$emit("update:visible", false);
@@ -71,6 +98,19 @@ export default {
       } catch (error) {
         console.error(error);
       }
+    },
+    /** 判断是否为视频文件 */
+    isVideoFile(url) {
+      if (!url) return false;
+      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.m4v'];
+      const extension = url.toLowerCase().substring(url.lastIndexOf('.'));
+      return videoExtensions.includes(extension);
+    },
+    /** 获取图片文件列表（用于预览） */
+    getImageUrls() {
+      return this.detailInfo
+        .filter(item => item.file && !this.isVideoFile(item.file))
+        .map(item => item.file);
     },
   },
 };
@@ -95,10 +135,23 @@ export default {
         padding-bottom: 35px;
         .course-img {
           height: inherit;
+          max-width: 100%;
+          object-fit: contain;
+        }
+        .course-video {
+          height: inherit;
+          max-width: 100%;
+          max-height: 450px;
+          object-fit: contain;
+          border-radius: 4px;
+          background: #000;
         }
         .sop-intro-box {
           .sop-intro {
             color: #666;
+            margin-top: 15px;
+            padding: 0 20px;
+            line-height: 1.6;
           }
         }
       }
