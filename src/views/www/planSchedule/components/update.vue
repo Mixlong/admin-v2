@@ -25,7 +25,7 @@
 
             <el-col :span="4">
               <el-form-item label="生产流程:" prop="process">
-                <el-select v-model="form.process" :disabled="!!form.id" style="width: 100%">
+                <el-select v-model="form.process" style="width: 100%">
                   <el-option v-for="(item, index) in operationList" :key="index" :label="item.dictLabel"
                     :value="item.dictLabel"></el-option>
                 </el-select>
