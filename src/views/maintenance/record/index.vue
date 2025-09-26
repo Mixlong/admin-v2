@@ -175,9 +175,10 @@
           </template>
         </el-table-column>      
  
-        <el-table-column label="操作" width="150" align="center" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit" v-hasPermi="['maintenance:record:edit']">编辑</el-button>
+            <el-button size="mini" type="text" @click="handleCopy(scope.row)" icon="el-icon-document-copy" v-hasPermi="['maintenance:record:add']">复制</el-button>
             <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)" icon="el-icon-delete" v-hasPermi="['maintenance:record:remove']">删除</el-button>
           </template>
         </el-table-column>  
@@ -392,6 +393,26 @@ export default {
     handleEdit(row) {
       this.editData = { ...row }
       this.addDialogVisible = true
+    },
+
+    // 复制记录
+    handleCopy(row) {
+      // 复制数据，但排除PCBA SN字段
+      const copyData = { ...row }
+      
+      // 清除不需要复制的字段
+      delete copyData.id  // 删除ID，新增时会自动生成
+      delete copyData.createTime  // 删除创建时间
+      delete copyData.updateTime  // 删除更新时间
+      delete copyData.createBy    // 删除创建人
+      delete copyData.updateBy    // 删除更新人
+      copyData.pcbaSn = ''        // 清空PCBA SN
+      
+      // 设置为复制数据并打开弹窗
+      this.editData = copyData
+      this.addDialogVisible = true
+      
+      this.$message.success('已复制，请修改相关信息后保存')
     },
 
     // 删除记录

@@ -2,7 +2,7 @@
   <div>
     <el-dialog 
       :visible.sync="dialogVisible" 
-      :title="editMode ? '编辑' : '新增'"
+      :title="getDialogTitle()"
       width="750px" 
       :close-on-click-modal="false" 
       @close="handleClose"
@@ -235,9 +235,9 @@ export default {
     }
   },
   computed: {
-    // 是否为编辑模式
+    // 是否为编辑模式 - 只有当有editData且有id时才是编辑模式
     editMode() {
-      return this.editData !== null
+      return this.editData !== null && this.editData.id
     }
   },
   watch: {
@@ -255,6 +255,14 @@ export default {
     this.loadDictData()
   },
   methods: {
+    // 获取弹窗标题
+    getDialogTitle() {
+      if (this.editData && this.editData.id) {
+        return '编辑'
+      }
+      return '新增'
+    },
+
     // 加载字典数据
     async loadDictData() {
       try {
