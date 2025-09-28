@@ -61,11 +61,11 @@
             </div>
             <div class="info-item">
               <span class="info-label">申请部门</span>
-              <span class="info-value" :class="{ empty: !detailData.dept }">{{ detailData.dept || '-' }}</span>
+              <span class="info-value" :class="{ empty: !getDeptName(detailData.dept) }">{{ getDeptName(detailData.dept) || '-' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">申请人员</span>
-              <span class="info-value" :class="{ empty: !detailData.deptPerson }">{{ detailData.deptPerson || '-'
+              <span class="info-value" :class="{ empty: !getUserName(detailData.deptPerson) }">{{ getUserName(detailData.deptPerson) || '-'
               }}</span>
             </div>
             <div class="info-item">
@@ -722,6 +722,8 @@
 
 <script>
 import { getBomOrderChangeDetail } from '@/api/third/bomChange'
+import { listDept } from '@/api/system/dept'
+import { listUser } from '@/api/system/user'
 
 export default {
   name: 'DetailView',
@@ -745,7 +747,15 @@ export default {
         11: '系统变更',
         12: '订单变更',
         13: '工单变更'
-      }
+      },
+      // 部门列表数据缓存
+      deptList: [],
+      // 用户列表数据缓存
+      userList: [],
+      // 部门映射 - ID到名称的映射
+      deptMap: {},
+      // 人员映射 - ID到名称的映射
+      userMap: {}
     }
   },
   computed: {
@@ -766,6 +776,11 @@ export default {
       return Object.values(groups)
     }
   },
+  created() {
+    // 组件创建时预加载部门和用户数据
+    this.loadDeptList()
+    this.loadUserList()
+  },
   methods: {
     // 打开详情弹窗 - 这是关键方法，需要暴露给父组件
     async openDialog(id) {
@@ -783,6 +798,8 @@ export default {
         if (this.detailData.processCode) {
           this.dialogTitle = `订单变更详情 - ${this.detailData.processCode}`
         }
+
+        // 数据已在 created 中预加载，这里不需要额外处理
       } catch (error) {
         console.error('获取详情失败:', error)
         this.$message.error('获取详情失败')
@@ -1000,6 +1017,129 @@ export default {
       if (!filePath) return 'download'
       const parts = filePath.split('/')
       return parts[parts.length - 1] || 'download'
+    },
+
+    // 获取部门名称
+    getDeptName(deptId) {
+      if (!deptId) return ''
+      
+      // 如果已经有映射，直接返回
+      if (this.deptMap[deptId]) {
+        return this.deptMap[deptId]
+      }
+      
+      // 如果没有映射且不是数字ID，可能已经是中文名称，直接返回
+      if (isNaN(deptId)) {
+        return deptId
+      }
+      
+      // 异步加载部门信息
+      this.loadDeptInfo(deptId)
+      
+      // 暂时返回ID，等加载完成后会自动更新
+      return deptId
+    },
+
+    // 获取用户名称
+    getUserName(userId) {
+      if (!userId) return ''
+      
+      // 如果已经有映射，直接返回
+      if (this.userMap[userId]) {
+        return this.userMap[userId]
+      }
+      
+      // 如果没有映射且不是数字ID，可能已经是中文名称，直接返回
+      if (isNaN(userId)) {
+        return userId
+      }
+      
+      // 异步加载用户信息
+      this.loadUserInfo(userId)
+      
+      // 暂时返回ID，等加载完成后会自动更新
+      return userId
+    },
+
+    // 加载部门列表
+    async loadDeptList() {
+      try {
+        const response = await listDept()
+        if (response.code === 200 && response.data) {
+          this.deptList = response.data
+          // 构建部门映射
+          response.data.forEach(dept => {
+            this.$set(this.deptMap, dept.deptId, dept.deptName)
+          })
+          console.log('部门列表加载完成:', this.deptMap)
+        }
+      } catch (error) {
+        console.error('获取部门列表失败:', error)
+      }
+    },
+
+    // 加载用户列表
+    async loadUserList() {
+      try {
+        const response = await listUser({ p: 1, l: 999 })
+        if (response.code === 200 && response.rows) {
+          this.userList = response.rows
+          // 构建用户映射，优先使用 nickName
+          response.rows.forEach(user => {
+            const userName = user.nickName || user.realName || user.userName
+            this.$set(this.userMap, user.userId, userName)
+          })
+          console.log('用户列表加载完成:', Object.keys(this.userMap).length, '个用户')
+        }
+      } catch (error) {
+        console.error('获取用户列表失败:', error)
+      }
+    },
+
+    // 获取部门名称
+    getDeptName(deptId) {
+      if (!deptId) return ''
+      
+      // 如果已经有映射，直接返回
+      if (this.deptMap[deptId]) {
+        return this.deptMap[deptId]
+      }
+      
+      // 如果不是数字ID，可能已经是中文名称，直接返回
+      if (isNaN(deptId)) {
+        return deptId
+      }
+      
+      // 如果没有加载过列表，触发加载
+      if (this.deptList.length === 0) {
+        this.loadDeptList()
+      }
+      
+      // 暂时返回ID，等加载完成后会自动更新
+      return deptId
+    },
+
+    // 获取用户名称
+    getUserName(userId) {
+      if (!userId) return ''
+      
+      // 如果已经有映射，直接返回
+      if (this.userMap[userId]) {
+        return this.userMap[userId]
+      }
+      
+      // 如果不是数字ID，可能已经是中文名称，直接返回
+      if (isNaN(userId)) {
+        return userId
+      }
+      
+      // 如果没有加载过列表，触发加载
+      if (this.userList.length === 0) {
+        this.loadUserList()
+      }
+      
+      // 暂时返回ID，等加载完成后会自动更新
+      return userId
     }
   }
 }
