@@ -51,7 +51,7 @@
                     trigger: 'blur',
                   },
                 ]">
-                  <el-select v-model="form.categoryId" placeholder="请选择产品品类" filterable :disabled="disabled"
+                  <el-select v-model="form.categoryId" placeholder="请选择产品品类" filterable
                     class="w100">
                     <el-option v-for="item in modelList" :key="item.id" :label="item.name" :value="item.id">
                     </el-option>

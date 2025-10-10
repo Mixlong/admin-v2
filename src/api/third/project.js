@@ -37,6 +37,13 @@ export function dictMkProject () {
     method: 'get',
   });
 }
+
+export function dictQcProject () {
+  return request ({
+    url: '/project/dict/qm',
+    method: 'get',
+  });
+}
 export function detailInfoProject (id) {
   return request ({
     url: '/project/' + id,

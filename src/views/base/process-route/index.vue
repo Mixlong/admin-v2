@@ -34,6 +34,16 @@
               @change="handleQuery"
             />
           </el-form-item>
+          <el-form-item label="备注" prop="remarks">
+            <el-input
+              v-model="queryParams.remarks"
+              placeholder="请输入备注"
+              clearable
+              size="mini"
+              style="width: 200px"
+              @keyup.enter.native="handleQuery"
+            />
+          </el-form-item>
     
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -127,6 +137,10 @@
         
         <!-- 责任人 -->
         <el-table-column label="责任人" align="center" prop="responsiblePerson" width="100" />
+        
+        <!-- 备注 -->
+        <el-table-column label="备注" align="center" prop="remarks" width="150" show-overflow-tooltip />
+        
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180" fixed="right">
           <template slot-scope="scope">
  
@@ -290,6 +304,7 @@ export default {
         category: null,
         responsiblePerson: null,
         versionCode: null,
+        remarks: null,
         orderByColumn: null,
         isAsc: null
       },

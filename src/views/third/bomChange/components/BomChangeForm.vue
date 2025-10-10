@@ -46,46 +46,16 @@
               </el-row>
             </div>
 
-            <!-- 客户订单信息区域 -->
+            <!-- 客户订单信息表格 -->
             <div class="info-group">
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="客户名称" prop="customer"
                     :rules="[{ required: true, message: '请输入客户名称', trigger: 'blur' }]">
-                    <!-- <el-input v-model="form.customer" placeholder="请输入客户名称" prefix-icon="el-icon-office-building"
-                      size="small" /> -->
                     <select-loadMore v-model="form.customer" :data="customerData.data" :page="customerData.page"
                       :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData"
                       size="small" placeholder="请选择客户名称" style="width:100%;">
                     </select-loadMore>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="客户单号" prop="customerNo"
-                    :rules="[{ required: true, message: '请输入客户单号', trigger: 'blur' }]">
-                    <el-input v-model="form.customerNo" placeholder="请输入客户单号" prefix-icon="el-icon-tickets"
-                      size="small" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="U8单号" prop="uuNo"
-                    :rules="[{ required: true, message: '请输入U8单号', trigger: 'blur' }]">
-                    <el-input v-model="form.uuNo" placeholder="请输入U8单号" prefix-icon="el-icon-document" size="small" />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-row :gutter="20">
-                <el-col :span="8">
-                  <el-form-item label="E树单号" prop="treeNo"
-                    :rules="[{ required: true, message: '请输入E树单号', trigger: 'blur' }]">
-                    <el-input v-model="form.treeNo" placeholder="请输入E树单号" prefix-icon="el-icon-share" size="small" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="订单BOM编码" prop="orderBom"
-                    :rules="[{ required: true, message: '请输入订单BOM编码', trigger: 'blur' }]">
-                    <el-input v-model="form.orderBom" placeholder="请输入订单BOM编码" prefix-icon="el-icon-collection"
-                      size="small" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
@@ -98,36 +68,6 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-              </el-row>
-            </div>
-
-            <!-- 产品配置信息区域 -->
-            <div class="info-group">
-
-              <el-row :gutter="20">
-                <el-col :span="8">
-                  <el-form-item label="订单数量" prop="orderNum"
-                    :rules="[{ required: true, message: '请输入订单数量', trigger: 'blur' }]">
-                    <el-input-number v-model="form.orderNum" placeholder="请输入订单数量" :min="1" :precision="0"
-                      controls-position="right" size="small" style="width: 100%" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="原下单日期" prop="originalOrderTime"
-                    :rules="[{ required: true, message: '请选择原下单日期', trigger: 'change' }]">
-                    <el-date-picker v-model="form.originalOrderTime" placeholder="请选择原下单日期" type="datetime"
-                      format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="原计划交期" prop="originalPlanTime"
-                    :rules="[{ required: true, message: '请选择原计划交期', trigger: 'change' }]">
-                    <el-date-picker v-model="form.originalPlanTime" placeholder="请选择原计划交期" type="datetime"
-                      format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="客户通知变更时间" prop="customerNoticeTime"
                     :rules="[{ required: true, message: '请选择客户通知变更时间', trigger: 'change' }]">
@@ -135,14 +75,41 @@
                       format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" size="small" style="width: 100%" />
                   </el-form-item>
                 </el-col>
-                <el-col :span="16">
+              </el-row>
+              
+        
+            </div>
+
+            <!-- BOM变更信息区域 -->
+            <div class="info-group">
+              <el-row :gutter="20">
+                <el-col :span="8">
+                  <el-form-item label="变更前BOM编码" prop="beforeOrderBom">
+                    <el-input v-model="form.beforeOrderBom" placeholder="请输入变更前BOM编码" size="small" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="变更后BOM编码" prop="afterOrderBom">
+                    <el-input v-model="form.afterOrderBom" placeholder="请输入变更后BOM编码" size="small" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="订单数量" prop="orderNum"
+                    :rules="[{ required: true, message: '请输入订单数量', trigger: 'blur' }]">
+                    <el-input-number v-model="form.orderNum" placeholder="请输入订单数量" :min="1" :precision="0"
+                      controls-position="right" size="small" style="width: 100%" />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row :gutter="20">
+       
+                <el-col :span="8">
                   <el-form-item label="变更说明" prop="changeInfo">
                     <el-input v-model="form.changeInfo" placeholder="请输入变更说明" type="textarea" :rows="4"
                       class="modern-textarea"></el-input>
                   </el-form-item>
                 </el-col>
-              </el-row>
-
+                <el-col :span="16">
               <!-- 变更分类 - 动态结构 -->
               <el-form-item label="变更分类" prop="changeValidation">
                 <div class="category-selection-compact">
@@ -170,8 +137,122 @@
                   </div>
                 </div>
               </el-form-item>
+                </el-col>
+              </el-row>
+                             <!-- 订单BOM变更通知信息表格 -->
+              <el-form-item label="" prop="infoList" label-width="0">
+                <div class="order-notice-section">
+                  <div style="text-align: right; padding-bottom: 12px;">
+                    <el-button type="primary" icon="el-icon-plus" size="small" @click="addOrderNoticeRow">
+                      添加订单信息
+                    </el-button>
+                  </div>
+                <el-table :data="form.infoList" border style="width: 100%" size="small">
+                  <el-table-column label="序号" type="index" width="60" align="center" />
+                  
+                  <el-table-column label="客户单号" prop="customerNo"  >
+                    <template slot="header">
+                      客户单号 <span style="color: #f56c6c;">*</span>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-input 
+                        v-model="scope.row.customerNo" 
+                        placeholder="请输入客户单号" 
+                        size="mini"
+                      />
+                    </template>
+                  </el-table-column>
+                  
+                  <el-table-column label="U8单号" prop="uuNo"  >
+                    <template slot="header">
+                      U8单号 <span style="color: #f56c6c;">*</span>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-input 
+                        v-model="scope.row.uuNo" 
+                        placeholder="请输入U8单号" 
+                        size="mini"
+                      />
+                    </template>
+                  </el-table-column>
+                  
+                  <el-table-column label="E树单号" prop="treeNo"  >
+                    <template slot="header">
+                      E树单号 <span style="color: #f56c6c;">*</span>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-input 
+                        v-model="scope.row.treeNo" 
+                        placeholder="请输入E树单号" 
+                        size="mini"
+                      />
+                    </template>
+                  </el-table-column>
+                  
+                  <el-table-column label="原下单日期" prop="originalOrderTime"  >
+                    <template slot="header">
+                      原下单日期 <span style="color: #f56c6c;">*</span>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-date-picker 
+                        v-model="scope.row.originalOrderTime" 
+                        placeholder="请选择日期" 
+                        type="date" 
+                        format="yyyy-MM-dd" 
+                        value-format="yyyy-MM-dd HH:mm:ss" 
+                        size="mini" 
+                        style="width: 100%"
+                      />
+                    </template>
+                  </el-table-column>
+                  
+                  <el-table-column label="原计划交期" prop="originalPlanTime"  >
+                    <template slot="header">
+                      原计划交期 <span style="color: #f56c6c;">*</span>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-date-picker 
+                        v-model="scope.row.originalPlanTime" 
+                        placeholder="请选择日期" 
+                        type="date" 
+                        format="yyyy-MM-dd" 
+                        value-format="yyyy-MM-dd HH:mm:ss" 
+                        size="mini" 
+                        style="width: 100%"
+                      />
+                    </template>
+                  </el-table-column>
+                  
+                  <el-table-column label="操作" width="120" align="center">
+                    <template slot-scope="scope">
+                      <el-button 
+                        type="text" 
+                        icon="el-icon-copy-document" 
+                        size="mini"
+                        @click="copyOrderNoticeRow(scope.$index)"
+                        title="复制"
+                      >
+                        复制
+                      </el-button>
+                      <el-button 
+                        type="text" 
+                        icon="el-icon-delete" 
+                        size="mini"
+                        @click="deleteOrderNoticeRow(scope.$index)"
+                        :disabled="form.infoList.length <= 1"
+                        style="color: #f56c6c;"
+                        title="删除"
+                      >
+                        删除
+                      </el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                </div>
+              </el-form-item>
             </div>
           </div>
+   
         </div>
 
 
@@ -512,17 +593,42 @@ export default {
         customer: [
           { required: true, message: "客户名称不能为空", trigger: "blur" }
         ],
-        customerNo: [
-          { required: true, message: "客户单号不能为空", trigger: "blur" }
-        ],
-        uuNo: [
-          { required: true, message: "U8单号不能为空", trigger: "blur" }
-        ],
-        treeNo: [
-          { required: true, message: "E树单号不能为空", trigger: "blur" }
-        ],
-        orderBom: [
-          { required: true, message: "订单BOM编码不能为空", trigger: "blur" }
+        infoList: [
+          {
+            validator: (rule, value, callback) => {
+              if (!this.form.infoList || this.form.infoList.length === 0) {
+                callback(new Error('请至少添加一条订单信息'));
+                return;
+              }
+              
+              // 检查每行数据的完整性
+              for (let i = 0; i < this.form.infoList.length; i++) {
+                const item = this.form.infoList[i];
+                if (!item.customerNo) {
+                  callback(new Error(`第${i + 1}行客户单号不能为空`));
+                  return;
+                }
+                if (!item.uuNo) {
+                  callback(new Error(`第${i + 1}行U8单号不能为空`));
+                  return;
+                }
+                if (!item.treeNo) {
+                  callback(new Error(`第${i + 1}行E树单号不能为空`));
+                  return;
+                }
+                if (!item.originalOrderTime) {
+                  callback(new Error(`第${i + 1}行原下单日期不能为空`));
+                  return;
+                }
+                if (!item.originalPlanTime) {
+                  callback(new Error(`第${i + 1}行原计划交期不能为空`));
+                  return;
+                }
+              }
+              callback();
+            },
+            trigger: 'change'
+          }
         ],
         configModel: [
           { required: true, message: "配置型号不能为空", trigger: "blur" }
@@ -530,12 +636,7 @@ export default {
         orderNum: [
           { required: true, message: "订单数量不能为空", trigger: "blur" }
         ],
-        originalOrderTime: [
-          { required: true, message: "原下单日期不能为空", trigger: "change" }
-        ],
-        originalPlanTime: [
-          { required: true, message: "原计划交期不能为空", trigger: "change" }
-        ],
+
         customerNoticeTime: [
           { required: true, message: "客户通知变更时间不能为空", trigger: "change" }
         ],
@@ -584,7 +685,7 @@ export default {
           { required: true, message: "终审人员不能为空", trigger: "change" }
         ],
         systemPerson: [
-          { required: true, message: "系统变更人员不能为空", trigger: "change" }
+          { required: false, message: "系统变更人员不能为空", trigger: "change" }
         ],
         orderChangePerson: [
           { required: true, message: "订单变更人员不能为空", trigger: "change" }
@@ -1007,7 +1108,7 @@ export default {
             this.applicantList = res.rows;
             if (applicantId) {
               // 确保申请人ID是数字类型
-              this.form.deptPerson = Number(applicantId);
+            this.form.deptPerson = Number(applicantId);
             }
           } else {
             this.applicantList = [];
@@ -1067,6 +1168,28 @@ export default {
           console.log('编辑模式 - 部门ID:', this.form.dept, '类型:', typeof this.form.dept);
         }
 
+        // 处理订单BOM变更通知详情列表
+        if (row.infoList && Array.isArray(row.infoList)) {
+          this.form.infoList = row.infoList.map(item => ({
+            changeNoticeId: item.changeNoticeId || this.form.id,
+            customerNo: item.customerNo || '',
+            uuNo: item.uuNo || '',
+            treeNo: item.treeNo || '',
+            originalOrderTime: item.originalOrderTime || '',
+            originalPlanTime: item.originalPlanTime || ''
+          }));
+        } else {
+          // 如果没有详情列表，创建一行默认数据
+          this.form.infoList = [{
+            changeNoticeId: this.form.id,
+            customerNo: row.customerNo || '',
+            uuNo: row.uuNo || '',
+            treeNo: row.treeNo || '',
+            originalOrderTime: row.originalOrderTime || '',
+            originalPlanTime: row.originalPlanTime || ''
+          }];
+        }
+
         // 解析变更分类数据并回显
         this.parseChangeData(row.changeCause || row);
 
@@ -1080,6 +1203,15 @@ export default {
         this.form.dept = null;
         this.form.deptPerson = '';
         this.form.processCode = 'order' + new Date().getTime();
+        // 初始化一行订单信息
+        this.form.infoList = [{
+          changeNoticeId: null,
+          customerNo: '',
+          uuNo: '',
+          treeNo: '',
+          originalOrderTime: '',
+          originalPlanTime: ''
+        }];
       }
 
       this.open = true;
@@ -1220,6 +1352,9 @@ export default {
         changeInfo: '',
         departmentValidation: ''
       };
+      
+      // 初始化至少一行订单信息
+      this.addOrderNoticeRow();
 
       // 重置表单验证
       this.resetForm("form");
@@ -1235,9 +1370,12 @@ export default {
     submitForm() {
       // 手动验证部门信息
       const departmentValid = this.validateDepartmentManually();
+      
+      // 手动验证订单信息表格
+      const infoListValid = this.validateInfoListManually();
 
       this.$refs["form"].validate(valid => {
-        if (valid && departmentValid) {
+        if (valid && departmentValid && infoListValid) {
           // 新增/修改逻辑
           this.handleSave();
         } else {
@@ -1245,8 +1383,45 @@ export default {
           if (!departmentValid) {
             this.$message.error('请至少填写一个部门的信息（人员和处理方案）');
           }
+          if (!infoListValid) {
+            this.$message.error('订单信息表格中存在必填字段未填写，请检查');
+          }
         }
       });
+    },
+
+    /** 手动验证订单信息表格 */
+    validateInfoListManually() {
+      if (!this.form.infoList || this.form.infoList.length === 0) {
+        this.$message.error('请至少添加一条订单信息');
+        return false;
+      }
+      
+      // 检查每行数据的完整性
+      for (let i = 0; i < this.form.infoList.length; i++) {
+        const item = this.form.infoList[i];
+        if (!item.customerNo) {
+          this.$message.error(`第${i + 1}行客户单号不能为空`);
+          return false;
+        }
+        if (!item.uuNo) {
+          this.$message.error(`第${i + 1}行U8单号不能为空`);
+          return false;
+        }
+        if (!item.treeNo) {
+          this.$message.error(`第${i + 1}行E树单号不能为空`);
+          return false;
+        }
+        if (!item.originalOrderTime) {
+          this.$message.error(`第${i + 1}行原下单日期不能为空`);
+          return false;
+        }
+        if (!item.originalPlanTime) {
+          this.$message.error(`第${i + 1}行原计划交期不能为空`);
+          return false;
+        }
+      }
+      return true;
     },
 
     /** 手动验证部门信息 */
@@ -1403,8 +1578,63 @@ export default {
 
       // 调试信息
       console.log('提交的list数据:', list);
+      console.log('提交的infoList数据:', submitData.infoList);
 
       return submitData;
+    },
+
+    /** 添加订单通知行 */
+    addOrderNoticeRow() {
+      const newRow = {
+        changeNoticeId: this.form.id,
+        customerNo: '',
+        uuNo: '',
+        treeNo: '',
+        originalOrderTime: '',
+        originalPlanTime: ''
+      };
+      
+      if (!this.form.infoList) {
+        this.form.infoList = [];
+      }
+      
+      this.form.infoList.push(newRow);
+      
+      // 触发表单验证
+      this.$nextTick(() => {
+        this.$refs.form && this.$refs.form.validateField('infoList');
+      });
+    },
+
+    /** 复制订单通知行 */
+    copyOrderNoticeRow(index) {
+      const originalRow = this.form.infoList[index];
+      const copiedRow = {
+        ...originalRow,
+        changeNoticeId: this.form.id
+      };
+      
+      this.form.infoList.splice(index + 1, 0, copiedRow);
+      
+      // 触发表单验证
+      this.$nextTick(() => {
+        this.$refs.form && this.$refs.form.validateField('infoList');
+      });
+    },
+
+    /** 删除订单通知行 */
+    deleteOrderNoticeRow(index) {
+      if (this.form.infoList.length <= 1) {
+        this.$message.warning('至少需要保留一行订单信息');
+        return;
+      }
+      
+      this.form.infoList.splice(index, 1);
+      
+      // 触发表单验证
+      this.$nextTick(() => {
+        this.$refs.form && this.$refs.form.validateField('infoList');
+      });
     },
 
     /** 构建变更原因数据 - 新格式 */
@@ -1592,7 +1822,7 @@ export default {
 
   .change-categories {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 16px;
   }
 
@@ -1962,7 +2192,35 @@ export default {
   border-radius: 8px;
 }
 
-// 表单验证错误样式
+/* 订单通知表格样式 - 遵循项目风格 */
+.order-notice-section {
+  padding:0 20px;
+  margin-bottom: 20px;
+  .section-header {
+    margin-bottom: 16px;
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+      display: inline-flex;
+      align-items: center;
+      
+      i {
+        margin-right: 6px;
+        color: #409eff;
+      }
+    }
+    
+    .section-subtitle {
+      font-size: 12px;
+      color: #909399;
+      margin-left: 8px;
+    }
+  }
+}
+
+/* 表单验证错误样式 */
 .el-form-item.is-error {
 
   .el-input__inner,

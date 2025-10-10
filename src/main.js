@@ -72,6 +72,23 @@ Vue.prototype.$preloadMicroApps = preloadMicroApps
 import { watchTokenChange } from '@/utils/microAppAuth'
 watchTokenChange()
 
+// 初始化性能监控
+import performanceMonitor from '@/utils/performanceMonitor'
+import { startAutoFix, addKeyboardShortcut } from '@/utils/emergencyFix'
+
+if (process.env.NODE_ENV === 'development') {
+  // 将性能监控器挂载到全局，供路由清理使用
+  window.performanceMonitor = performanceMonitor
+  
+  performanceMonitor.startMonitoring()
+  
+  // 启动自动修复
+  setTimeout(() => {
+    startAutoFix()
+    addKeyboardShortcut() // 添加快捷键 Ctrl+Shift+F
+  }, 5000) // 5秒后开始自动检测
+}
+
 // Vue.use(VueNativeSock, WS, {
 //   // 启用Vuex集成,store的值为你的vuex
 //   store: store,
@@ -112,6 +129,28 @@ new Vue({
   store,
   created() {
     window.Vue = Vue
+    
+    // 设置路由清理监听（只在特定条件下清理）
+    if (process.env.NODE_ENV === 'development') {
+      let lastCleanupTime = 0
+      
+      this.$router.afterEach((to, from) => {
+        const now = Date.now()
+        
+        // 只有距离上次清理超过2分钟才执行清理
+        if (now - lastCleanupTime > 120000) {
+          console.log('🔄 路由变化，执行智能清理:', from.path, '->', to.path)
+          setTimeout(() => {
+            if (window.performanceMonitor) {
+              window.performanceMonitor.performCleanup()
+              lastCleanupTime = now
+            }
+          }, 2000) // 延长等待时间，让页面先稳定
+        } else {
+          console.log('🔄 路由变化，跳过清理 (距离上次清理不足2分钟):', from.path, '->', to.path)
+        }
+      })
+    }
   },
   render: h => h(App)
 })

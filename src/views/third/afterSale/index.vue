@@ -199,6 +199,19 @@
         fixed
       />
       <el-table-column
+        label="发生阶段"
+        prop="generatorStage"
+        align="center"
+        width="120"
+        column-key="generatorStage"
+        :filters="happenStageFilters"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+        fixed="left"
+      >
+        <span slot-scope="{ row }" v-NoData="row.generatorStage"></span>
+      </el-table-column>
+      <el-table-column
         label="问题状态"
         prop="status"
         align="center"
@@ -309,6 +322,7 @@
           </div>
         </template>
       </el-table-column>
+       
       <el-table-column
         label="客退方"
         prop="returnParty"
@@ -692,6 +706,10 @@ export default {
         2: "月",
         3: "日",
       },
+      happenStageFilters: [
+        { text: "组装厂", value: "组装厂" },
+        { text: "用户", value: "用户" },
+      ],
       // 处理进展
       stateList: {
         1: "处理类型",
@@ -964,7 +982,14 @@ export default {
       afterList(dataInfo)
         .then((res) => {
           const { list, total } = res.data;
-          this.brandList = list;
+          // 兼容后端字段仍为 happenStage 的情况
+          this.brandList = (list || []).map((item) => ({
+            ...item,
+            generatorStage:
+              item.generatorStage !== undefined
+                ? item.generatorStage
+                : item.happenStage,
+          }));
           this.total = total;
         })
         .finally(() => {
@@ -988,6 +1013,10 @@ export default {
         };
       } else {
         dataCopy = { ...row, inventory: JSON.parse(inventory) };
+      }
+      // 兼容字段重命名：编辑时将 happenStage 映射为 generatorStage
+      if (dataCopy && dataCopy.happenStage !== undefined && dataCopy.generatorStage === undefined) {
+        dataCopy.generatorStage = dataCopy.happenStage;
       }
       const list = [
         {

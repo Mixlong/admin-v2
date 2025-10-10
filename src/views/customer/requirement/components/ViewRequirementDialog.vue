@@ -56,16 +56,22 @@
       <fieldset class="info-section">
         <legend><i class="el-icon-user"></i> 负责人信息</legend>
         <el-row :gutter="30">
-          <el-col :span="12">
+          <el-col :span="8">
             <div class="info-item">
               <label>项目负责人：</label>
               <span class="info-value">{{ formData.projectManager || '--' }}</span>
             </div>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <div class="info-item">
               <label>市场负责人：</label>
               <span class="info-value">{{ formData.marketManager || '--' }}</span>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="info-item">
+              <label>质量负责人：</label>
+              <span class="info-value">{{ formData.qualityManager || '--' }}</span>
             </div>
           </el-col>
         </el-row>
@@ -162,7 +168,7 @@
 <script>
 import AttachmentPreview from './AttachmentPreview'
 import { getDicts } from '@/api/system/dict/data'
-import { afterCategoryList } from '@/api/third/sale'
+import { listCategory } from '@/api/third/category'
 
 export default {
   name: 'ViewRequirementDialog',
@@ -216,12 +222,26 @@ export default {
     // 加载品类选项
     async loadCategoryOptions() {
       try {
-        const res = await afterCategoryList({ p: 1, pageSize: 100 })
+        // 使用与 AddRequirementDialog 相同的 API 确保数据一致性
+        const res = await listCategory({ p: 1, l: 100 })
+        console.log('ViewRequirementDialog 品类API响应:', res)
+        
         if (res.code === 200 && res.data) {
-          this.categoryOptions = res.data.list || []
+          const list = res.data.list || []
+          // 确保数据格式一致，包含 id 和 name 字段
+          this.categoryOptions = list.map(item => ({
+            id: item.id,
+            name: item.name || item.categoryName || item.label,
+            ...item // 保留其他字段
+          }))
+          console.log('品类选项加载成功:', this.categoryOptions.length, '条', this.categoryOptions)
+        } else {
+          console.error('品类API返回错误:', res.msg)
+          this.categoryOptions = []
         }
       } catch (error) {
         console.error('获取品类数据失败:', error)
+        this.categoryOptions = []
       }
     },
     
@@ -235,8 +255,20 @@ export default {
     // 根据品类ID获取品类名称
     getCategoryName(categoryId) {
       if (!categoryId) return '--'
-      const category = this.categoryOptions.find(item => item.id === categoryId)
-      return category ? category.name : '--'
+      
+      console.log('查找品类ID:', categoryId, '类型:', typeof categoryId)
+      console.log('可用品类选项:', this.categoryOptions.map(item => ({ id: item.id, name: item.name, type: typeof item.id })))
+      
+      // 使用宽松比较处理类型不一致问题（字符串 vs 数字）
+      const category = this.categoryOptions.find(item => item.id == categoryId)
+      
+      if (category) {
+        console.log('找到匹配的品类:', category)
+        return category.name || category.categoryName || category.label || '--'
+      } else {
+        console.warn('未找到品类ID对应的名称:', categoryId)
+        return '--'
+      }
     },
     
     // 获取类别标签类型

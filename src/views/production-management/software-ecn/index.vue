@@ -40,9 +40,10 @@
         </template>
       </el-table-column>
       <el-table-column label="ECR/N编号" prop="ecn" align="center" width="175" />
-      <el-table-column label="品类" prop="categoryName" align="center" width="140" />
-      <el-table-column label="型号" prop="computerName" align="center" width="140" />
+      <el-table-column label="品类" prop="categoryName" align="center" width="130" />
+      <el-table-column label="型号" prop="computerName" align="center" width="130" />
       <el-table-column label="申请部门" prop="reqUnit" align="center" :formatter="reqUnitFormatter" width="80" />
+      <el-table-column label="变更内容" prop="changeContent" align="center" />
       <el-table-column label="初审状态" prop="firstState" align="center" width="120">
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="row.firstState === 0">待审核</el-tag>
@@ -70,18 +71,19 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="终审状态" prop="secondState" align="center" width="170">
+      <el-table-column label="终审状态" prop="secondState" align="center" width="120">
         <template slot-scope="{ row }">
-          <div class="flex align-center justify-between check-box">
-            <div>{{ row.secondPerson }}</div>
-
-            <el-tag type="warning" v-if="row.secondState === 0">
+          <div class="check-box">
+            <div>
+              <el-tag type="warning" v-if="row.secondState === 0">
               待审核
             </el-tag>
             <el-tag type="success" v-if="row.secondState === 1">
               已审核
             </el-tag>
             <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
+            </div>
+            <div>审核人：{{ row.secondPerson }}</div>
           </div>
         </template>
       </el-table-column>

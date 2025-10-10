@@ -33,23 +33,7 @@
               <span class="info-label">客户</span>
               <span class="info-value" :class="{ empty: !detailData.customer }">{{ detailData.customer || '-' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">客户单号</span>
-              <span class="info-value" :class="{ empty: !detailData.customerNo }">{{ detailData.customerNo || '-'
-              }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">U8单号</span>
-              <span class="info-value" :class="{ empty: !detailData.uuNo }">{{ detailData.uuNo || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">E树单号</span>
-              <span class="info-value" :class="{ empty: !detailData.treeNo }">{{ detailData.treeNo || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">订单BOM编码</span>
-              <span class="info-value" :class="{ empty: !detailData.orderBom }">{{ detailData.orderBom || '-' }}</span>
-            </div>
+
             <div class="info-item">
               <span class="info-label">配置型号</span>
               <span class="info-value" :class="{ empty: !detailData.configModel }">{{ detailData.configModel || '-'
@@ -68,21 +52,56 @@
               <span class="info-value" :class="{ empty: !detailData.deptPerson }">{{ detailData.deptPerson || '-'
               }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">原下单日期</span>
-              <span class="info-value" :class="{ empty: !detailData.originalOrderTime }">{{ detailData.originalOrderTime
-                || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">原计划交期</span>
-              <span class="info-value" :class="{ empty: !detailData.originalPlanTime }">{{ detailData.originalPlanTime
-                || '-' }}</span>
-            </div>
             <div class="info-item full-width">
               <span class="info-label">变更说明</span>
               <span class="info-value" :class="{ empty: !detailData.changeInfo }">{{ detailData.changeInfo || '-'
               }}</span>
             </div>
+          </div>
+        </section>
+
+        <!-- 订单信息 -->
+        <section v-if="detailData.infoList && detailData.infoList.length > 0" class="section">
+          <h3 class="section-title">
+            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            订单信息
+          </h3>
+          <div class="card">
+            <el-table :data="detailData.infoList" border style="width: 100%" size="small">
+              <el-table-column label="序号" type="index" width="60" align="center" />
+              <el-table-column label="客户单号" prop="customerNo" align="center" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.customerNo || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="U8单号" prop="uuNo" align="center" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.uuNo || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="E树单号" prop="treeNo" align="center" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.treeNo || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="原下单日期" prop="originalOrderTime" align="center" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ formatDate(scope.row.originalOrderTime) || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="原计划交期" prop="originalPlanTime" align="center" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ formatDate(scope.row.originalPlanTime) || '-' }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
         </section>
 
@@ -182,36 +201,48 @@
                     info: detailData.secondState === 0 || !detailData.secondState
                   }"
                 >终审{{ getStateText(detailData.secondState) }}</span>
-                <span class="divider">•</span>
-                <span
-                  class="status-badge"
-                  :class="{
-                    success: detailData.systemState === 1,
-                    error: detailData.systemState === 2,
-                    warning: detailData.systemState === 0,
-                    info: !detailData.systemState
-                  }"
-                >系统{{ getChangeStateText(detailData.systemState) }}</span>
-                <span class="divider">•</span>
-                <span
-                  class="status-badge"
-                  :class="{
-                    success: detailData.orderChangeState === 1,
-                    error: detailData.orderChangeState === 2,
-                    warning: detailData.orderChangeState === 0,
-                    info: !detailData.orderChangeState
-                  }"
-                >订单{{ getChangeStateText(detailData.orderChangeState) }}</span>
-                <span class="divider">•</span>
-                <span
-                  class="status-badge"
-                  :class="{
-                    success: detailData.workOrderChangeState === 1,
-                    error: detailData.workOrderChangeState === 2,
-                    warning: detailData.workOrderChangeState === 0,
-                    info: !detailData.workOrderChangeState
-                  }"
-                >工单{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
+                
+                <!-- 系统变更阶段 - 只有配置了系统变更人员才显示 -->
+                <template v-if="detailData.systemPerson">
+                  <span class="divider">•</span>
+                  <span
+                    class="status-badge"
+                    :class="{
+                      success: detailData.systemState === 1,
+                      error: detailData.systemState === 2,
+                      warning: detailData.systemState === 0,
+                      info: !detailData.systemState
+                    }"
+                  >系统{{ getChangeStateText(detailData.systemState) }}</span>
+                </template>
+                
+                <!-- 订单变更阶段 - 只有配置了订单变更人员才显示 -->
+                <template v-if="detailData.orderChangePerson">
+                  <span class="divider">•</span>
+                  <span
+                    class="status-badge"
+                    :class="{
+                      success: detailData.orderChangeState === 1,
+                      error: detailData.orderChangeState === 2,
+                      warning: detailData.orderChangeState === 0,
+                      info: !detailData.orderChangeState
+                    }"
+                  >订单{{ getChangeStateText(detailData.orderChangeState) }}</span>
+                </template>
+                
+                <!-- 工单变更阶段 - 只有配置了工单变更人员才显示 -->
+                <template v-if="detailData.workOrderChangePerson">
+                  <span class="divider">•</span>
+                  <span
+                    class="status-badge"
+                    :class="{
+                      success: detailData.workOrderChangeState === 1,
+                      error: detailData.workOrderChangeState === 2,
+                      warning: detailData.workOrderChangeState === 0,
+                      info: !detailData.workOrderChangeState
+                    }"
+                  >工单{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
+                </template>
               </div>
             </div>
           </div>
@@ -331,9 +362,9 @@
           <div class="tabs">
             <button class="tab" :class="{ active: activeTab === 'first' }" @click="activeTab = 'first'">初审详情</button>
             <button class="tab" :class="{ active: activeTab === 'second' }" @click="activeTab = 'second'">终审详情</button>
-            <button class="tab" :class="{ active: activeTab === 'system' }" @click="activeTab = 'system'">系统变更</button>
-            <button class="tab" :class="{ active: activeTab === 'order' }" @click="activeTab = 'order'">订单变更</button>
-            <button class="tab" :class="{ active: activeTab === 'work' }" @click="activeTab = 'work'">工单变更</button>
+            <button v-if="detailData.systemPerson" class="tab" :class="{ active: activeTab === 'system' }" @click="activeTab = 'system'">系统变更</button>
+            <button v-if="detailData.orderChangePerson" class="tab" :class="{ active: activeTab === 'order' }" @click="activeTab = 'order'">订单变更</button>
+            <button v-if="detailData.workOrderChangePerson" class="tab" :class="{ active: activeTab === 'work' }" @click="activeTab = 'work'">工单变更</button>
           </div>
 
           <div v-if="activeTab === 'first'" class="tab-content active">
@@ -631,7 +662,8 @@
               </div>
             </div>
 
-            <div class="timeline-item" :class="getTimelineClass(detailData.systemState)">
+            <!-- 系统变更阶段 - 只有配置了系统变更人员才显示 -->
+            <div v-if="detailData.systemPerson" class="timeline-item" :class="getTimelineClass(detailData.systemState)">
               <div
                 class="timeline-dot"
                 :class="{
@@ -653,11 +685,12 @@
                     }"
                   >{{ getChangeStateText(detailData.systemState) }}</span>
                 </div>
-                <div v-if="detailData.systemPerson" class="timeline-info">{{ detailData.systemPerson }}</div>
+                <div class="timeline-info">{{ detailData.systemPerson }}</div>
               </div>
             </div>
 
-            <div class="timeline-item" :class="getTimelineClass(detailData.orderChangeState)">
+            <!-- 订单变更阶段 - 只有配置了订单变更人员才显示 -->
+            <div v-if="detailData.orderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.orderChangeState)">
               <div
                 class="timeline-dot"
                 :class="{
@@ -679,11 +712,12 @@
                     }"
                   >{{ getChangeStateText(detailData.orderChangeState) }}</span>
                 </div>
-                <div v-if="detailData.orderChangePerson" class="timeline-info">{{ detailData.orderChangePerson }}</div>
+                <div class="timeline-info">{{ detailData.orderChangePerson }}</div>
               </div>
             </div>
 
-            <div class="timeline-item" :class="getTimelineClass(detailData.workOrderChangeState)">
+            <!-- 工单变更阶段 - 只有配置了工单变更人员才显示 -->
+            <div v-if="detailData.workOrderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.workOrderChangeState)">
               <div
                 class="timeline-dot"
                 :class="{
@@ -705,8 +739,7 @@
                     }"
                   >{{ getChangeStateText(detailData.workOrderChangeState) }}</span>
                 </div>
-                <div v-if="detailData.workOrderChangePerson" class="timeline-info">{{ detailData.workOrderChangePerson
-                }}</div>
+                <div class="timeline-info">{{ detailData.workOrderChangePerson }}</div>
               </div>
             </div>
           </div>
@@ -722,6 +755,8 @@
 
 <script>
 import { getBomOrderChangeDetail } from '@/api/third/bomChange'
+import { listDept } from '@/api/system/dept'
+import { listUser } from '@/api/system/user'
 
 export default {
   name: 'DetailView',
@@ -778,6 +813,16 @@ export default {
       try {
         const response = await getBomOrderChangeDetail(id)
         this.detailData = response.data || {}
+
+        // 转换部门ID为部门名称
+        if (this.detailData.dept) {
+          await this.convertDeptIdToName()
+        }
+
+        // 转换人员ID为人员名称
+        if (this.detailData.deptPerson) {
+          await this.convertUserIdToName()
+        }
 
         // 设置标题
         if (this.detailData.processCode) {
@@ -1000,6 +1045,113 @@ export default {
       if (!filePath) return 'download'
       const parts = filePath.split('/')
       return parts[parts.length - 1] || 'download'
+    },
+
+    // 格式化日期
+    formatDate(dateStr) {
+      if (!dateStr) return ''
+      
+      try {
+        // 如果是完整的日期时间格式，只取日期部分
+        if (dateStr.includes(' ')) {
+          return dateStr.split(' ')[0]
+        }
+        
+        // 如果已经是日期格式，直接返回
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return dateStr
+        }
+        
+        // 尝试解析其他格式
+        const date = new Date(dateStr)
+        if (isNaN(date.getTime())) {
+          return dateStr // 如果无法解析，返回原始值
+        }
+        
+        return date.toISOString().split('T')[0]
+      } catch (error) {
+        console.warn('日期格式化失败:', error)
+        return dateStr
+      }
+    },
+
+    // 转换部门ID为部门名称
+    async convertDeptIdToName() {
+      try {
+        const deptId = Number(this.detailData.dept)
+        
+        // 检查部门ID是否有效
+        if (isNaN(deptId) || deptId <= 0) {
+          console.warn('部门ID无效:', this.detailData.dept)
+          return
+        }
+        
+        const response = await listDept()
+        const deptList = response.data || []
+        
+        // 递归查找部门名称
+        const findDeptName = (depts, targetDeptId) => {
+          for (const dept of depts) {
+            if (dept.deptId === targetDeptId) {
+              return dept.deptName
+            }
+            if (dept.children && dept.children.length > 0) {
+              const childResult = findDeptName(dept.children, targetDeptId)
+              if (childResult) return childResult
+            }
+          }
+          return null
+        }
+        
+        const deptName = findDeptName(deptList, deptId)
+        if (deptName) {
+          this.detailData.deptName = deptName
+          // 为了向后兼容，也更新dept字段显示名称
+          this.detailData.dept = deptName
+        }
+      } catch (error) {
+        console.error('获取部门信息失败:', error)
+      }
+    },
+
+    // 转换用户ID为用户名称
+    async convertUserIdToName() {
+      try {
+        const deptPersonId = Number(this.detailData.deptPerson)
+        const deptId = Number(this.detailData.dept)
+        
+        // 检查用户ID是否有效
+        if (isNaN(deptPersonId)) {
+          console.warn('用户ID无效:', this.detailData.deptPerson)
+          return
+        }
+        
+        // 如果有部门信息且部门ID有效，优先从部门用户中查找
+        if (!isNaN(deptId) && deptId > 0) {
+          const response = await listUser({ deptId: deptId, p: 1, l: 999 })
+          const userList = response.rows || []
+          
+          const user = userList.find(u => u.userId === deptPersonId)
+          if (user) {
+            this.detailData.deptPersonName = user.nickName || user.userName
+            // 为了向后兼容，也更新deptPerson字段显示名称
+            this.detailData.deptPerson = user.nickName || user.userName
+            return
+          }
+        }
+        
+        // 如果部门查找失败，尝试全局查找用户
+        const response = await listUser({ p: 1, l: 999 })
+        const userList = response.rows || []
+        
+        const user = userList.find(u => u.userId === deptPersonId)
+        if (user) {
+          this.detailData.deptPersonName = user.nickName || user.userName
+          this.detailData.deptPerson = user.nickName || user.userName
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      }
     }
   }
 }

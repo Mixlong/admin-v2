@@ -6,7 +6,7 @@
       width="750px" 
       :close-on-click-modal="false" 
       @close="handleClose"
-      top='0vh'
+      top='5vh'
       class="add-record-dialog">
     
     <el-form 
@@ -652,9 +652,16 @@ export default {
 
 /* 深度选择器样式 */
 :deep(.el-dialog__header) {
-  padding: 15px 20px 10px;
+  padding: 15px 50px 10px 20px; /* 右侧增加padding给关闭按钮留空间 */
   border-bottom: 1px solid #ebeef5;
   background: #f8f9fa;
+}
+
+:deep(.el-dialog__close) {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
 }
 
 :deep(.el-dialog__body) {

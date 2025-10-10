@@ -73,7 +73,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="englishName" label="规格" align="center" width="150" show-overflow-tooltip>
+        <el-table-column prop="englishName" label="规格" align="center" width="150">
           <template slot-scope="scope">
             <span>{{ scope.row.englishName || '--' }}</span>
           </template>
@@ -264,10 +264,13 @@ export default {
           key: 'testResult',
           label: '检验结果',
           type: 'select',
-          options: [
-            { label: 'PASS', value: 'PASS' },
-            { label: 'NG', value: 'NG' }
-          ],
+          component: 'el-select',
+          props:{
+            options: [
+              { label: 'PASS', value: 'PASS' },
+              { label: 'NG', value: 'NG' }
+            ]
+          },
           placeholder: '请选择检验结果',
           sort: 3
         }
