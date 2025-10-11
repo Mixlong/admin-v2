@@ -126,7 +126,7 @@
                 clearable
               >
                 <el-option 
-                  v-for="user in userList" 
+                  v-for="user in projectManagerList" 
                   :key="user.userId" 
                   :label="user.nickName" 
                   :value="user.nickName" 
@@ -300,6 +300,7 @@
 import { listUser } from '@/api/system/user'
 import { addSoCustomer, updateSoCustomer } from '@/api/crm/soCustomer'
 import { getDicts } from '@/api/system/dict/data'
+import { dictPmProject, dictMkProject } from '@/api/third/project'
 
 export default {
   name: 'CustomerFormModal',
@@ -384,7 +385,8 @@ export default {
         ]
       },
       // 用户数据
-      userList: [], // 用户列表
+      userList: [], // 销售负责人列表
+      projectManagerList: [], // 项目经理列表
       settlementPeriodOptions: []
     }
   },
@@ -472,6 +474,7 @@ export default {
   mounted() {
     this.loadSettlementPeriodOptions()
     this.getUserList()
+    this.getProjectManagerList()
   },
   methods: {
     resetForm() {
@@ -541,7 +544,7 @@ export default {
         no: this.customer.no || '',
         customerBrand: this.customer.customerBrand || '',
         country: this.customer.country || '',
-        customerStatus: this.customer.customerStatus || 'potential',
+        customerStatus: this.customer.customerStatus,
         customerLevel: this.customer.customerLevel || '',
         customerSource: this.customer.customerSource || '',
         address: this.customer.address || '',
@@ -679,15 +682,79 @@ export default {
     },
 
 
-    // 获取用户列表
+    // 获取销售负责人列表 - 使用市场字典接口
     async getUserList() {
       try {
-        const response = await listUser({ p: 1, l: 999 })
-        if (response.code === 200 && response.rows) {
-          this.userList = response.rows
+        const response = await dictMkProject()
+        if (response && response.data) {
+          let list = []
+          // 处理不同的数据结构
+          if (Array.isArray(response.data)) {
+            list = response.data.map(item => ({
+              userId: item.id || item.dictValue,
+              userName: item.dictValue || item.userName || item.name,
+              nickName: item.dictLabel || item.nickName || item.userName || item.name
+            }))
+          } else if (response.data.list) {
+            list = response.data.list.map(item => ({
+              userId: item.id || item.dictValue,
+              userName: item.dictValue || item.userName || item.name,
+              nickName: item.dictLabel || item.nickName || item.userName || item.name
+            }))
+          }
+          
+          // 去重处理
+          const uniqueUsers = []
+          const userNameSet = new Set()
+          list.forEach(user => {
+            if (!userNameSet.has(user.userName)) {
+              userNameSet.add(user.userName)
+              uniqueUsers.push(user)
+            }
+          })
+          
+          this.userList = uniqueUsers
         }
       } catch (error) {
-        console.error('获取用户列表失败:', error)
+        console.error('获取销售负责人列表失败:', error)
+      }
+    },
+
+    // 获取项目经理列表 - 使用项目经理字典接口
+    async getProjectManagerList() {
+      try {
+        const response = await dictPmProject()
+        if (response && response.data) {
+          let list = []
+          // 处理不同的数据结构
+          if (Array.isArray(response.data)) {
+            list = response.data.map(item => ({
+              userId: item.id || item.dictValue,
+              userName: item.dictValue || item.userName || item.name,
+              nickName: item.dictLabel || item.nickName || item.userName || item.name
+            }))
+          } else if (response.data.list) {
+            list = response.data.list.map(item => ({
+              userId: item.id || item.dictValue,
+              userName: item.dictValue || item.userName || item.name,
+              nickName: item.dictLabel || item.nickName || item.userName || item.name
+            }))
+          }
+          
+          // 去重处理
+          const uniqueUsers = []
+          const userNameSet = new Set()
+          list.forEach(user => {
+            if (!userNameSet.has(user.userName)) {
+              userNameSet.add(user.userName)
+              uniqueUsers.push(user)
+            }
+          })
+          
+          this.projectManagerList = uniqueUsers
+        }
+      } catch (error) {
+        console.error('获取项目经理列表失败:', error)
       }
     },
 
