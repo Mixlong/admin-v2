@@ -63,7 +63,7 @@
         >
         </el-table-column>
 
-        <el-table-column prop="no" label="客户编号" width="120" align="center" />
+        <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
 
         <el-table-column prop="customerBrand" label="客户品牌" width="120" align="center" />
         <el-table-column prop="customerAttribute" label="客户属性" width="120" align="center">
@@ -117,7 +117,7 @@
         <el-table-column prop="paymentTerm" label="结算期限" width="120" align="center">
           <template slot-scope="{ row }">
             <el-tag :type="getPaymentTermType(row.paymentTerm)" size="small">
-              {{ getSettlementPeriodLabel(row.paymentTerm) || '--' }}
+              {{ row.paymentTerm || '--' }}
             </el-tag>
           </template>
         </el-table-column>
