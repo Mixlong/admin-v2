@@ -39,7 +39,30 @@
         <!-- 第一行：品类统计图 + 供应商统计图 -->
         <el-row :gutter="20" class="chart-row">
           <el-col :span="24">
-            <div class="chart-card chart-card-medium">
+            
+          <div class="chart-card chart-card-medium">
+            <div class="chart-header">
+                <h3></h3>
+                <el-date-picker
+                  v-model="chartYears.monthly"
+                  type="year"
+                  placeholder="选择年份"
+                  format="yyyy年"
+                  value-format="yyyy"
+                  size="small"
+                  style="width: 120px"
+                  @change="handleMonthlyYearChange"
+                />
+              </div>
+              <div ref="monthlyChart" class="chart-container-medium"></div>
+            </div>
+        </el-col>
+        </el-row>
+        
+        <!-- 第二行：每月统计图 + 每日统计图 -->
+        <el-row :gutter="20" class="chart-row">
+        <el-col :span="12">
+          <div class="chart-card chart-card-medium">
               <div class="chart-header">
                 <h3></h3>
                 <el-date-picker
@@ -56,28 +79,6 @@
               </div>
               <div ref="supplierChart" class="chart-container-medium"></div>
           </div>
-        </el-col>
-        </el-row>
-        
-        <!-- 第二行：每月统计图 + 每日统计图 -->
-        <el-row :gutter="20" class="chart-row">
-        <el-col :span="12">
-            <div class="chart-card chart-card-medium">
-            <div class="chart-header">
-                <h3></h3>
-                <el-date-picker
-                  v-model="chartYears.monthly"
-                  type="year"
-                  placeholder="选择年份"
-                  format="yyyy年"
-                  value-format="yyyy"
-                  size="small"
-                  style="width: 120px"
-                  @change="handleMonthlyYearChange"
-                />
-              </div>
-              <div ref="monthlyChart" class="chart-container-medium"></div>
-            </div>
           </el-col>
           
           <el-col :span="12">
@@ -143,6 +144,7 @@ export default {
         monthly: new Date().getFullYear().toString()
       },
       categoryOptions: [],
+      supplierOptions: [],
       summaryData: {
         categoryCount: 0,
         supplierCount: 0,
@@ -433,9 +435,11 @@ export default {
         const response = await getSupplierReport(params)
 
         if (response.code === 200 && response.data) {
+          console.log('供应商API返回数据:', response.data)
           const chartData = this.processSupplierChartData(response.data)
+          console.log('处理后的供应商图表数据:', chartData)
           this.updateSupplierChart(chartData)
-          this.summaryData.supplierCount = chartData.length
+          this.summaryData.supplierCount = chartData.names ? chartData.names.length : 0
 
           // 同时处理供应商表格数据
           this.supplierTableData = this.processSupplierTableData(response.data)
@@ -578,12 +582,66 @@ export default {
 
     // 处理供应商图表数据
     processSupplierChartData(data) {
-      if (!Array.isArray(data)) return []
-      return data.map(item => ({
-        name: item.supplierName || item.supplier || item.name,
-        value: item.defectCount || item.count || item.value || 0,
-        rate: item.defectRate || item.rate || 0
-      }))
+      // 处理两种数据格式：1. 数组对象 2. 直接的数组字段
+      if (!data) return {
+        names: [],
+        totalCounts: [],
+        passCounts: [],
+        defectCounts: [],
+        defectRates: []
+      }
+      
+      // 如果数据是对象且包含supplierNames字段（新API格式）
+      if (!Array.isArray(data) && data.supplierNames) {
+        console.log('检测到新API格式数据:', data)
+        const names = data.supplierNames || []
+        const totalCounts = data.totalCounts || []
+        const defectCounts = data.defectCounts || []
+        const defectRates = data.defectRates || []
+        
+        // 计算合格批数 = 总批数 - 不合格批数
+        const passCounts = totalCounts.map((total, index) => {
+          return Math.max(0, total - (defectCounts[index] || 0))  // 确保不为负数
+        })
+        
+        console.log('处理结果:', { names, totalCounts, passCounts, defectCounts, defectRates })
+        return { names, totalCounts, passCounts, defectCounts, defectRates }
+      }
+      
+      // 如果是数组格式（旧API格式）
+      if (!Array.isArray(data)) return {
+        names: [],
+        totalCounts: [],
+        passCounts: [],
+        defectCounts: [],
+        defectRates: []
+      }
+      
+      const names = []
+      const totalCounts = []
+      const passCounts = []
+      const defectCounts = []
+      const defectRates = []
+      
+      data.forEach(item => {
+        names.push(item.supplierName || item.supplier || item.name || '未知')
+        const total = item.totalCount || 0
+        const defect = item.defectCount || 0
+        totalCounts.push(total)
+        passCounts.push(item.passCount || (total - defect))
+        defectCounts.push(defect)
+        
+        // 处理不良率
+        let rate = 0
+        if (typeof item.defectRate === 'string') {
+          rate = parseFloat(item.defectRate.replace('%', '')) || 0
+        } else {
+          rate = item.defectRate || 0
+        }
+        defectRates.push(rate)
+      })
+      
+      return { names, totalCounts, passCounts, defectCounts, defectRates }
     },
 
     // 处理图表数据（保留通用方法）
@@ -620,17 +678,21 @@ export default {
         })
         
         return {
+          months: data.months,  // 添加months字段
           dates: dates,
           defectCounts: data.defectCounts || [],
           totalCounts: data.totalCounts || [],
+          passCounts: data.passCounts || [],  // 添加passCounts字段
           defectRates: defectRates
         }
       }
       
       return {
+        months: [],
         dates: [],
         defectCounts: [],
         totalCounts: [],
+        passCounts: [],
         defectRates: []
       }
     },
@@ -670,9 +732,11 @@ export default {
       }
       
       return {
+        months: [],
         dates: [],
         defectCounts: [],
         totalCounts: [],
+        passCounts: [],
         defectRates: []
       }
     },
@@ -905,76 +969,9 @@ export default {
     
     // 更新供应商图表（柱状图）
     updateSupplierChart(data) {
-      const names = data.map(item => item.name)
-      const values = data.map(item => item.value)
-
       const option = {
         title: {
-          text: '供应商不良统计',
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '15%',
-          containLabel: true
-        },
-        dataZoom: [
-          {
-            type: 'slider',
-            show: true,
-            xAxisIndex: [0],
-            start: 0,
-            end: 100,
-            bottom: '0%'
-          },
-          {
-            type: 'inside',
-            xAxisIndex: [0],
-            start: 0,
-            end: 100
-          }
-        ],
-        xAxis: {
-          type: 'category',
-          data: names,
-          axisLabel: {
-            rotate: 0
-          }
-        },
-        yAxis: {
-          type: 'value',
-          name: '不良批次'
-        },
-        series: [{
-          name: '不良批次',
-          type: 'bar',
-          data: values,
-          itemStyle: {
-            color: '#91cc75'
-          },
-          emphasis: {
-            itemStyle: {
-              color: '#73a373'
-            }
-          }
-        }]
-      }
-      
-      this.supplierChart.setOption(option)
-    },
-    
-    // 更新每月柱状图表
-    updateMonthlyChart(data) {
-      const option = {
-        title: {
-          text: '每月柱状统计',
+          text: '供应商月度统计',
           left: 'center'
         },
         tooltip: {
@@ -985,7 +982,7 @@ export default {
           formatter: function(params) {
             let tooltip = params[0].axisValueLabel + '<br/>'
             params.forEach(param => {
-              if (param.seriesName === '不良率') {
+              if (param.seriesName === '不良率' || param.seriesName === '目标') {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '%<br/>'
               } else {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '<br/>'
@@ -995,14 +992,15 @@ export default {
           }
         },
         legend: {
-          data: ['不良批次', '总数量', '不良率'],
+          data: ['检验总批数', '合格批数', '不合格批数', '不良率'],
           top: '30px'
         },
         grid: {
-          top: '80px',
+          top: '100px',
           left: '60px',
           right: '60px',
-          bottom: '70px'
+          bottom: '70px',
+          containLabel: true
         },
         dataZoom: [
           {
@@ -1022,10 +1020,7 @@ export default {
         ],
         xAxis: {
           type: 'category',
-          data: data.dates.map(date => {
-            const parts = date.split('-')
-            return parts.length >= 2 ? parts[1] + '月' : date
-          }),
+          data: data.names || [],
           axisLabel: {
             rotate: 0
           }
@@ -1045,27 +1040,54 @@ export default {
             position: 'right',
             axisLabel: {
               formatter: '{value}%'
-            },
-            max: 100
+            }
           }
         ],
         series: [
           {
-            name: '不良批次',
-            type: 'bar',
-            yAxisIndex: 0,
-            data: data.defectCounts || [],
-            itemStyle: {
-              color: '#f56c6c'
-            }
-          },
-          {
-            name: '总数量',
+            name: '检验总批数',
             type: 'bar',
             yAxisIndex: 0,
             data: data.totalCounts || [],
             itemStyle: {
-              color: '#409EFF'
+              color: '#5470c6'
+            },
+            barGap: '10%',
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            data: data.passCounts || [],
+            itemStyle: {
+              color: '#fac858'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '不合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            data: data.defectCounts || [],
+            itemStyle: {
+              color: '#ee6666'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
             }
           },
           {
@@ -1075,11 +1097,186 @@ export default {
             data: data.defectRates || [],
             smooth: true,
             itemStyle: {
-              color: '#67c23a'
+              color: '#91cc75'
             },
             lineStyle: {
-              color: '#67c23a',
+              color: '#91cc75',
               width: 2
+            },
+            label: {
+              show: true,
+              formatter: '{c}%'
+            }
+          }
+        ]
+      }
+      
+      this.supplierChart.setOption(option)
+    },
+    
+    // 更新每月柱状图表
+    updateMonthlyChart(data) {
+      // 处理合格率数据（API返回的defectRates字段实际上是合格率）
+      const passRates = (data.defectRates || []).map(rate => {
+        if (typeof rate === 'string') {
+          return parseFloat(rate.replace('%', '')) || 0
+        }
+        return rate || 0
+      })
+      
+      const option = {
+        title: {
+          text: '每月统计',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross'
+          },
+          formatter: function(params) {
+            let tooltip = params[0].axisValueLabel + '月<br/>'
+            params.forEach(param => {
+              if (param.seriesName === '检验合格率' || param.seriesName === '目标') {
+                tooltip += param.marker + param.seriesName + ': ' + param.value + '%<br/>'
+              } else {
+                tooltip += param.marker + param.seriesName + ': ' + param.value + '<br/>'
+              }
+            })
+            return tooltip
+          }
+        },
+        legend: {
+          data: ['检验总批数', '合格批数', '不合格批数', '检验合格率', '目标'],
+          top: '30px'
+        },
+        grid: {
+          top: '100px',
+          left: '60px',
+          right: '60px',
+          bottom: '70px',
+          containLabel: true
+        },
+        dataZoom: [
+          {
+            type: 'slider',
+            show: true,
+            xAxisIndex: [0],
+            start: 0,
+            end: 100,
+            bottom: '0px'
+          },
+          {
+            type: 'inside',
+            xAxisIndex: [0],
+            start: 0,
+            end: 100
+          }
+        ],
+        xAxis: {
+          type: 'category',
+          data: (data.months || []).map(month => month + '月'),
+          axisLabel: {
+            rotate: 0
+          }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: '数量',
+            position: 'left',
+            axisLabel: {
+              formatter: '{value}'
+            }
+          },
+          {
+            type: 'value',
+            name: '合格率(%)',
+            position: 'right',
+            min: 60,
+            max: 100,
+            axisLabel: {
+              formatter: '{value}%'
+            }
+          }
+        ],
+        series: [
+          {
+            name: '检验总批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            data: data.totalCounts || [],
+            itemStyle: {
+              color: '#5470c6'  // 蓝色
+            },
+            barGap: '10%',
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            data: data.passCounts || [],
+            itemStyle: {
+              color: '#fac858'  // 黄色
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '不合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            data: data.defectCounts || [],
+            itemStyle: {
+              color: '#ee6666'  // 红色
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '检验合格率',
+            type: 'line',
+            yAxisIndex: 1,
+            data: passRates,
+            smooth: true,
+            itemStyle: {
+              color: '#91cc75'  // 绿色
+            },
+            lineStyle: {
+              color: '#91cc75',
+              width: 2
+            },
+            label: {
+              show: true,
+              formatter: '{c}%'
+            }
+          },
+          {
+            name: '目标',
+            type: 'line',
+            yAxisIndex: 1,
+            data: new Array(data.months ? data.months.length : 0).fill(98),  // 98%目标线
+            itemStyle: {
+              color: '#73c0de'  // 青色
+            },
+            lineStyle: {
+              color: '#73c0de',
+              width: 2,
+              type: 'solid'
             }
           }
         ]

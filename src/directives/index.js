@@ -3,10 +3,12 @@
  */
 
 import FormScrollError from './form-scroll-error';
+import InputFix from './input-fix';
 
 // 所有指令
 const directives = {
-  'form-scroll-error': FormScrollError
+  'form-scroll-error': FormScrollError,
+  'input-fix': InputFix
 };
 
 /**

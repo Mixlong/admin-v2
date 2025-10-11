@@ -12,6 +12,17 @@
             />
           </el-form-item>
         </el-col>
+        <el-col :span="24">
+          <el-form-item label="备注" prop="remarks">
+            <el-input
+              v-model="formData.remarks"
+              placeholder="请输入备注"
+              type="textarea"
+              show-word-limit
+              size="mini"
+            />
+          </el-form-item>
+        </el-col>
       </el-row>
 
       <el-table :data="formData.detailList" border style="width: 100%" max-height="500px">
@@ -55,6 +66,7 @@
               :disabled="!!formData.sopId" />
           </template>
         </el-table-column>
+
       </el-table>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -94,6 +106,7 @@ export default {
         category: null,
         responsiblePerson: "",
         sopId: null,
+        remarks: "",
         detailList: []
       },
       // 工序类型选项
@@ -179,6 +192,7 @@ export default {
           category: null,
           responsiblePerson: this.nickName || this.name || "",
           sopId: null,
+          remarks: "",
           detailList: []
         };
         // 自动生成所有工序类型
@@ -242,7 +256,8 @@ export default {
             standardPersonnel: 0,
             standardCapacity: 0,
             laborHours: 0,
-            unitCapacityPerPerson: 0
+            unitCapacityPerPerson: 0,
+
           });
           console.log(`添加工序类型: ${processTypeValue}`);
         } else {
@@ -283,7 +298,8 @@ export default {
             standardPersonnel: 0,
             standardCapacity: 0,
             laborHours: 0,
-            unitCapacityPerPerson: 0
+            unitCapacityPerPerson: 0,
+
           });
         }
       });

@@ -590,7 +590,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId", 'nickName']),
+    ...mapGetters(["userId", "nickName"]),
     isFirstStateFlag() {
       return (row) => {
         return (

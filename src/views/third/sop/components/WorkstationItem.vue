@@ -60,9 +60,19 @@
         <input type="hidden" v-model="workstation.indexNum" />
         <el-form-item label="工时" :prop="spendTimeProp" :rules="spendTimeRules"
           label-width="60px" required>
-          <el-input v-model="workstation.spendTime" placeholder="请输入工时(秒)" size="small" style="width: 100%;"
-            @input="handleSpendTimeInput" @keypress="handleNumberKeypress"
-            @blur="onSaveItem" />
+          <el-input-number
+            v-model="workstation.spendTime"
+            placeholder="请输入工时(秒)"
+            size="small"
+            :min="0"
+            :max="99999"
+            :precision="2"
+            :step="0.1"
+            controls-position="right"
+            @change="handleSpendTimeChange"
+            @blur="onSaveItem"
+            style="width: 100%;"
+          />
         </el-form-item>
         <el-form-item label="装备" :prop="equipmentProp" label-width="60px">
           <el-select v-model="workstation.equipment" multiple filterable clearable placeholder="请选择装备" size="small"
@@ -268,14 +278,9 @@ export default {
       this.$emit('index-num-input', value, this.itemIndex, this.processType);
     },
     
-    // 处理工时输入
-    handleSpendTimeInput(value) {
-      this.$emit('spend-time-input', value, this.itemIndex, this.processType);
-    },
-    
-    // 数字按键处理
-    handleNumberKeypress(event) {
-      this.$emit('number-keypress', event);
+    // 处理工时变化
+    handleSpendTimeChange(value) {
+      this.$emit('spend-time-change', value, this.itemIndex, this.processType);
     }
   }
 };

@@ -34,6 +34,16 @@
               @change="handleQuery"
             />
           </el-form-item>
+          <el-form-item label="备注" prop="remarks">
+            <el-input
+              v-model="queryParams.remarks"
+              placeholder="请输入备注"
+              clearable
+              size="mini"
+              style="width: 200px"
+              @keyup.enter.native="handleQuery"
+            />
+          </el-form-item>
     
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -59,7 +69,7 @@
         @selection-change="handleSelectionChange" 
         border 
         style="width: 100%" 
-        height="81vh"
+        :height="tableHeight(180)"
         row-key="id"
         :row-class-name="getRowClassName"
         @sort-change="handleSortChange">
@@ -127,6 +137,10 @@
         
         <!-- 责任人 -->
         <el-table-column label="责任人" align="center" prop="responsiblePerson" width="100" />
+        
+        <!-- 备注 -->
+        <el-table-column label="备注" align="center" prop="remarks" width="150" show-overflow-tooltip />
+        
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180" fixed="right">
           <template slot-scope="scope">
  
@@ -290,6 +304,7 @@ export default {
         category: null,
         responsiblePerson: null,
         versionCode: null,
+        remarks: null,
         orderByColumn: null,
         isAsc: null
       },
@@ -324,7 +339,13 @@ export default {
     /** 查询工艺路线列表 */
     getList() {
       this.loading = true;
-      listProcessRoute(this.queryParams).then(response => {
+      // 构建分页参数，确保参数名称正确
+      const params = {
+        ...this.queryParams,
+        p: this.queryParams.pageNum,
+        l: this.queryParams.pageSize
+      };
+      listProcessRoute(params).then(response => {
         // 处理返回的数据，将detailList中的数据映射到对应的工序类型列
         const processedList = response.data.list.map(route => {
           // 复制基础数据

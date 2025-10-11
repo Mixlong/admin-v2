@@ -1,8 +1,9 @@
 <template>
   <el-dialog title="查看" :visible.sync="visible" width="1000px" append-to-body @close="handleClose" top="0vh">
     <el-descriptions :column="2" border style="margin-bottom: 20px;">
-      <el-descriptions-item label="品类">{{ getCategoryName(processRouteData.category) }}</el-descriptions-item>
+      <el-descriptions-item label="品类">{{ processRouteData.categoryName }}</el-descriptions-item>
       <el-descriptions-item label="负责人">{{ processRouteData.responsiblePerson }}</el-descriptions-item>
+      <el-descriptions-item label="备注" :span="2">{{ processRouteData.remarks || '-' }}</el-descriptions-item>
     </el-descriptions>
 
     <el-table :data="processRouteData.detailList" border style="width: 100%">

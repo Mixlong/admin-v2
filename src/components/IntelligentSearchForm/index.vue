@@ -166,7 +166,15 @@ export default {
     hiddenFieldsWithValues() {
       return this.initialHiddenFields.filter(field => {
         const value = this.searchForm[field.key];
-        return value !== undefined && value !== null && value !== '';
+        // 检查值是否为空：undefined、null、空字符串、空数组
+        if (value === undefined || value === null || value === '') {
+          return false;
+        }
+        // 如果是数组，检查是否为空数组
+        if (Array.isArray(value) && value.length === 0) {
+          return false;
+        }
+        return true;
       });
     },
     maxLabelWidth() {
@@ -393,7 +401,25 @@ export default {
       this.$emit('filters-cleared');
     },
     handleSearch() { this.$emit('search', this.searchForm); },
-    handleReset() { this.$refs.searchForm.resetFields(); this.$emit('reset'); },
+    handleReset() { 
+      // 重置主表单
+      this.$refs.searchForm.resetFields(); 
+      
+      // 手动重置主表单中的隐藏字段（因为resetFields可能不会重置没有form-item的字段）
+      this.initialHiddenFields.forEach(field => {
+        this.$set(this.searchForm, field.key, this.getDefaultValue(field));
+        this.$set(this.tempSearchForm, field.key, this.getDefaultValue(field));
+      });
+      
+      // 如果弹窗是打开状态，强制刷新tempSearchForm
+      if (this.filterPopoverVisible) {
+        this.$nextTick(() => {
+          this.initTempSearchForm();
+        });
+      }
+      
+      this.$emit('reset'); 
+    },
 
     // 布局相关方法
     initializeLayout() {

@@ -2,11 +2,11 @@
   <div>
     <el-dialog 
       :visible.sync="dialogVisible" 
-      :title="getDialogTitle()"
+      :title="editMode ? '编辑' : copyMode ? '复制新增' : '新增'"
       width="750px" 
       :close-on-click-modal="false" 
       @close="handleClose"
-      top='0vh'
+      top='5vh'
       class="add-record-dialog">
     
     <el-form 
@@ -133,7 +133,7 @@
     <div slot="footer" class="dialog-footer">
       <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" @click="handleConfirm" :loading="loading">
-        {{ editMode ? '更新' : '保存' }}
+        {{ editMode ? '更新' : copyMode ? '复制保存' : '保存' }}
       </el-button>
     </div>
   </el-dialog>
@@ -235,9 +235,13 @@ export default {
     }
   },
   computed: {
-    // 是否为编辑模式 - 只有当有editData且有id时才是编辑模式
+    // 是否为编辑模式（有editData且有id才是编辑，没有id是复制）
     editMode() {
       return this.editData !== null && this.editData.id
+    },
+    // 是否为复制模式
+    copyMode() {
+      return this.editData !== null && !this.editData.id
     }
   },
   watch: {
@@ -255,14 +259,6 @@ export default {
     this.loadDictData()
   },
   methods: {
-    // 获取弹窗标题
-    getDialogTitle() {
-      if (this.editData && this.editData.id) {
-        return '编辑'
-      }
-      return '新增'
-    },
-
     // 加载字典数据
     async loadDictData() {
       try {
@@ -306,17 +302,28 @@ export default {
 
     // 初始化表单
     initForm() {
+      const currentUser = this.$store.state.user
+      const currentTime = this.formatDateTime(new Date())
+
       if (this.editData) {
-        // 编辑模式，加载现有数据
-        this.form = {
-           ...this.editData
+        if (this.editMode) {
+          // 编辑模式，加载现有数据
+          this.form = {
+             ...this.editData
+          }
+        } else {
+          // 复制模式，复制数据但重置关键字段
+          this.form = {
+            ...this.editData,
+            id: '', // 清空ID，确保走新增逻辑
+            repairTime: currentTime, // 重新设置维修时间为当前时间
+            createBy: currentUser?.name || currentUser?.userName || '', // 重新设置创建人
+            repairPerson: currentUser?.name || currentUser?.userName || '' // 重新设置维修员为当前用户
+          }
         }
         this.batchPcbaSn = ''
       } else {
         // 新增模式，设置默认值
-        const currentUser = this.$store.state.user
-        const currentTime = this.formatDateTime(new Date())
-
         this.form = {
           id: '',
           schedulingNo: '',
@@ -660,9 +667,16 @@ export default {
 
 /* 深度选择器样式 */
 :deep(.el-dialog__header) {
-  padding: 15px 20px 10px;
+  padding: 15px 50px 10px 20px; /* 右侧增加padding给关闭按钮留空间 */
   border-bottom: 1px solid #ebeef5;
   background: #f8f9fa;
+}
+
+:deep(.el-dialog__close) {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
 }
 
 :deep(.el-dialog__body) {

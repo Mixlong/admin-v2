@@ -133,8 +133,7 @@
                       @remove-item="onRemoveItem"
                       @save-item="onSaveItem"
                       @index-num-input="handleIndexNumInput"
-                      @spend-time-input="handleSpendTimeInput"
-                      @number-keypress="handleNumberKeypress"
+                      @spend-time-change="handleSpendTimeChange"
                       @validate-field="validateField"
                     />
                   </transition-group>
@@ -948,12 +947,17 @@ export default {
           submitData.list = this.convertWorkstationsToList(submitData.workstations);
           delete submitData.workstations; // 删除分组数据，使用list格式
 
-          // 处理装备字段的提交格式
+          // 处理装备字段和工时字段的提交格式
           if (submitData.list && submitData.list.length > 0) {
             submitData.list.forEach(item => {
               if (item.equipment && Array.isArray(item.equipment)) {
                 // 将装备数组转换为JSON字符串
                 item.equipment = JSON.stringify(item.equipment);
+              }
+
+              // el-input-number 已确保工时为数字类型，只需处理空值
+              if (item.spendTime === null || item.spendTime === undefined) {
+                item.spendTime = null;
               }
 
               // 新增的工位不传ID，让后端自动生成
@@ -1058,17 +1062,11 @@ export default {
       return result.join('');
     },
 
-    /** 处理工时输入，只允许数字 */
-    handleSpendTimeInput(value, index, processType) {
-      // 移除非数字字符（保留小数点）
-      const numericValue = value.replace(/[^\d.]/g, '');
-
-      // 转换为数字，如果为空则设为null
-      const numberValue = numericValue === '' ? null : parseFloat(numericValue);
-
+    /** 处理工时变化 */
+    handleSpendTimeChange(value, index, processType) {
       // 更新对应工序类型的工位数据
       if (this.form.workstations[processType] && this.form.workstations[processType][index]) {
-        this.form.workstations[processType][index].spendTime = numberValue;
+        this.$set(this.form.workstations[processType][index], 'spendTime', value);
       }
     },
 
@@ -1086,15 +1084,6 @@ export default {
       }
     },
 
-    /** 限制只能输入数字 */
-    handleNumberKeypress(event) {
-      // 允许数字键和一些控制键
-      const allowedKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
-
-      if (!allowedKeys.includes(event.key)) {
-        event.preventDefault();
-      }
-    },
 
     /** 更新历史文件表格数据 */
     updateHistoryFileList(fileList) {

@@ -397,22 +397,16 @@ export default {
 
     // 复制记录
     handleCopy(row) {
-      // 复制数据，但排除PCBA SN字段
+      // 复制当前数据作为新增，但清空PCBA SN和ID
       const copyData = { ...row }
+
+      delete copyData.id // 移除ID，作为新增
+      delete copyData.updateTime // 移除更新时间
+      delete copyData.createTime // 移除创建时间
+      copyData.pcbaSn = '' // 清空PCBA SN
       
-      // 清除不需要复制的字段
-      delete copyData.id  // 删除ID，新增时会自动生成
-      delete copyData.createTime  // 删除创建时间
-      delete copyData.updateTime  // 删除更新时间
-      delete copyData.createBy    // 删除创建人
-      delete copyData.updateBy    // 删除更新人
-      copyData.pcbaSn = ''        // 清空PCBA SN
-      
-      // 设置为复制数据并打开弹窗
       this.editData = copyData
       this.addDialogVisible = true
-      
-      this.$message.success('已复制，请修改相关信息后保存')
     },
 
     // 删除记录

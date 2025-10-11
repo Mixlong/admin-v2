@@ -40,13 +40,26 @@
           <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click" :style="{backgroundColor:row.isLicense === 0 ? '#ff4949':'#5cb85c',borderRadius:'12px'}">
             {{ row.isLicense === 0 ? "未许可" : "已许可" }}
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-if="row.isLicense === 1" @click.native="handleStatus(0, row)">取消许可</el-dropdown-item>
+              <el-dropdown-item v-if="row.isLicense === 1" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
               <template v-if="row.isLicense === 0">
-                <el-dropdown-item @click.native="handleStatus(1, row)">许可</el-dropdown-item>
-                <el-dropdown-item @click.native="handleStatus(2, row)">强制许可</el-dropdown-item>
+                <el-dropdown-item @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
+                <el-dropdown-item @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
               </template>
             </el-dropdown-menu>
           </el-dropdown>
+        </template>
+      </el-table-column>
+      <el-table-column label="许可有效期" align="center" width="120">
+        <template slot-scope="{ row }">
+          <span v-if="row.licenseValidityPeriod">
+            {{ parseTime(row.licenseValidityPeriod, '{y}-{m}-{d}') }}
+          </span>
+          <span v-else-if="row.isLicense === 1" class="text-warning">
+            长期有效
+          </span>
+          <span v-else class="text-muted">
+            -
+          </span>
         </template>
       </el-table-column>
       <el-table-column label="历史问题" align="center" width="240">
@@ -181,6 +194,79 @@
         <el-table-column label="创建时间" prop="operationTime" align="center" width="180" />
       </el-table>
     </el-dialog>
+
+    <!-- 许可操作弹窗 -->
+    <el-dialog
+      title="选择有效期"
+      :visible.sync="licenseDialog.visible"
+      width="400px"
+      center
+      top='0vh'
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <div class="license-dialog-content" style="padding: 20px;">
+        <div class="warning-icon" style="text-align: center; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="el-icon-warning-outline" style="font-size: 24px; color: #E6A23C;"></i>
+          <span style="font-size: 16px; color: #303133; font-weight: 500;">请选择许可有效期？</span>
+        </div>
+        
+        <!-- 有效期选择选项卡 -->
+        <div class="validity-options" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+          <div 
+            class="validity-option" 
+            :class="{ active: licenseDialog.validityType === 1 }"
+            @click="selectValidityType(1)"
+            style="display: flex; align-items: center; padding: 15px 20px; border: 2px solid #DCDFE6; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; background: #fff;"
+            :style="licenseDialog.validityType === 1 ? 'border-color: #409EFF; background: #f0f9ff;' : ''"
+          >
+            <div 
+              class="option-circle" 
+              style="width: 20px; height: 20px; border: 2px solid #DCDFE6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; transition: all 0.3s ease;"
+              :style="licenseDialog.validityType === 1 ? 'border-color: #409EFF; background: #409EFF; color: white;' : ''"
+            >
+              <i v-if="licenseDialog.validityType === 1" class="el-icon-check" style="font-size: 12px;"></i>
+            </div>
+            <span style="font-size: 14px; color: #303133; font-weight: 500;">长期有效</span>
+          </div>
+          
+          <div 
+            class="validity-option" 
+            :class="{ active: licenseDialog.validityType === 2 }"
+            @click="selectValidityType(2)"
+            style="display: flex; align-items: center; padding: 15px 20px; border: 2px solid #DCDFE6; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; background: #fff;"
+            :style="licenseDialog.validityType === 2 ? 'border-color: #409EFF; background: #f0f9ff;' : ''"
+          >
+            <div 
+              class="option-circle" 
+              style="width: 20px; height: 20px; border: 2px solid #DCDFE6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; transition: all 0.3s ease;"
+              :style="licenseDialog.validityType === 2 ? 'border-color: #409EFF; background: #409EFF; color: white;' : ''"
+            >
+              <i v-if="licenseDialog.validityType === 2" class="el-icon-check" style="font-size: 12px;"></i>
+            </div>
+            <span style="font-size: 14px; color: #303133; font-weight: 500;">具体日期</span>
+          </div>
+        </div>
+        
+        <!-- 日期选择组件 -->
+        <div v-if="licenseDialog.validityType === 2" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #EBEEF5;">
+          <div style="margin-bottom: 10px; font-size: 14px; color: #606266;">选择截止日期：</div>
+          <el-date-picker
+            v-model="licenseDialog.validityDate"
+            type="date"
+            placeholder="请选择截止日期"
+            :picker-options="datePickerOptions"
+            value-format="yyyy-MM-dd"
+            style="width: 100%"
+          />
+        </div>
+      </div>
+      
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="licenseDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="confirmLicenseOperation">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -227,8 +313,24 @@ export default {
       },
 
       isHistoricalIssuesListDialogVisible: false,
-    historicalIssuesList: [],
+      historicalIssuesList: [],
       currentComputerIdForIssues: null,
+
+      // 许可操作弹窗数据
+      licenseDialog: {
+        visible: false,
+        title: '',
+        message: '',
+        type: 0, // 0: 取消许可, 1: 许可, 2: 强制许可
+        currentRow: null,
+        validityType: 1, // 1: 长期有效, 2: 具体日期
+        validityDate: null
+      },
+
+      // 日期选择器配置
+      datePickerOptions: {
+        // 移除日期禁用，允许选择任意日期
+      },
     };
   },
   watch: {
@@ -305,39 +407,119 @@ export default {
           this.loading = false;
         });
     },
-    handleStatus(isLicense, row) {
-      let text;
-
-      const licenseData = {
-        0: "取消许可",
-        1: "许可",
-        2: "强制许可",
+    // 显示许可操作弹窗
+    showLicenseDialog(isLicense, row) {
+      // 如果是取消许可，直接执行操作
+      if (isLicense === 0) {
+        this.$confirm("确认要取消该产品的许可吗？", "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            return computerUpdate({
+              id: row.id,
+              isLicense: 0
+            });
+          })
+          .then((res) => {
+            if (res.data === 1) {
+              this.msgSuccess("取消许可成功");
+              this.getList();
+            } else {
+              this.msgError("配置总览未审核");
+            }
+          })
+          .catch(() => {});
+        return;
       }
 
-      text = licenseData[isLicense];
-
-      this.$confirm("确认要" + `"${text}"` + "吗？", "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(function () {
-          return computerUpdate({
-            id: row.id,
-            isLicense
-          });
+      // 如果是强制许可，使用原来的逻辑
+      if (isLicense === 2) {
+        this.$confirm("确认要强制许可该产品吗？", "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         })
+          .then(() => {
+            return computerUpdate({
+              id: row.id,
+              isLicense: 2
+            });
+          })
+          .then((res) => {
+            if (res.data === 1) {
+              this.msgSuccess("强制许可成功");
+              this.getList();
+            } else {
+              this.msgError("配置总览未审核");
+            }
+          })
+          .catch(() => {});
+        return;
+      }
+
+      // 只有普通许可（isLicense === 1）才显示有效期选择弹窗
+      this.licenseDialog = {
+        visible: true,
+        type: isLicense,
+        currentRow: row,
+        validityType: 1, // 默认长期有效
+        validityDate: null
+      };
+    },
+
+    // 选择有效期类型
+    selectValidityType(type) {
+      this.licenseDialog.validityType = type;
+      if (type === 1) { // 长期有效
+        this.licenseDialog.validityDate = null;
+      }
+    },
+
+    // 确认许可操作
+    confirmLicenseOperation() {
+      const { type, currentRow, validityType, validityDate } = this.licenseDialog;
+      
+      // 构建请求参数
+      const params = {
+        id: currentRow.id,
+        isLicense: type
+      };
+
+      // 添加有效期类型参数
+      if (type === 1 || type === 2) {
+        params.validityType = validityType;
+        
+        // 如果选择了具体日期，添加有效期参数
+        if (validityType === 2) {
+          if (!validityDate) {
+            this.$message.warning('请选择有效期截止日期');
+            return;
+          }
+          // 将日期转换为10位时间戳（秒级）
+          const timestamp = Math.floor(new Date(validityDate).getTime() / 1000);
+          params.validityDate = timestamp;
+          // 保持向后兼容
+          params.licenseValidityPeriod = validityDate;
+        }
+      }
+
+      // 执行许可操作
+      computerUpdate(params)
         .then((res) => {
           if (res.data === 1) {
             this.msgSuccess("操作成功");
             this.getList();
+            this.licenseDialog.visible = false;
           } else {
             this.msgError("配置总览未审核");
           }
-        }).catch(() => {
-
         })
+        .catch((error) => {
+        });
     },
+
     handleQuery() {
       this.queryParams.p = 1;
       this.getList();
@@ -489,6 +671,97 @@ export default {
 <style>
 .custom-divider{
   margin:5px 0 ;
-} 
+}
+
+/* 许可操作弹窗样式 */
+.license-dialog-content {
+  padding: 20px 0;
+}
+
+.license-dialog-content .warning-icon {
+  text-align: center;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.license-dialog-content .warning-text {
+  font-size: 16px;
+  color: #303133;
+  font-weight: 500;
+}
+
+/* 有效期选择选项卡样式 */
+.validity-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.validity-option {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border: 2px solid #DCDFE6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.validity-option:hover {
+  border-color: #409EFF;
+  background: #f0f9ff;
+}
+
+.validity-option.active {
+  border-color: #409EFF;
+  background: #f0f9ff;
+}
+
+.validity-option .option-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #DCDFE6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.validity-option.active .option-circle {
+  border-color: #409EFF;
+  background: #409EFF;
+  color: white;
+}
+
+.validity-option .option-text {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+
+/* 日期选择区域 */
+.date-picker-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #EBEEF5;
+}
+
+/* 文本颜色类 */
+.text-warning {
+  color: #E6A23C;
+}
+
+.text-muted {
+  color: #909399;
+}
 
 </style>

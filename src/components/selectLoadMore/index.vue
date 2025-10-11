@@ -14,6 +14,7 @@
     v-bind="$attrs"
     v-on="$listeners"
     @change="getChange"
+    type='mini'
   >
     <el-option
       v-for="option in data"

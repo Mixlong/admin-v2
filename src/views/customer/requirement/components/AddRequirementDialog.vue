@@ -13,7 +13,7 @@
       :model="localFormData"
       :rules="dynamicRules"
       ref="form"
-      label-width="120px"
+      label-width="125px"
       class="requirement-form"
     >
       <!-- 基本信息 -->
@@ -24,7 +24,6 @@
             <el-form-item label="客户名称" prop="customer">
               <select-loadMore
                 v-model="localFormData.customer"
-                style="width: 100%"
                 :data="customerData.data"
                 :page="customerData.page"
                 :hasMore="customerData.more"
@@ -39,20 +38,19 @@
           </el-col>
           
           <el-col :span="12">
-            <el-form-item label="客户类别" prop="customerClass">
-              <el-select 
-                v-model="localFormData.customerClass" 
-                placeholder="请选择类别" 
-                clearable
-                :disabled="isView"
-                style="width: 100%">
-                <el-option
-                  v-for="item in customerTypeOptions"
-                  :key="item.dictValue"
-                  :label="item.dictLabel"
-                  :value="item.dictValue">
-                </el-option>
-              </el-select>
+            <el-form-item label="质量负责人" prop="qualityManager">
+              <select-loadMore
+                v-model="localFormData.qualityManager"
+                :data="userQualityData.data"
+                :page="userQualityData.page"
+                :hasMore="userQualityData.more"
+                dictLabel="displayName"
+                dictValue="displayName"
+                :request="getUserQualityData"
+                placeholder="请选择质量负责人"
+                size="mini"
+                :disabled="isView">
+              </select-loadMore>
             </el-form-item>
           </el-col>
         </el-row>
@@ -84,8 +82,8 @@
                 :data="userMarketData.data"
                 :page="userMarketData.page"
                 :hasMore="userMarketData.more"
-                dictLabel="dictLabel"
-                dictValue="dictLabel"
+                dictLabel="displayName"
+                dictValue="displayName"
                 :request="getUserMarketData"
                 placeholder="请选择市场负责人"
                 size="mini"
@@ -93,6 +91,8 @@
               </select-loadMore>
             </el-form-item>
           </el-col>
+          
+         
         </el-row>
       </fieldset>
 
@@ -154,33 +154,6 @@
         <legend>客户要求（标准）</legend>
         <el-row :gutter="30">
           <el-col :span="12">
-            <el-form-item label="校验标准" prop="validationStandard">
-              <Editor 
-                v-model="localFormData.validationStandard" 
-                :min-height="120"
-                placeholder="请输入校验标准..."
-                :disabled="isView"
-                :config="{
-                  height: 120,
-                  menubar: false,
-                  toolbar: 'bold italic underline | bullist numlist | removeformat',
-                  plugins: 'lists',
-                  statusbar: false,
-                  resize: false,
-                  branding: false
-                }" />
-            </el-form-item>
-            <el-form-item label="校验标准附件">
-              <MyUpload 
-                v-model="localFormData.validationAttachment"
-                :multiple="true"
-                :limit="10"
-                :disabled="isView"
-              />
-            </el-form-item>
-          </el-col>
-          
-          <el-col :span="12">
             <el-form-item label="产品认证" prop="productCertification">
               <Editor 
                 v-model="localFormData.productCertification" 
@@ -206,9 +179,6 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row :gutter="30">
           <el-col :span="12">
             <el-form-item label="环保要求" prop="environmentalRequirements">
               <Editor 
@@ -235,13 +205,12 @@
               />
             </el-form-item>
           </el-col>
-          
           <el-col :span="12">
-            <el-form-item label="AQL标准" prop="aqlStandard">
+            <el-form-item label="其他要求" prop="validationStandard">
               <Editor 
-                v-model="localFormData.aqlStandard" 
+                v-model="localFormData.validationStandard" 
                 :min-height="120"
-                placeholder="请输入AQL标准..."
+                placeholder="请输入其他要求..."
                 :disabled="isView"
                 :config="{
                   height: 120,
@@ -253,18 +222,18 @@
                   branding: false
                 }" />
             </el-form-item>
-            <el-form-item label="AQL标准附件">
+            <el-form-item label="其他要求附件">
               <MyUpload 
-                v-model="localFormData.aqlAttachment"
+                v-model="localFormData.validationAttachment"
                 :multiple="true"
                 :limit="10"
                 :disabled="isView"
               />
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row :gutter="30">
+          
+          
+       
           <el-col :span="12">
             <el-form-item label="质量协议" prop="qualityInfo">
               <Editor 
@@ -291,9 +260,49 @@
               />
             </el-form-item>
           </el-col>
-          
           <el-col :span="12">
-            <!-- 预留位置，可以添加其他字段 -->
+            <el-form-item label="保障措施" prop="aqlStandard">
+              <Editor 
+                v-model="localFormData.aqlStandard" 
+                :min-height="120"
+                placeholder="请输入保障措施..."
+                :disabled="isView"
+                :config="{
+                  height: 120,
+                  menubar: false,
+                  toolbar: 'bold italic underline | bullist numlist | removeformat',
+                  plugins: 'lists',
+                  statusbar: false,
+                  resize: false,
+                  branding: false
+                }" />
+            </el-form-item>
+            <el-form-item label="保障措施附件">
+              <MyUpload 
+                v-model="localFormData.aqlAttachment"
+                :multiple="true"
+                :limit="10"
+                :disabled="isView"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="客户出货方" prop="customerDelivery">
+              <Editor 
+                v-model="localFormData.customerDelivery" 
+                :min-height="120"
+                placeholder="请输入客户出货方..."
+                :disabled="isView"
+                :config="{
+                  height: 120,
+                  menubar: false,
+                  toolbar: 'bold italic underline | bullist numlist | removeformat',
+                  plugins: 'lists',
+                  statusbar: false,
+                  resize: false,
+                  branding: false
+                }" />
+            </el-form-item>
           </el-col>
         </el-row>
       </fieldset>
@@ -310,12 +319,11 @@
 
 <script>
 import { addCustomerRequirement, updateCustomerRequirement } from '@/api/customer/requirement'
-import { afterCategoryList } from '@/api/third/sale'
-import { getCategoryList } from '@/api/quote-management/quotation'
+import { listCategory } from "@/api/third/category";
 import { getCustomerList } from '@/api/order'
 import { getDicts } from '@/api/system/dict/data'
 import { dictUserList } from '@/api/system/user'
-  import { dictPmProject, dictMkProject  } from '@/api/third/project'
+  import { dictPmProject, dictMkProject, dictQcProject  } from '@/api/third/project'
 import Editor from '@/components/Editor'
 import MyUpload from '@/components/MyUpload'
 
@@ -352,6 +360,7 @@ export default {
         more: true,
       },
       submitLoading: false,
+      isDialogInitialized: false, // 标记对话框是否已初始化,
       categoryOptions: [],
       customerOptions: [],
       customerData: {
@@ -371,11 +380,17 @@ export default {
         page: 1,
         more: true,
       },
+      userQualityData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       localFormData: {
         customer: '',
         customerClass: '',
         projectManager: '',
         marketManager: '', // 市场负责人
+        qualityManager: '', // 质量负责人
         projectStartTime: '',
         massProductionTime: '',
         validationStandard: '',
@@ -383,6 +398,7 @@ export default {
         environmentalRequirements: '',
         aqlStandard: '',
         qualityInfo: '', // 质量协议
+        customerDelivery: '', // 客户出货方
         validationAttachment: '',
         certificationAttachment: '',
         environmentalAttachment: '',
@@ -403,6 +419,9 @@ export default {
         marketManager: [
           { required: true, message: '请选择市场负责人', trigger: 'change' }
         ],
+        qualityManager: [
+          { required: false, message: '请选择质量负责人', trigger: 'change' }
+        ],
     
       }
     }
@@ -421,15 +440,14 @@ export default {
     dynamicRules() {
       const rules = { ...this.formRules }
 
-      // // 为每个机型配置添加验证规则
-      // this.localFormData.requirementInfoList.forEach((_, index) => {
-      //   rules[`requirementInfoList.${index}.category`] = [
-      //     { required: true, message: '请选择机型型号', trigger: 'change' }
-      //   ]
-      //   rules[`requirementInfoList.${index}.modelConfig`] = [
-      //     { required: true, message: '请输入机型配置', trigger: 'blur' }
-      //   ]
-      // })
+      // 为每个机型配置添加验证规则
+      this.localFormData.requirementInfoList.forEach((_, index) => {
+        // 机型型号必填
+        rules[`requirementInfoList.${index}.category`] = [
+          { required: true, message: '请选择机型型号', trigger: 'change' }
+        ]
+        // 机型配置非必填，不添加验证规则
+      })
 
       return rules
     }
@@ -437,11 +455,20 @@ export default {
   watch: {
     visible(val) {
       if (val) {
-        this.initDialog()
-        // 监听对话框打开，防止自动滚动
+        this.isDialogInitialized = false
+        // 立即设置滚动位置为0，防止加载过程中的自动滚动
         this.$nextTick(() => {
-          this.preventAutoScroll()
+          const dialogContent = document.querySelector('.dialog-scroll .el-dialog__body')
+          if (dialogContent) {
+            dialogContent.scrollTop = 0
+          }
         })
+        this.initDialog()
+        this.$nextTick(() => {
+          this.isDialogInitialized = true
+        })
+      } else {
+        this.isDialogInitialized = false
       }
     },
     formData: {
@@ -449,6 +476,12 @@ export default {
         if (newVal) {
           this.localFormData = {
             ...newVal,
+            // 确保所有附件字段都是字符串类型，避免 null 值导致 MyUpload 组件警告
+            validationAttachment: newVal.validationAttachment || '',
+            certificationAttachment: newVal.certificationAttachment || '',
+            environmentalAttachment: newVal.environmentalAttachment || '',
+            aqlAttachment: newVal.aqlAttachment || '',
+            qualityAgreement: newVal.qualityAgreement || '',
             requirementInfoList: newVal.requirementInfoList || []
           }
         } else {
@@ -457,6 +490,7 @@ export default {
             customerClass: '',
             projectManager: '',
             marketManager: '',
+            qualityManager: '', // 质量负责人
             projectStartTime: '',
             massProductionTime: '',
             validationStandard: '',
@@ -464,6 +498,7 @@ export default {
             environmentalRequirements: '',
             aqlStandard: '',
             qualityInfo: '', // 质量协议
+            customerDelivery: '', // 客户出货方
             validationAttachment: '',
             certificationAttachment: '',
             environmentalAttachment: '',
@@ -479,6 +514,23 @@ export default {
       },
       immediate: true,
       deep: true
+    }
+  },
+  mounted() {
+    // 添加防止输入框聚焦时自动滚动的处理
+    this.$nextTick(() => {
+      const dialogBody = document.querySelector('.dialog-scroll .el-dialog__body')
+      if (dialogBody) {
+        // 阻止输入框聚焦时的滚动行为
+        dialogBody.addEventListener('focusin', this.handleFocusIn, true)
+      }
+    })
+  },
+  beforeDestroy() {
+    // 清理事件监听
+    const dialogBody = document.querySelector('.dialog-scroll .el-dialog__body')
+    if (dialogBody) {
+      dialogBody.removeEventListener('focusin', this.handleFocusIn, true)
     }
   },
   methods: {
@@ -512,27 +564,48 @@ export default {
       if (this.userMarketData.data.length === 0) {
         await this.getUserMarketData({ page: 1 })
       }
+      if (this.userQualityData.data.length === 0) {
+        await this.getUserQualityData({ page: 1 })
+      }
 
       // 如果是编辑模式，确保加载足够的品类数据以便正确回显
       if ((this.isEdit || this.isView) && this.localFormData.requirementInfoList) {
         const existingCategoryIds = this.localFormData.requirementInfoList
           .map(item => item.category)
-          .filter(id => id)
+          .filter(id => id && id !== '')
         
-        // 检查现有的品类ID是否都在当前数据中
-        const missingIds = existingCategoryIds.filter(id => 
-          !this.categoryData.data.some(item => item.id === id)
-        )
-        
-        if (missingIds.length > 0) {
-          // 如果有缺失的品类ID，尝试加载更多数据
-          console.log('检测到缺失的品类ID，尝试加载更多数据:', missingIds)
-          for (let page = 2; page <= 5; page++) {
-            await this.getCategoryList(page)
-            const stillMissing = missingIds.filter(id => 
-              !this.categoryData.data.some(item => item.id === id)
+        if (existingCategoryIds.length > 0) {
+          console.log('编辑模式检测到已选品类ID:', existingCategoryIds)
+          
+          // 检查现有的品类ID是否都在当前数据中
+          const missingIds = existingCategoryIds.filter(id => 
+            !this.categoryData.data.some(item => item.id == id) // 使用 == 比较，处理类型不一致
+          )
+          
+          if (missingIds.length > 0) {
+            // 如果有缺失的品类ID，尝试加载更多数据
+            console.log('检测到缺失的品类ID，尝试加载更多数据:', missingIds)
+            let currentPage = 2
+            while (currentPage <= 10 && missingIds.length > 0) {
+              await this.getCategoryList({ page: currentPage, more: true })
+              // 重新检查缺失的ID
+              const stillMissing = missingIds.filter(id => 
+                !this.categoryData.data.some(item => item.id == id)
+              )
+              if (stillMissing.length === 0) {
+                console.log('所有缺失的品类ID已找到')
+                break
+              }
+              currentPage++
+            }
+            
+            // 如果仍有缺失的ID，记录警告
+            const finalMissing = missingIds.filter(id => 
+              !this.categoryData.data.some(item => item.id == id)
             )
-            if (stillMissing.length === 0) break
+            if (finalMissing.length > 0) {
+              console.warn('仍有品类ID无法找到:', finalMissing)
+            }
           }
         }
       }
@@ -542,15 +615,10 @@ export default {
         this.addModelConfig()
       }
       
-      // 重置表单验证并防止自动滚动
+      // 重置表单验证
       this.$nextTick(() => {
         if (this.$refs.form) {
           this.$refs.form.clearValidate()
-        }
-        
-        // 恢复滚动位置到顶部，防止自动滚动到底部
-        if (dialogContent) {
-          dialogContent.scrollTop = 0
         }
       })
     },
@@ -602,124 +670,64 @@ export default {
     },
 
     // 为 select-loadMore 组件提供的分页加载方法
-    async getCategoryList(params = {}, pageSize = 20) {
-      try {
-        // 处理参数，如果第一个参数是对象，则从中提取页码
-        const currentPage = typeof params === 'object' && params.page ? params.page : (typeof params === 'number' ? params : 1)
-        console.log(`获取品类列表 - 页码: ${currentPage}, 每页数量: ${pageSize}`)
-
-        // 首先尝试主API
-        let res = await afterCategoryList({ p: currentPage, pageSize })
-        console.log('品类API响应 (afterCategoryList):', res)
-
-        if (res.code === 200 && res.data) {
-          // 处理不同的数据结构
-          if (res.data.list && res.data.list.length > 0) {
-            const formattedData = res.data.list.map(item => ({
+    // 获取品类数据 (用于 select-loadMore 组件)
+    getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        listCategory({
+          p: page,
+          l: 20,
+          key: keyword,
+        }).then((res) => {
+          if (res.code === 200 && res.data) {
+            const list = res.data.list || [];
+            
+            // 确保数据格式一致，包含 id 和 name 字段
+            const formattedList = list.map(item => ({
               id: item.id,
-              name: item.name || item.categoryName || item.label
-            }))
+              name: item.name || item.categoryName || item.label,
+              ...item // 保留其他字段
+            }));
 
-            // 更新 categoryData 用于组件状态管理
-            if (currentPage === 1) {
-              this.categoryData.data = formattedData
+            if (more) {
+              // 去重处理，避免重复数据
+              const existingIds = new Set(this.categoryData.data.map(item => item.id));
+              const newItems = formattedList.filter(item => !existingIds.has(item.id));
+              this.categoryData.data = [...this.categoryData.data, ...newItems];
             } else {
-              this.categoryData.data = [...this.categoryData.data, ...formattedData]
+              this.categoryData.data = formattedList;
             }
-            this.categoryData.page = currentPage
-            this.categoryData.more = res.data.list.length === pageSize
 
-            return {
-              data: formattedData,
-              hasMore: res.data.list.length === pageSize
-            }
-          } else if (Array.isArray(res.data) && res.data.length > 0) {
-            const formattedData = res.data.map(item => ({
-              id: item.id,
-              name: item.name || item.categoryName || item.label
-            }))
-
-            if (currentPage === 1) {
-              this.categoryData.data = formattedData
-            } else {
-              this.categoryData.data = [...this.categoryData.data, ...formattedData]
-            }
-            this.categoryData.page = currentPage
-            this.categoryData.more = res.data.length === pageSize
-
-            return {
-              data: formattedData,
-              hasMore: res.data.length === pageSize
-            }
-          }
-        }
-
-        // 如果主API没有数据，尝试备用API
-        console.log('主API无数据，尝试备用API...')
-        const { getCategoryList: getCategoryListAPI } = await import('@/api/quote-management/quotation')
-        res = await getCategoryListAPI()
-        console.log('品类API响应 (getCategoryListAPI):', res)
-
-        if (res.code === 200 && res.data) {
-          let formattedData = []
-          if (Array.isArray(res.data)) {
-            formattedData = res.data.map(item => ({
-              id: item.id,
-              name: item.name || item.categoryName || item.label
-            }))
-          } else if (res.data.list) {
-            formattedData = res.data.list.map(item => ({
-              id: item.id,
-              name: item.name || item.categoryName || item.label
-            }))
-          }
-
-          if (currentPage === 1) {
-            this.categoryData.data = formattedData
+            // 计算是否还有更多数据
+            const { total, pageNum, pageSize } = res.data || {};
+            this.categoryData.more = total ? pageNum * pageSize < total : list.length >= 20;
+            this.categoryData.page = pageNum || page;
           } else {
-            this.categoryData.data = [...this.categoryData.data, ...formattedData]
+            console.error('获取品类数据失败:', res.msg);
           }
-          this.categoryData.page = currentPage
-          this.categoryData.more = false // 备用API通常返回全部数据
-
-          return {
-            data: formattedData,
-            hasMore: false
-          }
-        }
-
-        console.error('所有API都无数据')
-        return {
-          data: [],
-          hasMore: false
-        }
-
-      } catch (error) {
-        console.error('获取品类数据失败:', error)
-        this.$message.error('获取品类数据失败: ' + (error.message || '未知错误'))
-        return {
-          data: [],
-          hasMore: false
-        }
-      }
+          resolve();
+        }).catch(error => {
+          console.error('获取品类数据异常:', error);
+          resolve();
+        });
+      });
     },
     
     // 加载品类选项
     async loadCategoryOptions() {
       try {
         // 首先尝试主API
-        let res = await afterCategoryList({ p: 1, pageSize: 100 })
-        console.log('品类API响应 (afterCategoryList):', res)
+        let res = await listCategory({ p: 1, pageSize: 100 })
+        console.log('品类API响应 (listCategory):', res)
         
         if (res.code === 200 && res.data) {
           // 处理不同的数据结构
           if (res.data.list && res.data.list.length > 0) {
             this.categoryOptions = res.data.list
-            console.log('品类选项加载成功 (afterCategoryList):', this.categoryOptions.length, '条')
+            console.log('品类选项加载成功 (listCategory):', this.categoryOptions.length, '条')
             return
           } else if (Array.isArray(res.data) && res.data.length > 0) {
             this.categoryOptions = res.data
-            console.log('品类选项加载成功 (afterCategoryList):', this.categoryOptions.length, '条')
+            console.log('品类选项加载成功 (listCategory):', this.categoryOptions.length, '条')
             return
           }
         }
@@ -911,7 +919,7 @@ export default {
             this.userProjectData.more = false; // 没有更多数据
             this.userProjectData.page = 1;
           } else {
-            console.error('获取项目负责人数据失败:', res?.msg);
+            console.error('获取项目负责人数据失败:', res?.msg || '响应数据为空');
           }
           resolve();
         }).catch(error => {
@@ -966,11 +974,66 @@ export default {
             this.userMarketData.more = false; // 没有更多数据
             this.userMarketData.page = 1;
           } else {
-            console.error('获取市场负责人数据失败:', res?.msg);
+            console.error('获取市场负责人数据失败:', res?.msg || '响应数据为空');
           }
           resolve();
         }).catch(error => {
           console.error('获取市场负责人数据异常:', error);
+          resolve();
+        });
+      });
+    },
+
+    // 获取质量负责人数据 (用于 select-loadMore 组件)
+    getUserQualityData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        // 字典接口，获取所有数据，无分页
+        dictQcProject().then((res) => {
+          if (res && res.data) {
+            let list = [];
+            // 处理不同的数据结构
+            if (Array.isArray(res.data)) {
+              list = res.data.map(item => ({
+                id: item.id || item.dictValue,
+                userName: item.dictValue || item.userName || item.name,
+                displayName: item.dictLabel || item.nickName || item.userName || item.name
+              }));
+            } else if (res.data.list) {
+              list = res.data.list.map(item => ({
+                id: item.id || item.dictValue,
+                userName: item.dictValue || item.userName || item.name,
+                displayName: item.dictLabel || item.nickName || item.userName || item.name
+              }));
+            }
+
+            // 如果有关键字，进行客户端过滤
+            if (keyword) {
+              list = list.filter(item => 
+                item.displayName.includes(keyword) || 
+                item.userName.includes(keyword)
+              );
+            }
+
+            // 去重处理
+            const uniqueUsers = [];
+            const userNameSet = new Set();
+            list.forEach(user => {
+              if (!userNameSet.has(user.userName)) {
+                userNameSet.add(user.userName);
+                uniqueUsers.push(user);
+              }
+            });
+
+            // 字典接口返回所有数据，不需要分页
+            this.userQualityData.data = uniqueUsers;
+            this.userQualityData.more = false; // 没有更多数据
+            this.userQualityData.page = 1;
+          } else {
+            console.error('获取质量负责人数据失败:', res?.msg || '响应数据为空');
+          }
+          resolve();
+        }).catch(error => {
+          console.error('获取质量负责人数据异常:', error);
           resolve();
         });
       });
@@ -1059,37 +1122,24 @@ export default {
           this.$message.error(response.msg || (this.isEdit ? '更新失败' : '创建失败'))
         }
       } catch (error) {
-        if (error !== false) { // 表单验证失败时不显示错误消息
-          console.error('提交客户要求失败:', error)
-          this.$message.error(this.isEdit ? '更新失败' : '创建失败')
-        }
       } finally {
         this.submitLoading = false
       }
     },
     
-    // 防止自动滚动的方法
-    preventAutoScroll() {
+    // 处理输入框聚焦事件，防止自动滚动
+    handleFocusIn(e) {
       const dialogContent = document.querySelector('.el-dialog__body')
-      if (!dialogContent) return
-
-      // 只在对话框刚打开时设置滚动位置为顶部
-      dialogContent.scrollTop = 0
-
-      // 监听富文本编辑器的初始化事件，防止编辑器导致的自动滚动
-      this.$nextTick(() => {
-        const editors = document.querySelectorAll('.tox-edit-area iframe')
-        editors.forEach(editor => {
-          editor.addEventListener('load', () => {
-            setTimeout(() => {
-              // 只有当滚动位置接近底部时才重置到顶部（防止编辑器初始化导致的滚动）
-              if (dialogContent && dialogContent.scrollTop > dialogContent.scrollHeight - dialogContent.clientHeight - 100) {
-                dialogContent.scrollTop = 0
-              }
-            }, 100)
-          })
-        })
-      })
+      if (!dialogContent || !this.isDialogInitialized) return
+      
+      const scrollTop = dialogContent.scrollTop
+      
+      // 使用 setTimeout 确保在浏览器默认滚动后恢复位置
+      setTimeout(() => {
+        if (dialogContent && this.isDialogInitialized) {
+          dialogContent.scrollTop = scrollTop
+        }
+      }, 0)
     },
 
     // 关闭对话框
@@ -1103,6 +1153,11 @@ export default {
       this.customerTypeOptions = []
       
       // 重置 select-loadMore 数据
+      this.categoryData = {
+        data: [],
+        page: 1,
+        more: true,
+      }
       this.customerData = {
         data: [],
         page: 1,
@@ -1114,6 +1169,11 @@ export default {
         more: true,
       }
       this.userMarketData = {
+        data: [],
+        page: 1,
+        more: true,
+      }
+      this.userQualityData = {
         data: [],
         page: 1,
         more: true,
@@ -1295,10 +1355,16 @@ export default {
   color: #606266;
 }
 
-/* 优化对话框滚动行为 */
-::v-deep .el-dialog__body {
-  scroll-behavior: smooth;
+/* 防止输入框聚焦时自动滚动 */
+.dialog-scroll ::v-deep .el-input__inner,
+.dialog-scroll ::v-deep .el-textarea__inner,
+.dialog-scroll ::v-deep .tox-edit-area {
+  scroll-margin-top: 0;
+  scroll-margin-bottom: 0;
 }
- 
- 
+
+/* 禁用表单元素的平滑滚动 */
+.dialog-scroll ::v-deep .el-dialog__body {
+  scroll-behavior: auto;
+}
 </style>

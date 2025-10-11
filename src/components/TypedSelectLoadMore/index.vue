@@ -24,11 +24,11 @@ export default {
       type: [String, Number],
       default: ''
     },
-    // 选择器类型：category（仪表型号）、user（用户）
+    // 选择器类型：category（仪表型号）、user（用户）、customer（客户）
     type: {
       type: String,
       required: true,
-      validator: (value) => ['category', 'user'].includes(value)
+      validator: (value) => ['category', 'user', 'customer'].includes(value)
     },
     // 占位符文本
     placeholder: {
@@ -92,6 +92,11 @@ export default {
           dictLabel: 'displayName',
           dictValue: 'userName',
           placeholder: '请选择负责人'
+        },
+        customer: {
+          dictLabel: 'name',
+          dictValue: 'id',
+          placeholder: '请选择客户'
         }
       };
       return configs[this.type] || {};
@@ -126,6 +131,8 @@ export default {
           await this.getCategoryData({ page, more, keyword });
         } else if (this.type === 'user') {
           await this.getUserData({ page, more, keyword });
+        } else if (this.type === 'customer') {
+          await this.getCustomerData({ page, more, keyword });
         }
       } catch (error) {
         console.error(`加载${this.type}数据失败:`, error);
@@ -214,6 +221,46 @@ export default {
       });
     },
     
+    // 获取客户数据
+    async getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
+      // 使用与contact页面相同的客户API
+      const { getCustomerList } = await import('@/api/order');
+      
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword
+        }).then((res) => {
+          // 直接使用res.data，与contact页面保持一致
+          if (res && res.data) {
+            const { list, total, pageNum, pageSize } = res.data;
+            // 过滤启用状态的客户
+            const filteredList = list.filter((item) => item.status === 0);
+
+            if (more) {
+              this.componentData.data = [...this.componentData.data, ...filteredList];
+            } else {
+              this.componentData.data = filteredList;
+            }
+
+            // 计算是否还有更多数据
+            this.componentData.page = pageNum;
+            this.componentData.more = this.componentData.data.length < total;
+          } else {
+            console.error('获取客户数据失败: 响应数据格式错误');
+            this.componentData.data = [];
+            this.componentData.more = false;
+          }
+          resolve();
+        }).catch((error) => {
+          console.error('获取客户数据失败:', error);
+          this.componentData.data = [];
+          this.componentData.more = false;
+          resolve();
+        });
+      });
+    },
+
     // 处理值变化
     handleChange(value) {
       this.$emit('change', value);

@@ -57,7 +57,7 @@
         
         <el-table-column prop="inventoryCreateTime" label="日期" align="center" width="110">
           <template slot-scope="scope">
-            <span>{{ formatDate(scope.row.createTime , 'yyyy-MM-dd') || '--' }}</span>
+            <span>{{ scope.row.inventoryCreateTime || '--' }}</span>
           </template>
         </el-table-column>
         
@@ -73,7 +73,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="englishName" label="规格" align="center" width="150" show-overflow-tooltip>
+        <el-table-column prop="englishName" label="规格" align="center" width="150">
           <template slot-scope="scope">
             <span>{{ scope.row.englishName || '--' }}</span>
           </template>
@@ -81,7 +81,7 @@
         
         <el-table-column prop="invDefine" label="供应商" align="center" width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.invDefine || '--' }}</span>
+            <span>{{ scope.row.invDefine ||  '--' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="id" label="来料记录" align="center">
@@ -134,6 +134,7 @@
             <span v-else>--</span>
           </template>
         </el-table-column>
+        <el-table-column prop="remark" label="备注" align="center" width="150" show-overflow-tooltip/>
         <el-table-column prop="createBy" label="检验员" align="center" width="100"/>
          
         <el-table-column label="操作" width="180" align="center" >
@@ -264,10 +265,13 @@ export default {
           key: 'testResult',
           label: '检验结果',
           type: 'select',
-          options: [
-            { label: 'PASS', value: 'PASS' },
-            { label: 'NG', value: 'NG' }
-          ],
+          component: 'el-select',
+          props:{
+            options: [
+              { label: 'PASS', value: 'PASS' },
+              { label: 'NG', value: 'NG' }
+            ]
+          },
           placeholder: '请选择检验结果',
           sort: 3
         }

@@ -85,6 +85,23 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="发生阶段" prop="generatorStage">
+                <el-select
+                  v-model="form.generatorStage"
+                  clearable
+                  style="width: 100%"
+                  placeholder="请选择发生阶段"
+                >
+                  <el-option
+                    v-for="item in happenStageOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
             <el-col v-if="isUpdateId">
               <el-form-item label="问题根因" prop="rootMatter">
                 <el-input
@@ -658,8 +675,13 @@ export default {
       // 提交loading
       isSubLoading: false,
       computerIdIndex: "",
+      happenStageOptions: [
+        { label: "组装厂", value: "组装厂" },
+        { label: "用户", value: "用户" },
+      ],
       // 表单参数
       form: {
+        generatorStage: "",
         inventory: [],
         logisticsEntity: {},
         list: [
@@ -712,6 +734,9 @@ export default {
             message: "请选择客退清单",
             trigger: ["change", "blur"],
           },
+        ],
+        generatorStage: [
+          { required: true, message: "请选择发生阶段", trigger: "change" },
         ],
         categoryId: [
           { required: true, message: "请选择品类", trigger: "change" },
@@ -876,7 +901,8 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        // inventory: [],
+        generatorStage: "",
+        inventory: [],
         list: [
           {
             categoryId: "",
@@ -923,6 +949,10 @@ export default {
           this.isSubLoading = true;
           let params = JSON.parse(JSON.stringify(this.form));
           params.inventory = JSON.stringify(params.inventory);
+          // 兼容后端字段仍为 happenStage 的情况
+          if (params.generatorStage !== undefined) {
+            params.happenStage = params.generatorStage;
+          }
 
           if (params.id) {
             const { logisticsEntity, ...dataInfo } = params;

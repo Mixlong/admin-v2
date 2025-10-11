@@ -64,6 +64,19 @@
                 </el-input>
               </el-form-item>
             </el-col>
+             <!-- 没有供应商信息时，显社输入框 -->
+            <el-col :span="12" v-if="form.invCode && !selectedInventoryInfo.supplier">
+              <el-form-item label="供应商" prop="invDefine">
+                <el-input
+                  v-model="form.invDefine"
+                  placeholder="请输入供应商"
+                  style="width: 100%"
+                  size="mini"
+                  :disabled="isView"
+                  clearable>
+                </el-input>
+              </el-form-item>
+            </el-col>
           </el-row>
           
           <el-row :gutter="20">
@@ -81,15 +94,16 @@
                     <span class="label">规格2:</span>
                     <span class="value">{{ selectedInventoryInfo.invStd || '--' }}</span>
                   </div>
-                  <div class="info-item">
+                  <!-- 有供应商信息时，只读显示 -->
+                  <div v-if="selectedInventoryInfo.supplier" class="info-item">
                     <span class="label">供应商:</span>
-                    <span class="value">{{ selectedInventoryInfo.supplier || selectedInventoryInfo.invDefine || '--' }}</span>
+                    <span class="value">{{ selectedInventoryInfo.supplier }}</span>
                   </div>
                 </div>
             </el-col>
-            <el-col :span="12">
-            </el-col>
           </el-row>
+          
+          
         </fieldset>
 
         <!-- 检验数据 -->
@@ -193,6 +207,20 @@
             </el-col>
           </el-row>
           
+          <el-row :gutter="20">
+            <el-col :span="24">
+              <el-form-item label="备注" prop="remark" label-width="120px">
+                <el-input
+                  v-model="form.remark"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入备注信息"
+                  show-word-limit
+                  :disabled="isView">
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
       
         </fieldset>
       </el-form>
@@ -332,10 +360,11 @@ export default {
         Authorization: 'Bearer ' + getToken()
       },
       form: {
-        basicInfoId: '',
+        batchNo: '',
         invCode: '',
         invName: '',
         category: '',
+        supplier: '',
         purchaseOrderCode: '',
         arrivalQuantity: null,
         samplingQuantity: null,
@@ -344,7 +373,8 @@ export default {
         testInfo: '',
         defectiveDesc: '',
         inspectionResult: 'PASS',
-        testResult: 'PASS'
+        testResult: 'PASS',
+        remark: ''
       },
       rules: {
         batchNo:[
@@ -464,9 +494,11 @@ export default {
         // 新增模式，重置表单
         this.form = {
           basicInfoId: this.basicInfoId,
+          batchNo: '',
           invCode: '',
           invName: '',
           category: '',
+          supplier: '',
           purchaseOrderCode: '',
           arrivalQuantity: null,
           samplingQuantity: null,
@@ -474,7 +506,8 @@ export default {
           defectRate: '0.00%',
           testInfo: '',
           defectiveDesc: '',
-          inspectionResult: 'PASS'
+          inspectionResult: 'PASS',
+          remark: ''
         }
 
         // 新增模式下清空来料相关信息
@@ -731,17 +764,25 @@ export default {
         if (selectedInventory) {
           this.form.invName = selectedInventory.invName || ''
           this.form.category = selectedInventory.category || ''
+          
+          // 检查是否有供应商信息
+          const supplierInfo = selectedInventory.supplier || selectedInventory.invDefine || ''
+          
           // 存储完整的选中信息用于显示
           this.selectedInventoryInfo = {
             englishName: selectedInventory.englishName || '',
             invStd: selectedInventory.invStd || '',
-            supplier: selectedInventory.supplier || '',
-            invDefine: selectedInventory.invDefine || ''
+            supplier: supplierInfo  // 用于判断是否显示输入框
           }
+          
+          // 有供应商信息时，不填充到 form.supplier（因为会在 selectedInventoryInfo 中只读显示）
+          // 没有供应商信息时，清空 form.supplier，显示输入框让用户手动输入
+          this.form.supplier = ''
         }
       } else {
         this.form.invName = ''
         this.form.category = ''
+        this.form.supplier = ''
         this.selectedInventoryInfo = {}
       }
     }
