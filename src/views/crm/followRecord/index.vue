@@ -126,21 +126,22 @@
             <el-button
               type="text"
               size="small"
-              icon="el-icon-edit"
-              @click="handleEdit(row)"
-              v-hasPermi="['crm:followRecord:edit']"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="text"
-              size="small"
               icon="el-icon-view"
               @click="handleView(row)"
               v-hasPermi="['crm:followRecord:query']"
             >
               查看
             </el-button>
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-edit"
+              @click="handleEdit(row)"
+              v-hasPermi="['crm:followRecord:edit']"
+            >
+              编辑
+            </el-button>
+     
             <el-button
               v-if="row.status === 'pending'"
               type="text"
@@ -217,6 +218,7 @@ import SelectLoadMore from '@/components/selectLoadMore'
 // import EditFollowRecordDialog from './components/EditFollowRecordDialog.vue' // 已合并到AddFollowRecordDialog
 import { getFollowRecordList, deleteFollowRecord, updateFollowRecord } from '@/api/crm/followRecord'
 import { getSoCustomerList } from '@/api/crm/soCustomer'
+import { FOLLOW_METHOD_OPTIONS, getFollowMethodColor } from '@/views/crm/constants'
 
 export default {
   name: 'CrmFollowRecord',
@@ -269,14 +271,7 @@ export default {
           props: {
             size: 'mini',
             clearable: true,
-            options: [
-              { label: '电话跟进', value: 'call' },
-              { label: '客户拜访', value: 'visit' },
-              { label: '邮件沟通', value: 'email' },
-              { label: '会议', value: 'meeting' },
-              { label: '微信沟通', value: 'wechat' },
-              { label: '其他', value: 'other' }
-            ]
+            options: FOLLOW_METHOD_OPTIONS
           }
         },
         {
@@ -477,27 +472,9 @@ export default {
       this.currentPage = page
       this.getFollowRecordList()
     },
+    // 简化：使用统一的常量管理
     getMethodColor(method) {
-      const colorMap = {
-        call: '',
-        visit: 'success',
-        email: 'warning',
-        meeting: 'info',
-        wechat: 'primary',
-        other: 'danger'
-      }
-      return colorMap[method] || ''
-    },
-    getMethodText(method) {
-      const textMap = {
-        call: '电话跟进',
-        visit: '客户拜访',
-        email: '邮件沟通',
-        meeting: '会议',
-        wechat: '微信沟通',
-        other: '其他'
-      }
-      return textMap[method] || method
+      return getFollowMethodColor(method)
     },
     formatDateTime(datetime) {
       if (!datetime) return ''

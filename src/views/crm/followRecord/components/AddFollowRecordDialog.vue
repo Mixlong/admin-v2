@@ -70,12 +70,12 @@
                 placeholder="请选择跟进方式"
                 style="width: 100%"
               >
-                <el-option label="电话跟进" value="call" />
-                <el-option label="客户拜访" value="visit" />
-                <el-option label="邮件沟通" value="email" />
-                <el-option label="会议" value="meeting" />
-                <el-option label="微信沟通" value="wechat" />
-                <el-option label="其他" value="other" />
+              <el-option 
+                v-for="option in followMethodOptions" 
+                :key="option.value" 
+                :label="option.label" 
+                :value="option.value" 
+              />
               </el-select>
             </el-form-item>
           </el-col>
@@ -121,6 +121,7 @@ import { getSoCustomerList } from '@/api/crm/soCustomer'
 import { getCustomerContactList } from '@/api/third/customerContact'
 import SelectLoadMore from '@/components/selectLoadMore'
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore'
+import { FOLLOW_METHOD_OPTIONS } from '@/views/crm/constants'
 
 export default {
   name: 'AddFollowRecordDialog',
@@ -152,6 +153,7 @@ export default {
   },
   data() {
     return {
+      followMethodOptions: FOLLOW_METHOD_OPTIONS,
       loading: false,
       form: {
         customerId: '',

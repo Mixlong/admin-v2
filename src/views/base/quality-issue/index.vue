@@ -257,6 +257,7 @@
               label="已确认"
               :value="4"
             />
+            <el-option v-if="canModifyGeneralStatus()" label="已关闭" :value="5" />  
           </el-select>
         </el-form-item>
 
@@ -594,7 +595,8 @@ export default {
         1: 'warning', // 待处理
         2: 'primary', // 处理中
         3: 'success', // 已完善
-        4: 'info' // 已确认
+        4: 'info', // 已确认
+        5: 'info' // 已关闭
       }
       return statusMap[status] || 'info'
     },
@@ -605,7 +607,8 @@ export default {
         1: '待处理',
         2: '处理中',
         3: '已完善',
-        4: '已确认'
+        4: '已确认',
+        5: '已关闭'
       }
       return statusMap[status] || '未知'
     },

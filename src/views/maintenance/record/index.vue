@@ -175,9 +175,10 @@
           </template>
         </el-table-column>      
  
-        <el-table-column label="操作" width="150" align="center" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit" v-hasPermi="['maintenance:record:edit']">编辑</el-button>
+            <el-button size="mini" type="text" @click="handleCopy(scope.row)" icon="el-icon-document-copy" v-hasPermi="['maintenance:record:add']">复制</el-button>
             <el-button size="mini" type="text" class="text-red" @click="handleDelete(scope.row)" icon="el-icon-delete" v-hasPermi="['maintenance:record:remove']">删除</el-button>
           </template>
         </el-table-column>  
@@ -391,6 +392,20 @@ export default {
     // 编辑记录
     handleEdit(row) {
       this.editData = { ...row }
+      this.addDialogVisible = true
+    },
+
+    // 复制记录
+    handleCopy(row) {
+      // 复制当前数据作为新增，但清空PCBA SN和ID
+      const copyData = { ...row }
+
+      delete copyData.id // 移除ID，作为新增
+      delete copyData.updateTime // 移除更新时间
+      delete copyData.createTime // 移除创建时间
+      copyData.pcbaSn = '' // 清空PCBA SN
+      
+      this.editData = copyData
       this.addDialogVisible = true
     },
 

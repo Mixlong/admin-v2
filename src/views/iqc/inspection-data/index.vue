@@ -81,7 +81,7 @@
         
         <el-table-column prop="invDefine" label="供应商" align="center" width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.invDefine || '--' }}</span>
+            <span>{{ scope.row.invDefine ||  '--' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="id" label="来料记录" align="center">
@@ -134,6 +134,7 @@
             <span v-else>--</span>
           </template>
         </el-table-column>
+        <el-table-column prop="remark" label="备注" align="center" width="150" show-overflow-tooltip/>
         <el-table-column prop="createBy" label="检验员" align="center" width="100"/>
          
         <el-table-column label="操作" width="180" align="center" >

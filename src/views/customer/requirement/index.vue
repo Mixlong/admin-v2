@@ -104,63 +104,17 @@
             </template>
           </el-table-column>
         <!-- 客户要求（标准） -->
-        <el-table-column label="客户要求（标准）" align="center" >
-          <el-table-column prop="validationStandard" label="校验标准" align="center" >
-            <template slot-scope="scope">
-              <div class="requirement-container">
-                <div class="requirement-scroll-area">
-                  <div v-html="scope.row.validationStandard" class="requirement-text rich-text-content"></div>
-                </div>
-
-                <!-- 校验标准附件下载 -->
-                <div v-if="hasFieldAttachments(scope.row, 'validationAttachment')" class="attachment-fixed-right">
-                  <el-popover
-                    placement="right"
-                    width="300"
-                    trigger="click"
-                    title="附件">
-
-                    <!-- 文件表格 -->
-                    <el-table
-                      :data="getFieldAttachments(scope.row, 'validationAttachment')"
-                      size="mini"
-                      :show-header='false'
-                      max-height="300">
-                      <el-table-column property="name" label="文件名" min-width="200">
-                        <template slot-scope="fileScope">
-                          <div class="file-name-cell">
-                            <i :class="getFileIcon(fileScope.row.extension)" class="file-icon-small"></i>
-                            <span :title="fileScope.row.name">{{ fileScope.row.name }}</span>
-                          </div>
-                        </template>
-                      </el-table-column>
-
-                      <el-table-column label="操作" width="60" align="center">
-                        <template slot-scope="fileScope">
-                          <el-button
-                            type="text"
-                            size="mini"
-                            icon="el-icon-download"
-                            @click="downloadFile(fileScope.row)"
-                            title="下载">
-                          </el-button>
-                        </template>
-                      </el-table-column>
-                    </el-table>
-
-                    <el-button
-                      slot="reference"
-                      type="text"
-                      size="mini"
-                      icon="el-icon-paperclip"
-                      class="attachment-btn">
-                      ({{ getFieldAttachments(scope.row, 'validationAttachment').length }})
-                    </el-button>
-                  </el-popover>
-                </div>
+        <el-table-column label="客户出货方" prop="customerDelivery" align="center" >
+          <template slot-scope="scope">
+            <div class="requirement-container">
+              <div class="requirement-scroll-area">
+                <div v-html="scope.row.customerDelivery"></div>
               </div>
-            </template>
-          </el-table-column>
+            </div>
+          </template>
+        </el-table-column>
+          <el-table-column label="客户要求（标准）" align="center" >
+    
           
           <el-table-column prop="productCertification" label="产品认证" align="center" >
             <template slot-scope="scope">
@@ -275,16 +229,15 @@
               </div>
             </template>
           </el-table-column>
-          
-          <el-table-column prop="aqlStandard" label="AQL标准" align="center"  >
+          <el-table-column prop="validationStandard" label="其他要求" align="center" >
             <template slot-scope="scope">
               <div class="requirement-container">
                 <div class="requirement-scroll-area">
-                  <div v-html="scope.row.aqlStandard" class="requirement-text rich-text-content"></div>
+                  <div v-html="scope.row.validationStandard" class="requirement-text rich-text-content"></div>
                 </div>
 
-                <!-- AQL标准附件下载 -->
-                <div v-if="hasFieldAttachments(scope.row, 'aqlAttachment')" class="attachment-fixed-right">
+                <!-- 校验标准附件下载 -->
+                <div v-if="hasFieldAttachments(scope.row, 'validationAttachment')" class="attachment-fixed-right">
                   <el-popover
                     placement="right"
                     width="300"
@@ -293,7 +246,7 @@
 
                     <!-- 文件表格 -->
                     <el-table
-                      :data="getFieldAttachments(scope.row, 'aqlAttachment')"
+                      :data="getFieldAttachments(scope.row, 'validationAttachment')"
                       size="mini"
                       :show-header='false'
                       max-height="300">
@@ -325,14 +278,14 @@
                       size="mini"
                       icon="el-icon-paperclip"
                       class="attachment-btn">
-                      ({{ getFieldAttachments(scope.row, 'aqlAttachment').length }})
+                      ({{ getFieldAttachments(scope.row, 'validationAttachment').length }})
                     </el-button>
                   </el-popover>
                 </div>
               </div>
             </template>
           </el-table-column>
-          
+ 
           <el-table-column prop="qualityInfo" label="质量协议" align="center"  >
             <template slot-scope="scope">
               <div class="requirement-container">
@@ -392,7 +345,62 @@
         </el-table-column>
         
  
-        
+        <el-table-column label="保障措施" align="center" > 
+            <template slot-scope="scope">
+              <div class="requirement-container">
+                <div class="requirement-scroll-area">
+                  <div v-html="scope.row.aqlStandard" class="requirement-text rich-text-content"></div>
+                </div>
+
+                <!-- AQL标准附件下载 -->
+                <div v-if="hasFieldAttachments(scope.row, 'aqlAttachment')" class="attachment-fixed-right">
+                  <el-popover
+                    placement="right"
+                    width="300"
+                    trigger="click"
+                    title="附件">
+
+                    <!-- 文件表格 -->
+                    <el-table
+                      :data="getFieldAttachments(scope.row, 'aqlAttachment')"
+                      size="mini"
+                      :show-header='false'
+                      max-height="300">
+                      <el-table-column property="name" label="文件名" min-width="200">
+                        <template slot-scope="fileScope">
+                          <div class="file-name-cell">
+                            <i :class="getFileIcon(fileScope.row.extension)" class="file-icon-small"></i>
+                            <span :title="fileScope.row.name">{{ fileScope.row.name }}</span>
+                          </div>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="操作" width="60" align="center">
+                        <template slot-scope="fileScope">
+                          <el-button
+                            type="text"
+                            size="mini"
+                            icon="el-icon-download"
+                            @click="downloadFile(fileScope.row)"
+                            title="下载">
+                          </el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+
+                    <el-button
+                      slot="reference"
+                      type="text"
+                      size="mini"
+                      icon="el-icon-paperclip"
+                      class="attachment-btn">
+                      ({{ getFieldAttachments(scope.row, 'aqlAttachment').length }})
+                    </el-button>
+                  </el-popover>
+                </div>
+              </div>
+            </template>
+        </el-table-column>
         <!-- 市场负责人 -->
         <el-table-column label="市场负责人" align="center" width="120" class-name="market-manager-column">
           <template slot-scope="scope">

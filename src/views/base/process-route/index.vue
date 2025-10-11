@@ -69,7 +69,7 @@
         @selection-change="handleSelectionChange" 
         border 
         style="width: 100%" 
-        height="81vh"
+        :height="tableHeight(180)"
         row-key="id"
         :row-class-name="getRowClassName"
         @sort-change="handleSortChange">
@@ -339,7 +339,13 @@ export default {
     /** 查询工艺路线列表 */
     getList() {
       this.loading = true;
-      listProcessRoute(this.queryParams).then(response => {
+      // 构建分页参数，确保参数名称正确
+      const params = {
+        ...this.queryParams,
+        p: this.queryParams.pageNum,
+        l: this.queryParams.pageSize
+      };
+      listProcessRoute(params).then(response => {
         // 处理返回的数据，将detailList中的数据映射到对应的工序类型列
         const processedList = response.data.list.map(route => {
           // 复制基础数据

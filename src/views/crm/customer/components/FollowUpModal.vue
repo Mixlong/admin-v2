@@ -17,11 +17,12 @@
     >
       <el-form-item label="跟进类型" prop="type">
         <el-select v-model="form.type" placeholder="请选择跟进类型" style="width: 100%">
-          <el-option label="电话跟进" value="call" />
-          <el-option label="客户拜访" value="visit" />
-          <el-option label="邮件沟通" value="email" />
-          <el-option label="会议讨论" value="meeting" />
-          <el-option label="其他" value="other" />
+          <el-option 
+            v-for="option in followMethodOptions" 
+            :key="option.value" 
+            :label="option.label" 
+            :value="option.value" 
+          />
         </el-select>
       </el-form-item>
 
@@ -89,6 +90,8 @@
 </template>
 
 <script>
+import { FOLLOW_METHOD_OPTIONS } from '@/views/crm/constants'
+
 export default {
   name: 'FollowUpModal',
   props: {
@@ -103,6 +106,7 @@ export default {
   },
   data() {
     return {
+      followMethodOptions: FOLLOW_METHOD_OPTIONS,
       loading: false,
       fileList: [],
       contactOptions: [],

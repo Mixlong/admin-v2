@@ -48,8 +48,8 @@
         
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="手机号" prop="contactPhone">
-              <el-input v-model="formData.contactPhone" placeholder="请输入手机号" />
+            <el-form-item label="其他联系方式" prop="contactPhone">
+              <el-input v-model="formData.contactPhone" placeholder="请输入其他联系方式" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -95,6 +95,18 @@
             placeholder="请输入联系人详情描述"
           />
         </el-form-item>
+        <el-form-item label="名片图片" prop="cardImage">
+          <el-upload-sortable
+            v-model="formData.cardImage"
+            :img-w="100"
+            :img-h="100"
+            accept="image/*"
+            :multiple="true"
+            :sortable="false"
+          />
+        </el-form-item>
+        
+        
       </fieldset>
     </el-form>
 
@@ -115,12 +127,14 @@ import { listUser } from '@/api/system/user'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import SelectLoadMore from '@/components/selectLoadMore'
+import ElUploadSortable from '@/components/el-upload-sortable'
 
 export default {
   name: 'ContactFormModal',
   components: {
     Treeselect,
-    SelectLoadMore
+    SelectLoadMore,
+    ElUploadSortable
   },
   props: {
     visible: {
@@ -155,7 +169,8 @@ export default {
         belongDepartment: '',
         isDecisionMaker: 0,
         contactDetails: '',
-        collaborator: ''
+        collaborator: '',
+        cardImage: ''
       },
       // 客户数据
       customerData: {
@@ -285,7 +300,8 @@ export default {
         belongDepartment: '',
         isDecisionMaker: 0,
         contactDetails: '',
-        collaborator: ''
+        collaborator: '',
+        cardImage: ''
       }
 
       this.selectedCollaborators = []

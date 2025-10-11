@@ -13,7 +13,7 @@
       :model="localFormData"
       :rules="dynamicRules"
       ref="form"
-      label-width="120px"
+      label-width="125px"
       class="requirement-form"
     >
       <!-- 基本信息 -->
@@ -154,33 +154,6 @@
         <legend>客户要求（标准）</legend>
         <el-row :gutter="30">
           <el-col :span="12">
-            <el-form-item label="校验标准" prop="validationStandard">
-              <Editor 
-                v-model="localFormData.validationStandard" 
-                :min-height="120"
-                placeholder="请输入校验标准..."
-                :disabled="isView"
-                :config="{
-                  height: 120,
-                  menubar: false,
-                  toolbar: 'bold italic underline | bullist numlist | removeformat',
-                  plugins: 'lists',
-                  statusbar: false,
-                  resize: false,
-                  branding: false
-                }" />
-            </el-form-item>
-            <el-form-item label="校验标准附件">
-              <MyUpload 
-                v-model="localFormData.validationAttachment"
-                :multiple="true"
-                :limit="10"
-                :disabled="isView"
-              />
-            </el-form-item>
-          </el-col>
-          
-          <el-col :span="12">
             <el-form-item label="产品认证" prop="productCertification">
               <Editor 
                 v-model="localFormData.productCertification" 
@@ -206,9 +179,6 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row :gutter="30">
           <el-col :span="12">
             <el-form-item label="环保要求" prop="environmentalRequirements">
               <Editor 
@@ -235,13 +205,12 @@
               />
             </el-form-item>
           </el-col>
-          
           <el-col :span="12">
-            <el-form-item label="AQL标准" prop="aqlStandard">
+            <el-form-item label="其他要求" prop="validationStandard">
               <Editor 
-                v-model="localFormData.aqlStandard" 
+                v-model="localFormData.validationStandard" 
                 :min-height="120"
-                placeholder="请输入AQL标准..."
+                placeholder="请输入其他要求..."
                 :disabled="isView"
                 :config="{
                   height: 120,
@@ -253,18 +222,18 @@
                   branding: false
                 }" />
             </el-form-item>
-            <el-form-item label="AQL标准附件">
+            <el-form-item label="其他要求附件">
               <MyUpload 
-                v-model="localFormData.aqlAttachment"
+                v-model="localFormData.validationAttachment"
                 :multiple="true"
                 :limit="10"
                 :disabled="isView"
               />
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row :gutter="30">
+          
+          
+       
           <el-col :span="12">
             <el-form-item label="质量协议" prop="qualityInfo">
               <Editor 
@@ -291,9 +260,49 @@
               />
             </el-form-item>
           </el-col>
-          
           <el-col :span="12">
-            <!-- 预留位置，可以添加其他字段 -->
+            <el-form-item label="保障措施" prop="aqlStandard">
+              <Editor 
+                v-model="localFormData.aqlStandard" 
+                :min-height="120"
+                placeholder="请输入保障措施..."
+                :disabled="isView"
+                :config="{
+                  height: 120,
+                  menubar: false,
+                  toolbar: 'bold italic underline | bullist numlist | removeformat',
+                  plugins: 'lists',
+                  statusbar: false,
+                  resize: false,
+                  branding: false
+                }" />
+            </el-form-item>
+            <el-form-item label="保障措施附件">
+              <MyUpload 
+                v-model="localFormData.aqlAttachment"
+                :multiple="true"
+                :limit="10"
+                :disabled="isView"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="客户出货方" prop="customerDelivery">
+              <Editor 
+                v-model="localFormData.customerDelivery" 
+                :min-height="120"
+                placeholder="请输入客户出货方..."
+                :disabled="isView"
+                :config="{
+                  height: 120,
+                  menubar: false,
+                  toolbar: 'bold italic underline | bullist numlist | removeformat',
+                  plugins: 'lists',
+                  statusbar: false,
+                  resize: false,
+                  branding: false
+                }" />
+            </el-form-item>
           </el-col>
         </el-row>
       </fieldset>
@@ -351,6 +360,7 @@ export default {
         more: true,
       },
       submitLoading: false,
+      isDialogInitialized: false, // 标记对话框是否已初始化,
       categoryOptions: [],
       customerOptions: [],
       customerData: {
@@ -388,6 +398,7 @@ export default {
         environmentalRequirements: '',
         aqlStandard: '',
         qualityInfo: '', // 质量协议
+        customerDelivery: '', // 客户出货方
         validationAttachment: '',
         certificationAttachment: '',
         environmentalAttachment: '',
@@ -409,7 +420,7 @@ export default {
           { required: true, message: '请选择市场负责人', trigger: 'change' }
         ],
         qualityManager: [
-          { required: true, message: '请选择质量负责人', trigger: 'change' }
+          { required: false, message: '请选择质量负责人', trigger: 'change' }
         ],
     
       }
@@ -429,15 +440,14 @@ export default {
     dynamicRules() {
       const rules = { ...this.formRules }
 
-      // // 为每个机型配置添加验证规则
-      // this.localFormData.requirementInfoList.forEach((_, index) => {
-      //   rules[`requirementInfoList.${index}.category`] = [
-      //     { required: true, message: '请选择机型型号', trigger: 'change' }
-      //   ]
-      //   rules[`requirementInfoList.${index}.modelConfig`] = [
-      //     { required: true, message: '请输入机型配置', trigger: 'blur' }
-      //   ]
-      // })
+      // 为每个机型配置添加验证规则
+      this.localFormData.requirementInfoList.forEach((_, index) => {
+        // 机型型号必填
+        rules[`requirementInfoList.${index}.category`] = [
+          { required: true, message: '请选择机型型号', trigger: 'change' }
+        ]
+        // 机型配置非必填，不添加验证规则
+      })
 
       return rules
     }
@@ -445,11 +455,20 @@ export default {
   watch: {
     visible(val) {
       if (val) {
-        this.initDialog()
-        // 监听对话框打开，防止自动滚动
+        this.isDialogInitialized = false
+        // 立即设置滚动位置为0，防止加载过程中的自动滚动
         this.$nextTick(() => {
-          this.preventAutoScroll()
+          const dialogContent = document.querySelector('.dialog-scroll .el-dialog__body')
+          if (dialogContent) {
+            dialogContent.scrollTop = 0
+          }
         })
+        this.initDialog()
+        this.$nextTick(() => {
+          this.isDialogInitialized = true
+        })
+      } else {
+        this.isDialogInitialized = false
       }
     },
     formData: {
@@ -479,6 +498,7 @@ export default {
             environmentalRequirements: '',
             aqlStandard: '',
             qualityInfo: '', // 质量协议
+            customerDelivery: '', // 客户出货方
             validationAttachment: '',
             certificationAttachment: '',
             environmentalAttachment: '',
@@ -494,6 +514,23 @@ export default {
       },
       immediate: true,
       deep: true
+    }
+  },
+  mounted() {
+    // 添加防止输入框聚焦时自动滚动的处理
+    this.$nextTick(() => {
+      const dialogBody = document.querySelector('.dialog-scroll .el-dialog__body')
+      if (dialogBody) {
+        // 阻止输入框聚焦时的滚动行为
+        dialogBody.addEventListener('focusin', this.handleFocusIn, true)
+      }
+    })
+  },
+  beforeDestroy() {
+    // 清理事件监听
+    const dialogBody = document.querySelector('.dialog-scroll .el-dialog__body')
+    if (dialogBody) {
+      dialogBody.removeEventListener('focusin', this.handleFocusIn, true)
     }
   },
   methods: {
@@ -578,15 +615,10 @@ export default {
         this.addModelConfig()
       }
       
-      // 重置表单验证并防止自动滚动
+      // 重置表单验证
       this.$nextTick(() => {
         if (this.$refs.form) {
           this.$refs.form.clearValidate()
-        }
-        
-        // 恢复滚动位置到顶部，防止自动滚动到底部
-        if (dialogContent) {
-          dialogContent.scrollTop = 0
         }
       })
     },
@@ -1090,37 +1122,24 @@ export default {
           this.$message.error(response.msg || (this.isEdit ? '更新失败' : '创建失败'))
         }
       } catch (error) {
-        if (error !== false) { // 表单验证失败时不显示错误消息
-          console.error('提交客户要求失败:', error)
-          this.$message.error(this.isEdit ? '更新失败' : '创建失败')
-        }
       } finally {
         this.submitLoading = false
       }
     },
     
-    // 防止自动滚动的方法
-    preventAutoScroll() {
+    // 处理输入框聚焦事件，防止自动滚动
+    handleFocusIn(e) {
       const dialogContent = document.querySelector('.el-dialog__body')
-      if (!dialogContent) return
-
-      // 只在对话框刚打开时设置滚动位置为顶部
-      dialogContent.scrollTop = 0
-
-      // 监听富文本编辑器的初始化事件，防止编辑器导致的自动滚动
-      this.$nextTick(() => {
-        const editors = document.querySelectorAll('.tox-edit-area iframe')
-        editors.forEach(editor => {
-          editor.addEventListener('load', () => {
-            setTimeout(() => {
-              // 只有当滚动位置接近底部时才重置到顶部（防止编辑器初始化导致的滚动）
-              if (dialogContent && dialogContent.scrollTop > dialogContent.scrollHeight - dialogContent.clientHeight - 100) {
-                dialogContent.scrollTop = 0
-              }
-            }, 100)
-          })
-        })
-      })
+      if (!dialogContent || !this.isDialogInitialized) return
+      
+      const scrollTop = dialogContent.scrollTop
+      
+      // 使用 setTimeout 确保在浏览器默认滚动后恢复位置
+      setTimeout(() => {
+        if (dialogContent && this.isDialogInitialized) {
+          dialogContent.scrollTop = scrollTop
+        }
+      }, 0)
     },
 
     // 关闭对话框
@@ -1336,10 +1355,16 @@ export default {
   color: #606266;
 }
 
-/* 优化对话框滚动行为 */
-::v-deep .el-dialog__body {
-  scroll-behavior: smooth;
+/* 防止输入框聚焦时自动滚动 */
+.dialog-scroll ::v-deep .el-input__inner,
+.dialog-scroll ::v-deep .el-textarea__inner,
+.dialog-scroll ::v-deep .tox-edit-area {
+  scroll-margin-top: 0;
+  scroll-margin-bottom: 0;
 }
- 
- 
+
+/* 禁用表单元素的平滑滚动 */
+.dialog-scroll ::v-deep .el-dialog__body {
+  scroll-behavior: auto;
+}
 </style>

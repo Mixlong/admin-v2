@@ -25,7 +25,7 @@
             <div class="info-label">跟进方式</div>
             <div class="info-value">
               <el-tag :type="getMethodColor(activity.followMethod || activity.type)" size="small">
-                {{ getMethodText(activity.followMethod || activity.type) }}
+                {{ activity.followMethod || activity.type }}
               </el-tag>
             </div>
           </div>
@@ -70,6 +70,8 @@
 </template>
 
 <script>
+import { getFollowMethodColor } from '@/views/crm/constants'
+
 export default {
   name: 'ActivityDetailModal',
   props: {
@@ -112,65 +114,12 @@ export default {
 
     // 辅助函数
     getMethodColor(method) {
-      const colorMap = {
-        // 中文值
-        '电话沟通': '',
-        '客户拜访': 'success',
-        '邮件沟通': 'warning',
-        '微信沟通': 'info',
-        '会议': 'info',
-        '其他': 'danger',
-        // 英文值
-        'call': '',
-        'visit': 'success',
-        'email': 'warning',
-        'wechat': 'info',
-        'meeting': 'info',
-        'other': 'danger'
-      }
-      return colorMap[method] || ''
+      return getFollowMethodColor(method)
     },
 
-    getMethodText(method) {
-      const textMap = {
-        // 英文值转中文
-        'call': '电话跟进',
-        'visit': '客户拜访',
-        'email': '邮件沟通',
-        'wechat': '微信沟通',
-        'meeting': '会议',
-        'other': '其他',
-        // 中文值保持不变
-        '电话跟进': '电话跟进',
-        '客户拜访': '客户拜访',
-        '邮件沟通': '邮件沟通',
-        '微信沟通': '微信沟通',
-        '会议': '会议',
-        '其他': '其他'
-      }
-      return textMap[method] || method
-    },
-
+    // type 就是 followMethod，使用同一个函数
     getTypeColor(type) {
-      const colorMap = {
-        call: '',
-        visit: 'success',
-        email: 'warning',
-        meeting: 'info',
-        other: 'danger'
-      }
-      return colorMap[type] || ''
-    },
-
-    getTypeText(type) {
-      const textMap = {
-        call: '电话跟进',
-        visit: '客户拜访',
-        email: '邮件沟通',
-        meeting: '会议',
-        other: '其他'
-      }
-      return textMap[type] || type
+      return getFollowMethodColor(type)
     },
 
     getStatusType(status) {

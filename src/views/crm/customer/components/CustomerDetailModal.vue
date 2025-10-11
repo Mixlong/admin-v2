@@ -96,6 +96,10 @@
                   <div class="info-label">客户来源</div>
                   <div class="info-value">{{ customer.customerSource || '--' }}</div>
                 </div>
+                <div class="info-item">
+                  <div class="info-label">客户属性</div>
+                  <div class="info-value">{{ customer.customerAttribute || '--' }}</div>
+                </div>
                 <div class="info-item info-item--span2">
                   <div class="info-label">客户地址</div>
                   <div class="info-value">{{ customer.address || '--' }}</div>
@@ -106,10 +110,7 @@
             <div class="info-section">
               <div class="section-title">产品信息</div>
               <div class="info-grid">
-                 <div class="info-item">
-                   <div class="info-label">电控类型</div>
-                   <div class="info-value">{{ getDictLabel('control_type', customer.electricalControlType) || customer.electricalControlType || '--' }}</div>
-                  </div>
+           
                 <div class="info-item">
                   <div class="info-label">现有电控供应商</div>
                   <div class="info-value">{{ customer.electricalSupplier || '--' }}</div>
@@ -197,14 +198,6 @@
                   <div class="info-label">开户电话</div>
                   <div class="info-value">{{ customer.bankPhone || '--' }}</div>
                 </div>
-                <div class="info-item">
-                  <div class="info-label">状态</div>
-                  <div class="info-value">
-                    <el-tag :type="customer.status === 0 ? 'success' : 'danger'" size="small">
-                      {{ customer.status === 0 ? '启用' : '禁用' }}
-                    </el-tag>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -223,7 +216,7 @@
                   </div>
                 </div>
                 <div class="info-item">
-                  <div class="info-label">协助人</div>
+                  <div class="info-label">项目经理</div>
                   <div class="info-value">
                     <div class="user-info" v-if="customer.assistant">
                       <el-avatar :size="20" class="bg-green-600">
@@ -283,8 +276,44 @@
             >
               <el-table-column prop="contactName" label="姓名" align="center" />
               <el-table-column prop="position" label="职位" align="center" />
-              <el-table-column prop="contactPhone" label="电话" align="center" />
               <el-table-column prop="email" label="邮箱" align="center" />
+              <el-table-column prop="contactPhone" label="其他联系方式" align="center" />
+
+        <el-table-column prop="cardImage" label="名片" width="200" align="center">
+          <template slot-scope="scope">
+            <div v-if="scope.row.cardImage && getImageList(scope.row.cardImage).length > 0">
+              <el-carousel 
+                v-if="getImageList(scope.row.cardImage).length > 1"
+                height="50px" 
+                :autoplay="false" 
+                indicator-position="none"
+                arrow="hover"
+                :interval="4000"
+                style="width: 120px; border-radius: 4px; overflow: hidden;margin: auto;">
+                <el-carousel-item 
+                  v-for="(img, index) in getImageList(scope.row.cardImage)" 
+                  :key="index">
+                  <el-image
+                    style="width: 60px; height: 50px"
+                    :src="img"
+                    :preview-src-list="getImageList(scope.row.cardImage)"
+                    :initial-index="index"
+                    fit="cover">
+                  </el-image>
+                </el-carousel-item>
+              </el-carousel>
+              <el-image
+                v-else
+                style="width: 60px; height: 50px; border-radius: 4px;"
+                :src="getImageList(scope.row.cardImage)[0]"
+                :preview-src-list="getImageList(scope.row.cardImage)"
+                fit="cover">
+              </el-image>
+            </div>
+            <span v-else>--</span>
+          </template>
+        </el-table-column>
+
               <el-table-column prop="isDecisionMaker" label="决策人" align="center">
                 <template slot-scope="{ row }">
                   <el-tag v-if="row.isDecisionMaker === 1" type="warning" size="mini">
@@ -735,6 +764,12 @@ export default {
     this.loadSettlementPeriodDict()
   },
   methods: {
+    // 处理多图显示 - 将逗号分隔的URL字符串转换为数组
+      getImageList(imgStr) {
+      if (!imgStr) return []
+      return imgStr.split(',').filter(url => url.trim() !== '')
+    },
+
     handleClose() {
       this.dialogVisible = false
     },
@@ -827,16 +862,8 @@ export default {
         return dictText
       }
       
-      // 如果字典没有，使用硬编码映射
-      const textMap = {
-        'call': '电话跟进',
-        'visit': '客户拜访',
-        'email': '邮件沟通',
-        'wechat': '微信沟通',
-        'meeting': '会议',
-        'other': '其他'
-      }
-      return textMap[method] || method || '--'
+      // 简化：直接返回，无需映射
+      return method || '--'
     },
     
     // 获取产品意向数组

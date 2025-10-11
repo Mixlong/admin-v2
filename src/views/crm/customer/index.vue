@@ -66,7 +66,11 @@
         <el-table-column prop="no" label="客户编号" width="120" align="center" />
 
         <el-table-column prop="customerBrand" label="客户品牌" width="120" align="center" />
-
+        <el-table-column prop="customerAttribute" label="客户属性" width="120" align="center">
+          <template slot-scope="{ row }">
+            {{ getDictLabel('customer_attribute_enum', row.customerAttribute) || row.customerAttribute || '--' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="country" label="所属国家" width="100" align="center">
           <template slot-scope="{ row }">
             {{ getDictLabel('country_origin', row.country) || row.country || '--' }}
@@ -74,14 +78,20 @@
         </el-table-column>
 
 
-        <el-table-column prop="customerStatus" label="客户状态" width="100" align="center">
-          <template slot-scope="{ row }">
-            <el-tag :type="getStatusType(row.customerStatus)">
-              {{ row.customerStatus }}
-            </el-tag>
-          </template>
-        </el-table-column>
+      
 
+        
+ 
+ 
+
+        <el-table-column prop="electricalSupplier" label="现有电控供应商" width="120" align="center" />
+
+        <el-table-column prop="instrumentSupplier" label="现有仪表供应商" width="120" align="center" />
+
+        <el-table-column prop="assemblyFactory" label="组装工厂" width="120" align="center" />
+
+        <el-table-column prop="annualShipments" label="年出货量" width="120" align="center" />
+        <el-table-column prop="backgroundCheck" label="背景调查" width="200" show-overflow-tooltip align="center" />
         <el-table-column prop="customerLevel" label="客户级别" width="100" align="center">
           <template slot-scope="{ row }">
             <el-tag :type="getLevelType(row.customerLevel)" size="small" v-if="row.customerLevel">
@@ -92,32 +102,8 @@
             </div>
           </template>
         </el-table-column>
-
         <el-table-column prop="customerSource" label="客户来源" width="100" align="center" />
 
-        <el-table-column prop="status" label="启用状态" width="100" align="center">
-          <template slot-scope="{ row }">
-            <el-tag :type="row.status === 0 ? 'success' : 'danger'">
-              {{ row.status === 0 ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-
-
-        <el-table-column prop="electricalControlType" label="电控类型" width="100" align="center">
-          <template slot-scope="{ row }">
-            {{ getDictLabel('control_type', row.electricalControlType) || row.electricalControlType }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="electricalSupplier" label="现有电控供应商" width="120" align="center" />
-
-        <el-table-column prop="instrumentSupplier" label="现有仪表供应商" width="120" align="center" />
-
-        <el-table-column prop="assemblyFactory" label="组装工厂" width="120" align="center" />
-
-        <el-table-column prop="annualShipments" label="年出货量" width="120" align="center" />
 
         <el-table-column prop="productIntent" label="产品意向" width="200" show-overflow-tooltip align="center">
           <template slot-scope="{ row }">
@@ -125,14 +111,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="backgroundCheck" label="背景调查" width="200" show-overflow-tooltip align="center" />
-
+ 
         <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip align="center" />
 
         <el-table-column prop="paymentTerm" label="结算期限" width="120" align="center">
           <template slot-scope="{ row }">
-            <el-tag :type="getPaymentTermType(row.paymentTerm)">
-              {{ settlementPeriodCode(row.paymentTerm) || '--' }}
+            <el-tag :type="getPaymentTermType(row.paymentTerm)" size="small">
+              {{ getSettlementPeriodLabel(row.paymentTerm) || '--' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -180,20 +165,15 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="createTime" label="创建时间" width="100" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="100" align="center" >
+          <template slot-scope="{ row }">
+            {{ parseTime(row.createTime,"{y}-{m}-{d}") }}
+          </template>
+        </el-table-column>
 
 
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template slot-scope="{ row }">
-            <el-button
-              type="text"
-              size="small"
-              icon="el-icon-edit"
-              @click="handleEdit(row)"
-              v-hasPermi="['crm:customer:edit']"
-            >
-              编辑
-            </el-button>
             <el-button
               type="text"
               size="small"
@@ -203,6 +183,16 @@
             >
               查看
             </el-button>
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-edit"
+              @click="handleEdit(row)"
+              v-hasPermi="['crm:customer:edit']"
+            >
+              编辑
+            </el-button>
+   
             <el-button
               type="text"
               size="small"
@@ -534,9 +524,10 @@ export default {
       return list.find(item => String(item.raw?.dictCode) === String(value) || String(item.value) === String(value)) || null
     },
 
-    settlementPeriodCode(value) {
+    // 获取结算期限显示文本（与 CustomerDetailModal 保持一致）
+    getSettlementPeriodLabel(value) {
       const item = this.settlementPeriodItem(value)
-      return item && item.raw ? item.raw.dictCode : (item ? item.value : '')
+      return item ? (item.label || item.dictLabel) : value
     },
 
     getTaxTypeColor(type) {

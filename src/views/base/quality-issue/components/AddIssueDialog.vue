@@ -146,7 +146,50 @@
               </Editor>
             </el-form-item>
           </el-col>
-          </el-row>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="临时措施" prop="temporaryMeasures">
+              <Editor 
+                v-model="form.temporaryMeasures" 
+                :min-height="150" 
+                :read-only="isView"
+                placeholder="请输入针对问题采取的临时处理措施"
+                :config="editorConfig">
+              </Editor>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="长期措施" prop="longTermImprovement">
+              <Editor 
+                v-model="form.longTermImprovement" 
+                :min-height="150" 
+                :read-only="isView"
+                placeholder="请输入防止问题再次发生的长期改善措施"
+                :config="editorConfig">
+              </Editor>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="效果确认" prop="effectConfirmation">
+              <Editor 
+                v-model="form.effectConfirmation" 
+                :min-height="150" 
+                :read-only="isView"
+                placeholder="请输入措施实施后的效果确认情况"
+                :config="editorConfig">
+              </Editor>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
         </div>
       </fieldset>
       
@@ -175,7 +218,6 @@
           </el-row>
         </div>
       </fieldset>
-      
     </el-form>
     
     <div slot="footer" class="dialog-footer" v-if="!isView">
@@ -266,7 +308,10 @@ export default {
         causeAnalysis: '',
         confirmer: '',
         effectConfirmation: '',
-        problemImages: ''
+        problemImages: '',
+        temporaryMeasures: '',
+        longTermImprovement: '',
+        isClosed: 0
       },
       rules: {
         orderNo: [
@@ -362,7 +407,10 @@ export default {
           causeAnalysis: this.editData.causeAnalysis || '',
           confirmer: this.editData.confirmer || '',
           effectConfirmation: this.editData.effectConfirmation || '',
-          problemImages: this.editData.problemImages || ''
+          problemImages: this.editData.problemImages || '',
+          temporaryMeasures: this.editData.temporaryMeasures || '',
+          longTermImprovement: this.editData.longTermImprovement || '',
+          isClosed: this.editData.isClosed || 0
         }
       } else {
         // 新增模式
@@ -380,7 +428,10 @@ export default {
           causeAnalysis: '',
           confirmer: '',
           effectConfirmation: '',
-          problemImages: ''
+          problemImages: '',
+          temporaryMeasures: '',
+          longTermImprovement: '',
+          isClosed: 0
         }
       }
     },

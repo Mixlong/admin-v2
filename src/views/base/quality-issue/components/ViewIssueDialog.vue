@@ -127,7 +127,7 @@
             <el-col :span="24">
               <div class="info-item">
                 <label class="info-label">临时措施：</label>
-                <div class="info-content">{{ issueData.temporaryMeasures }}</div>
+                <div class="info-content" v-html="issueData.temporaryMeasures"></div>
               </div>
             </el-col>
           </el-row>
@@ -136,7 +136,7 @@
             <el-col :span="24">
               <div class="info-item">
                 <label class="info-label">长期改善对策：</label>
-                <div class="info-content">{{ issueData.longTermImprovement }}</div>
+                <div class="info-content" v-html="issueData.longTermImprovement"></div>
               </div>
             </el-col>
           </el-row>
@@ -145,7 +145,7 @@
             <el-col :span="24">
               <div class="info-item">
                 <label class="info-label">确认效果：</label>
-                <div class="info-content">{{ issueData.effectConfirmation }}</div>
+                <div class="info-content" v-html="issueData.effectConfirmation"></div>
               </div>
             </el-col>
           </el-row>
@@ -288,7 +288,8 @@ export default {
         1: '待处理',
         2: '处理中',
         3: '已完善',
-        4: '已确认'
+        4: '已确认',
+        5: '已关闭'
       }
       return statusMap[status] || '未知'
     },

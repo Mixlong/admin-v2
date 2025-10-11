@@ -20,6 +20,44 @@
           <el-tag v-if="contact.isDecisionMaker === 1" type="warning" size="small">是</el-tag>
           <span v-else>否</span>
         </el-descriptions-item>
+        <el-descriptions-item label="名片图片" :span="2">
+          <div v-if="contact.cardImage  && getImageList(contact.cardImage ).length > 0">
+            <el-carousel 
+              v-if="getImageList(contact.cardImage ).length > 1"
+              height="150px" 
+              :autoplay="false" 
+              indicator-position="outside"
+              arrow="hover"
+              :interval="4000"
+              style="width: 200px; border-radius: 4px; overflow: hidden;">
+              <el-carousel-item 
+                v-for="(img, index) in getImageList(contact.cardImage)" 
+                :key="index">
+                <el-image
+                  style="width: 200px; height: 150px"
+                  :src="img"
+                  :preview-src-list="getImageList(contact.cardImage )"
+                  :initial-index="index"
+                  fit="cover">
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                  </div>
+                </el-image>
+              </el-carousel-item>
+            </el-carousel>
+            <el-image
+              v-else
+              style="width: 200px; height: 150px; border-radius: 4px;"
+              :src="getImageList(contact.cardImage )[0]"
+              :preview-src-list="getImageList(contact.cardImage )"
+              fit="cover">
+              <div slot="error" class="image-slot">
+                <i class="el-icon-picture-outline"></i>
+              </div>
+            </el-image>
+          </div>
+          <span v-else>暂无名片</span>
+        </el-descriptions-item>
         <el-descriptions-item label="联系人详情" :span="2">{{ contact.contactDetails }}</el-descriptions-item>
       </el-descriptions>
     </div>
@@ -54,6 +92,12 @@ export default {
     }
   },
   methods: {
+    // 处理多图显示 - 将逗号分隔的URL字符串转换为数组
+    getImageList(imgStr) {
+      if (!imgStr) return []
+      return imgStr.split(',').filter(url => url.trim() !== '')
+    },
+
     handleClose() {
       this.$emit('update:visible', false)
     },
@@ -69,5 +113,19 @@ export default {
 </script>
 
 <style scoped>
- 
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 30px;
+}
+
+.contact-detail :deep(.el-image) {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
 </style>

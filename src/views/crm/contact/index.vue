@@ -84,22 +84,11 @@
         >
         </el-table-column>
 
-        <el-table-column prop="customerName" label="所属客户" width="150" align="center" />
+        <el-table-column prop="customerName" label="所属客户" width="170" align="center" />
 
-        <el-table-column prop="department" label="部门" width="120" align="center" />
+        <el-table-column prop="department" label="部门" width="140" align="center" />
 
-        <el-table-column prop="position" label="职位" width="120" align="center" />
-
-        <el-table-column prop="contactPhone" label="电话" width="130" align="center">
-          <template slot-scope="{ row }">
-            <div v-if="row.contactPhone">
-              <span class="cursor-pointer text-blue-600" @click="handleCall(row.contactPhone)">
-                {{ row.contactPhone }}
-              </span>
-            </div>
-          </template>
-        </el-table-column>
-
+        <el-table-column prop="position" label="职位" width="140" align="center" />
         <el-table-column prop="email" label="邮箱"  align="center">
           <template slot-scope="{ row }">
             <div v-if="row.email">
@@ -110,8 +99,52 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="contactPhone" label="其他联系方式" width="150" align="center">
+          <template slot-scope="{ row }">
+            <div v-if="row.contactPhone">
+              <span class="cursor-pointer text-blue-600" @click="handleCall(row.contactPhone)">
+                {{ row.contactPhone }}
+              </span>
+            </div>
+          </template>
+        </el-table-column>
 
-        <el-table-column prop="isDecisionMaker" label="决策人" width="80" align="center">
+        <el-table-column prop="cardImage" label="名片" width="200" align="center">
+          <template slot-scope="scope">
+            <div v-if="scope.row.cardImage && getImageList(scope.row.cardImage).length > 0">
+              <el-carousel 
+                v-if="getImageList(scope.row.cardImage).length > 1"
+                height="50px" 
+                :autoplay="false" 
+                indicator-position="none"
+                arrow="hover"
+                :interval="4000"
+                style="width: 120px; border-radius: 4px; overflow: hidden;margin: auto;">
+                <el-carousel-item 
+                  v-for="(img, index) in getImageList(scope.row.cardImage)" 
+                  :key="index">
+                  <el-image
+                    style="width: 60px; height: 50px"
+                    :src="img"
+                    :preview-src-list="getImageList(scope.row.cardImage)"
+                    :initial-index="index"
+                    fit="cover">
+                  </el-image>
+                </el-carousel-item>
+              </el-carousel>
+              <el-image
+                v-else
+                style="width: 60px; height: 50px; border-radius: 4px;"
+                :src="getImageList(scope.row.cardImage)[0]"
+                :preview-src-list="getImageList(scope.row.cardImage)"
+                fit="cover">
+              </el-image>
+            </div>
+            <span v-else>--</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="isDecisionMaker" label="决策人" width="100" align="center">
           <template slot-scope="{ row }">
             <el-tag :type="row.isDecisionMaker === 1 ? 'success' : 'info'" size="small">
               {{ row.isDecisionMaker === 1 ? '是' : '否' }}
@@ -126,21 +159,22 @@
             <el-button
               type="text"
               size="small"
-              icon="el-icon-edit"
-              @click="handleEdit(row)"
-              v-hasPermi="['crm:contact:edit']"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="text"
-              size="small"
               icon="el-icon-view"
               @click="handleView(row)"
               v-hasPermi="['crm:contact:query']"
             >
               查看
             </el-button>
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-edit"
+              @click="handleEdit(row)"
+              v-hasPermi="['crm:contact:edit']"
+            >
+              编辑
+            </el-button>
+       
             <el-button
               type="text"
               size="small"
@@ -403,6 +437,12 @@ export default {
     this.getDeptTreeselect()
   },
   methods: {
+    // 处理多图显示 - 将逗号分隔的URL字符串转换为数组
+    getImageList(imgStr) {
+      if (!imgStr) return []
+      return imgStr.split(',').filter(url => url.trim() !== '')
+    },
+
     // 获取客户数据（与表单共享）
     getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
@@ -916,5 +956,26 @@ export default {
 .action-danger:hover,
 .action-danger:focus {
   color: #dd6161;
+}
+
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 24px;
+}
+
+.crm-contact-table :deep(.el-image) {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.text-gray-400 {
+  color: #909399;
+  font-size: 12px;
 }
 </style>

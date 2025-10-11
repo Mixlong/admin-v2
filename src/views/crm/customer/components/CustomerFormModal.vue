@@ -27,12 +27,13 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="客户来源" prop="customerSource">
-              <el-select v-model="form.customerSource" placeholder="请选择客户来源" style="width: 100%">
-                <el-option label="电话营销" value="电话营销" />
-                <el-option label="网络推广" value="网络营销" />
-                <el-option label="朋友介绍" value="客户推荐" />
-                <el-option label="展会活动" value="展会" />
-                <el-option label="其他" value="其他" />
+              <el-select v-model="form.customerSource" placeholder="请选择客户来源" style="width: 100%" clearable>
+                <el-option
+                  v-for="dict in dict.type.customer_source"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.label"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -61,9 +62,19 @@
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="客户属性" prop="customerAttribute">
+              <el-select v-model="form.customerAttribute" placeholder="请选择客户属性" style="width: 100%" clearable>
+                <el-option
+                  v-for="dict in dict.type.customer_attribute_enum"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.label"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+ 
           <el-col :span="12">
             <el-form-item label="客户品牌" prop="customerBrand">
               <el-input v-model="form.customerBrand" placeholder="请输入客户品牌" />
@@ -86,20 +97,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="客户来源" prop="customerSource">
-              <el-select v-model="form.customerSource" placeholder="请选择客户来源" style="width: 100%" clearable>
-                <el-option label="电话营销" value="电话营销" />
-                <el-option label="网络推广" value="网络推广" />
-                <el-option label="朋友介绍" value="朋友介绍" />
-                <el-option label="展会活动" value="展会活动" />
-                <el-option label="其他" value="其他" />
-              </el-select>
-            </el-form-item>
-          </el-col>
+ 
           <el-col :span="12">
             <el-form-item label="销售负责人" prop="salesLeader">
               <el-select 
@@ -119,10 +117,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="协助人" prop="assistant">
+            <el-form-item label="项目经理" prop="assistant">
               <el-select 
                 v-model="form.assistant" 
-                placeholder="请选择协助人" 
+                placeholder="请选择项目经理" 
                 style="width: 100%"
                 filterable
                 clearable
@@ -155,62 +153,6 @@
           />
         </el-form-item>
       </fieldset>
-
-      <!-- 产品信息 -->
-      <fieldset class="form-fieldset">
-        <legend>产品信息</legend>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="电控类型" prop="electricalControlType">
-              <el-input v-model="form.electricalControlType" placeholder="请输入电控类型" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="电控供应商" prop="electricalSupplier">
-              <el-input v-model="form.electricalSupplier" placeholder="请输入电控供应商" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="仪表供应商" prop="instrumentSupplier">
-              <el-input v-model="form.instrumentSupplier" placeholder="请输入仪表供应商" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="组装工厂" prop="assemblyFactory">
-              <el-input v-model="form.assemblyFactory" placeholder="请输入组装工厂" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="年出货量（台/年）" prop="annualShipments">
-              <el-input-number
-                v-model="form.annualShipments"
-                :min="0"
-                :max="999999"
-                placeholder="请输入年出货量"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="产品意向" prop="productIntent">
-              <el-input
-                v-model="form.productIntent"
-                type="textarea"
-                :rows="2"
-                placeholder="请输入产品意向"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-
       <!-- 财务信息 -->
       <fieldset class="form-fieldset">
         <legend>财务信息</legend>
@@ -289,11 +231,41 @@
         </el-row>
       </fieldset>
 
-      <!-- 产品信息 -->
+      <!-- 深度调研 -->
       <fieldset class="form-fieldset">
-        <legend>产品信息</legend>
+        <legend>深度调研</legend>
 
         <el-row :gutter="20">
+ 
+          <el-col :span="12">
+            <el-form-item label="年出货量" prop="annualShipments">
+              <el-input-number v-model="form.annualShipments" placeholder="请输入年出货量" style="width: 100%" :min="0" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="组装工厂" prop="assemblyFactory">
+              <el-input v-model="form.assemblyFactory" placeholder="请输入组装工厂" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+     
+          <el-col :span="12">
+            <el-form-item label="现有电控供应商" prop="electricalSupplier">
+              <el-input v-model="form.electricalSupplier" placeholder="请输入电控供应商" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="现有仪表供应商" prop="instrumentSupplier">
+              <el-input v-model="form.instrumentSupplier" placeholder="请输入仪表供应商" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+ 
+   
           <el-col :span="12">
             <el-form-item label="产品意向" prop="productIntent">
               <el-select v-model="form.productIntent" placeholder="请选择产品意向" style="width: 100%" clearable multiple >
@@ -306,45 +278,8 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="年出货量" prop="annualShipments">
-              <el-input-number v-model="form.annualShipments" placeholder="请输入年出货量" style="width: 100%" :min="0" />
-            </el-form-item>
-          </el-col>
         </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="组装工厂" prop="assemblyFactory">
-              <el-input v-model="form.assemblyFactory" placeholder="请输入组装工厂" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="电控类型" prop="electricalControlType">
-              <el-select v-model="form.electricalControlType" placeholder="请选择电控类型" style="width: 100%" clearable>
-                <el-option
-                  v-for="dict in dict.type.control_type"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="现有电控供应商" prop="electricalSupplier">
-              <el-input v-model="form.electricalSupplier" placeholder="请输入电控供应商" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="现有仪表供应商" prop="instrumentSupplier">
-              <el-input v-model="form.instrumentSupplier" placeholder="请输入仪表供应商" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        
       </fieldset>
 
  
@@ -368,7 +303,7 @@ import { getDicts } from '@/api/system/dict/data'
 
 export default {
   name: 'CustomerFormModal',
-  dicts: ['customer_type_enum', 'control_type', 'product_intention', 'tax_type', 'bank_account', 'country_origin'],
+  dicts: ['customer_type_enum', 'control_type', 'product_intention', 'tax_type', 'bank_account', 'country_origin', 'customer_source','customer_attribute_enum'],
   components: {
   },
   props: {
