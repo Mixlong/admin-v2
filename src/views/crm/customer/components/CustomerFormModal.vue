@@ -159,20 +159,16 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="结算期限" prop="paymentTerm">
-              <el-select v-model="form.paymentTerm" placeholder="请选择结算期限" style="width: 100%" clearable>
-                <el-option
-                  v-for="option in settlementPeriodOptions"
-                  :key="option.dictCode"
-                  :label="option.dictLabel"
-                  :value="Number(option.dictCode)"
+            <el-form-item label="付款条件" prop="paymentTerm">
+                <el-input
+                 v-model="form.paymentTerm"
+                 placeholder="请输入付款条件"
                 />
-              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="税种" prop="taxType">
-              <el-select v-model="form.taxType" placeholder="请选择税种" style="width: 100%">
+            <el-form-item label="币种" prop="taxType">
+              <el-select v-model="form.taxType" placeholder="请选择" style="width: 100%">
                 <el-option 
                   v-for="dict in dict.type.tax_type" 
                   :key="dict.value" 
@@ -418,7 +414,7 @@ export default {
             no: newCustomer.no || '',
             customerBrand: newCustomer.customerBrand || '',
             country: newCustomer.country || '',
-            customerStatus: newCustomer.customerStatus || 'potential',
+            customerStatus: newCustomer.customerStatus,
             customerLevel: newCustomer.customerLevel || '',
             customerSource: newCustomer.customerSource || '',
             address: newCustomer.address || '',

@@ -158,7 +158,7 @@
                   <div class="info-label">结算期限</div>
                   <div class="info-value">
                   <el-tag :type="getPaymentTermType(customer.paymentTerm)" size="small">
-                      {{ getSettlementPeriodLabel(customer.paymentTerm) || '--' }}
+                      {{ customer.paymentTerm || '--' }}
                   </el-tag>
                   </div>
                 </div>
@@ -316,10 +316,9 @@
 
               <el-table-column prop="isDecisionMaker" label="决策人" align="center">
                 <template slot-scope="{ row }">
-                  <el-tag v-if="row.isDecisionMaker === 1" type="warning" size="mini">
-                    决策人
-                  </el-tag>
-                  <span v-else>--</span>
+                  <el-tag :type="row.isDecisionMaker === 1 ? 'success' : 'info'" size="small">
+                 {{ row.isDecisionMaker === 1 ? '是' : '否' }}
+                </el-tag>
                 </template>
               </el-table-column>
               <el-table-column label="操作" width="80" align="center">
