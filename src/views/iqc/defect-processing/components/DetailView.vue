@@ -17,31 +17,31 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">日期</span>
-              <span class="info-value" :class="{ empty: !detailData.createTime }">{{ formatDate(detailData.createTime) || '2025-09-02' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.createTime }">{{ formatDate(detailData.createTime)   }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">机型</span>
-              <span class="info-value" :class="{ empty: !detailData.categoryName }">{{ detailData.categoryName || 'BN135' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.categoryName }">{{ detailData.categoryName || '--' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">物料编码</span>
-              <span class="info-value" :class="{ empty: !detailData.invCode }">{{ detailData.invCode || '70240464-1' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.invCode }">{{ detailData.invCode || '--' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">物料名称</span>
-              <span class="info-value" :class="{ empty: !detailData.invName }">{{ detailData.invName || '下壳' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.invName }">{{ detailData.invName || '--' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">供应商</span>
-              <span class="info-value" :class="{ empty: !detailData.invDefine }">{{ detailData.invDefine || '铭记鑫' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.invDefine }">{{ detailData.invDefine || '--' }}</span>
             </div>
             <div class="info-item full-width">
               <span class="info-label">规格1</span>
-              <span class="info-value" :class="{ empty: !detailData.englishName }">{{ detailData.englishName || 'L403XFN-下壳' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.englishName }">{{ detailData.englishName || '--' }}</span>
             </div>
             <div class="info-item full-width">
               <span class="info-label">规格2</span>
-              <span class="info-value" :class="{ empty: !detailData.invStd }">{{ detailData.invStd || '1、L403XFN-下壳; 2、材质: PC5420P; 3、表面处理: 原色注塑黑色，表面细纹; 4、尺寸: 85.62*65.15*31.79，套啤M3*6盲孔铜螺母2PCS; 5、符合ROHS，REACH要求' }}</span>
+              <span class="info-value" :class="{ empty: !detailData.invStd }">{{ detailData.invStd || '--' }}</span>
             </div>
           </div>
         </fieldset>
@@ -52,19 +52,19 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">到料数量</span>
-              <span class="info-value">{{ detailData.arrivalQuantity || '100' }}</span>
+              <span class="info-value">{{ detailData.arrivalQuantity }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">抽检数量</span>
-              <span class="info-value">{{ detailData.samplingQuantity || '60' }}</span>
+              <span class="info-value">{{ detailData.samplingQuantity }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">不良数量</span>
-              <span class="info-value">{{ detailData.defectiveQuantity || '30' }}</span>
+              <span class="info-value">{{ detailData.defectiveQuantity }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">不良率</span>
-              <span class="info-value">{{ detailData.defectiveRate || '50.00%' }}</span>
+              <span class="info-value">{{ detailData.defectiveRate }}</span>
             </div>
           </div>
         </fieldset>

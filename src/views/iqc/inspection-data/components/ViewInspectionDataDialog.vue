@@ -17,7 +17,7 @@
           <el-col :span="12">
             <div class="info-item">
               <label>日期：</label>
-              <span>{{ viewData.inventoryCreateTime || '--' }}</span>
+              <span>{{ parseTime(viewData.createTime,"{y}-{m}-{d}") || '--' }}</span>
             </div>
           </el-col>
           <el-col :span="12">
@@ -105,8 +105,8 @@
           <el-col :span="24">
             <div class="info-item">
               <label>检验结果：</label>
-              <el-tag :type="getResultType(viewData.inspectionResult)">
-                {{viewData.inspectionResult}}
+              <el-tag :type="getResultType(viewData.testResult)">
+                {{viewData.testResult}}
               </el-tag>
             </div>
           </el-col>
