@@ -2,7 +2,7 @@
   <div class="app-container flex-app-container">
     <!-- 智能搜索区域 -->
     <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch" @reset="handleReset"
-      @field-change="handleFieldChange">
+      @field-change="handleFieldChange" defaultVisibleCount="4">
       <!-- 自定义所属品类字段渲染 -->
       <template #field-categoryId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">

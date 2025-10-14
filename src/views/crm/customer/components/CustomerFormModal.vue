@@ -208,7 +208,7 @@
       </fieldset>
 
       <!-- 联系方式 -->
-             <!-- 财务信息 -->
+       <!-- 财务信息 -->
       <fieldset class="form-fieldset">
         <legend>联系信息</legend>
 
@@ -267,7 +267,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-
+        
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="银行账户" prop="bankAccount">

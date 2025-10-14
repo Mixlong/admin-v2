@@ -57,7 +57,7 @@
         
         <el-table-column prop="inventoryCreateTime" label="日期" align="center" width="110">
           <template slot-scope="scope">
-            <span>{{ scope.row.inventoryCreateTime || '--' }}</span>
+            <span>{{ parseTime(scope.row.createTime,"{y}-{m}-{d}") || '--' }}</span>
           </template>
         </el-table-column>
         

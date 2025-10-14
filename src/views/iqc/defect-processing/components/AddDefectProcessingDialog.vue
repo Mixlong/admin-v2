@@ -91,7 +91,7 @@
                   </div>
                   <div class="info-item">
                     <span class="label">检验结果:</span>
-                    <span class="value">{{ (selectedInventoryInfo && selectedInventoryInfo.inspectionResult) || '--' }}</span>
+                    <span class="value" :style="{'color':selectedInventoryInfo.testResult=='NG'?'red':'green'}">{{ (selectedInventoryInfo && selectedInventoryInfo.testResult) || '--' }}</span>
                   </div>
                 </div>
           </el-row>
