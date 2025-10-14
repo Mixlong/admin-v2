@@ -85,12 +85,15 @@
             <el-form-item label="所属国家" prop="country">
               <el-select
                 v-model="form.country"
-                placeholder="请选择所属国家"
+                placeholder="请选择或输入所属国家"
                 style="width: 100%"
                 clearable
+                filterable
+                allow-create
+                default-first-option
               >
                 <el-option
-                  v-for="dict in dict.type.country_origin"
+                  v-for="dict in dict.type.country_origin.slice().sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'))"
                   :key="dict.value"
                   :label="dict.label"
                   :value="dict.label"
