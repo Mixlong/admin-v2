@@ -57,7 +57,7 @@
         <span class="user-name">{{ nickName }}</span>
       </div>
       <template v-if="device !== 'mobile'">
-        <search id="header-search" class="right-menu-item" v-if="name === 'admin'" />
+        <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
       </template>
       <SizeSelect class="pointer" />
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
