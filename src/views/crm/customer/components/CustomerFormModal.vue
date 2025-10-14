@@ -45,6 +45,7 @@
               <el-select v-model="form.customerStatus" placeholder="请选择客户状态" style="width: 100%">
                 <el-option label="潜在客户" value="潜在客户" />
                 <el-option label="意向客户" value="意向客户" />
+                <el-option label="送样客户" value="送样客户" />
                 <el-option label="成交客户" value="成交客户" />
                 <el-option label="流失客户" value="流失客户" />
               </el-select>
@@ -153,8 +154,135 @@
           />
         </el-form-item>
       </fieldset>
-      <!-- 财务信息 -->
+ 
+
+      <!-- 深度调研 -->
       <fieldset class="form-fieldset">
+        <legend>深度调研</legend>
+
+        <el-row :gutter="20">
+ 
+          <el-col :span="12">
+            <el-form-item label="年出货量" prop="annualShipments">
+              <el-input-number v-model="form.annualShipments" placeholder="请输入年出货量" style="width: 100%" :min="0" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="组装工厂" prop="assemblyFactory">
+              <el-input v-model="form.assemblyFactory" placeholder="请输入组装工厂" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+     
+          <el-col :span="12">
+            <el-form-item label="现有电控供应商" prop="electricalSupplier">
+              <el-input v-model="form.electricalSupplier" placeholder="请输入电控供应商" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="现有仪表供应商" prop="instrumentSupplier">
+              <el-input v-model="form.instrumentSupplier" placeholder="请输入仪表供应商" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+ 
+   
+          <el-col :span="12">
+            <el-form-item label="产品意向" prop="productIntent">
+              <el-select v-model="form.productIntent" placeholder="请选择产品意向" style="width: 100%" clearable multiple >
+                <el-option
+                  v-for="dict in dict.type.product_intention"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+      </fieldset>
+
+      <!-- 联系方式 -->
+             <!-- 财务信息 -->
+      <fieldset class="form-fieldset">
+        <legend>联系信息</legend>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="付款条件" prop="paymentTerm">
+                <el-input
+                 v-model="form.paymentTerm"
+                 placeholder="请输入付款条件"
+                />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="币种" prop="taxType">
+              <el-select v-model="form.taxType" placeholder="请选择" style="width: 100%">
+                <el-option 
+                  v-for="dict in dict.type.tax_type" 
+                  :key="dict.value" 
+                  :label="dict.label" 
+                  :value="dict.value" 
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="增值税税率(%)" prop="vatRate">
+              <el-input-number v-model="form.vatRate" placeholder="请输入增值税税率" style="width: 100%" :min="0" :max="100" :precision="2" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="发票税号" prop="invoiceTaxNo">
+              <el-input-number v-model="form.invoiceTaxNo" placeholder="请输入发票税号" style="width: 100%" :controls="false" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="发票抬头" prop="invoiceTitle">
+              <el-input v-model="form.invoiceTitle" placeholder="请输入发票抬头" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="开户银行" prop="bankName">
+              <el-select v-model="form.bankName" placeholder="请选择开户银行" style="width: 100%" clearable filterable>
+                <el-option
+                  v-for="dict in dict.type.bank_account"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="银行账户" prop="bankAccount">
+              <el-input v-model="form.bankAccount" placeholder="请输入银行账户" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="开户电话" prop="bankPhone">
+              <el-input v-model="form.bankPhone" placeholder="请输入开户电话" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </fieldset>
+       <!-- 财务信息 -->
+       <fieldset class="form-fieldset">
         <legend>财务信息</legend>
 
         <el-row :gutter="20">
@@ -226,59 +354,6 @@
           </el-col>
         </el-row>
       </fieldset>
-
-      <!-- 深度调研 -->
-      <fieldset class="form-fieldset">
-        <legend>深度调研</legend>
-
-        <el-row :gutter="20">
- 
-          <el-col :span="12">
-            <el-form-item label="年出货量" prop="annualShipments">
-              <el-input-number v-model="form.annualShipments" placeholder="请输入年出货量" style="width: 100%" :min="0" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="组装工厂" prop="assemblyFactory">
-              <el-input v-model="form.assemblyFactory" placeholder="请输入组装工厂" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-     
-          <el-col :span="12">
-            <el-form-item label="现有电控供应商" prop="electricalSupplier">
-              <el-input v-model="form.electricalSupplier" placeholder="请输入电控供应商" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="现有仪表供应商" prop="instrumentSupplier">
-              <el-input v-model="form.instrumentSupplier" placeholder="请输入仪表供应商" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
- 
-   
-          <el-col :span="12">
-            <el-form-item label="产品意向" prop="productIntent">
-              <el-select v-model="form.productIntent" placeholder="请选择产品意向" style="width: 100%" clearable multiple >
-                <el-option
-                  v-for="dict in dict.type.product_intention"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-      </fieldset>
-
- 
     </el-form>
 
     <template slot="footer">

@@ -7,7 +7,7 @@
       <template #field-categoryId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-select v-model="searchForm[field.key]" filterable allow-create clearable @change="changeCategory"
-            style="width: 140px" placeholder="请选择" size="small">
+            style="width: 140px" placeholder="请选择" size="mini">
             <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
           </el-select>
         </el-form-item>
@@ -17,7 +17,7 @@
       <template #field-computerId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-select v-model="searchForm[field.key]" :loading="isCLoading" filterable remote clearable @change="getList"
-            :remote-method="getComputerNameList" style="width: 140px" size="small" placeholder="请先选择品类">
+            :remote-method="getComputerNameList" style="width: 140px" size="mini" placeholder="请先选择品类">
             <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
           </el-select>
         </el-form-item>
@@ -27,7 +27,7 @@
       <template #field-salesOrderNo="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请输入迪太订单号" size="small" />
+            style="width: 140px" placeholder="请输入迪太订单号" size="mini" />
         </el-form-item>
       </template>
 
@@ -35,15 +35,15 @@
       <template #field-no="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请输入排产单号" size="small" />
+            placeholder="请输入排产单号" size="mini" />
         </el-form-item>
       </template>
 
       <!-- 自定义排产状态字段渲染 -->
       <template #field-productStatus="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm[field.key]" clearable size="small" placeholder="请选择">
-            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
+          <el-select v-model="searchForm[field.key]" clearable size="mini" placeholder="请选择">
+            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="key" />
           </el-select>
         </el-form-item>
       </template>
@@ -53,18 +53,18 @@
         <el-form-item :label="field.label" :prop="field.key">
           <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"
-            size="small"></el-date-picker>
+            size="mini"></el-date-picker>
         </el-form-item>
       </template>
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd"
-          size="small">
+          size="mini">
           新 增
         </el-button>
         <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd"
-          size="small">
+          size="mini">
           新 增(旧)
         </el-button>
       </template>
@@ -97,7 +97,14 @@
       <el-table-column label="排产数量" align="center" prop="num" width="90" />
       <el-table-column label="排产状态" align="center" prop="productStatus" width="85">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.productStatus !== null" size="small" :type="tagType(row.productStatus)">
+          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
+            {{ productStatusList[row.productStatus] }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="MUA配置" align="center" prop="productStatus" width="85">
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
             {{ productStatusList[row.productStatus] }}
           </el-tag>
         </template>
@@ -111,7 +118,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180" fixed="right">
+      <el-table-column label="操作" align="center" width="250" fixed="right">
         <div class="flex align-center justify-between" slot-scope="{ row }">
           <el-button v-if="row.salesOrderNo" v-hasPermi="['www:planSchedule:update']" type="text"
             @click="handleUpdate(row)">
@@ -124,6 +131,10 @@
           <el-button class="mlZero" v-show="row.qrCode" type="text" v-hasPermi="['www:planSchedule:taskOrder']"
             @click="handleQrCode(row)">
             任务令
+          </el-button>
+          <el-button class="mlZero" type="text" v-hasPermi="['www:planSchedule:codeSet']"
+            @click="onSetCodeConfig(row)" style="color: #E6A23C;">
+            MUA配置
           </el-button>
           <el-dropdown>
             <span class="el-dropdown-link text-blue font12">
@@ -142,9 +153,7 @@
                 @click.native="onEditProdStatusEnd(row)">
                 生产完结
               </el-dropdown-item>
-              <el-dropdown-item v-hasPermi="['www:planSchedule:codeSet']" @click.native="onSetCodeConfig(row)">
-                任务令配置
-              </el-dropdown-item>
+
               <el-dropdown-item @click.native="onBoxInfo(row.id)">
                 箱子信息
               </el-dropdown-item>
@@ -249,7 +258,7 @@
         <el-descriptions-item label="软件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.softList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.softList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.softList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>
@@ -258,7 +267,7 @@
         <el-descriptions-item label="硬件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.hardList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.hardList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.hardList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>
@@ -268,7 +277,7 @@
         <el-descriptions-item label="工程资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.projectList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.projectList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.projectList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>

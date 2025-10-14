@@ -21,7 +21,7 @@
             dictValue="id" 
             :request="getCustomerData"
             size="mini" 
-            placeholder="请选择客户" 
+            placeholder="请选择" 
             clearable
             @change="handleSearch"
             style="width: 150px;"
@@ -264,7 +264,7 @@ export default {
           key: 'followMethod',
           label: '跟进方式',
           component: 'el-select',
-          placeholder: '请选择跟进方式',
+          placeholder: '请选择',
           width: '120px',
           sort: 3,
           autoSearch: true,
@@ -278,7 +278,7 @@ export default {
           key: 'follower',
           label: '跟进人',
           component: 'el-input',
-          placeholder: '请输入跟进人',
+          placeholder: '请输入',
           width: '120px',
           sort: 4,
           autoSearch: false,

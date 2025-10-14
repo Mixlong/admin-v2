@@ -22,7 +22,7 @@
             dictValue="id" 
             :request="getCustomerData"
             size="mini" 
-            placeholder="请选择客户" 
+            placeholder="请选择" 
             clearable
             @getChange="handleSearch"
             style="width: 150px;"
@@ -38,7 +38,7 @@
             :options="deptOptions" 
             :disable-branch-nodes="true"
             :show-count="true" 
-            placeholder="请选择归属部门" 
+            placeholder="请选择" 
             :clearable="true" 
             :searchable="true"
             :default-expand-level="0"
@@ -292,7 +292,7 @@ export default {
           key: 'contactName',
           label: '联系人姓名',
           component: 'el-input',
-          placeholder: '请输入联系人姓名',
+          placeholder: '请输入',
           width: '150px',
           sort: 5,
           autoSearch: false,
@@ -305,7 +305,7 @@ export default {
           key: 'contactPhone',
           label: '联系人手机号',
           component: 'el-input',
-          placeholder: '请输入手机号',
+          placeholder: '请输入',
           width: '150px',
           sort: 6,
           autoSearch: false,
@@ -327,7 +327,7 @@ export default {
           key: 'department',
           label: '部门',
           component: 'el-input',
-          placeholder: '请输入部门',
+          placeholder: '请输入',
           width: '120px',
           sort: 2,
           autoSearch: false,
@@ -340,7 +340,7 @@ export default {
           key: 'position',
           label: '职务',
           component: 'el-input',
-          placeholder: '请输入职务',
+          placeholder: '请输入',
           width: '120px',
           sort: 5,
           autoSearch: false,
@@ -370,7 +370,7 @@ export default {
           key: 'belongDepartment',
           label: '归属部门',
           component: 'custom', // 使用slot自定义
-          placeholder: '请选择归属部门',
+          placeholder: '请选择',
           width: '160px',
           sort: 4,
           autoSearch: true
@@ -379,7 +379,7 @@ export default {
           key: 'dateRange',
           label: '创建时间',
           component: 'el-date-picker',
-          placeholder: '请选择时间范围',
+          placeholder: '请选择',
           width: '200px',
           sort: 3,
           autoSearch: true,

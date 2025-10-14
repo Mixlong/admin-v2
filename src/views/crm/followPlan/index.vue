@@ -181,7 +181,7 @@ export default {
           sort: 1, 
           autoSearch: false,
           props: {
-            placeholder: '请选择客户',
+            placeholder: '请选择',
             clearable: true,
             filterable: true,
             options: []
@@ -191,7 +191,7 @@ export default {
           key: 'planContent', 
           label: '计划内容', 
           component: 'el-input', 
-          placeholder: '请输入计划内容', 
+          placeholder: '请输入', 
           width: '180px', 
           sort: 2, 
           autoSearch: false 
@@ -204,7 +204,7 @@ export default {
           sort: 3, 
           autoSearch: false,
           props: {
-            placeholder: '请选择执行人',
+            placeholder: '请选择',
             clearable: true,
             filterable: true,
             options: []

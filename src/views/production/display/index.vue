@@ -6,7 +6,7 @@
       :fields="searchFields" 
       @search="handleSearch" 
       @reset="handleReset"
-      :default-visible-count="3"
+      :default-visible-count="4"
       @field-change="handleFieldChange">
       
       <!-- 自定义所属品类字段渲染 -->
@@ -66,37 +66,46 @@
         </el-table-column>
         <el-table-column prop="computerName" label="仪表型号" align="center"/>
         <el-table-column prop="salesOrderNo" label="迪太订单号" align="center" />
-        <el-table-column prop="customerOrderNo" label="客户订单号" align="center" />
-        <el-table-column prop="num" label="生产数量" align="center" />
+        <el-table-column prop="orderCode" label="工单号" align="center" />
+        <el-table-column prop="num" label="生产数量" align="center">
+          <template slot-scope="scope">
+            <strong 
+              style="cursor: pointer; color: #409EFF; text-decoration: underline; font-size: 15px; font-weight: 700;"
+              @click="handleQuantityClick(scope.row)"
+            >
+              {{ scope.row.num }}
+            </strong>
+          </template>
+        </el-table-column>
         <el-table-column prop="address" label="生产地点" align="center"/>
         
         <!-- 测试环节分组列 -->
         <el-table-column label="测试环节" align="center">
           <el-table-column label="IQC" align="center"  >
             <template slot-scope="scope">
-              {{ scope.row.iqcNum }}
+              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.iqcNum }}</strong>
             </template>
           </el-table-column>
           
           <el-table-column label="FQC" align="center"  >
             <template slot-scope="scope">
-              {{ scope.row.fqcNum }}
+              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fqcNum }}</strong>
             </template>
           </el-table-column>
           
           <el-table-column label="防水" align="center"  >
             <template slot-scope="scope">
-              {{ scope.row.fsNum }}
+              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fsNum }}</strong>
             </template>
           </el-table-column>
           <el-table-column label="配置工位" align="center"  >
             <template slot-scope="scope">
-              {{ scope.row.dcdNum }}
+              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.dcdNum }}</strong>
             </template>
           </el-table-column>
           <el-table-column label="包装" align="center"  >
             <template slot-scope="scope">
-              {{ scope.row.bzNum }}
+              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.bzNum }}</strong>
             </template>
           </el-table-column>
         </el-table-column>
@@ -111,6 +120,40 @@
         @pagination="getList"
       />
     </div>
+
+    <!-- 排产详情弹窗 -->
+    <el-dialog
+      title="排产详情"
+      :visible.sync="schedulingDialogVisible"
+      width="80%"
+      top="0"
+      :before-close="handleCloseSchedulingDialog">
+      <el-table
+        :data="schedulingTableData"
+        v-loading="schedulingLoading"
+        border
+        stripe
+        style="width: 100%"
+        max-height="400">
+        <el-table-column prop="orderCode" label="工单号" align="center" />
+        <el-table-column prop="customerName" label="客户名称" align="center" />
+        <el-table-column prop="num" label="订单数量" align="center">
+          <template slot-scope="scope">
+            <strong>{{ scope.row.num }}</strong>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <!-- 分页器 -->
+      <pagination
+        v-show="schedulingTotal > 0"
+        :total="schedulingTotal"
+        :page.sync="schedulingQueryParams.pageNum"
+        :limit.sync="schedulingQueryParams.pageSize"
+        @pagination="getSchedulingList"
+        style="margin-top: 15px;"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -122,6 +165,7 @@ import Pagination from '@/components/Pagination'
 import {
   schedulingList
 } from "@/api/www/planSchedule";
+import { getMaterialList } from '@/api/third/prodData'
 export default {
   name: 'ProductionDisplay',
   components: {
@@ -140,7 +184,12 @@ export default {
         no: ''
       },
       searchFields: [
- 
+        {
+          key: 'orderCode',
+          label: '工单号',
+          component: 'el-input',
+          sort: 1
+        },
         {
           key: 'computerId',
           label: '型号',
@@ -164,6 +213,16 @@ export default {
         data: [],
         page: 1,
         more: true,
+      },
+      // 排产弹窗相关数据
+      schedulingDialogVisible: false,
+      schedulingLoading: false,
+      schedulingTableData: [],
+      schedulingTotal: 0,
+      schedulingQueryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        orderCode: ''
       },
       // 查询参数
       queryParams: {
@@ -447,6 +506,93 @@ export default {
         'completed': '已完成',
         'in-progress': '进行中',
         'pending': '待开始'
+      };
+      return statusMap[status] || '待开始';
+    },
+
+    // 处理生产数量点击事件
+    handleQuantityClick(row) {
+      if (!row.orderCode) {
+        this.$message.warning('工单号不存在');
+        return;
+      }
+      
+      // 重置分页参数
+      this.schedulingQueryParams.pageNum = 1;
+      this.schedulingQueryParams.orderCode = row.orderCode;
+      
+      this.schedulingDialogVisible = true;
+      this.getSchedulingData();
+    },
+
+    // 获取排产数据
+    getSchedulingData() {
+      this.schedulingLoading = true;
+      
+      const params = {
+        orderCode: this.schedulingQueryParams.orderCode,
+        p: this.schedulingQueryParams.pageNum,
+        l: this.schedulingQueryParams.pageSize
+      };
+      
+      getMaterialList(params)
+        .then(response => {
+          if (response.code === 200) {
+            // 根据实际API响应结构处理数据
+            const data = response.data;
+            if (data) {
+              this.schedulingTableData = data.list || [];
+              this.schedulingTotal = data.total || 0;
+              
+              if (this.schedulingTableData.length === 0) {
+                this.$message.info('暂无排产数据');
+              }
+            } else {
+              this.schedulingTableData = [];
+              this.schedulingTotal = 0;
+            }
+          }
+        })
+        .finally(() => {
+          this.schedulingLoading = false;
+        });
+    },
+
+    // 排产列表分页处理
+    getSchedulingList() {
+      this.getSchedulingData();
+    },
+
+    // 关闭排产弹窗
+    handleCloseSchedulingDialog() {
+      this.schedulingDialogVisible = false;
+      this.schedulingTableData = [];
+      this.schedulingTotal = 0;
+      this.schedulingQueryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        orderCode: ''
+      };
+    },
+
+    // 获取排产状态标签类型
+    getSchedulingStatusType(status) {
+      const statusMap = {
+        '0': 'info',     // 待开始
+        '1': 'warning',  // 进行中
+        '2': 'success',  // 已完成
+        '3': 'danger'    // 已取消
+      };
+      return statusMap[status] || 'info';
+    },
+
+    // 获取排产状态文本
+    getSchedulingStatusText(status) {
+      const statusMap = {
+        '0': '待开始',
+        '1': '进行中', 
+        '2': '已完成',
+        '3': '已取消'
       };
       return statusMap[status] || '待开始';
     }

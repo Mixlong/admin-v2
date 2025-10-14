@@ -310,10 +310,11 @@ export default {
       else return '';
     },
     getFieldProps(field) {
+      console.log("🚀 ~ file: index.vue:313 ~ field:", field)
       const defaultProps = {
         size: field.size || 'mini',
         clearable: field.clearable !== false,
-        placeholder: field.placeholder || `请选择${field.label}`
+        placeholder: field.placeholder || `${field.component === 'el-input' ? '请输入' : '请选择'}`
       };
 
       // 处理样式配置

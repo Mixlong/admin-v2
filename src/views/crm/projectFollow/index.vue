@@ -22,7 +22,7 @@
             dictValue="id" 
             :request="getCustomerData"
             size="mini" 
-            placeholder="请选择客户" 
+            placeholder="请选择" 
             clearable
             @change="handleSearch"
             style="width: 150px;"
@@ -232,7 +232,7 @@ export default {
           key: 'projectName',
           label: '项目名称',
           component: 'el-input',
-          placeholder: '请输入项目名称',
+          placeholder: '请输入',
           width: '150px',
           sort: 1,
           props: {
@@ -244,7 +244,7 @@ export default {
           key: 'customerId',
           label: '客户',
           component: 'custom', // 使用slot自定义
-          placeholder: '请选择客户',
+          placeholder: '请选择',
           width: '200px',
           sort: 2,
           autoSearch: true
@@ -253,7 +253,7 @@ export default {
           key: 'productType',
           label: '产品类型',
           component: 'el-input',
-          placeholder: '请输入产品类型',
+          placeholder: '请输入',
           width: '120px',
           sort: 3,
           autoSearch: true,
@@ -266,7 +266,7 @@ export default {
           key: 'projectNode',
           label: '项目阶段',
           component: 'el-select',
-          placeholder: '请选择项目阶段',
+          placeholder: '请选择',
           width: '120px',
           sort: 4,
           autoSearch: true,

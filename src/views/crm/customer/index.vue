@@ -21,7 +21,7 @@
             dictValue="name" 
             :request="getCustomerData"
             size="mini" 
-            placeholder="请选择客户" 
+            placeholder="请选择" 
             clearable
             @getChange="handleSearch"
             style="width: 100%;"
@@ -76,14 +76,6 @@
             {{ getDictLabel('country_origin', row.country) || row.country || '--' }}
           </template>
         </el-table-column>
-
-
-      
-
-        
- 
- 
-
         <el-table-column prop="electricalSupplier" label="现有电控供应商" width="120" align="center" />
 
         <el-table-column prop="instrumentSupplier" label="现有仪表供应商" width="120" align="center" />
@@ -100,6 +92,13 @@
             <div v-else>
               --
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="customerStatus" label="客户状态" width="100" align="center">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.customerStatus" size="mini" :type="getCustomerStatusType(scope.row.customerStatus)">
+              {{ scope.row.customerStatus }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="customerSource" label="客户来源" width="100" align="center" />
@@ -328,7 +327,7 @@ export default {
         this.total = response.total || 0
       } catch (error) {
         console.error('获取客户列表失败:', error)
-        this.$message.error('获取客户列表失败')
+        // 全局 API 拦截器已处理错误消息，无需重复提示
         this.customers = []
         this.total = 0
       } finally {
@@ -484,6 +483,20 @@ export default {
         '流失客户': 'danger'
       }
       return statusMap[customerStatus] || ''
+    },
+
+    // 获取客户状态颜色类型
+    getCustomerStatusType(customerStatus) {
+      const statusMap = {
+        '潜在客户': 'info',      // 灰色 - 表示未开发
+        '意向客户': 'warning',   // 橙色 - 表示有意向
+        '送样客户': 'primary',   // 蓝色 - 表示已送样
+        '成交客户': 'success',   // 绿色 - 表示成功
+        '流失客户': 'danger'     // 红色 - 表示失败
+      }
+      // 如果找不到匹配的状态，返回默认颜色 'info'（灰色）
+      // 这样即使新增了状态但忘记配置颜色，也会有默认显示
+      return statusMap[customerStatus] || 'info'
     },
 
     getStatusText(customerStatus) {
