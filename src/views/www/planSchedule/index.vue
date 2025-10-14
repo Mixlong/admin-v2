@@ -2,7 +2,7 @@
   <div class="app-container flex-app-container">
     <!-- 智能搜索区域 -->
     <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch" @reset="handleReset"
-      @field-change="handleFieldChange">
+      @field-change="handleFieldChange" defaultVisibleCount="4">
       <!-- 自定义所属品类字段渲染 -->
       <template #field-categoryId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
@@ -35,15 +35,15 @@
       <template #field-no="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-input v-model.trim="searchForm[field.key]" clearable @keyup.native.enter="handleQuery"
-            style="width: 140px" placeholder="请输入排产单号" size="small" />
+            placeholder="请输入排产单号" size="mini" />
         </el-form-item>
       </template>
 
       <!-- 自定义排产状态字段渲染 -->
       <template #field-productStatus="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm[field.key]" clearable size="small" placeholder="请选择">
-            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="+key" />
+          <el-select v-model="searchForm[field.key]" clearable size="mini" placeholder="请选择">
+            <el-option v-for="(value, key) in productStatusList" :key="key" :label="value" :value="key" />
           </el-select>
         </el-form-item>
       </template>
@@ -53,18 +53,18 @@
         <el-form-item :label="field.label" :prop="field.key">
           <el-date-picker v-model="dateRange" style="width: 250px" value-format="timestamp" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"
-            size="small"></el-date-picker>
+            size="mini"></el-date-picker>
         </el-form-item>
       </template>
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <el-button type="primary" icon="el-icon-plus" v-hasPermi="['www:planSchedule:add']" @click="handleAdd"
-          size="small">
+          size="mini">
           新 增
         </el-button>
         <el-button v-hasPermi="['www:planSchedule:oldAdd']" type="danger" icon="el-icon-plus" @click="handleOldAdd"
-          size="small">
+          size="mini">
           新 增(旧)
         </el-button>
       </template>
@@ -249,7 +249,7 @@
         <el-descriptions-item label="软件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.softList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.softList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.softList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>
@@ -258,7 +258,7 @@
         <el-descriptions-item label="硬件资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.hardList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.hardList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.hardList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>
@@ -268,7 +268,7 @@
         <el-descriptions-item label="工程资料" :labelStyle="isLabelStyle" :contentStyle="isContentStyle"
           content-class-name="overflow-y" v-if="isDataLen(dataInfo.projectList)">
           <div class="detail_item_box">
-            <el-tag size="small" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.projectList"
+            <el-tag size="mini" class="margin-right-xs margin-bottom-xs" v-for="(item, index) in dataInfo.projectList"
               :key="index">
               {{ item.typeValue }}
             </el-tag>
