@@ -179,6 +179,11 @@ export default {
       };
     },
     handleLogin() {
+      // 防止重复点击
+      if (this.loading) {
+        return;
+      }
+      
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true;
@@ -245,6 +250,11 @@ export default {
     },
     // 校验验证码
     submitCode() {
+      // 防止重复点击
+      if (this.isCodeLoading) {
+        return;
+      }
+      
       this.$refs.codeForm.validate((valid) => {
         if (valid) {
           this.isCodeLoading = true;
@@ -258,8 +268,10 @@ export default {
               Cookies.set("iamKeys", iamKey, { expires: 30 });
               Cookies.set(iamKey, iamValue, { expires: 30 });
               this.$router.push({ path: this.redirect || "/" });
+              // 登录成功后不重置 loading 状态，保持按钮禁用直到页面跳转完成
             })
-            .finally(() => {
+            .catch(() => {
+              // 只有失败时才重置 loading 状态
               this.isCodeLoading = false;
             });
         }

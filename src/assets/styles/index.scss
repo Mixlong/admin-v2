@@ -12,7 +12,7 @@ body {
   // -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   color: #4c4948;
-  background-color: #9faec8;
+  background-color: #d4d9e1; /* 更浅的背景色，与深色侧边栏搭配 */
   font-family: "PingFang SC", "Helvetica Neue", Helvetica, "microsoft yahei",
     arial, STHeiTi, sans-serif;
   font-size: 12px;
@@ -197,6 +197,7 @@ aside {
 //main-container全局样式
 .app-container {
   padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .components-container {
@@ -1570,4 +1571,22 @@ iframe[data-wujie-flag] {
 }
 td.el-table__cell {
   background-color: #fff;
+}
+
+/* ===== 强制设置菜单字体大小 - 全局最高优先级 ===== */
+/* 一级菜单 15px 加粗 */
+#app .sidebar-container .el-menu > li > .el-submenu__title,
+#app .sidebar-container .el-menu > li.el-menu-item,
+#app .sidebar-container .el-menu > .el-submenu > .el-submenu__title,
+#app .sidebar-container .el-menu > .el-menu-item {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+#app .sidebar-container .el-menu > li > .el-submenu__title > span,
+#app .sidebar-container .el-menu > li.el-menu-item > span,
+#app .sidebar-container .el-menu > .el-submenu > .el-submenu__title > span,
+#app .sidebar-container .el-menu > .el-menu-item > span {
+  font-size: 15px !important;
+  font-weight: 700 !important;
 }

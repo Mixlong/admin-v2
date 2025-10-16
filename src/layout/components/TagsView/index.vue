@@ -227,13 +227,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "@/assets/styles/variables.scss";
+
 .tags-view-container {
   height: 34px;
   width: 100%;
-  background: #fff;
-  padding-left: 220px;
-  border-bottom: 1px solid #d8dce5;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 0 3px 0 rgba(0, 0, 0, 0.04);
+  background: transparent !important;
+  
   .tags-view-wrapper {
     .tags-view-item {
       display: inline-block;
@@ -241,26 +241,33 @@ export default {
       cursor: pointer;
       height: 26px;
       line-height: 26px;
-      border: 1px solid #d8dce5;
-      color: #666;
-      background: #fff;
+      border: none;
+      color: #ffffff !important;
+      background: rgb(139, 161, 184);
       padding: 0 8px;
       font-size: 12px;
       margin-left: 5px;
       margin-top: 4px;
+      transition: all 0.3s ease;
+      
       &:first-of-type {
         margin-left: 15px;
       }
       &:last-of-type {
         margin-right: 15px;
       }
+      
+      &:hover {
+        background: rgba(139, 161, 184, 0.8);
+      }
+      
       &.active {
-        background-color: #42b983;
+        background-color: rgb(139, 161, 184);
         color: #fff;
-        border-color: #42b983;
+        border: none;
         &::before {
           content: "";
-          background:#fff;
+          background: #fff;
           display: inline-block;
           width: 8px;
           height: 8px;
@@ -271,9 +278,10 @@ export default {
       }
     }
   }
+  
   .contextmenu {
     margin: 0;
-    background: #fff;
+    background: if($darkTheme, #2c3e50, #fff);
     z-index: 3000;
     position: absolute;
     list-style-type: none;
@@ -281,14 +289,16 @@ export default {
     border-radius: 4px;
     font-size: 12px;
     font-weight: 400;
-    color: #333;
+    color: if($darkTheme, #fff, #333);
     box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
+    border: 1px solid if($darkTheme, rgba(255, 255, 255, 0.1), #e4e7ed);
+    
     li {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
       &:hover {
-        background: #eee;
+        background: if($darkTheme, rgba(255, 255, 255, 0.1), #eee);
       }
     }
   }
@@ -296,9 +306,12 @@ export default {
 </style>
 
 <style lang="scss">
+@import "@/assets/styles/variables.scss";
+
 //reset element css of el-icon-close
 .tags-view-wrapper {
   .tags-view-item {
+    color: #ffffff !important;
     .el-icon-close {
       width: 16px;
       height: 16px;
@@ -313,7 +326,7 @@ export default {
         vertical-align: -3px;
       }
       &:hover {
-        background-color: #b4bccc;
+        background-color: rgba(255, 255, 255, 0.3);
         color: #fff;
       }
     }

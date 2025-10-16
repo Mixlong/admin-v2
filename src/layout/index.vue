@@ -6,8 +6,11 @@
       @click="handleClickOutside"
     />
 
+    <!-- 侧边栏占满高度 -->
+    <sidebar class="sidebar-container" />
+    
+    <!-- 右侧主要内容区域 -->
     <div :class="{ hasTagsView: needTagsView }" class="main-container">
-      <sidebar class="sidebar-container" />
       <div :class="{ 'fixed-header': fixedHeader }">
         <div>
           <navbar />
@@ -72,13 +75,39 @@ export default {
 .app-wrapper {
   @include clearfix;
   position: relative;
-  height: 100%;
+  height: 100vh;
   width: 100%;
+  display: flex;
 
   &.mobile.openSidebar {
     position: fixed;
     top: 0;
   }
+}
+
+.sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
+}
+
+.main-container {
+  flex: 1;
+  margin-left: $sideBarWidth;
+  min-height: 100vh;
+  max-width: calc(100vw - #{$sideBarWidth});
+  width: calc(100vw - #{$sideBarWidth});
+  transition: margin-left 0.28s, max-width 0.28s, width 0.28s;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.hideSidebar .main-container {
+  margin-left: $hideSideBarWidth;
+  max-width: calc(100vw - #{$hideSideBarWidth});
+  width: calc(100vw - #{$hideSideBarWidth});
 }
 
 .drawer-bg {
@@ -88,30 +117,26 @@ export default {
   top: 0;
   height: 100%;
   position: absolute;
-  z-index: 999;
+  z-index: 8;
 }
 
 .fixed-header {
   position: fixed;
   top: 0;
+  left: $sideBarWidth;
   right: 0;
-  z-index: 1005;
-  border-radius: 6px;
-  // overflow: hidden;
-  // border-left: 10px solid #9faec8;
-  // border-right: 10px solid #9faec8;
-  // width: calc(100% - #{$sideBarWidth});
-  // width: calc(100% - 20px);
-  width: 100%;
-  transition: width 0.28s;
+  z-index: 9;
+  width: calc(100% - #{$sideBarWidth});
+  transition: left 0.28s, width 0.28s;
 }
 
 .hideSidebar .fixed-header {
-  // width: calc(100% - 54px);
-  width: 100%;
+  left: $hideSideBarWidth;
+  width: calc(100% - #{$hideSideBarWidth});
 }
 
 .mobile .fixed-header {
+  left: 0;
   width: 100%;
 }
 </style>

@@ -140,12 +140,12 @@
           </el-col>
         </el-row>
 
-        <el-form-item label="客户地址" prop="address">
+        <el-form-item label="客户网址" prop="address">
           <el-input
             v-model="form.address"
             type="textarea"
             :rows="2"
-            placeholder="请输入客户地址"
+            placeholder="请输入客户网址"
           />
         </el-form-item>
         <el-form-item label="背景调查" prop="backgroundCheck">
