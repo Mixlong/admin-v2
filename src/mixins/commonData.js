@@ -25,7 +25,7 @@ export default {
       //   系统电压
       dicts_voltage: [24, 36, 48, 52, 60, 72],
       //   助力档位数
-      powerGearData: [3, 4, 5, 9],
+      powerGearData: [1,2,3,4,5,6,7,8,9],
       // 缓启动参数
       slowStartData: [0, 1, 2, 3],
       // 测速磁钢数
