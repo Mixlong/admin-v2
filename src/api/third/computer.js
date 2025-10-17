@@ -77,3 +77,39 @@ export function computerName (name) {
   });
 }
 
+// 包装信息初审
+export function packagingFirstAudit(data) {
+  return request({
+    url: '/model/config/packaging/first/audit',
+    method: 'put',
+    data
+  });
+}
+
+// 包装信息终审
+export function packagingFinalAudit(data) {
+  return request({
+    url: '/model/config/packaging/final/audit',
+    method: 'put',
+    data
+  });
+}
+
+// 规格书初审
+export function specificationFirstAudit(data) {
+  return request({
+    url: '/model/config/specification/first/audit',
+    method: 'put',
+    data
+  });
+}
+
+// 规格书终审
+export function specificationFinalAudit(data) {
+  return request({
+    url: '/model/config/specification/final/audit',
+    method: 'put',
+    data
+  });
+}
+

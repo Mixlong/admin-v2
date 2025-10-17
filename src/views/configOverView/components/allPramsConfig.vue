@@ -50,12 +50,17 @@
     <el-alert title="表格可通过按住Ctrl + 鼠标左键左右拖动" type="success" show-icon>
     </el-alert>
 
+    <div style="position: relative">
+      <!-- 固定的基础信息分组标题 -->
+      <div class="fixed-group-header">基础信息</div>
+      
     <el-table id="drag_table" ref="tableRef" row-key="id" v-loading="loading" :data="brandList"
-      :height="tableHeight(-20)" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" fixed :reserve-selection="true" />
-      <el-table-column label="操作" align="center" width="100" fixed>
+        :height="tableHeight(-20)" @selection-change="handleSelectionChange" :header-cell-class-name="headerCellClassName">
+ 
+      <!-- 基础信息 -->
+      <el-table-column label="操作" align="center" width="100" fixed="left">
         <template slot-scope="{ row }">
-          <div class="flex  gap-btn justify-center">
+          <div class="operation-btns">
 
             <!-- 初审 -->
             <Tooltip v-if="row.state === 0" class="text-orange" icon="el-icon-coordinate" content="待初审"
@@ -64,168 +69,178 @@
             <!-- 终审 -->
             <Tooltip v-if="row.state === 1" class="text-orange" icon="el-icon-coordinate" content="待终审"
               v-hasPermi="['config:overview:final:check']" @click="handleAuthChange(row, 2)" />
-            <!-- 
-            <Tooltip class="margin-0" icon="el-icon-position" content="产品族谱" v-hasPermi="['product:configOverView:btn']"
-              @click="
-                handleNameToPage('ProductFamily', {
-                  categoryId: row.categoryId,
-                  computerId: row.computerId,
-                })
-                " /> -->
 
             <!-- 配置详情 -->
             <Tooltip class="margin-0" icon="el-icon-s-management" content="配置详情" @click="handleOpenDetail(row)" />
             <Tooltip v-hasPermi="['config:overview:first:edit']" icon="el-icon-edit" content="编辑"
-              @click="handleEdit(row)" style="margin-left: 0px;" />
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="包装信息" prop="state" align="center" width="100" fixed>
-        <template v-slot="{ row }">
-          <div class="flex  gap-btn justify-center">
+              @click="handleEdit(row)" />
+            
             <!-- 包装信息查看 -->
-            <Tooltip v-show="row.packagingInfo" class="margin-0" icon="el-icon-view" content="包装信息"
+            <Tooltip v-if="row.packagingInfo" icon="el-icon-box" content="包装信息查看" 
               @click="handleSeePackagingInfo(row)" />
-            <!-- 包装信息 -->
-            <Tooltip v-hasPermi="['config:overview:first:editPackage']" class="margin-0" icon="el-icon-edit"
-              content="编辑包装信息" @click="handleEditPackagingInfo(row)" />
+            
+            <!-- 包装信息编辑 -->
+            <Tooltip v-if="row.packagingInfo" icon="el-icon-edit-outline" content="包装信息编辑" 
+              v-hasPermi="['config:overview:first:edit']" @click="handleEditPackagingInfo(row)" />
+            
+            <!-- 包装信息初审 -->
+            <Tooltip v-if="row.packagingInfo && (row.packagingAuditStatus === 0 || row.packagingAuditStatus === null || row.packagingAuditStatus === undefined)" 
+              class="text-orange" 
+              icon="el-icon-takeaway-box" content="包装初审" 
+              v-hasPermi="['config:overview:first:check']" @click="handlePackagingFirstAudit(row)" />
+            
+            <!-- 包装信息终审 -->
+            <Tooltip v-if="row.packagingInfo && row.packagingAuditStatus === 1" class="text-orange" 
+              icon="el-icon-box" content="包装终审" 
+              v-hasPermi="['config:overview:final:check']" @click="handlePackagingFinalAudit(row)" />
+            
+            <!-- 产品图纸初审 -->
+            <Tooltip v-if="row.specification && (row.specificationAuditStatus === 0 || row.specificationAuditStatus === null || row.specificationAuditStatus === undefined)" 
+              class="text-orange" 
+              icon="el-icon-document" content="产品图纸初审" 
+              v-hasPermi="['config:overview:first:check']" @click="handleSpecificationFirstAudit(row)" />
+            
+            <!-- 产品图纸终审 -->
+            <Tooltip v-if="row.specification && row.specificationAuditStatus === 1" class="text-orange" 
+              icon="el-icon-document-checked" content="产品图纸终审" 
+              v-hasPermi="['config:overview:final:check']" @click="handleSpecificationFinalAudit(row)" />
           </div>
-
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" prop="state" align="center" width="100" fixed>
+      <el-table-column label="审核状态" prop="state" align="center" width="140" fixed="left">
         <template v-slot="{ row }">
-          <template v-if="row.state === 0">
-            <el-tag type="danger">未审核</el-tag>
-          </template>
-          <template v-if="row.state === 1">
-            <el-tag type="success">初审通过</el-tag>
-          </template>
-          <template v-if="row.state === 2">
-            <el-tag type="info">初审未通过</el-tag>
-          </template>
-          <template v-if="row.state === 3">
-            <el-tag type="success">终审通过</el-tag>
-          </template>
-          <template v-if="row.state === 4">
-            <el-tag type="info">终审未通过</el-tag>
-          </template>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
+            <!-- 配置审核状态 -->
+            <div>
+              <el-tag size="mini" v-if="row.state === 0" type="danger">配置:未审核</el-tag>
+              <el-tag size="mini" v-else-if="row.state === 1" type="success">配置:初审通过</el-tag>
+              <el-tag size="mini" v-else-if="row.state === 2" type="info">配置:初审未通过</el-tag>
+              <el-tag size="mini" v-else-if="row.state === 3" type="success">配置:终审通过</el-tag>
+              <el-tag size="mini" v-else-if="row.state === 4" type="info">配置:终审未通过</el-tag>
+            </div>
+            
+            <!-- 包装审核状态 -->
+            <div v-if="row.packagingInfo">
+              <el-tag size="mini" v-if="row.packagingAuditStatus === -1" type="danger">包装:拒审</el-tag>
+              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning">包装:待初审</el-tag>
+              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="primary">包装:待终审</el-tag>
+              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 2" type="success">包装:已审核</el-tag>
+              <el-tag size="mini" v-else type="info">包装:待初审</el-tag>
+            </div>
+            
+            <!-- 产品图纸审核状态 -->
+            <div v-if="row.specification">
+              <el-tag size="mini" v-if="row.specificationAuditStatus === -1" type="danger">图纸:拒审</el-tag>
+              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning">图纸:待初审</el-tag>
+              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="primary">图纸:待终审</el-tag>
+              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success">图纸:已审核</el-tag>
+              <el-tag size="mini" v-else type="info">图纸:待初审</el-tag>
+            </div>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column label="品类" prop="category" align="center" width="120" fixed column-key="category"
+      <el-table-column label="品类" prop="category" align="center" width="120" fixed="left" column-key="category"
         :filters="getFiltersData('category')" :filter-method="filterHandler" />
-      <el-table-column label="型号" prop="computerName" align="center" width="120" fixed column-key="computerName"
+      <el-table-column label="型号" prop="computerName" align="center" width="120" fixed="left" column-key="computerName"
         :filters="getFiltersData('computerName')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.computerName"></span>
       </el-table-column>
-      <el-table-column label="规格书" prop="specification" align="center" width="120" fixed>
-        <template slot-scope="{ row }">
-          <preview-img width="45px" height="45px" :isDisBadge="false" :url="row.specification" />
-        </template>
+      <el-table-column label="客户" prop="customerName" align="center" width="120" fixed="left" column-key="customerName">
+        <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
-      <el-table-column label="是否配置" prop="isStat" align="center" width="120" fixed>
+      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" width="120" fixed="left"
+        column-key="customerMaterialNum">
+        <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
+      </el-table-column>
+      <el-table-column label="实际客户车名" prop="customerCarName" align="center" width="150" fixed="left" column-key="customerCarName">
+        <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
+      </el-table-column>
+      <el-table-column label="是否配置" prop="isStat" align="center" width="120" fixed="left">
         <template slot-scope="{ row }">
           <el-tag type="success" v-if="row.isSts == 1">是</el-tag>
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="BIST型号" prop="isBist" align="center" width="120" fixed>
+      <el-table-column label="BIST型号" prop="isBist" align="center" width="120" fixed="left">
         <template slot-scope="{ row }">
           <el-tag type="success" v-if="row.isBist == 1">是</el-tag>
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" width="120" fixed column-key="customerName"
-        :filters="getFiltersData('customerName')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
+      
+      <!-- 外观信息 -->
+      <el-table-column label="外观信息" align="center" label-class-name="group-header-appearance">
+      <el-table-column label="产品图纸" prop="specification" align="center" width="140">
+        <template slot-scope="{ row }">
+          <div class="specification-upload-cell">
+            <preview-img 
+              v-if="row.specification" 
+              width="45px" 
+              height="45px" 
+              :isDisBadge="false" 
+              :url="row.specification" 
+            />
+            <el-button 
+              v-if="!row.specification"
+              v-hasPermi="['config:overview:first:edit']"
+              type="text" 
+              icon="el-icon-upload2" 
+              size="mini"
+              @click="handleUploadSpecification(row, $event)"
+            >
+              上传
+            </el-button>
+            <!-- 隐藏的文件上传输入框 -->
+            <input 
+              type="file" 
+              accept="image/*,application/pdf" 
+              style="display: none"
+              @change="onSpecificationFileSelected($event, row)"
+            />
+          </div>
+        </template>
       </el-table-column>
-      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" width="120" fixed
-        column-key="customerMaterialNum" :filters="getFiltersData('customerMaterialNum')"
-        :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
-      </el-table-column>
-      <el-table-column label="描述" prop="desc" align="center" width="120">
-        <span slot-scope="scope" v-NoData="scope.row.desc"></span>
+      <el-table-column label="标签规则" prop="labelRule" align="center" width="120" column-key="labelRule"
+        :filters="handleDataFilter(labelRuleData)" :filter-method="filterHandler">
+        <span slot-scope="{ row }" v-NoData="labelRuleData[row.labelRule]" />
       </el-table-column>
       <el-table-column label="SN" prop="sn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-
-      <el-table-column label="pcbaSn" prop="pcbaSn" align="center" width="120">
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
-      <el-table-column label="实际客户车名" prop="customerCarName" align="center" width="150" column-key="customerCarName"
-        :filters="getFiltersData('customerCarName')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
+      <el-table-column label="车把尺寸" prop="handlebarSize" align="center" width="120" column-key="handlebarSize"
+        :filters="handleDataFilter(handlebarSizeData)" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="handlebarSizeData[scope.row.handlebarSize]" />
       </el-table-column>
-      <el-table-column label="车名" prop="ebikeName" align="center" width="150" column-key="ebikeName"
-        :filters="handleDataFilter(dicts_ebike)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="dicts_ebike[scope.row.ebikeName]" />
-      </el-table-column>
-      <el-table-column label="客户车型编码" prop="carModel" align="center" width="150" column-key="carModel"
-        :filters="getFiltersData('carModel')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.carModel" />
-      </el-table-column>
-      <el-table-column label="控制器接头" prop="controlConnect" align="center" width="120" column-key="controlConnect"
-        :filters="getFiltersData('controlConnect')" :filter-method="filterHandler">
+      <el-table-column label="控制器接头" prop="controlConnect" align="center" width="120" column-key="controlConnect">
         <span slot-scope="scope" v-NoData="scope.row.controlConnect" />
       </el-table-column>
-      <el-table-column label="不含头控制器出线线长(mm)" align="center" width="200" prop="notControllerJointString"
-        column-key="notControllerJointString" :filters="getFiltersData('notControllerJointString')"
-        :filter-method="filterHandler">
+      <el-table-column label="控制器线长不含头mm" align="center" width="175" prop="notControllerJointString"
+        column-key="notControllerJointString">
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.controlHead === 1">（含头）</span>
-
           <p>
             <span v-NoData="row.notControllerJointString"></span>
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="按键【仪表端】接头" align="center" prop="modelEndHead" width="160" column-key="modelEndHead"
-        :filters="getFiltersData('modelEndHead')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.modelEndHead"></span>
-      </el-table-column>
-      <el-table-column label="按键【按键端】接头" align="center" prop="keyEndHead" width="160" column-key="keyEndHead"
-        :filters="getFiltersData('keyEndHead')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
-      </el-table-column>
-      <el-table-column label="通讯协议" prop="sysProtocol" align="center" width="120" column-key="sysProtocol"
-        :filters="handleDataFilter(dicts_protocol_list)" :filter-method="filterHandler">
-        <span slot-scope="{ row }" v-NoData="dicts_protocol_list[row.sysProtocol]" />
-      </el-table-column>
-
-      <el-table-column label="通讯方式" prop="serialLevel" align="center" width="120" column-key="serialLevel"
-        :filters="handleDataFilter(serialLevelData)" :filter-method="filterHandler">
-        <span slot-scope="{ row }" v-NoData="serialLevelData[row.serialLevel]" />
-      </el-table-column>
-
-      <el-table-column label="串口波特率" prop="baudRate" align="center" width="120" column-key="baudRate"
-        :filters="handleDataFilter(baudRateList)" :filter-method="filterHandler">
-        <span slot-scope="{ row }" v-NoData="baudRateList[row.baudRate]" />
-      </el-table-column>
-
-      <el-table-column label="CAN波特率" prop="canRate" align="center" width="120" column-key="canRate"
-        :filters="handleDataFilter(canRateList)" :filter-method="filterHandler">
-        <template slot-scope="{ row }">
-          <span v-if="row.serialLevel === 2" v-NoData="canRateList[row.canRate]" />
-          <span v-else>- - -</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="帧类型" prop="msgType" align="center" width="120" column-key="msgType"
-        :filters="handleDataFilter(msgTypeData)" :filter-method="filterHandler">
-        <template slot-scope="{ row }">
-          <span v-if="row.serialLevel === 2" v-NoData="msgTypeData[row.msgType]" />
-          <span v-else>- - -</span>
-        </template>
-      </el-table-column>
-
       <el-table-column label="按键型号" prop="keyType" align="center" width="120" column-key="keyType"
         :filters="handleDataFilter(dicts_keyType_list)" :filter-method="filterHandler">
         <span slot-scope="{ row }" v-NoData="dicts_keyType_list[row.keyType]" />
       </el-table-column>
-      <el-table-column label="按键线长(mm)" prop="keyLineLen" align="center" width="120" column-key="keyLineLen"
-        :filters="getFiltersData('keyLineLen')" :filter-method="filterHandler">
+      <el-table-column label="按键连接类型" prop="keyLinkType" align="center" width="125" column-key="keyLinkType" :filters="[
+        { text: '直连', value: 0 },
+        { text: '快拆', value: 1 },
+      ]" :filter-method="filterHandler">
+        <template slot-scope="{ row }">
+          <span v-if="row.keyLinkType === 0">直连</span>
+          <span v-else-if="row.keyLinkType === 1">快拆</span>
+          <span v-else>--</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="按键线长mm" prop="keyLineLen" align="center" width="120" column-key="keyLineLen">
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.keyLineType === 1">（含头）</span>
           <p>
@@ -233,93 +248,16 @@
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="按键图片" prop="keyImgUrl" align="center" width="120">
-        <template slot-scope="{ row }">
-          <preview-img width="45px" height="45px" :url="row.keyImgUrl" />
-        </template>
+      <el-table-column label="按键【仪表端】接头" align="center" prop="modelEndHead" width="165" column-key="modelEndHead">
+        <span slot-scope="scope" v-NoData="scope.row.modelEndHead"></span>
       </el-table-column>
-      <el-table-column label="开机logo" prop="powerLogo" align="center" width="120">
-        <template slot-scope="{ row }">
-          <preview-img width="45px" height="45px" :url="row.powerLogo" />
-        </template>
+      <el-table-column label="按键【按键端】接头" align="center" prop="keyEndHead" width="165" column-key="keyEndHead">
+        <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
       </el-table-column>
-      <el-table-column label="标签规则" prop="labelRule" align="center" width="120" column-key="labelRule"
-        :filters="handleDataFilter(labelRuleData)" :filter-method="filterHandler">
-        <span slot-scope="{ row }" v-NoData="labelRuleData[row.labelRule]" />
       </el-table-column>
-      <el-table-column label="标签图片" prop="labelRuleImg" align="center" width="120">
-        <template slot-scope="{ row }">
-          <preview-img width="45px" height="45px" :url="row.labelRuleImg" />
-        </template>
-      </el-table-column>
-      <el-table-column label="限速范围" prop="speedLimitRang" align="center" width="120" column-key="speedLimitRang"
-        :filters="getFiltersData('speedLimitRang')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.speedLimitRang"></span>
-      </el-table-column>
-      <el-table-column label="车把尺寸" prop="handlebarSize" align="center" width="120" column-key="handlebarSize"
-        :filters="handleDataFilter(handlebarSizeData)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="handlebarSizeData[scope.row.handlebarSize]" />
-      </el-table-column>
-      <el-table-column label="配置协议" prop="agreement" align="center" width="120" column-key="agreement"
-        :filters="handleDataFilter(dicts_agreement)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="dicts_agreement[scope.row.agreement]" />
-      </el-table-column>
-      <el-table-column label="实际协议" prop="showAgreement" align="center" width="120" />
-      <el-table-column label="测速磁钢数" prop="speedSteel" align="center" width="120" column-key="speedSteel"
-        :filters="getFiltersData('speedSteel')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.speedSteel"></span>
-      </el-table-column>
-      <el-table-column label="车轮宽度" prop="tiresSize" align="center" width="120" column-key="tiresSize"
-        :filters="getFiltersData('tiresSize')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.tiresSize"></span>
-      </el-table-column>
-      <el-table-column label="助力限速门限(km/h)" prop="assistLimit" align="center" width="155" column-key="assistLimit"
-        :filters="getFiltersData('assistLimit')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
-      </el-table-column>
-      <el-table-column label="配置轮径" prop="wheelDiameter" align="center" width="120" column-key="wheelDiameter"
-        :filters="handleDataFilter(wheelDiameterData)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="wheelDiameterData[scope.row.wheelDiameter]"></span>
-      </el-table-column>
-      <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="120" />
-      <el-table-column label="周长(mm)" prop="perimeter" align="center" width="120" column-key="perimeter"
-        :filters="getFiltersData('perimeter')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
-      </el-table-column>
-      <el-table-column label="电压" prop="voltage" align="center" width="120" column-key="voltage"
-        :filters="getFiltersData('voltage')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
-      </el-table-column>
-      <el-table-column label="缓启动" prop="slowStart" align="center" width="120" column-key="slowStart"
-        :filters="getFiltersData('slowStart')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.slowStart"></span>
-      </el-table-column>
-      <el-table-column label="显示单位" prop="unit" align="center" width="120" column-key="unit"
-        :filters="handleDataFilter(dicts_unit)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="dicts_unit[scope.row.unit]"></span>
-      </el-table-column>
-      <el-table-column label="电量计算" prop="power" align="center" width="120" column-key="power"
-        :filters="handleDataFilter(dicts_power)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="dicts_power[scope.row.power]"></span>
-      </el-table-column>
-      <el-table-column label="APP" prop="app" align="center" width="120" column-key="app" :filters="[
-        { text: 'YES', value: 1 },
-        { text: 'NO', value: 0 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.app)" slot-scope="{ row }" :type="row.app === 1 ? 'success' : 'danger'">
-          {{ row.app === 1 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
-      </el-table-column>
-      <el-table-column label="USB" prop="usb" align="center" width="120" column-key="usb" :filters="[
-        { text: 'YES', value: 1 },
-        { text: 'NO', value: 0 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.usb)" slot-scope="{ row }" :type="row.usb === 1 ? 'success' : 'danger'">
-          {{ row.usb === 1 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
-      </el-table-column>
+      
+      <!-- 车型配置 -->
+      <el-table-column label="车型配置" align="center" label-class-name="group-header-config">
       <el-table-column label="蓝牙" prop="bluetooth" align="center" width="120" column-key="bluetooth" :filters="[
         { text: 'YES', value: 1 },
         { text: 'NO', value: 0 },
@@ -329,197 +267,374 @@
         </el-tag>
         <template v-else> - - - </template>
       </el-table-column>
-      <el-table-column label="推车助力" prop="driveAssist" align="center" width="120" column-key="driveAssist" :filters="[
-        { text: 'YES', value: 1 },
-        { text: 'NO', value: 0 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.driveAssist)" slot-scope="{ row }"
-          :type="row.driveAssist === 1 ? 'success' : 'danger'">
-          {{ row.driveAssist === 1 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+      <el-table-column label="通讯协议" prop="sysProtocol" align="center" width="120" column-key="sysProtocol"
+        :filters="handleDataFilter(dicts_protocol_list)" :filter-method="filterHandler">
+        <span slot-scope="{ row }" v-NoData="dicts_protocol_list[row.sysProtocol]" />
       </el-table-column>
-      <el-table-column label="恢复出厂设置" prop="factoryReset" align="center" width="120" column-key="factoryReset" :filters="[
-        { text: 'YES', value: 0 },
-        { text: 'NO', value: 1 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.factoryReset)" slot-scope="{ row }"
-          :type="row.factoryReset === 0 ? 'success' : 'danger'">
-          {{ row.factoryReset === 0 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+      <el-table-column label="通讯方式" prop="serialLevel" align="center" width="120" column-key="serialLevel"
+        :filters="handleDataFilter(serialLevelData)" :filter-method="filterHandler">
+        <span slot-scope="{ row }" v-NoData="serialLevelData[row.serialLevel]" />
       </el-table-column>
-      <el-table-column label="转把分档" prop="rotateHandle" align="center" width="120" column-key="rotateHandle" :filters="[
-        { text: 'YES', value: 1 },
-        { text: 'NO', value: 0 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.rotateHandle)" slot-scope="{ row }"
-          :type="row.rotateHandle === 1 ? 'success' : 'danger'">
-          {{ row.rotateHandle === 1 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+      <el-table-column label="实际协议" prop="showAgreement" align="center" width="120" />
+      <el-table-column label="配置协议" prop="agreement" align="center" width="120" column-key="agreement"
+        :filters="handleDataFilter(dicts_agreement)" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="dicts_agreement[scope.row.agreement]" />
       </el-table-column>
-      <el-table-column label="助力正反" prop="assist" align="center" width="120" column-key="assist" :filters="[
-        { text: '助力正', value: 0 },
-        { text: '助力反', value: 1 },
-      ]" :filter-method="filterHandler">
-        <template v-if="isShow(row.assist)" slot-scope="{ row }">
-          {{ row.assist === 0 ? "助力正" : "助力反" }}
-        </template>
-        <template v-else> - - - </template>
+      <el-table-column label="系统电压" prop="voltage" align="center" width="120" column-key="voltage"
+        :filters="getFiltersData('voltage')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
       </el-table-column>
-      <el-table-column label="转把限速" prop="rotateHandleSpeedLimit" align="center" width="120"
-        column-key="rotateHandleSpeedLimit" :filters="[
-          { text: '正常', value: 0 },
-          { text: '限速6Km', value: 1 },
-        ]" :filter-method="filterHandler">
-        <template v-if="isShow(row.rotateHandleSpeedLimit)" slot-scope="{ row }">
-          {{ row.rotateHandleSpeedLimit === 0 ? "正常" : "限速6Km" }}
-        </template>
-        <template v-else> - - - </template>
+      <el-table-column label="欠压门限" prop="undervoltage" align="center" width="120" column-key="undervoltage"
+        :filters="getFiltersData('undervoltage')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
       </el-table-column>
-      <el-table-column label="默认档位" prop="defaultGear" align="center" width="120" column-key="defaultGear"
-        :filters="getFiltersData('defaultGear')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.defaultGear"></span>
+      <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="120" />
+      <el-table-column label="配置轮径" prop="wheelDiameter" align="center" width="120" column-key="wheelDiameter"
+        :filters="handleDataFilter(wheelDiameterData)" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="wheelDiameterData[scope.row.wheelDiameter]"></span>
       </el-table-column>
-      <el-table-column label="最高档位" prop="topGear" align="center" width="120" column-key="topGear"
-        :filters="getFiltersData('topGear')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.topGear"></span>
-      </el-table-column>
-      <el-table-column label="速度平滑等级" prop="smoothLevel" align="center" width="120" column-key="smoothLevel"
-        :filters="getFiltersData('smoothLevel')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.smoothLevel"></span>
-      </el-table-column>
-      <el-table-column label="电量变化时间(s)" prop="batteryVoltageChangeTime" align="center" width="150"
-        column-key="batteryVoltageChangeTime" :filters="getFiltersData('batteryVoltageChangeTime')"
-        :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.batteryVoltageChangeTime"></span>
-      </el-table-column>
-      <el-table-column label="总线故障超时时间(s)" prop="allLineErrTimeOut" align="center" width="160"
-        column-key="allLineErrTimeOut" :filters="getFiltersData('allLineErrTimeOut')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.allLineErrTimeOut"></span>
-      </el-table-column>
-      <el-table-column label="背光亮度" prop="backlightBrightness" align="center" width="120"
-        column-key="backlightBrightness" :filters="handleDataFilter(backlightBrightnessList)"
-        :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="backlightBrightnessList[scope.row.backlightBrightness]"></span>
-      </el-table-column>
-      <el-table-column label="Logo界面" prop="logo" align="center" width="120" column-key="logo"
-        :filters="handleDataFilter(dicts_logo)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="dicts_logo[scope.row.logo]"></span>
-      </el-table-column>
-      <el-table-column label="休眠时间(min)" prop="sleepTime" align="center" width="120" column-key="sleepTime"
-        :filters="getFiltersData('sleepTime')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.sleepTime"></span>
+      <el-table-column label="周长" prop="perimeter" align="center" width="120" column-key="perimeter"
+        :filters="getFiltersData('perimeter')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
       </el-table-column>
       <el-table-column label="助力档位数" prop="powerGear" align="center" width="120" column-key="powerGear"
         :filters="getFiltersData('powerGear')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.powerGear"></span>
       </el-table-column>
-      <el-table-column label="助力开始磁钢数" prop="assistStartMagnetNumber" align="center" width="130"
-        column-key="assistStartMagnetNumber" :filters="getFiltersData('assistStartMagnetNumber')"
-        :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.assistStartMagnetNumber" />
+      <el-table-column label="默认档位" prop="defaultGear" align="center" width="120" column-key="defaultGear"
+        :filters="getFiltersData('defaultGear')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.defaultGear"></span>
       </el-table-column>
-      <el-table-column label="助力比例" prop="assistPercentage" align="center" width="120" column-key="assistPercentage"
-        :filters="getFiltersData('assistPercentage')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.assistPercentage"></span>
+      <el-table-column label="测速磁钢数" prop="speedSteel" align="center" width="120" column-key="speedSteel"
+        :filters="getFiltersData('speedSteel')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.speedSteel"></span>
       </el-table-column>
-      <el-table-column label="显示轮径" prop="showWheelsize" align="center" width="120" column-key="showWheelsize"
-        :filters="getFiltersData('showWheelsize')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.showWheelsize"></span>
+      <el-table-column label="助力限速门限" prop="assistLimit" align="center" width="130" column-key="assistLimit"
+        :filters="getFiltersData('assistLimit')" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
       </el-table-column>
-      <el-table-column label="系统电压(V)" prop="voltage" align="center" width="120" column-key="voltage"
-        :filters="getFiltersData('voltage')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
+      <el-table-column label="限速范围" prop="speedLimitRang" align="center" width="120" column-key="speedLimitRang">
+        <span slot-scope="scope" v-NoData="scope.row.speedLimitRang"></span>
       </el-table-column>
-      <el-table-column label="限流门限(A)" prop="currentlimiting" align="center" width="120" column-key="currentlimiting"
-        :filters="getFiltersData('currentlimiting')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.currentlimiting"></span>
+      <el-table-column label="显示单位" prop="unit" align="center" width="120" column-key="unit"
+        :filters="handleDataFilter(dicts_unit)" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="dicts_unit[scope.row.unit]"></span>
       </el-table-column>
-      <el-table-column label="欠压门限(V)" prop="undervoltage" align="center" width="120" column-key="undervoltage"
-        :filters="getFiltersData('undervoltage')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
+      <el-table-column label="LOGO界面" prop="logo" align="center" width="120" column-key="logo"
+        :filters="handleDataFilter(dicts_logo)" :filter-method="filterHandler">
+        <span slot-scope="scope" v-NoData="dicts_logo[scope.row.logo]"></span>
       </el-table-column>
-      <el-table-column label="蜂鸣器" prop="buzzerSwitch" align="center" width="120" column-key="buzzerSwitch" :filters="[
-        { text: 'YES', value: 0 },
-        { text: 'NO', value: 1 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.buzzerSwitch)" slot-scope="{ row }"
-          :type="row.buzzerSwitch === 0 ? 'success' : 'danger'">
-          {{ row.buzzerSwitch === 0 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+      <el-table-column label="开机LOGO" prop="powerLogo" align="center" width="120">
+        <template slot-scope="{ row }">
+          <preview-img width="45px" height="45px" :url="row.powerLogo" />
+        </template>
       </el-table-column>
-      <el-table-column label="高速蜂鸣器提醒" prop="highSpeedBuzzerRemind" align="center" width="140"
-        column-key="highSpeedBuzzerRemind" :filters="getFiltersData('highSpeedBuzzerRemind')"
-        :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.highSpeedBuzzerRemind"></span>
       </el-table-column>
-      <el-table-column label="定速巡航功能" prop="cruise" align="center" width="120" column-key="cruise" :filters="[
-        { text: 'YES', value: 0 },
-        { text: 'NO', value: 1 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.cruise)" slot-scope="{ row }" :type="row.cruise === 0 ? 'success' : 'danger'">
-          {{ row.cruise === 0 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+      
+      <!-- 包装信息 -->
+      <el-table-column label="包装信息" align="center" label-class-name="group-header-package">
+      <el-table-column label="附件出货方式" align="center">
+        <el-table-column label="支架螺丝" align="center" width="150">
+          <template slot-scope="{ row }">
+            <span v-NoData="getPackagingValue(row, '解件出库方式', '支架螺丝')"></span>
+          </template>
       </el-table-column>
-      <el-table-column label="是否开机密码" prop="turnOnPasswd" align="center" width="120" column-key="turnOnPasswd" :filters="[
-        { text: 'YES', value: 0 },
-        { text: 'NO', value: 1 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.turnOnPasswd)" slot-scope="{ row }"
-          :type="row.turnOnPasswd === 0 ? 'success' : 'danger'">
-          {{ row.turnOnPasswd === 0 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+        <el-table-column label="按键螺丝" align="center" width="150">
+          <template slot-scope="{ row }">
+            <span v-NoData="getPackagingValue(row, '解件出库方式', '按栓螺丝')"></span>
+          </template>
       </el-table-column>
-      <el-table-column label="开机密码" prop="startupPasswd" align="center" width="120" column-key="startupPasswd"
-        :filters="getFiltersData('startupPasswd')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.startupPasswd"></span>
+        <el-table-column label="硅胶垫片" align="center" width="150">
+          <template slot-scope="{ row }">
+            <span v-NoData="getPackagingValue(row, '解件出库方式', '硅胶垫片')"></span>
+          </template>
       </el-table-column>
-      <el-table-column label="是否菜单密码" prop="menuPassword" align="center" width="120" column-key="menuPassword" :filters="[
-        { text: 'YES', value: 0 },
-        { text: 'NO', value: 1 },
-      ]" :filter-method="filterHandler">
-        <el-tag v-if="isShow(row.menuPassword)" slot-scope="{ row }"
-          :type="row.menuPassword === 0 ? 'success' : 'danger'">
-          {{ row.menuPassword === 0 ? "YES" : "NO" }}
-        </el-tag>
-        <template v-else> - - - </template>
+        <el-table-column label="其它附件要求" align="center" width="200">
+          <template slot-scope="{ row }">
+            <div 
+              v-html="getPackagingValue(row, '解件出库方式', '其它附件要求')" 
+              class="rich-text-content"
+              @click="handleRichTextClick($event, row, '解件出库方式', '其它附件要求')"
+            ></div>
+          </template>
       </el-table-column>
-      <el-table-column label="高级菜单密码" prop="highMenuPasswd" align="center" width="120" column-key="highMenuPasswd"
-        :filters="getFiltersData('highMenuPasswd')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.highMenuPasswd"></span>
       </el-table-column>
-      <el-table-column label="有无高级菜单" prop="isHighMenuPassword" align="center" width="130">
-        <el-tag v-if="isShow(row.isHighMenuPassword)" slot-scope="{ row }"
-          :type="row.isHighMenuPassword === 0 ? 'success' : 'danger'">
-          {{ row.isHighMenuPassword === 0 ? "YES" : "NO" }}
-        </el-tag>
+
+      <el-table-column label="附件装箱方式" align="center" width="200">
+        <template slot-scope="{ row }">
+          <div>
+            <div>{{ getPackagingValue(row, '附件装箱方式', 'value') }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && getPackagingValue(row, '附件装箱方式', 'administrator')" 
+                 v-html="getPackagingValue(row, '附件装箱方式', 'administrator')" 
+                 class="rich-text-content text-muted"
+                 @click="handleRichTextClick($event, row, '附件装箱方式', 'administrator')"></div>
+          </div>
+        </template>
       </el-table-column>
-      <el-table-column label="电机功率(W)" prop="motorSys" align="center" width="120" column-key="motorSys"
-        :filters="getFiltersData('motorSys')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.motorSys"></span>
+
+      <el-table-column label="箱唛要求" align="center" width="200">
+        <template slot-scope="{ row }">
+          <div>
+            <div>{{ getPackagingValue(row, '箱唛要求', 'value') }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && getPackagingValue(row, '箱唛要求', 'administrator')" 
+                 v-html="getPackagingValue(row, '箱唛要求', 'administrator')" 
+                 class="rich-text-content text-muted"
+                 @click="handleRichTextClick($event, row, '箱唛要求', 'administrator')"></div>
+          </div>
+        </template>
       </el-table-column>
-      <el-table-column label="电池容量" prop="batteryCap" align="center" width="120" column-key="batteryCap"
-        :filters="getFiltersData('batteryCap')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.batteryCap"></span>
+
+      <el-table-column label="检验报告要求" align="center" width="200">
+        <template slot-scope="{ row }">
+          <div>
+            <div>{{ getPackagingValue(row, '检验报告要求', 'value') }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && getPackagingValue(row, '检验报告要求', 'administrator')" 
+                 v-html="getPackagingValue(row, '检验报告要求', 'administrator')" 
+                 class="rich-text-content text-muted"
+                 @click="handleRichTextClick($event, row, '检验报告要求', 'administrator')"></div>
+          </div>
+        </template>
       </el-table-column>
-      <el-table-column label="创建人" prop="createBy" align="center" width="120" column-key="createBy"
-        :filters="getFiltersData('createBy')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.createBy"></span>
-      </el-table-column>
-      <el-table-column label="审核人 " prop="checkBy" align="center" width="120" column-key="checkBy"
-        :filters="getFiltersData('checkBy')" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="scope.row.checkBy"></span>
       </el-table-column>
 
     </el-table>
+    </div>
 
-    <pagination v-if="total > 0" :total="total" :ls="[10, 50, 100, 300, 500]" :page.sync="queryParams.p"
+    <pagination v-if="total > 0" :total="total" :ls="[10,20,30,40, 50, 100, 300, 500]" :page.sync="queryParams.p"
       :limit.sync="queryParams.l" @pagination="getList" />
+
+    <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="40%" center :close-on-click-modal="false">
+      <el-form ref="authForm" :model="authForm" class="form-data" :inline="false">
+        <el-form-item label="拒审原因">
+          <el-input type="textarea" :autosize="{ minRows: 4, maxRows: 8 }" v-model="authForm.msg"
+            placeholder="不通过则需要输入原因" />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button :loading="isSubmitLoading" @click="handleStatusChange(isAuthFlag === 1 ? 2 : 4)">
+          不通过
+        </el-button>
+        <el-button type="primary" :loading="isSubmitLoading" @click="handleStatusChange(isAuthFlag === 1 ? 1 : 3)">
+          通过
+        </el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog :visible.sync="isDeployShow" width="50%" center top="2vh">
+      <template v-slot:title>
+        <div>
+          <h2>配置详情</h2>
+          <el-switch v-model="isSample" active-text="简化"> </el-switch>
+        </div>
+      </template>
+      <el-descriptions direction="vertical" :column="4" border>
+      <el-descriptions-item label="背光亮度">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="backlightBrightnessList[deployData.backlightBrightness]
+                "></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.backlightBrightness">
+              </span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="缓启动" v-if="isKm5s">
+          <span v-NoData="deployData.slowStart"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="车名" v-if="!isSample">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="dicts_ebike[deployData.ebikeName]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.ebikeName"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="车轮宽度" v-if="!isSample">
+          <span v-NoData="deployData.tiresSize"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="休眠时间(min)">
+          <span v-NoData="deployData.sleepTime"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="轮径">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="wheelDiameterData[deployData.wheelDiameter]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.wheelDiameter"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="车型" v-if="!isSample">
+          <span v-NoData="deployData.carModel"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="蓝牙">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.bluetooth === 1 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.bluetooth"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="系统电压(V)">
+          <span v-NoData="deployData.voltage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="周长(mm)">
+          <span v-NoData="deployData.perimeter"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="默认档位">
+          <span v-NoData="deployData.defaultGear"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="推车助力">
+          {{ deployData.driveAssist === 1 ? "YES" : "NO" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="欠压门限(V)">
+          <span v-NoData="deployData.undervoltage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="显示单位">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="dicts_unit[deployData.unit]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.unit"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Logo界面">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="dicts_logo[deployData.logo]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.logo"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="恢复出厂设置" v-if="!isSample">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.factoryReset === 0 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.factoryReset"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="助力档位数">
+          <span v-NoData="deployData.powerGear"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="协议">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="dicts_agreement[deployData.agreement]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.agreement"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="开机密码">
+          <span v-NoData="deployData.startupPasswd"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="转把分档" v-if="isKm5s">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.rotateHandle === 1 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.rotateHandle"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="助力开始磁钢数" v-if="isKm5s">
+          <span v-NoData="deployData.assistStartMagnetNumber"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电量计算方式">
+          <div class="flex justify-between">
+            <div>
+              <span v-NoData="dicts_power[deployData.power]"></span>
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.power"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="高级菜单密码">
+          <span v-NoData="deployData.highMenuPasswd"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="蜂鸣器开关" v-if="!isSample">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.buzzerSwitch === 0 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.buzzerSwitch"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="助力比例" v-if="isKm5s">
+          <span v-NoData="deployData.assistPercentage"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="测速磁钢数">
+          <span v-NoData="deployData.speedSteel"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电机功率(W)">
+          <span v-NoData="deployData.motorSys"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="定速巡航功能">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.cruise === 0 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.cruise"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="限流门限(A)">
+          <span v-NoData="deployData.currentlimiting"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电量变化时间(s)">
+          <span v-NoData="deployData.batteryVoltageChangeTime"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="电池容量" v-if="!isSample">
+          <span v-NoData="deployData.batteryCap"></span>
+        </el-descriptions-item>
+        <el-descriptions-item label="开机密码">
+          <div class="flex justify-between">
+            <div>
+              {{ deployData.turnOnPasswd === 0 ? "YES" : "NO" }}
+            </div>
+            <div v-show="!isSample">
+              实际值：
+              <span class="text-red" v-NoData="deployData.turnOnPasswd"></span>
+            </div>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="助力限速门限(km/h)">
+          <span v-NoData="deployData.assistLimit"></span>
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
 
     <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="40%" center :close-on-click-modal="false">
       <el-form ref="authForm" :model="authForm" class="form-data" :inline="false">
@@ -814,7 +929,56 @@
     <ParamsCompare :isParamsCompareShow.sync="isParamsCompareShow" :dictList="dictList" />
 
     <PackagingInfo ref="packInfoRef" />
+    <PackagingInfoEdit 
+      ref="packInfoEditRef" 
+      :visible.sync="packagingEditVisible"
+      :packagingInfo="currentPackagingInfo"
+      @save="handlePackagingInfoSave"
+    />
     <addDialog ref="addDialogRef" @refresh-list="getList" />
+    
+    <!-- 图片预览组件 -->
+    <el-image-viewer 
+      v-if="showImageViewer" 
+      :url-list="previewImageList" 
+      :initial-index="currentImageIndex"
+      :on-close="closeImageViewer"
+    />
+    
+    <!-- 审核对话框 -->
+    <el-dialog 
+      :title="auditDialog.title" 
+      :visible.sync="auditDialog.visible" 
+      width="500px"
+      append-to-body
+    >
+      <el-form :model="auditDialog.form" :rules="auditDialog.rules" ref="auditForm" label-width="100px">
+        <el-form-item label="审核结果" prop="status">
+          <el-radio-group v-model="auditDialog.form.status">
+            <el-radio :label="1">通过</el-radio>
+            <el-radio :label="-1">拒绝</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item 
+          label="拒绝原因" 
+          prop="why"
+          v-if="auditDialog.form.status === -1"
+        >
+          <el-input 
+            v-model="auditDialog.form.why" 
+            type="textarea" 
+            :rows="4"
+            placeholder="请输入拒绝原因"
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="auditDialog.visible = false">取 消</el-button>
+        <el-button type="primary" @click="handleAuditConfirm" :loading="auditDialog.loading">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -825,10 +989,15 @@ import {
   modelConfigState,
   ConfigExport,
 } from "@/api/third/testApi";
+import { editComputer, packagingFirstAudit, packagingFinalAudit, specificationFirstAudit, specificationFinalAudit } from "@/api/third/computer";
 import commonData from "@/mixins/commonData";
 import ParamsCompare from "./ParamsCompare.vue";
 import { getCustomerList } from "@/api/order";
 import addDialog from '@/views/third/productFamily/index.vue'
+import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
+import axios from "axios";
+import reqUrl from "@/utils/requestUrl";
+
 export default {
   name: "ConfigOverview",
   mixins: [commonData],
@@ -847,6 +1016,8 @@ export default {
     CategoryComputer: () => import("@/components/CategoryComputer"),
     ParamsCompare,
     PackagingInfo: () => import("./packagingInfo"),
+    PackagingInfoEdit: () => import("./packagingInfoEdit"),
+    ElImageViewer,
   },
   mounted() {
     // 初始化表格拖拽功能
@@ -870,6 +1041,14 @@ export default {
       isAuthFlag: null,
       authForm: {},
       form: {},
+      // 包装信息编辑
+      packagingEditVisible: false,
+      currentPackagingInfo: null,
+      currentEditRow: null, // 当前编辑的行数据
+      // 图片预览
+      showImageViewer: false,
+      previewImageList: [],
+      currentImageIndex: 0,
       // 遮罩层
       loading: true,
       // 总条数
@@ -907,10 +1086,32 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
+        l: 20,
         categoryId: undefined,
         computerId: undefined,
         customerName: undefined,
+      },
+      // 审核对话框
+      auditDialog: {
+        visible: false,
+        loading: false,
+        title: '',
+        type: '', // 'packagingFirst', 'packagingFinal', 'specificationFirst', 'specificationFinal'
+        currentRow: null,
+        form: {
+          id: '',
+          status: 1, // 1:通过, -1:拒绝
+          why: ''
+        },
+        rules: {
+          status: [
+            { required: true, message: '请选择审核结果', trigger: 'change' }
+          ],
+          why: [
+            { required: true, message: '请输入拒绝原因', trigger: 'blur' },
+            { min: 5, message: '拒绝原因至少5个字符', trigger: 'blur' }
+          ]
+        }
       },
     };
   },
@@ -1023,6 +1224,34 @@ export default {
     }
   },
   methods: {
+    // 表头二级、三级着色：根据列名匹配所属分组
+    headerCellClassName({ column, rowIndex }) {
+      // 只对多级表头的子行着色（但顶级也兼容）
+      const label = (column && column.label) || ''
+
+      const basic = new Set([
+        '操作', '审核状态', '品类', '型号', '客户', '客户料号', '实际客户车名', '是否配置', 'BIST型号'
+      ])
+      const appearance = new Set([
+        '产品图纸', '标签规则', 'SN', 'PCBA SN', '车把尺寸', '控制器接头', '控制器线长不含头mm',
+        '按键型号', '按键连接类型', '按键线长mm', '按键【仪表端】接头', '按键【按键端】接头'
+      ])
+      const vehicleCfg = new Set([
+        '蓝牙', '通讯协议', '通讯方式', '实际协议', '配置协议', '系统电压', '欠压门限', '实际轮径', '配置轮径',
+        '周长', '助力档位数', '默认档位', '测速磁钢数', '助力限速门限', '限速范围', '显示单位',
+        'LOGO界面', '开机LOGO'
+      ])
+      const packageSet = new Set([
+        '包装信息', '附件出货方式', '支架螺丝', '按键螺丝', '硅胶垫片', '其它附件要求',
+        '附件装箱方式', '箱唛要求', '检验报告要求'
+      ])
+
+      if (basic.has(label)) return 'group-header-basic'
+      if (appearance.has(label)) return 'group-header-appearance'
+      if (vehicleCfg.has(label)) return 'group-header-config'
+      if (packageSet.has(label)) return 'group-header-package'
+      return ''
+    },
     // 初始化表格拖拽功能
     initTableDrag() {
       let isDragging = false;
@@ -1118,8 +1347,19 @@ export default {
         this.brandList = list;
         this.total = total;
         this.loading = false;
+        
+        // 调试：打印第一条数据查看审核状态字段
+        if (list && list.length > 0) {
+          console.log('📋 列表数据示例:', list[0]);
+          console.log('包装审核状态:', list[0].packagingAuditStatus);
+          console.log('规格书审核状态:', list[0].specificationAuditStatus);
+          console.log('包装信息:', list[0].packagingInfo);
+          console.log('规格书:', list[0].specification);
+        }
+        
         // 表格数据加载完成后重新初始化拖拽功能
         this.$nextTick(() => {
+          this.$refs.tableRef && this.$refs.tableRef.doLayout()
           this.initTableDrag();
         });
       });
@@ -1253,14 +1493,207 @@ export default {
     },
     // 查看包装信息
     handleSeePackagingInfo(row) {
+      console.log('👀 查看包装信息 - 原始 row 数据:', row)
+      console.log('📦 row.packagingInfo:', row.packagingInfo)
+      
       this.$refs.packInfoRef.isDialogVisible = true;
-      this.$refs.packInfoRef.packagingInfo = row.packagingInfo ?? "";
+      this.$refs.packInfoRef.packagingInfo = row.packagingInfo || "";
     },
     handleEditPackagingInfo(row) {
-      let item = { ...row, id: row.computerId };
-      this.$refs.addDialogRef.isPackage = true;
-      this.$refs.addDialogRef.handleUpdate(item);
-    },    // 多选框选中数据
+      console.log('📝 编辑包装信息:', row)
+      console.log('📦 row.packagingInfo:', row.packagingInfo)
+      
+      this.currentEditRow = row
+      this.currentPackagingInfo = row.packagingInfo || ""
+      console.log('📦 最终加载的包装信息:', this.currentPackagingInfo)
+      this.packagingEditVisible = true
+    },
+    
+    // 保存包装信息
+    async handlePackagingInfoSave(newFormatData) {
+      console.log('💾 保存包装信息:', newFormatData)
+      console.log('📦 当前行数据:', this.currentEditRow)
+      
+      if (!this.currentEditRow) {
+        this.$message.error('未找到编辑行数据')
+        return
+      }
+
+      try {
+        const loading = this.$loading({
+          lock: true,
+          text: '保存中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        })
+
+        // 构造完整的提交数据，packagingInfo 放到 instrumentModel 里
+        const packagingInfoStr = JSON.stringify(newFormatData)
+        const computerData = {
+          id: this.currentEditRow.computerId,
+          name: this.currentEditRow.computerName,
+          categoryId: this.currentEditRow.categoryId,
+          status: this.currentEditRow.status,
+          isSts: this.currentEditRow.isSts,
+          isBist: this.currentEditRow.isBist,
+          instrumentModel: {
+            ...(this.currentEditRow.instrumentModel || {}),
+            id: this.currentEditRow.id,
+            packagingInfo: packagingInfoStr
+          }
+        }
+        
+        console.log('📤 提交的数据:', computerData)
+        console.log('📦 新的包装信息:', packagingInfoStr)
+
+        // 调用编辑仪表接口
+        const res = await editComputer(computerData)
+
+        loading.close()
+
+        if (res.code === 200) {
+          this.$message.success('保存成功')
+          
+          // 更新 packagingInfo
+          this.$set(this.currentEditRow, 'packagingInfo', packagingInfoStr)
+          
+          console.log('✅ 数据更新完成，packagingInfo:', this.currentEditRow.packagingInfo)
+          
+          // 刷新列表获取最新数据
+          this.getList()
+        } else {
+          this.$message.error(res.msg || '保存失败')
+        }
+      } catch (error) {
+        console.error('保存包装信息失败:', error)
+        this.$message.error('保存失败: ' + (error.message || '未知错误'))
+      }
+    },
+    
+    // ==================== 审核相关方法 ====================
+    
+    // 包装信息初审
+    handlePackagingFirstAudit(row) {
+      this.auditDialog.title = '包装信息初审';
+      this.auditDialog.type = 'packagingFirst';
+      this.auditDialog.currentRow = row;
+      this.auditDialog.form.id = row.id;
+      this.auditDialog.form.status = 1;
+      this.auditDialog.form.why = '';
+      this.auditDialog.visible = true;
+    },
+    
+    // 包装信息终审
+    handlePackagingFinalAudit(row) {
+      this.auditDialog.title = '包装信息终审';
+      this.auditDialog.type = 'packagingFinal';
+      this.auditDialog.currentRow = row;
+      this.auditDialog.form.id = row.id;
+      this.auditDialog.form.status = 1;
+      this.auditDialog.form.why = '';
+      this.auditDialog.visible = true;
+    },
+    
+    // 产品图纸初审
+    handleSpecificationFirstAudit(row) {
+      this.auditDialog.title = '产品图纸初审';
+      this.auditDialog.type = 'specificationFirst';
+      this.auditDialog.currentRow = row;
+      this.auditDialog.form.id = row.id;
+      this.auditDialog.form.status = 1;
+      this.auditDialog.form.why = '';
+      this.auditDialog.visible = true;
+    },
+    
+    // 产品图纸终审
+    handleSpecificationFinalAudit(row) {
+      this.auditDialog.title = '产品图纸终审';
+      this.auditDialog.type = 'specificationFinal';
+      this.auditDialog.currentRow = row;
+      this.auditDialog.form.id = row.id;
+      this.auditDialog.form.status = 1;
+      this.auditDialog.form.why = '';
+      this.auditDialog.visible = true;
+    },
+    
+    // 确认审核
+    async handleAuditConfirm() {
+      // 如果拒绝，验证拒绝原因
+      if (this.auditDialog.form.status === -1) {
+        if (!this.auditDialog.form.why || this.auditDialog.form.why.trim() === '') {
+          this.$message.warning('请输入拒绝原因');
+          return;
+        }
+        if (this.auditDialog.form.why.trim().length < 5) {
+          this.$message.warning('拒绝原因至少5个字符');
+          return;
+        }
+      }
+      
+      this.auditDialog.loading = true;
+      
+      try {
+        let apiFunction = null;
+        let successMsg = '';
+        
+        // 根据审核类型选择对应的API
+        switch (this.auditDialog.type) {
+          case 'packagingFirst':
+            apiFunction = packagingFirstAudit;
+            successMsg = '包装信息初审完成';
+            break;
+          case 'packagingFinal':
+            apiFunction = packagingFinalAudit;
+            successMsg = '包装信息终审完成';
+            break;
+          case 'specificationFirst':
+            apiFunction = specificationFirstAudit;
+            successMsg = '产品图纸初审完成';
+            break;
+          case 'specificationFinal':
+            apiFunction = specificationFinalAudit;
+            successMsg = '产品图纸终审完成';
+            break;
+          default:
+            this.$message.error('未知的审核类型');
+            this.auditDialog.loading = false;
+            return;
+        }
+        
+        // 准备提交数据
+        const submitData = {
+          id: this.auditDialog.form.id,
+          status: this.auditDialog.form.status === 1 ? 0 : 1, // API中 0:通过, 1:拒绝
+          why: this.auditDialog.form.why || ''
+        };
+        
+        console.log('审核提交数据:', submitData);
+        
+        // 调用API
+        const res = await apiFunction(submitData);
+        
+        if (res.code === 200) {
+          this.$message.success(successMsg);
+          
+          // 关闭对话框
+          this.auditDialog.visible = false;
+          
+          // 刷新列表
+          this.getList();
+        } else {
+          this.$message.error(res.msg || '审核操作失败');
+        }
+      } catch (error) {
+        console.error('审核失败:', error);
+        this.$message.error('审核操作失败: ' + (error.message || '未知错误'));
+      } finally {
+        this.auditDialog.loading = false;
+      }
+    },
+    
+    // ==================== 审核相关方法结束 ====================
+    
+    // 多选框选中数据
     handleSelectionChange(selection) {
       this.uploadIds = selection.map((item) => item.id);
     },
@@ -1282,6 +1715,400 @@ export default {
       this.$refs.addDialogRef.isPackage = false;
       this.$refs.addDialogRef.handleUpdate(item);
     },
+    
+    // 获取包装信息字段值
+    getPackagingValue(row, groupName, fieldName) {
+      if (!row.packagingInfo) return '';
+      
+      try {
+        let packagingData = row.packagingInfo;
+        
+        // 如果是字符串，先解析
+        if (typeof packagingData === 'string') {
+          packagingData = JSON.parse(packagingData);
+        }
+        
+        // 检测数据格式
+        if (Array.isArray(packagingData)) {
+          // 旧格式数据，需要转换
+          return this.getOldFormatValue(packagingData, groupName, fieldName);
+        } else if (typeof packagingData === 'object') {
+          // 新格式数据
+          return this.getNewFormatValue(packagingData, groupName, fieldName);
+        }
+        
+        return '';
+      } catch (error) {
+        console.error('解析包装信息失败:', error);
+        return '';
+      }
+    },
+    
+    // 从旧格式获取值
+    getOldFormatValue(oldData, groupName, fieldName) {
+      // 旧格式数据结构和新格式完全不同，不应该强行映射显示
+      // 统一显示 -- 表示该数据是旧格式，不支持新的字段结构
+      return '--';
+    },
+    
+    // 转换旧的 contentId
+    convertOldContentId(contentId) {
+      const mapping = {
+        'ditaiStandardNoLockAttachment': '不锁，以附件出货',
+        'customerSpecifiedNoLock': '不锁，以附件出货',
+        'customerSpecifiedNormalLock': '锁上出货',
+        'ditaiStandardAllAccessoriesUnifiedTailNumber': '放置尾数箱',
+        'customerSpecified': '客户模板（参考附件，内容根据订单内容做修改）',
+        'accordingToBOM': '迪太模板',
+        'ditaiTemplate': '迪太模板',
+        'ditaiEnglishIndicators': '迪太模板'
+      };
+      return mapping[contentId] || contentId;
+    },
+    
+    // 从新格式获取值
+    getNewFormatValue(newData, groupName, fieldName) {
+      const groupData = newData[groupName];
+      if (!groupData) return '';
+      
+      // 判断是 {value, administrator} 结构还是多字段结构
+      if (fieldName === 'value' || fieldName === 'administrator') {
+        // {value, administrator} 结构
+        return groupData[fieldName] || '';
+      } else {
+        // 多字段结构，如 解件出库方式.支架螺丝
+        const value = groupData[fieldName];
+        if (typeof value === 'object') {
+          return value.value || '';
+        }
+        return value || '';
+      }
+    },
+    
+    // 判断是否应该显示附件内容（administrator字段）
+    shouldShowAdministrator(value) {
+      if (!value) return false;
+      
+      // 只有这些选项才需要显示附件内容
+      const showAdministratorOptions = [
+        '其它装箱方式（参考附件）',
+        '客户模板（参考附件，内容根据订单内容做修改）'
+      ];
+      
+      return showAdministratorOptions.includes(value);
+    },
+    
+    // 处理富文本内容点击事件
+    handleRichTextClick(event, row, groupName, fieldName) {
+      const target = event.target;
+      
+      // 处理图片点击
+      if (target.tagName === 'IMG') {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // 获取当前富文本内容中的所有图片
+        const content = this.getPackagingValue(row, groupName, fieldName);
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        const images = Array.from(tempDiv.querySelectorAll('img'));
+        
+        // 提取所有图片地址
+        this.previewImageList = images.map(img => img.src);
+        
+        // 找到当前点击图片的索引
+        this.currentImageIndex = images.findIndex(img => img.src === target.src);
+        if (this.currentImageIndex === -1) {
+          this.currentImageIndex = 0;
+        }
+        
+        // 显示图片预览
+        this.showImageViewer = true;
+      }
+      
+      // 处理链接点击（可选：在新窗口打开）
+      if (target.tagName === 'A') {
+        event.preventDefault();
+        event.stopPropagation();
+        const href = target.getAttribute('href');
+        if (href) {
+          window.open(href, '_blank');
+        }
+      }
+    },
+    
+    // 关闭图片预览
+    closeImageViewer() {
+      this.showImageViewer = false;
+      this.previewImageList = [];
+      this.currentImageIndex = 0;
+    },
+    
+    // 触发产品图纸上传
+    handleUploadSpecification(row, event) {
+      // 通过事件对象找到按钮的父元素，再找到 input
+      const button = event.target.closest('button');
+      if (button) {
+        const cell = button.closest('.specification-upload-cell');
+        if (cell) {
+          const input = cell.querySelector('input[type="file"]');
+          if (input) {
+            input.click();
+          }
+        }
+      }
+    },
+    
+    // 处理产品图纸文件选择
+    async onSpecificationFileSelected(event, row) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const fileType = file.type;
+      const fileName = file.name.toLowerCase();
+      
+      // 支持的图片格式
+      const supportedImageTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+        'image/bmp', 'image/webp', 'image/svg+xml'
+      ];
+      
+      // 支持的文件扩展名（作为备用检查）
+      const supportedExtensions = [
+        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.pdf'
+      ];
+      
+      // 检查文件大小（限制为50MB）
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        this.$message.error('文件大小不能超过50MB');
+        event.target.value = '';
+        return;
+      }
+      
+      // 验证文件类型
+      const isValidType = fileType === 'application/pdf' || 
+                         supportedImageTypes.includes(fileType) ||
+                         supportedExtensions.some(ext => fileName.endsWith(ext));
+      
+      if (!isValidType) {
+        this.$message.error('只支持上传图片文件（JPG、PNG、GIF、BMP、WebP、SVG）或PDF文件');
+        event.target.value = '';
+        return;
+      }
+      
+      // 判断文件类型并处理
+      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+        // PDF文件：转换为图片
+        await this.handlePdfSpecification(file, row);
+      } else if (supportedImageTypes.includes(fileType) || 
+                 ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].some(ext => fileName.endsWith(ext))) {
+        // 图片文件：直接上传
+        await this.handleImageSpecification(file, row);
+      } else {
+        this.$message.error('不支持的文件格式');
+      }
+      
+      // 重置文件输入框
+      event.target.value = '';
+    },
+    
+    // 处理图片上传
+    async handleImageSpecification(file, row) {
+      const loading = this.$loading({
+        lock: true,
+        text: '上传中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // 上传图片到OSS
+        const uploadRes = await axios.post(reqUrl + '/oss/batch-upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        
+        if (uploadRes.data.code === 200 && uploadRes.data.data) {
+          let imageUrl = '';
+          
+          // 处理返回的数据格式（统一处理数组格式）
+          if (Array.isArray(uploadRes.data.data)) {
+            // 拦截空数组
+            if (uploadRes.data.data.length === 0) {
+              this.$message.error('上传失败：未返回图片地址');
+              return;
+            }
+            
+            // 提取所有图片URL
+            const imageUrls = uploadRes.data.data.map(item => {
+              const url = item?.url || item;
+              // 清理URL中的反引号和空格
+              return typeof url === 'string' ? url.replace(/`/g, '').trim() : url;
+            }).filter(url => url && url.trim() !== ''); // 过滤掉空URL
+            
+            if (imageUrls.length === 0) {
+              this.$message.error('上传失败：未获取到有效图片地址');
+              return;
+            }
+            
+            // 将所有图片URL用逗号连接（通常单张图片只有一个URL）
+            imageUrl = imageUrls.join(',');
+            
+            if (imageUrls.length > 1) {
+              this.$message.success(`上传成功，共上传${imageUrls.length}张图片`);
+            }
+          } else if (typeof uploadRes.data.data === 'object') {
+            imageUrl = uploadRes.data.data.url;
+            // 清理URL中的反引号和空格
+            if (typeof imageUrl === 'string') {
+              imageUrl = imageUrl.replace(/`/g, '').trim();
+            }
+          } else {
+            imageUrl = uploadRes.data.data;
+            // 清理URL中的反引号和空格
+            if (typeof imageUrl === 'string') {
+              imageUrl = imageUrl.replace(/`/g, '').trim();
+            }
+          }
+          
+          // 验证 imageUrl 是否有效
+          if (!imageUrl || imageUrl.trim() === '') {
+            this.$message.error('上传失败：图片地址为空');
+            return;
+          }
+          
+          // 调用编辑接口更新产品图纸
+          await this.updateSpecification(row, imageUrl);
+        } else {
+          this.$message.error(uploadRes.data.msg || '上传失败');
+        }
+      } catch (error) {
+        console.error('图片上传失败:', error);
+        this.$message.error('上传失败: ' + (error.message || '未知错误'));
+      } finally {
+        loading.close();
+      }
+    },
+    
+    // 处理PDF上传（转换为图片）
+    async handlePdfSpecification(file, row) {
+      const loading = this.$loading({
+        lock: true,
+        text: 'PDF转换中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // 调用PDF转图片接口
+        const convertRes = await axios.post(reqUrl + '/file/converterToOss', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        
+        if (convertRes.data.code === 200 && convertRes.data.data) {
+          let imageUrl = '';
+          
+          // 处理返回的数据格式（可能是数组或单个URL）
+          if (Array.isArray(convertRes.data.data)) {
+            // 拦截空数组
+            if (convertRes.data.data.length === 0) {
+              this.$message.error('PDF转换失败：未生成图片');
+              return;
+            }
+            
+            // 如果是数组，保存所有图片URL（用逗号分隔）
+            const imageUrls = convertRes.data.data.map(item => {
+              const url = item?.url || item;
+              // 清理URL中的反引号和空格
+              return typeof url === 'string' ? url.replace(/`/g, '').trim() : url;
+            }).filter(url => url && url.trim() !== ''); // 过滤掉空URL
+            
+            if (imageUrls.length === 0) {
+              this.$message.error('PDF转换失败：未生成有效图片');
+              return;
+            }
+            
+            // 将所有图片URL用逗号连接
+            imageUrl = imageUrls.join(',');
+            
+            this.$message.success(`PDF转换成功，共生成${imageUrls.length}张图片`);
+          } else if (typeof convertRes.data.data === 'object') {
+            imageUrl = convertRes.data.data.url;
+            // 清理URL中的反引号和空格
+            if (typeof imageUrl === 'string') {
+              imageUrl = imageUrl.replace(/`/g, '').trim();
+            }
+          } else {
+            imageUrl = convertRes.data.data;
+            // 清理URL中的反引号和空格
+            if (typeof imageUrl === 'string') {
+              imageUrl = imageUrl.replace(/`/g, '').trim();
+            }
+          }
+          
+          // 验证 imageUrl 是否有效
+          if (!imageUrl || imageUrl.trim() === '') {
+            this.$message.error('PDF转换失败：图片URL为空');
+            return;
+          }
+          
+          // 调用编辑接口更新产品图纸
+          await this.updateSpecification(row, imageUrl);
+        } else {
+          this.$message.error(convertRes.data.msg || 'PDF转换失败');
+        }
+      } catch (error) {
+        console.error('PDF转换失败:', error);
+        this.$message.error('PDF转换失败: ' + (error.message || '未知错误'));
+      } finally {
+        loading.close();
+      }
+    },
+    
+    // 更新产品图纸
+    async updateSpecification(row, imageUrl) {
+      try {
+        // 构造提交数据
+        const submitData = {
+          id: row.computerId,
+          name: row.computerName,
+          categoryId: row.categoryId,
+          status: row.status,
+          isSts: row.isSts,
+          isBist: row.isBist,
+          instrumentModel: {
+            id: row.id,
+            specification: imageUrl
+          }
+        };
+        
+        // 调用编辑接口
+        const res = await editComputer(submitData);
+        
+        if (res.code === 200) {
+          this.$message.success('产品图纸上传成功');
+          // 更新本地数据
+          this.$set(row, 'specification', imageUrl);
+          // 刷新列表
+          this.getList();
+        } else {
+          this.$message.error(res.msg || '更新失败');
+        }
+      } catch (error) {
+        console.error('更新产品图纸失败:', error);
+        this.$message.error('更新失败: ' + (error.message || '未知错误'));
+      }
+    },
   },
 };
 </script>
@@ -1291,9 +2118,100 @@ export default {
   gap: 10px;
 }
 
+/* 产品图纸上传单元格 */
+.specification-upload-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+}
+
+/* 操作按钮换行显示 */
+.operation-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 6px 4px;
+  line-height: 1;
+  
+  /* 移除按钮默认的 margin */
+  ::v-deep .el-tooltip,
+  ::v-deep > * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* 固定的基础信息分组标题 */
+.fixed-group-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1110px; /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
+  height: 40px;
+  line-height: 40px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #B4C7E7;
+  color: #000000;
+  font-weight: 600;
+  font-size: 14px;
+  border-top: 1px solid #dfe6ec; /* 顶部线条 */
+  border-left: 1px solid #dfe6ec;
+  border-right: 1px solid #dfe6ec;
+  border-bottom: 1px solid #dfe6ec;
+  z-index: 10;
+  pointer-events: none; /* 允许点击事件穿透到下方筛选器 */
+}
+
+/* 富文本内容样式 */
+.rich-text-content {
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  
+  ::v-deep p {
+    margin: 0;
+    padding: 2px 0;
+  }
+  
+  ::v-deep img {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  
+  ::v-deep a {
+    color: #409EFF;
+    text-decoration: underline;
+    cursor: pointer;
+    
+    &:hover {
+      color: #66b1ff;
+    }
+  }
+}
+
+.text-muted {
+  color: #909399;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
 /* 修复固定列遮挡滚动条的问题 */
 ::v-deep .el-table__fixed {
   pointer-events: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.12) !important;
+  height: calc(100% - 13px) !important; /* 减去滚动条高度，避免遮挡横向滚动条 */
 
   /* 允许固定列内的按钮等元素可以点击 */
   .el-table__fixed-body-wrapper,
@@ -1309,6 +2227,34 @@ export default {
     pointer-events: auto;
   }
 }
+
+/* 固定列左侧不遮挡滚动条 */
+::v-deep .el-table__fixed-left {
+  height: calc(100% - 13px) !important;
+}
+
+/* 固定列左侧阴影 */
+::v-deep .el-table__fixed-right {
+  box-shadow: -1px 0 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+::v-deep .el-table__fixed-left {
+  box-shadow: 1px 0 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 确保固定列背景色正确 */
+::v-deep .el-table__fixed-left .el-table__cell,
+::v-deep .el-table__fixed-right .el-table__cell {
+  background-color: #fff !important;
+}
+
+/* 固定列的表头加 padding-top 与覆盖的分组标题对齐 */
+::v-deep .el-table__fixed thead.is-group th .cell {
+  position: relative;
+  top:19px;
+}
+
+ 
 
 /* 确保滚动条可见且可以交互 */
 ::v-deep .el-table__body-wrapper {
@@ -1330,5 +2276,96 @@ export default {
       background: #a8a8a8;
     }
   }
+}
+</style>
+
+<style lang="scss">
+/* 全局样式 - 图片预览器层级 */
+.el-image-viewer__wrapper {
+  z-index: 99999 !important;
+  position: fixed !important;
+}
+
+.el-image-viewer__mask {
+  z-index: 0 !important;
+  position: absolute !important;
+}
+
+.el-image-viewer__canvas {
+  z-index: 1 !important;
+  position: absolute !important;
+}
+
+.el-image-viewer__btn {
+  z-index: 2 !important;
+  position: absolute !important;
+}
+
+.el-image-viewer__close {
+  z-index: 2 !important;
+  position: absolute !important;
+}
+
+.el-image-viewer__actions {
+  z-index: 2 !important;
+  position: absolute !important;
+}
+
+/* 表头分组颜色 - 对应 Excel 样式 */
+/* 基础信息 - 浅蓝色 */
+.el-table th.group-header-basic {
+  background-color: #B4C7E7 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* 外观信息 - 浅绿色 */
+.el-table th.group-header-appearance {
+  background-color: #C6E0B4 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* 车型配置 - 浅粉色 */
+.el-table th.group-header-config {
+  background-color: #F4CCCC !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* 包装信息 - 浅黄色 */
+.el-table th.group-header-package {
+  background-color: #FFE599 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* 为表头单元格添加边框 */
+.el-table th.group-header-basic,
+.el-table th.group-header-appearance,
+.el-table th.group-header-config,
+.el-table th.group-header-package {
+  border: 1px solid #dfe6ec !important;
+}
+
+/* 确保 hover 时保持背景颜色 */
+.el-table th.group-header-basic:hover {
+  background-color: #B4C7E7 !important;
+}
+
+.el-table th.group-header-appearance:hover {
+  background-color: #C6E0B4 !important;
+}
+
+.el-table th.group-header-config:hover {
+  background-color: #F4CCCC !important;
+}
+
+.el-table th.group-header-package:hover {
+  background-color: #FFE599 !important;
 }
 </style>

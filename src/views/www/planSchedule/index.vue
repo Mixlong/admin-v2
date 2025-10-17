@@ -102,10 +102,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="MUA配置" align="center" prop="productStatus" width="85">
+      <el-table-column label="MUA配置" align="center" prop="configList" width="85">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.productStatus !== null" size="mini" :type="tagType(row.productStatus)">
-            {{ productStatusList[row.productStatus] }}
+          <el-tag v-if="row.configList && row.configList.length > 0" size="mini" type="success">
+            已配置
+          </el-tag>
+          <el-tag v-else size="mini" type="info">
+            未配置
           </el-tag>
         </template>
       </el-table-column>

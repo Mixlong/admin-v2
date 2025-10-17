@@ -287,12 +287,21 @@
                   </el-form-item>
                 </el-col>
 
-                <el-col>
-                  <el-form-item label="包装信息" prop="instrumentModel.packagingInfo">
-                    <modelInfoTable ref="modelInfoTable" v-if="dialogVisible"
-                      :data="form.instrumentModel.packagingInfo" />
-                  </el-form-item>
-                </el-col>
+              <el-col>
+                <el-form-item label="包装信息" prop="instrumentModel.packagingInfo">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <el-button type="primary" size="small" @click="openPackagingInfoEdit">
+                      编辑包装信息
+                    </el-button>
+                    <el-tag v-if="hasPackagingInfo" type="success" size="small">
+                      已配置
+                    </el-tag>
+                    <el-tag v-else type="info" size="small">
+                      未配置
+                    </el-tag>
+                  </div>
+                </el-form-item>
+              </el-col>
               </el-row>
             </fieldset>
             <template>
@@ -419,7 +428,7 @@
                   </el-col>
 
                   <el-col :span="24">
-                    <el-form-item label="规格书" prop="instrumentModel.specification">
+                    <el-form-item label="产品图纸" prop="instrumentModel.specification">
                       <el-upload-sortable v-model="form.instrumentModel.specification" :imgW="80" :imgH="80"
                         :max="20" />
                     </el-form-item>
@@ -935,8 +944,17 @@
       </template>
       <template v-else>
         <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
-          <modelInfoTable ref="modelInfoTable" v-if="dialogVisible && isPackage"
-            :data="form.instrumentModel.packagingInfo" />
+          <div style="display: flex; align-items: center; gap: 10px; padding: 20px;">
+            <el-button type="primary" size="small" @click="openPackagingInfoEdit">
+              编辑包装信息
+            </el-button>
+            <el-tag v-if="hasPackagingInfo" type="success" size="small">
+              已配置
+            </el-tag>
+            <el-tag v-else type="info" size="small">
+              未配置
+            </el-tag>
+          </div>
         </el-form>
       </template>
       <div slot="footer" class="dialog-footer flex justify-center" :class="{ 'product-btn-box': !isPackage }">
@@ -974,6 +992,13 @@
         <el-button @click="onResetForm">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 包装信息编辑弹窗 -->
+    <PackagingInfoEdit
+      :visible.sync="packagingInfoEditVisible"
+      :packagingInfo="currentPackagingInfo"
+      @save="handlePackagingInfoSave"
+    />
   </div>
 </template>
 
@@ -989,7 +1014,7 @@ import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
-import modelInfoTable from "./modelInfoTable";
+import PackagingInfoEdit from "@/views/configOverView/components/packagingInfoEdit.vue";
 export default {
   mixins: [mixin, commonData],
   props: {
@@ -1074,7 +1099,6 @@ export default {
       }
     };
     return {
-      modelInfoTable: null,
       isSubmitLoading: false,
       isCopyProduct: false,
       isEditCopy: false,
@@ -1094,6 +1118,9 @@ export default {
       },
       title: "",
       disabled: false,
+      // 包装信息编辑弹窗
+      packagingInfoEditVisible: false,
+      currentPackagingInfo: null,
       serialLevelLogData: {
         0: "3.3V",
         1: "5V",
@@ -1169,6 +1196,35 @@ export default {
       return ({ required = true, message = "", trigger = "change" } = {}) => {
         return { required, message: `${message}不能为空`, trigger };
       };
+    },
+    // 判断是否已配置包装信息
+    hasPackagingInfo() {
+      const packagingInfo = this.form.instrumentModel?.packagingInfo;
+      if (!packagingInfo) return false;
+      
+      // 如果是字符串，尝试解析
+      if (typeof packagingInfo === 'string') {
+        try {
+          const parsed = JSON.parse(packagingInfo);
+          // 检查是否有实质内容（非空对象/数组）
+          if (Array.isArray(parsed)) {
+            return parsed.length > 0;
+          }
+          return Object.keys(parsed).length > 0;
+        } catch (e) {
+          return false;
+        }
+      }
+      
+      // 如果是对象或数组
+      if (Array.isArray(packagingInfo)) {
+        return packagingInfo.length > 0;
+      }
+      if (typeof packagingInfo === 'object') {
+        return Object.keys(packagingInfo).length > 0;
+      }
+      
+      return false;
     },
   },
   watch: {
@@ -1679,7 +1735,7 @@ export default {
             this.form.jsonStr = configJsonString;
             console.log("🚀 ~ file: updates.vue:2419 ~  this.form:", this.form)
           }
-          this.form.instrumentModel.packagingInfo = this.$refs.modelInfoTable.exportSelectedJson()
+          // 包装信息已经通过编辑弹窗保存到 form.instrumentModel.packagingInfo 中
           console.log(this.form)
           if (this.form.id && !this.isCopyProduct) {
             this.handleSubmitEdit();
@@ -1749,11 +1805,36 @@ export default {
     handleLabelRule(labelRule) {
       if (labelRule === 1) this.form.instrumentModel.labelRuleImg = "";
     },
+    // 打开包装信息编辑弹窗
+    openPackagingInfoEdit() {
+      // 取当前表单中的包装信息数据
+      this.currentPackagingInfo = this.form.instrumentModel.packagingInfo || null;
+      this.packagingInfoEditVisible = true;
+    },
+    // 保存包装信息
+    handlePackagingInfoSave(newFormatData) {
+      try {
+        // 确保 instrumentModel 存在
+        if (!this.form.instrumentModel) {
+          this.form.instrumentModel = {};
+        }
+        
+        // 将新格式数据序列化为字符串并保存到表单
+        const packagingInfoStr = JSON.stringify(newFormatData || {});
+        this.form.instrumentModel.packagingInfo = packagingInfoStr;
+        
+        this.packagingInfoEditVisible = false;
+        this.$message.success("包装信息已更新");
+      } catch (e) {
+        console.error("保存包装信息失败:", e);
+        this.$message.error("保存包装信息失败");
+      }
+    },
   },
   components: {
     ElUploadSortable,
     tinymce,
-    modelInfoTable
+    PackagingInfoEdit
   },
 };
 </script>
