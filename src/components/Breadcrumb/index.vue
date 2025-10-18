@@ -68,15 +68,33 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "@/assets/styles/variables.scss";
+
 .app-breadcrumb.el-breadcrumb {
   display: inline-block;
   font-size: 14px;
   line-height: 50px;
   margin-left: 8px;
+  color: #515a6e !important;
 
   .no-redirect {
-    color: #97a8be;
+    color: #515a6e !important;
     cursor: text;
+  }
+  
+  // 面包屑链接颜色
+  a {
+    color: #515a6e !important;
+    text-decoration: none;
+    
+    &:hover {
+      color: #515a6e !important;
+    }
+  }
+  
+  // 面包屑分隔符颜色
+  :deep(.el-breadcrumb__separator) {
+    color: #515a6e !important;
   }
 }
 </style>

@@ -30,12 +30,16 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "@/assets/styles/variables.scss";
+
 .hamburger {
   display: inline-block;
   vertical-align: middle;
   width: 20px;
   height: 20px;
+  fill: #515a6e !important;
+  transition: all 0.3s ease;
 }
 
 .hamburger.is-active {

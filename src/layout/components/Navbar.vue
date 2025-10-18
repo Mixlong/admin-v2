@@ -1,82 +1,43 @@
 <template>
   <div class="navbar-wrap-style">
-    <div style="font-size: 25px; padding: 0 25px 0 25px" class="hamburger-container text-shadow text-blue">
+    <!-- <div style="font-size: 25px; padding: 0 25px 0 25px" class="hamburger-container text-shadow text-blue"> -->
       <!-- 迪太云后台管理 -->
-      <img :src="customImage == 0
+      <!-- <img :src="customImage == 0
           ? require('@/assets/logo/logo.png')
           : require('@/assets/logo/logo1.png')
-        " alt="" style="vertical-align: middle; width: 100px" />
-      <div class="text-center font20 company-name">迪太云</div>
-    </div>
+        " alt="" class="logo-image" style="vertical-align: middle; width: 100px" /> -->
+      <!-- <div class="text-center font20 company-name">迪太云</div> -->
+    <!-- </div> -->
     <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container"
       @toggleClick="toggleSideBar" />
 
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <div style="font-size: 14px; cursor: pointer" class="text-red">
-        <el-popover placement="top" width="620">
-          <el-row :gutter="15">
-            <el-col :span="6" v-for="(item, index) in themeImageCount" :key="index">
-              <div :class="{ 'select-theme': customImage == index }">
-                <el-image v-if="index == 0" class="pointer" style="height: 77px; width: 100%">
-                  <div @click="selectTheme(index)" slot="error" style="height: 77px; width: 100%"
-                    class="image-slot flex justify-center align-center text-gray">
-                    默认
-                  </div>
-                </el-image>
-                <el-image v-else class="pointer" style="height: 77px"
-                  :src="require('@/assets/theme/smallDemo' + index + '.png')" @click="selectTheme(index)"></el-image>
-                <div class="select-check" v-if="customImage == index">
-                  <i class="el-icon-success text-blue"></i>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-
-          <el-button slot="reference" type="text">
-            <svg-icon icon-class="pifu" v-if="customImage == 0" />
-            <svg-icon icon-class="pifu-white" v-if="customImage" />
-          </el-button>
-        </el-popover>
-      </div>
-
-      <!-- <div style="font-size: 14px; cursor: pointer" class="text-red">
-        <router-link tag="a" target="_blank" :to="{ path: '/document' }">
-          <i
-            class="el-icon-edit-outline"
-            @click="toProjectNote"
-            :class="{ news: readNum > 0 }"
-          />
-          <span class="solid-right padding-right"> api文档</span>
-        </router-link>
-      </div> -->
-
-      <div class="user-info padding-left padding-right-xs">
-        <span>welcome,</span>
-        <span class="user-name">{{ nickName }}</span>
-      </div>
       <template v-if="device !== 'mobile'">
         <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
       </template>
-      <SizeSelect class="pointer" />
+      
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar" />
-          <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/user/profile">
             <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
-          <el-dropdown-item @click.native="setting = true">
+          <!-- <el-dropdown-item @click.native="setting = true">
             <span>布局设置</span>
-          </el-dropdown-item>
+          </el-dropdown-item> -->
           <el-dropdown-item divided @click.native="logout">
             <span>退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
+      
+      <div class="user-info   padding-right-xs">
+        <span class="user-name">{{ nickName }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -157,50 +118,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.select-theme {
-  position: relative;
-  vertical-align: middle;
-
-  .select-check {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 77px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &::before {
-      content: "";
-      background-color: #000;
-      position: absolute;
-      width: 100%;
-      height: 77px;
-      -moz-opacity: 0.6;
-      opacity: 0.6;
-      left: 0;
-      top: 0;
-      border-radius: 2px;
-    }
-
-    i {
-      position: relative;
-      z-index: 10;
-      font-size: 30px;
-    }
-  }
-}
+@import "@/assets/styles/variables.scss";
 
 .navbar-wrap-style {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  background: transparent !important;
+  color: #515a6e !important;
 
   .company-name {
-    color: #0094d0;
+    color: if($darkTheme, #ffffff, #0094d0);
   }
 
   .icon-msg {
@@ -233,10 +161,6 @@ export default {
     .company-name {
       margin-left: 10px;
     }
-
-    &:hover {
-      // background: rgba(0, 0, 0, 0.025);
-    }
   }
 
   .breadcrumb-container {
@@ -246,6 +170,30 @@ export default {
   .errLog-container {
     display: inline-block;
     vertical-align: top;
+  }
+
+  .user-info {
+    color: #515a6e !important;
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    
+    .user-name {
+      color: #515a6e !important;
+      font-size: 14px;
+      position: relative;
+      display: inline-block;
+      margin-left:5px;
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 10px;
+        width: 100%;
+        height: 1px;
+        background-color: #515a6e;
+      }
+    }
   }
 
   .right-menu {
@@ -258,17 +206,12 @@ export default {
       outline: none;
     }
 
-    .user-name {
-      margin-left: 5px;
-      margin-right: 5px;
-    }
-
     .right-menu-item {
       display: inline-block;
       padding: 0 8px;
       height: 100%;
       font-size: 18px;
-      color: #5a5e66;
+      color: #515a6e !important;
       vertical-align: text-bottom;
 
       &.hover-effect {
@@ -276,17 +219,19 @@ export default {
         transition: background 0.3s;
 
         &:hover {
-          background: rgba(0, 0, 0, 0.025);
+          background: if($darkTheme, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.025));
         }
       }
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 0;
 
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;
+        display: flex;
+        align-items: center;
 
         .user-avatar {
           cursor: pointer;
@@ -294,16 +239,12 @@ export default {
           height: 40px;
           border-radius: 10px;
         }
-
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
-        }
       }
     }
   }
+}
+
+.logo-image {
+  transition: filter 0.3s ease;
 }
 </style>

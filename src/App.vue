@@ -20,6 +20,9 @@ export default {
     NoWekwork: () => import("@/views/error/noNetwork"),
     ThemePicker,
   },
+  mounted() {
+    // 已通过组件 class 和 CSS 控制菜单字体样式，无需 JavaScript 操作
+  },
   metaInfo() {
     return {
       title:
@@ -89,7 +92,7 @@ export default {
     color: #fff !important;
   }
   .hamburger {
-    background-color: #fff !important;
+    // background-color: #fff !important;
   }
 
   &#app .el-submenu .el-submenu__title,
@@ -109,6 +112,12 @@ export default {
   &#app .sidebar-container .el-submenu__title:hover,
   &#app .sidebar-container .submenu-title-noDropdown:hover {
     background-color: rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  // 激活状态的菜单项文字颜色和左边框
+  .el-menu-item.is-active {
+    color: #409EFF !important;
+    border-left: #409EFF solid 4px !important;
   }
   .fade-transform-leave-active,
   .fade-transform-enter-active {

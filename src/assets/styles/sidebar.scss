@@ -10,7 +10,7 @@
     transition: width 0.28s;
     width: $sideBarWidth !important;
     // background-color: $menuBg !important;
-    height: 100%;
+    height: 100vh;
     position: fixed;
     font-size: 0px;
     top: 0;
@@ -18,6 +18,7 @@
     left: 0;
     z-index: 1001;
     overflow: hidden;
+    border-right: 1px solid if($darkTheme, rgba(255, 255, 255, 0.2), #d1d5db);
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -41,7 +42,7 @@
         margin-top: 40px;
         height: calc(100% - 100px);
         border-radius: 6px;
-        padding-left: 10px;
+        // padding-left: 10px;
         .scrollbar-wrapper {
           background-color: $menuBg;
           border-radius: 6px;
@@ -67,13 +68,6 @@
       border: none;
       height: 100%;
       width: 100% !important;
-    }
-
-    .el-menu-item,
-    .el-submenu__title {
-      // overflow: hidden !important;
-      // text-overflow: ellipsis !important;
-      // white-space: nowrap !important;
     }
 
     // menu hover
@@ -220,14 +214,14 @@
 //   }
 // }
 
-/* 设置了默认左边框为白色 */
+/* 设置了默认左边框为深色主题 */
 .el-submenu .el-submenu__title {
-  border-left: #fff solid 6px;
+  border-left: #304156 solid 6px;
 }
 /* 设置鼠标悬停时el-submenu的样式 */
 .el-submenu .el-submenu__title:hover {
-  border-left: #6190e8 solid 6px !important;
-  background-color: #e2eff9 !important;
+  border-left: #409EFF solid 6px !important;
+  background-color: #263445 !important;
   color: #6190e8 !important;
 }
 
@@ -284,15 +278,138 @@
 }
 
 .el-menu-item {
-  border-left: #fff solid 6px;
+  border-left: #304156 solid 6px;
 }
 /* 设置鼠标悬停时el-menu-item的样式 */
 .el-menu-item:hover {
-  border-left: #6190e8 solid 6px !important;
-  background-color: #e2eff9 !important;
-  color: #6190e8 !important;
+  border-left: #409EFF solid 6px !important;
+  background-color: #263445 !important;
+  color: #409EFF !important;
 }
 
 .el-menu-item:hover i {
   color: #6190e8;
+}
+
+/* ===== 菜单层级样式优化 ===== */
+
+/* 一级菜单样式 - 所有顶级菜单加粗且更大 */
+.sidebar-container .el-menu > .el-submenu > .el-submenu__title,
+.sidebar-container .el-menu > .el-menu-item,
+.sidebar-container .el-menu--collapse > .el-submenu > .el-submenu__title,
+.sidebar-container .el-menu--collapse > .el-menu-item {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding-left: 20px !important;
+  
+  .svg-icon {
+    margin-right: 12px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* 一级菜单字体样式 - 由JavaScript强制应用 */
+.sidebar-container .el-menu > li > .el-submenu__title,
+.sidebar-container .el-menu > li.el-menu-item {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* 二级及以下的折叠菜单标题 - 普通样式 */
+.el-submenu .el-submenu > .el-submenu__title {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  padding-left: 50px !important;
+  
+  .svg-icon {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 二级菜单样式 - 图标对齐一级菜单文字开头 */
+.el-submenu .el-menu-item {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  padding-left: 50px !important; /* 20px(一级左边距) + 18px(一级图标) + 12px(一级图标右边距) = 50px */
+  
+  .svg-icon {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 三级菜单样式 - 图标对齐二级菜单文字开头 */
+.el-submenu .el-submenu .el-menu-item {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  padding-left: 76px !important; /* 50px(二级左边距) + 16px(二级图标) + 10px(二级图标右边距) = 76px */
+  
+  .svg-icon {
+    margin-right: 8px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* 顶级菜单项（无子菜单）样式 */
+.submenu-title-noDropdown {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  padding-left: 20px !important;
+  
+  .svg-icon {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* 调整菜单项高度以适应新字体大小 */
+.el-submenu__title,
+.el-menu-item {
+  height: 48px !important;
+  line-height: 48px !important;
+}
+
+/* 子菜单标题图标调整 */
+.el-submenu__title .el-submenu__icon-arrow {
+  margin-top: -3px;
+}
+
+/* 强制覆盖一级菜单字体大小 - 使用组件添加的 class */
+.sidebar-container .first-level-menu,
+.sidebar-container .first-level-submenu > .el-submenu__title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  
+  span {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }
+  
+  * {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* 强制二级菜单保持14px */
+.sidebar-container .nest-menu .el-submenu__title,
+.sidebar-container .nest-menu .el-menu-item {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  
+  span {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+  }
+  
+  * {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+  }
 }
