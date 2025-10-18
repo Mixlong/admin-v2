@@ -10,10 +10,6 @@ const state = {
   title: "",
   theme: storageSetting.theme || "#409EFF",
   showSettings,
-  themeImageCount: 18,
-  customImage: localStorage.getItem("themeImageFile")
-    ? localStorage.getItem("themeImageFile")
-    : "0",
   tagsView:
     storageSetting.tagsView === undefined ? tagsView : storageSetting.tagsView,
   fixedHeader:
@@ -34,18 +30,11 @@ const mutations = {
   CHANGE_SETTING: (state, { key, value }) => {
     Object.hasOwn(state, key) && (state[key] = value);
   },
-  CHANGE_CUSTOMIMAGE: (state, data) => {
-    state.customImage = data;
-  },
 };
 
 const actions = {
   changeSetting({ commit }, data) {
     commit("CHANGE_SETTING", data);
-  },
-  changeThemeImage({ commit }, data) {
-    localStorage.setItem("themeImageFile", data);
-    commit("CHANGE_CUSTOMIMAGE", data);
   },
   // 设置网页标题
   setTitle({ commit, state }, title) {

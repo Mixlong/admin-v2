@@ -454,6 +454,7 @@
       :form-data="currentRow"
       :is-edit="isEdit"
       :is-view="isView"
+      :category-all-data="categoryAllData"
       @success="handleDialogSuccess"
     />
     
@@ -474,7 +475,9 @@ import { getDicts } from '@/api/system/dict/data'
 import { getCustomerList } from '@/api/order'
 import AddRequirementDialog from './components/AddRequirementDialog'
 import ViewRequirementDialog from './components/ViewRequirementDialog'
-  import { dictPmProject as dictUserList } from '@/api/third/project'
+import { dictPmProject as dictUserList } from '@/api/third/project'
+import { extend } from '@/utils/ruoyi'
+import { categoryComputerDict } from '@/api/third/fileConfig'
 export default {
   name: 'CustomerRequirement',
   components: {
@@ -494,6 +497,7 @@ export default {
       },
       dateRange: [],
       categoryOptions: [],
+      categoryAllData: [], // 全部品类数据（从 categoryComputerDict 接口获取）
       categoryData: {
         data: [],
         page: 1,
@@ -518,15 +522,58 @@ export default {
       currentRow: null
     }
   },
-  mounted() {
-    this.loadCategoryOptions()
+  async mounted() {
+    // 优先加载全部品类数据（因为这个接口响应较慢，提前加载供编辑时使用）
+    this.loadAllCategoryData()
+    
+    // 先加载品类数据，确保表格显示时能正确回显
+    await Promise.all([
+      this.getCategoryData({ page: 1 }),
+      this.loadCategoryOptions()
+    ])
+    
+    // 并行加载其他数据
     this.loadCustomerTypeDict()
     this.loadUserOptions()
-    this.getCategoryData({ page: 1 }) // 初始化品类数据
-    this.getCustomerData({ page: 1 }) // 初始化客户数据
+    this.getCustomerData({ page: 1 })
+    
+    // 最后加载表格数据
     this.fetchData()
   },
   methods: {
+    // 加载全部品类数据（供编辑对话框使用）
+    async loadAllCategoryData() {
+      try {
+        console.log('开始加载全部品类数据...')
+        const res = await categoryComputerDict()
+        console.log('全部品类数据API响应:', res)
+        
+        if (res.code === 200 && res.data) {
+          // 处理数据格式，确保包含 id 和 name 字段
+          if (Array.isArray(res.data)) {
+            this.categoryAllData = res.data.map(item => ({
+              id: item.id || item.categoryId,
+              name: item.name || item.categoryName || item.label,
+              ...item // 保留其他字段
+            }))
+          } else if (res.data.list) {
+            this.categoryAllData = res.data.list.map(item => ({
+              id: item.id || item.categoryId,
+              name: item.name || item.categoryName || item.label,
+              ...item // 保留其他字段
+            }))
+          }
+          console.log('全部品类数据加载成功:', this.categoryAllData.length, '条')
+        } else {
+          console.error('获取全部品类数据失败:', res.msg)
+          this.categoryAllData = []
+        }
+      } catch (error) {
+        console.error('加载全部品类数据异常:', error)
+        this.categoryAllData = []
+      }
+    },
+    
     // 获取客户数据 (用于 select-loadMore 组件)
     getCustomerData({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
@@ -728,13 +775,15 @@ export default {
     
     // 查看
     handleView(row) {
-      this.currentRow = { ...row }
+      // 深拷贝，避免修改原数据
+      this.currentRow = extend(row)
       this.viewDialogVisible = true
     },
     
     // 编辑
     handleEdit(row) {
-      this.currentRow = { ...row }
+      // 深拷贝，避免修改原数据
+      this.currentRow = extend(row)
       this.isEdit = true
       this.isView = false
       this.dialogVisible = true
@@ -786,7 +835,8 @@ export default {
     
     // 从查看组件跳转到编辑
     handleViewEdit(row) {
-      this.currentRow = { ...row }
+      // 深拷贝，避免修改原数据
+      this.currentRow = extend(row)
       this.isEdit = true
       this.isView = false
       this.dialogVisible = true
@@ -816,9 +866,10 @@ export default {
     getCategoryName(categoryId) {
       if (!categoryId) return '--'
       // 优先从 categoryData 中查找，如果没找到再从 categoryOptions 中查找
-      const category = this.categoryData.data.find(item => item.id === categoryId) || 
-                      this.categoryOptions.find(item => item.id === categoryId)
-      return category ? category.name : '--'
+      // 使用 == 比较，处理字符串和数字类型不一致的情况
+      const category = this.categoryData.data.find(item => item.id == categoryId) || 
+                      this.categoryOptions.find(item => item.id == categoryId)
+      return category ? category.name : categoryId
     },
     
     // 格式化日期

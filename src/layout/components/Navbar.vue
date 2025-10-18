@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapGetters } from "vuex";
 import Breadcrumb from "@/components/Breadcrumb";
 import Hamburger from "@/components/Hamburger";
 import Screenfull from "@/components/Screenfull";
@@ -53,11 +53,6 @@ import RuoYiGit from "@/components/RuoYi/Git";
 import RuoYiDoc from "@/components/RuoYi/Doc";
 
 export default {
-  data() {
-    return {
-      themeImageList: 0,
-    };
-  },
   components: {
     Breadcrumb,
     Hamburger,
@@ -69,10 +64,6 @@ export default {
   },
   computed: {
     ...mapGetters(["sidebar", "avatar", "nickName", "readNum", "device", "name"]),
-    ...mapState({
-      customImage: (state) => state.settings.customImage,
-      themeImageCount: (state) => state.settings.themeImageCount,
-    }),
     setting: {
       get() {
         return this.$store.state.settings.showSettings;
@@ -109,9 +100,6 @@ export default {
           location.href = "/index";
         });
       });
-    },
-    selectTheme(value) {
-      this.$store.dispatch("settings/changeThemeImage", value);
     },
   },
 };

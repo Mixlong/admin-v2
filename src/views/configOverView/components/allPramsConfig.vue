@@ -24,6 +24,14 @@
           <el-option label="否" :value="0" />
         </el-select>
       </el-form-item>
+      <el-form-item label="产品图纸状态" prop="specificationAuditStatus">
+        <el-select v-model="queryParams.specificationAuditStatus" @change="getList" clearable style="width: 120px;">
+          <el-option label="拒审" :value="-1" />
+          <el-option label="待初审" :value="0" />
+          <el-option label="待终审" :value="1" />
+          <el-option label="已审核" :value="2" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -47,15 +55,12 @@
         </el-button> -->
     </el-form>
 
-    <el-alert title="表格可通过按住Ctrl + 鼠标左键左右拖动" type="success" show-icon>
-    </el-alert>
-
     <div style="position: relative">
       <!-- 固定的基础信息分组标题 -->
-      <div class="fixed-group-header">基础信息</div>
-      
+      <div class="fixed-group-header"></div>
+
     <el-table id="drag_table" ref="tableRef" row-key="id" v-loading="loading" :data="brandList"
-        :height="tableHeight(-20)" @selection-change="handleSelectionChange" :header-cell-class-name="headerCellClassName">
+        :height="tableHeight(10)" @selection-change="handleSelectionChange" :header-cell-class-name="headerCellClassName">
  
       <!-- 基础信息 -->
       <el-table-column label="操作" align="center" width="100" fixed="left">
@@ -81,29 +86,24 @@
             
             <!-- 包装信息编辑 -->
             <Tooltip v-if="row.packagingInfo" icon="el-icon-edit-outline" content="包装信息编辑" 
-              v-hasPermi="['config:overview:first:edit']" @click="handleEditPackagingInfo(row)" />
+              v-hasPermi="['config:overview:first:editPackage']" @click="handleEditPackagingInfo(row)" />
             
-            <!-- 包装信息初审 -->
-            <Tooltip v-if="row.packagingInfo && (row.packagingAuditStatus === 0 || row.packagingAuditStatus === null || row.packagingAuditStatus === undefined)" 
+            <!-- 包装信息审核（简化流程：只有待审核状态才显示） -->
+            <Tooltip v-if="row.packagingInfo && row.packagingAuditStatus === 0" 
               class="text-orange" 
-              icon="el-icon-takeaway-box" content="包装初审" 
-              v-hasPermi="['config:overview:first:check']" @click="handlePackagingFirstAudit(row)" />
-            
-            <!-- 包装信息终审 -->
-            <Tooltip v-if="row.packagingInfo && row.packagingAuditStatus === 1" class="text-orange" 
-              icon="el-icon-box" content="包装终审" 
-              v-hasPermi="['config:overview:final:check']" @click="handlePackagingFinalAudit(row)" />
+              icon="el-icon-circle-check" content="包装审核" 
+              v-hasPermi="['config:overview:packaging:final:check']" @click="handlePackagingAudit(row)" />
             
             <!-- 产品图纸初审 -->
             <Tooltip v-if="row.specification && (row.specificationAuditStatus === 0 || row.specificationAuditStatus === null || row.specificationAuditStatus === undefined)" 
               class="text-orange" 
               icon="el-icon-document" content="产品图纸初审" 
-              v-hasPermi="['config:overview:first:check']" @click="handleSpecificationFirstAudit(row)" />
+              v-hasPermi="['config:overview:specification:first:check']" @click="handleSpecificationFirstAudit(row)" />
             
             <!-- 产品图纸终审 -->
             <Tooltip v-if="row.specification && row.specificationAuditStatus === 1" class="text-orange" 
               icon="el-icon-document-checked" content="产品图纸终审" 
-              v-hasPermi="['config:overview:final:check']" @click="handleSpecificationFinalAudit(row)" />
+              v-hasPermi="['config:overview:specification:final:check']" @click="handleSpecificationFinalAudit(row)" />
           </div>
         </template>
       </el-table-column>
@@ -111,78 +111,127 @@
         <template v-slot="{ row }">
           <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
             <!-- 配置审核状态 -->
-            <div>
-              <el-tag size="mini" v-if="row.state === 0" type="danger">配置:未审核</el-tag>
-              <el-tag size="mini" v-else-if="row.state === 1" type="success">配置:初审通过</el-tag>
-              <el-tag size="mini" v-else-if="row.state === 2" type="info">配置:初审未通过</el-tag>
-              <el-tag size="mini" v-else-if="row.state === 3" type="success">配置:终审通过</el-tag>
-              <el-tag size="mini" v-else-if="row.state === 4" type="info">配置:终审未通过</el-tag>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <el-tag size="mini" v-if="row.state === 0" type="danger">配置:未审核</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 1" type="success">配置:初审通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 2" type="info">配置:初审未通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 3" type="success">配置:终审通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 4" type="info">配置:终审未通过</el-tag>
+          </div>
+
+              <!-- 配置审核人信息 -->
+              <el-tooltip  placement="top">
+                <div slot="content" style="line-height: 1.8;">
+                  <div v-if="row.createBy">创建者：{{ row.createBy }}</div>
+                  <div v-if="row.firstPerson">初审者：{{ row.firstPerson }}</div>
+                  <div v-if="row.lastPerson">终审者：{{ row.lastPerson }}</div>
+                </div>
+                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
+              </el-tooltip>
             </div>
             
-            <!-- 包装审核状态 -->
-            <div v-if="row.packagingInfo">
-              <el-tag size="mini" v-if="row.packagingAuditStatus === -1" type="danger">包装:拒审</el-tag>
-              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning">包装:待初审</el-tag>
-              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="primary">包装:待终审</el-tag>
-              <el-tag size="mini" v-else-if="row.packagingAuditStatus === 2" type="success">包装:已审核</el-tag>
-              <el-tag size="mini" v-else type="info">包装:待初审</el-tag>
+            <!-- 包装审核状态（简化流程：-1拒审、0待审核、1已审核） -->
+            <div v-if="row.packagingInfo" style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <el-tooltip v-if="row.packagingAuditStatus === -1" 
+                  :content="row.packagingReasonRejection || '暂无拒绝原因'" 
+                  placement="top"
+                  :disabled="!row.packagingReasonRejection">
+                  <el-tag size="mini" type="danger" style="cursor: pointer;">包装:拒审</el-tag>
+                </el-tooltip>
+                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="success">包装:已审核</el-tag>
+                <el-tag size="mini" v-else type="warning">包装:待审核</el-tag>
+              </div>
+              
+              <!-- 包装审核人信息（简化：只显示审核者） -->
+              <el-tooltip v-if="row.packagingLastPerson" placement="top">
+                <div slot="content" style="line-height: 1.8;">
+                  <div>审核者：{{ row.packagingLastPerson }}</div>
+                </div>
+                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
+              </el-tooltip>
             </div>
             
             <!-- 产品图纸审核状态 -->
-            <div v-if="row.specification">
-              <el-tag size="mini" v-if="row.specificationAuditStatus === -1" type="danger">图纸:拒审</el-tag>
-              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning">图纸:待初审</el-tag>
-              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="primary">图纸:待终审</el-tag>
-              <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success">图纸:已审核</el-tag>
-              <el-tag size="mini" v-else type="info">图纸:待初审</el-tag>
+            <div v-if="row.specification" style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <el-tooltip v-if="row.specificationAuditStatus === -1" 
+                  :content="row.specificationReasonRejection || '暂无拒绝原因'" 
+                  placement="top"
+                  :disabled="!row.specificationReasonRejection">
+                  <el-tag size="mini" type="danger" style="cursor: pointer;">图纸:拒审</el-tag>
+                </el-tooltip>
+                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning">图纸:待初审</el-tag>
+                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="primary">图纸:待终审</el-tag>
+                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success">图纸:已审核</el-tag>
+                <el-tag size="mini" v-else type="info">图纸:待初审</el-tag>
+              </div>
+              
+              <!-- 产品图纸审核人信息 -->
+              <el-tooltip v-if="row.specificationFirstPerson || row.specificationLastPerson" placement="top">
+                <div slot="content" style="line-height: 1.8;">
+                  <div v-if="row.specificationFirstPerson">初审者：{{ row.specificationFirstPerson }}</div>
+                  <div v-if="row.specificationLastPerson">终审者：{{ row.specificationLastPerson }}</div>
+                </div>
+                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
+              </el-tooltip>
             </div>
           </div>
         </template>
       </el-table-column>
+      <!-- 品类 -->
       <el-table-column label="品类" prop="category" align="center" width="120" fixed="left" column-key="category"
         :filters="getFiltersData('category')" :filter-method="filterHandler" />
+      
+      <!-- 型号 -->
       <el-table-column label="型号" prop="computerName" align="center" width="120" fixed="left" column-key="computerName"
         :filters="getFiltersData('computerName')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.computerName"></span>
       </el-table-column>
-      <el-table-column label="客户" prop="customerName" align="center" width="120" fixed="left" column-key="customerName">
+      
+      <!-- 基础信息 -->
+      <el-table-column label="基础信息" align="left" label-class-name="group-header-basic">
+      <el-table-column label="客户" prop="customerName" align="center" width="120" column-key="customerName">
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
-      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" width="120" fixed="left"
+      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" width="120" 
         column-key="customerMaterialNum">
         <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
       </el-table-column>
-      <el-table-column label="实际客户车名" prop="customerCarName" align="center" width="150" fixed="left" column-key="customerCarName">
+      <el-table-column label="实际客户车名" prop="customerCarName" align="center" width="130" column-key="customerCarName">
         <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
       </el-table-column>
-      <el-table-column label="是否配置" prop="isStat" align="center" width="120" fixed="left">
+      <el-table-column label="是否配置" prop="isStat" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag type="success" v-if="row.isSts == 1">是</el-tag>
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="BIST型号" prop="isBist" align="center" width="120" fixed="left">
+      <el-table-column label="BIST型号" prop="isBist" align="center" width="90">
         <template slot-scope="{ row }">
           <el-tag type="success" v-if="row.isBist == 1">是</el-tag>
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
+      </el-table-column>
       
       <!-- 外观信息 -->
       <el-table-column label="外观信息" align="center" label-class-name="group-header-appearance">
-      <el-table-column label="产品图纸" prop="specification" align="center" width="140">
+      <el-table-column label="产品图纸" prop="specification" align="center" width="120">
         <template slot-scope="{ row }">
           <div class="specification-upload-cell">
+            <!-- 如果有多张图片（逗号分隔），只显示第一张的预览 -->
             <preview-img 
               v-if="row.specification" 
-              width="45px" 
-              height="45px" 
+              width="60px" 
+              height="60px" 
               :isDisBadge="false" 
-              :url="row.specification" 
+              :url="getFirstImageUrl(row.specification)" 
             />
             <el-button 
               v-if="!row.specification"
-              v-hasPermi="['config:overview:first:edit']"
+              v-hasPermi="['config:overview:specification:upload']"
               type="text" 
               icon="el-icon-upload2" 
               size="mini"
@@ -200,9 +249,19 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="标签规则" prop="labelRule" align="center" width="120" column-key="labelRule"
-        :filters="handleDataFilter(labelRuleData)" :filter-method="filterHandler">
-        <span slot-scope="{ row }" v-NoData="labelRuleData[row.labelRule]" />
+      <el-table-column label="标签规则" align="center" width="100" >
+        <template slot-scope="{ row }">
+          <div v-if="row.labelRule === 2" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <preview-img 
+              v-if="row.labelRuleImg" 
+              width="60px" 
+              height="60px" 
+              :url="row.labelRuleImg" 
+            />
+            <span v-else style="color: #909399; font-size: 12px;">无图片</span>
+          </div>
+          <span v-else v-NoData="labelRuleData[row.labelRule]" />
+        </template>
       </el-table-column>
       <el-table-column label="SN" prop="sn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
@@ -210,7 +269,7 @@
       <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="120">
         <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
-      <el-table-column label="车把尺寸" prop="handlebarSize" align="center" width="120" column-key="handlebarSize"
+      <el-table-column label="车把尺寸" prop="handlebarSize" align="center" width="95" column-key="handlebarSize"
         :filters="handleDataFilter(handlebarSizeData)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="handlebarSizeData[scope.row.handlebarSize]" />
       </el-table-column>
@@ -226,7 +285,7 @@
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="按键型号" prop="keyType" align="center" width="120" column-key="keyType"
+      <el-table-column label="按键型号" prop="keyType" align="center" width="100" column-key="keyType"
         :filters="handleDataFilter(dicts_keyType_list)" :filter-method="filterHandler">
         <span slot-scope="{ row }" v-NoData="dicts_keyType_list[row.keyType]" />
       </el-table-column>
@@ -258,7 +317,7 @@
       
       <!-- 车型配置 -->
       <el-table-column label="车型配置" align="center" label-class-name="group-header-config">
-      <el-table-column label="蓝牙" prop="bluetooth" align="center" width="120" column-key="bluetooth" :filters="[
+      <el-table-column label="蓝牙" prop="bluetooth" align="center" width="80" column-key="bluetooth" :filters="[
         { text: 'YES', value: 1 },
         { text: 'NO', value: 0 },
       ]" :filter-method="filterHandler">
@@ -267,56 +326,56 @@
         </el-tag>
         <template v-else> - - - </template>
       </el-table-column>
-      <el-table-column label="通讯协议" prop="sysProtocol" align="center" width="120" column-key="sysProtocol"
+      <el-table-column label="通讯协议" prop="sysProtocol" align="center" width="95" column-key="sysProtocol"
         :filters="handleDataFilter(dicts_protocol_list)" :filter-method="filterHandler">
         <span slot-scope="{ row }" v-NoData="dicts_protocol_list[row.sysProtocol]" />
       </el-table-column>
-      <el-table-column label="通讯方式" prop="serialLevel" align="center" width="120" column-key="serialLevel"
+      <el-table-column label="通讯方式" prop="serialLevel" align="center" width="95" column-key="serialLevel"
         :filters="handleDataFilter(serialLevelData)" :filter-method="filterHandler">
         <span slot-scope="{ row }" v-NoData="serialLevelData[row.serialLevel]" />
       </el-table-column>
-      <el-table-column label="实际协议" prop="showAgreement" align="center" width="120" />
-      <el-table-column label="配置协议" prop="agreement" align="center" width="120" column-key="agreement"
+      <el-table-column label="实际协议" prop="showAgreement" align="center" width="90" />
+      <el-table-column label="配置协议" prop="agreement" align="center" width="95" column-key="agreement"
         :filters="handleDataFilter(dicts_agreement)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="dicts_agreement[scope.row.agreement]" />
       </el-table-column>
-      <el-table-column label="系统电压" prop="voltage" align="center" width="120" column-key="voltage"
+      <el-table-column label="系统电压" prop="voltage" align="center" width="95" column-key="voltage"
         :filters="getFiltersData('voltage')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.voltage"></span>
       </el-table-column>
-      <el-table-column label="欠压门限" prop="undervoltage" align="center" width="120" column-key="undervoltage"
+      <el-table-column label="欠压门限" prop="undervoltage" align="center" width="95" column-key="undervoltage"
         :filters="getFiltersData('undervoltage')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
       </el-table-column>
-      <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="120" />
-      <el-table-column label="配置轮径" prop="wheelDiameter" align="center" width="120" column-key="wheelDiameter"
+      <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="95" />
+      <el-table-column label="配置轮径" prop="wheelDiameter" align="center" width="95" column-key="wheelDiameter"
         :filters="handleDataFilter(wheelDiameterData)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="wheelDiameterData[scope.row.wheelDiameter]"></span>
       </el-table-column>
-      <el-table-column label="周长" prop="perimeter" align="center" width="120" column-key="perimeter"
+      <el-table-column label="周长" prop="perimeter" align="center" width="95" column-key="perimeter"
         :filters="getFiltersData('perimeter')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
       </el-table-column>
-      <el-table-column label="助力档位数" prop="powerGear" align="center" width="120" column-key="powerGear"
+      <el-table-column label="助力档位数" prop="powerGear" align="center" width="110" column-key="powerGear"
         :filters="getFiltersData('powerGear')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.powerGear"></span>
       </el-table-column>
-      <el-table-column label="默认档位" prop="defaultGear" align="center" width="120" column-key="defaultGear"
+      <el-table-column label="默认档位" prop="defaultGear" align="center" width="95" column-key="defaultGear"
         :filters="getFiltersData('defaultGear')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.defaultGear"></span>
       </el-table-column>
-      <el-table-column label="测速磁钢数" prop="speedSteel" align="center" width="120" column-key="speedSteel"
+      <el-table-column label="测速磁钢数" prop="speedSteel" align="center" width="110" column-key="speedSteel"
         :filters="getFiltersData('speedSteel')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.speedSteel"></span>
       </el-table-column>
-      <el-table-column label="助力限速门限" prop="assistLimit" align="center" width="130" column-key="assistLimit"
+      <el-table-column label="助力限速门限" prop="assistLimit" align="center" width="125" column-key="assistLimit"
         :filters="getFiltersData('assistLimit')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.assistLimit"></span>
       </el-table-column>
-      <el-table-column label="限速范围" prop="speedLimitRang" align="center" width="120" column-key="speedLimitRang">
+      <el-table-column label="限速范围" prop="speedLimitRang" align="center" width="110" column-key="speedLimitRang">
         <span slot-scope="scope" v-NoData="scope.row.speedLimitRang"></span>
       </el-table-column>
-      <el-table-column label="显示单位" prop="unit" align="center" width="120" column-key="unit"
+      <el-table-column label="显示单位" prop="unit" align="center" width="95" column-key="unit"
         :filters="handleDataFilter(dicts_unit)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="dicts_unit[scope.row.unit]"></span>
       </el-table-column>
@@ -334,17 +393,17 @@
       <!-- 包装信息 -->
       <el-table-column label="包装信息" align="center" label-class-name="group-header-package">
       <el-table-column label="附件出货方式" align="center">
-        <el-table-column label="支架螺丝" align="center" width="150">
+        <el-table-column label="支架螺丝" align="center" width="120">
           <template slot-scope="{ row }">
             <span v-NoData="getPackagingValue(row, '解件出库方式', '支架螺丝')"></span>
           </template>
       </el-table-column>
-        <el-table-column label="按键螺丝" align="center" width="150">
+        <el-table-column label="按键螺丝" align="center" width="120">
           <template slot-scope="{ row }">
-            <span v-NoData="getPackagingValue(row, '解件出库方式', '按栓螺丝')"></span>
+            <span v-NoData="getPackagingValue(row, '解件出库方式', '按键螺丝')"></span>
           </template>
       </el-table-column>
-        <el-table-column label="硅胶垫片" align="center" width="150">
+        <el-table-column label="硅胶垫片" align="center" width="120">
           <template slot-scope="{ row }">
             <span v-NoData="getPackagingValue(row, '解件出库方式', '硅胶垫片')"></span>
           </template>
@@ -400,8 +459,24 @@
     </el-table>
     </div>
 
-    <pagination v-if="total > 0" :total="total" :ls="[10,20,30,40, 50, 100, 300, 500]" :page.sync="queryParams.p"
-      :limit.sync="queryParams.l" @pagination="getList" />
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <el-alert 
+        title="表格可通过按住Ctrl + 鼠标左键左右拖动" 
+        type="success" 
+        show-icon
+        :closable="false"
+        style="flex: 0 0 auto; margin-right: 20px;width:fit-content;">
+      </el-alert>
+      
+      <pagination 
+        v-if="total > 0" 
+        :total="total" 
+        :ls="[10,20,30,40, 50, 100, 300, 500]" 
+        :page.sync="queryParams.p"
+        :limit.sync="queryParams.l" 
+        @pagination="getList" 
+        style="flex: 1; display: flex; justify-content: flex-end;" />
+    </div>
 
     <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="40%" center :close-on-click-modal="false">
       <el-form ref="authForm" :model="authForm" class="form-data" :inline="false">
@@ -427,7 +502,7 @@
           <el-switch v-model="isSample" active-text="简化"> </el-switch>
         </div>
       </template>
-      <el-descriptions direction="vertical" :column="4" border>
+      <el-descriptions direction="vertical" :column="6" border>
       <el-descriptions-item label="背光亮度">
           <div class="flex justify-between">
             <div>
@@ -660,7 +735,7 @@
           <el-switch v-model="isSample" active-text="简化"> </el-switch>
         </div>
       </template>
-      <el-descriptions direction="vertical" :column="4" border>
+      <el-descriptions direction="vertical" :column="6" border>
         <el-descriptions-item label="背光亮度">
           <div class="flex justify-between">
             <div>
@@ -950,6 +1025,7 @@
       :title="auditDialog.title" 
       :visible.sync="auditDialog.visible" 
       width="500px"
+      top='0vh'
       append-to-body
     >
       <el-form :model="auditDialog.form" :rules="auditDialog.rules" ref="auditForm" label-width="100px">
@@ -989,7 +1065,7 @@ import {
   modelConfigState,
   ConfigExport,
 } from "@/api/third/testApi";
-import { editComputer, packagingFirstAudit, packagingFinalAudit, specificationFirstAudit, specificationFinalAudit } from "@/api/third/computer";
+import { editComputer, packagingFinalAudit, specificationFirstAudit, specificationFinalAudit } from "@/api/third/computer";
 import commonData from "@/mixins/commonData";
 import ParamsCompare from "./ParamsCompare.vue";
 import { getCustomerList } from "@/api/order";
@@ -997,6 +1073,8 @@ import addDialog from '@/views/third/productFamily/index.vue'
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
 import axios from "axios";
 import reqUrl from "@/utils/requestUrl";
+// 导入包装信息字段配置 - 统一管理所有字段定义
+import { getFieldValue } from '@/config/fieldConfigs/packaging';
 
 export default {
   name: "ConfigOverview",
@@ -1090,6 +1168,7 @@ export default {
         categoryId: undefined,
         computerId: undefined,
         customerName: undefined,
+        specificationAuditStatus: undefined,
       },
       // 审核对话框
       auditDialog: {
@@ -1405,6 +1484,7 @@ export default {
         categoryId: undefined,
         computerId: undefined,
         customerName: undefined,
+        specificationAuditStatus: undefined,
       };
 
       // 清空相关选项
@@ -1572,21 +1652,10 @@ export default {
     
     // ==================== 审核相关方法 ====================
     
-    // 包装信息初审
-    handlePackagingFirstAudit(row) {
-      this.auditDialog.title = '包装信息初审';
-      this.auditDialog.type = 'packagingFirst';
-      this.auditDialog.currentRow = row;
-      this.auditDialog.form.id = row.id;
-      this.auditDialog.form.status = 1;
-      this.auditDialog.form.why = '';
-      this.auditDialog.visible = true;
-    },
-    
-    // 包装信息终审
-    handlePackagingFinalAudit(row) {
-      this.auditDialog.title = '包装信息终审';
-      this.auditDialog.type = 'packagingFinal';
+    // 包装信息审核（简化流程：直接终审）
+    handlePackagingAudit(row) {
+      this.auditDialog.title = '包装信息审核';
+      this.auditDialog.type = 'packaging';
       this.auditDialog.currentRow = row;
       this.auditDialog.form.id = row.id;
       this.auditDialog.form.status = 1;
@@ -1638,13 +1707,9 @@ export default {
         
         // 根据审核类型选择对应的API
         switch (this.auditDialog.type) {
-          case 'packagingFirst':
-            apiFunction = packagingFirstAudit;
-            successMsg = '包装信息初审完成';
-            break;
-          case 'packagingFinal':
-            apiFunction = packagingFinalAudit;
-            successMsg = '包装信息终审完成';
+          case 'packaging':
+            apiFunction = packagingFinalAudit; // 简化流程：直接使用终审接口
+            successMsg = '包装信息审核完成';
             break;
           case 'specificationFirst':
             apiFunction = specificationFirstAudit;
@@ -1716,7 +1781,10 @@ export default {
       this.$refs.addDialogRef.handleUpdate(item);
     },
     
-    // 获取包装信息字段值
+    /**
+     * 获取包装信息字段值（使用配置文件工具函数）
+     * 优势：自动处理历史字段名兼容，代码更简洁
+     */
     getPackagingValue(row, groupName, fieldName) {
       if (!row.packagingInfo) return '';
       
@@ -1730,11 +1798,11 @@ export default {
         
         // 检测数据格式
         if (Array.isArray(packagingData)) {
-          // 旧格式数据，需要转换
-          return this.getOldFormatValue(packagingData, groupName, fieldName);
+          // 旧格式数据，统一显示 -- 表示不支持
+          return '--';
         } else if (typeof packagingData === 'object') {
-          // 新格式数据
-          return this.getNewFormatValue(packagingData, groupName, fieldName);
+          // 新格式数据 - 使用配置文件的工具函数（自动处理历史字段名）
+          return getFieldValue(packagingData, groupName, fieldName);
         }
         
         return '';
@@ -1744,46 +1812,9 @@ export default {
       }
     },
     
-    // 从旧格式获取值
-    getOldFormatValue(oldData, groupName, fieldName) {
-      // 旧格式数据结构和新格式完全不同，不应该强行映射显示
-      // 统一显示 -- 表示该数据是旧格式，不支持新的字段结构
-      return '--';
-    },
-    
-    // 转换旧的 contentId
-    convertOldContentId(contentId) {
-      const mapping = {
-        'ditaiStandardNoLockAttachment': '不锁，以附件出货',
-        'customerSpecifiedNoLock': '不锁，以附件出货',
-        'customerSpecifiedNormalLock': '锁上出货',
-        'ditaiStandardAllAccessoriesUnifiedTailNumber': '放置尾数箱',
-        'customerSpecified': '客户模板（参考附件，内容根据订单内容做修改）',
-        'accordingToBOM': '迪太模板',
-        'ditaiTemplate': '迪太模板',
-        'ditaiEnglishIndicators': '迪太模板'
-      };
-      return mapping[contentId] || contentId;
-    },
-    
-    // 从新格式获取值
-    getNewFormatValue(newData, groupName, fieldName) {
-      const groupData = newData[groupName];
-      if (!groupData) return '';
-      
-      // 判断是 {value, administrator} 结构还是多字段结构
-      if (fieldName === 'value' || fieldName === 'administrator') {
-        // {value, administrator} 结构
-        return groupData[fieldName] || '';
-      } else {
-        // 多字段结构，如 解件出库方式.支架螺丝
-        const value = groupData[fieldName];
-        if (typeof value === 'object') {
-          return value.value || '';
-        }
-        return value || '';
-      }
-    },
+    // 注意：getOldFormatValue、convertOldContentId、getNewFormatValue 方法已移除
+    // 这些功能已由配置文件（packagingFieldsConfig.js）的工具函数统一处理
+    // 好处：字段管理集中化，历史兼容性自动处理，代码更简洁
     
     // 判断是否应该显示附件内容（administrator字段）
     shouldShowAdministrator(value) {
@@ -2075,6 +2106,22 @@ export default {
       }
     },
     
+    // 获取第一张图片URL（处理逗号分隔的多图情况）
+    getFirstImageUrl(url) {
+      if (!url) return '';
+      
+      // 清理URL中的反引号和多余空格
+      let cleanUrl = url.replace(/`/g, '').trim();
+      
+      // 如果包含逗号，说明有多张图片，取第一张
+      if (cleanUrl.includes(',')) {
+        const urls = cleanUrl.split(',').map(u => u.trim()).filter(u => u);
+        return urls[0] || '';
+      }
+      
+      return cleanUrl;
+    },
+    
     // 更新产品图纸
     async updateSpecification(row, imageUrl) {
       try {
@@ -2150,8 +2197,8 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1110px; /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
-  height: 40px;
+  width: 482px; /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
+  height: 41px;
   line-height: 40px;
   box-sizing: border-box;
   text-align: center;
@@ -2161,8 +2208,7 @@ export default {
   font-size: 14px;
   border-top: 1px solid #dfe6ec; /* 顶部线条 */
   border-left: 1px solid #dfe6ec;
-  border-right: 1px solid #dfe6ec;
-  border-bottom: 1px solid #dfe6ec;
+  border-bottom: 2px solid #dfe6ec;
   z-index: 10;
   pointer-events: none; /* 允许点击事件穿透到下方筛选器 */
 }

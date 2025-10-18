@@ -21,69 +21,40 @@
         :row-style="rowStyle"
         :row-class-name="getRowClassName"
       >
-        <!-- 第一大列：附件出库方式（包含4个子列） -->
-        <el-table-column label="附件出库方式" align="center">
-          <!-- 支架螺丝 -->
-          <el-table-column label="支架螺丝" width="230" header-align="center">
+        <!-- 第一大列：附件出库方式（从配置文件读取） -->
+        <el-table-column :label="PACKAGING_FIELDS['解件出库方式'].displayName" align="center">
+          <!-- 遍历配置生成子列 - 真正的统一管理！ -->
+          <el-table-column 
+            v-for="(field, fieldKey) in PACKAGING_FIELDS['解件出库方式'].fields"
+            :key="fieldKey"
+            :label="field.displayName"
+            :width="field.width"
+            :min-width="field.minWidth"
+            header-align="center"
+          >
             <template slot-scope="scope">
-              <div class="simple-select-cell" style="vertical-align: top !important; align-items: flex-start; display: flex; flex-direction: column;">
+              <!-- select 类型 -->
+              <div v-if="field.formType === 'select'" class="simple-select-cell">
                 <el-select 
-                  v-model="formData.解件出库方式.支架螺丝" 
+                  v-model="formData['解件出库方式'][fieldKey]" 
                   placeholder="请选择" 
                   size="small"
                   style="width: 100%"
                 >
-                  <el-option label="锁上出货" value="锁上出货" />
-                  <el-option label="不锁，以附件出货" value="不锁，以附件出货" />
-                  <el-option label="不涉及" value="不涉及" />
+                  <el-option 
+                    v-for="opt in field.options"
+                    :key="opt.value"
+                    :label="opt.label" 
+                    :value="opt.value" 
+                  />
                 </el-select>
               </div>
-            </template>
-          </el-table-column>
-          
-          <!-- 按栓螺丝 -->
-          <el-table-column label="按栓螺丝" width="230" header-align="center">
-            <template slot-scope="scope">
-              <div class="simple-select-cell">
-                <el-select 
-                  v-model="formData.解件出库方式.按栓螺丝" 
-                  placeholder="请选择" 
-                  size="small"
-                  style="width: 100%"
-                >
-                  <el-option label="锁上出货" value="锁上出货" />
-                  <el-option label="不锁，以附件出货" value="不锁，以附件出货" />
-                  <el-option label="不涉及" value="不涉及" />
-                </el-select>
-              </div>
-            </template>
-          </el-table-column>
-          
-          <!-- 硅胶垫片 -->
-          <el-table-column label="硅胶垫片" width="230" header-align="center">
-            <template slot-scope="scope">
-              <div class="simple-select-cell">
-                <el-select 
-                  v-model="formData.解件出库方式.硅胶垫片" 
-                  placeholder="请选择" 
-                  size="small"
-                  style="width: 100%"
-                >
-                  <el-option label="粘贴出货" value="粘贴出货" />
-                  <el-option label="不锁，以附件出货" value="不锁，以附件出货" />
-                  <el-option label="不涉及" value="不涉及" />
-                </el-select>
-              </div>
-            </template>
-          </el-table-column>
-          
-          <!-- 其它附件要求 -->
-          <el-table-column label="其它附件要求" min-width="250" header-align="center">
-            <template slot-scope="scope">
-              <div class="rich-text-cell full-height-cell">
+              
+              <!-- richtext 类型 -->
+              <div v-else-if="field.formType === 'richtext'" class="rich-text-cell full-height-cell">
                 <Editor 
-                  v-model="formData.解件出库方式.其它附件要求" 
-                  :min-height="284"
+                  v-model="formData['解件出库方式'][fieldKey]" 
+                  :min-height="field.minHeight || 284"
                   placeholder="请输入其它附件要求，可使用工具栏的图片按钮上传图片或文件"
                   :toolbar="customToolbar"
                 />
@@ -92,87 +63,38 @@
           </el-table-column>
         </el-table-column>
         
-        <!-- 附件装箱方式 -->
-        <el-table-column label="附件装箱方式" min-width="250" header-align="center">
+        <!-- 其他列：附件装箱方式、箱唛要求、检验报告要求（从配置文件读取） -->
+        <el-table-column 
+          v-for="groupKey in ['附件装箱方式', '箱唛要求', '检验报告要求']"
+          :key="groupKey"
+          :label="PACKAGING_FIELDS[groupKey].displayName"
+          :min-width="PACKAGING_FIELDS[groupKey].minWidth"
+          header-align="center"
+        >
           <template slot-scope="scope">
             <div class="select-with-rich-cell">
+              <!-- 下拉框 -->
               <el-select 
-                v-model="formData.附件装箱方式.value" 
+                v-model="formData[groupKey].value" 
                 placeholder="请选择" 
                 size="small"
                 style="width: 100%; margin-bottom: 10px;"
-                @change="handleSelectChange('附件装箱方式')"
+                @change="handleSelectChange(groupKey)"
               >
-                <el-option label="其它装箱方式（参考附件）" value="其它装箱方式（参考附件）" />
-                <el-option label="放置每箱内" value="放置每箱内" />
-                <el-option label="放置尾数箱" value="放置尾数箱" />
+                <el-option 
+                  v-for="opt in PACKAGING_FIELDS[groupKey].fields.value.options"
+                  :key="opt.value"
+                  :label="opt.label" 
+                  :value="opt.value" 
+                />
               </el-select>
               
-              <div v-if="shouldShowEditor('附件装箱方式')" class="admin-editor-wrapper">
+              <!-- 富文本（按配置显示） -->
+              <div v-if="shouldShowEditor(groupKey)" class="admin-editor-wrapper">
                 <div class="admin-editor-box">
                   <Editor 
-                    v-model="formData.附件装箱方式.administrator" 
-                    :min-height="230"
-                    placeholder="可使用工具栏的图片按钮上传多张图片或其它文件，支持在线查看和下载"
-                    :toolbar="customToolbar"
-                  />
-                </div>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 箱唛要求 -->
-        <el-table-column label="箱唛要求" min-width="250" header-align="center">
-          <template slot-scope="scope">
-            <div class="select-with-rich-cell">
-              <el-select 
-                v-model="formData.箱唛要求.value" 
-                placeholder="请选择" 
-                size="small"
-                style="width: 100%; margin-bottom: 10px;"
-                @change="handleSelectChange('箱唛要求')"
-              >
-                <el-option label="迪太模板" value="迪太模板" />
-                <el-option label="客户模板（参考附件，内容根据订单内容做修改）" value="客户模板（参考附件，内容根据订单内容做修改）" />
-                <el-option label="客户系统模板（等出货时，随送货单一起下发）" value="客户系统模板（等出货时，随送货单一起下发）" />
-              </el-select>
-              
-              <div v-if="shouldShowEditor('箱唛要求')" class="admin-editor-wrapper">
-                <div class="admin-editor-box">
-                  <Editor 
-                    v-model="formData.箱唛要求.administrator" 
-                    :min-height="230"
-                    placeholder="可使用工具栏的图片按钮上传多张图片或其它文件，支持在线查看和下载"
-                    :toolbar="customToolbar"
-                  />
-                </div>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 检验报告要求 -->
-        <el-table-column label="检验报告要求" min-width="250" header-align="center">
-          <template slot-scope="scope">
-            <div class="select-with-rich-cell">
-              <el-select 
-                v-model="formData.检验报告要求.value" 
-                placeholder="请选择" 
-                size="small"
-                style="width: 100%; margin-bottom: 10px;"
-                @change="handleSelectChange('检验报告要求')"
-              >
-                <el-option label="迪太模板" value="迪太模板" />
-                <el-option label="客户模板（参考附件，内容根据订单内容做修改）" value="客户模板（参考附件，内容根据订单内容做修改）" />
-                <el-option label="客户系统模板（等出货时，随送货单一起下发）" value="客户系统模板（等出货时，随送货单一起下发）" />
-              </el-select>
-              
-              <div v-if="shouldShowEditor('检验报告要求')" class="admin-editor-wrapper">
-                <div class="admin-editor-box">
-                  <Editor 
-                    v-model="formData.检验报告要求.administrator" 
-                    :min-height="230"
+                    v-model="formData[groupKey].administrator" 
+                    :min-height="PACKAGING_FIELDS[groupKey].fields.administrator.minHeight"
                     placeholder="可使用工具栏的图片按钮上传多张图片或其它文件，支持在线查看和下载"
                     :toolbar="customToolbar"
                   />
@@ -193,6 +115,14 @@
 
 <script>
 import Editor from '@/components/Editor'
+import { 
+  PACKAGING_FIELDS, 
+  getFieldValue, 
+  getFieldDefaultValue,
+  normalizePackagingData,
+  getGroupFieldKeys,
+  shouldShowRichtext
+} from '@/config/fieldConfigs/packaging'
 
 export default {
   name: 'PackagingInfoEdit',
@@ -220,26 +150,10 @@ export default {
         [{ color: [] }],                                 // 字体颜色
         ['link']                                         // 链接（文件上传按钮会自动添加，支持所有类型包括图片和PDF）
       ],
-      formData: {
-        解件出库方式: {
-          支架螺丝: '锁上出货',
-          按栓螺丝: '锁上出货',
-          硅胶垫片: '粘贴出货',
-          其它附件要求: ''
-        },
-        附件装箱方式: {
-          value: '其它装箱方式（参考附件）',
-          administrator: ''
-        },
-        箱唛要求: {
-          value: '迪太模板',
-          administrator: ''
-        },
-        检验报告要求: {
-          value: '迪太模板',
-          administrator: ''
-        }
-      }
+      // 使用配置文件初始化表单数据 - 集中管理，易于维护
+      formData: this.initFormData(),
+      // 挂载配置到 data，template 可以使用
+      PACKAGING_FIELDS
     }
   },
   computed: {
@@ -287,6 +201,30 @@ export default {
     this.disableTableHover()
   },
   methods: {
+    // ========== 数据初始化方法（使用配置文件） ==========
+    
+    /**
+     * 初始化表单数据
+     * 从配置文件自动生成，默认值也从配置读取 - 真正的统一管理！
+     */
+    initFormData() {
+      const formData = {}
+      
+      Object.keys(PACKAGING_FIELDS).forEach(groupKey => {
+        formData[groupKey] = {}
+        const fields = PACKAGING_FIELDS[groupKey].fields
+        
+        Object.keys(fields).forEach(fieldKey => {
+          // 从配置读取默认值
+          formData[groupKey][fieldKey] = getFieldDefaultValue(groupKey, fieldKey)
+        })
+      })
+      
+      return formData
+    },
+    
+    // ========== 表格样式方法 ==========
+    
     // 表格行样式
     rowStyle() {
       return {
@@ -335,15 +273,10 @@ export default {
       }
     },
     
-    // 判断是否应该显示富文本编辑器（只有特定完整选项才显示）
-    shouldShowEditor(fieldName) {
-      const value = this.formData[fieldName]?.value || ''
-      // 只有这些完整的选项才显示富文本编辑器
-      const showEditorOptions = [
-        '其它装箱方式（参考附件）',
-        '客户模板（参考附件，内容根据订单内容做修改）'
-      ]
-      return showEditorOptions.includes(value)
+    // 判断是否应该显示富文本编辑器（从配置读取）
+    shouldShowEditor(groupKey) {
+      const value = this.formData[groupKey]?.value || ''
+      return shouldShowRichtext(groupKey, 'administrator', value)
     },
     
     loadData() {
@@ -422,60 +355,42 @@ export default {
       return mapping[contentId] || contentId
     },
 
+    /**
+     * 加载新格式数据（使用配置文件自动处理兼容性）
+     * 优势：自动处理历史字段名，无需手动写映射代码
+     */
     loadNewFormat(newData) {
       console.log('📥 加载新格式数据:', newData)
       
-      // 处理"解件出库方式"分组
-      if (newData['解件出库方式']) {
-        Object.keys(newData['解件出库方式']).forEach(key => {
-          const value = newData['解件出库方式'][key]
-          if (typeof value === 'object' && value.value !== undefined) {
-            this.$set(this.formData.解件出库方式, key, value.value)
-          } else {
-            this.$set(this.formData.解件出库方式, key, value)
+      // 使用配置文件的工具函数自动标准化数据（自动处理历史别名）
+      const normalized = normalizePackagingData(newData)
+      console.log('🔄 标准化后的数据:', normalized)
+      
+      // 将标准化后的数据填充到 formData
+      Object.keys(PACKAGING_FIELDS).forEach(groupKey => {
+        if (!normalized[groupKey]) return
+        
+        const fieldKeys = getGroupFieldKeys(groupKey)
+        
+        fieldKeys.forEach(fieldKey => {
+          const value = normalized[groupKey][fieldKey]
+          if (value !== undefined) {
+            this.$set(this.formData[groupKey], fieldKey, value)
           }
         })
-        console.log('✅ 解件出库方式加载完成:', this.formData.解件出库方式)
-      }
-
-      // 处理其他分组（附件装箱方式、箱唛要求、检验报告要求）
-      ['附件装箱方式', '箱唛要求', '检验报告要求'].forEach(groupName => {
-        if (newData[groupName]) {
-          if (typeof newData[groupName] === 'object') {
-            this.$set(this.formData[groupName], 'value', newData[groupName].value || '')
-            this.$set(this.formData[groupName], 'administrator', newData[groupName].administrator || '')
-          } else {
-            this.$set(this.formData[groupName], 'value', newData[groupName])
-            this.$set(this.formData[groupName], 'administrator', '')
-          }
-          console.log(`✅ ${groupName}加载完成:`, this.formData[groupName])
-        }
+        
+        console.log(`✅ ${groupKey} 加载完成:`, this.formData[groupKey])
       })
       
       console.log('✅ 所有数据加载完成，当前formData:', JSON.parse(JSON.stringify(this.formData)))
     },
 
+    /**
+     * 重置表单（使用配置文件初始化）
+     * 优势：字段修改只需改配置文件，这里无需修改
+     */
     resetForm() {
-      this.formData = {
-        解件出库方式: {
-          支架螺丝: '锁上出货',
-          按栓螺丝: '锁上出货',
-          硅胶垫片: '粘贴出货',
-          其它附件要求: ''
-        },
-        附件装箱方式: {
-          value: '其它装箱方式（参考附件）',
-          administrator: ''
-        },
-        箱唛要求: {
-          value: '迪太模板',
-          administrator: ''
-        },
-        检验报告要求: {
-          value: '迪太模板',
-          administrator: ''
-        }
-      }
+      this.formData = this.initFormData()
     },
 
     handleSave() {
@@ -486,28 +401,35 @@ export default {
       this.dialogVisible = false
     },
 
+    /**
+     * 转换为新格式保存（使用配置文件遍历）
+     * 优势：新增字段只需修改配置文件，这里自动处理
+     */
     convertToNewFormat() {
       const result = {}
 
-      const group1 = {}
-      const items1 = ['支架螺丝', '按栓螺丝', '硅胶垫片', '其它附件要求']
-      items1.forEach(item => {
-        const value = this.formData.解件出库方式[item]
-        if (value) {
-          group1[item] = value
-        }
-      })
-      if (Object.keys(group1).length > 0) {
-        result['解件出库方式'] = group1
-      }
-
-      ['附件装箱方式', '箱唛要求', '检验报告要求'].forEach(groupName => {
-        const group = this.formData[groupName]
-        // 只要有 value 就保存，统一保存为对象格式
-        if (group.value) {
-          result[groupName] = {
-            value: group.value,
-            administrator: group.administrator || ''
+      // 遍历所有分组（从配置文件读取）
+      Object.keys(PACKAGING_FIELDS).forEach(groupKey => {
+        const fieldKeys = getGroupFieldKeys(groupKey)
+        const groupData = {}
+        
+        fieldKeys.forEach(fieldKey => {
+          const value = this.formData[groupKey]?.[fieldKey]
+          if (value !== undefined && value !== '') {
+            groupData[fieldKey] = value
+          }
+        })
+        
+        // 只保存有数据的分组
+        if (Object.keys(groupData).length > 0) {
+          // 对于 value/administrator 结构，统一保存为对象
+          if (fieldKeys.includes('value') && fieldKeys.includes('administrator')) {
+            result[groupKey] = {
+              value: groupData.value || '',
+              administrator: groupData.administrator || ''
+            }
+          } else {
+            result[groupKey] = groupData
           }
         }
       })
@@ -611,7 +533,6 @@ export default {
 
 // 简单下拉框单元格
 .simple-select-cell {
-  padding: 10px 12px;
   display: block;
 }
 

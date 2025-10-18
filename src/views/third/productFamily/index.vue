@@ -2,7 +2,7 @@
   <!-- <div class="app-container"> -->
   <!-- <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="key">
-        <el-select v-model="queryParams.key" @change="changeCategory" filterable allow-create clearable
+        <el-select v-model="queryParams.key" @chan规格书e="changeCategory" filterable allow-create clearable
           placeholder="请选择品类">
           <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id" />
         </el-select>

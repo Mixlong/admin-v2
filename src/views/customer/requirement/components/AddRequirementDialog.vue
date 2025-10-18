@@ -349,6 +349,10 @@ export default {
     isView: {
       type: Boolean,
       default: false
+    },
+    categoryAllData: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -540,6 +544,13 @@ export default {
       const dialogContent = document.querySelector('.el-dialog__body')
       const initialScrollTop = dialogContent ? dialogContent.scrollTop : 0
 
+      // 优先使用父组件传递的全部品类数据
+      if (this.categoryAllData && this.categoryAllData.length > 0) {
+        console.log('使用父组件传递的全部品类数据:', this.categoryAllData.length, '条')
+        this.categoryData.data = this.categoryAllData
+        this.categoryData.more = false // 已经是全部数据，不需要分页
+      }
+
       await Promise.all([
         this.loadCategoryOptions(),
         this.loadCustomerOptions(),
@@ -547,8 +558,9 @@ export default {
         this.loadUserOptions()
       ])
 
-      // 确保 categoryData 初始化，为 select-loadMore 提供数据
+      // 如果父组件没有传递品类数据，才使用分页接口加载
       if (this.categoryData.data.length === 0) {
+        console.log('父组件未传递品类数据，使用分页接口加载')
         await this.getCategoryList(1)
       }
 
@@ -568,47 +580,8 @@ export default {
         await this.getUserQualityData({ page: 1 })
       }
 
-      // 如果是编辑模式，确保加载足够的品类数据以便正确回显
-      if ((this.isEdit || this.isView) && this.localFormData.requirementInfoList) {
-        const existingCategoryIds = this.localFormData.requirementInfoList
-          .map(item => item.category)
-          .filter(id => id && id !== '')
-        
-        if (existingCategoryIds.length > 0) {
-          console.log('编辑模式检测到已选品类ID:', existingCategoryIds)
-          
-          // 检查现有的品类ID是否都在当前数据中
-          const missingIds = existingCategoryIds.filter(id => 
-            !this.categoryData.data.some(item => item.id == id) // 使用 == 比较，处理类型不一致
-          )
-          
-          if (missingIds.length > 0) {
-            // 如果有缺失的品类ID，尝试加载更多数据
-            console.log('检测到缺失的品类ID，尝试加载更多数据:', missingIds)
-            let currentPage = 2
-            while (currentPage <= 10 && missingIds.length > 0) {
-              await this.getCategoryList({ page: currentPage, more: true })
-              // 重新检查缺失的ID
-              const stillMissing = missingIds.filter(id => 
-                !this.categoryData.data.some(item => item.id == id)
-              )
-              if (stillMissing.length === 0) {
-                console.log('所有缺失的品类ID已找到')
-                break
-              }
-              currentPage++
-            }
-            
-            // 如果仍有缺失的ID，记录警告
-            const finalMissing = missingIds.filter(id => 
-              !this.categoryData.data.some(item => item.id == id)
-            )
-            if (finalMissing.length > 0) {
-              console.warn('仍有品类ID无法找到:', finalMissing)
-            }
-          }
-        }
-      }
+      // 如果使用的是全部品类数据，就不需要再分页加载了
+      // 编辑模式下的品类数据已经在上面通过 categoryAllData 初始化完成
 
       // 如果是新增模式且没有机型配置，添加一个默认的
       if (!this.isEdit && !this.isView && this.localFormData.requirementInfoList.length === 0) {
@@ -673,6 +646,30 @@ export default {
     // 获取品类数据 (用于 select-loadMore 组件)
     getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
+        // 如果已经有全部数据（从父组件传递），直接在客户端过滤，不需要再调用接口
+        if (this.categoryAllData && this.categoryAllData.length > 0) {
+          console.log('使用全部品类数据进行客户端过滤，关键字:', keyword)
+          
+          let filteredData = this.categoryAllData
+          
+          // 如果有关键字，进行过滤
+          if (keyword) {
+            filteredData = this.categoryAllData.filter(item => 
+              (item.name && item.name.includes(keyword)) ||
+              (item.label && item.label.includes(keyword))
+            )
+          }
+          
+          // 更新数据
+          this.categoryData.data = filteredData
+          this.categoryData.more = false // 已经是全部数据，不需要分页
+          this.categoryData.page = 1
+          
+          resolve()
+          return
+        }
+        
+        // 如果没有全部数据，使用接口分页加载
         listCategory({
           p: page,
           l: 20,
