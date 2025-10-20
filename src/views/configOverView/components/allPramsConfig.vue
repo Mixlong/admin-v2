@@ -2649,57 +2649,8 @@ export default {
   font-size: 14px !important;
 }
 
-/* 表格单元格内的富文本容器 - 确保正确换行和左对齐 */
-::v-deep .el-table__body-wrapper .el-table__body td {
-  .rich-text-content,
-  .text-muted {
-    text-align: left !important;
-    display: block;
-  }
-  
-  /* 确保富文本容器的父级也左对齐、顶部对齐 */
-  & > .cell {
-    text-align: left;
-    vertical-align: top;
-  }
-}
-
  
-
-/* 针对包含富文本内容的td单元格，强制顶部对齐 */
-::v-deep .el-table__body td:has(.rich-text-content),
-::v-deep .el-table__body td:has(.text-muted) {
-  vertical-align: top !important;
-}
-
  
-
-/* 使用 class-name 精确定位富文本列的单元格 - 最强优先级 */
-::v-deep .el-table .rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table__body .rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table td.rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table__body-wrapper .el-table__body td.rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-/* 针对富文本列的 cell 容器 - 覆盖 Element UI 默认居中 */
-::v-deep .el-table td.rich-text-cell-column .cell {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  padding-top: 8px !important;
-}
-
 /* 为表头单元格添加边框 */
 .el-table th.group-header-basic,
 .el-table th.group-header-appearance,
