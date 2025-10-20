@@ -476,7 +476,7 @@ import { getCustomerList } from '@/api/order'
 import AddRequirementDialog from './components/AddRequirementDialog'
 import ViewRequirementDialog from './components/ViewRequirementDialog'
 import { dictPmProject as dictUserList } from '@/api/third/project'
-import { extend } from '@/utils/ruoyi'
+import { cloneDeep } from 'lodash'
 import { categoryComputerDict } from '@/api/third/fileConfig'
 export default {
   name: 'CustomerRequirement',
@@ -776,14 +776,14 @@ export default {
     // 查看
     handleView(row) {
       // 深拷贝，避免修改原数据
-      this.currentRow = extend(row)
+      this.currentRow = cloneDeep(row)
       this.viewDialogVisible = true
     },
     
     // 编辑
     handleEdit(row) {
       // 深拷贝，避免修改原数据
-      this.currentRow = extend(row)
+      this.currentRow = cloneDeep(row)
       this.isEdit = true
       this.isView = false
       this.dialogVisible = true

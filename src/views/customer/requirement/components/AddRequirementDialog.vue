@@ -91,8 +91,20 @@
               </select-loadMore>
             </el-form-item>
           </el-col>
-          
-         
+        </el-row>
+        
+        <el-row :gutter="30">
+          <el-col :span="24">
+            <el-form-item label="客户出货方" prop="customerDelivery">
+              <el-input 
+                v-model="localFormData.customerDelivery" 
+                type="textarea"
+                :rows="3"
+                placeholder="请输入客户出货方" 
+                :disabled="isView" 
+              />
+            </el-form-item>
+          </el-col>
         </el-row>
       </fieldset>
 
@@ -286,24 +298,6 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="客户出货方" prop="customerDelivery">
-              <Editor 
-                v-model="localFormData.customerDelivery" 
-                :min-height="120"
-                placeholder="请输入客户出货方..."
-                :disabled="isView"
-                :config="{
-                  height: 120,
-                  menubar: false,
-                  toolbar: 'bold italic underline | bullist numlist | removeformat',
-                  plugins: 'lists',
-                  statusbar: false,
-                  resize: false,
-                  branding: false
-                }" />
-            </el-form-item>
-          </el-col>
         </el-row>
       </fieldset>
     </el-form>
@@ -424,7 +418,7 @@ export default {
           { required: true, message: '请选择市场负责人', trigger: 'change' }
         ],
         qualityManager: [
-          { required: false, message: '请选择质量负责人', trigger: 'change' }
+          { required: true, message: '请选择质量负责人', trigger: 'change' }
         ],
     
       }
