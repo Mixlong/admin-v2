@@ -18,8 +18,8 @@ export const PACKAGING_FIELDS = {
         displayName: '支架螺丝',
         aliases: [],
         formType: 'select',  // 表单类型
-        width: '230',
-        defaultValue: '锁上出货',
+        width: '200',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '锁上出货', value: '锁上出货' },
           { label: '不锁，以附件出货', value: '不锁，以附件出货' },
@@ -31,8 +31,8 @@ export const PACKAGING_FIELDS = {
         displayName: '按键螺丝',
         aliases: ['按栓螺丝'],
         formType: 'select',
-        width: '230',
-        defaultValue: '锁上出货',
+        width: '200',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '锁上出货', value: '锁上出货' },
           { label: '不锁，以附件出货', value: '不锁，以附件出货' },
@@ -44,8 +44,8 @@ export const PACKAGING_FIELDS = {
         displayName: '硅胶垫片',
         aliases: [],
         formType: 'select',
-        width: '230',
-        defaultValue: '粘贴出货',
+        width: '200',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '粘贴出货', value: '粘贴出货' },
           { label: '不贴，以附件出货', value: '不贴，以附件出货' },
@@ -76,7 +76,7 @@ export const PACKAGING_FIELDS = {
         displayName: '装箱方式',
         aliases: [],
         formType: 'select',
-        defaultValue: '其它装箱方式（参考附件）',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '其它装箱方式（参考附件）', value: '其它装箱方式（参考附件）' },
           { label: '放置每箱内', value: '放置每箱内' },
@@ -90,8 +90,8 @@ export const PACKAGING_FIELDS = {
         formType: 'richtext',
         defaultValue: '',
         minHeight: 230,
-        // 显示条件：只有这些选项才显示富文本
-        showWhen: ['其它装箱方式（参考附件）']
+        // 显示条件：这些选项显示富文本
+        showWhen: ['其它装箱方式（参考附件）', '放置尾数箱']
       }
     }
   },
@@ -108,7 +108,7 @@ export const PACKAGING_FIELDS = {
         displayName: '箱唛要求',
         aliases: [],
         formType: 'select',
-        defaultValue: '迪太模板',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '迪太模板', value: '迪太模板' },
           { label: '迪太中英模板', value: '迪太中英模板' },
@@ -140,7 +140,7 @@ export const PACKAGING_FIELDS = {
         displayName: '检验报告要求',
         aliases: [],
         formType: 'select',
-        defaultValue: '迪太模板',
+        defaultValue: '',  // 默认空值，显示"请选择"
         options: [
           { label: '迪太模板', value: '迪太模板' },
           { label: '迪太中英模板', value: '迪太中英模板' },

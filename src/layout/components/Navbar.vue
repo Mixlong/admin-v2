@@ -16,8 +16,18 @@
     <div class="right-menu">
       <template v-if="device !== 'mobile'">
         <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
+        
+        <!-- Windows版迪太云管理下载 -->
+        <a 
+          href="https://fxlancher.oss-cn-beijing.aliyuncs.com/DigiswiseCloudWin/DigiSmartSetup.exe"
+          download
+          class="download-btn-container"
+        >
+          <img src="@/assets/logo/desktop_on.png" class="download-icon" alt="下载" />
+          <span class="download-text">迪大圣Windows版</span>
+        </a>
       </template>
-      
+        
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar" />
@@ -209,6 +219,87 @@ export default {
         &:hover {
           background: if($darkTheme, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.025));
         }
+      }
+      
+    }
+    
+    .download-btn-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0px 12px;
+      margin: 5px 8px;
+      margin-top: 10px ;
+      height: auto;
+      background: rgb(56, 128, 246);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: normal;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 1px solid rgb(56, 128, 246);
+      height: 35px;
+      line-height: 35px;
+      position: relative;
+      overflow: hidden;
+      
+      // 镜子光动画效果
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-25deg);
+        animation: shine 4s ease-in-out infinite;
+      }
+      
+      &:hover {
+        background: rgba(56, 128, 246, 0.85);
+        border-color: rgba(56, 128, 246, 0.85);
+      }
+      
+      &:active {
+        background: rgba(56, 128, 246, 0.7);
+        border-color: rgba(56, 128, 246, 0.7);
+      }
+      
+      .download-icon {
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .download-text {
+        color: #fff;
+        white-space: nowrap;
+        line-height: 1;
+        position: relative;
+        z-index: 1;
+      }
+    }
+    
+    // 镜子光动画关键帧
+    @keyframes shine {
+      0% {
+        left: -100%;
+      }
+      50% {
+        left: 100%;
+      }
+      100% {
+        left: 100%;
       }
     }
 

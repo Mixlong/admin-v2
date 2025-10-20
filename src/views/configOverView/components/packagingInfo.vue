@@ -63,7 +63,7 @@
       </el-table>
     </div>
     
-    <!-- 新格式UI：多级表头表格（类似编辑表格） -->
+    <!-- 新格式UI：多级表头表格（完全从配置文件渲染） -->
     <div v-else class="package-info-new-format">
       <el-table 
         :key="'new-format-' + Object.keys(newFormatData).length"
@@ -73,89 +73,68 @@
         style="width: 100%"
         class="packaging-table-view"
       >
-        <!-- 附件出库方式 -->
-        <el-table-column label="附件出库方式" align="center">
-          <el-table-column label="支架螺丝" width="180" header-align="center">
+        <!-- 遍历配置文件中的所有分组 -->
+        <template v-for="(groupConfig, groupKey) in PACKAGING_FIELDS">
+          <!-- 情况1: 解件出库方式 - 有多个子列 -->
+          <el-table-column 
+            v-if="groupConfig.formType !== 'select-with-richtext'"
+            :key="`view-multi-${groupKey}`"
+            :label="groupConfig.displayName" 
+            align="center"
+          >
+            <!-- 遍历该分组下的所有字段 -->
+            <el-table-column 
+              v-for="(fieldConfig, fieldKey) in groupConfig.fields"
+              :key="fieldKey"
+              :label="fieldConfig.displayName"
+              :width="fieldConfig.width"
+              :min-width="fieldConfig.minWidth"
+              header-align="center"
+            >
+              <template slot-scope="scope">
+                <!-- select 类型 - 显示文本值 -->
+                <div v-if="fieldConfig.formType === 'select'" class="view-cell">
+                  {{ getFieldValue(scope.row, groupKey, fieldKey) }}
+                </div>
+                
+                <!-- richtext 类型 - 显示富文本内容 -->
+                <div v-else-if="fieldConfig.formType === 'richtext'">
+                  <div 
+                    v-if="getFieldValue(scope.row, groupKey, fieldKey)"
+                    class="view-cell rich-text-view"
+                    v-html="getFieldValue(scope.row, groupKey, fieldKey)"
+                    @click="handleRichTextClick($event, scope.row[groupKey])"
+                  ></div>
+                  <div v-else class="view-cell">--</div>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table-column>
+          
+          <!-- 情况2: 下拉框+富文本类型（附件装箱方式、箱唛要求、检验报告要求） -->
+          <el-table-column 
+            v-else
+            :key="`view-single-${groupKey}`"
+            :label="groupConfig.displayName" 
+            :min-width="groupConfig.minWidth"
+            header-align="center"
+          >
             <template slot-scope="scope">
               <div class="view-cell">
-                {{ getFieldValue(scope.row, '解件出库方式', '支架螺丝') }}
+                <!-- 主值显示 -->
+                <div class="view-value">{{ getFieldValue(scope.row, groupKey, 'value') }}</div>
+                
+                <!-- 附件说明（富文本） -->
+                <div 
+                  v-if="getFieldValue(scope.row, groupKey, 'administrator')" 
+                  class="rich-text-view view-details"
+                  v-html="getFieldValue(scope.row, groupKey, 'administrator')"
+                  @click="handleRichTextClick($event, scope.row[groupKey])"
+                ></div>
               </div>
             </template>
           </el-table-column>
-          
-          <el-table-column label="按栓螺丝" width="180" header-align="center">
-            <template slot-scope="scope">
-              <div class="view-cell">
-                {{ getFieldValue(scope.row, '解件出库方式', '按栓螺丝') }}
-              </div>
-            </template>
-          </el-table-column>
-          
-          <el-table-column label="硅胶垫片" width="180" header-align="center">
-            <template slot-scope="scope">
-              <div class="view-cell">
-                {{ getFieldValue(scope.row, '解件出库方式', '硅胶垫片') }}
-              </div>
-            </template>
-          </el-table-column>
-          
-          <el-table-column label="其它附件要求" min-width="250" header-align="center">
-            <template slot-scope="scope">
-              <div 
-                class="view-cell rich-text-view"
-                v-if="getFieldValue(scope.row, '解件出库方式', '其它附件要求')"
-                v-html="getFieldValue(scope.row, '解件出库方式', '其它附件要求')"
-                @click="handleRichTextClick($event, scope.row['解件出库方式'])"
-              ></div>
-              <div v-else class="view-cell">--</div>
-            </template>
-          </el-table-column>
-        </el-table-column>
-        
-        <!-- 附件装箱方式 -->
-        <el-table-column label="附件装箱方式" min-width="250" header-align="center">
-          <template slot-scope="scope">
-            <div class="view-cell">
-              <div class="view-value">{{ getFieldValue(scope.row, '附件装箱方式', 'value') }}</div>
-              <div 
-                v-if="getFieldValue(scope.row, '附件装箱方式', 'administrator')" 
-                class="rich-text-view view-details"
-                v-html="getFieldValue(scope.row, '附件装箱方式', 'administrator')"
-                @click="handleRichTextClick($event, scope.row['附件装箱方式'])"
-              ></div>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 箱唛要求 -->
-        <el-table-column label="箱唛要求" min-width="250" header-align="center">
-          <template slot-scope="scope">
-            <div class="view-cell">
-              <div class="view-value">{{ getFieldValue(scope.row, '箱唛要求', 'value') }}</div>
-              <div 
-                v-if="getFieldValue(scope.row, '箱唛要求', 'administrator')" 
-                class="rich-text-view view-details"
-                v-html="getFieldValue(scope.row, '箱唛要求', 'administrator')"
-                @click="handleRichTextClick($event, scope.row['箱唛要求'])"
-              ></div>
-            </div>
-          </template>
-        </el-table-column>
-        
-        <!-- 检验报告要求 -->
-        <el-table-column label="检验报告要求" min-width="250" header-align="center">
-          <template slot-scope="scope">
-            <div class="view-cell">
-              <div class="view-value">{{ getFieldValue(scope.row, '检验报告要求', 'value') }}</div>
-              <div 
-                v-if="getFieldValue(scope.row, '检验报告要求', 'administrator')" 
-                class="rich-text-view view-details"
-                v-html="getFieldValue(scope.row, '检验报告要求', 'administrator')"
-                @click="handleRichTextClick($event, scope.row['检验报告要求'])"
-              ></div>
-            </div>
-          </template>
-        </el-table-column>
+        </template>
       </el-table>
     </div>
     
@@ -172,6 +151,10 @@
 <script>
 import { urlDownload } from "@/utils";
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer';
+import { 
+  PACKAGING_FIELDS, 
+  getFieldValue as getConfigFieldValue 
+} from '@/config/fieldConfigs/packaging';
 
 export default {
   components: {
@@ -179,6 +162,8 @@ export default {
   },
   data() {
     return {
+      // 暴露配置给 template 使用
+      PACKAGING_FIELDS,
       isDialogVisible: false,
       packagingInfo: "",
       tableData: [],
@@ -475,12 +460,15 @@ export default {
       return option ? option.label : row.content;
     },
     
-    // 获取字段值（兼容 Vue 2 语法）
+    /**
+     * 获取字段值（使用配置文件的工具函数，自动处理别名）
+     * 优势：自动处理历史字段名（如"按栓螺丝" → "按键螺丝"）
+     */
     getFieldValue(row, groupName, fieldName) {
-      if (!row || !row[groupName]) {
+      if (!row) {
         return '--';
       }
-      const value = row[groupName][fieldName];
+      const value = getConfigFieldValue(row, groupName, fieldName);
       return value || '--';
     },
     

@@ -427,12 +427,12 @@
                     </el-form-item>
                   </el-col>
 
-                  <el-col :span="24">
+                  <!-- <el-col :span="24">
                     <el-form-item label="产品图纸" prop="instrumentModel.specification">
                       <el-upload-sortable v-model="form.instrumentModel.specification" :imgW="80" :imgH="80"
                         :max="20" />
                     </el-form-item>
-                  </el-col>
+                  </el-col> -->
                 </el-row>
               </fieldset>
             </template>
@@ -1674,60 +1674,73 @@ export default {
 
           // 非STS
           if (this.form.isSts === 0) {
-            const {
-              customerMaterialNum,
-              customerName,
-              customerCarName,
-              id,
-              serialLevel,
-              baudRate,
-              msgType,
-              canRate,
-              sn,
-              pcbaSn,
-              sysProtocol,
-              labelRule,
-              labelRuleImg,
-              controlConnect,
-              controlHead,
-              notControllerJointString,
-              keyType,
-              keyLinkType,
-              modelEndHead,
-              keyEndHead,
-              keyLineLen,
-              keyImgUrl,
-              powerLogo,
-              specification,
-              packagingInfo,
-            } = this.form.instrumentModel;
-            this.form.instrumentModel = {};
-            this.form.instrumentModel.customerMaterialNum = customerMaterialNum;
-            this.form.instrumentModel.customerName = customerName;
-            this.form.instrumentModel.customerCarName = customerCarName;
-            this.form.instrumentModel.id = id;
-            this.form.instrumentModel.serialLevel = serialLevel;
-            this.form.instrumentModel.baudRate = baudRate;
-            this.form.instrumentModel.msgType = msgType;
-            this.form.instrumentModel.canRate = canRate;
-            this.form.instrumentModel.sn = sn;
-            this.form.instrumentModel.pcbaSn = pcbaSn;
-            this.form.instrumentModel.sysProtocol = sysProtocol;
-            this.form.instrumentModel.labelRule = labelRule;
-            this.form.instrumentModel.labelRuleImg = labelRuleImg;
-            this.form.instrumentModel.controlConnect = controlConnect;
-            this.form.instrumentModel.controlHead = controlHead;
-            this.form.instrumentModel.notControllerJointString =
-              notControllerJointString;
-            this.form.instrumentModel.keyType = keyType;
-            this.form.instrumentModel.keyLinkType = keyLinkType;
-            this.form.instrumentModel.modelEndHead = modelEndHead;
-            this.form.instrumentModel.keyEndHead = keyEndHead;
-            this.form.instrumentModel.keyLineLen = keyLineLen;
-            this.form.instrumentModel.keyImgUrl = keyImgUrl;
-            this.form.instrumentModel.powerLogo = powerLogo;
-            this.form.instrumentModel.specification = specification;
-            this.form.instrumentModel.packagingInfo = packagingInfo;
+            // 非STS模式：移除STS专有字段（黑名单方式更安全，避免遗漏字段）
+            // 只删除纯STS的配置字段，保留所有可能用到的字段
+            const stsOnlyFields = [
+              // 车型配置区的STS专有字段（在 v-if="form.isSts === 1" 内）
+              'backlightBrightness',
+              'sleepTime',
+              'voltage',
+              'undervoltage',
+              'powerGear',
+              'assistStartMagnetNumber',
+              'assistPercentage',
+              'currentlimiting',
+              'assistLimit',
+              'showWheelsize',
+              'slowStart',
+              'wheelDiameter',
+              'showWheelDiameter',
+              'perimeter',
+              'unit',
+              'agreement',
+              'showAgreement',
+              'power',
+              'speedSteel',
+              'batteryVoltageChangeTime',
+              'smoothLevel',
+              'allLineErrTimeOut',
+              'ebikeName',
+              'carModel',
+              'defaultGear',
+              'logo',
+              'startupPasswd',
+              'highMenuPasswd',
+              'menuPasswd',
+              'motorSys',
+              'batteryCap',
+              'highSpeedBuzzerRemind',
+              'tiresSize',
+              'bluetooth',
+              'driveAssist',
+              'factoryReset',
+              'rotateHandle',
+              'buzzerSwitch',
+              'cruise',
+              'turnOnPasswd',
+              'menuPassword',
+              'isHighMenuPassword',
+              'rotateHandleSpeedLimit',
+              'assist',
+              'serialLevelLog',
+              // 基础配置区的STS专有字段
+              'topGear',
+              'speedLimitRang',
+              'app',
+              'usb',
+              'communicateType',
+              'maxGear',
+              'speedLimit',
+              'shutdownTime',
+              'assistSpeedLimitThreshold',
+              'busOvertime',
+            ];
+            
+            // 删除STS专有字段，保留其他所有字段
+            stsOnlyFields.forEach(field => {
+              delete this.form.instrumentModel[field];
+            });
+            
             this.form.jsonStr = "";
           } else {
             // STS

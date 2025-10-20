@@ -1,116 +1,307 @@
 <template>
-  <el-dialog 
-    title="编辑包装信息" 
-    :visible.sync="dialogVisible" 
-    width="98%" 
-    top="0vh"
-    :close-on-click-modal="false"
-    append-to-body
-    custom-class="packaging-dialog"
-    @close="handleClose"
-  >
-    <div class="packaging-form">
-      <!-- 使用 el-table 标准多级表头 -->
-      <el-table 
-        :data="tableData" 
-        border 
-        size="small"
-        style="width: 100%"
-        class="packaging-table-vertical-top no-hover-table"
-        :cell-style="cellStyle"
-        :row-style="rowStyle"
-        :row-class-name="getRowClassName"
-      >
-        <!-- 第一大列：附件出库方式（从配置文件读取） -->
-        <el-table-column :label="PACKAGING_FIELDS['解件出库方式'].displayName" align="center">
-          <!-- 遍历配置生成子列 - 真正的统一管理！ -->
-          <el-table-column 
-            v-for="(field, fieldKey) in PACKAGING_FIELDS['解件出库方式'].fields"
-            :key="fieldKey"
-            :label="field.displayName"
-            :width="field.width"
-            :min-width="field.minWidth"
-            header-align="center"
-          >
-            <template slot-scope="scope">
-              <!-- select 类型 -->
-              <div v-if="field.formType === 'select'" class="simple-select-cell">
-                <el-select 
-                  v-model="formData['解件出库方式'][fieldKey]" 
-                  placeholder="请选择" 
-                  size="small"
-                  style="width: 100%"
-                >
-                  <el-option 
-                    v-for="opt in field.options"
-                    :key="opt.value"
-                    :label="opt.label" 
-                    :value="opt.value" 
-                  />
-                </el-select>
-              </div>
-              
-              <!-- richtext 类型 -->
-              <div v-else-if="field.formType === 'richtext'" class="rich-text-cell full-height-cell">
-                <Editor 
-                  v-model="formData['解件出库方式'][fieldKey]" 
-                  :min-height="field.minHeight || 284"
-                  placeholder="请输入其它附件要求，可使用工具栏的图片按钮上传图片或文件"
-                  :toolbar="customToolbar"
-                />
-              </div>
+  <div>
+    <!-- 主编辑对话框 -->
+    <el-dialog 
+      title="编辑包装信息" 
+      :visible.sync="dialogVisible" 
+      width="99%" 
+      top="0vh"
+      :close-on-click-modal="false"
+      append-to-body
+      custom-class="packaging-dialog"
+      @close="handleClose"
+    >
+      <!-- 复制包装信息按钮 -->
+      <div class="copy-btn-area">
+        <el-button 
+          type="primary" 
+          icon="el-icon-document-copy" 
+          size="small"
+          @click="copyDialogVisible = true"
+        >
+          从其他型号复制包装信息
+        </el-button>
+      </div>
+
+      <div class="packaging-form">
+        <!-- 使用 el-table 标准多级表头 - 完全从配置文件渲染 -->
+        <el-table 
+          :data="tableData" 
+          border 
+          size="small"
+          style="width: 100%"
+          class="packaging-table-vertical-top no-hover-table"
+          :cell-style="cellStyle"
+          :row-style="rowStyle"
+          :row-class-name="getRowClassName"
+        >
+          <!-- 遍历配置文件中的所有分组 -->
+          <template v-for="(groupConfig, groupKey) in PACKAGING_FIELDS">
+            <!-- 情况1: 解件出库方式 - 有多个子列 -->
+            <el-table-column 
+              v-if="groupConfig.formType !== 'select-with-richtext'"
+              :key="`multi-${groupKey}`"
+              :label="groupConfig.displayName" 
+              align="center"
+            >
+              <!-- 遍历该分组下的所有字段 -->
+              <el-table-column 
+                v-for="(fieldConfig, fieldKey) in groupConfig.fields"
+                :key="fieldKey"
+                :label="fieldConfig.displayName"
+                :width="fieldConfig.width"
+                :min-width="fieldConfig.minWidth"
+                header-align="center"
+              >
+                <template slot-scope="scope">
+                  <!-- select 类型 -->
+                  <div v-if="fieldConfig.formType === 'select'" class="simple-select-cell">
+                    <el-select 
+                      v-model="formData[groupKey][fieldKey]" 
+                      placeholder="请选择" 
+                      size="small"
+                      style="width: 100%"
+                    >
+                      <el-option 
+                        v-for="opt in fieldConfig.options"
+                        :key="opt.value"
+                        :label="opt.label" 
+                        :value="opt.value" 
+                      />
+                    </el-select>
+                  </div>
+                  
+                  <!-- richtext 类型 -->
+                  <div v-else-if="fieldConfig.formType === 'richtext'" class="rich-text-cell full-height-cell">
+                    <Editor 
+                      v-if="dialogVisible"
+                      :key="`editor-${groupKey}-${fieldKey}-${editorKey}`"
+                      v-model="formData[groupKey][fieldKey]" 
+                      :min-height="fieldConfig.minHeight || 284"
+                      placeholder="请输入其它附件要求，可使用工具栏的图片按钮上传图片或文件"
+                      :toolbar="customToolbar"
+                    />
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table-column>
+            
+            <!-- 情况2: 下拉框+富文本类型（附件装箱方式、箱唛要求、检验报告要求） -->
+            <el-table-column 
+              v-else
+              :key="`single-${groupKey}`"
+              :label="groupConfig.displayName" 
+              :min-width="groupConfig.minWidth"
+              header-align="center"
+            >
+              <template slot-scope="scope">
+                <div class="select-with-rich-cell">
+                  <!-- 下拉框 -->
+                  <el-select 
+                    v-model="formData[groupKey].value" 
+                    placeholder="请选择" 
+                    size="small"
+                    style="width: 100%; margin-bottom: 10px;"
+                    @change="handleSelectChange(groupKey)"
+                  >
+                    <el-option 
+                      v-for="opt in groupConfig.fields.value.options"
+                      :key="opt.value"
+                      :label="opt.label" 
+                      :value="opt.value" 
+                    />
+                  </el-select>
+                  
+                  <!-- 富文本（条件显示） -->
+                  <div v-if="shouldShowEditorByConfig(groupKey)" class="admin-editor-wrapper">
+                    <div class="admin-editor-box">
+                      <Editor 
+                        v-if="dialogVisible"
+                        :key="`editor-${groupKey}-admin-${editorKey}`"
+                        v-model="formData[groupKey].administrator" 
+                        :min-height="groupConfig.fields.administrator.minHeight || 230"
+                        placeholder="可使用工具栏的图片按钮上传多张图片或其它文件，支持在线查看和下载"
+                        :toolbar="customToolbar"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+          </template>
+        </el-table>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="handleClose" size="small">取 消</el-button>
+        <el-button type="primary" @click="handleSave" size="small" :loading="saving">保 存</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 复制包装信息对话框 -->
+    <el-dialog
+      title="从其他型号复制包装信息"
+      :visible.sync="copyDialogVisible"
+      width="90%"
+      top="0vh"
+      :close-on-click-modal="false"
+      append-to-body
+      @open="handleCopyDialogOpen"
+    >
+      <div class="copy-dialog-content">
+        <!-- 搜索表单 -->
+        <el-form :inline="true" size="small" class="copy-search-form">
+          <el-form-item label="所属品类">
+            <el-select 
+              v-model="copySearch.categoryId" 
+              @change="handleCategoryChange"
+              filterable 
+              clearable 
+              placeholder="请选择品类" 
+              style="width: 180px;"
+            >
+              <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="仪表型号">
+            <el-select 
+              v-model="copySearch.computerId" 
+              :loading="isCLoading"
+              filterable 
+              remote 
+              clearable 
+              placeholder="请输入仪表型号搜索"
+              style="width: 200px;"
+              :remote-method="handleRemoteSearchComputer"
+            >
+              <el-option v-for="item in computerOptions" :key="item.model" :label="item.name" :value="item.model" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" @click="handleSearchCopy" :loading="copySearchLoading">搜索</el-button>
+            <el-button icon="el-icon-refresh" @click="handleResetCopySearch">重置</el-button>
+          </el-form-item>
+        </el-form>
+        
+        <!-- 搜索结果列表 -->
+        <el-table 
+          v-loading="copySearchLoading"
+          :data="copySearchResults" 
+          border 
+          size="small"
+          height="58vh"
+          highlight-current-row
+        >
+        <el-table-column label="品类" prop="category" width="80">
+            <template slot-scope="{ row }">
+              {{ row.category || '--' }}
             </template>
           </el-table-column>
-        </el-table-column>
-        
-        <!-- 其他列：附件装箱方式、箱唛要求、检验报告要求（从配置文件读取） -->
-        <el-table-column 
-          v-for="groupKey in ['附件装箱方式', '箱唛要求', '检验报告要求']"
-          :key="groupKey"
-          :label="PACKAGING_FIELDS[groupKey].displayName"
-          :min-width="PACKAGING_FIELDS[groupKey].minWidth"
-          header-align="center"
-        >
-          <template slot-scope="scope">
-            <div class="select-with-rich-cell">
-              <!-- 下拉框 -->
-              <el-select 
-                v-model="formData[groupKey].value" 
-                placeholder="请选择" 
-                size="small"
-                style="width: 100%; margin-bottom: 10px;"
-                @change="handleSelectChange(groupKey)"
-              >
-                <el-option 
-                  v-for="opt in PACKAGING_FIELDS[groupKey].fields.value.options"
-                  :key="opt.value"
-                  :label="opt.label" 
-                  :value="opt.value" 
-                />
-              </el-select>
-              
-              <!-- 富文本（按配置显示） -->
-              <div v-if="shouldShowEditor(groupKey)" class="admin-editor-wrapper">
-                <div class="admin-editor-box">
-                  <Editor 
-                    v-model="formData[groupKey].administrator" 
-                    :min-height="PACKAGING_FIELDS[groupKey].fields.administrator.minHeight"
-                    placeholder="可使用工具栏的图片按钮上传多张图片或其它文件，支持在线查看和下载"
-                    :toolbar="customToolbar"
-                  />
-                </div>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+          <el-table-column label="型号" prop="computerName" min-width="120" fixed="left">
+            <template slot-scope="{ row }">
+              {{ row.computerName || '--' }}
+            </template>
+          </el-table-column>
+ 
+          <el-table-column label="客户" prop="customerName" width="100">
+            <template slot-scope="{ row }">
+              {{ row.customerName || '--' }}
+            </template>
+          </el-table-column>
+          
+          <!-- 包装信息 -->
+          <el-table-column label="包装信息" align="center">
+            <el-table-column label="附件出货方式" align="center">
+              <el-table-column label="支架螺丝" align="center" width="120">
+                <template slot-scope="{ row }">
+                  <span v-NoData="getPackagingPreviewValue(row, '解件出库方式', '支架螺丝')"></span>
+                </template>
+              </el-table-column>
+              <el-table-column label="按键螺丝" align="center" width="120">
+                <template slot-scope="{ row }">
+                  <span v-NoData="getPackagingPreviewValue(row, '解件出库方式', '按键螺丝')"></span>
+                </template>
+              </el-table-column>
+              <el-table-column label="硅胶垫片" align="center" width="120">
+                <template slot-scope="{ row }">
+                  <span v-NoData="getPackagingPreviewValue(row, '解件出库方式', '硅胶垫片')"></span>
+                </template>
+              </el-table-column>
+              <el-table-column label="其它附件要求" header-align="center" align="left" min-width="180" class-name="rich-text-cell-column">
+                <template slot-scope="{ row }">
+                  <div 
+                    v-html="getPackagingPreviewValue(row, '解件出库方式', '其它附件要求')" 
+                    class="rich-text-content"
+                  ></div>
+                </template>
+              </el-table-column>
+            </el-table-column>
 
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="handleClose" size="small">取 消</el-button>
-      <el-button type="primary" @click="handleSave" size="small" :loading="saving">保 存</el-button>
-    </div>
-  </el-dialog>
+            <el-table-column label="附件装箱方式" header-align="center" align="left" min-width="180" class-name="rich-text-cell-column">
+              <template slot-scope="{ row }">
+                <div>
+                  <div class="select-value-text">{{ getPackagingPreviewValue(row, '附件装箱方式', 'value') }}</div>
+                  <div v-if="shouldShowAdministrator(getPackagingPreviewValue(row, '附件装箱方式', 'value')) && getPackagingPreviewValue(row, '附件装箱方式', 'administrator')" 
+                       v-html="getPackagingPreviewValue(row, '附件装箱方式', 'administrator')" 
+                       class="rich-text-content text-muted"></div>
+                </div>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="箱唛要求" header-align="center" align="left" min-width="180" class-name="rich-text-cell-column">
+              <template slot-scope="{ row }">
+                <div>
+                  <div class="select-value-text">{{ getPackagingPreviewValue(row, '箱唛要求', 'value') }}</div>
+                  <div v-if="shouldShowAdministrator(getPackagingPreviewValue(row, '箱唛要求', 'value')) && getPackagingPreviewValue(row, '箱唛要求', 'administrator')" 
+                       v-html="getPackagingPreviewValue(row, '箱唛要求', 'administrator')" 
+                       class="rich-text-content text-muted"></div>
+                </div>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="检验报告要求" header-align="center" align="left" min-width="180" class-name="rich-text-cell-column">
+              <template slot-scope="{ row }">
+                <div>
+                  <div class="select-value-text">{{ getPackagingPreviewValue(row, '检验报告要求', 'value') }}</div>
+                  <div v-if="shouldShowAdministrator(getPackagingPreviewValue(row, '检验报告要求', 'value')) && getPackagingPreviewValue(row, '检验报告要求', 'administrator')" 
+                       v-html="getPackagingPreviewValue(row, '检验报告要求', 'administrator')" 
+                       class="rich-text-content text-muted"></div>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table-column>
+          
+          <el-table-column label="操作" width="100" align="center" fixed="right">
+            <template slot-scope="{ row }">
+              <el-button 
+                type="primary" 
+                size="mini" 
+                icon="el-icon-document-copy"
+                :disabled="!row.packagingInfo"
+                @click="handleCopyPackaging(row)"
+              >
+                复制
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <el-pagination
+          v-if="copyTotal > 0"
+          style="margin-top: 15px; text-align: right;"
+          @size-change="handleCopySizeChange"
+          @current-change="handleCopyPageChange"
+          :current-page="copySearch.p"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="copySearch.l"
+          :total="copyTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        >
+        </el-pagination>
+      </div>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -118,11 +309,12 @@ import Editor from '@/components/Editor'
 import { 
   PACKAGING_FIELDS, 
   getFieldValue, 
-  getFieldDefaultValue,
   normalizePackagingData,
   getGroupFieldKeys,
   shouldShowRichtext
 } from '@/config/fieldConfigs/packaging'
+import { categoryComputerDict, computerNameList } from '@/api/third/fileConfig'
+import { modelConfigList } from '@/api/third/testApi'
 
 export default {
   name: 'PackagingInfoEdit',
@@ -141,19 +333,35 @@ export default {
   },
   data() {
     return {
+      // 暴露配置给 template 使用
+      PACKAGING_FIELDS,
       saving: false,
       tableData: [{}], // 只有一行数据
       // 自定义工具栏：只保留加粗、字体大小、颜色、链接、文件上传
       customToolbar: [
-        ['bold'],                                        // 加粗
         [{ size: ['small', false, 'large', 'huge'] }],  // 字体大小
         [{ color: [] }],                                 // 字体颜色
         ['link']                                         // 链接（文件上传按钮会自动添加，支持所有类型包括图片和PDF）
       ],
       // 使用配置文件初始化表单数据 - 集中管理，易于维护
       formData: this.initFormData(),
-      // 挂载配置到 data，template 可以使用
-      PACKAGING_FIELDS
+      // 编辑器key，用于强制重新渲染
+      editorKey: Date.now(),
+      
+      // ========== 复制包装信息功能相关 ==========
+      copyDialogVisible: false, // 复制对话框可见性
+      copySearch: {
+        p: 1,
+        l: 20,
+        categoryId: '',
+        computerId: ''
+      },
+      copySearchLoading: false,
+      copySearchResults: [], // 搜索结果
+      copyTotal: 0, // 总数
+      categoryList: [], // 品类列表
+      computerOptions: [], // 型号列表
+      isCLoading: false // 型号加载状态
     }
   },
   computed: {
@@ -170,6 +378,10 @@ export default {
     visible(val) {
       if (val) {
         console.log('👁️ 弹窗打开，准备加载数据')
+        // 更新编辑器key，强制重新渲染所有编辑器
+        this.editorKey = Date.now()
+        // 先重置表单，避免显示旧数据
+        this.resetForm()
         // 使用 nextTick 确保 packagingInfo prop 已更新
         this.$nextTick(() => {
           this.loadData()
@@ -199,13 +411,242 @@ export default {
   },
   mounted() {
     this.disableTableHover()
+    this.loadCategoryList()
   },
   methods: {
+    // ========== 复制包装信息功能方法 ==========
+    
+    /**
+     * 加载品类列表
+     */
+    async loadCategoryList() {
+      try {
+        const res = await categoryComputerDict()
+        if (res.code === 200) {
+          this.categoryList = res.data || []
+        }
+      } catch (error) {
+        console.error('加载品类列表失败:', error)
+      }
+    },
+    
+    /**
+     * 复制对话框打开时 - 默认加载列表数据
+     */
+    handleCopyDialogOpen() {
+      // 默认加载第一页数据
+      this.handleSearchCopy()
+    },
+    
+    /**
+     * 品类改变时 - 完全复制主表格的逻辑
+     */
+    handleCategoryChange(val) {
+      // 清空型号选择
+      this.copySearch.computerId = ''
+      
+      if (val) {
+        // 完全按照主表格的方式过滤
+        this.computerOptions = this.categoryList.filter(
+          (item) => item.id === val
+        )[0]?.computerList || []
+      } else {
+        this.computerOptions = []
+      }
+    },
+    
+    /**
+     * 远程搜索型号 - 完全复制主表格的逻辑
+     */
+    handleRemoteSearchComputer(name) {
+      if (name) {
+        this.isCLoading = false
+        computerNameList({
+          name,
+          categoryId: this.copySearch.categoryId
+        }).then((res) => {
+          this.computerOptions = res.data
+        })
+      } else {
+        this.computerOptions = []
+      }
+    },
+    
+    /**
+     * 搜索可复制的包装信息 - 使用与主表格完全相同的API
+     */
+    async handleSearchCopy() {
+      this.copySearchLoading = true
+      
+      try {
+        // 使用与主表格相同的参数格式
+        const params = {
+          p: this.copySearch.p,
+          l: this.copySearch.l
+        }
+        
+        if (this.copySearch.categoryId) {
+          params.categoryId = this.copySearch.categoryId
+        }
+        
+        if (this.copySearch.computerId) {
+          params.computerId = this.copySearch.computerId
+        }
+        
+        // 使用与主表格相同的API
+        const res = await modelConfigList(params)
+        
+        if (res.code === 200) {
+          // 按包装信息配置状态排序
+          this.copySearchResults = (res.data.list || []).sort((a, b) => {
+            if (a.packagingInfo && !b.packagingInfo) return -1
+            if (!a.packagingInfo && b.packagingInfo) return 1
+            return 0
+          })
+          this.copyTotal = res.data.total || 0
+        }
+      } catch (error) {
+        console.error('搜索失败:', error)
+        this.$message.error('搜索失败，请重试')
+      } finally {
+        this.copySearchLoading = false
+      }
+    },
+    
+    /**
+     * 分页大小改变
+     */
+    handleCopySizeChange(val) {
+      this.copySearch.l = val
+      this.copySearch.p = 1
+      this.handleSearchCopy()
+    },
+    
+    /**
+     * 页码改变
+     */
+    handleCopyPageChange(val) {
+      this.copySearch.p = val
+      this.handleSearchCopy()
+    },
+    
+    /**
+     * 重置搜索
+     */
+    handleResetCopySearch() {
+      this.copySearch = {
+        p: 1,
+        l: 20,
+        categoryId: '',
+        computerId: ''
+      }
+      this.computerOptions = []
+      this.handleSearchCopy()
+    },
+    
+    /**
+     * 复制包装信息到当前表单
+     */
+    handleCopyPackaging(row) {
+      this.$confirm(`确定要复制型号"${row.computerName}"的包装信息吗？当前表单内容将被覆盖。`, '提示', {
+        confirmButtonText: '确定复制',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        try {
+          // 解析并加载包装信息
+          let packagingData = row.packagingInfo
+          
+          if (typeof packagingData === 'string' && packagingData.trim()) {
+            packagingData = JSON.parse(packagingData)
+          }
+          
+          if (packagingData && typeof packagingData === 'object') {
+            // 使用标准的加载方法
+            if (Array.isArray(packagingData)) {
+              this.loadOldFormat(packagingData)
+            } else {
+              this.loadNewFormat(packagingData)
+            }
+            
+            this.$message.success(`已成功复制"${row.computerName}"的包装信息`)
+            
+            // 关闭复制对话框
+            this.copyDialogVisible = false
+          } else {
+            this.$message.warning('该型号的包装信息格式不正确')
+          }
+        } catch (error) {
+          console.error('复制包装信息失败:', error)
+          this.$message.error('复制失败，请重试')
+        }
+      }).catch(() => {
+        // 用户取消
+      })
+    },
+    
+    /**
+     * 获取包装信息预览值（用于复制对话框中的包装信息显示）
+     */
+    getPackagingPreviewValue(row, groupName, fieldName) {
+      if (!row.packagingInfo) return '';
+      
+      try {
+        let packagingData = row.packagingInfo;
+        
+        // 如果是字符串，先解析
+        if (typeof packagingData === 'string') {
+          packagingData = JSON.parse(packagingData);
+        }
+        
+        // 处理新格式数据
+        if (typeof packagingData === 'object' && !Array.isArray(packagingData)) {
+          // 使用配置文件的工具函数获取字段值
+          return getFieldValue(packagingData, groupName, fieldName);
+        }
+        
+        // 处理旧格式数据
+        if (Array.isArray(packagingData)) {
+          const mapping = {
+            '支架螺丝': 'ditaiStandardNoLockAttachment',
+            '按键螺丝': 'customerSpecifiedNoLock', 
+            '硅胶垫片': 'customerSpecifiedNormalLock'
+          };
+          
+          if (groupName === '解件出库方式' && mapping[fieldName]) {
+            const item = packagingData.find(item => item.checkItemId === mapping[fieldName]);
+            if (item) {
+              return this.convertOldContentId(item.contentId);
+            }
+          }
+          
+          // 其他字段的旧格式处理
+          const fieldMapping = {
+            '附件装箱方式': 'accessoryPackingRequirements',
+            '箱唛要求': 'boxMarkRequirements', 
+            '检验报告要求': 'inspectionReportRequirements'
+          };
+          
+          if (fieldName === 'value' && fieldMapping[groupName]) {
+            const item = packagingData.find(item => item.checkItemId === fieldMapping[groupName]);
+            if (item) {
+              return this.convertOldContentId(item.contentId);
+            }
+          }
+        }
+        
+        return '';
+      } catch (error) {
+        console.error('解析包装信息预览失败:', error);
+        return '';
+      }
+    },
+    
     // ========== 数据初始化方法（使用配置文件） ==========
     
     /**
-     * 初始化表单数据
-     * 从配置文件自动生成，默认值也从配置读取 - 真正的统一管理！
+     * 初始化表单数据（完全从配置文件读取）
+     * 优势：默认值在配置文件定义，这里无需硬编码
      */
     initFormData() {
       const formData = {}
@@ -215,8 +656,11 @@ export default {
         const fields = PACKAGING_FIELDS[groupKey].fields
         
         Object.keys(fields).forEach(fieldKey => {
-          // 从配置读取默认值
-          formData[groupKey][fieldKey] = getFieldDefaultValue(groupKey, fieldKey)
+          // 直接使用配置文件的 defaultValue
+          const fieldConfig = fields[fieldKey]
+          formData[groupKey][fieldKey] = fieldConfig.defaultValue !== undefined 
+            ? fieldConfig.defaultValue 
+            : ''
         })
       })
       
@@ -267,16 +711,36 @@ export default {
       // 下拉框改变时的回调
       console.log(`${fieldName} 选择了:`, this.formData[fieldName].value)
       
-      // 如果切换到不需要附件的选项，清空 administrator 内容
-      if (!this.shouldShowEditor(fieldName)) {
-        this.formData[fieldName].administrator = ''
-      }
+      // 所有选项都显示富文本，不需要清空内容
     },
     
-    // 判断是否应该显示富文本编辑器（从配置读取）
-    shouldShowEditor(groupKey) {
-      const value = this.formData[groupKey]?.value || ''
-      return shouldShowRichtext(groupKey, 'administrator', value)
+    /**
+     * 基于配置文件判断是否显示富文本编辑器
+     * 修改为：所有下拉框字段都显示富文本编辑器
+     */
+    shouldShowEditorByConfig(groupKey) {
+      const groupConfig = PACKAGING_FIELDS[groupKey]
+      
+      if (!groupConfig || !groupConfig.fields.administrator) {
+        return false
+      }
+      
+      // 始终显示富文本编辑器
+      return true
+    },
+    
+    // 兼容旧方法名（如果其他地方还在用）
+    shouldShowEditor(fieldName) {
+      return this.shouldShowEditorByConfig(fieldName)
+    },
+    
+    /**
+     * 判断是否应该显示附件内容（administrator字段）
+     * 用于复制对话框中的包装信息显示
+     */
+    shouldShowAdministrator(value) {
+      // 始终显示富文本内容（只要选择了值）
+      return true;
     },
     
     loadData() {
@@ -390,7 +854,12 @@ export default {
      * 优势：字段修改只需改配置文件，这里无需修改
      */
     resetForm() {
+      console.log('🔄 重置表单数据')
       this.formData = this.initFormData()
+      // 强制刷新视图，确保富文本编辑器也重置
+      this.$nextTick(() => {
+        this.$forceUpdate()
+      })
     },
 
     handleSave() {
@@ -439,6 +908,10 @@ export default {
 
     handleClose() {
       this.dialogVisible = false
+      // 关闭时重置表单，避免下次打开显示旧数据
+      this.$nextTick(() => {
+        this.resetForm()
+      })
     }
   }
 }
@@ -450,6 +923,138 @@ export default {
     padding: 15px;
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+  }
+}
+
+/* 复制包装信息按钮区域 */
+.copy-btn-area {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* 复制对话框内容 */
+.copy-dialog-content {
+  .copy-search-form {
+    padding: 15px 15px 0 15px;
+    background: #F8F9FA;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+  
+  /* 包装信息预览样式 */
+  .packaging-preview {
+    .packaging-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 12px;
+      line-height: 1.4;
+      
+      .label {
+        color: #606266;
+        font-weight: 500;
+        min-width: 60px;
+        margin-right: 6px;
+        flex-shrink: 0;
+      }
+      
+      .value {
+        color: #303133;
+        flex: 1;
+        word-break: break-all;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .text-muted {
+    color: #C0C4CC;
+    font-style: italic;
+  }
+  
+  /* 复制对话框表格样式 - 与主表格保持一致 */
+  .el-table {
+ 
+
+    /* 针对包含富文本内容的td单元格，强制顶部对齐 */
+    ::v-deep .el-table__body td:has(.rich-text-content),
+    ::v-deep .el-table__body td:has(.text-muted) {
+      vertical-align: top !important;
+    }
+ 
+    /* 使用 class-name 精确定位富文本列的单元格 - 最强优先级 */
+    ::v-deep .rich-text-cell-column {
+      vertical-align: top !important;
+    }
+
+    ::v-deep .el-table__body .rich-text-cell-column {
+      vertical-align: top !important;
+    }
+
+    ::v-deep td.rich-text-cell-column {
+      vertical-align: top !important;
+    }
+
+    ::v-deep .el-table__body-wrapper .el-table__body td.rich-text-cell-column {
+      vertical-align: top !important;
+    }
+
+    /* 针对富文本列的 cell 容器 - 覆盖 Element UI 默认居中 */
+    ::v-deep td.rich-text-cell-column .cell {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      justify-content: flex-start !important;
+      padding-top: 8px !important;
+    }
+
+    /* 表格单元格内的富文本容器 - 确保正确换行和左对齐 */
+    ::v-deep .el-table__body-wrapper .el-table__body td {
+      .rich-text-content,
+      .text-muted {
+        text-align: left !important;
+        display: block;
+      }
+      
+      /* 确保富文本容器的父级也左对齐、顶部对齐 */
+      & > .cell {
+        text-align: left;
+        vertical-align: top;
+      }
+    }
+
+    /* 富文本内容样式 - 与主表格保持一致 */
+    ::v-deep .rich-text-content {
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-word;
+      text-align: left;
+      padding: 4px 8px;
+    }
+
+    /* 下拉框选择值文本样式 - 与主表格保持一致 */
+    ::v-deep .select-value-text {
+      padding: 4px 0 10px 0;
+      margin-bottom: 10px;
+      border-bottom: 1px dashed #DCDFE6;
+      font-size: 13px;
+      color: #303133;
+      font-weight: 500;
+      width: 100%;
+    }
   }
 }
 
@@ -471,31 +1076,12 @@ export default {
     }
     
     .el-table__body {
-      td {
-        padding: 0 !important;
-        vertical-align: top !important;
-      }
-      
       tr:hover > td {
         background-color: transparent !important;
       }
     }
     
-    // 确保单元格内容容器也是顶部对齐
-    .cell {
-      padding: 0 !important;
-      line-height: normal;
-      vertical-align: top !important;
-    }
-    
-    // 强制所有表格单元格内容顶部对齐
-    td {
-      vertical-align: top !important;
-    }
-    
-    .el-table__cell {
-      vertical-align: top !important;
-    }
+ 
   }
 }
 
@@ -520,12 +1106,6 @@ export default {
     }
     
     &.el-table--enable-row-hover .el-table__body tr:hover > td {
-      background-color: #ffffff !important;
-    }
-    
-    // 确保单元格垂直对齐
-    td.el-table__cell {
-      vertical-align: top !important;
       background-color: #ffffff !important;
     }
   }

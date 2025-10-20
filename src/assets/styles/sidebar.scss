@@ -316,24 +316,64 @@
   font-weight: 700 !important;
 }
 
-/* 二级及以下的折叠菜单标题 - 普通样式 */
+/* ===== 通用多级菜单缩进系统 ===== */
+/* 基础缩进：每层增加30px */
+
+/* 二级菜单折叠标题 */
 .el-submenu .el-submenu > .el-submenu__title {
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  padding-left: 50px !important;
-  
-  .svg-icon {
-    margin-right: 10px;
-    width: 16px;
-    height: 16px;
-  }
+  padding-left: 50px !important; /* 20 + 30 */
 }
 
-/* 二级菜单样式 - 图标对齐一级菜单文字开头 */
+/* 三级菜单折叠标题 */
+.el-submenu .el-submenu .el-submenu > .el-submenu__title {
+  padding-left: 80px !important; /* 50 + 30 */
+}
+
+/* 四级菜单折叠标题 */
+.el-submenu .el-submenu .el-submenu .el-submenu > .el-submenu__title {
+  padding-left: 110px !important; /* 80 + 30 */
+}
+
+/* 五级菜单折叠标题 */
+.el-submenu .el-submenu .el-submenu .el-submenu .el-submenu > .el-submenu__title {
+  padding-left: 140px !important; /* 110 + 30 */
+}
+
+/* 六级菜单折叠标题 */
+.el-submenu .el-submenu .el-submenu .el-submenu .el-submenu .el-submenu > .el-submenu__title {
+  padding-left: 170px !important; /* 140 + 30 */
+}
+
+/* 二级菜单项 */
+.el-submenu .el-menu-item {
+  padding-left: 50px !important;
+}
+
+/* 三级菜单项 */
+.el-submenu .el-submenu .el-menu-item {
+  padding-left: 80px !important;
+}
+
+/* 四级菜单项 */
+.el-submenu .el-submenu .el-submenu .el-menu-item {
+  padding-left: 110px !important;
+}
+
+/* 五级菜单项 */
+.el-submenu .el-submenu .el-submenu .el-submenu .el-menu-item {
+  padding-left: 140px !important;
+}
+
+/* 六级菜单项 */
+.el-submenu .el-submenu .el-submenu .el-submenu .el-submenu .el-menu-item {
+  padding-left: 170px !important;
+}
+
+/* 二级及以下菜单的字体和图标样式 */
+.el-submenu .el-submenu__title,
 .el-submenu .el-menu-item {
   font-size: 14px !important;
   font-weight: 400 !important;
-  padding-left: 50px !important; /* 20px(一级左边距) + 18px(一级图标) + 12px(一级图标右边距) = 50px */
   
   .svg-icon {
     margin-right: 10px;
@@ -342,11 +382,10 @@
   }
 }
 
-/* 三级菜单样式 - 图标对齐二级菜单文字开头 */
+/* 三级及以下菜单的字体样式（更小） */
+.el-submenu .el-submenu .el-submenu__title,
 .el-submenu .el-submenu .el-menu-item {
   font-size: 13px !important;
-  font-weight: 400 !important;
-  padding-left: 76px !important; /* 50px(二级左边距) + 16px(二级图标) + 10px(二级图标右边距) = 76px */
   
   .svg-icon {
     margin-right: 8px;

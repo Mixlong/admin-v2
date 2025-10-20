@@ -96,10 +96,10 @@
                   :picker-options="getMonthPickerOptions()"
                   @change="handleDailyMonthChange"
                 />
-            </div>
+              </div>
               <div ref="dailyChart" class="chart-container-medium"></div>
-          </div>
-        </el-col>
+            </div>
+          </el-col>
       </el-row>
     </div>
     </div>
@@ -967,7 +967,7 @@ export default {
       
     },
     
-    // 更新供应商图表（柱状图）
+    // 更新供应商图表（纯柱状图）
     updateSupplierChart(data) {
       const option = {
         title: {
@@ -977,12 +977,12 @@ export default {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
-            type: 'cross'
+            type: 'shadow'
           },
           formatter: function(params) {
             let tooltip = params[0].axisValueLabel + '<br/>'
             params.forEach(param => {
-              if (param.seriesName === '不良率' || param.seriesName === '目标') {
+              if (param.seriesName === '批次不合格率') {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '%<br/>'
               } else {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '<br/>'
@@ -992,14 +992,14 @@ export default {
           }
         },
         legend: {
-          data: ['检验总批数', '合格批数', '不合格批数', '不良率'],
+          data: ['总批数', '不合格数', '批次不合格率'],
           top: '30px'
         },
         grid: {
-          top: '100px',
-          left: '60px',
+          top: '70px',
+          left: '50px',
           right: '60px',
-          bottom: '70px',
+          bottom: '50px',
           containLabel: true
         },
         dataZoom: [
@@ -1008,27 +1008,28 @@ export default {
             show: true,
             xAxisIndex: [0],
             start: 0,
-            end: 100,
+            end: 50,  // 默认只显示50%，避免拥挤
             bottom: '0px'
           },
           {
             type: 'inside',
             xAxisIndex: [0],
             start: 0,
-            end: 100
+            end: 50
           }
         ],
         xAxis: {
           type: 'category',
           data: data.names || [],
           axisLabel: {
-            rotate: 0
+            rotate: 0,
+            interval: 0  // 强制显示所有标签
           }
         },
         yAxis: [
           {
             type: 'value',
-            name: '数量',
+            name: '批数',
             position: 'left',
             axisLabel: {
               formatter: '{value}'
@@ -1036,8 +1037,10 @@ export default {
           },
           {
             type: 'value',
-            name: '不良率(%)',
+            name: '批次不合格率(%)',
             position: 'right',
+            min: 0,
+            max: 100,
             axisLabel: {
               formatter: '{value}%'
             }
@@ -1045,66 +1048,54 @@ export default {
         ],
         series: [
           {
-            name: '检验总批数',
+            name: '总批数',
             type: 'bar',
-            yAxisIndex: 0,
+            yAxisIndex: 0,  // 使用左Y轴
+            barWidth: '20%',  // 设置柱子宽度
+            barGap: '20%',     // 设置同组柱子间距
             data: data.totalCounts || [],
             itemStyle: {
-              color: '#5470c6'
-            },
-            barGap: '10%',
-            label: {
-              show: true,
-              position: 'top',
-              distance: 5,
-              formatter: '{c}'
-            }
-          },
-          {
-            name: '合格批数',
-            type: 'bar',
-            yAxisIndex: 0,
-            data: data.passCounts || [],
-            itemStyle: {
-              color: '#fac858'
+              color: '#5470c6'  // 蓝色
             },
             label: {
               show: true,
               position: 'top',
               distance: 5,
+              fontSize: 11,
               formatter: '{c}'
             }
           },
           {
-            name: '不合格批数',
+            name: '不合格数',
             type: 'bar',
-            yAxisIndex: 0,
+            yAxisIndex: 0,  // 使用左Y轴
+            barWidth: '20%',
             data: data.defectCounts || [],
             itemStyle: {
-              color: '#ee6666'
+              color: '#ee6666'  // 红色
             },
             label: {
               show: true,
               position: 'top',
               distance: 5,
+              fontSize: 11,
               formatter: '{c}'
             }
           },
           {
-            name: '不良率',
-            type: 'line',
-            yAxisIndex: 1,
+            name: '批次不合格率',
+            type: 'bar',
+            yAxisIndex: 1,  // 使用右Y轴（百分比）
+            barWidth: '20%',
             data: data.defectRates || [],
-            smooth: true,
             itemStyle: {
-              color: '#91cc75'
-            },
-            lineStyle: {
-              color: '#91cc75',
-              width: 2
+              color: '#fac858'  // 黄色
             },
             label: {
               show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
               formatter: '{c}%'
             }
           }
@@ -1147,14 +1138,14 @@ export default {
           }
         },
         legend: {
-          data: ['检验总批数', '合格批数', '不合格批数', '检验合格率', '目标'],
+          data: ['总批数', '合格批数', '不合格数', '检验合格率', '目标'],
           top: '30px'
         },
         grid: {
-          top: '100px',
-          left: '60px',
+          top: '70px',
+          left: '50px',
           right: '60px',
-          bottom: '70px',
+          bottom: '50px',
           containLabel: true
         },
         dataZoom: [
@@ -1202,7 +1193,7 @@ export default {
         ],
         series: [
           {
-            name: '检验总批数',
+            name: '总批数',
             type: 'bar',
             yAxisIndex: 0,
             data: data.totalCounts || [],
@@ -1233,7 +1224,7 @@ export default {
             }
           },
           {
-            name: '不合格批数',
+            name: '不合格数',
             type: 'bar',
             yAxisIndex: 0,
             data: data.defectCounts || [],
@@ -1314,10 +1305,11 @@ export default {
           top: '30px'
         },
         grid: {
-          top: '80px',
-          left: '60px',
+          top: '70px',
+          left: '50px',
           right: '60px',
-          bottom: '70px'
+          bottom: '50px',
+          containLabel: true
         },
         dataZoom: [
           {

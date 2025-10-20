@@ -62,120 +62,126 @@
     <el-table id="drag_table" ref="tableRef" row-key="id" v-loading="loading" :data="brandList"
         :height="tableHeight(10)" @selection-change="handleSelectionChange" :header-cell-class-name="headerCellClassName">
  
-      <!-- 基础信息 -->
-      <el-table-column label="操作" align="center" width="100" fixed="left">
-        <template slot-scope="{ row }">
-          <div class="operation-btns">
-
-            <!-- 初审 -->
-            <Tooltip v-if="row.state === 0" class="text-orange" icon="el-icon-coordinate" content="待初审"
-              v-hasPermi="['config:overview:first:check']" @click="handleAuthChange(row, 1)" />
-
-            <!-- 终审 -->
-            <Tooltip v-if="row.state === 1" class="text-orange" icon="el-icon-coordinate" content="待终审"
-              v-hasPermi="['config:overview:final:check']" @click="handleAuthChange(row, 2)" />
-
-            <!-- 配置详情 -->
-            <Tooltip class="margin-0" icon="el-icon-s-management" content="配置详情" @click="handleOpenDetail(row)" />
-            <Tooltip v-hasPermi="['config:overview:first:edit']" icon="el-icon-edit" content="编辑"
-              @click="handleEdit(row)" />
-            
-            <!-- 包装信息查看 -->
-            <Tooltip v-if="row.packagingInfo" icon="el-icon-box" content="包装信息查看" 
-              @click="handleSeePackagingInfo(row)" />
-            
-            <!-- 包装信息编辑 -->
-            <Tooltip v-if="row.packagingInfo" icon="el-icon-edit-outline" content="包装信息编辑" 
-              v-hasPermi="['config:overview:first:editPackage']" @click="handleEditPackagingInfo(row)" />
-            
-            <!-- 包装信息审核（简化流程：只有待审核状态才显示） -->
-            <Tooltip v-if="row.packagingInfo && row.packagingAuditStatus === 0" 
-              class="text-orange" 
-              icon="el-icon-circle-check" content="包装审核" 
-              v-hasPermi="['config:overview:packaging:final:check']" @click="handlePackagingAudit(row)" />
-            
-            <!-- 产品图纸初审 -->
-            <Tooltip v-if="row.specification && (row.specificationAuditStatus === 0 || row.specificationAuditStatus === null || row.specificationAuditStatus === undefined)" 
-              class="text-orange" 
-              icon="el-icon-document" content="产品图纸初审" 
-              v-hasPermi="['config:overview:specification:first:check']" @click="handleSpecificationFirstAudit(row)" />
-            
-            <!-- 产品图纸终审 -->
-            <Tooltip v-if="row.specification && row.specificationAuditStatus === 1" class="text-orange" 
-              icon="el-icon-document-checked" content="产品图纸终审" 
-              v-hasPermi="['config:overview:specification:final:check']" @click="handleSpecificationFinalAudit(row)" />
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="审核状态" prop="state" align="center" width="140" fixed="left">
+      <!-- 审核状态与操作合并列 -->
+      <el-table-column label="审核状态" prop="state" align="center" width="200" fixed="left">
         <template v-slot="{ row }">
-          <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
-            <!-- 配置审核状态 -->
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
-                <el-tag size="mini" v-if="row.state === 0" type="danger">配置:未审核</el-tag>
-                <el-tag size="mini" v-else-if="row.state === 1" type="success">配置:初审通过</el-tag>
-                <el-tag size="mini" v-else-if="row.state === 2" type="info">配置:初审未通过</el-tag>
-                <el-tag size="mini" v-else-if="row.state === 3" type="success">配置:终审通过</el-tag>
-                <el-tag size="mini" v-else-if="row.state === 4" type="info">配置:终审未通过</el-tag>
-          </div>
-
-              <!-- 配置审核人信息 -->
-              <el-tooltip  placement="top">
-                <div slot="content" style="line-height: 1.8;">
-                  <div v-if="row.createBy">创建者：{{ row.createBy }}</div>
-                  <div v-if="row.firstPerson">初审者：{{ row.firstPerson }}</div>
-                  <div v-if="row.lastPerson">终审者：{{ row.lastPerson }}</div>
-                </div>
-                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
-              </el-tooltip>
+          <div class="audit-container">
+            <!-- 配置审核状态与操作 -->
+            <div class="audit-row audit-row-config">
+              <div class="audit-status">
+                <el-tag size="mini" v-if="row.state === 0" type="warning"><span class="tag-prefix-config">配置:</span>未审核</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 1" type="success"><span class="tag-prefix-config">配置:</span>初审通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 2" type="danger"><span class="tag-prefix-config">配置:</span>初审未通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 3" type="success"><span class="tag-prefix-config">配置:</span>终审通过</el-tag>
+                <el-tag size="mini" v-else-if="row.state === 4" type="danger"><span class="tag-prefix-config">配置:</span>终审未通过</el-tag>
+                <el-tag size="mini" v-else type="info"><span class="tag-prefix-config">配置:</span>未知状态</el-tag>
+                
+                <!-- 配置审核人信息 - 移到状态后面 -->
+                <el-tooltip v-if="row.createBy || row.firstPerson || row.lastPerson" placement="top">
+                  <div slot="content" style="line-height: 1.8;">
+                    <div v-if="row.createBy">创建者：{{ row.createBy }}</div>
+                    <div v-if="row.firstPerson">初审者：{{ row.firstPerson }}</div>
+                    <div v-if="row.lastPerson">终审者：{{ row.lastPerson }}</div>
+                  </div>
+                  <i class="el-icon-user" style="color: #409EFF; cursor: pointer; font-size: 14px; margin-left: 6px;"></i>
+                </el-tooltip>
+              </div>
+              
+              <div class="audit-operations">
+                <!-- 配置初审 -->
+                <Tooltip v-if="row.state === 0" class="text-orange" icon="el-icon-circle-check" content="配置初审"
+                  v-hasPermi="['config:overview:first:check']" @click="handleAuthChange(row, 1)" />
+                
+                <!-- 配置终审 -->
+                <Tooltip v-if="row.state === 1" class="text-orange" icon="el-icon-circle-check" content="配置终审"
+                  v-hasPermi="['config:overview:final:check']" @click="handleAuthChange(row, 2)" />
+                
+                <!-- 配置详情 -->
+                <Tooltip icon="el-icon-view" content="配置详情" @click="handleOpenDetail(row)" />
+                
+                <!-- 配置编辑 -->
+                <Tooltip v-hasPermi="['config:overview:first:edit']" icon="el-icon-edit" content="配置编辑"
+                  @click="handleEdit(row)" />
+              </div>
             </div>
             
-            <!-- 包装审核状态（简化流程：-1拒审、0待审核、1已审核） -->
-            <div v-if="row.packagingInfo" style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
+            <!-- 包装审核状态与操作 -->
+            <div v-if="row.packagingInfo" class="audit-row audit-row-package">
+              <div class="audit-status">
                 <el-tooltip v-if="row.packagingAuditStatus === -1" 
                   :content="row.packagingReasonRejection || '暂无拒绝原因'" 
                   placement="top"
                   :disabled="!row.packagingReasonRejection">
-                  <el-tag size="mini" type="danger" style="cursor: pointer;">包装:拒审</el-tag>
+                  <el-tag size="mini" type="danger" style="cursor: pointer;"><span class="tag-prefix-package">包装:</span>拒审</el-tag>
                 </el-tooltip>
-                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="success">包装:已审核</el-tag>
-                <el-tag size="mini" v-else type="warning">包装:待审核</el-tag>
+                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning"><span class="tag-prefix-package">包装:</span>待审核</el-tag>
+                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="success"><span class="tag-prefix-package">包装:</span>已审核</el-tag>
+                <el-tag size="mini" v-else type="info"><span class="tag-prefix-package">包装:</span>待审核</el-tag>
+                
+                <!-- 包装审核人信息 - 移到状态后面 -->
+                <el-tooltip v-if="row.packagingFirstPerson || row.packagingLastPerson" placement="top">
+                  <div slot="content" style="line-height: 1.8;">
+                    <div v-if="row.packagingLastPerson">终审者：{{ row.packagingLastPerson }}</div>
+                  </div>
+                  <i class="el-icon-user" style="color: #409EFF; cursor: pointer; font-size: 14px; margin-left: 6px;"></i>
+                </el-tooltip>
               </div>
               
-              <!-- 包装审核人信息（简化：只显示审核者） -->
-              <el-tooltip v-if="row.packagingLastPerson" placement="top">
-                <div slot="content" style="line-height: 1.8;">
-                  <div>审核者：{{ row.packagingLastPerson }}</div>
-                </div>
-                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
-              </el-tooltip>
+              <div class="audit-operations">
+                <!-- 包装信息审核 -->
+                <Tooltip v-if="row.packagingAuditStatus === 0 || row.packagingAuditStatus === null || row.packagingAuditStatus === undefined" 
+                  class="text-orange" 
+                  icon="el-icon-circle-check" content="包装审核" 
+                  v-hasPermi="['config:overview:packaging:final:check']" @click="handlePackagingFinalAudit(row)" />
+                
+                <!-- 包装信息查看 -->
+                <Tooltip icon="el-icon-view" content="包装查看" 
+                  @click="handleSeePackagingInfo(row)" />
+                
+                <!-- 包装信息编辑 -->
+                <Tooltip icon="el-icon-edit" content="包装编辑" 
+                  v-hasPermi="['config:overview:first:editPackage']" @click="handleEditPackagingInfo(row)" />
+              </div>
             </div>
             
-            <!-- 产品图纸审核状态 -->
-            <div v-if="row.specification" style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
+            <!-- 产品图纸审核状态与操作 -->
+            <div v-if="row.specification" class="audit-row audit-row-spec">
+              <div class="audit-status">
                 <el-tooltip v-if="row.specificationAuditStatus === -1" 
                   :content="row.specificationReasonRejection || '暂无拒绝原因'" 
                   placement="top"
                   :disabled="!row.specificationReasonRejection">
-                  <el-tag size="mini" type="danger" style="cursor: pointer;">图纸:拒审</el-tag>
+                  <el-tag size="mini" type="danger" style="cursor: pointer;"><span class="tag-prefix-spec">图纸:</span>拒审</el-tag>
                 </el-tooltip>
-                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning">图纸:待初审</el-tag>
-                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="primary">图纸:待终审</el-tag>
-                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success">图纸:已审核</el-tag>
-                <el-tag size="mini" v-else type="info">图纸:待初审</el-tag>
+                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning"><span class="tag-prefix-spec">图纸:</span>待审核</el-tag>
+                <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="success"><span class="tag-prefix-spec">图纸:</span>已审核</el-tag>
+                <el-tag size="mini" v-else type="info"><span class="tag-prefix-spec">图纸:</span>待审核</el-tag>
+                
+                <!-- 产品图纸审核人信息 - 移到状态后面 -->
+                <el-tooltip v-if="row.specificationFirstPerson || row.specificationLastPerson" placement="top">
+                  <div slot="content" style="line-height: 1.8;">
+                    <div v-if="row.specificationFirstPerson">审核者：{{ row.specificationFirstPerson }}</div>
+                    <div v-if="row.specificationLastPerson">终审者：{{ row.specificationLastPerson }}</div>
+                  </div>
+                  <i class="el-icon-user" style="color: #409EFF; cursor: pointer; font-size: 14px; margin-left: 6px;"></i>
+                </el-tooltip>
               </div>
               
-              <!-- 产品图纸审核人信息 -->
-              <el-tooltip v-if="row.specificationFirstPerson || row.specificationLastPerson" placement="top">
-                <div slot="content" style="line-height: 1.8;">
-                  <div v-if="row.specificationFirstPerson">初审者：{{ row.specificationFirstPerson }}</div>
-                  <div v-if="row.specificationLastPerson">终审者：{{ row.specificationLastPerson }}</div>
-                </div>
-                <i class="el-icon-view" style="color: #409EFF; cursor: pointer; font-size: 14px;"></i>
-              </el-tooltip>
+              <div class="audit-operations">
+                <!-- 产品图纸审核 -->
+                <Tooltip v-if="row.specificationAuditStatus === 0 || row.specificationAuditStatus === null || row.specificationAuditStatus === undefined" 
+                  class="text-orange" 
+                  icon="el-icon-circle-check" content="图纸审核" 
+                  v-hasPermi="['config:overview:specification:first:check']" @click="handleSpecificationFirstAudit(row)" />
+                
+                <!-- 产品图纸查看 -->
+                <Tooltip icon="el-icon-view" content="图纸查看" 
+                  @click="handleViewSpecification(row)" />
+                
+                <!-- 产品图纸编辑 -->
+                <Tooltip icon="el-icon-edit" content="图纸编辑" 
+                  v-hasPermi="['config:overview:specification:upload']" @click="handleOpenSpecificationManage(row)" />
+              </div>
             </div>
           </div>
         </template>
@@ -221,31 +227,47 @@
       <el-table-column label="产品图纸" prop="specification" align="center" width="120">
         <template slot-scope="{ row }">
           <div class="specification-upload-cell">
-            <!-- 如果有多张图片（逗号分隔），只显示第一张的预览 -->
-            <preview-img 
-              v-if="row.specification" 
-              width="60px" 
-              height="60px" 
-              :isDisBadge="false" 
-              :url="getFirstImageUrl(row.specification)" 
-            />
-            <el-button 
-              v-if="!row.specification"
-              v-hasPermi="['config:overview:specification:upload']"
-              type="text" 
-              icon="el-icon-upload2" 
-              size="mini"
-              @click="handleUploadSpecification(row, $event)"
-            >
-              上传
-            </el-button>
-            <!-- 隐藏的文件上传输入框 -->
-            <input 
-              type="file" 
-              accept="image/*,application/pdf" 
-              style="display: none"
-              @change="onSpecificationFileSelected($event, row)"
-            />
+            <!-- 如果有图片，显示第一张预览 + 管理按钮 -->
+            <div v-if="row.specification" class="spec-preview-wrapper">
+              <div class="spec-image-container" @click.stop="handlePreviewSpecification(row.specification)">
+                <el-image
+                  style="width: 60px; height: 60px"
+                  :src="getFirstImageUrl(row.specification)"
+                  fit="contain"
+                  :preview-src-list="[]"
+                >
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                  </div>
+                </el-image>
+                <!-- 图片数量徽章 -->
+                <span class="spec-count-badge">{{ getImageCount(row.specification) }}</span>
+              </div>
+              <el-button 
+                v-hasPermi="['config:overview:specification:upload']"
+                type="text" 
+                icon="el-icon-edit" 
+                size="mini"
+                @click="handleOpenSpecificationManage(row)"
+              >
+                上传
+              </el-button>
+            </div>
+            <!-- 如果没有图片 -->
+            <template v-else>
+              <!-- 有权限：显示上传按钮 -->
+              <el-button 
+                v-if="checkPermi(['config:overview:specification:upload'])"
+                type="text" 
+                icon="el-icon-upload2" 
+                size="mini"
+                @click="handleOpenSpecificationManage(row)"
+              >
+                上传
+              </el-button>
+              <!-- 无权限：显示-- -->
+              <span v-else>--</span>
+            </template>
           </div>
         </template>
       </el-table-column>
@@ -408,7 +430,7 @@
             <span v-NoData="getPackagingValue(row, '解件出库方式', '硅胶垫片')"></span>
           </template>
       </el-table-column>
-        <el-table-column label="其它附件要求" align="center" width="200">
+        <el-table-column label="其它附件要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
           <template slot-scope="{ row }">
             <div 
               v-html="getPackagingValue(row, '解件出库方式', '其它附件要求')" 
@@ -419,10 +441,10 @@
       </el-table-column>
       </el-table-column>
 
-      <el-table-column label="附件装箱方式" align="center" width="200">
+      <el-table-column label="附件装箱方式" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div>{{ getPackagingValue(row, '附件装箱方式', 'value') }}</div>
+            <div class="select-value-text">{{ getPackagingValue(row, '附件装箱方式', 'value') }}</div>
             <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && getPackagingValue(row, '附件装箱方式', 'administrator')" 
                  v-html="getPackagingValue(row, '附件装箱方式', 'administrator')" 
                  class="rich-text-content text-muted"
@@ -431,10 +453,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="箱唛要求" align="center" width="200">
+      <el-table-column label="箱唛要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div>{{ getPackagingValue(row, '箱唛要求', 'value') }}</div>
+            <div class="select-value-text">{{ getPackagingValue(row, '箱唛要求', 'value') }}</div>
             <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && getPackagingValue(row, '箱唛要求', 'administrator')" 
                  v-html="getPackagingValue(row, '箱唛要求', 'administrator')" 
                  class="rich-text-content text-muted"
@@ -443,10 +465,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="检验报告要求" align="center" width="200">
+      <el-table-column label="检验报告要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div>{{ getPackagingValue(row, '检验报告要求', 'value') }}</div>
+            <div class="select-value-text">{{ getPackagingValue(row, '检验报告要求', 'value') }}</div>
             <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && getPackagingValue(row, '检验报告要求', 'administrator')" 
                  v-html="getPackagingValue(row, '检验报告要求', 'administrator')" 
                  class="rich-text-content text-muted"
@@ -1010,6 +1032,14 @@
       :packagingInfo="currentPackagingInfo"
       @save="handlePackagingInfoSave"
     />
+    <SpecificationManage
+      :visible.sync="specificationManageVisible"
+      :currentRow="currentSpecificationRow"
+      :viewOnly="specificationViewMode"
+      :uploadImageMethod="uploadImageForSpecification"
+      :uploadPdfMethod="uploadPdfForSpecification"
+      @save="handleSpecificationSave"
+    />
     <addDialog ref="addDialogRef" @refresh-list="getList" />
     
     <!-- 图片预览组件 -->
@@ -1065,7 +1095,7 @@ import {
   modelConfigState,
   ConfigExport,
 } from "@/api/third/testApi";
-import { editComputer, packagingFinalAudit, specificationFirstAudit, specificationFinalAudit } from "@/api/third/computer";
+import { editComputer, detailComputer, packagingFirstAudit, packagingFinalAudit, specificationFirstAudit, specificationFinalAudit } from "@/api/third/computer";
 import commonData from "@/mixins/commonData";
 import ParamsCompare from "./ParamsCompare.vue";
 import { getCustomerList } from "@/api/order";
@@ -1074,7 +1104,9 @@ import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
 import axios from "axios";
 import reqUrl from "@/utils/requestUrl";
 // 导入包装信息字段配置 - 统一管理所有字段定义
-import { getFieldValue } from '@/config/fieldConfigs/packaging';
+import { getFieldValue, PACKAGING_FIELDS } from '@/config/fieldConfigs/packaging';
+// 导入权限检查方法
+import { checkPermi } from '@/utils/permission';
 
 export default {
   name: "ConfigOverview",
@@ -1095,6 +1127,7 @@ export default {
     ParamsCompare,
     PackagingInfo: () => import("./packagingInfo"),
     PackagingInfoEdit: () => import("./packagingInfoEdit"),
+    SpecificationManage: () => import("./SpecificationManage"),
     ElImageViewer,
   },
   mounted() {
@@ -1123,6 +1156,10 @@ export default {
       packagingEditVisible: false,
       currentPackagingInfo: null,
       currentEditRow: null, // 当前编辑的行数据
+      // 产品图纸管理
+      specificationManageVisible: false,
+      currentSpecificationRow: null,
+      specificationViewMode: false, // 是否为查看模式
       // 图片预览
       showImageViewer: false,
       previewImageList: [],
@@ -1303,6 +1340,9 @@ export default {
     }
   },
   methods: {
+    // 权限检查方法（在模板中使用）
+    checkPermi,
+    
     // 表头二级、三级着色：根据列名匹配所属分组
     headerCellClassName({ column, rowIndex }) {
       // 只对多级表头的子行着色（但顶级也兼容）
@@ -1589,6 +1629,16 @@ export default {
       this.packagingEditVisible = true
     },
     
+    // 获取完整的设备详情
+    async getComputerDetail(computerId) {
+      try {
+        return await detailComputer(computerId)
+      } catch (error) {
+        console.error('获取设备详情失败:', error)
+        return null
+      }
+    },
+    
     // 保存包装信息
     async handlePackagingInfoSave(newFormatData) {
       console.log('💾 保存包装信息:', newFormatData)
@@ -1607,19 +1657,25 @@ export default {
           background: 'rgba(0, 0, 0, 0.7)'
         })
 
-        // 构造完整的提交数据，packagingInfo 放到 instrumentModel 里
+        // ⭐ 关键修复：先获取完整的详情数据，避免字段丢失
+        const detailRes = await this.getComputerDetail(this.currentEditRow.computerId)
+        
+        if (!detailRes || detailRes.code !== 200) {
+          loading.close()
+          this.$message.error('获取详情失败')
+          return
+        }
+        
+        const fullData = detailRes.data
+        console.log('📋 获取到的完整数据:', fullData)
+        
+        // 构造完整的提交数据，只更新 packagingInfo 字段
         const packagingInfoStr = JSON.stringify(newFormatData)
         const computerData = {
-          id: this.currentEditRow.computerId,
-          name: this.currentEditRow.computerName,
-          categoryId: this.currentEditRow.categoryId,
-          status: this.currentEditRow.status,
-          isSts: this.currentEditRow.isSts,
-          isBist: this.currentEditRow.isBist,
+          ...fullData,  // 使用完整数据
           instrumentModel: {
-            ...(this.currentEditRow.instrumentModel || {}),
-            id: this.currentEditRow.id,
-            packagingInfo: packagingInfoStr
+            ...(fullData.instrumentModel || {}),  // 展开完整的 instrumentModel
+            packagingInfo: packagingInfoStr  // 只更新 packagingInfo
           }
         }
         
@@ -1652,10 +1708,21 @@ export default {
     
     // ==================== 审核相关方法 ====================
     
-    // 包装信息审核（简化流程：直接终审）
-    handlePackagingAudit(row) {
-      this.auditDialog.title = '包装信息审核';
-      this.auditDialog.type = 'packaging';
+    // 包装信息初审
+    handlePackagingFirstAudit(row) {
+      this.auditDialog.title = '包装信息初审';
+      this.auditDialog.type = 'packagingFirst';
+      this.auditDialog.currentRow = row;
+      this.auditDialog.form.id = row.id;
+      this.auditDialog.form.status = 1;
+      this.auditDialog.form.why = '';
+      this.auditDialog.visible = true;
+    },
+    
+    // 包装信息终审
+    handlePackagingFinalAudit(row) {
+      this.auditDialog.title = '包装信息终审';
+      this.auditDialog.type = 'packagingFinal';
       this.auditDialog.currentRow = row;
       this.auditDialog.form.id = row.id;
       this.auditDialog.form.status = 1;
@@ -1707,9 +1774,13 @@ export default {
         
         // 根据审核类型选择对应的API
         switch (this.auditDialog.type) {
-          case 'packaging':
-            apiFunction = packagingFinalAudit; // 简化流程：直接使用终审接口
-            successMsg = '包装信息审核完成';
+          case 'packagingFirst':
+            apiFunction = packagingFirstAudit;
+            successMsg = '包装信息初审完成';
+            break;
+          case 'packagingFinal':
+            apiFunction = packagingFinalAudit;
+            successMsg = '包装信息终审完成';
             break;
           case 'specificationFirst':
             apiFunction = specificationFirstAudit;
@@ -1746,7 +1817,6 @@ export default {
           // 刷新列表
           this.getList();
         } else {
-          this.$message.error(res.msg || '审核操作失败');
         }
       } catch (error) {
         console.error('审核失败:', error);
@@ -1816,17 +1886,13 @@ export default {
     // 这些功能已由配置文件（packagingFieldsConfig.js）的工具函数统一处理
     // 好处：字段管理集中化，历史兼容性自动处理，代码更简洁
     
-    // 判断是否应该显示附件内容（administrator字段）
+    /**
+     * 判断是否应该显示附件内容（administrator字段）
+     * 修改为：所有下拉框字段都显示富文本内容（如果有内容的话）
+     */
     shouldShowAdministrator(value) {
-      if (!value) return false;
-      
-      // 只有这些选项才需要显示附件内容
-      const showAdministratorOptions = [
-        '其它装箱方式（参考附件）',
-        '客户模板（参考附件，内容根据订单内容做修改）'
-      ];
-      
-      return showAdministratorOptions.includes(value);
+      // 始终显示富文本内容（只要选择了值）
+      return true;
     },
     
     // 处理富文本内容点击事件
@@ -1875,88 +1941,45 @@ export default {
       this.currentImageIndex = 0;
     },
     
-    // 触发产品图纸上传
-    handleUploadSpecification(row, event) {
-      // 通过事件对象找到按钮的父元素，再找到 input
-      const button = event.target.closest('button');
-      if (button) {
-        const cell = button.closest('.specification-upload-cell');
-        if (cell) {
-          const input = cell.querySelector('input[type="file"]');
-          if (input) {
-            input.click();
-          }
-        }
-      }
+    // 打开产品图纸管理对话框（编辑模式）
+    handleOpenSpecificationManage(row) {
+      console.log('📝 打开产品图纸管理:', row);
+      this.currentSpecificationRow = row;
+      this.specificationViewMode = false; // 编辑模式
+      this.specificationManageVisible = true;
     },
     
-    // 处理产品图纸文件选择
-    async onSpecificationFileSelected(event, row) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // 保存产品图纸
+    async handleSpecificationSave(imageUrl) {
+      console.log('💾 保存产品图纸:', imageUrl);
       
-      const fileType = file.type;
-      const fileName = file.name.toLowerCase();
-      
-      // 支持的图片格式
-      const supportedImageTypes = [
-        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
-        'image/bmp', 'image/webp', 'image/svg+xml'
-      ];
-      
-      // 支持的文件扩展名（作为备用检查）
-      const supportedExtensions = [
-        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.pdf'
-      ];
-      
-      // 检查文件大小（限制为50MB）
-      const maxSize = 50 * 1024 * 1024; // 50MB
-      if (file.size > maxSize) {
-        this.$message.error('文件大小不能超过50MB');
-        event.target.value = '';
+      if (!this.currentSpecificationRow) {
+        this.$message.error('未找到行数据');
         return;
       }
       
-      // 验证文件类型
-      const isValidType = fileType === 'application/pdf' || 
-                         supportedImageTypes.includes(fileType) ||
-                         supportedExtensions.some(ext => fileName.endsWith(ext));
-      
-      if (!isValidType) {
-        this.$message.error('只支持上传图片文件（JPG、PNG、GIF、BMP、WebP、SVG）或PDF文件');
-        event.target.value = '';
-        return;
-      }
-      
-      // 判断文件类型并处理
-      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-        // PDF文件：转换为图片
-        await this.handlePdfSpecification(file, row);
-      } else if (supportedImageTypes.includes(fileType) || 
-                 ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].some(ext => fileName.endsWith(ext))) {
-        // 图片文件：直接上传
-        await this.handleImageSpecification(file, row);
-      } else {
-        this.$message.error('不支持的文件格式');
-      }
-      
-      // 重置文件输入框
-      event.target.value = '';
-    },
-    
-    // 处理图片上传
-    async handleImageSpecification(file, row) {
       const loading = this.$loading({
         lock: true,
-        text: '上传中...',
+        text: '保存中...',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       });
       
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
+        await this.updateSpecification(this.currentSpecificationRow, imageUrl);
+      } catch (error) {
+        console.error('保存失败:', error);
+      } finally {
+        loading.close();
+      }
+    },
+    
+    // 为SpecificationManage组件提供的图片上传方法
+    async uploadImageForSpecification(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
         // 上传图片到OSS
         const uploadRes = await axios.post(reqUrl + '/oss/batch-upload', formData, {
           headers: {
@@ -1971,8 +1994,7 @@ export default {
           if (Array.isArray(uploadRes.data.data)) {
             // 拦截空数组
             if (uploadRes.data.data.length === 0) {
-              this.$message.error('上传失败：未返回图片地址');
-              return;
+              throw new Error('未返回图片地址');
             }
             
             // 提取所有图片URL
@@ -1983,16 +2005,11 @@ export default {
             }).filter(url => url && url.trim() !== ''); // 过滤掉空URL
             
             if (imageUrls.length === 0) {
-              this.$message.error('上传失败：未获取到有效图片地址');
-              return;
+              throw new Error('未获取到有效图片地址');
             }
             
             // 将所有图片URL用逗号连接（通常单张图片只有一个URL）
             imageUrl = imageUrls.join(',');
-            
-            if (imageUrls.length > 1) {
-              this.$message.success(`上传成功，共上传${imageUrls.length}张图片`);
-            }
           } else if (typeof uploadRes.data.data === 'object') {
             imageUrl = uploadRes.data.data.url;
             // 清理URL中的反引号和空格
@@ -2009,36 +2026,25 @@ export default {
           
           // 验证 imageUrl 是否有效
           if (!imageUrl || imageUrl.trim() === '') {
-            this.$message.error('上传失败：图片地址为空');
-            return;
+            throw new Error('图片地址为空');
           }
           
-          // 调用编辑接口更新产品图纸
-          await this.updateSpecification(row, imageUrl);
+          return imageUrl;
         } else {
-          this.$message.error(uploadRes.data.msg || '上传失败');
+          throw new Error(uploadRes.data.msg || '上传失败');
         }
       } catch (error) {
         console.error('图片上传失败:', error);
-        this.$message.error('上传失败: ' + (error.message || '未知错误'));
-      } finally {
-        loading.close();
+        throw error;
       }
     },
     
-    // 处理PDF上传（转换为图片）
-    async handlePdfSpecification(file, row) {
-      const loading = this.$loading({
-        lock: true,
-        text: 'PDF转换中...',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      });
+    // 为SpecificationManage组件提供的PDF上传方法
+    async uploadPdfForSpecification(file) {
+      const formData = new FormData();
+      formData.append('file', file);
       
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
         // 调用PDF转图片接口
         const convertRes = await axios.post(reqUrl + '/file/converterToOss', formData, {
           headers: {
@@ -2053,8 +2059,7 @@ export default {
           if (Array.isArray(convertRes.data.data)) {
             // 拦截空数组
             if (convertRes.data.data.length === 0) {
-              this.$message.error('PDF转换失败：未生成图片');
-              return;
+              throw new Error('PDF转换失败：未生成图片');
             }
             
             // 如果是数组，保存所有图片URL（用逗号分隔）
@@ -2065,14 +2070,11 @@ export default {
             }).filter(url => url && url.trim() !== ''); // 过滤掉空URL
             
             if (imageUrls.length === 0) {
-              this.$message.error('PDF转换失败：未生成有效图片');
-              return;
+              throw new Error('PDF转换失败：未生成有效图片');
             }
             
             // 将所有图片URL用逗号连接
             imageUrl = imageUrls.join(',');
-            
-            this.$message.success(`PDF转换成功，共生成${imageUrls.length}张图片`);
           } else if (typeof convertRes.data.data === 'object') {
             imageUrl = convertRes.data.data.url;
             // 清理URL中的反引号和空格
@@ -2089,20 +2091,16 @@ export default {
           
           // 验证 imageUrl 是否有效
           if (!imageUrl || imageUrl.trim() === '') {
-            this.$message.error('PDF转换失败：图片URL为空');
-            return;
+            throw new Error('PDF转换失败：图片URL为空');
           }
           
-          // 调用编辑接口更新产品图纸
-          await this.updateSpecification(row, imageUrl);
+          return imageUrl;
         } else {
-          this.$message.error(convertRes.data.msg || 'PDF转换失败');
+          throw new Error(convertRes.data.msg || 'PDF转换失败');
         }
       } catch (error) {
         console.error('PDF转换失败:', error);
-        this.$message.error('PDF转换失败: ' + (error.message || '未知错误'));
-      } finally {
-        loading.close();
+        throw error;
       }
     },
     
@@ -2122,22 +2120,89 @@ export default {
       return cleanUrl;
     },
     
+    // 获取图片数量
+    getImageCount(url) {
+      if (!url) return 0;
+      
+      // 清理URL中的反引号和多余空格
+      let cleanUrl = url.replace(/`/g, '').trim();
+      
+      // 如果包含逗号，说明有多张图片
+      if (cleanUrl.includes(',')) {
+        const urls = cleanUrl.split(',').map(u => u.trim()).filter(u => u);
+        return urls.length;
+      }
+      
+      // 单张图片
+      return cleanUrl ? 1 : 0;
+    },
+    
+    // 获取所有图片URL列表
+    getAllImageUrls(url) {
+      if (!url) return [];
+      
+      // 清理URL中的反引号和多余空格
+      let cleanUrl = url.replace(/`/g, '').trim();
+      
+      // 如果包含逗号，说明有多张图片
+      if (cleanUrl.includes(',')) {
+        return cleanUrl.split(',').map(u => u.trim()).filter(u => u);
+      }
+      
+      // 单张图片
+      return cleanUrl ? [cleanUrl] : [];
+    },
+    
+    // 预览产品图纸（支持多图左右切换）
+    handlePreviewSpecification(url) {
+      const imageUrls = this.getAllImageUrls(url);
+      if (imageUrls.length === 0) {
+        this.$message.warning('暂无图片可预览');
+        return;
+      }
+      
+      // 使用 el-image-viewer 显示图片
+      this.previewImageList = imageUrls;
+      this.currentImageIndex = 0; // 从第一张开始
+      this.showImageViewer = true;
+    },
+    
+    // 查看产品图纸（从操作按钮触发）- 打开查看模式对话框
+    handleViewSpecification(row) {
+      if (!row.specification) {
+        this.$message.warning('暂无图纸可查看');
+        return;
+      }
+      console.log('👁️ 查看产品图纸:', row);
+      this.currentSpecificationRow = row;
+      this.specificationViewMode = true; // 查看模式
+      this.specificationManageVisible = true;
+    },
+    
     // 更新产品图纸
     async updateSpecification(row, imageUrl) {
       try {
-        // 构造提交数据
+        // ⭐ 关键修复：先获取完整的详情数据，避免字段丢失
+        const detailRes = await this.getComputerDetail(row.computerId)
+        
+        if (!detailRes || detailRes.code !== 200) {
+          this.$message.error('获取详情失败')
+          return
+        }
+        
+        const fullData = detailRes.data
+        console.log('📋 获取到的完整数据:', fullData)
+        
+        // 构造完整的提交数据，只更新 specification 字段
         const submitData = {
-          id: row.computerId,
-          name: row.computerName,
-          categoryId: row.categoryId,
-          status: row.status,
-          isSts: row.isSts,
-          isBist: row.isBist,
+          ...fullData,  // 使用完整数据
           instrumentModel: {
-            id: row.id,
-            specification: imageUrl
+            ...(fullData.instrumentModel || {}),  // 展开完整的 instrumentModel
+            specification: imageUrl  // 只更新 specification
           }
         };
+        
+        console.log('📤 提交的数据:', submitData)
         
         // 调用编辑接口
         const res = await editComputer(submitData);
@@ -2172,24 +2237,165 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 8px 4px;
+  
+  .spec-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    
+    .spec-image-container {
+      position: relative;
+      display: inline-block;
+      cursor: pointer; /* 鼠标指针变为手型，提示可点击 */
+      transition: transform 0.2s;
+      
+      &:hover {
+        transform: scale(1.05); /* hover时轻微放大 */
+      }
+      
+      /* 图片错误占位 */
+      .image-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: #F5F7FA;
+        color: #C0C4CC;
+        font-size: 24px;
+      }
+      
+      /* 数量徽章 */
+      .spec-count-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        min-width: 20px;
+        height: 20px;
+        line-height: 18px; /* 调整line-height让数字更居中 */
+        padding: 0 6px;
+        background: #F56C6C;
+        color: #FFF;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #FFF;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+        pointer-events: none; /* 徽章不响应点击，让点击穿透到容器 */
+        display: flex; /* 使用flex布局让数字完美居中 */
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
 }
 
-/* 操作按钮换行显示 */
-.operation-btns {
+/* 审核容器 - 整体布局 */
+.audit-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+/* 审核状态行 - 状态标签 + 操作按钮 */
+.audit-row {
+  display: flex;
   align-items: center;
-  padding: 6px 4px;
-  line-height: 1;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  padding: 3px 4px;
   
-  /* 移除按钮默认的 margin */
-  ::v-deep .el-tooltip,
-  ::v-deep > * {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  .audit-status {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    
+    .el-tooltip {
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    /* 状态标签样式 */
+    ::v-deep .el-tag {
+      border: none;
+      padding: 2px 8px;
+      height: 22px;
+      line-height: 18px;
+      background-color: #f5f5f5 !important; /* 统一淡灰背景 */
+      
+      &.el-tag--success {
+        background-color: #f0f9ff !important; /* 淡蓝色 */
+        color: #52c41a;
+      }
+      
+      &.el-tag--warning {
+        background-color: #fffbf0 !important; /* 淡黄色 */
+        color: #faad14;
+      }
+      
+      &.el-tag--danger {
+        background-color: #fff1f0 !important; /* 淡红色 */
+        color: #ff4d4f;
+      }
+      
+      &.el-tag--info {
+        background-color: #fafafa !important; /* 淡灰色 */
+        color: #8c8c8c;
+      }
+      
+      &.el-tag--primary {
+        background-color: #f0f5ff !important; /* 淡蓝色 */
+        color: #1890ff;
+      }
+    }
   }
+  
+  .audit-operations {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: nowrap;
+    
+    ::v-deep .el-tooltip,
+    ::v-deep > * {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+    
+    ::v-deep i {
+      font-size: 15px;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* 状态标签前缀颜色区分 - 让文字更醒目 */
+.tag-prefix-config {
+  color: #1890ff !important;
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.tag-prefix-package {
+  color: #13C2C2 !important;
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.tag-prefix-spec {
+  color: #722ED1 !important;
+  font-weight: 600;
+  margin-right: 2px;
 }
 
 /* 固定的基础信息分组标题 */
@@ -2197,9 +2403,9 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  width: 482px; /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
+  width: 442px; /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
   height: 41px;
-  line-height: 40px;
+  line-height: 40px; 
   box-sizing: border-box;
   text-align: center;
   background-color: #B4C7E7;
@@ -2209,7 +2415,7 @@ export default {
   border-top: 1px solid #dfe6ec; /* 顶部线条 */
   border-left: 1px solid #dfe6ec;
   border-bottom: 2px solid #dfe6ec;
-  z-index: 10;
+  z-index: 160;
   pointer-events: none; /* 允许点击事件穿透到下方筛选器 */
 }
 
@@ -2219,10 +2425,17 @@ export default {
   overflow-y: auto;
   font-size: 12px;
   line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  text-align: left;
+  padding: 4px 8px;
   
   ::v-deep p {
     margin: 0;
     padding: 2px 0;
+    white-space: pre-wrap;
+    text-align: left;
   }
   
   ::v-deep img {
@@ -2245,12 +2458,53 @@ export default {
       color: #66b1ff;
     }
   }
+  
+  ::v-deep br {
+    display: block;
+    content: "";
+    margin: 2px 0;
+  }
+  
+  ::v-deep ol,
+  ::v-deep ul {
+    margin: 4px 0;
+    padding-left: 20px;
+    text-align: left;
+    
+    li {
+      margin: 2px 0;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+  }
+  
+  ::v-deep div,
+  ::v-deep span {
+    white-space: pre-wrap;
+    text-align: left;
+  }
 }
 
 .text-muted {
   color: #909399;
   font-size: 11px;
   margin-top: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  text-align: left;
+  padding: 4px 8px;
+}
+
+/* 下拉框选择值的样式 - 添加底部虚线分割线 */
+.select-value-text {
+  padding: 4px 0 10px 0;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #DCDFE6;
+  font-size: 13px;
+  color: #303133;
+  font-weight: 500;
+  width: 100%;
 }
 
 /* 修复固定列遮挡滚动条的问题 */
@@ -2258,6 +2512,7 @@ export default {
   pointer-events: none;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.12) !important;
   height: calc(100% - 13px) !important; /* 减去滚动条高度，避免遮挡横向滚动条 */
+  z-index: 15 !important; /* 确保fixed列高于图纸数量徽章(z-index:10) */
 
   /* 允许固定列内的按钮等元素可以点击 */
   .el-table__fixed-body-wrapper,
@@ -2277,11 +2532,13 @@ export default {
 /* 固定列左侧不遮挡滚动条 */
 ::v-deep .el-table__fixed-left {
   height: calc(100% - 13px) !important;
+  z-index: 15 !important; /* 确保fixed左列高于图纸数量徽章 */
 }
 
 /* 固定列左侧阴影 */
 ::v-deep .el-table__fixed-right {
   box-shadow: -1px 0 8px rgba(0, 0, 0, 0.12) !important;
+  z-index: 15 !important; /* 确保fixed右列高于图纸数量徽章 */
 }
 
 ::v-deep .el-table__fixed-left {
@@ -2292,6 +2549,8 @@ export default {
 ::v-deep .el-table__fixed-left .el-table__cell,
 ::v-deep .el-table__fixed-right .el-table__cell {
   background-color: #fff !important;
+  z-index: 1; /* 确保单元格内容层级正确 */
+  position: relative; /* 让z-index生效 */
 }
 
 /* 固定列的表头加 padding-top 与覆盖的分组标题对齐 */
@@ -2325,7 +2584,7 @@ export default {
 }
 </style>
 
-<style lang="scss">
+<style lang="scss" scoped>
 /* 全局样式 - 图片预览器层级 */
 .el-image-viewer__wrapper {
   z-index: 99999 !important;
@@ -2390,6 +2649,57 @@ export default {
   font-size: 14px !important;
 }
 
+/* 表格单元格内的富文本容器 - 确保正确换行和左对齐 */
+::v-deep .el-table__body-wrapper .el-table__body td {
+  .rich-text-content,
+  .text-muted {
+    text-align: left !important;
+    display: block;
+  }
+  
+  /* 确保富文本容器的父级也左对齐、顶部对齐 */
+  & > .cell {
+    text-align: left;
+    vertical-align: top;
+  }
+}
+
+ 
+
+/* 针对包含富文本内容的td单元格，强制顶部对齐 */
+::v-deep .el-table__body td:has(.rich-text-content),
+::v-deep .el-table__body td:has(.text-muted) {
+  vertical-align: top !important;
+}
+
+ 
+
+/* 使用 class-name 精确定位富文本列的单元格 - 最强优先级 */
+::v-deep .el-table .rich-text-cell-column {
+  vertical-align: top !important;
+}
+
+::v-deep .el-table__body .rich-text-cell-column {
+  vertical-align: top !important;
+}
+
+::v-deep .el-table td.rich-text-cell-column {
+  vertical-align: top !important;
+}
+
+::v-deep .el-table__body-wrapper .el-table__body td.rich-text-cell-column {
+  vertical-align: top !important;
+}
+
+/* 针对富文本列的 cell 容器 - 覆盖 Element UI 默认居中 */
+::v-deep .el-table td.rich-text-cell-column .cell {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  padding-top: 8px !important;
+}
+
 /* 为表头单元格添加边框 */
 .el-table th.group-header-basic,
 .el-table th.group-header-appearance,
@@ -2399,6 +2709,53 @@ export default {
 }
 
 /* 确保 hover 时保持背景颜色 */
+.el-table th.group-header-basic:hover {
+  background-color: #B4C7E7 !important;
+}
+
+.el-table th.group-header-appearance:hover {
+  background-color: #C6E0B4 !important;
+}
+
+.el-table th.group-header-config:hover {
+  background-color: #F4CCCC !important;
+}
+
+.el-table th.group-header-package:hover {
+  background-color: #FFE599 !important;
+}
+</style>
+
+<style lang="scss">
+/* 全局样式 - 表头分组颜色（不受 scoped 限制） */
+.el-table th.group-header-basic {
+  background-color: #B4C7E7 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.el-table th.group-header-appearance {
+  background-color: #C6E0B4 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.el-table th.group-header-config {
+  background-color: #F4CCCC !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.el-table th.group-header-package {
+  background-color: #FFE599 !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
 .el-table th.group-header-basic:hover {
   background-color: #B4C7E7 !important;
 }
