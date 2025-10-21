@@ -3,7 +3,7 @@ const baseApiList = {
   // development: "http://192.168.2.127:8808",
   development: "http://test-admin.riding-evolved.com",
   test: "http://test-admin.riding-evolved.com",
-  // development: "http://192.168.2.16:8111",
+  development: "http://192.168.2.16:8111",
   // development: "http://192.168.2.26:8100",
   // development: "http://config-admin-api.ri、ding-evolved.com",
   // 生产

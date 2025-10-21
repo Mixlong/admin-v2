@@ -90,19 +90,19 @@
               <div class="audit-operations">
                 <!-- 配置初审 -->
                 <Tooltip v-if="row.state === 0" class="text-orange" icon="el-icon-circle-check" content="配置初审"
-                  v-hasPermi="['config:overview:first:check']" @click="handleAuthChange(row, 1)" />
-                
+              v-hasPermi="['config:overview:first:check']" @click="handleAuthChange(row, 1)" />
+
                 <!-- 配置终审 -->
                 <Tooltip v-if="row.state === 1" class="text-orange" icon="el-icon-circle-check" content="配置终审"
-                  v-hasPermi="['config:overview:final:check']" @click="handleAuthChange(row, 2)" />
-                
-                <!-- 配置详情 -->
+              v-hasPermi="['config:overview:final:check']" @click="handleAuthChange(row, 2)" />
+
+            <!-- 配置详情 -->
                 <Tooltip icon="el-icon-view" content="配置详情" @click="handleOpenDetail(row)" />
                 
                 <!-- 配置编辑 -->
                 <Tooltip v-hasPermi="['config:overview:first:edit']" icon="el-icon-edit" content="配置编辑"
                   @click="handleEdit(row)" />
-              </div>
+          </div>
             </div>
             
             <!-- 包装审核状态与操作 -->
@@ -134,16 +134,16 @@
                   icon="el-icon-circle-check" content="包装审核" 
                   v-hasPermi="['config:overview:packaging:final:check']" @click="handlePackagingFinalAudit(row)" />
                 
-                <!-- 包装信息查看 -->
+            <!-- 包装信息查看 -->
                 <Tooltip icon="el-icon-view" content="包装查看" 
-                  @click="handleSeePackagingInfo(row)" />
+              @click="handleSeePackagingInfo(row)" />
                 
                 <!-- 包装信息编辑 -->
                 <Tooltip icon="el-icon-edit" content="包装编辑" 
                   v-hasPermi="['config:overview:first:editPackage']" @click="handleEditPackagingInfo(row)" />
               </div>
-            </div>
-            
+          </div>
+
             <!-- 产品图纸审核状态与操作 -->
             <div v-if="row.specification" class="audit-row audit-row-spec">
               <div class="audit-status">

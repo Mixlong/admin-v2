@@ -104,7 +104,7 @@
             </template>
           </el-table-column>
         <!-- 客户要求（标准） -->
-        <el-table-column label="客户出货方" prop="customerDelivery" align="center" >
+        <el-table-column label="客户出货方" prop="customerDelivery" align="center" width="220" >
           <template slot-scope="scope">
             <div class="requirement-container">
               <div class="requirement-scroll-area">
@@ -402,21 +402,21 @@
             </template>
         </el-table-column>
         <!-- 市场负责人 -->
-        <el-table-column label="市场负责人" align="center" width="120" class-name="market-manager-column">
+        <el-table-column label="市场负责人" align="center" width="95" class-name="market-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.marketManager || '--' }}</span>
           </template>
         </el-table-column>
         
         <!-- 质量负责人 -->
-        <el-table-column label="质量负责人" align="center" width="120" class-name="quality-manager-column">
+        <el-table-column label="质量负责人" align="center" width="95" class-name="quality-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.qualityManager || '--' }}</span>
           </template>
         </el-table-column>
         
         <!-- 项目负责人 -->
-        <el-table-column prop="projectManager" label="项目负责人" align="center" width="120" class-name="project-manager-column">
+        <el-table-column prop="projectManager" label="项目负责人" align="center" width="95" class-name="project-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.projectManager || '--' }}</span>
           </template>

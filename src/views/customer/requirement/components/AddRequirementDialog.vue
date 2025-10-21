@@ -136,19 +136,21 @@
             <el-row :gutter="30">
               <el-col :span="12">
                 <el-form-item :label="`机型型号${index + 1}`" :prop="`requirementInfoList.${index}.category`">
-                  <select-loadMore
+                  <el-select
                     v-model="item.category"
                     style="width: 100%"
-                    :data="categoryData.data"
-                    :page="categoryData.page"
-                    :hasMore="categoryData.more"
-                    dictLabel="name"
-                    dictValue="id"
-                    :request="getCategoryList"
+                    filterable
+                    clearable
                     placeholder="请选择品类"
                     size="mini"
                     :disabled="isView">
-                  </select-loadMore>
+                    <el-option
+                      v-for="category in categoryAllData"
+                      :key="category.id"
+                      :label="category.name || category.label"
+                      :value="category.id">
+                    </el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -636,6 +638,53 @@ export default {
       })
     },
 
+    // 为 select-loadMore 组件提供的分页加载方法（不会影响其他select组件）
+    getCategoryListForSelect({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        // 如果已经有全部数据，进行客户端过滤
+        if (this.categoryAllData && this.categoryAllData.length > 0) {
+          console.log('使用全部品类数据进行客户端过滤，关键字:', keyword)
+          
+          let filteredData = [...this.categoryAllData]
+          
+          // 如果有关键字，进行过滤
+          if (keyword) {
+            filteredData = this.categoryAllData.filter(item => 
+              (item.name && item.name.includes(keyword)) ||
+              (item.label && item.label.includes(keyword))
+            )
+          }
+          
+          // 确保所有已选中的值都在列表中（即使不匹配搜索关键字）
+          const selectedIds = this.localFormData.requirementInfoList
+            .map(item => item.category)
+            .filter(id => id) // 过滤掉空值
+          
+          selectedIds.forEach(selectedId => {
+            const exists = filteredData.some(item => item.id === selectedId)
+            if (!exists) {
+              // 如果已选中的值不在过滤结果中，从原始数据中找到并添加
+              const selectedItem = this.categoryAllData.find(item => item.id === selectedId)
+              if (selectedItem) {
+                filteredData.unshift(selectedItem) // 添加到列表开头
+              }
+            }
+          })
+          
+          // 更新数据
+          this.categoryData.data = filteredData
+          this.categoryData.more = false
+          this.categoryData.page = 1
+          
+          resolve()
+          return
+        }
+        
+        // 如果没有全部数据，调用原有方法
+        this.getCategoryList({ page, more, keyword }).then(resolve)
+      })
+    },
+    
     // 为 select-loadMore 组件提供的分页加载方法
     // 获取品类数据 (用于 select-loadMore 组件)
     getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
@@ -644,7 +693,7 @@ export default {
         if (this.categoryAllData && this.categoryAllData.length > 0) {
           console.log('使用全部品类数据进行客户端过滤，关键字:', keyword)
           
-          let filteredData = this.categoryAllData
+          let filteredData = [...this.categoryAllData]
           
           // 如果有关键字，进行过滤
           if (keyword) {
@@ -656,7 +705,7 @@ export default {
           
           // 更新数据
           this.categoryData.data = filteredData
-          this.categoryData.more = false // 已经是全部数据，不需要分页
+          this.categoryData.more = false
           this.categoryData.page = 1
           
           resolve()
@@ -1091,9 +1140,9 @@ export default {
           submitData.massProductionTime = submitData.massProductionTime + ' 00:00:00'
         }
 
-        // 处理机型配置列表，移除空的配置项
+        // 处理机型配置列表，移除完全空的配置项（两个字段都为空才移除）
         submitData.requirementInfoList = submitData.requirementInfoList.filter(item =>
-          item.category && item.modelConfig
+          item.category || item.modelConfig
         ).map(item => ({
           ...item,
           requirementId: this.isEdit ? this.localFormData.id : null
