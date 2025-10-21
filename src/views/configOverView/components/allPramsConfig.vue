@@ -433,10 +433,12 @@
         <el-table-column label="其它附件要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
           <template slot-scope="{ row }">
             <div 
+              v-if="!isRichTextEmpty(getPackagingValue(row, '解件出库方式', '其它附件要求'))"
               v-html="getPackagingValue(row, '解件出库方式', '其它附件要求')" 
               class="rich-text-content"
               @click="handleRichTextClick($event, row, '解件出库方式', '其它附件要求')"
             ></div>
+            <span v-else>--</span>
           </template>
       </el-table-column>
       </el-table-column>
@@ -444,8 +446,8 @@
       <el-table-column label="附件装箱方式" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '附件装箱方式', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && getPackagingValue(row, '附件装箱方式', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '附件装箱方式', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && !isRichTextEmpty(getPackagingValue(row, '附件装箱方式', 'administrator'))" 
                  v-html="getPackagingValue(row, '附件装箱方式', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '附件装箱方式', 'administrator')"></div>
@@ -456,8 +458,8 @@
       <el-table-column label="箱唛要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '箱唛要求', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && getPackagingValue(row, '箱唛要求', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '箱唛要求', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && !isRichTextEmpty(getPackagingValue(row, '箱唛要求', 'administrator'))" 
                  v-html="getPackagingValue(row, '箱唛要求', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '箱唛要求', 'administrator')"></div>
@@ -468,8 +470,8 @@
       <el-table-column label="检验报告要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '检验报告要求', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && getPackagingValue(row, '检验报告要求', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '检验报告要求', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && !isRichTextEmpty(getPackagingValue(row, '检验报告要求', 'administrator'))" 
                  v-html="getPackagingValue(row, '检验报告要求', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '检验报告要求', 'administrator')"></div>
@@ -1880,6 +1882,23 @@ export default {
         console.error('解析包装信息失败:', error);
         return '';
       }
+    },
+    
+    /**
+     * 判断富文本内容是否为空（包括只有空p标签的情况）
+     */
+    isRichTextEmpty(htmlContent) {
+      if (!htmlContent) return true;
+      
+      // 创建临时div来解析HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // 获取纯文本内容（去除所有HTML标签）
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // 判断纯文本是否为空（去除空白字符后）
+      return textContent.trim() === '';
     },
     
     // 注意：getOldFormatValue、convertOldContentId、getNewFormatValue 方法已移除
