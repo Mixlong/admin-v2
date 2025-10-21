@@ -147,6 +147,12 @@ export default {
       this.handleReturnData(fileList);
     },
     handleReturnData(file) {
+      // 如果文件列表为空或不存在，直接触发空值更新
+      if (!file || !Array.isArray(file) || file.length === 0) {
+        this.$emit("input", "");
+        return;
+      }
+      
       if (file.every((item) => item.status === "success")) {
         let currentFill = file.map((item) => {
           const url = item.response ? item.response.data[0].url : item.url;

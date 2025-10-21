@@ -72,7 +72,7 @@
       </span>
     </div>
     <el-table ref="multipleTableRef" v-loading="loading" :data="brandList" :row-key="getRowKeys"
-      :height="tableHeight(35)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
+      :height="tableHeight(0)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
       <el-table-column type="selection" width="55" align="center" :reserve-selection="true"
         :selectable="checkSelectable" />
       <el-table-column label="序号" width="58" type="index" align="center" />

@@ -10,6 +10,7 @@
     append-to-body
     top="-5vh"
     center
+    class="dialog-scroll"
   >
     <el-form ref="form" :model="form" :rules="rules" label-position="top">
       <template v-if="!isBatchSync">
