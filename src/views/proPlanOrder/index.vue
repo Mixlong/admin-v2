@@ -212,17 +212,60 @@
         </el-table-column>
       </el-table-column> -->
 
-      <el-table-column v-if="isSeeStatus" prop="pucsStatus" label="配置总览" align="center" width="80">
-        <template slot-scope="{ row }">
-          <div class="flex justify-center align-center">
-            <template v-if="row.configStatus == 3">
-              <StatusFlag bgColor="green"></StatusFlag>
+      <el-table-column v-if="isSeeStatus" label="配置总览" align="center">
+        <!-- 配置审核状态 -->
+        <el-table-column prop="configStatus" label="配置" align="center" width="80">
+          <template slot-scope="{ row }">
+            <template v-if="row.configStatus === 3">
+              <span style="font-size: 13px; color: #67C23A; font-weight: 500;">已审核</span>
             </template>
             <template v-else>
-              <StatusFlag bgColor="red"></StatusFlag>
+              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">未审核</span>
             </template>
-          </div>
-        </template>
+          </template>
+        </el-table-column>
+        
+        <!-- 包装审核状态 -->
+        <el-table-column prop="packagingAuditStatus" label="包装" align="center" width="80">
+          <template slot-scope="{ row }">
+            <template v-if="row.packagingAuditStatus === 2">
+              <span style="font-size: 13px; color: #67C23A; font-weight: 500;">已审核</span>
+            </template>
+            <template v-else-if="row.packagingAuditStatus === 1">
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待终审</span>
+            </template>
+            <template v-else-if="row.packagingAuditStatus === 0">
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待初审</span>
+            </template>
+            <template v-else-if="row.packagingAuditStatus === -1">
+              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">拒审</span>
+            </template>
+            <template v-else>
+              <span style="font-size: 13px; color: #909399; font-weight: 500;">未配置</span>
+            </template>
+          </template>
+        </el-table-column>
+        
+        <!-- 规格书审核状态 -->
+        <el-table-column prop="specificationAuditStatus" label="产品图纸" align="center" width="80">
+          <template slot-scope="{ row }">
+            <template v-if="row.specificationAuditStatus === 2">
+              <span style="font-size: 13px; color: #67C23A; font-weight: 500;">已审核</span>
+            </template>
+            <template v-else-if="row.specificationAuditStatus === 1">
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待终审</span>
+            </template>
+            <template v-else-if="row.specificationAuditStatus === 0">
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待初审</span>
+            </template>
+            <template v-else-if="row.specificationAuditStatus === -1">
+              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">拒审</span>
+            </template>
+            <template v-else>
+              <span style="font-size: 13px; color: #909399; font-weight: 500;">未配置</span>
+            </template>
+          </template>
+        </el-table-column>
       </el-table-column>
 
       <el-table-column v-if="isSeeStatus" label="SMT资料" align="center">

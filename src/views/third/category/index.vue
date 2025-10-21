@@ -52,12 +52,24 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="MUA配置" align="center" width="100">
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.muaJsonStr" size="mini" type="success">
+            已配置
+          </el-tag>
+          <el-tag v-else size="mini" type="info">
+            未配置
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="创建人" align="center" prop="createBy" width="100" />
       <el-table-column label="创建时间" align="center" prop="createTime" sortable width="140" />
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" align="center" width="180">
         <template slot-scope="scope">
           <Tooltip v-hasPermi="['product:category:edit']" icon="el-icon-edit" content="编辑"
             @click="handleUpdate(scope.row)" />
+          <Tooltip icon="el-icon-setting" content="MUA配置" :className="['text-orange']"
+            @click="handleMuaConfig(scope.row)" />
           <Tooltip v-hasPermi="['product:category:add']" icon="el-icon-delete" :className="['text-red']" content="删除"
             @click="handleStatusChange(scope.row)" />
         </template>
@@ -111,6 +123,9 @@
         <el-button type="primary" @click="handleDel(1)">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- MUA配置 -->
+    <MuaSet ref="muaSetRef" @refresh="getList" />
   </div>
 </template>
 
@@ -126,6 +141,9 @@ import { getDicts } from "@/api/system/dict/data";
 
 export default {
   name: "Category",
+  components: {
+    MuaSet: () => import("./components/muaSet.vue"),
+  },
   data() {
     return {
       // 遮罩层
@@ -314,6 +332,16 @@ export default {
             });
           }
         }
+      });
+    },
+    /** MUA配置 */
+    handleMuaConfig(row) {
+      console.log('🚀 打开MUA配置:', row);
+      this.$refs.muaSetRef.dialogVisible = true;
+      this.$refs.muaSetRef.reset();
+      this.$refs.muaSetRef.echoData({
+        id: row.id,
+        muaJsonStr: row.muaJsonStr || null,
       });
     },
   },

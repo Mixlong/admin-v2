@@ -101,6 +101,29 @@
             </div>
           </el-col>
       </el-row>
+      
+      <!-- 第三行：物料TOP10统计图 -->
+      <el-row :gutter="20" class="chart-row">
+        <el-col :span="24">
+          <div class="chart-card chart-card-medium">
+            <div class="chart-header">
+              <h3></h3>
+              <el-date-picker
+                v-model="chartMonths.materialTop10"
+                type="month"
+                placeholder="选择年月"
+                format="yyyy年MM月"
+                value-format="yyyy-MM"
+                size="small"
+                style="width: 150px"
+                :picker-options="getMonthPickerOptions()"
+                @change="handleMaterialTop10MonthChange"
+              />
+            </div>
+            <div ref="materialTop10Chart" class="chart-container-medium"></div>
+          </div>
+        </el-col>
+      </el-row>
     </div>
     </div>
 
@@ -109,7 +132,7 @@
 
 <script>
 import * as echarts from 'echarts'
-import {  getDailyReport, getMonthlyReport, getSupplierReport, getSupplierList } from '@/api/iqc/statistics'
+import {  getDailyReport, getMonthlyReport, getSupplierReport, getSupplierList, getMaterialTop10 } from '@/api/iqc/statistics'
 import { afterCategoryList } from '@/api/third/sale'
 export default {
   name: 'IQCStatistics',
@@ -137,7 +160,8 @@ export default {
       chartMonths: {
         category: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
         supplier: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
-        daily: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')
+        daily: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
+        materialTop10: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')
       },
       // 各图表独立的年份选择
       chartYears: {
@@ -163,7 +187,8 @@ export default {
       },
       supplierChart: null,
       monthlyChart: null,
-      dailyChart: null
+      dailyChart: null,
+      materialTop10Chart: null
     }
   },
   computed: {
@@ -192,6 +217,9 @@ export default {
     }
     if (this.dailyChart) {
       this.dailyChart.dispose()
+    }
+    if (this.materialTop10Chart) {
+      this.materialTop10Chart.dispose()
     }
   },
   methods: {
@@ -340,6 +368,7 @@ export default {
       this.supplierChart = echarts.init(this.$refs.supplierChart)
       this.monthlyChart = echarts.init(this.$refs.monthlyChart)
       this.dailyChart = echarts.init(this.$refs.dailyChart)
+      this.materialTop10Chart = echarts.init(this.$refs.materialTop10Chart)
       
       // 监听窗口大小变化
       window.addEventListener('resize', this.handleResize)
@@ -357,6 +386,9 @@ export default {
       if (this.dailyChart) {
         this.dailyChart.resize()
       }
+      if (this.materialTop10Chart) {
+        this.materialTop10Chart.resize()
+      }
     },
     
     // 获取数据
@@ -366,7 +398,8 @@ export default {
         await Promise.all([
           this.fetchSupplierData(),
           this.fetchMonthlyData(),
-          this.fetchDailyData()
+          this.fetchDailyData(),
+          this.fetchMaterialTop10Data()
         ])
       } catch (error) {
         console.error('获取数据失败:', error)
@@ -412,6 +445,48 @@ export default {
       this.fetchSupplierData()
       this.fetchMonthlyData()
       this.fetchDailyData()
+      this.fetchMaterialTop10Data()
+    },
+    
+    // 获取物料TOP10数据
+    async fetchMaterialTop10Data() {
+      try {
+        const params = {
+          month: this.chartMonths.materialTop10  // 格式：yyyy-MM
+        }
+        
+        // 添加筛选参数
+        if (this.searchForm.supplierName) {
+          params.supplierName = this.searchForm.supplierName
+        }
+
+        const response = await getMaterialTop10(params)
+
+        if (response.code === 200 && response.data) {
+          console.log('物料TOP10 API返回数据:', response.data)
+          const chartData = this.processMaterialTop10Data(response.data)
+          console.log('处理后的物料TOP10图表数据:', chartData)
+          this.updateMaterialTop10Chart(chartData)
+        } else {
+          this.$message.warning(response.msg || '暂无物料TOP10数据')
+          this.updateMaterialTop10Chart({
+            names: [],
+            totalCounts: [],
+            passCounts: [],
+            defectCounts: [],
+            defectRates: []
+          })
+        }
+      } catch (error) {
+        console.error('获取物料TOP10数据失败:', error)
+        this.updateMaterialTop10Chart({
+          names: [],
+          totalCounts: [],
+          passCounts: [],
+          defectCounts: [],
+          defectRates: []
+        })
+      }
     },
 
  
@@ -580,6 +655,67 @@ export default {
       }))
     },
 
+    // 处理物料TOP10图表数据
+    processMaterialTop10Data(data) {
+      if (!data) return {
+        names: [],
+        totalCounts: [],
+        passCounts: [],
+        defectCounts: [],
+        defectRates: []
+      }
+      
+      // 如果数据是对象且包含字段（新API格式）
+      if (!Array.isArray(data) && data.materialNames) {
+        const names = data.materialNames || []
+        const totalCounts = data.totalCounts || []
+        const defectCounts = data.defectCounts || []
+        const defectRates = data.defectRates || []
+        
+        // 计算合格批数 = 总批数 - 不合格批数
+        const passCounts = totalCounts.map((total, index) => {
+          return Math.max(0, total - (defectCounts[index] || 0))
+        })
+        
+        return { names, totalCounts, passCounts, defectCounts, defectRates }
+      }
+      
+      // 如果是数组格式（旧API格式）
+      if (!Array.isArray(data)) return {
+        names: [],
+        totalCounts: [],
+        passCounts: [],
+        defectCounts: [],
+        defectRates: []
+      }
+      
+      const names = []
+      const totalCounts = []
+      const passCounts = []
+      const defectCounts = []
+      const defectRates = []
+      
+      data.forEach(item => {
+        names.push(item.materialName || item.material || item.name || '未知')
+        const total = item.totalCount || 0
+        const defect = item.defectCount || 0
+        totalCounts.push(total)
+        passCounts.push(item.passCount || (total - defect))
+        defectCounts.push(defect)
+        
+        // 处理不良率
+        let rate = 0
+        if (typeof item.defectRate === 'string') {
+          rate = parseFloat(item.defectRate.replace('%', '')) || 0
+        } else {
+          rate = item.defectRate || 0
+        }
+        defectRates.push(rate)
+      })
+      
+      return { names, totalCounts, passCounts, defectCounts, defectRates }
+    },
+    
     // 处理供应商图表数据
     processSupplierChartData(data) {
       // 处理两种数据格式：1. 数组对象 2. 直接的数组字段
@@ -1105,6 +1241,161 @@ export default {
       this.supplierChart.setOption(option)
     },
     
+    // 更新物料TOP10图表
+    updateMaterialTop10Chart(data) {
+      const option = {
+        title: {
+          text: '物料TOP10月度统计',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          },
+          formatter: function(params) {
+            let tooltip = params[0].axisValueLabel + '<br/>'
+            params.forEach(param => {
+              if (param.seriesName === '不良率') {
+                tooltip += param.marker + param.seriesName + ': ' + param.value + '%<br/>'
+              } else {
+                tooltip += param.marker + param.seriesName + ': ' + param.value + '<br/>'
+              }
+            })
+            return tooltip
+          }
+        },
+        legend: {
+          data: ['检验总批数', '合格批数', '不合格批数', '不良率'],
+          top: '30px'
+        },
+        grid: {
+          top: '70px',
+          left: '50px',
+          right: '60px',
+          bottom: '50px',
+          containLabel: true
+        },
+        dataZoom: [
+          {
+            type: 'slider',
+            show: true,
+            xAxisIndex: [0],
+            start: 0,
+            end: 100,
+            bottom: '0px'
+          },
+          {
+            type: 'inside',
+            xAxisIndex: [0],
+            start: 0,
+            end: 100
+          }
+        ],
+        xAxis: {
+          type: 'category',
+          data: data.names || [],
+          axisLabel: {
+            rotate: 45,
+            interval: 0
+          }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: '批数',
+            position: 'left',
+            axisLabel: {
+              formatter: '{value}'
+            }
+          },
+          {
+            type: 'value',
+            name: '不良率(%)',
+            position: 'right',
+            min: 0,
+            max: 100,
+            axisLabel: {
+              formatter: '{value}%'
+            }
+          }
+        ],
+        series: [
+          {
+            name: '检验总批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            barWidth: '18%',
+            data: data.totalCounts || [],
+            itemStyle: {
+              color: '#5470c6'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            barWidth: '18%',
+            data: data.passCounts || [],
+            itemStyle: {
+              color: '#91cc75'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '不合格批数',
+            type: 'bar',
+            yAxisIndex: 0,
+            barWidth: '18%',
+            data: data.defectCounts || [],
+            itemStyle: {
+              color: '#ee6666'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
+              formatter: '{c}'
+            }
+          },
+          {
+            name: '不良率',
+            type: 'line',
+            yAxisIndex: 1,
+            data: data.defectRates || [],
+            smooth: true,
+            itemStyle: {
+              color: '#fac858'
+            },
+            lineStyle: {
+              color: '#fac858',
+              width: 2
+            },
+            label: {
+              show: true,
+              formatter: '{c}%'
+            }
+          }
+        ]
+      }
+      
+      this.materialTop10Chart.setOption(option)
+    },
+    
     // 更新每月柱状图表
     updateMonthlyChart(data) {
       // 处理合格率数据（API返回的defectRates字段实际上是合格率）
@@ -1595,6 +1886,15 @@ export default {
       // 验证月份是否在当前年份范围内
       if (this.validateMonthInCurrentYear(this.chartMonths.daily)) {
         this.fetchDailyData()
+      }
+    },
+    
+    // 物料TOP10图表月份变化处理
+    handleMaterialTop10MonthChange() {
+      console.log('物料TOP10图表月份变化:', this.chartMonths.materialTop10)
+      // 验证月份是否在当前年份范围内
+      if (this.validateMonthInCurrentYear(this.chartMonths.materialTop10)) {
+        this.fetchMaterialTop10Data()
       }
     },
     

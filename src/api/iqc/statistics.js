@@ -44,4 +44,14 @@ export function getSupplierList(params) {
     params
   })
 }
+
+// 物料TOP10统计报表
+// params: { month: 'yyyy-MM', supplierName: '供应商名称(可选)' }
+export function getMaterialTop10(params) {
+  return request({
+    url: '/base/inventory/info/material/top10',
+    method: 'get',
+    params
+  })
+}
  
