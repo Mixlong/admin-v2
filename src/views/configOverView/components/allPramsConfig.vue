@@ -116,6 +116,7 @@
                 </el-tooltip>
                 <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning"><span class="tag-prefix-package">包装:</span>待审核</el-tag>
                 <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="success"><span class="tag-prefix-package">包装:</span>已审核</el-tag>
+                <el-tag size="mini" v-else type="info"><span class="tag-prefix-package">包装:</span>--</el-tag>
                 
                 <!-- 包装审核人信息 - 移到状态后面 -->
                 <el-tooltip v-if="row.packagingFirstPerson || row.packagingLastPerson" placement="top">
@@ -155,6 +156,7 @@
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning"><span class="tag-prefix-spec">图纸:</span>待初审</el-tag>
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="warning"><span class="tag-prefix-spec">图纸:</span>待终审</el-tag>
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success"><span class="tag-prefix-spec">图纸:</span>已审核</el-tag>
+
                 
                 <!-- 产品图纸审核人信息 - 移到状态后面 -->
                 <el-tooltip v-if="row.specificationFirstPerson || row.specificationLastPerson" placement="top">
