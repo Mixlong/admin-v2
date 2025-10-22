@@ -114,15 +114,12 @@
                   :disabled="!row.packagingReasonRejection">
                   <el-tag size="mini" type="danger" style="cursor: pointer;"><span class="tag-prefix-package">包装:</span>拒审</el-tag>
                 </el-tooltip>
-                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning"><span class="tag-prefix-package">包装:</span>待初审</el-tag>
-                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="warning"><span class="tag-prefix-package">包装:</span>待终审</el-tag>
-                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 2" type="success"><span class="tag-prefix-package">包装:</span>已审核</el-tag>
-                <el-tag size="mini" v-else type="info"><span class="tag-prefix-package">包装:</span>待初审</el-tag>
+                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 0" type="warning"><span class="tag-prefix-package">包装:</span>待审核</el-tag>
+                <el-tag size="mini" v-else-if="row.packagingAuditStatus === 1" type="success"><span class="tag-prefix-package">包装:</span>已审核</el-tag>
                 
                 <!-- 包装审核人信息 - 移到状态后面 -->
                 <el-tooltip v-if="row.packagingFirstPerson || row.packagingLastPerson" placement="top">
                   <div slot="content" style="line-height: 1.8;">
-                    <div v-if="row.packagingFirstPerson">初审者：{{ row.packagingFirstPerson }}</div>
                     <div v-if="row.packagingLastPerson">终审者：{{ row.packagingLastPerson }}</div>
                   </div>
                   <i class="el-icon-user" style="color: #409EFF; cursor: pointer; font-size: 14px; margin-left: 6px;"></i>
@@ -130,16 +127,10 @@
               </div>
               
               <div class="audit-operations">
-                <!-- 包装信息初审 -->
-                <Tooltip v-if="row.packagingAuditStatus === 0 || row.packagingAuditStatus === null || row.packagingAuditStatus === undefined" 
+                <!-- 包装信息审核 -->
+                <Tooltip v-if="row.packagingAuditStatus === 0" 
                   class="text-orange" 
-                  icon="el-icon-circle-check" content="包装初审" 
-                  v-hasPermi="['config:overview:packaging:first:check']" @click="handlePackagingFirstAudit(row)" />
-                
-                <!-- 包装信息终审 -->
-                <Tooltip v-if="row.packagingAuditStatus === 1" 
-                  class="text-orange" 
-                  icon="el-icon-circle-check" content="包装终审" 
+                  icon="el-icon-circle-check" content="包装审核" 
                   v-hasPermi="['config:overview:packaging:final:check']" @click="handlePackagingFinalAudit(row)" />
                 
             <!-- 包装信息查看 -->
@@ -164,7 +155,6 @@
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 0" type="warning"><span class="tag-prefix-spec">图纸:</span>待初审</el-tag>
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 1" type="warning"><span class="tag-prefix-spec">图纸:</span>待终审</el-tag>
                 <el-tag size="mini" v-else-if="row.specificationAuditStatus === 2" type="success"><span class="tag-prefix-spec">图纸:</span>已审核</el-tag>
-                <el-tag size="mini" v-else type="info"><span class="tag-prefix-spec">图纸:</span>待初审</el-tag>
                 
                 <!-- 产品图纸审核人信息 - 移到状态后面 -->
                 <el-tooltip v-if="row.specificationFirstPerson || row.specificationLastPerson" placement="top">
@@ -178,7 +168,7 @@
               
               <div class="audit-operations">
                 <!-- 产品图纸初审 -->
-                <Tooltip v-if="row.specificationAuditStatus === 0 || row.specificationAuditStatus === null || row.specificationAuditStatus === undefined" 
+                <Tooltip v-if="row.specificationAuditStatus === 0" 
                   class="text-orange" 
                   icon="el-icon-circle-check" content="图纸初审" 
                   v-hasPermi="['config:overview:specification:first:check']" @click="handleSpecificationFirstAudit(row)" />
