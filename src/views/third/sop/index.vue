@@ -34,6 +34,11 @@
             新增
           </el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button type="info" icon="el-icon-folder-opened" @click="handleOpenDraftBox">
+            草稿箱
+          </el-button>
+        </el-col>
       </el-row>
     </el-form>
 
@@ -108,6 +113,9 @@
         </el-table-column>
       </el-table>
     </el-dialog>
+
+    <!-- 草稿箱 -->
+    <DraftBox :visible.sync="isDraftBoxVisible" @edit-draft="handleEditDraft" />
   </div>
 </template>
 
@@ -120,6 +128,7 @@ export default {
   components: {
     AddSop: () => import("./components/addSop"),
     sopDetail: () => import("./components/sopDetail"),
+    DraftBox: () => import("./components/DraftBox"),
   },
   data() {
     return {
@@ -134,6 +143,8 @@ export default {
       isSopDetailDia: false,
       // 历史文件弹窗
       historyFileDialogVisible: false,
+      // 草稿箱弹窗
+      isDraftBoxVisible: false,
       // 历史文件列表
       historyFileList: [],
       // 待处理 、 全部
@@ -299,6 +310,21 @@ export default {
         this.historyFileList = JSON.parse(row.historyFile);;
         this.historyFileDialogVisible = true;
       }
+    },
+    // 打开草稿箱
+    handleOpenDraftBox() {
+      this.isDraftBoxVisible = true;
+    },
+    // 从草稿箱编辑草稿
+    handleEditDraft(draftId) {
+      // 打开新增弹窗
+      this.isSopAddDia = true;
+      // 等待弹窗打开后加载草稿数据
+      this.$nextTick(() => {
+        if (this.$refs.isAddSopRef && this.$refs.isAddSopRef.loadDraft) {
+          this.$refs.isAddSopRef.loadDraft(draftId);
+        }
+      });
     },
   },
 };

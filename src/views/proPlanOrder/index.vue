@@ -219,8 +219,20 @@
             <template v-if="row.configStatus === 3">
               <span style="font-size: 13px; color: #67C23A; font-weight: 500;">已审核</span>
             </template>
+            <template v-else-if="row.configStatus === 0">
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待审核</span>
+            </template>
+            <template v-else-if="row.configStatus === 1">
+              <span style="font-size: 13px; color: #409EFF; font-weight: 500;">初审通过</span>
+            </template>
+            <template v-else-if="row.configStatus === 2">
+              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">初审未通过</span>
+            </template>
+            <template v-else-if="row.configStatus === 4">
+              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">终审未通过</span>
+            </template>
             <template v-else>
-              <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">未审核</span>
+              <span style="font-size: 13px; color: #909399; font-weight: 500;">未配置</span>
             </template>
           </template>
         </el-table-column>
@@ -228,14 +240,11 @@
         <!-- 包装审核状态 -->
         <el-table-column prop="packagingAuditStatus" label="包装" align="center" width="80">
           <template slot-scope="{ row }">
-            <template v-if="row.packagingAuditStatus === 2">
+            <template v-if="row.packagingAuditStatus === 1">
               <span style="font-size: 13px; color: #67C23A; font-weight: 500;">已审核</span>
             </template>
-            <template v-else-if="row.packagingAuditStatus === 1">
-              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待终审</span>
-            </template>
             <template v-else-if="row.packagingAuditStatus === 0">
-              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待初审</span>
+              <span style="font-size: 13px; color: #E6A23C; font-weight: 500;">待审核</span>
             </template>
             <template v-else-if="row.packagingAuditStatus === -1">
               <span style="font-size: 13px; color: #F56C6C; font-weight: 500;">拒审</span>

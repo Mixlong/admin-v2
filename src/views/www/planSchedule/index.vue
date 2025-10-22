@@ -86,7 +86,7 @@
       <el-table-column label="排产单号" align="center" prop="no" min-width="150" />
       <el-table-column label="订单编号" align="center" prop="orderCode" min-width="150" />
       <el-table-column label="生产地点" align="center" prop="address" width="90" />
-      <el-table-column label="生产日期" align="center" prop="date">
+      <el-table-column label="生产日期" align="center" prop="date" width="95">
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.date, '{y}-{m}-{d}')" :class="{ 'text-red': isDisabled(row.date) }"
             :title="isDisabled(row.date) ? '已过期' : ''"></span>

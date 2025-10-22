@@ -19,6 +19,7 @@
                   :request="getSupplierList"
                   placeholder="请选择供应商"
                   size="mini"
+                  @change="handleSupplierChange"
                 >
                 </select-loadMore>
         </el-form-item>
@@ -411,6 +412,14 @@ export default {
 
 
     
+    // 供应商改变处理
+    handleSupplierChange(value) {
+      console.log('供应商改变:', value)
+      // 供应商改变时自动更新所有图表数据
+      this.pagination.current = 1
+      this.fetchData()
+    },
+    
     // 搜索处理
     handleSearch() {
       this.pagination.current = 1
@@ -665,7 +674,33 @@ export default {
         defectRates: []
       }
       
-      // 如果数据是对象且包含字段（新API格式）
+      // 最新API格式：invNames + invCodes + totalBatchCounts + qualifiedBatchCounts + defectiveBatchCounts
+      if (!Array.isArray(data) && data.invNames && data.invCodes) {
+        const invNames = data.invNames || []
+        const invCodes = data.invCodes || []
+        const totalCounts = data.totalBatchCounts || []
+        const passCounts = data.qualifiedBatchCounts || []
+        const defectCounts = data.defectiveBatchCounts || []
+        const defectRatesRaw = data.defectRates || []
+        
+        // 组合显示：物料编码 + 物料名称
+        const names = invCodes.map((code, index) => {
+          const name = invNames[index] || '未知'
+          return `${code}\n${name}`
+        })
+        
+        // 处理不良率（从字符串百分比转为数字）
+        const defectRates = defectRatesRaw.map(rate => {
+          if (typeof rate === 'string') {
+            return parseFloat(rate.replace('%', '')) || 0
+          }
+          return rate || 0
+        })
+        
+        return { names, totalCounts, passCounts, defectCounts, defectRates }
+      }
+      
+      // 如果数据是对象且包含字段（旧API格式）
       if (!Array.isArray(data) && data.materialNames) {
         const names = data.materialNames || []
         const totalCounts = data.totalCounts || []
@@ -680,7 +715,7 @@ export default {
         return { names, totalCounts, passCounts, defectCounts, defectRates }
       }
       
-      // 如果是数组格式（旧API格式）
+      // 如果是数组格式（更旧的API格式）
       if (!Array.isArray(data)) return {
         names: [],
         totalCounts: [],
@@ -1157,9 +1192,19 @@ export default {
         xAxis: {
           type: 'category',
           data: data.names || [],
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
             rotate: 0,
-            interval: 0  // 强制显示所有标签
+            interval: 0,  // 强制显示所有标签
+            color: '#333'
           }
         },
         yAxis: [
@@ -1167,8 +1212,31 @@ export default {
             type: 'value',
             name: '批数',
             position: 'left',
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value}'
+              formatter: '{value}',
+              color: '#333'
             }
           },
           {
@@ -1177,8 +1245,21 @@ export default {
             position: 'right',
             min: 0,
             max: 100,
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            },
             axisLabel: {
-              formatter: '{value}%'
+              formatter: '{value}%',
+              color: '#333'
             }
           }
         ],
@@ -1256,7 +1337,7 @@ export default {
           formatter: function(params) {
             let tooltip = params[0].axisValueLabel + '<br/>'
             params.forEach(param => {
-              if (param.seriesName === '不良率') {
+              if (param.seriesName === '批次不合格率') {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '%<br/>'
               } else {
                 tooltip += param.marker + param.seriesName + ': ' + param.value + '<br/>'
@@ -1266,14 +1347,14 @@ export default {
           }
         },
         legend: {
-          data: ['检验总批数', '合格批数', '不合格批数', '不良率'],
+          data: ['总批数', '不合格数', '批次不合格率'],
           top: '30px'
         },
         grid: {
           top: '70px',
           left: '50px',
           right: '60px',
-          bottom: '50px',
+          bottom: '80px',
           containLabel: true
         },
         dataZoom: [
@@ -1295,9 +1376,32 @@ export default {
         xAxis: {
           type: 'category',
           data: data.names || [],
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
-            rotate: 45,
-            interval: 0
+            rotate: 0,
+            interval: 0,
+            color: '#333',
+            formatter: function(value) {
+              // 如果包含换行符，直接返回
+              if (value.includes('\n')) {
+                return value
+              }
+              // 如果文字太长，进行智能换行
+              if (value.length > 12) {
+                // 尝试在中间位置换行
+                const mid = Math.floor(value.length / 2)
+                return value.substring(0, mid) + '\n' + value.substring(mid)
+              }
+              return value
+            }
           }
         },
         yAxis: [
@@ -1305,27 +1409,64 @@ export default {
             type: 'value',
             name: '批数',
             position: 'left',
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,  // 左边Y轴显示刻度线
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,  // 显示网格线
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value}'
+              formatter: '{value}',
+              color: '#333'
             }
           },
           {
             type: 'value',
-            name: '不良率(%)',
+            name: '批次不合格率(%)',
             position: 'right',
             min: 0,
             max: 100,
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: false  // 右边Y轴不显示轴线
+            },
+            axisTick: {
+              show: false  // 右边Y轴不显示刻度线
+            },
+            splitLine: {
+              show: false
+            },
             axisLabel: {
-              formatter: '{value}%'
+              formatter: '{value}%',
+              color: '#333'
             }
           }
         ],
         series: [
           {
-            name: '检验总批数',
+            name: '总批数',
             type: 'bar',
             yAxisIndex: 0,
-            barWidth: '18%',
+            barWidth: '20%',
+            barGap: '20%',
             data: data.totalCounts || [],
             itemStyle: {
               color: '#5470c6'
@@ -1339,27 +1480,10 @@ export default {
             }
           },
           {
-            name: '合格批数',
+            name: '不合格数',
             type: 'bar',
             yAxisIndex: 0,
-            barWidth: '18%',
-            data: data.passCounts || [],
-            itemStyle: {
-              color: '#91cc75'
-            },
-            label: {
-              show: true,
-              position: 'top',
-              distance: 5,
-              fontSize: 11,
-              formatter: '{c}'
-            }
-          },
-          {
-            name: '不合格批数',
-            type: 'bar',
-            yAxisIndex: 0,
-            barWidth: '18%',
+            barWidth: '20%',
             data: data.defectCounts || [],
             itemStyle: {
               color: '#ee6666'
@@ -1373,20 +1497,19 @@ export default {
             }
           },
           {
-            name: '不良率',
-            type: 'line',
+            name: '批次不合格率',
+            type: 'bar',
             yAxisIndex: 1,
+            barWidth: '20%',
             data: data.defectRates || [],
-            smooth: true,
             itemStyle: {
               color: '#fac858'
             },
-            lineStyle: {
-              color: '#fac858',
-              width: 2
-            },
             label: {
               show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
               formatter: '{c}%'
             }
           }
@@ -1458,8 +1581,18 @@ export default {
         xAxis: {
           type: 'category',
           data: (data.months || []).map(month => month + '月'),
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
-            rotate: 0
+            rotate: 0,
+            color: '#333'
           }
         },
         yAxis: [
@@ -1467,8 +1600,31 @@ export default {
             type: 'value',
             name: '数量',
             position: 'left',
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value}'
+              formatter: '{value}',
+              color: '#333'
             }
           },
           {
@@ -1477,8 +1633,21 @@ export default {
             position: 'right',
             min: 60,
             max: 100,
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            },
             axisLabel: {
-              formatter: '{value}%'
+              formatter: '{value}%',
+              color: '#333'
             }
           }
         ],
@@ -1624,8 +1793,18 @@ export default {
             const parts = date.split('-')
             return parts.length >= 3 ? parts[2] + '日' : date
           }),
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
-            rotate: 0
+            rotate: 0,
+            color: '#333'
           }
         },
         yAxis: [
@@ -1633,18 +1812,54 @@ export default {
             type: 'value',
             name: '数量',
             position: 'left',
+            nameTextStyle: {
+              color: '#333'
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value}'
+              formatter: '{value}',
+              color: '#333'
             }
           },
           {
             type: 'value',
             name: '不良率(%)',
             position: 'right',
-            axisLabel: {
-              formatter: '{value}%'
+            max: 100,
+            nameTextStyle: {
+              color: '#333'
             },
-            max: 100
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: '{value}%',
+              color: '#333'
+            }
           }
         ],
         series: [
@@ -1655,6 +1870,13 @@ export default {
             data: data.defectCounts || [],
             itemStyle: {
               color: '#f56c6c'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
+              formatter: '{c}'
             }
           },
           {
@@ -1664,6 +1886,13 @@ export default {
             data: data.totalCounts || [],
             itemStyle: {
               color: '#409EFF'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 5,
+              fontSize: 11,
+              formatter: '{c}'
             }
           },
           {
@@ -1678,6 +1907,10 @@ export default {
             lineStyle: {
               color: '#67c23a',
               width: 2
+            },
+            label: {
+              show: true,
+              formatter: '{c}%'
             }
           }
         ]
@@ -2057,6 +2290,11 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 400px; /* 设置最小高度 */
+}
+
+/* 物料TOP10图表特殊高度 */
+.iqc-statistics-container .chart-row:last-child .chart-card-medium {
+  min-height: 500px; /* 物料TOP10图表高度更高 */
 }
 
 /* 图表头部样式 */

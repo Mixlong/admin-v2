@@ -1,35 +1,45 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" @submit.native.prevent>
-      <el-form-item label="产品型号" prop="computer">
-        <el-select v-model="queryParams.computer" filterable clearable size="small" style="width: 185px"
-          placeholder="请选择产品型号">
-          <el-option v-for="item in computerList" :key="item.model" :label="item.name" :value="item.model" />
+      <el-form-item label="品类" prop="category">
+        <el-select v-model="queryParams.category" filterable clearable size="mini" style="width: 130px"
+          placeholder="请选择品类">
+          <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" clearable size="small" style="width: 185px" placeholder="请选择状态">
+        <el-select v-model="queryParams.status" clearable size="mini" style="width: 130px" placeholder="请选择状态">
           <el-option label="沟通中" :value="1" />
           <el-option label="客户同意" :value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="市场负责人" prop="marketManager">
-        <el-select v-model="queryParams.marketManager" filterable clearable size="small" style="width: 185px"
+      <el-form-item label="客户" prop="involvedCustomers">
+        <TypedSelectLoadMore
+          v-model="queryParams.involvedCustomers"
+          type="customer"
+          dictLabel="name"
+          dictValue="name"
+          style="width: 150px"
+          @change="handleQuery"
+        />
+      </el-form-item>
+      <!-- <el-form-item label="市场负责人" prop="marketManager">
+        <el-select v-model="queryParams.marketManager" filterable clearable size="mini" style="width: 130px"
           placeholder="请选择市场负责人">
           <el-option v-for="item in marketManagerList" :key="item.dictValue" :label="item.dictLabel"
             :value="item.dictLabel" />
         </el-select>
       </el-form-item>
       <el-form-item label="项目经理" prop="projectManager">
-        <el-select v-model="queryParams.projectManager" filterable clearable size="small" style="width: 185px"
+        <el-select v-model="queryParams.projectManager" filterable clearable size="mini" style="width: 130px"
           placeholder="请选择项目经理">
           <el-option v-for="item in projectManagerList" :key="item.dictValue" :label="item.dictLabel"
             :value="item.dictLabel" />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="创建时间">
         <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
-          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="small" />
+          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" v-debounce="{ Fn: handleQuery }">
@@ -55,7 +65,7 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品型号" align="center" prop="computerName" width="140" />
+      <el-table-column label="品类" align="center" prop="categoryName" width="140" />
       <el-table-column label="变更描述" align="center" prop="changeDescription" min-width="150" show-overflow-tooltip />
       <el-table-column label="涉及的客户" align="center" prop="involvedCustomers" width="150" show-overflow-tooltip>
         <span slot-scope="scope" v-NoData="scope.row.involvedCustomers"></span>
@@ -92,13 +102,15 @@
           <span v-else>--</span>
         </template>
       </el-table-column>
-      <el-table-column label="日期" align="center" prop="createTime" width="140">
+      <el-table-column label="日期" align="center" prop="createTime" width="100">
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime, '{y}-{m}-{d}') }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150" fixed="right">
+      <el-table-column label="操作" align="center" width="160" fixed="right">
         <template slot-scope="scope">
+          <Tooltip v-if="scope.row.status === 1" v-hasPermi="['third:pcn:notice:edit']" icon="el-icon-check" content="完成"
+            @click="handleComplete(scope.row)" />
           <Tooltip v-hasPermi="['third:pcn:notice:edit']" icon="el-icon-edit" content="编辑"
             @click="handleUpdate(scope.row)" />
           <Tooltip v-hasPermi="['third:pcn:notice:delete']" icon="el-icon-delete" :className="['text-red']"
@@ -111,72 +123,93 @@
       @pagination="getList" />
 
     <!-- 添加或修改PCN产品变更通知对话框 -->
-    <el-dialog :title="title" center width="800px" :visible.sync="open" append-to-body :close-on-click-modal="false" top="0vh">
+    <el-dialog :title="title" center :width="isCompleting ? '600px' : '800px'" :visible.sync="open" append-to-body :close-on-click-modal="false" top="0vh">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px" @submit.native.prevent>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="产品型号:" prop="computer">
-              <el-select v-model="form.computer" filterable clearable placeholder="请选择产品型号" style="width: 100%">
-                <el-option v-for="item in computerList" :key="item.model" :label="item.name" :value="item.model" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="状态:" prop="status">
-              <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
-                <el-option label="沟通中" :value="1" />
-                <el-option label="客户同意" :value="2" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <!-- 完成操作时只显示具体实施对策 -->
+        <template v-if="isCompleting">
+          <el-form-item label="具体实施对策:" prop="implementationStrategy">
+            <el-input type="textarea" :autosize="{ minRows: 4, maxRows: 8 }" v-model="form.implementationStrategy"
+              placeholder="请输入具体实施对策（客户同意后）" />
+          </el-form-item>
+        </template>
 
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="市场负责人:" prop="marketManager">
-              <el-select v-model="form.marketManager" filterable clearable placeholder="请选择市场负责人" style="width: 100%">
-                <el-option v-for="item in marketManagerList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictLabel" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="项目经理:" prop="projectManager">
-              <el-select v-model="form.projectManager" filterable clearable placeholder="请选择项目经理" style="width: 100%">
-                <el-option v-for="item in projectManagerList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictLabel" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <!-- 非完成操作时显示所有字段 -->
+        <template v-else>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="品类:" prop="category">
+                <el-select v-model="form.category" filterable clearable placeholder="请选择品类" style="width: 100%">
+                  <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="状态:" prop="status">
+                <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
+                  <el-option label="沟通中" :value="1" />
+                  <el-option label="客户同意" :value="2" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-form-item label="变更描述:" prop="changeDescription">
-          <el-input type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" v-model="form.changeDescription"
-            placeholder="请输入变更描述" />
-        </el-form-item>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="市场负责人:" prop="marketManager">
+                <el-select v-model="form.marketManager" filterable clearable placeholder="请选择市场负责人" style="width: 100%">
+                  <el-option v-for="item in marketManagerList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictLabel" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="项目经理:" prop="projectManager">
+                <el-select v-model="form.projectManager" filterable clearable placeholder="请选择项目经理" style="width: 100%">
+                  <el-option v-for="item in projectManagerList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictLabel" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-form-item label="涉及的客户:" prop="involvedCustomers">
-          <el-select v-model="form.involvedCustomersArray" multiple filterable clearable placeholder="请选择涉及的客户"
-            style="width: 100%">
-            <el-option v-for="item in customerList" :key="item.id" :label="item.name" :value="item.name" />
-          </el-select>
-        </el-form-item>
+          <el-form-item label="变更描述:" prop="changeDescription">
+            <el-input type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" v-model="form.changeDescription"
+              placeholder="请输入变更描述" />
+          </el-form-item>
 
-        <el-form-item label="客户沟通进展:" prop="customerCommunicationProgress">
-          <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" v-model="form.customerCommunicationProgress"
-            placeholder="请输入客户沟通进展" />
-        </el-form-item>
+          <el-form-item label="涉及的客户:" prop="involvedCustomers">
+            <select-loadMore
+              v-model="form.involvedCustomersArray"
+              :data="customerData.data"
+              :page="customerData.page"
+              :hasMore="customerData.more"
+              :request="getCustomerListForSelect"
+              dictLabel="name"
+              dictValue="name"
+              placeholder="请选择涉及的客户"
+              :multiple="true"
+              :clearable="true"
+              style="width: 100%"
+              @change="handleCustomerChange"
+            />
+          </el-form-item>
 
-        <el-form-item v-if="form.status === 2" label="具体实施对策:" prop="implementationStrategy">
-          <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" v-model="form.implementationStrategy"
-            placeholder="请输入具体实施对策（客户同意后）" />
-        </el-form-item>
+          <el-form-item label="客户沟通进展:" prop="customerCommunicationProgress">
+            <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" v-model="form.customerCommunicationProgress"
+              placeholder="请输入客户沟通进展" />
+          </el-form-item>
 
-        <el-form-item label="PCN文件:">
-          <MyUpload 
-            v-model="form.pcnFile"
-            :multiple="true"
-            :limit="10"
-          />
-        </el-form-item>
+          <el-form-item v-if="form.status === 2" label="具体实施对策:" prop="implementationStrategy">
+            <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" v-model="form.implementationStrategy"
+              placeholder="请输入具体实施对策（客户同意后）" />
+          </el-form-item>
+
+          <el-form-item label="PCN文件:">
+            <MyUpload 
+              v-model="form.pcnFile"
+              :multiple="true"
+              :limit="10"
+            />
+          </el-form-item>
+        </template>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
@@ -194,9 +227,9 @@
             <span>{{ getFileName(row.url) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="120">
+        <el-table-column label="操作" align="center" width="100">
           <template slot-scope="{ row }">
-            <el-button type="text" size="small" icon="el-icon-download" @click="handleDownloadSingle(row.url)">
+            <el-button type="text" size="mini" icon="el-icon-download" @click="handleDownloadSingle(row.url)">
               下载
             </el-button>
           </template>
@@ -220,13 +253,15 @@ import {
 } from "@/api/third/pcn";
 import { categoryComputerDict } from "@/api/third/fileConfig";
 import { dictPmProject, dictMkProject } from "@/api/third/project";
-import { getSoCustomerList } from "@/api/crm/soCustomer";
+import { getCustomerList } from "@/api/order";
 import MyUpload from '@/components/MyUpload';
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 
 export default {
   name: "PcnNotice",
   components: {
-    MyUpload
+    MyUpload,
+    TypedSelectLoadMore
   },
   data() {
     return {
@@ -240,16 +275,22 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 是否为完成操作
+      isCompleting: false,
       // 日期范围
       dateRange: [],
-      // 产品型号列表
-      computerList: [],
+      // 品类列表
+      categoryList: [],
       // 市场负责人列表
       marketManagerList: [],
       // 项目经理列表
       projectManagerList: [],
-      // 客户列表
-      customerList: [],
+      // 客户数据（分页）
+      customerData: {
+        data: [],
+        page: 1,
+        more: true
+      },
       // 文件列表弹窗
       fileListVisible: false,
       fileList: [],
@@ -257,8 +298,9 @@ export default {
       queryParams: {
         p: 1,
         l: 20,
-        computer: undefined,
+        category: undefined,
         status: undefined,
+        involvedCustomers: undefined,
         marketManager: undefined,
         projectManager: undefined,
         startTime: undefined,
@@ -267,7 +309,7 @@ export default {
       // 表单参数
       form: {
         id: undefined,
-        computer: undefined,
+        category: undefined,
         changeDescription: undefined,
         involvedCustomers: undefined,
         involvedCustomersArray: [],
@@ -280,8 +322,8 @@ export default {
       },
       // 表单校验
       rules: {
-        computer: [
-          { required: true, message: "产品型号不能为空", trigger: "change" },
+        category: [
+          { required: true, message: "品类不能为空", trigger: "change" },
         ],
         status: [
           { required: true, message: "状态不能为空", trigger: "change" },
@@ -300,31 +342,41 @@ export default {
   },
   created() {
     Promise.all([
-      this.loadComputerList(),
+      this.loadCategoryList(),
       this.loadMarketManagerList(),
-      this.loadProjectManagerList(),
-      this.loadCustomerList()
+      this.loadProjectManagerList()
     ]).then(() => {
       this.getList();
     });
   },
   methods: {
-    /** 加载产品型号列表 */
-    loadComputerList() {
+    /** 加载品类列表 */
+    loadCategoryList() {
       return categoryComputerDict().then((res) => {
-        const allComputers = [];
-        if (res.data && Array.isArray(res.data)) {
-          res.data.forEach(category => {
-            if (category.computerList && Array.isArray(category.computerList)) {
-              allComputers.push(...category.computerList);
-            }
-          });
+        if (res.code === 200 && res.data) {
+          // 处理数据格式，确保包含 id 和 name 字段
+          if (Array.isArray(res.data)) {
+            this.categoryList = res.data.map(item => ({
+              id: item.id || item.categoryId,
+              name: item.name || item.categoryName || item.label,
+              ...item // 保留其他字段
+            }))
+          } else if (res.data.list) {
+            this.categoryList = res.data.list.map(item => ({
+              id: item.id || item.categoryId,
+              name: item.name || item.categoryName || item.label,
+              ...item // 保留其他字段
+            }))
+          }
+          console.log('品类列表加载成功:', this.categoryList.length, '条')
+        } else {
+          console.error('获取品类列表失败:', res.msg)
+          this.categoryList = []
         }
-        this.computerList = allComputers;
-        return this.computerList;
+        return this.categoryList;
       }).catch((error) => {
-        console.error('加载产品型号列表失败:', error);
-        this.computerList = [];
+        console.error('加载品类列表失败:', error);
+        this.categoryList = [];
         return [];
       });
     },
@@ -361,25 +413,48 @@ export default {
       });
     },
     /** 加载客户列表 */
-    loadCustomerList() {
-      return getSoCustomerList({
-        pageNum: 1,
-        pageSize: 999,
-      }).then((res) => {
-        if (res.code === 200 && res.data) {
-          const { list = [] } = res.data;
-          // 过滤状态为0的客户（启用状态）
-          this.customerList = list.filter(item => item.status === 0);
-          console.log('客户列表加载成功:', this.customerList.length, '条');
-        } else {
-          this.customerList = [];
-        }
-        return this.customerList;
-      }).catch((error) => {
-        console.error('加载客户列表失败:', error);
-        this.customerList = [];
-        return [];
+    /** 获取客户列表（支持分页和搜索） */
+    getCustomerListForSelect({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword
+        }).then((res) => {
+          if (res && res.data) {
+            const { list, total, pageNum, pageSize } = res.data;
+            // 过滤启用状态的客户
+            const filteredList = list.filter((item) => item.status === 0);
+
+            if (more) {
+              this.customerData.data = [...this.customerData.data, ...filteredList];
+            } else {
+              this.customerData.data = filteredList;
+            }
+
+            // 计算是否还有更多数据
+            this.customerData.page = pageNum;
+            this.customerData.more = this.customerData.data.length < total;
+          } else {
+            console.error('获取客户数据失败: 响应数据格式错误');
+            this.customerData.data = [];
+            this.customerData.more = false;
+          }
+          resolve();
+        }).catch((error) => {
+          console.error('获取客户数据失败:', error);
+          this.customerData.data = [];
+          this.customerData.more = false;
+          resolve();
+        });
       });
+    },
+    /** 处理客户选择变化 */
+    handleCustomerChange(value) {
+      console.log('客户选择变化:', value);
+      // 使用 $set 确保响应式更新
+      this.$set(this.form, 'involvedCustomersArray', value);
+      // 强制更新
+      this.$forceUpdate();
     },
     /** 查询PCN列表 */
     getList() {
@@ -400,13 +475,15 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false;
+      this.isCompleting = false;  // 重置完成标记
       this.reset();
     },
     // 表单重置
     reset() {
+      this.isCompleting = false;  // 重置完成标记
       this.form = {
         id: undefined,
-        computer: undefined,
+        category: undefined,
         changeDescription: undefined,
         involvedCustomers: undefined,
         involvedCustomersArray: [], // 多选客户数组
@@ -433,29 +510,76 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
-      this.open = true;
-      this.title = "添加"
+      // 先加载客户数据，然后再打开对话框
+      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
+        this.open = true;
+        this.title = "添加"
+      });
     },
     /** 修改按钮操作 */
+    /** 完成按钮（沟通中 -> 客户同意） */
+    handleComplete(row) {
+      this.reset();
+      this.isCompleting = true;  // 设置为完成操作
+      const id = row.id;
+      
+      // 先加载客户数据，然后再打开对话框
+      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
+        getPcnNoticeInfo(id).then((response) => {
+          this.form = response.data;
+          // 将状态修改为客户同意
+          this.form.status = 2;
+          // 将逗号分隔的客户字符串转换为数组
+          if (this.form.involvedCustomers) {
+            const customerArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
+            console.log('完成-原始客户数据:', this.form.involvedCustomers);
+            console.log('完成-转换后的数组:', customerArray);
+            // 使用 $set 确保响应式
+            this.$set(this.form, 'involvedCustomersArray', customerArray);
+          } else {
+            this.$set(this.form, 'involvedCustomersArray', []);
+          }
+          this.open = true;
+          this.title = "完成";  // 修改标题
+          // 等待 DOM 更新后强制刷新
+          this.$nextTick(() => {
+            this.$forceUpdate();
+          });
+        });
+      });
+    },
     handleUpdate(row) {
       this.reset();
       const id = row.id;
-      getPcnNoticeInfo(id).then((response) => {
-        this.form = response.data;
-        // 将逗号分隔的客户字符串转换为数组
-        if (this.form.involvedCustomers) {
-          this.form.involvedCustomersArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
-        } else {
-          this.form.involvedCustomersArray = [];
-        }
-        this.open = true;
-        this.title = "修改PCN产品变更通知";
+      
+      // 先加载客户数据，然后再打开对话框
+      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
+        getPcnNoticeInfo(id).then((response) => {
+          this.form = response.data;
+          // 将逗号分隔的客户字符串转换为数组
+          if (this.form.involvedCustomers) {
+            const customerArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
+            console.log('编辑-原始客户数据:', this.form.involvedCustomers);
+            console.log('编辑-转换后的数组:', customerArray);
+            // 使用 $set 确保响应式
+            this.$set(this.form, 'involvedCustomersArray', customerArray);
+          } else {
+            this.$set(this.form, 'involvedCustomersArray', []);
+          }
+          this.open = true;
+          this.title = "修改";
+          // 等待 DOM 更新后强制刷新
+          this.$nextTick(() => {
+            this.$forceUpdate();
+          });
+        });
       });
     },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          console.log('提交前-客户数组:', this.form.involvedCustomersArray);
           // 将客户数组转换为逗号分隔的字符串
           const submitData = {
             ...this.form,
@@ -463,6 +587,7 @@ export default {
               ? this.form.involvedCustomersArray.join(',')
               : ''
           };
+          console.log('提交时-转换后的客户字符串:', submitData.involvedCustomers);
           // 删除临时的数组字段
           delete submitData.involvedCustomersArray;
 

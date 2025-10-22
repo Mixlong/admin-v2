@@ -25,10 +25,11 @@ export default {
       default: ''
     },
     // 选择器类型：category（仪表型号）、user（用户）、customer（客户）
+    // 如果传入了 dictLabel 和 dictValue，则 type 可以为任意字符串
     type: {
       type: String,
-      required: true,
-      validator: (value) => ['category', 'user', 'customer'].includes(value)
+      required: false,
+      default: 'custom'
     },
     // 占位符文本
     placeholder: {
@@ -59,6 +60,11 @@ export default {
     dictValue: {
       type: String,
       default: ''
+    },
+    // 是否返回 label 而不是 value（用于需要返回名称而不是ID的场景）
+    returnLabel: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -103,11 +109,17 @@ export default {
     },
     // 计算后的字典标签字段
     computedDictLabel() {
-      return this.dictLabel || this.typeConfig.dictLabel;
+      // 优先使用传入的 prop，其次使用类型配置，最后默认为 'label'
+      return this.dictLabel || this.typeConfig.dictLabel || 'label';
     },
     // 计算后的字典值字段
     computedDictValue() {
-      return this.dictValue || this.typeConfig.dictValue;
+      // 如果设置了 returnLabel，则返回 label 字段
+      if (this.returnLabel) {
+        return this.dictLabel || this.typeConfig.dictLabel || 'label';
+      }
+      // 优先使用传入的 prop，其次使用类型配置，最后默认为 'value'
+      return this.dictValue || this.typeConfig.dictValue || 'value';
     },
     // 计算后的占位符
     computedPlaceholder() {

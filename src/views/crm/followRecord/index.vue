@@ -476,6 +476,10 @@ export default {
     getMethodColor(method) {
       return getFollowMethodColor(method)
     },
+    getMethodText(method) {
+      const option = FOLLOW_METHOD_OPTIONS.find(opt => opt.value === method)
+      return option ? option.label : method
+    },
     formatDateTime(datetime) {
       if (!datetime) return ''
       const date = new Date(datetime)

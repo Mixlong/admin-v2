@@ -20,48 +20,48 @@
                     style="width: 150px"
                     @change="handleProductionLineYearMonthChange"
                   />
-                  <select-loadMore
-                    v-model="chartParams.productionLine.category"
-                    :data="categoryData.data"
-                    :page="categoryData.page"
-                    :hasMore="categoryData.more"
-                    dictLabel="name"
-                    dictValue="id"
-                    :request="getCategoryList"
-                    placeholder="请选择品类"
-                    size="mini"
-                    style="width: 140px"
-                    @change="updateProductionLineChart"
-                  />
                   <el-select
-                    v-model="chartParams.productionLine.productionLine"
-                    placeholder="请选择线号"
+                    v-model="chartParams.productionLine.productType"
+                    placeholder="请选择产品类型"
                     style="width: 140px"
                     size="mini"
                     clearable
                     filterable
-                    @change="updateProductionLineChart"
+                    @change="handleProductionLineProductTypeChange"
                   >
                     <el-option
-                      v-for="item in productionLineOptions"
-                      :key="item.dictValue"
+                      v-for="(item, index) in productTypeOptions"
+                      :key="item.dictCode || `product-type-${index}`"
                       :label="item.dictLabel"
-                      :value="item.dictLabel"
+                      :value="item.dictCode"
                     />
                   </el-select>
+                  <select-loadMore
+                    v-model="chartParams.productionLine.category"
+                    :data="productionLineCategoryData.data"
+                    :page="productionLineCategoryData.page"
+                    :hasMore="productionLineCategoryData.more"
+                    dictLabel="name"
+                    dictValue="id"
+                    :request="getProductionLineCategoryList"
+                    placeholder="请选择品类"
+                    size="mini"
+                    style="width: 140px"
+                    @change="handleProductionLineCategoryChange"
+                  />
                   <el-select
                     v-model="chartParams.productionLine.defectReasons"
                     multiple
                     placeholder="请选择不良原因"
                     style="width: 200px"
-                    size="small"
+                    size="mini"
                     clearable
                     filterable
                     collapse-tags
                     @change="updateProductionLineChart"
                   >
                     <el-option
-                      v-for="item in defectReasonOptions"
+                      v-for="item in productionLineDefectReasonOptions"
                       :key="item"
                       :label="item"
                       :value="item"
@@ -90,19 +90,6 @@
                     style="width: 150px"
                     @change="handleProductTypeYearMonthChange"
                   />
-                  <select-loadMore
-                    v-model="chartParams.productType.category"
-                    :data="categoryData.data"
-                    :page="categoryData.page"
-                    :hasMore="categoryData.more"
-                    dictLabel="name"
-                    dictValue="id"
-                    :request="getCategoryList"
-                    placeholder="请选择品类"
-                    size="mini"
-                    style="width: 140px"
-                    @change="updateProductTypeChart"
-                  />
                   <el-select
                     v-model="chartParams.productType.productType"
                     placeholder="请选择产品类型"
@@ -110,28 +97,41 @@
                     size="mini"
                     clearable
                     filterable
-                    @change="updateProductTypeChart"
+                    @change="handleProductTypeProductTypeChange"
                   >
                     <el-option
-                      v-for="item in productTypeOptions"
-                      :key="item.dictValue"
+                      v-for="(item, index) in productTypeOptions"
+                      :key="item.dictCode || `product-type-2-${index}`"
                       :label="item.dictLabel"
                       :value="item.dictCode"
                     />
                   </el-select>
+                  <select-loadMore
+                    v-model="chartParams.productType.category"
+                    :data="productTypeCategoryData.data"
+                    :page="productTypeCategoryData.page"
+                    :hasMore="productTypeCategoryData.more"
+                    dictLabel="name"
+                    dictValue="id"
+                    :request="getProductTypeCategoryList"
+                    placeholder="请选择品类"
+                    size="mini"
+                    style="width: 140px"
+                    @change="handleProductTypeCategoryChange"
+                  />
                   <el-select
                     v-model="chartParams.productType.defectReasons"
                     multiple
                     collapse-tags
                     placeholder="请选择不良原因"
                     style="width: 200px"
-                    size="small"
+                    size="mini"
                     clearable
                     filterable
                     @change="updateProductTypeChart"
                   >
                     <el-option
-                      v-for="item in defectReasonOptions"
+                      v-for="item in productTypeDefectReasonOptions"
                       :key="item"
                       :label="item"
                       :value="item"
@@ -151,15 +151,21 @@
 <script>
 import * as echarts from 'echarts'
 import { getRepairDefectReport, getRepairReasonsList } from '@/api/maintenance/statistics'
-import { afterCategoryList } from '@/api/third/sale'
+import { listCategory } from '@/api/third/category'
 import { getDicts } from '@/api/system/dict/data'
 
 export default {
   name: 'MaintenanceStatistics',
   data() {
     return {
-      // 品类数据
-      categoryData: {
+      // 线号统计图 - 品类数据
+      productionLineCategoryData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
+      // 产品类型统计图 - 品类数据
+      productTypeCategoryData: {
         data: [],
         page: 1,
         more: true,
@@ -167,8 +173,10 @@ export default {
       loading: false,
       // 统一查询表单
       searchForm: {},
-      // 不良原因字典选项
-      defectReasonOptions: [],
+      // 线号统计图 - 不良原因选项
+      productionLineDefectReasonOptions: [],
+      // 产品类型统计图 - 不良原因选项
+      productTypeDefectReasonOptions: [],
       // 线别字典选项
       productionLineOptions: [],
       // 产品类型字典选项
@@ -179,6 +187,7 @@ export default {
           year: new Date().getFullYear().toString(),
           month: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
           yearMonth: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
+          productType: '',
           category: '',
           productionLine: '',
           defectReasons: []
@@ -187,8 +196,8 @@ export default {
           year: new Date().getFullYear().toString(),
           month: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
           yearMonth: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'),
-          category: '',
           productType: '',
+          category: '',
           defectReasons: []
         }
       },
@@ -205,45 +214,84 @@ export default {
     this.disposeCharts()
   },
   methods: {
-    // 获取品类列表
-    getCategoryList({ page = 1, more = false, keyword = "" } = {}) {
+    // 线号统计图 - 获取品类列表（根据产品类型筛选）
+    getProductionLineCategoryList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
-        afterCategoryList({
+        const params = {
           p: page,
           key: keyword
-        }).then((res) => {
+        }
+        // 如果选择了产品类型，添加过滤参数
+        if (this.chartParams.productionLine.productType) {
+          params.productType = this.chartParams.productionLine.productType
+        }
+        
+        listCategory(params).then((res) => {
           if (res.code === 200 && res.data) {
             const { list, total, pageNum, pageSize } = res.data
             if (more) {
-              this.categoryData.data = [...this.categoryData.data, ...list]
+              this.productionLineCategoryData.data = [...this.productionLineCategoryData.data, ...list]
             } else {
-              this.categoryData.data = list || []
+              this.productionLineCategoryData.data = list || []
             }
-            this.categoryData.more = pageNum * pageSize < total
-            this.categoryData.page = pageNum
+            this.productionLineCategoryData.more = pageNum * pageSize < total
+            this.productionLineCategoryData.page = pageNum
           } else {
-            this.categoryData.data = []
-            this.categoryData.more = false
+            this.productionLineCategoryData.data = []
+            this.productionLineCategoryData.more = false
           }
           resolve()
         }).catch((error) => {
           console.error('获取品类数据失败:', error)
-          this.categoryData.data = []
-          this.categoryData.more = false
+          this.productionLineCategoryData.data = []
+          this.productionLineCategoryData.more = false
           resolve()
         })
       })
     },
-
+    
+    // 产品类型统计图 - 获取品类列表（根据产品类型筛选）
+    getProductTypeCategoryList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        const params = {
+          p: page,
+          key: keyword
+        }
+        // 如果选择了产品类型，添加过滤参数
+        if (this.chartParams.productType.productType) {
+          params.productType = this.chartParams.productType.productType
+        }
+        
+        listCategory(params).then((res) => {
+          if (res.code === 200 && res.data) {
+            const { list, total, pageNum, pageSize } = res.data
+            if (more) {
+              this.productTypeCategoryData.data = [...this.productTypeCategoryData.data, ...list]
+            } else {
+              this.productTypeCategoryData.data = list || []
+            }
+            this.productTypeCategoryData.more = pageNum * pageSize < total
+            this.productTypeCategoryData.page = pageNum
+          } else {
+            this.productTypeCategoryData.data = []
+            this.productTypeCategoryData.more = false
+          }
+          resolve()
+        }).catch((error) => {
+          console.error('获取品类数据失败:', error)
+          this.productTypeCategoryData.data = []
+          this.productTypeCategoryData.more = false
+          resolve()
+        })
+      })
+    },
+    
     // 加载选项并设置默认值
     async loadOptionsAndSetDefaults() {
       try {
         // 加载字典数据
         await Promise.all([
-          this.loadProductionLineOptions(),
-          this.loadProductTypeOptions(),
-          this.loadDefectReasonOptions(),
-          this.loadCategoryOptions()
+          this.loadProductTypeOptions()
         ])
         
         // 设置默认选中第一项
@@ -261,60 +309,22 @@ export default {
     // 设置默认选中项
     setDefaultSelections() {
       console.log('开始设置默认选中项...')
-      console.log('线别选项数量:', this.productionLineOptions.length)
       console.log('产品类型选项数量:', this.productTypeOptions.length)
-      console.log('不良原因选项数量:', this.defectReasonOptions.length)
 
-      // 线号统计图：默认选中第一条线号（使用dictLabel）
-      if (this.productionLineOptions.length > 0) {
-        this.chartParams.productionLine.productionLine = this.productionLineOptions[0].dictLabel
-        console.log('线号统计默认选中线号:', this.chartParams.productionLine.productionLine)
-      }
-
-      // 产品类型统计图：默认选中第一个产品类型（使用dictLabel）
-      if (this.productTypeOptions.length > 0) {
-        this.chartParams.productType.productType = this.productTypeOptions[0].dictLabel
-        console.log('产品类型统计默认选中类型:', this.chartParams.productType.productType)
-      }
-
-      // 两个图表都默认不选中任何不良原因
+      // 不默认选中任何产品类型，让用户手动选择
+      this.chartParams.productionLine.productType = ''
+      this.chartParams.productType.productType = ''
+      
+      // 两个图表都默认不选中任何品类和不良原因
+      this.chartParams.productionLine.category = ''
+      this.chartParams.productType.category = ''
       this.chartParams.productionLine.defectReasons = []
       this.chartParams.productType.defectReasons = []
-      console.log('默认选中的不良原因数量: 0 (不默认选择)')
-
+      
+      console.log('默认不选中任何筛选项，等待用户手动选择')
       console.log('最终的图表参数设置:')
       console.log('线号统计参数:', this.chartParams.productionLine)
       console.log('产品类型统计参数:', this.chartParams.productType)
-    },
-
-    // 加载不良原因选项
-    async loadDefectReasonOptions() {
-      try {
-        const res = await getRepairReasonsList()
-        if (res.code === 200 && res.data && Array.isArray(res.data)) {
-          this.defectReasonOptions = res.data // 直接使用字符串数组
-          console.log('加载不良原因选项:', this.defectReasonOptions.length, '条')
-        } else {
-          this.defectReasonOptions = []
-        }
-      } catch (error) {
-        console.error('获取不良原因列表失败:', error)
-        this.defectReasonOptions = []
-      }
-    },
-
-    // 加载线别字典选项
-    async loadProductionLineOptions() {
-      try {
-        const res = await getDicts('sop_line')
-        if (res.code === 200 && res.data) {
-          this.productionLineOptions = res.data.filter(item => item.status === '0') // 只显示启用的字典项
-          console.log('加载线别选项:', this.productionLineOptions.length, '条')
-        }
-      } catch (error) {
-        console.error('获取线别字典失败:', error)
-        this.productionLineOptions = []
-      }
     },
 
     // 加载产品类型字典选项
@@ -324,19 +334,11 @@ export default {
         if (res.code === 200 && res.data) {
           this.productTypeOptions = res.data.filter(item => item.status === '0') // 只显示启用的字典项
           console.log('加载产品类型选项:', this.productTypeOptions.length, '条')
+          console.log('产品类型选项详情:', JSON.stringify(this.productTypeOptions, null, 2))
         }
       } catch (error) {
         console.error('获取产品类型字典失败:', error)
         this.productTypeOptions = []
-      }
-    },
-
-    // 加载品类选项
-    async loadCategoryOptions() {
-      try {
-        await this.loadCategoryData(1)
-      } catch (error) {
-        console.error('获取品类数据失败:', error)
       }
     },
 
@@ -471,6 +473,116 @@ export default {
         this.chartParams.productType.yearMonth = value
       }
       this.updateProductTypeChart()
+    },
+    
+    // 线号统计图 - 产品类型变化处理（联动品类和不良原因）
+    async handleProductionLineProductTypeChange(value) {
+      console.log('线号统计图-产品类型变化:', value)
+      // 清空品类和不良原因选择
+      this.chartParams.productionLine.category = ''
+      this.chartParams.productionLine.defectReasons = []
+      this.productionLineCategoryData.data = []
+      this.productionLineDefectReasonOptions = []
+      
+      if (value) {
+        // 重新加载品类数据（根据产品类型筛选）
+        await this.getProductionLineCategoryList({ page: 1, more: false, keyword: '' })
+      }
+      
+      // 更新图表
+      this.updateProductionLineChart()
+    },
+    
+    // 线号统计图 - 品类变化处理（联动不良原因）
+    async handleProductionLineCategoryChange(value) {
+      console.log('线号统计图-品类变化:', value)
+      // 清空不良原因选择
+      this.chartParams.productionLine.defectReasons = []
+      this.productionLineDefectReasonOptions = []
+      
+      if (value) {
+        // 重新加载不良原因数据（根据品类筛选）
+        await this.loadProductionLineDefectReasons(value)
+      }
+      
+      // 更新图表
+      this.updateProductionLineChart()
+    },
+    
+    // 产品类型统计图 - 产品类型变化处理（联动品类和不良原因）
+    async handleProductTypeProductTypeChange(value) {
+      console.log('产品类型统计图-产品类型变化:', value)
+      // 清空品类和不良原因选择
+      this.chartParams.productType.category = ''
+      this.chartParams.productType.defectReasons = []
+      this.productTypeCategoryData.data = []
+      this.productTypeDefectReasonOptions = []
+      
+      if (value) {
+        // 重新加载品类数据（根据产品类型筛选）
+        await this.getProductTypeCategoryList({ page: 1, more: false, keyword: '' })
+      }
+      
+      // 更新图表
+      this.updateProductTypeChart()
+    },
+    
+    // 产品类型统计图 - 品类变化处理（联动不良原因）
+    async handleProductTypeCategoryChange(value) {
+      console.log('产品类型统计图-品类变化:', value)
+      // 清空不良原因选择
+      this.chartParams.productType.defectReasons = []
+      this.productTypeDefectReasonOptions = []
+      
+      if (value) {
+        // 重新加载不良原因数据（根据品类筛选）
+        await this.loadProductTypeDefectReasons(value)
+      }
+      
+      // 更新图表
+      this.updateProductTypeChart()
+    },
+    
+    // 线号统计图 - 加载不良原因选项（根据品类筛选）
+    async loadProductionLineDefectReasons(categoryId) {
+      try {
+        const params = {}
+        if (categoryId) {
+          params.categoryId = categoryId
+        }
+        
+        const res = await getRepairReasonsList(params)
+        if (res.code === 200 && res.data && Array.isArray(res.data)) {
+          this.productionLineDefectReasonOptions = res.data
+          console.log('线号统计图-加载不良原因选项:', this.productionLineDefectReasonOptions.length, '条')
+        } else {
+          this.productionLineDefectReasonOptions = []
+        }
+      } catch (error) {
+        console.error('线号统计图-获取不良原因列表失败:', error)
+        this.productionLineDefectReasonOptions = []
+      }
+    },
+    
+    // 产品类型统计图 - 加载不良原因选项（根据品类筛选）
+    async loadProductTypeDefectReasons(categoryId) {
+      try {
+        const params = {}
+        if (categoryId) {
+          params.categoryId = categoryId
+        }
+        
+        const res = await getRepairReasonsList(params)
+        if (res.code === 200 && res.data && Array.isArray(res.data)) {
+          this.productTypeDefectReasonOptions = res.data
+          console.log('产品类型统计图-加载不良原因选项:', this.productTypeDefectReasonOptions.length, '条')
+        } else {
+          this.productTypeDefectReasonOptions = []
+        }
+      } catch (error) {
+        console.error('产品类型统计图-获取不良原因列表失败:', error)
+        this.productTypeDefectReasonOptions = []
+      }
     },
 
     // 各图表独立更新方法
@@ -691,8 +803,18 @@ export default {
         xAxis: {
           type: 'category',
           data: names,
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
-            rotate: 0
+            rotate: 0,
+            color: '#333'
           }
         },
         yAxis: [
@@ -700,16 +822,52 @@ export default {
             type: 'value',
             name: '不良数量',
             position: 'left',
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value} 次'
+              formatter: '{value} 次',
+              color: '#333'
+            },
+            nameTextStyle: {
+              color: '#333'
             }
           },
           {
             type: 'value',
             name: '累计比例(%)',
             position: 'right',
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            },
             axisLabel: {
-              formatter: '{value}%'
+              formatter: '{value}%',
+              color: '#333'
+            },
+            nameTextStyle: {
+              color: '#333'
             }
           }
         ],
@@ -816,8 +974,18 @@ export default {
         xAxis: {
           type: 'category',
           data: names,
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e0e0e0'
+            }
+          },
+          axisTick: {
+            show: false
+          },
           axisLabel: {
-            rotate: 0
+            rotate: 0,
+            color: '#333'
           }
         },
         yAxis: [
@@ -825,16 +993,52 @@ export default {
             type: 'value',
             name: '不良数量',
             position: 'left',
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            axisTick: {
+              show: true,
+              lineStyle: {
+                color: '#e0e0e0'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: '#e8e8e8',
+                type: 'solid'
+              }
+            },
             axisLabel: {
-              formatter: '{value} 次'
+              formatter: '{value} 次',
+              color: '#333'
+            },
+            nameTextStyle: {
+              color: '#333'
             }
           },
           {
             type: 'value',
             name: '累计比例(%)',
             position: 'right',
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            },
             axisLabel: {
-              formatter: '{value}%'
+              formatter: '{value}%',
+              color: '#333'
+            },
+            nameTextStyle: {
+              color: '#333'
             }
           }
         ],

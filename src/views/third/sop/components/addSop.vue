@@ -10,11 +10,12 @@
             <el-col :span="12">
               <el-form-item label="品类" prop="categoryId">
                 <TypedSelectLoadMore
+              ref="categorySelect"
               v-model="form.categoryId"
               type="category"
               customStyle="width: 100%"
               size="mini"
-              @change="handleQuery"
+              @change="handleCategoryChange"
             />
               </el-form-item>
             </el-col>
@@ -174,6 +175,9 @@
     <!-- 底部操作区 -->
     <div slot="footer" class="dialog-footer">
       <el-button @click="close">取消</el-button>
+      <el-button v-if="!form.id" type="info" :loading="isSavingDraft" @click="saveDraft">
+        {{ isSavingDraft ? '保存中...' : '保存草稿' }}
+      </el-button>
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
         {{ isSubLoading ? '保存中...' : '确定' }}
       </el-button>
@@ -218,6 +222,10 @@ export default {
       accept: "image/*,video/*",
       // 提交loading
       isSubLoading: false,
+      // 草稿保存loading
+      isSavingDraft: false,
+      // 当前加载的草稿ID
+      currentDraftId: null,
       historyFileList: [], // 历史文件表格数据
       uploadingItems: {}, // 上传中的文件信息 {[index]: {name, type, preview, percentage, loaded, total}}
       pendingUpload: null, // 待上传文件信息
@@ -341,6 +349,13 @@ export default {
     // 加载装备字典数据
     this.loadEquipmentDict();
   },
+  mounted() {
+    // 监听 TypedSelectLoadMore 的选择事件，获取完整的选项信息
+    this.$nextTick(() => {
+      // 尝试获取 TypedSelectLoadMore 组件实例
+      this.setupCategoryListener();
+    });
+  },
   methods: {
     // 加载装备字典数据
     async loadEquipmentDict() {
@@ -369,6 +384,33 @@ export default {
     close() {
       this.$emit("update:visible", false);
     },
+    /** 处理品类选择变化 */
+    handleCategoryChange(value) {
+      // value 是选中的品类ID
+      console.log('品类ID变化:', value);
+      
+      // 从 TypedSelectLoadMore 组件中获取对应的品类名称
+      this.$nextTick(() => {
+        if (this.$refs.categorySelect && this.$refs.categorySelect.componentData) {
+          const categoryData = this.$refs.categorySelect.componentData.data || [];
+          const selectedCategory = categoryData.find(item => {
+            // 根据 type="category" 的配置，dictValue 是 'id'
+            return item.id == value || item.id === value;
+          });
+          
+          if (selectedCategory) {
+            // 根据 type="category" 的配置，dictLabel 是 'name'
+            const categoryName = selectedCategory.name || selectedCategory.label || value;
+            console.log('品类名称:', categoryName);
+            this.$set(this.form, 'categoryName', categoryName);
+          }
+        }
+      });
+    },
+    /** 设置品类选择器监听 */
+    setupCategoryListener() {
+      // 这个方法不再需要，因为我们已经在 handleCategoryChange 中处理了
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -385,6 +427,7 @@ export default {
       };
       this.historyFileList = []; // 重置历史文件表格数据
       this.activeProcessType = '1'; // 重置到第一个tab
+      this.currentDraftId = null; // 清除草稿ID
       // 确保表单引用存在后再重置
       this.$nextTick(() => {
         if (this.$refs.form) {
@@ -985,6 +1028,10 @@ export default {
               .then(() => {
                 this.msgSuccess("创建成功");
                 this.$parent.getList();
+                // 如果是从草稿创建的，自动删除该草稿
+                if (this.currentDraftId) {
+                  this.deleteDraftById(this.currentDraftId);
+                }
               })
               .finally(() => {
                 this.isSubLoading = false;
@@ -1151,6 +1198,141 @@ export default {
     getImageUrls(fileString) {
       const fileList = this.getFileList(fileString);
       return fileList.filter(file => !this.isVideoFile(file.url)).map(img => img.url);
+    },
+
+    /** 保存草稿到 localStorage */
+    saveDraft() {
+      // 基本验证：至少需要品类
+      if (!this.form.categoryId) {
+        this.msgWarning('请至少选择品类后再保存草稿');
+        return;
+      }
+
+      this.isSavingDraft = true;
+      
+      try {
+        // 获取品类名称（优先从 form.categoryName，否则从 categoryId）
+        const categoryName = this.form.categoryName || this.getCategoryName(this.form.categoryId);
+        
+        // 准备草稿数据
+        const draftData = {
+          id: this.currentDraftId || `draft_${Date.now()}`,
+          createTime: this.currentDraftId ? this.getDraftById(this.currentDraftId)?.createTime : new Date().toISOString(),
+          updateTime: new Date().toISOString(),
+          formData: _.cloneDeep(this.form),
+          categoryName: categoryName, // 保存品类名称用于显示
+          categoryId: this.form.categoryId, // 同时保存品类ID
+          versionCode: this.form.versionCode || '',
+          desc: this.form.desc || '',
+        };
+
+        // 获取现有草稿列表
+        const drafts = this.getDraftList();
+        
+        // 查找是否存在相同ID的草稿
+        const existingIndex = drafts.findIndex(d => d.id === draftData.id);
+        
+        if (existingIndex !== -1) {
+          // 更新现有草稿
+          drafts[existingIndex] = draftData;
+          this.msgSuccess('草稿已更新');
+        } else {
+          // 添加新草稿
+          drafts.unshift(draftData); // 最新的放在前面
+          this.msgSuccess('草稿已保存');
+        }
+
+        // 保存到 localStorage
+        localStorage.setItem('sop_drafts', JSON.stringify(drafts));
+        this.currentDraftId = draftData.id;
+        
+      } catch (error) {
+        console.error('保存草稿失败:', error);
+        this.msgError('保存草稿失败，请重试');
+      } finally {
+        this.isSavingDraft = false;
+      }
+    },
+
+    /** 获取草稿列表 */
+    getDraftList() {
+      try {
+        const draftsStr = localStorage.getItem('sop_drafts');
+        return draftsStr ? JSON.parse(draftsStr) : [];
+      } catch (error) {
+        console.error('读取草稿列表失败:', error);
+        return [];
+      }
+    },
+
+    /** 根据ID获取草稿 */
+    getDraftById(draftId) {
+      const drafts = this.getDraftList();
+      return drafts.find(d => d.id === draftId);
+    },
+
+    /** 删除指定ID的草稿 */
+    deleteDraftById(draftId) {
+      try {
+        const drafts = this.getDraftList();
+        const filteredDrafts = drafts.filter(d => d.id !== draftId);
+        localStorage.setItem('sop_drafts', JSON.stringify(filteredDrafts));
+      } catch (error) {
+        console.error('删除草稿失败:', error);
+      }
+    },
+
+    /** 加载草稿 */
+    loadDraft(draftId) {
+      const draft = this.getDraftById(draftId);
+      if (!draft) {
+        this.msgError('草稿不存在');
+        return;
+      }
+
+      try {
+        // 加载表单数据
+        this.form = _.cloneDeep(draft.formData);
+        this.currentDraftId = draftId;
+        
+        // 确保工位数据格式正确
+        if (!this.form.workstations) {
+          this.form.workstations = {
+            '1': [],
+            '2': [],
+            '3': [],
+          };
+        }
+
+        // 重新排序工位序号
+        this.$nextTick(() => {
+          this.reorderAllWorkstationIndexes();
+        });
+      } catch (error) {
+        this.msgError('加载草稿失败，请重试');
+      }
+    },
+
+    /** 获取品类名称（用于草稿列表显示） */
+    getCategoryName(categoryId) {
+      if (!categoryId) return '未选择品类';
+      
+      // 尝试从表单的 categoryName 字段获取（编辑时会有）
+      if (this.form.categoryName) {
+        return this.form.categoryName;
+      }
+      
+      // 尝试从 TypedSelectLoadMore 组件中获取
+      if (this.$refs.categorySelect && this.$refs.categorySelect.componentData) {
+        const categoryData = this.$refs.categorySelect.componentData.data || [];
+        const selectedCategory = categoryData.find(item => item.id == categoryId || item.id === categoryId);
+        if (selectedCategory) {
+          return selectedCategory.name || selectedCategory.label || categoryId;
+        }
+      }
+      
+      // 如果没有名称，返回 ID
+      return categoryId;
     },
 
     /** 检测数据是否被修改 */
