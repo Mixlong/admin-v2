@@ -1893,6 +1893,7 @@ export default {
     
     /**
      * 判断富文本内容是否为空（包括只有空p标签的情况）
+     * 修复：支持检测图片、视频等媒体元素
      */
     isRichTextEmpty(htmlContent) {
       if (!htmlContent) return true;
@@ -1900,6 +1901,12 @@ export default {
       // 创建临时div来解析HTML
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlContent;
+      
+      // 检查是否包含媒体元素（图片、视频等）
+      const hasMedia = tempDiv.querySelector('img, video, audio, iframe');
+      if (hasMedia) {
+        return false; // 包含媒体元素，不为空
+      }
       
       // 获取纯文本内容（去除所有HTML标签）
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
