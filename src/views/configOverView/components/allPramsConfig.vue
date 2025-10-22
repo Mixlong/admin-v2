@@ -448,10 +448,12 @@
         <el-table-column label="其它附件要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
           <template slot-scope="{ row }">
             <div 
+              v-if="!isRichTextEmpty(getPackagingValue(row, '解件出库方式', '其它附件要求'))"
               v-html="getPackagingValue(row, '解件出库方式', '其它附件要求')" 
               class="rich-text-content"
               @click="handleRichTextClick($event, row, '解件出库方式', '其它附件要求')"
             ></div>
+            <span v-else>--</span>
           </template>
       </el-table-column>
       </el-table-column>
@@ -459,8 +461,8 @@
       <el-table-column label="附件装箱方式" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '附件装箱方式', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && getPackagingValue(row, '附件装箱方式', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '附件装箱方式', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '附件装箱方式', 'value')) && !isRichTextEmpty(getPackagingValue(row, '附件装箱方式', 'administrator'))" 
                  v-html="getPackagingValue(row, '附件装箱方式', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '附件装箱方式', 'administrator')"></div>
@@ -471,8 +473,8 @@
       <el-table-column label="箱唛要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '箱唛要求', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && getPackagingValue(row, '箱唛要求', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '箱唛要求', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '箱唛要求', 'value')) && !isRichTextEmpty(getPackagingValue(row, '箱唛要求', 'administrator'))" 
                  v-html="getPackagingValue(row, '箱唛要求', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '箱唛要求', 'administrator')"></div>
@@ -483,8 +485,8 @@
       <el-table-column label="检验报告要求" header-align="center" align="left" min-width="220" class-name="rich-text-cell-column">
         <template slot-scope="{ row }">
           <div>
-            <div class="select-value-text">{{ getPackagingValue(row, '检验报告要求', 'value') }}</div>
-            <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && getPackagingValue(row, '检验报告要求', 'administrator')" 
+            <div class="select-value-text">{{ getPackagingValue(row, '检验报告要求', 'value') || '--' }}</div>
+            <div v-if="shouldShowAdministrator(getPackagingValue(row, '检验报告要求', 'value')) && !isRichTextEmpty(getPackagingValue(row, '检验报告要求', 'administrator'))" 
                  v-html="getPackagingValue(row, '检验报告要求', 'administrator')" 
                  class="rich-text-content text-muted"
                  @click="handleRichTextClick($event, row, '检验报告要求', 'administrator')"></div>
@@ -1897,6 +1899,23 @@ export default {
       }
     },
     
+    /**
+     * 判断富文本内容是否为空（包括只有空p标签的情况）
+     */
+    isRichTextEmpty(htmlContent) {
+      if (!htmlContent) return true;
+      
+      // 创建临时div来解析HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // 获取纯文本内容（去除所有HTML标签）
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // 判断纯文本是否为空（去除空白字符后）
+      return textContent.trim() === '';
+    },
+    
     // 注意：getOldFormatValue、convertOldContentId、getNewFormatValue 方法已移除
     // 这些功能已由配置文件（packagingFieldsConfig.js）的工具函数统一处理
     // 好处：字段管理集中化，历史兼容性自动处理，代码更简洁
@@ -2664,57 +2683,8 @@ export default {
   font-size: 14px !important;
 }
 
-/* 表格单元格内的富文本容器 - 确保正确换行和左对齐 */
-::v-deep .el-table__body-wrapper .el-table__body td {
-  .rich-text-content,
-  .text-muted {
-    text-align: left !important;
-    display: block;
-  }
-  
-  /* 确保富文本容器的父级也左对齐、顶部对齐 */
-  & > .cell {
-    text-align: left;
-    vertical-align: top;
-  }
-}
-
  
-
-/* 针对包含富文本内容的td单元格，强制顶部对齐 */
-::v-deep .el-table__body td:has(.rich-text-content),
-::v-deep .el-table__body td:has(.text-muted) {
-  vertical-align: top !important;
-}
-
  
-
-/* 使用 class-name 精确定位富文本列的单元格 - 最强优先级 */
-::v-deep .el-table .rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table__body .rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table td.rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-::v-deep .el-table__body-wrapper .el-table__body td.rich-text-cell-column {
-  vertical-align: top !important;
-}
-
-/* 针对富文本列的 cell 容器 - 覆盖 Element UI 默认居中 */
-::v-deep .el-table td.rich-text-cell-column .cell {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  padding-top: 8px !important;
-}
-
 /* 为表头单元格添加边框 */
 .el-table th.group-header-basic,
 .el-table th.group-header-appearance,

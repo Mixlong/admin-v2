@@ -104,7 +104,7 @@
             </template>
           </el-table-column>
         <!-- 客户要求（标准） -->
-        <el-table-column label="客户出货方" prop="customerDelivery" align="center" >
+        <el-table-column label="客户出货方" prop="customerDelivery" align="center" width="220" >
           <template slot-scope="scope">
             <div class="requirement-container">
               <div class="requirement-scroll-area">
@@ -402,21 +402,21 @@
             </template>
         </el-table-column>
         <!-- 市场负责人 -->
-        <el-table-column label="市场负责人" align="center" width="120" class-name="market-manager-column">
+        <el-table-column label="市场负责人" align="center" width="95" class-name="market-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.marketManager || '--' }}</span>
           </template>
         </el-table-column>
         
         <!-- 质量负责人 -->
-        <el-table-column label="质量负责人" align="center" width="120" class-name="quality-manager-column">
+        <el-table-column label="质量负责人" align="center" width="95" class-name="quality-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.qualityManager || '--' }}</span>
           </template>
         </el-table-column>
         
         <!-- 项目负责人 -->
-        <el-table-column prop="projectManager" label="项目负责人" align="center" width="120" class-name="project-manager-column">
+        <el-table-column prop="projectManager" label="项目负责人" align="center" width="95" class-name="project-manager-column">
           <template slot-scope="scope">
             <span>{{ scope.row.projectManager || '--' }}</span>
           </template>
@@ -476,7 +476,7 @@ import { getCustomerList } from '@/api/order'
 import AddRequirementDialog from './components/AddRequirementDialog'
 import ViewRequirementDialog from './components/ViewRequirementDialog'
 import { dictPmProject as dictUserList } from '@/api/third/project'
-import { extend } from '@/utils/ruoyi'
+import { cloneDeep } from 'lodash'
 import { categoryComputerDict } from '@/api/third/fileConfig'
 export default {
   name: 'CustomerRequirement',
@@ -776,14 +776,14 @@ export default {
     // 查看
     handleView(row) {
       // 深拷贝，避免修改原数据
-      this.currentRow = extend(row)
+      this.currentRow = cloneDeep(row)
       this.viewDialogVisible = true
     },
     
     // 编辑
     handleEdit(row) {
       // 深拷贝，避免修改原数据
-      this.currentRow = extend(row)
+      this.currentRow = cloneDeep(row)
       this.isEdit = true
       this.isView = false
       this.dialogVisible = true

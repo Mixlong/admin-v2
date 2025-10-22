@@ -985,29 +985,7 @@ export default {
   .el-table {
  
 
-    /* 针对包含富文本内容的td单元格，强制顶部对齐 */
-    ::v-deep .el-table__body td:has(.rich-text-content),
-    ::v-deep .el-table__body td:has(.text-muted) {
-      vertical-align: top !important;
-    }
- 
-    /* 使用 class-name 精确定位富文本列的单元格 - 最强优先级 */
-    ::v-deep .rich-text-cell-column {
-      vertical-align: top !important;
-    }
-
-    ::v-deep .el-table__body .rich-text-cell-column {
-      vertical-align: top !important;
-    }
-
-    ::v-deep td.rich-text-cell-column {
-      vertical-align: top !important;
-    }
-
-    ::v-deep .el-table__body-wrapper .el-table__body td.rich-text-cell-column {
-      vertical-align: top !important;
-    }
-
+  
     /* 针对富文本列的 cell 容器 - 覆盖 Element UI 默认居中 */
     ::v-deep td.rich-text-cell-column .cell {
       display: flex !important;
@@ -1024,12 +1002,7 @@ export default {
         text-align: left !important;
         display: block;
       }
-      
-      /* 确保富文本容器的父级也左对齐、顶部对齐 */
-      & > .cell {
-        text-align: left;
-        vertical-align: top;
-      }
+ 
     }
 
     /* 富文本内容样式 - 与主表格保持一致 */

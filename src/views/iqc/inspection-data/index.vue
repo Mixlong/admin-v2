@@ -641,7 +641,6 @@ export default {
   margin: 0;
   padding: 0;
   line-height: 1.4;
-  display: inline;
 }
 
 .el-table .cell .rich-text-content p + p::before {
