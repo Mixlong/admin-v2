@@ -78,19 +78,6 @@ export const constantRoutes = [
     hidden: true,
   },
   {
-    path: "",
-    component: Layout,
-    redirect: "index",
-    children: [
-      {
-        path: "index",
-        component: (resolve) => require(["@/views/index"], resolve),
-        name: "Index",
-        meta: { title: "首页", icon: "dashboard", noCache: true, affix: true },
-      }
-    ],
-  },
-  {
     path: "/tool",
     component: Layout,
     hidden: true,

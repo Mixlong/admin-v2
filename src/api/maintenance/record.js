@@ -51,3 +51,23 @@ export function exportMaintenanceRecord(params) {
     params
   })
 }
+
+// ==================== 外协维修记录相关接口 ====================
+
+// 获取外协维修记录列表
+export function getOutsourcingRecordList(params) {
+  return request({
+    url: '/base/repair/record/list/outsourcing',
+    method: 'get',
+    params
+  })
+}
+
+// 导出外协维修记录数据
+export function exportOutsourcingRecord(params) {
+  return request({
+    url: '/base/repair/record/export/outsourcing',
+    method: 'get',
+    params
+  })
+}

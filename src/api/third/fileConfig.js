@@ -24,10 +24,23 @@ export function listModelDict(query) {
   })
 }
 
-export function categoryComputerDict() {
+export function categoryComputerDict(params) {
   return request({
     url: '/file/category/computer',
-    method: 'get'
+    method: 'get',
+    params
+  })
+}
+
+// 获取外协机型列表（本地开发：647，正式服：825）
+export function getOutsourcingCategoryList() {
+  // 根据环境自动切换 productType
+  const productType = process.env.NODE_ENV === 'development' ? 647 : 825
+  
+  return request({
+    url: '/category/list',
+    method: 'get',
+    params: { productType }
   })
 }
 
