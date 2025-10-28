@@ -614,7 +614,6 @@ export default {
   },
   data() {
     return {
-      nickName:'杨贵来',
       // 型号
       computerOptions: [],
       customerData: {
@@ -955,7 +954,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId"]),
+    ...mapGetters(["userId","nickName"]),
     // 判断是否为初审状态
     isFirstStateFlag() {
       return this.isAuthFlag === 1;

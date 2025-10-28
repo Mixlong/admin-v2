@@ -208,10 +208,16 @@
       <el-table-column label="客户" prop="customerName" align="center" width="120" column-key="customerName">
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
-      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" width="120" 
-        column-key="customerMaterialNum">
-        <span slot-scope="scope" v-NoData="scope.row.customerMaterialNum" />
+      <el-table-column label="客户料号" prop="customerMaterialNum" align="center" min-width="160" class-name="rich-text-cell-column">
+          <template slot-scope="{ row }">
+            <div 
+              v-html="row.customerMaterialNum" 
+              class="rich-text-content"
+              @click="handleRichTextClick($event, row, '客户料号')"
+            ></div>
+          </template>
       </el-table-column>
+      
       <el-table-column label="实际客户车名" prop="customerCarName" align="center" width="130" column-key="customerCarName">
         <span slot-scope="scope" v-NoData="scope.row.customerCarName"></span>
       </el-table-column>

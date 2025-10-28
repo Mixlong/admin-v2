@@ -98,12 +98,6 @@
               </el-col>
 
               <el-col :span="6">
-                <el-form-item label="客户料号" prop="instrumentModel.customerMaterialNum">
-                  <el-input v-model="form.instrumentModel.customerMaterialNum" placeholder="请输入客户料号" clearable />
-                </el-form-item>
-              </el-col>
-
-              <el-col :span="6">
                 <el-form-item label="客户名称" prop="instrumentModel.customerName">
                   <select-loadMore v-model="form.instrumentModel.customerName" class="w100"
                     :data="customerNameData.data" :page="customerNameData.page" :hasMore="customerNameData.more"
@@ -111,6 +105,17 @@
                   </select-loadMore>
                 </el-form-item>
               </el-col>
+            </el-row>
+
+            <el-row :gutter="10">
+              <el-col :span="24">
+                <el-form-item label="客户料号" prop="instrumentModel.customerMaterialNum">
+                  <tinymce v-model="form.instrumentModel.customerMaterialNum" :height="200" v-if="dialogVisible"/>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="10">
 
               <template v-if="form.isSts === 1">
                 <el-col :span="6">

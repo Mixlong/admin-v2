@@ -7,7 +7,7 @@
       :searchForm="searchForm" 
       :fields="searchFields" 
       @search="handleSearch"
-      :defaultVisibleCount="3" 
+      :defaultVisibleCount="4" 
       @reset="handleReset" 
       @field-change="handleFieldChange"
       @layout-changed="handleSearchFormLayoutChanged">
@@ -31,6 +31,25 @@
         </el-form-item>
       </template>
 
+      <!-- 自定义供应商字段 -->
+      <template #field-supplierName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+          <select-loadMore
+            v-model="searchForm[field.key]"
+            style="width: 100%"
+            :data="supplierData.data"
+            :page="supplierData.page"
+            :hasMore="supplierData.more"
+            dictLabel="supplierName"
+            dictValue="supplierName"
+            :request="getSupplierData"
+            placeholder="请选择供应商"
+            size="mini"
+            clearable
+            @change="(val) => { console.log('供应商选中:', val, 'searchForm.supplierName:', searchForm.supplierName); handleSearch() }">
+          </select-loadMore>
+        </el-form-item>
+      </template>
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
@@ -193,7 +212,11 @@ import {
   getIqcInspectionDataList,
   deleteIqcInspectionData
 } from '@/api/iqc/inspectionData'
-import { exportInventoryInfo } from '@/api/base/inventory'
+import { 
+  exportInventoryInfo,
+  getInventoryList as apiGetInventoryList,
+  getSuppliersList
+} from '@/api/base/inventory'
 import { getIqcBasicInfoById } from '@/api/iqc/basicInfo'
 import { afterCategoryList } from '@/api/third/sale'
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
@@ -215,10 +238,20 @@ export default {
       basicInfoData: null,
       // 搜索表单
       searchForm: {
+        isEcn: '',
+        isEnc: '',
+        id: '',
+        invCode: '',
+        invName: '',
+        supplierName: '',
+        remark: '',
+        isDefective: '',
         inspectionResult: '',
         defectQuantityMin: '',
         defectQuantityMax: '',
-        testResult: ''
+        testResult: '',
+        inventoryStartDate: '',
+        inventoryEndDate: ''
       },
       // 表格数据
       tableData: [],
@@ -252,14 +285,64 @@ export default {
         page: 1,
         more: true,
       },
+
+      // 供应商数据
+      supplierData: {
+        data: [],
+        page: 1,
+        more: false,
+      },
+      // 供应商原始数据(用于过滤)
+      supplierRawData: [],
       
       // IntelligentSearchForm 配置
       searchFields: [
+        {
+          key: 'id',
+          label: '来料记录ID',
+          component: 'el-input',
+          placeholder: '请输入来料记录ID',
+          sort: 1
+        },
         {
           key: 'invCode',
           label: '物料编码',
           type: 'custom', // 使用自定义插槽
           sort: 2
+        },
+        {
+          key: 'invName',
+          label: '物料名称',
+          component: 'el-input',
+          placeholder: '请输入物料名称',
+          sort: 3
+        },
+        {
+          key: 'supplierName',
+          label: '供应商',
+          component: 'custom',
+          sort: 4
+        },
+        {
+          key: 'remark',
+          label: '备注',
+          component: 'el-input',
+          placeholder: '请输入备注',
+          sort: 5
+        },
+        {
+          key: 'isDefective',
+          label: '是否不良',
+          type: 'select',
+          component: 'el-select',
+          props:{
+            options: [
+              { label: '否', value: '0' },
+              { label: '是', value: '1' }
+            ]
+          },
+          placeholder: '请选择是否不良',
+          sort: 6
         },
         {
           key: 'testResult',
@@ -273,7 +356,31 @@ export default {
             ]
           },
           placeholder: '请选择检验结果',
-          sort: 3
+          sort: 7
+        },
+        {
+          key: 'inventoryDateRange',
+          label: '来料时间',
+          type: 'daterange',
+          component: 'el-date-picker',
+          props: {
+            type: 'daterange',
+            rangeSeparator: '至',
+            startPlaceholder: '开始日期',
+            endPlaceholder: '结束日期',
+            valueFormat: 'yyyy-MM-dd'
+          },
+          placeholder: '请选择来料时间范围',
+          sort: 3,
+          onChange: (value) => {
+            if (value && value.length === 2) {
+              this.searchForm.inventoryStartDate = value[0]
+              this.searchForm.inventoryEndDate = value[1]
+            } else {
+              this.searchForm.inventoryStartDate = ''
+              this.searchForm.inventoryEndDate = ''
+            }
+          }
         }
       ]
     }
@@ -313,13 +420,21 @@ export default {
       if (this.pagination.current) params.p = this.pagination.current
       if (this.pagination.size) params.l = this.pagination.size
       if (this.basicInfoId) params.basicInfoId = this.basicInfoId
+      if (this.searchForm.isEcn !== '' && this.searchForm.isEcn !== undefined) params.isEcn = this.searchForm.isEcn
+      if (this.searchForm.isEnc) params.isEnc = this.searchForm.isEnc
       if (this.searchForm.id) params.id = this.searchForm.id
       if (this.searchForm.invCode) params.invCode = this.searchForm.invCode
+      if (this.searchForm.invName) params.invName = this.searchForm.invName
+      if (this.searchForm.supplierName) params.supplierName = this.searchForm.supplierName
+      if (this.searchForm.remark) params.remark = this.searchForm.remark
+      if (this.searchForm.isDefective) params.isDefective = this.searchForm.isDefective
       if (this.searchForm.category) params.category = this.searchForm.category
       if (this.searchForm.inspectionResult) params.inspectionResult = this.searchForm.inspectionResult
       if (this.searchForm.defectQuantityMin) params.defectQuantityMin = this.searchForm.defectQuantityMin
       if (this.searchForm.defectQuantityMax) params.defectQuantityMax = this.searchForm.defectQuantityMax
       if (this.searchForm.testResult) params.testResult = this.searchForm.testResult
+      if (this.searchForm.inventoryStartDate) params.inventoryStartDate = this.searchForm.inventoryStartDate
+      if (this.searchForm.inventoryEndDate) params.inventoryEndDate = this.searchForm.inventoryEndDate
 
       console.log('IQC检验数据列表请求参数:', params)
 
@@ -348,6 +463,7 @@ export default {
  
     // 搜索功能
     handleSearch() {
+      console.log('handleSearch 触发, supplierName:', this.searchForm.supplierName)
       this.pagination.current = 1
       this.fetchData()
     },
@@ -355,10 +471,20 @@ export default {
     // 重置搜索
     handleReset() {
       this.searchForm = {
+        isEcn: '',
+        isEnc: '',
+        id: '',
+        invCode: '',
+        invName: '',
+        supplierName: '',
+        remark: '',
+        isDefective: '',
         inspectionResult: '',
         defectQuantityMin: '',
         defectQuantityMax: '',
-        testResult: ''
+        testResult: '',
+        inventoryStartDate: '',
+        inventoryEndDate: ''
       }
       this.pagination.current = 1
       this.fetchData()
@@ -534,23 +660,103 @@ export default {
     // 获取来料编码列表
     getInventoryList({ page = 1, more = false, keyword = "" } = {}) {
       return new Promise((resolve) => {
-        getIqcInspectionDataList({
+        const params = {
           p: page,
-          l: 20,
-          invCode: keyword
-        }).then((res) => {
-          if (res.code === 200 && res.data) {
-            const { list, total, pageNum, pageSize } = res.data
+          l: 20
+        }
+        
+        if (keyword) {
+          params.invCode = keyword
+        }
+
+        apiGetInventoryList(params).then(res => {
+          if (res.code === 200) {
+            const list = res.data.list || []
+            const { total, pageNum, pageSize } = res.data || {}
+            
+            // 更新组件数据
             if (more) {
+              // 加载更多,追加数据
               this.inventoryData.data = [...this.inventoryData.data, ...list]
             } else {
+              // 首次加载或搜索,替换数据
               this.inventoryData.data = list
             }
+            this.inventoryData.page = pageNum || page
             this.inventoryData.more = pageNum * pageSize < total
-            this.inventoryData.page = pageNum
+            
+            resolve()
+          } else {
+            this.inventoryData.data = []
+            this.inventoryData.more = false
+            resolve()
           }
+        }).catch((error) => {
+          console.error('获取来料编码列表失败:', error)
+          this.inventoryData.data = []
+          this.inventoryData.more = false
           resolve()
-        }).catch(() => {
+        })
+      })
+    },
+
+    // 获取供应商列表
+    getSupplierData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        // 如果已经有原始数据,直接从缓存中过滤,不重复请求
+        if (this.supplierRawData.length > 0) {
+          // 客户端过滤
+          let filteredList = this.supplierRawData
+          if (keyword) {
+            filteredList = this.supplierRawData.filter(item => 
+              item.supplierName && item.supplierName.toLowerCase().includes(keyword.toLowerCase())
+            )
+          }
+          
+          this.supplierData.data = filteredList
+          this.supplierData.more = false
+          resolve()
+          return
+        }
+
+        // 首次加载,调用API获取全部数据
+        getSuppliersList({}).then(res => {
+          if (res.code === 200) {
+            // API 返回的是字符串数组,需要转换为对象数组
+            const rawList = res.data || []
+            
+            // 转换为对象数组并缓存
+            this.supplierRawData = rawList.map(name => ({
+              supplierName: name,
+              label: name,
+              value: name
+            }))
+            
+            console.log('供应商数据加载完成，总数:', this.supplierRawData.length)
+            
+            // 如果有关键字,进行客户端过滤
+            let filteredList = this.supplierRawData
+            if (keyword) {
+              filteredList = this.supplierRawData.filter(item => 
+                item.supplierName && item.supplierName.toLowerCase().includes(keyword.toLowerCase())
+              )
+            }
+            
+            // 更新组件数据
+            this.supplierData.data = filteredList
+            this.supplierData.page = 1
+            this.supplierData.more = false
+            
+            resolve()
+          } else {
+            this.supplierData.data = []
+            this.supplierData.more = false
+            resolve()
+          }
+        }).catch((error) => {
+          console.error('获取供应商列表失败:', error)
+          this.supplierData.data = []
+          this.supplierData.more = false
           resolve()
         })
       })
@@ -575,12 +781,19 @@ export default {
         // 构建导出参数，使用当前的搜索条件
         const params = {}
         if (this.basicInfoId) params.id = this.basicInfoId
+        if (this.searchForm.isEcn !== '' && this.searchForm.isEcn !== undefined) params.isEcn = this.searchForm.isEcn
+        if (this.searchForm.isEnc) params.isEnc = this.searchForm.isEnc
         if (this.searchForm.id) params.id = this.searchForm.id
         if (this.searchForm.invCode) params.invCode = this.searchForm.invCode
+        if (this.searchForm.invName) params.invName = this.searchForm.invName
+        if (this.searchForm.supplierName) params.supplierName = this.searchForm.supplierName
+        if (this.searchForm.remark) params.remark = this.searchForm.remark
+        if (this.searchForm.isDefective) params.isDefective = this.searchForm.isDefective
         if (this.searchForm.category) params.category = this.searchForm.category
         if (this.searchForm.inspectionResult) params.inspectionResult = this.searchForm.inspectionResult
-        if (this.basicInfoData?.inventoryStartDate) params.inventoryStartDate = this.basicInfoData.inventoryStartDate
-        if (this.basicInfoData?.inventoryEndDate) params.inventoryEndDate = this.basicInfoData.inventoryEndDate
+        if (this.searchForm.testResult) params.testResult = this.searchForm.testResult
+        if (this.searchForm.inventoryStartDate) params.inventoryStartDate = this.searchForm.inventoryStartDate
+        if (this.searchForm.inventoryEndDate) params.inventoryEndDate = this.searchForm.inventoryEndDate
         
         // 过滤掉空值参数
         Object.keys(params).forEach(key => {

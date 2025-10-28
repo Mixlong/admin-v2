@@ -231,9 +231,14 @@ export default {
       // 搜索表单
       searchForm: {
         category: '',
+        categoryName: '',
         productionLine: '',
+        lineNum: '',
         repairPerson: '',
         pcbaSn: '',
+        badResult: '',
+        serviceResult: '',
+        repairPlan: '',
         startDate: '',
         endDate: ''
       },
@@ -272,7 +277,42 @@ export default {
           label: '机型',
           type: 'custom',
         },
- 
+        {
+          key: 'categoryName',
+          label: '品类名称',
+          component: 'el-input',
+          placeholder: '请输入品类名称'
+        },
+        {
+          key: 'lineNum',
+          label: '线号',
+          component: 'el-input',
+          placeholder: '请输入线号'
+        },
+        {
+          key: 'badResult',
+          label: '不良原因',
+          component: 'el-input',
+          placeholder: '请输入不良原因'
+        },
+        {
+          key: 'serviceResult',
+          label: '维修结果',
+          component: 'el-input',
+          placeholder: '请输入维修结果'
+        },
+        {
+          key: 'repairPlan',
+          label: '维修方案',
+          component: 'el-input',
+          placeholder: '请输入维修方案'
+        },
+        {
+          key: 'pcbaSn',
+          label: 'PCBA SN',
+          component: 'el-input',
+          placeholder: '请输入PCBA SN'
+        },
         {
           key: 'repairPerson',
           label: '维修员',
@@ -309,9 +349,14 @@ export default {
         p: this.pagination.current,
         l: this.pagination.size,
         category: this.searchForm.category || undefined,
+        categoryName: this.searchForm.categoryName || undefined,
         productionLine: this.searchForm.productionLine || undefined,
+        lineNum: this.searchForm.lineNum || undefined,
         repairPerson: this.searchForm.repairPerson || undefined,
         pcbaSn: this.searchForm.pcbaSn || undefined,
+        badResult: this.searchForm.badResult || undefined,
+        serviceResult: this.searchForm.serviceResult || undefined,
+        repairPlan: this.searchForm.repairPlan || undefined,
         startDate: this.searchForm.startDate || undefined,
         endDate: this.searchForm.endDate || undefined
       }
@@ -381,6 +426,7 @@ export default {
         this.searchForm.startDate = ''
         this.searchForm.endDate = ''
       }
+      this.handleSearch()
     },
 
     // 新增记录
@@ -580,9 +626,14 @@ export default {
         // 准备导出参数，使用当前搜索条件
         const params = {
           category: this.searchForm.category || undefined,
+          categoryName: this.searchForm.categoryName || undefined,
           productionLine: this.searchForm.productionLine || undefined,
+          lineNum: this.searchForm.lineNum || undefined,
           repairPerson: this.searchForm.repairPerson || undefined,
           pcbaSn: this.searchForm.pcbaSn || undefined,
+          badResult: this.searchForm.badResult || undefined,
+          serviceResult: this.searchForm.serviceResult || undefined,
+          repairPlan: this.searchForm.repairPlan || undefined,
           startDate: this.searchForm.startDate || undefined,
           endDate: this.searchForm.endDate || undefined
         };

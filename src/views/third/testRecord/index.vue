@@ -1,46 +1,65 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="品类" prop="categoryName">
-        <el-select v-model="queryParams.categoryName" clearable filterable style="max-width: 140px"
-          @change="changeCategory">
-          <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="型号" prop="computerName">
-        <el-select v-model="queryParams.computerName" clearable filterable @change="getList" style="width: 140px">
-          <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="PCBA SN" prop="pcbaSn">
-        <el-input v-model="queryParams.pcbaSn" placeholder="请输入" clearable style="width: 140px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="整机SN" prop="sn">
-        <el-input v-model="queryParams.sn" placeholder="请输入" clearable style="width: 140px"
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="测试环节" prop="processName">
-        <el-select v-model="queryParams.processName" clearable style="max-width: 140px">
-          <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="判定结果" prop="result">
-        <el-select v-model="queryParams.result" placeholder="请选择" clearable style="max-width: 140px">
-          <el-option label="OK" value="OK"></el-option>
-          <el-option label="NG" value="NG"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item class="fr">
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
+    <!-- 智能搜索表单 -->
+    <IntelligentSearchForm
+      :searchForm="queryParams"
+      :fields="searchFields"
+      @search="handleQuery"
+      :defaultVisibleCount="5"
+      @reset="resetQuery"
+      @field-change="handleFieldChange">
+      
+      <!-- 自定义品类字段 -->
+      <template #field-categoryName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable filterable style="width: 200px"
+            @change="changeCategory">
+            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义型号字段 -->
+      <template #field-computerName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable filterable @change="getList" style="width: 200px">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义测试环节字段 -->
+      <template #field-processName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select v-model="searchForm[field.key]" clearable style="width: 200px">
+            <el-option v-for="dict in testList" :key="dict.dictCode" :label="dict.dictLabel" :value="dict.dictLabel" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义测试时间字段 -->
+      <template #field-testTimeRange="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-date-picker
+            v-model="testTimeRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd"
+            style="width: 240px"
+            @change="handleTestTimeChange">
+          </el-date-picker>
+        </el-form-item>
+      </template>
+
+      <!-- 页面操作按钮 -->
+      <template #page-actions>
+        <el-button type="warning" icon="el-icon-download" @click="handleExport">
+          导出
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button class="float-right" type="warning" icon="el-icon-download" @click="handleExport">
-          导 出
-        </el-button>
-      </el-form-item>
-    </el-form>
+      </template>
+    </IntelligentSearchForm>
 
     <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border>
       <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
@@ -50,12 +69,18 @@
       </el-table-column>
       <el-table-column label="品类" prop="categoryName" align="center" width="120" fixed="left" />
       <el-table-column label="型号" prop="computerName" align="center" width="140" fixed="left" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" />
-      <el-table-column label="整机SN" prop="sn" align="center">
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="190" />
+      <el-table-column label="整机SN" prop="sn" align="center" width="190">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center">
+      <el-table-column label="箱号" prop="boxNo" align="center" width="190">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
+      </el-table-column>
+      <el-table-column label="销售订单号" prop="salesOrderNo" align="center" width="150">
+        <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
+      </el-table-column>
+      <el-table-column label="工单号" prop="orderCode" align="center" width="150">
+        <span slot-scope="scope" v-NoData="scope.row.orderCode"></span>
       </el-table-column>
       <el-table-column label="测试环节" prop="processName" align="center" width="100" />
       <el-table-column label="判断结果" prop="result" align="center" width="100">
@@ -213,9 +238,13 @@
 <script>
 import { stsTestList, stsTestExport } from "@/api/third/testApi";
 import { CategoryMixin } from "@/mixins/common";
+import IntelligentSearchForm from "@/components/IntelligentSearchForm";
 
 export default {
   name: "StsTestResult",
+  components: {
+    IntelligentSearchForm
+  },
   mixins: [CategoryMixin],
   props: {
     sn: {
@@ -392,6 +421,8 @@ export default {
         //   key: "afterTestOutputDelay4",
         // },
       ],
+      // 时间范围
+      testTimeRange: [],
       // 查询参数
       queryParams: {
         p: 1,
@@ -402,8 +433,91 @@ export default {
         sn: "",
         processName: "",
         result: "",
+        boxNo: "",
+        salesOrderNo: "",
+        orderCode: "",
+        cpuId: "",
+        startTime: "",
+        endTime: "",
         recordId: "",
       },
+      // 搜索字段配置
+      searchFields: [
+        {
+          key: 'categoryName',
+          label: '品类',
+          component: 'custom',
+          sort: 1
+        },
+        {
+          key: 'computerName',
+          label: '型号',
+          component: 'custom',
+          sort: 2
+        },
+        {
+          key: 'pcbaSn',
+          label: 'PCBA SN',
+          component: 'el-input',
+          placeholder: '请输入PCBA SN',
+          sort: 3
+        },
+        {
+          key: 'sn',
+          label: '整机SN',
+          component: 'el-input',
+          placeholder: '请输入整机SN',
+          sort: 4
+        },
+        {
+          key: 'processName',
+          label: '测试环节',
+          component: 'custom',
+          sort: 5
+        },
+        {
+          key: 'result',
+          label: '判定结果',
+          component: 'el-select',
+          type: 'select',
+          props: {
+            options: [
+              { label: 'OK', value: 'OK' },
+              { label: 'NG', value: 'NG' }
+            ]
+          },
+          placeholder: '请选择判定结果',
+          sort: 6
+        },
+        {
+          key: 'boxNo',
+          label: '箱号',
+          component: 'el-input',
+          placeholder: '请输入箱号',
+          sort: 7
+        },
+        {
+          key: 'salesOrderNo',
+          label: '销售订单号',
+          component: 'el-input',
+          placeholder: '请输入销售订单号',
+          sort: 8
+        },
+        {
+          key: 'orderCode',
+          label: '工单号',
+          component: 'el-input',
+          placeholder: '请输入工单号',
+          sort: 9
+        },
+        {
+          key: 'cpuId',
+          label: '测试设备SN',
+          component: 'el-input',
+          placeholder: '请输入测试设备SN',
+          sort: 10
+        },
+      ],
       contentStyle: {
         paddingTop: "20px",
         paddingBottom: "20px",
@@ -425,20 +539,18 @@ export default {
   created() {
     // 处理路由参数
     if (this.$route.name === "StsTestResult") {
-      const { params, query } = this.$route;
-      const { type, categoryId, status, model } = query;
-      this.queryParams.type = type ?? "";
-      this.queryParams.categoryId = categoryId ?? "";
-      this.queryParams.status = status ?? "";
-      this.queryParams.computerId = model ?? "";
-
+      const { params } = this.$route;
       const { sn, recordId } = params;
-      this.queryParams.sn = sn;
-      this.queryParams.recordId = recordId;
+      
+      // 只设置 queryParams 中已定义的字段
+      if (sn) this.queryParams.sn = sn;
+      if (recordId) this.queryParams.recordId = recordId;
     } else {
-      this.queryParams.sn = this.sn;
-      this.queryParams.pcbaSn = this.pcbaSn
+      // 从 props 中获取参数
+      if (this.sn) this.queryParams.sn = this.sn;
+      if (this.pcbaSn) this.queryParams.pcbaSn = this.pcbaSn;
     }
+    
     this.getCategoryData();
     this.getList();
     this.getDicts("sys_test_session").then((res) => {
@@ -502,6 +614,20 @@ export default {
         (item) => item.name === categoryName
       )[0].computerList;
     },
+    // 字段变化处理
+    handleFieldChange(field, value) {
+      console.log('字段变化:', field, value);
+    },
+    // 处理测试时间范围变化
+    handleTestTimeChange(timeRange) {
+      if (timeRange && timeRange.length === 2) {
+        this.queryParams.startTime = timeRange[0];
+        this.queryParams.endTime = timeRange[1];
+      } else {
+        this.queryParams.startTime = "";
+        this.queryParams.endTime = "";
+      }
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -511,6 +637,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.testTimeRange = [];
       this.queryParams = {
         p: 1,
         l: 20,
@@ -520,6 +647,10 @@ export default {
         sn: "",
         processName: "",
         result: "",
+        boxNo: "",
+        cpuId: "",
+        startTime: "",
+        endTime: "",
         recordId: "",
       };
 

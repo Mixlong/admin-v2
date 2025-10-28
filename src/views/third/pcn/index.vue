@@ -176,20 +176,22 @@
           </el-form-item>
 
           <el-form-item label="涉及的客户:" prop="involvedCustomers">
-            <select-loadMore
+            <el-select
               v-model="form.involvedCustomersArray"
-              :data="customerData.data"
-              :page="customerData.page"
-              :hasMore="customerData.more"
-              :request="getCustomerListForSelect"
-              dictLabel="name"
-              dictValue="name"
-              placeholder="请选择涉及的客户"
-              :multiple="true"
-              :clearable="true"
+              multiple
+              filterable
+              clearable
+              placeholder="请选择客户"
               style="width: 100%"
               @change="handleCustomerChange"
-            />
+            >
+              <el-option
+                v-for="item in customerList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+              />
+            </el-select>
           </el-form-item>
 
           <el-form-item label="客户沟通进展:" prop="customerCommunicationProgress">
@@ -285,12 +287,8 @@ export default {
       marketManagerList: [],
       // 项目经理列表
       projectManagerList: [],
-      // 客户数据（分页）
-      customerData: {
-        data: [],
-        page: 1,
-        more: true
-      },
+      // 客户列表（一次性加载全部）
+      customerList: [],
       // 文件列表弹窗
       fileListVisible: false,
       fileList: [],
@@ -318,7 +316,7 @@ export default {
         implementationStrategy: undefined,
         marketManager: undefined,
         projectManager: undefined,
-        pcnFile: undefined,
+        pcnFile: '',  // 修复：使用空字符串而不是 undefined
       },
       // 表单校验
       rules: {
@@ -340,14 +338,13 @@ export default {
       },
     };
   },
+
   created() {
-    Promise.all([
-      this.loadCategoryList(),
-      this.loadMarketManagerList(),
-      this.loadProjectManagerList()
-    ]).then(() => {
-      this.getList();
-    });
+    this.loadCategoryList();
+    this.loadMarketManagerList();
+    this.loadProjectManagerList();
+    this.loadCustomerList();
+    this.getList();
   },
   methods: {
     /** 加载品类列表 */
@@ -413,48 +410,35 @@ export default {
       });
     },
     /** 加载客户列表 */
-    /** 获取客户列表（支持分页和搜索） */
-    getCustomerListForSelect({ page = 1, more = false, keyword = "" } = {}) {
-      return new Promise((resolve) => {
-        getCustomerList({
-          p: page,
-          name: keyword
-        }).then((res) => {
-          if (res && res.data) {
-            const { list, total, pageNum, pageSize } = res.data;
-            // 过滤启用状态的客户
-            const filteredList = list.filter((item) => item.status === 0);
+    /** 加载客户列表（一次性加载全部） */
+    loadCustomerList() {
+      getCustomerList({
+        p: 1,
+        l: 9999
+      }).then((res) => {
+        if (res && res.data && res.data.list) {
+          // 过滤启用状态的客户
+          const filteredList = res.data.list.filter((item) => item.status === 0);
 
-            if (more) {
-              this.customerData.data = [...this.customerData.data, ...filteredList];
-            } else {
-              this.customerData.data = filteredList;
-            }
-
-            // 计算是否还有更多数据
-            this.customerData.page = pageNum;
-            this.customerData.more = this.customerData.data.length < total;
-          } else {
-            console.error('获取客户数据失败: 响应数据格式错误');
-            this.customerData.data = [];
-            this.customerData.more = false;
-          }
-          resolve();
-        }).catch((error) => {
-          console.error('获取客户数据失败:', error);
-          this.customerData.data = [];
-          this.customerData.more = false;
-          resolve();
-        });
+          // 按拼音/英文字母顺序排序
+          this.customerList = filteredList.sort((a, b) => {
+            const nameA = a.name || '';
+            const nameB = b.name || '';
+            return nameA.localeCompare(nameB, 'zh-CN', { sensitivity: 'base' });
+          });
+        } else {
+          console.error('获取客户数据失败: 响应数据格式错误');
+          this.customerList = [];
+        }
+      }).catch((error) => {
+        console.error('获取客户数据失败:', error);
+        this.customerList = [];
       });
     },
     /** 处理客户选择变化 */
     handleCustomerChange(value) {
       console.log('客户选择变化:', value);
-      // 使用 $set 确保响应式更新
-      this.$set(this.form, 'involvedCustomersArray', value);
-      // 强制更新
-      this.$forceUpdate();
+      this.form.involvedCustomersArray = value;
     },
     /** 查询PCN列表 */
     getList() {
@@ -492,7 +476,7 @@ export default {
         implementationStrategy: undefined,
         marketManager: undefined,
         projectManager: undefined,
-        pcnFile: undefined,
+        pcnFile: '',  // 修复：使用空字符串而不是 undefined
       };
       this.resetForm("form");
     },
@@ -510,11 +494,8 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
-      // 先加载客户数据，然后再打开对话框
-      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
-        this.open = true;
-        this.title = "添加"
-      });
+      this.open = true;
+      this.title = "添加";
     },
     /** 修改按钮操作 */
     /** 完成按钮（沟通中 -> 客户同意） */
@@ -523,56 +504,34 @@ export default {
       this.isCompleting = true;  // 设置为完成操作
       const id = row.id;
       
-      // 先加载客户数据，然后再打开对话框
-      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
-        getPcnNoticeInfo(id).then((response) => {
-          this.form = response.data;
-          // 将状态修改为客户同意
-          this.form.status = 2;
-          // 将逗号分隔的客户字符串转换为数组
-          if (this.form.involvedCustomers) {
-            const customerArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
-            console.log('完成-原始客户数据:', this.form.involvedCustomers);
-            console.log('完成-转换后的数组:', customerArray);
-            // 使用 $set 确保响应式
-            this.$set(this.form, 'involvedCustomersArray', customerArray);
-          } else {
-            this.$set(this.form, 'involvedCustomersArray', []);
-          }
-          this.open = true;
-          this.title = "完成";  // 修改标题
-          // 等待 DOM 更新后强制刷新
-          this.$nextTick(() => {
-            this.$forceUpdate();
-          });
-        });
+      getPcnNoticeInfo(id).then((response) => {
+        this.form = response.data;
+        // 将状态修改为客户同意
+        this.form.status = 2;
+        // 将逗号分隔的客户名称字符串转换为数组
+        if (this.form.involvedCustomers) {
+          this.form.involvedCustomersArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
+        } else {
+          this.form.involvedCustomersArray = [];
+        }
+        this.open = true;
+        this.title = "完成";
       });
     },
     handleUpdate(row) {
       this.reset();
       const id = row.id;
       
-      // 先加载客户数据，然后再打开对话框
-      this.getCustomerListForSelect({ page: 1, more: false, keyword: "" }).then(() => {
-        getPcnNoticeInfo(id).then((response) => {
-          this.form = response.data;
-          // 将逗号分隔的客户字符串转换为数组
-          if (this.form.involvedCustomers) {
-            const customerArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
-            console.log('编辑-原始客户数据:', this.form.involvedCustomers);
-            console.log('编辑-转换后的数组:', customerArray);
-            // 使用 $set 确保响应式
-            this.$set(this.form, 'involvedCustomersArray', customerArray);
-          } else {
-            this.$set(this.form, 'involvedCustomersArray', []);
-          }
-          this.open = true;
-          this.title = "修改";
-          // 等待 DOM 更新后强制刷新
-          this.$nextTick(() => {
-            this.$forceUpdate();
-          });
-        });
+      getPcnNoticeInfo(id).then((response) => {
+        this.form = response.data;
+        // 将逗号分隔的客户字符串转换为数组
+        if (this.form.involvedCustomers) {
+          this.form.involvedCustomersArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
+        } else {
+          this.form.involvedCustomersArray = [];
+        }
+        this.open = true;
+        this.title = "修改";
       });
     },
     /** 提交按钮 */
