@@ -632,10 +632,10 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid) {
           this.submitLoading = true
-          
+          delete this.form.createTime 
           // 准备提交数据
           const submitData = { ...this.form }
-          
+         
           // 调用对应的API
           const apiCall = this.editData 
             ? updateIqcInspectionData(submitData)
