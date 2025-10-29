@@ -213,6 +213,7 @@
             <div 
               v-html="row.customerMaterialNum" 
               class="rich-text-content"
+              style="overflow: auto;"
               @click="handleRichTextClick($event, row, '客户料号')"
             ></div>
           </template>
