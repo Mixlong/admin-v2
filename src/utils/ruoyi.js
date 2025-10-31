@@ -147,7 +147,6 @@ export function selectDictLabel(datas, value) {
   //   }
   // });
   // return actions.join("");
-  console.log(datas, value, datas.find(item => item.dictValue === String(value))?.dictLabel)
   return datas.find(item => +item.dictValue === +value)?.dictLabel;
 }
 

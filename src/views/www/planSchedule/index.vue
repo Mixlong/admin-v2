@@ -2,7 +2,7 @@
   <div class="app-container flex-app-container">
     <!-- 智能搜索区域 -->
     <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch" @reset="handleReset"
-      @field-change="handleFieldChange" defaultVisibleCount="4">
+      @field-change="handleFieldChange" :defaultVisibleCount="4">
       <!-- 自定义所属品类字段渲染 -->
       <template #field-categoryId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
@@ -67,6 +67,10 @@
           size="mini">
           新 增(旧)
         </el-button>
+        <el-button type="success" icon="el-icon-upload2" v-hasPermi="['www:planSchedule:import']" @click="handleImport"
+          size="mini">
+          导 入
+        </el-button>
       </template>
     </IntelligentSearchForm>
 
@@ -104,7 +108,7 @@
       </el-table-column>
       <el-table-column label="MUA配置" align="center" prop="configList" width="85">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.configList && row.configList.length > 0" size="mini" type="success">
+          <el-tag v-if="row.configList && row.configList.length > 0 && row.configList[0].jsonStr&& row.configList[0].configType==1" size="mini" type="success">
             已配置
           </el-tag>
           <el-tag v-else size="mini" type="info">
@@ -337,6 +341,9 @@
     <edit-log ref="editLogRef" />
     <!-- Mua配置 -->
     <MuaSet ref="muaSetRef" @refresh="getList()" />
+
+    <!-- 批量导入对话框 -->
+    <BatchImportDialog :visible.sync="importDialogVisible" @success="handleImportSuccess" />
   </div>
 </template>
 
@@ -348,7 +355,8 @@ import {
   sendProd,
   proSecDetail,
   boxInfoList,
-  schedulingEdit
+  schedulingEdit,
+  schedulingImport
 } from "@/api/www/planSchedule";
 import { listComputer } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
@@ -372,6 +380,7 @@ export default {
     EditLog: () => import("./components/log.vue"),
     MuaSet: () => import("./components/muaSet.vue"),
     MuaSetList: () => import("./components/MuaSetList.vue"),
+    BatchImportDialog: () => import("./components/BatchImportDialog.vue"),
   },
   data() {
     return {
@@ -479,7 +488,9 @@ export default {
         p: 1,
         l: 10,
         id: ""
-      }
+      },
+      // 导入对话框显示状态
+      importDialogVisible: false
     };
   },
   computed: {
@@ -1079,6 +1090,19 @@ export default {
       })
     },
 
+    // ==================== 导入功能相关方法 ====================
+
+    /** 打开导入对话框 */
+    handleImport() {
+      this.importDialogVisible = true;
+    },
+
+    /** 导入成功回调 */
+    handleImportSuccess() {
+      this.$message.success('导入成功！');
+      this.getList(); // 刷新列表
+    },
+
   },
 };
 </script>
@@ -1094,4 +1118,6 @@ export default {
     }
   }
 }
+
+
 </style>

@@ -33,15 +33,22 @@ export default {
   },
   methods: {
     getBreadcrumb() {
-      // only show routes with meta.title
+      // 直接根据实际路由层级显示，不自动添加"首页"
       let matched = this.$route.matched.filter(item => item.meta && item.meta.title)
-      const first = matched[0]
 
-      if (!this.isDashboard(first)) {
-        matched = [{ path: '/index', meta: { title: '首页' }}].concat(matched)
-      }
-
-      this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
+      // 基于title去重，避免重复显示相同名称的面包屑
+      const seenTitles = new Set()
+      this.levelList = matched
+        .filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
+        .filter(item => {
+          // 使用title作为唯一标识，过滤重复的标题
+          const title = item.meta.title
+          if (seenTitles.has(title)) {
+            return false
+          }
+          seenTitles.add(title)
+          return true
+        })
     },
     isDashboard(route) {
       const name = route && route.name

@@ -36,7 +36,6 @@ const permission = {
 function filterAsyncRouter(asyncRouterMap) {
   return asyncRouterMap.filter((route) => {
     if (route.component) {
-      console.log('处理路由组件:', route.component, '类型:', typeof route.component);
 
       // Layout组件特殊处理
       if (route.component === "Layout") {
@@ -48,16 +47,13 @@ function filterAsyncRouter(asyncRouterMap) {
         route.component = MicroAppContainer;
       } else if (typeof route.component === 'string' && route.component.trim().indexOf("micro:") === 0) {
         // 微应用路径标识处理 (格式: micro:应用名:路径)
-        console.log('检测到微应用路径:', route.component);
         const originalComponent = route.component.trim();
         route.component = MicroAppContainer;
         
         // 解析微应用配置
         route.meta = route.meta || {};
         route.meta.microApp = parseMicroAppConfig(originalComponent, route.path);
-        console.log('微应用配置解析完成:', route.meta.microApp);
       } else {
-        console.log('使用loadView加载普通组件:', route.component);
         route.component = loadView(route.component);
       }
     }
