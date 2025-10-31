@@ -166,7 +166,7 @@
              type="text" 
              icon="el-icon-plus" 
              size="mini" 
-             @click="addContactRow"
+             @click.stop="addContactRow"
            >
              新增联系人
            </el-button>
@@ -182,7 +182,6 @@
             border 
             size="small"
             max-height="250"
-            style="width: 100%"
           >
           <el-table-column type="index" label="序号" width="55" align="center" />
           
@@ -220,7 +219,7 @@
             </template>
           </el-table-column>
           
-          <el-table-column label="邮箱"  align="center">
+          <el-table-column label="邮箱"  align="center" width="140">
             <template slot-scope="{ row, $index }">
               <el-input 
                 v-model="row.email" 
@@ -1316,13 +1315,7 @@ export default {
 .is-required :deep(.el-input__inner) {
   border-color: #F56C6C;
 }
-
-/* 联系人表格容器 - 支持横向滚动 */
-.contact-table-wrapper {
-  overflow-x: auto;
-  width: 100%;
-}
-
+ 
 /* 名片上传组件样式调整 */
 .contact-table-wrapper :deep(.el-upload-sortable) {
   display: flex;

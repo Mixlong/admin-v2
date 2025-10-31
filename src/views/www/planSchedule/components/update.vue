@@ -53,6 +53,12 @@
                 <el-input v-model="form.remark" clearable placeholder="请输入"></el-input>
               </el-form-item>
             </el-col>
+
+            <el-col :span="4">
+              <el-form-item label="采购单号:" prop="purchaseOrderCode">
+                <el-input v-model="form.purchaseOrderCode" clearable placeholder="请输入采购单号"></el-input>
+              </el-form-item>
+            </el-col>
           </el-row>
 
           <el-form-item label="客户订单信息:" required>
@@ -255,6 +261,7 @@ export default {
         batchNo: "",
         batchNum: 1,
         remark: "",
+        purchaseOrderCode: "",
         list: [],
       },
       selOrderData: [],
@@ -465,7 +472,8 @@ export default {
         batchNo: "",
         batchNum: 1,
         list: [],
-        remark: ""
+        remark: "",
+        purchaseOrderCode: ""
       };
       this.orderData = [];
       this.selOrderData = [];
@@ -516,6 +524,7 @@ export default {
         batchNo: orderData.batchNo || '',
         batchNum: orderData.batchNum || 1,
         remark: orderData.remark || '',
+        purchaseOrderCode: orderData.purchaseOrderCode || '',
         date: orderData.date ? this.formatDateOnly(orderData.date) : '', // 转换为日期字符串，统一为00:00:00
       };
 
@@ -629,6 +638,7 @@ export default {
       this.form = {
         ...this.form,
         ...scheduleData,
+        purchaseOrderCode: scheduleData.purchaseOrderCode || '',
         date: scheduleData.date ? this.formatDateOnly(scheduleData.date) : '', // 转换为日期字符串，统一为00:00:00
       };
 

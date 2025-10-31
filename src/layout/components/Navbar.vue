@@ -18,14 +18,13 @@
         <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
         
         <!-- Windows版迪太云管理下载 -->
-        <a 
-          href="https://fxlancher.oss-cn-beijing.aliyuncs.com/DigiswiseCloudWin/DigiSmartSetup.exe"
-          download
+        <div 
+          @click="handleDownload"
           class="download-btn-container"
         >
           <img src="@/assets/logo/desktop_on.png" class="download-icon" alt="下载" />
           <span class="download-text">迪大圣Windows版</span>
-        </a>
+        </div>
       </template>
         
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
@@ -89,6 +88,55 @@ export default {
 
   mounted() { },
   methods: {
+    async handleDownload() {
+      try {
+        const loading = this.$loading({
+          lock: true,
+          text: '正在获取最新版本...',
+          spinner: 'el-icon-loading'
+        });
+        
+        try {
+          // 获取latest.yml文件
+          const response = await fetch('https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml', {
+            mode: 'cors',
+            credentials: 'omit'
+          });
+          
+          if (!response.ok) {
+            throw new Error('获取版本信息失败');
+          }
+          
+          const ymlText = await response.text();
+          
+          // 解析yml文件获取文件名
+          const urlMatch = ymlText.match(/url:\s*(\S+)/);
+          const versionMatch = ymlText.match(/version:\s*(\S+)/);
+          const fileName = urlMatch ? urlMatch[1] : 'DigiSmart-Setup-1.0.3.exe';
+          const version = versionMatch ? versionMatch[1] : '';
+          
+          // 构建完整的下载URL
+          const downloadUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/${fileName}`;
+          
+          loading.close();
+          
+          // 创建隐藏的a标签触发下载
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = fileName;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          this.$message.success(`开始下载最新版本 ${version}`);
+        } catch (fetchError) {
+          this.$message.success('开始下载迪大圣Windows版');
+        }
+      } catch (error) {
+        console.error('下载失败:', error);
+      }
+    },
     jumpApi() {
       this.$router.push({
         path: "/document",

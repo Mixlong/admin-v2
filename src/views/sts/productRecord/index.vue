@@ -257,13 +257,14 @@ export default {
         if (route.name !== "ProductRecord") return;
         const { params, query } = route;
 
-        const { type, categoryId, status, model, recordId } = query;
+        const { type, categoryId, status, model, recordId, sn } = query;
 
         this.queryParams.type = type ?? "";
         this.queryParams.categoryId = categoryId ?? "";
         this.queryParams.status = status ?? "";
         this.queryParams.computerId = model ?? "";
         this.queryParams.recordId = recordId ?? "";
+        this.queryParams.sn = sn ?? "";
 
         const { boxNo } = params;
         this.queryParams.boxNo = boxNo;

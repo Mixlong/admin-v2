@@ -1821,7 +1821,10 @@ export default {
     },
     // 标签规则
     handleLabelRule(labelRule) {
-      if (labelRule === 1) this.form.instrumentModel.labelRuleImg = "";
+      // 选择通用或清空标签规则时，清空图片字段
+      if (labelRule === 1 || !labelRule) {
+        this.form.instrumentModel.labelRuleImg = "";
+      }
     },
     // 打开包装信息编辑弹窗
     openPackagingInfoEdit() {

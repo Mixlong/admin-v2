@@ -38,6 +38,13 @@
             clearable
           ></el-input>
         </el-form-item>
+        <el-form-item label="料号" prop="partNo">
+          <el-input
+            v-model="form.partNo"
+            placeholder="请输入料号"
+            clearable
+          ></el-input>
+        </el-form-item>
         <el-form-item label="版本描述" prop="desc">
           <el-input
             v-model="form.desc"
@@ -72,6 +79,7 @@ export default {
         name: "",
         desc: "",
         categoryId: "",
+        partNo: "",
       },
       title: "",
       // 表单校验
@@ -103,6 +111,7 @@ export default {
         name: "",
         desc: "",
         categoryId: "",
+        partNo: "",
       };
     },
     /** 提交按钮 */

@@ -35,9 +35,14 @@ router.beforeEach((to, from, next) => {
   start();
   if (getToken()) {
 
-    if (to.matched && to.matched.length > 2) {
-      to.matched.splice(1, to.matched.length - 2)
-    }
+    // 注释掉：这段代码会删除路由的中间层级，导致面包屑和标签页显示错误
+    // console.log('🌟 进入路由前 to.matched:', to.matched.map(m => ({path: m.path, name: m.name, title: m.meta?.title, component: m.components?.default?.name})));
+    
+    // if (to.matched && to.matched.length > 2) {
+    //   console.log('🌟 删除中间层级前:', to.matched.map(m => ({path: m.path, title: m.meta?.title})));
+    //   to.matched.splice(1, to.matched.length - 2)
+    //   console.log('🌟 删除中间层级后:', to.matched.map(m => ({path: m.path, title: m.meta?.title})));
+    // }
 
     to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
     /* has token*/

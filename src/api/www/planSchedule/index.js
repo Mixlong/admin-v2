@@ -105,3 +105,12 @@ export function setMuaConfig(data) {
     data
   }) 
 }
+
+// 导入排产数据
+export function schedulingImport(data) {
+  return request({
+    url: '/production/scheduling/import',
+    method: 'post',
+    data
+  });
+}

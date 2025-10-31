@@ -1106,7 +1106,7 @@ export default {
       this.handleQuery();
     },
     toPage(sn) {
-      this.$router.push(`/www/PartInfoView/production?sn=${sn}`);
+      this.$router.push(`/afterSaleSupport/material/PartInfoView/productRecord?sn=${sn}`);
     },
     cellClick(row, column, cell, event) {
       const { label } = column;
