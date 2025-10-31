@@ -20,6 +20,11 @@
         </template>
       </el-table-column>
       <el-table-column label="版本号" prop="name" align="center" />
+      <el-table-column label="料号" prop="partNo" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.partNo || '--' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="状态" align="center">
         <template slot-scope="scope">

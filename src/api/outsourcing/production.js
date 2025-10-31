@@ -79,3 +79,15 @@ export function finalAudit(id) {
     method: 'put'
   })
 }
+
+/**
+ * 批量导入外协生产数据
+ * @param {FormData} data - 包含文件的FormData对象
+ */
+export function importOutsourcingProduction(data) {
+  return request({
+    url: '/outsourcing/production/import',
+    method: 'post',
+    data
+  })
+}
