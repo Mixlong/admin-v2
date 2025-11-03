@@ -3,7 +3,7 @@
         :close-on-click-modal="true">
         <el-form ref="form" :model="form" :rules="rules" label-position="top">
             <el-row>
-                <el-col>
+                <!-- <el-col>
                     <el-form-item label="配置类型" prop="configType">
                         <el-radio-group v-model="form.configType">
                             <el-radio v-for="item in configTypeData" :label="+item.dictValue" border>
@@ -11,7 +11,7 @@
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
-                </el-col>
+                </el-col> -->
                 <el-col>
                     <el-form-item label="升级项目" prop="upgradeProject">
                         <el-checkbox-group v-model="form.upgradeProject">
@@ -30,7 +30,7 @@
                         </el-radio-group>
                     </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                     <el-form-item label="通讯类型" prop="communicationType">
                         <el-radio-group v-model="form.communicationType">
                             <el-radio v-for="item in communicationTypeData" :label="item.dictValue" border>
@@ -38,7 +38,7 @@
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
-                </el-col>
+                </el-col> -->
             </el-row>
 
         </el-form>
