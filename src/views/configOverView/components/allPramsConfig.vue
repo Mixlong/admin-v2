@@ -205,6 +205,21 @@
       
       <!-- 基础信息 -->
       <el-table-column label="基础信息" align="left" label-class-name="group-header-basic">
+              <el-table-column label="BIST关联型号" prop="isBist" align="center" width="180" header-align="center">
+        <template slot-scope="{ row }">
+          <div 
+            style="display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;"
+            @click="handleEditBist(row)"
+          >
+            <el-tag size="small" :type="row.isBist == 1 ? 'success' : 'danger'">
+              {{ row.isBist == 1 ? '是' : '否' }}
+            </el-tag>
+            <div  style="font-size: 12px; color: #606266; text-align: center;">
+              {{ (row.relatedModelList || []).map(item => item.computerName || item.name || '-').join(', ') || '--' }}
+            </div>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="客户" prop="customerName" align="center" width="120" column-key="customerName">
         <span slot-scope="scope" v-NoData="scope.row.customerName"></span>
       </el-table-column>
@@ -228,12 +243,7 @@
           <el-tag type="danger" v-else>否</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="BIST型号" prop="isBist" align="center" width="90">
-        <template slot-scope="{ row }">
-          <el-tag type="success" v-if="row.isBist == 1">是</el-tag>
-          <el-tag type="danger" v-else>否</el-tag>
-        </template>
-      </el-table-column>
+ 
       </el-table-column>
       
       <!-- 外观信息 -->
@@ -299,21 +309,24 @@
           <span v-else v-NoData="labelRuleData[row.labelRule]" />
         </template>
       </el-table-column>
-      <el-table-column label="SN" prop="sn" align="center" width="120">
+      <el-table-column label="SN" prop="sn" align="center" width="120" column-key="sn"
+        :filters="getFiltersData('sn')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="120">
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="120" column-key="pcbaSn"
+        :filters="getFiltersData('pcbaSn')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.pcbaSn"></span>
       </el-table-column>
       <el-table-column label="车把尺寸" prop="handlebarSize" align="center" width="95" column-key="handlebarSize"
         :filters="handleDataFilter(handlebarSizeData)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="handlebarSizeData[scope.row.handlebarSize]" />
       </el-table-column>
-      <el-table-column label="控制器接头" prop="controlConnect" align="center" width="120" column-key="controlConnect">
+      <el-table-column label="控制器接头" prop="controlConnect" align="center" width="120" column-key="controlConnect"
+        :filters="getFiltersData('controlConnect')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.controlConnect" />
       </el-table-column>
       <el-table-column label="控制器线长不含头mm" align="center" width="175" prop="notControllerJointString"
-        column-key="notControllerJointString">
+        column-key="notControllerJointString" :filters="getFiltersData('notControllerJointString')" :filter-method="filterHandler">
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.controlHead === 1">（含头）</span>
           <p>
@@ -335,7 +348,8 @@
           <span v-else>--</span>
         </template>
       </el-table-column>
-      <el-table-column label="按键线长mm" prop="keyLineLen" align="center" width="120" column-key="keyLineLen">
+      <el-table-column label="按键线长mm" prop="keyLineLen" align="center" width="120" column-key="keyLineLen"
+        :filters="getFiltersData('keyLineLen')" :filter-method="filterHandler">
         <template slot-scope="{ row }">
           <span class="text-green" v-if="row.keyLineType === 1">（含头）</span>
           <p>
@@ -343,10 +357,12 @@
           </p>
         </template>
       </el-table-column>
-      <el-table-column label="按键【仪表端】接头" align="center" prop="modelEndHead" width="165" column-key="modelEndHead">
+      <el-table-column label="按键【仪表端】接头" align="center" prop="modelEndHead" width="165" column-key="modelEndHead"
+        :filters="getFiltersData('modelEndHead')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.modelEndHead"></span>
       </el-table-column>
-      <el-table-column label="按键【按键端】接头" align="center" prop="keyEndHead" width="165" column-key="keyEndHead">
+      <el-table-column label="按键【按键端】接头" align="center" prop="keyEndHead" width="165" column-key="keyEndHead"
+        :filters="getFiltersData('keyEndHead')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.keyEndHead"></span>
       </el-table-column>
       </el-table-column>
@@ -1180,6 +1196,10 @@ export default {
       showImageViewer: false,
       previewImageList: [],
       currentImageIndex: 0,
+      presenceFilterOptions: [
+        { text: '有', value: 'has' },
+        { text: '无', value: 'none' }
+      ],
       // 遮罩层
       loading: true,
       // 总条数
@@ -1217,7 +1237,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 50,
         categoryId: undefined,
         computerId: undefined,
         customerName: undefined,
@@ -1365,7 +1385,7 @@ export default {
       const label = (column && column.label) || ''
 
       const basic = new Set([
-        '操作', '审核状态', '品类', '型号', '客户', '客户料号', '实际客户车名', '是否配置', 'BIST型号'
+        '操作', '审核状态', '品类', '型号', '客户', '客户料号', '实际客户车名', '是否配置', 'BIST型号', '关联型号', 'BIST关联型号'
       ])
       const appearance = new Set([
         '产品图纸', '标签规则', 'SN', 'PCBA SN', '车把尺寸', '控制器接头', '控制器线长不含头mm',
@@ -1865,6 +1885,17 @@ export default {
       let item = { ...row, id: row.computerId };
       this.$refs.addDialogRef.isPackage = false;
       this.$refs.addDialogRef.handleUpdate(item);
+    },
+    
+    // 编辑BIST关联型号
+    handleEditBist(row) {
+      // 权限判断
+      if (!this.checkPermi(['config:overview:bist:edit'])) {
+        this.$message.warning('您没有权限编辑BIST关联型号')
+        return
+      }
+      let item = { ...row, id: row.computerId };
+      this.$refs.addDialogRef.handleUpdate(item,{ isPackage: false, eidtBist: true});
     },
     
     /**

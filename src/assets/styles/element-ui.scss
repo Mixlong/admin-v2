@@ -83,6 +83,15 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+
+// 图片预览器默认缩放为70%
+.el-image-viewer__img {
+  max-width: 70vw !important;
+  max-height: 70vh !important;
+  width: auto !important;
+  height: auto !important;
+}
+
 // .el-form-item {
 //   margin-bottom: 0;
 //   & + .el-form-item {

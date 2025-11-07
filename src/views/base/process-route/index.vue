@@ -82,6 +82,8 @@
           </el-table-column>
         <el-table-column label="仪表型号" align="center" prop="categoryName" width="100" />
         <el-table-column label="版本号" align="center" prop="versionCode" width="120" />
+         <!-- 备注 -->
+        <el-table-column label="备注" align="center" prop="remarks" width="150" show-overflow-tooltip />
         <!-- 动态生成工序类型分组 -->
         <el-table-column 
           v-for="processType in processTypeOptions" 
@@ -138,8 +140,7 @@
         <!-- 责任人 -->
         <el-table-column label="责任人" align="center" prop="responsiblePerson" width="100" />
         
-        <!-- 备注 -->
-        <el-table-column label="备注" align="center" prop="remarks" width="150" show-overflow-tooltip />
+        
         
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180" fixed="right">
           <template slot-scope="scope">

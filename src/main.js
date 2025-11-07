@@ -25,6 +25,9 @@ import '@/utils/mainOperation/mainFn'
 import directives from '@/directives'
 // import VueNativeSock from 'vue-native-websocket';
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
+import VersionChecker from '@/utils/versionChecker';
+import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
+
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };
@@ -71,6 +74,13 @@ Vue.prototype.$preloadMicroApps = preloadMicroApps
 // 初始化微应用token同步
 import { watchTokenChange } from '@/utils/microAppAuth'
 watchTokenChange()
+
+// 🆕 初始化版本更新检查
+import VersionCheckPlugin from '@/plugins/versionCheck'
+Vue.use(VersionCheckPlugin, {
+  autoCheck: true,        // 自动检查更新
+  interval: 30 * 60 * 1000  // 检查间隔：30分钟
+})
 
 // 初始化性能监控 - 已禁用，避免干扰表单输入
 // import performanceMonitor from '@/utils/performanceMonitor'
@@ -130,6 +140,51 @@ new Vue({
   created() {
     window.Vue = Vue
     
+    // 挂载版本检查调试工具到全局（方便开发调试）
+    window.$version = {
+      // 手动检查更新（弹出通知）
+      check: () => this.checkVersionUpdate(true),
+      
+      // 打开版本历史弹窗（查看所有版本）
+      open: () => {
+        this.$root.$emit('open-version-history')
+      },
+      
+      // 清除版本历史（用于测试）
+      clear: () => {
+        VersionChecker.clearVersionHistory()
+        sessionStorage.clear()
+        this.$message.success('已清除版本历史，刷新页面后会重新检测')
+      },
+      
+      // 切换到远程模式
+      useRemote: (url) => {
+        VersionChecker.useRemoteExcel(url)
+        this.$message.success('已切换到远程模式')
+      },
+      
+      // 切换到本地模式
+      useLocal: () => {
+        VersionChecker.useLocalExcel()
+        this.$message.success('已切换到本地模式')
+      },
+      
+      // 查看当前配置
+      info: () => {
+        console.log('📋 当前配置:')
+        console.log('- Excel URL:', VersionChecker.getExcelFileUrl())
+        console.log('- 本地存储:', localStorage.getItem('app_latest_version'))
+      }
+    }
+    
+    // 页面加载后自动检查版本更新已由 VersionCheckPlugin 插件自动处理
+    // 无需在这里重复调用，避免弹窗出现2次
+    
+    // 监听全局版本历史打开事件
+    this.$root.$on('open-version-history', () => {
+      console.log('📚 打开版本历史弹窗')
+    })
+    
     // 设置路由清理监听 - 已禁用，避免干扰表单输入
     // if (process.env.NODE_ENV === 'development') {
     //   let lastCleanupTime = 0
@@ -151,6 +206,100 @@ new Vue({
     //     }
     //   })
     // }
+  },
+  methods: {
+    /**
+     * 检查版本更新
+     * @param {Boolean} force - 是否强制检查（忽略时间间隔）
+     */
+    async checkVersionUpdate(force = false) {
+      try {
+        console.log('🔍 开始检查版本更新...')
+        const newVersion = await VersionChecker.checkUpdate(force)
+        
+        if (newVersion) {
+          console.log('🎊 发现新版本:', newVersion.version)
+          this.showVersionDialog(newVersion)
+        } else {
+          console.log('✅ 当前已是最新版本')
+          if (force) {
+            this.$message.info('当前已是最新版本')
+          }
+        }
+      } catch (error) {
+        console.error('❌ 版本检查失败:', error)
+        if (force) {
+          this.$message.error('版本检查失败，请稍后重试')
+        }
+      }
+    },
+    
+    /**
+     * 显示版本更新弹窗
+     */
+    showVersionDialog(versionInfo) {
+      // 检查本次登录是否已提示过
+      const sessionKey = `version_shown_${versionInfo.version}`
+      if (sessionStorage.getItem(sessionKey)) {
+        console.log('⏭️ 本次登录已提示过此版本，跳过显示')
+        return
+      }
+      
+      // 创建弹窗实例
+      const DialogConstructor = Vue.extend(VersionUpdateDialog)
+      const instance = new DialogConstructor({
+        propsData: {
+          visible: true,
+          versionInfo: versionInfo
+        }
+      })
+      
+      instance.$mount()
+      document.body.appendChild(instance.$el)
+      
+      // 监听确认事件
+      instance.$on('confirm', (data) => {
+        console.log('✅ 用户已查看版本:', data.versionInfo.version)
+        
+        // 标记版本为已查看
+        VersionChecker.markVersionViewed(data.versionInfo)
+        
+        // 如果勾选了"本次登录不再提示"
+        if (data.dontShowAgain) {
+          sessionStorage.setItem(sessionKey, 'true')
+          console.log('📝 已设置本次登录不再提示')
+        }
+        
+        // 销毁实例
+        this.destroyDialogInstance(instance)
+      })
+      
+      // 监听关闭事件
+      instance.$on('close', (data) => {
+        console.log('⏭️ 用户关闭了弹窗')
+        
+        // 如果勾选了"本次登录不再提示"
+        if (data.dontShowAgain) {
+          sessionStorage.setItem(sessionKey, 'true')
+          console.log('📝 已设置本次登录不再提示')
+        }
+        
+        // 销毁实例
+        this.destroyDialogInstance(instance)
+      })
+    },
+    
+    /**
+     * 销毁弹窗实例
+     */
+    destroyDialogInstance(instance) {
+      setTimeout(() => {
+        instance.$destroy()
+        if (instance.$el && instance.$el.parentNode) {
+          document.body.removeChild(instance.$el)
+        }
+      }, 300)
+    }
   },
   render: h => h(App)
 })

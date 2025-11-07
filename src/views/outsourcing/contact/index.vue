@@ -45,6 +45,21 @@
         </el-form-item>
       </template>
 
+      <!-- 联系人类型自定义字段 -->
+      <template #field-contactType="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            placeholder="请选择联系人类型"
+            clearable
+            style="width: 200px"
+          >
+            <el-option label="主送" :value="1" />
+            <el-option label="抄送" :value="2" />
+          </el-select>
+        </el-form-item>
+      </template>
+
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <el-button 
@@ -101,6 +116,24 @@
       >
         <template slot-scope="scope">
           <span>{{ scope.row.contactPerson || '--' }}</span>
+        </template>
+      </el-table-column>
+
+      <!-- 联系人类型 -->
+      <el-table-column 
+        prop="contactType" 
+        label="联系人类型" 
+        align="center" 
+        width="120"
+      >
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.contactType == 1" size="small" type="primary">
+            主送
+          </el-tag>
+          <el-tag v-else-if="scope.row.contactType == 2" size="small" type="info">
+            抄送
+          </el-tag>
+          <span v-else>--</span>
         </template>
       </el-table-column>
 
@@ -249,6 +282,18 @@
           />
         </el-form-item>
 
+        <el-form-item label="联系人类型" prop="contactType">
+          <el-select
+            v-model="formData.contactType"
+            placeholder="请选择联系人类型"
+            style="width: 100%"
+            clearable
+          >
+            <el-option label="主送" :value="1" />
+            <el-option label="抄送" :value="2" />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="生产产品" prop="productType">
           <el-select
             v-model="formData.productType"
@@ -308,6 +353,7 @@ export default {
         companyName: '',
         email: '',
         contactPerson: '',
+        contactType: undefined,
         productType: ''
       },
       // 搜索字段配置
@@ -339,10 +385,16 @@ export default {
           sort: 3
         },
         {
+          key: 'contactType',
+          label: '联系人类型',
+          component: 'custom',
+          sort: 4
+        },
+        {
           key: 'productType',
           label: '生产产品',
           component: 'custom',
-          sort: 4
+          sort: 5
         }
       ],
       // 表格数据
@@ -365,6 +417,7 @@ export default {
         companyName: '',
         email: '',
         contactPerson: '',
+        contactType: undefined,
         productType: '',
         remark: ''
       },
@@ -385,6 +438,9 @@ export default {
         ],
         contactPerson: [
           { max: 50, message: '联系人不能超过50个字符', trigger: 'blur' }
+        ],
+        contactType: [
+          { required: true, message: '请选择联系人类型', trigger: 'change' }
         ],
         productType: [
           { max: 100, message: '生产产品不能超过100个字符', trigger: 'blur' }
@@ -464,6 +520,7 @@ export default {
         companyName: row.companyName,
         email: row.email,
         contactPerson: row.contactPerson,
+        contactType: row.contactType,
         productType: row.productType,
         remark: row.remark
       }
@@ -520,6 +577,7 @@ export default {
         companyName: '',
         email: '',
         contactPerson: '',
+        contactType: undefined,
         productType: '',
         remark: ''
       }

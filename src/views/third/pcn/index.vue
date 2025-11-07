@@ -599,15 +599,19 @@ export default {
     /** 下载单个文件 */
     handleDownloadSingle(fileUrl) {
       if (!fileUrl) return;
-      window.open(fileUrl, '_blank');
+      this.urlDownload(fileUrl);
     },
     /** 全部下载 */
     handleDownloadAll() {
-      this.fileList.forEach((file, index) => {
-        setTimeout(() => {
-          window.open(file.url, '_blank');
-        }, index * 300); // 每个文件间隔300ms，避免浏览器拦截
-      });
+      if (!this.fileList || this.fileList.length === 0) {
+        this.$message.warning('没有可下载的文件');
+        return;
+      }
+      
+      // 将所有文件URL拼接成逗号分隔的字符串
+      const fileUrls = this.fileList.map(file => file.url).join(',');
+      // 使用 zipFile 批量下载（会自动打包成zip）
+      this.zipFile(fileUrls,'PCN附件');
     },
     /** 获取文件名 */
     getFileName(url) {

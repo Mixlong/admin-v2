@@ -28,6 +28,26 @@
           />
         </el-form-item>
       </template>
+      
+      <!-- 自定义国家选择器字段 -->
+      <template #field-country="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <SelectLoadMore 
+            v-model="searchForm[field.key]" 
+            :data="countryData.data" 
+            :page="countryData.page"
+            :hasMore="countryData.more" 
+            dictLabel="name" 
+            dictValue="value" 
+            :request="getCountryData"
+            size="mini" 
+            placeholder="请选择国家" 
+            clearable
+            @getChange="handleSearch"
+            style="width: 100%;"
+          />
+        </el-form-item>
+      </template>
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <el-button
@@ -248,6 +268,7 @@ import CustomerDetailModal from './components/CustomerDetailModal.vue'
 import CustomerFormModal from './components/CustomerFormModal.vue'
 import FollowUpModal from './components/FollowUpModal.vue'
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
+import SelectLoadMore from '@/components/selectLoadMore'
 import { getSoCustomerList, deleteSoCustomer } from '@/api/crm/soCustomer'
 
 export default {
@@ -257,7 +278,8 @@ export default {
     CustomerDetailModal,
     CustomerFormModal,
     FollowUpModal,
-    IntelligentSearchForm
+    IntelligentSearchForm,
+    SelectLoadMore
   },
   data() {
     return {
@@ -273,10 +295,18 @@ export default {
         more: true
       },
 
+      // 国家数据（用于搜索选择器）
+      countryData: {
+        data: [],
+        page: 1,
+        more: true
+      },
+
       // 搜索表单
       searchForm: {
         name: '',
         no: '',
+        country: '',
       },
 
       // 搜索字段配置
@@ -294,6 +324,14 @@ export default {
             filterable: true,
             options: []
           }
+        },
+        { 
+          key: 'country', 
+          label: '所属国家', 
+          component: 'custom', 
+          width: '150px', 
+          sort: 2, 
+          autoSearch: false,
         },
       ],
 
@@ -349,6 +387,9 @@ export default {
         }
         if (this.searchForm.no) {
           params.no = this.searchForm.no
+        }
+        if (this.searchForm.country) {
+          params.country = this.searchForm.country
         }
 
         console.log('客户搜索参数:', params)
@@ -596,6 +637,53 @@ export default {
         }).catch(() => {
           resolve();
         });
+      });
+    },
+
+    // 获取国家字典数据（用于搜索选择器）
+    getCountryData({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        // 从字典数据中获取国家列表
+        if (!this.dict || !this.dict.type || !this.dict.type.country_origin) {
+          resolve();
+          return;
+        }
+
+        let countryList = this.dict.type.country_origin || [];
+        
+        // 如果有搜索关键词，进行筛选
+        if (keyword && keyword.trim()) {
+          const keywordLower = keyword.toLowerCase();
+          countryList = countryList.filter(item => {
+            const label = (item.label || item.dictLabel || '').toLowerCase();
+            const value = (item.value || item.dictValue || '').toLowerCase();
+            return label.includes(keywordLower) || value.includes(keywordLower);
+          });
+        }
+
+        // 分页处理（每页20条）
+        const pageSize = 20;
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedList = countryList.slice(startIndex, endIndex);
+        
+        // 转换为 SelectLoadMore 需要的格式
+        const formattedList = paginatedList.map(item => ({
+          id: item.value || item.dictValue,
+          value: item.value || item.dictValue,
+          name: item.label || item.dictLabel
+        }));
+
+        if (more) {
+          this.countryData.data = [...this.countryData.data, ...formattedList];
+        } else {
+          this.countryData.data = formattedList;
+        }
+
+        this.countryData.page = page;
+        this.countryData.more = endIndex < countryList.length;
+        
+        resolve();
       });
     },
 

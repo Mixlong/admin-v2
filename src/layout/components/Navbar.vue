@@ -17,6 +17,21 @@
       <template v-if="device !== 'mobile'">
         <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
         
+        <!-- 版本更新入口 -->
+        <el-tooltip content="查看版本更新" placement="bottom">
+          <div 
+            class="version-btn-container right-menu-item hover-effect"
+            @click="openVersionHistory"
+          >
+            <i class="el-icon-bell"></i>
+            <el-badge 
+              v-if="hasNewVersion" 
+              is-dot 
+              class="version-badge"
+            />
+          </div>
+        </el-tooltip>
+        
         <!-- Windows版迪太云管理下载 -->
         <div 
           @click="handleDownload"
@@ -48,6 +63,9 @@
         <span class="user-name">{{ nickName }}</span>
       </div>
     </div>
+    
+    <!-- 版本历史弹窗 -->
+    <version-history-dialog ref="versionHistoryDialog" />
   </div>
 </template>
 
@@ -60,6 +78,7 @@ import SizeSelect from "@/components/SizeSelect";
 import Search from "@/components/HeaderSearch";
 import RuoYiGit from "@/components/RuoYi/Git";
 import RuoYiDoc from "@/components/RuoYi/Doc";
+import VersionHistoryDialog from "@/components/VersionHistoryDialog.vue";
 
 export default {
   components: {
@@ -70,6 +89,12 @@ export default {
     Search,
     RuoYiGit,
     RuoYiDoc,
+    VersionHistoryDialog,
+  },
+  data() {
+    return {
+      hasNewVersion: false, // 是否有新版本（显示红点）
+    };
   },
   computed: {
     ...mapGetters(["sidebar", "avatar", "nickName", "readNum", "device", "name"]),
@@ -86,8 +111,56 @@ export default {
     },
   },
 
-  mounted() { },
+  mounted() { 
+    // 检查是否有新版本（用于显示红点提示）
+    this.checkNewVersionStatus();
+  },
   methods: {
+    /**
+     * 打开版本历史弹窗
+     */
+    openVersionHistory() {
+      if (this.$refs.versionHistoryDialog) {
+        this.$refs.versionHistoryDialog.open();
+      }
+      // 点击后隐藏红点，并标记为已查看
+      this.hasNewVersion = false;
+      
+      // 在 sessionStorage 中添加已查看标记
+      try {
+        const stored = localStorage.getItem('app_latest_version');
+        if (stored) {
+          const storedInfo = JSON.parse(stored);
+          const sessionKey = `version_shown_${storedInfo.version}`;
+          sessionStorage.setItem(sessionKey, 'true');
+        }
+      } catch (error) {
+        console.log('设置版本已查看标记失败:', error);
+      }
+    },
+    
+    /**
+     * 检查是否有新版本（用于显示红点）
+     */
+    async checkNewVersionStatus() {
+      try {
+        // 调用全局的版本检查
+        if (window.$version && window.$version.check) {
+          // 静默检查，不弹窗
+          const stored = localStorage.getItem('app_latest_version');
+          if (stored) {
+            const storedInfo = JSON.parse(stored);
+            // 简单检查：如果有存储但是首次登录，显示红点
+            const sessionKey = `version_shown_${storedInfo.version}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+              this.hasNewVersion = true;
+            }
+          }
+        }
+      } catch (error) {
+        console.log('检查新版本状态失败:', error);
+      }
+    },
     async handleDownload() {
       try {
         const loading = this.$loading({
@@ -269,6 +342,30 @@ export default {
         }
       }
       
+    }
+    
+    .version-btn-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-size: 20px;
+      
+      i {
+        color: #515a6e;
+        transition: all 0.3s;
+      }
+      
+      &:hover i {
+        color: #409eff;
+        transform: scale(1.1);
+      }
+      
+      .version-badge {
+        ::v-deep .el-badge__content {
+          background-color: #f56c6c;
+        }
+      }
     }
     
     .download-btn-container {

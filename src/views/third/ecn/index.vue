@@ -77,17 +77,38 @@
               <el-tag type="danger" v-if="row.thirdState === 2">已驳回</el-tag>
             </div>
 
-            <div class="flex align-center justify-between check-box">
-              <div>{{ row.secondPerson }}</div>
+            <!-- 终审人员列表（使用 secondList，每人一行，显示各自状态） -->
+            <template v-if="row.secondList && Array.isArray(row.secondList) && row.secondList.length > 0">
+              <div 
+                v-for="(auditRecord, index) in row.secondList" 
+                :key="`second-${auditRecord.id || auditRecord.auditor || index}`"
+                class="flex align-center justify-between check-box"
+              >
+                <div>{{ auditRecord.auditor }}</div>
 
-              <el-tag type="warning" v-if="row.secondState === 0">
-                待审核
-              </el-tag>
-              <el-tag type="success" v-if="row.secondState === 1">
-                已审核
-              </el-tag>
-              <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
-            </div>
+                <el-tag type="warning" v-if="auditRecord.auditStatus === 0">
+                  待审核
+                </el-tag>
+                <el-tag type="success" v-if="auditRecord.auditStatus === 1">
+                  已审核
+                </el-tag>
+                <el-tag type="danger" v-if="auditRecord.auditStatus === 2">已驳回</el-tag>
+              </div>
+            </template>
+            <!-- 兼容：如果没有 secondList，使用 secondPerson 或 secondPersonList -->
+            <template v-else>
+              <div class="flex align-center justify-between check-box">
+                <div>{{ row.secondPerson || (row.secondPersonList ? row.secondPersonList.split(',').join('、') : '--') }}</div>
+
+                <el-tag type="warning" v-if="row.secondState === 0">
+                  待审核
+                </el-tag>
+                <el-tag type="success" v-if="row.secondState === 1">
+                  已审核
+                </el-tag>
+                <el-tag type="danger" v-if="row.secondState === 2">已驳回</el-tag>
+              </div>
+            </template>
           </div>
         </template>
       </el-table-column>
@@ -177,25 +198,27 @@
             <Tooltip v-show="row.thirdPerson === nickName && row.thirdState === 1" class="text-grey"
               icon="el-icon-circle-check" content="撤销PMC终审" @click="handleResetCheck(row, 4)" />
             <Tooltip
-              v-show="row.systemPerson === nickName && row.thirdState === 1 && row.secondState === 1 && row.systemState !== 0"
+              v-show="row.systemPerson === nickName && row.thirdState === 1 && isAllSecondAuditCompleted(row) && row.systemState !== 0"
               class="text-grey" icon="el-icon-circle-check" content="撤销系统变更审核" @click="handleResetCheck(row, 5)" />
 
             <!-- 最终审核 -->
-            <Tooltip v-show="row.secondPerson === nickName &&
-              row.secondState !== 1 &&
+            <Tooltip v-show="isInSecondPersonList(row) &&
+              getCurrentUserAuditStatus(row) === 0 &&
               row.thirdState === 1 &&
               isSecondStateFlag(row)
-              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${row.secondPerson}） 终审`"
+              " class="text-orange" icon="el-icon-coordinate" :content="`待 （${nickName}） 终审`"
               @click="handleAuthFlag(row, 3)" />
             <Tooltip v-show="row.systemPerson === nickName &&
               row.systemState !== 1 &&
-              row.secondState === 1 &&
+              isAllSecondAuditCompleted(row) &&
               row.thirdState === 1
               " class="text-green" icon="el-icon-coordinate" content="系统变更审核" @click="handleAuthFlag(row, 5)" />
 
-            <Tooltip v-show="row.secondPerson === nickName &&
-              row.secondState === 1 &&
-              row.thirdState === 1
+            <!-- 撤销终审：当前用户可以撤销自己的审核，但需要检查系统变更是否已完成 -->
+            <Tooltip v-show="isInSecondPersonList(row) &&
+              getCurrentUserAuditStatus(row) === 1 &&
+              row.thirdState === 1 &&
+              row.systemState !== 1
               " class="text-grey" icon="el-icon-circle-check" content="撤销终审" @click="handleResetCheck(row, 3)" />
 
             <Tooltip class="text-green" icon="el-icon-view" content="详情" @click="handleDetail(row)" />
@@ -590,10 +613,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId", "nickName"]),
+    ...mapGetters(["userId","nickName"]),
     isFirstStateFlag() {
       return (row) => {
-        return (
+        return (         
           row.firstPerson === this.nickName &&
           row.firstState === 1 &&
           row.list.every((item) => item.state === 0)
@@ -997,8 +1020,8 @@ export default {
       if (isAuthFlag === 3) {
         this.authForm = {
           state: row.secondState || 1,
-          remark: row.finalRemark,
-          result: row.finalResult,
+          remark:'',
+          result:'',
         };
       }
 
@@ -1064,14 +1087,26 @@ export default {
             });
           }
 
-          // 撤销终审
+          // 撤销终审（多人审核，需要传递当前用户的审核记录）
           if (flag === 3) {
-            const data = {
+            let data = {
               id: row.id,
               remark: row.finalRemark,
               result: row.finalResult,
               state: 0,
             };
+
+            // 如果是多人审核，传递当前用户的审核记录ID或auditor
+            if (row.secondList && Array.isArray(row.secondList) && row.secondList.length > 0) {
+              const userRecord = row.secondList.find(record => record.auditor === this.nickName);
+              if (userRecord) {
+                // 传递审核记录ID（如果存在）或auditor
+                if (userRecord.id) {
+                  data.secondAuditId = userRecord.id;
+                }
+                data.auditor = userRecord.auditor;
+              }
+            }
 
             ecnSecondState(data).then((res) => {
               if (res.data) {
@@ -1171,6 +1206,21 @@ export default {
               ...this.authForm,
             };
 
+            // 如果是多人审核，传递当前用户的审核记录ID或auditor
+            if (this.isAuthAlterData.secondList && Array.isArray(this.isAuthAlterData.secondList) && this.isAuthAlterData.secondList.length > 0) {
+              const userRecord = this.isAuthAlterData.secondList.find(record => record.auditor === this.nickName);
+              if (userRecord) {
+  
+                data.secondPerson = userRecord.auditor;
+              } else {
+                // 如果没有找到记录，至少传递当前用户作为auditor
+                data.secondPerson = this.nickName;
+              } 
+            } else {
+              // 如果没有 secondList，传递当前用户作为auditor
+              data.secondPerson = this.nickName;
+            }
+
             ecnSecondState(data).then((res) => {
               if (res.data) {
                 this.msgSuccess("操作成功");
@@ -1214,6 +1264,50 @@ export default {
     },
     handleResetErrTip(state) {
       this.clearValidateItem("authForm", state === 1 ? "remark" : "result");
+    },
+    /** 判断当前用户是否在终审人员列表中 */
+    isInSecondPersonList(row) {
+      if (!this.nickName) {
+        return false;
+      }
+      
+      // 优先检查 secondList
+      if (row.secondList && Array.isArray(row.secondList) && row.secondList.length > 0) {
+        return row.secondList.some(record => record.auditor === this.nickName);
+      }
+      
+      // 如果没有 secondList，检查 secondPersonList
+      if (row.secondPersonList && row.secondPersonList.trim()) {
+        const personList = row.secondPersonList.split(',').map(name => name.trim());
+        return personList.includes(this.nickName);
+      }
+      
+      // 兼容旧的单个审核人字段
+      if (row.secondPerson) {
+        return row.secondPerson === this.nickName;
+      }
+      
+      return false;
+    },
+    /** 获取当前用户在终审中的审核状态 */
+    getCurrentUserAuditStatus(row) {
+      if (row.secondList && Array.isArray(row.secondList) && row.secondList.length > 0) {
+        const userRecord = row.secondList.find(record => record.auditor === this.nickName);
+        if (userRecord) {
+          return userRecord.auditStatus;
+        }
+      }
+      // 如果没有 secondList，使用整体的 secondState
+      return row.secondState;
+    },
+    /** 判断所有终审人员是否都已完成审核 */
+    isAllSecondAuditCompleted(row) {
+      if (row.secondList && Array.isArray(row.secondList) && row.secondList.length > 0) {
+        // 所有审核人都已审核（auditStatus === 1）
+        return row.secondList.every(record => record.auditStatus === 1);
+      }
+      // 如果没有 secondList，使用整体的 secondState
+      return row.secondState === 1;
     },
   },
 };

@@ -90,8 +90,8 @@ export default {
         phone: "",
       },
       loginForm: {
-        username: "",
-        password: "",
+        username: process.env.NODE_ENV === 'development' ? "admin" : "",
+        password: process.env.NODE_ENV === 'development' ? "admin123" : "",
         rememberMe: false,
         code: "",
         uuid: "",

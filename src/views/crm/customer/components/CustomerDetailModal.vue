@@ -535,6 +535,61 @@
             </el-table>
           </div>
         </el-tab-pane>
+
+        <!-- 收货地址 -->
+        <el-tab-pane label="收货地址" name="addresses">
+          <div class="tab-content">
+            <div class="section-header">
+              <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddAddress" v-hasPermi="['crm:address:add']">
+                添加收货地址
+              </el-button>
+            </div>
+            
+            <el-table 
+              v-loading="addressLoading"
+              :data="addressList" 
+              style="width: 100%"
+              height="36vh"
+              border
+              size="small"
+              element-loading-text="加载收货地址数据..."
+              class="crm-address-table"
+            >
+              <el-table-column label="收货地址" align="left" min-width="400">
+                <template slot-scope="{ row }">
+                  <div class="address-info">
+                    <span v-if="row.contactName || row.contactPhone">
+                      <span v-if="row.contactName">{{ row.contactName }}</span>
+                      <span v-if="row.contactName && row.contactPhone"> / </span>
+                      <span v-if="row.contactPhone">{{ row.contactPhone }}</span>
+                      <span v-if="(row.contactName || row.contactPhone) && row.address"> - </span>
+                    </span>
+                    <span>{{ row.address || '--' }}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="备注" align="center" min-width="180">
+                <template slot-scope="{ row }">
+                  <div class="text-ellipsis" :title="row.remark">
+                    {{ row.remark || '--' }}
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="createTime" label="创建时间" width="150" align="center">
+                <template slot-scope="{ row }">
+                  {{ formatDate(row.createTime) }}
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="80" align="center">
+                <template slot-scope="{ row }">
+                  <el-button type="text" size="mini" icon="el-icon-edit" @click="handleEditAddress(row)" v-hasPermi="['crm:address:edit']">
+                    编辑
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-tab-pane>
       </el-tabs>
         </div>
 
@@ -646,6 +701,15 @@
       :projectFollow="editingProjectFollow"
       @refresh="handleProjectFollowRefresh"
     />
+    
+    <!-- 添加/编辑收货地址弹窗 -->
+    <CustomerAddressFormDialog
+      :visible.sync="addressFormVisible"
+      :mode="editingAddress && editingAddress.id ? 'edit' : 'add'"
+      :customerAddress="editingAddress"
+      :disableCustomerSelect="true"
+      @refresh="handleAddressRefresh"
+    />
   </div>
 </template>
 
@@ -659,7 +723,9 @@ import { getContactsByCustomerId } from '@/api/third/customerContact'
 import { getFollowRecordsByCustomerId, addFollowRecord } from '@/api/crm/followRecord'
 import { getFollowPlanList } from '@/api/crm/followPlan'
 import { getProjectFollowByCustomerId } from '@/api/crm/projectFollow'
+import { listCustomerAddress } from '@/api/crm/customerAddress'
 import ProjectFollowFormDialog from '../../projectFollow/components/ProjectFollowFormDialog.vue'
+import CustomerAddressFormDialog from '../../customer-address/components/CustomerAddressFormDialog.vue'
 import { parseTime } from '@/utils/ruoyi'
 
 export default {
@@ -670,7 +736,8 @@ export default {
     ContactFormModal,
     FollowPlanFormDialog,
     AddFollowRecordDialog,
-    ProjectFollowFormDialog
+    ProjectFollowFormDialog,
+    CustomerAddressFormDialog
   },
   props: {
     visible: {
@@ -695,22 +762,26 @@ export default {
       followUpList: [],
       planList: [],
       projectFollowList: [],
+      addressList: [],
       // 加载状态
       contactLoading: false,
       followUpLoading: false,
       planLoading: false,
       projectFollowLoading: false,
+      addressLoading: false,
       quickFollowupLoading: false,
       // 弹窗控制
       contactFormVisible: false,
       followPlanFormVisible: false,
       addFollowRecordVisible: false,
       projectFollowFormVisible: false,
+      addressFormVisible: false,
       // 编辑数据
       editingContact: null,
       editingFollowRecord: null,
       editingFollowPlan: null,
       editingProjectFollow: null,
+      editingAddress: null,
       // 字典数据
       settlementPeriodDict: []
     }
@@ -1012,6 +1083,27 @@ export default {
         this.loadProjectFollows(this.customer.id)
       }
     },
+    handleAddressRefresh() {
+      // 刷新收货地址数据
+      if (this.customer && this.customer.id) {
+        this.loadAddresses(this.customer.id)
+      }
+    },
+    handleAddAddress() {
+      // 打开添加收货地址弹窗
+      // 新增模式下，传递默认客户ID，但不要设置id，这样不会误判为编辑模式
+      this.editingAddress = this.customer && this.customer.id ? {
+        customerId: this.customer.id,
+        id: null // 明确设置为null，确保不是编辑模式
+      } : null
+      this.addressFormVisible = true
+    },
+    handleEditAddress(address) {
+      // 编辑收货地址
+      console.log('编辑收货地址', address)
+      this.editingAddress = address
+      this.addressFormVisible = true
+    },
     // 数据加载方法
     // 加载客户相关的所有数据
     async loadCustomerRelatedData(customerId) {
@@ -1022,7 +1114,8 @@ export default {
         this.loadContacts(customerId),
         this.loadFollowRecords(customerId),
         this.loadFollowPlans(customerId),
-        this.loadProjectFollows(customerId)
+        this.loadProjectFollows(customerId),
+        this.loadAddresses(customerId)
       ])
     },
 
@@ -1095,6 +1188,23 @@ export default {
         this.$message.error('加载项目跟进失败')
       } finally {
         this.projectFollowLoading = false
+      }
+    },
+
+    // 加载收货地址列表
+    async loadAddresses(customerId) {
+      this.addressLoading = true
+      try {
+        const response = await listCustomerAddress({ customerId })
+        if (response && response.code === 200 && response.data) {
+          this.addressList = response.data.list || response.data || []
+          console.log('收货地址数据:', this.addressList)
+        }
+      } catch (error) {
+        console.error('加载收货地址失败:', error)
+        this.$message.error('加载收货地址失败')
+      } finally {
+        this.addressLoading = false
       }
     },
 
@@ -1379,12 +1489,15 @@ export default {
 /* 表格样式 */
 .crm-contact-table,
 .crm-followup-table,
-.crm-plan-table {
+.crm-plan-table,
+.crm-address-table {
+  width: 100%;
 }
 
 .crm-contact-table :deep(.el-table__body-wrapper),
 .crm-followup-table :deep(.el-table__body-wrapper),
-.crm-plan-table :deep(.el-table__body-wrapper) {
+.crm-plan-table :deep(.el-table__body-wrapper),
+.crm-address-table :deep(.el-table__body-wrapper) {
   max-height: 400px;
   overflow-y: auto;
 }
