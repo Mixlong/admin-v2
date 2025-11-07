@@ -18,10 +18,10 @@
           :hasMore="customerNameData.more" dictLabel="name" dictValue="name" :request="getCustomerNameList"
           style="width: 150px;" />
       </el-form-item>
-      <el-form-item label="BIST型号" prop="customerName">
-        <el-select v-model="queryParams.isBist" @change="getList" clearable style="width: 70px;">
-          <el-option label="是" :value="1" />
-          <el-option label="否" :value="0" />
+      <el-form-item label="型号类型" prop="customerName">
+        <el-select v-model="queryParams.isBist" @change="getList" clearable style="width: 100px;">
+          <el-option label="BIST型号" :value="1" />
+          <el-option label="大货型号" :value="0" />
         </el-select>
       </el-form-item>
       <el-form-item label="产品图纸状态" prop="specificationAuditStatus">
@@ -205,17 +205,17 @@
       
       <!-- 基础信息 -->
       <el-table-column label="基础信息" align="left" label-class-name="group-header-basic">
-              <el-table-column label="BIST关联型号" prop="isBist" align="center" width="180" header-align="center">
+              <el-table-column label="型号类型" prop="isBist" align="center" width="180" header-align="center">
         <template slot-scope="{ row }">
           <div 
             style="display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;"
             @click="handleEditBist(row)"
           >
             <el-tag size="small" :type="row.isBist == 1 ? 'success' : 'danger'">
-              {{ row.isBist == 1 ? '是' : '否' }}
+              {{ row.isBist == 1 ? 'BIST型号' : '大货型号' }}
             </el-tag>
             <div  style="font-size: 12px; color: #606266; text-align: center;">
-              {{ (row.relatedModelList || []).map(item => item.computerName || item.name || '-').join(', ') || '--' }}
+             {{ row.isBist == 1 ? '关联大货型号：' : '关联BIST型号：' }} {{ (row.relatedModelList || []).map(item => item.computerName || item.name || '-').join(', ') || '--' }}
             </div>
           </div>
         </template>
@@ -1385,7 +1385,7 @@ export default {
       const label = (column && column.label) || ''
 
       const basic = new Set([
-        '操作', '审核状态', '品类', '型号', '客户', '客户料号', '实际客户车名', '是否配置', 'BIST型号', '关联型号', 'BIST关联型号'
+        '操作', '审核状态', '品类', '型号', '客户', '客户料号', '实际客户车名', '是否配置', 'BIST型号', '关联型号', '型号类型'
       ])
       const appearance = new Set([
         '产品图纸', '标签规则', 'SN', 'PCBA SN', '车把尺寸', '控制器接头', '控制器线长不含头mm',

@@ -207,6 +207,8 @@ export default {
       this.$refs.compUpdate.title = "添加子产品";
       this.$refs.compUpdate.isCopyProduct = true;
       this.$refs.compUpdate.addBistOptions();
+      this.eidtBist=false;
+      this.isPackage=false;
     },
     handleUpdate(row, {isPackage, eidtBist} = {}) {
       this.$refs.compUpdate.reset();
@@ -224,7 +226,7 @@ export default {
           this.$refs.compUpdate.dialogVisible = true;
           this.$refs.compUpdate.disabled = true;
           this.$refs.compUpdate.isCopyProduct = false;
-          this.$refs.compUpdate.form = Object.assign({}, data);
+          this.$refs.compUpdate.form = Object.assign({}, data,{category: row.category});
           this.$refs.compUpdate.title = "修改子产品";
           this.$refs.compUpdate.viewBistOptions();
           this.isPackage = isPackage || false;

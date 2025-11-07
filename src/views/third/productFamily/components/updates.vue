@@ -1825,7 +1825,7 @@
     </div>
     <div v-else>
       <el-dialog
-        title="编辑BIST关联型号"
+        :title="form.isBist === 1 ? '关联大货型号' : '关联BIST型号'"
         :visible.sync="dialogVisible"
         :close-on-click-modal="false"
         width="600px"
@@ -1838,33 +1838,27 @@
             :rules="formRules"
             :model="form"
             label-width="150px"
+            
           >
           <div class="bist-edit-container">
             <!-- BIST型号开关 -->
             <div class="bist-form-item">
-              <label class="bist-label">BIST型号</label>
-              <el-switch
-                v-model="form.isBist"
-                :active-value="1"
-                :inactive-value="0"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-                @change="handleBistChange"
-              >
-              </el-switch>
+              <label class="bist-label">型号: </label>
+                    <label class="bist-label">{{ form.category }} </label>
+
             </div>
 
             <!-- 关联型号选择 -->
             <div class="bist-form-item">
-              <label class="bist-label">关联型号</label>
+              <label class="bist-label">{{ form.isBist === 1 ? '大货型号' : 'BIST型号' }}:</label>
               <el-select
                 ref="relatedModelSelect"
                 :key="`related-select-${form.isBist}`"
                 v-model="form.instrumentModel.relatedModelIdList"
                 :placeholder="
                   form.isBist === 1
-                    ? '请选择关联型号（可多选）'
-                    : '请选择关联型号'
+                    ? '请选择关联的大货型号'
+                    : '请选择关联的BIST的型号'
                 "
                 :multiple="form.isBist === 1"
                 filterable
@@ -1887,7 +1881,7 @@
             </div>
 
             <!-- 提示信息 -->
-            <div class="bist-tip">
+            <div class="bist-tip" v-if='form.isBist === 1'>
               <i class="el-icon-info"></i>
               <span>{{
                 form.isBist === 1
@@ -2262,13 +2256,13 @@ export default {
     /** 加载关联型号列表 */
     loadBistOptions() {
       const isBist = this.form.isBist == 1 ? 0 : 1;
+      const categoryId = this.form.categoryId;
       // 如果isBist未设置，不加载
       if (isBist === undefined || isBist === null) {
         this.bistOptions = [];
         return Promise.resolve();
       }
-      console.log(this.form, 111);
-      return getModelSimpleList(isBist)
+      return getModelSimpleList(isBist,categoryId)
         .then((res) => {
           if (res.code === 200 && res.data) {
             this.bistOptions = res.data;
