@@ -7,6 +7,9 @@ import router from '@/router';
 import plugins from './plugins' // plugins
 import WujieVue from 'wujie-vue2'; // 无界微前端
 
+// 全局表单输入修复补丁（解决 loading 卡死、输入框禁用等问题）
+import '@/plugins/fixFormBlock';
+
 // import './assets/styles/element-variables.scss';
 import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/styles/index.scss'; // global css
