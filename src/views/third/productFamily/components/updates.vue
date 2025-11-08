@@ -1844,7 +1844,7 @@
             <!-- BIST型号开关 -->
             <div class="bist-form-item">
               <label class="bist-label">型号: </label>
-                    <label class="bist-label">{{ form.category }} </label>
+                    <label class="bist-label">{{ form.name }} </label>
 
             </div>
 
