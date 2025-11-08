@@ -521,14 +521,14 @@ export default {
     handleUpdate(row) {
       this.reset();
       const id = row.id;
-      
+      this.form.involvedCustomersArray = [];
       getPcnNoticeInfo(id).then((response) => {
         this.form = response.data;
         // 将逗号分隔的客户字符串转换为数组
         if (this.form.involvedCustomers) {
-          this.form.involvedCustomersArray = this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item);
+          this.$set(this.form, 'involvedCustomersArray', this.form.involvedCustomers.split(',').map(item => item.trim()).filter(item => item));
         } else {
-          this.form.involvedCustomersArray = [];
+          this.$set(this.form, 'involvedCustomersArray', []);
         }
         this.open = true;
         this.title = "修改";

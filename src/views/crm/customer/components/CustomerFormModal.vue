@@ -430,7 +430,7 @@
           >
             <el-table-column type="index" label="序号" width="55" align="center" />
             
-            <el-table-column label="联系人姓名"  align="center" width="120">
+            <el-table-column label="联系人姓名"  align="center" width="162">
               <template slot-scope="{ row, $index }">
                 <el-input 
                   v-model="row.contactName" 
@@ -442,7 +442,7 @@
               </template>
             </el-table-column>
             
-            <el-table-column label="联系方式"   align="center">
+            <el-table-column label="联系方式"   align="center" width="300">
               <template slot-scope="{ row, $index }">
                 <el-input 
                   v-model="row.contactPhone" 
