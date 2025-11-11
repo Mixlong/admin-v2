@@ -68,7 +68,7 @@
   @pagination="getList" /> -->
   <!-- </div> -->
   <div>
-    <CompUpdate ref="compUpdate" :isPackage="isPackage" @refresh-list="handleRefreshList" />
+    <CompUpdate ref="compUpdate"  :eidtBist='eidtBist' :isPackage="isPackage" @refresh-list="handleRefreshList" />
   </div>
 </template>
 
@@ -89,6 +89,7 @@ export default {
   },
   data() {
     return {
+      eidtBist:false,
       form: {},
       // 遮罩层
       loading: true,
@@ -205,20 +206,35 @@ export default {
       this.$refs.compUpdate.form.categoryId = this.queryParams.key;
       this.$refs.compUpdate.title = "添加子产品";
       this.$refs.compUpdate.isCopyProduct = true;
+      this.$refs.compUpdate.addBistOptions();
+      this.eidtBist=false;
+      this.isPackage=false;
     },
-    handleUpdate(row) {
+    handleUpdate(row, {isPackage, eidtBist} = {}) {
       this.$refs.compUpdate.reset();
-
-      detailComputer(row.id).then((res) => {
-        let { data } = res;
-        data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
-        this.$refs.compUpdate.dialogVisible = true;
-        this.$refs.compUpdate.disabled = true;
-        this.$refs.compUpdate.isCopyProduct = false;
-        this.$refs.compUpdate.form = Object.assign({}, data);
-
-        this.$refs.compUpdate.title = "修改子产品";
+      const loading = this.$loading({
+        lock: true,
+        text: '加载中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
       });
+
+      detailComputer(row.id)
+        .then((res) => {
+          let { data } = res;
+          data.instrumentModel = data.instrumentModel ? data.instrumentModel : {};
+          this.$refs.compUpdate.dialogVisible = true;
+          this.$refs.compUpdate.disabled = true;
+          this.$refs.compUpdate.isCopyProduct = false;
+          this.$refs.compUpdate.form = Object.assign({}, data,{category: row.category});
+          this.$refs.compUpdate.title = "修改子产品";
+          this.$refs.compUpdate.viewBistOptions();
+          this.isPackage = isPackage || false;
+          this.eidtBist = eidtBist || false;
+        })
+        .finally(() => {
+          loading.close();
+        });
     },
     rowStyle({ row, rowIndex }) {
       let styleJson = {};

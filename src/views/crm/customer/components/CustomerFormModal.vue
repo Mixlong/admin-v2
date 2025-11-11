@@ -403,6 +403,162 @@
         </el-table>
         </div>
       </fieldset>
+          <!-- 收货地址信息 -->
+      <fieldset class="form-fieldset address-fieldset">
+        <legend>
+          <span>收货地址信息</span>
+          <el-button 
+            type="text" 
+            icon="el-icon-plus" 
+            size="mini" 
+            @click.stop="addAddressRow"
+          >
+            新增收货地址
+          </el-button>
+        </legend>
+        
+        <div v-if="addressList.length === 0" style="text-align: center; padding: 15px 0; color: #909399; font-size: 13px;">
+          暂无收货地址，请点击"新增收货地址"按钮添加
+        </div>
+        
+        <div v-else class="address-table-wrapper">
+          <el-table 
+            :data="addressList" 
+            border 
+            size="small"
+            max-height="250"
+          >
+            <el-table-column type="index" label="序号" width="55" align="center" />
+            
+            <el-table-column label="联系人姓名"  align="center" width="162">
+              <template slot-scope="{ row, $index }">
+                <el-input 
+                  v-model="row.contactName" 
+                  placeholder="姓名" 
+                  size="mini"
+                  :disabled="isEdit && row.id && editingAddressIndex !== $index"
+                  :class="{ 'is-required': !row.contactName }"
+                />
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="联系方式"   align="center" width="300">
+              <template slot-scope="{ row, $index }">
+                <el-input 
+                  v-model="row.contactPhone" 
+                  placeholder="联系方式" 
+                  size="mini"
+                  :disabled="isEdit && row.id && editingAddressIndex !== $index"
+                />
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="收货地址" align="center" width="250">
+              <template slot-scope="{ row, $index }">
+                <el-input 
+                  v-model="row.address" 
+                  type="text"
+                  placeholder="收货地址" 
+                  size="mini"
+                  :disabled="isEdit && row.id && editingAddressIndex !== $index"
+                  :class="{ 'is-required': !row.address }"
+                />
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="备注" align="center" width="180">
+              <template slot-scope="{ row, $index }">
+                <el-input 
+                  v-model="row.remark" 
+                  placeholder="备注" 
+                  size="mini"
+                  :disabled="isEdit && row.id && editingAddressIndex !== $index"
+                />
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="操作" width="140" align="center" fixed="right">
+              <template slot-scope="{ row, $index }">
+                <!-- 新增模式：只显示删除 -->
+                <template v-if="!isEdit">
+                  <el-button 
+                    type="text" 
+                    size="mini" 
+                    @click="deleteAddressRow($index)"
+                    style="color: #F56C6C;"
+                  >
+                    删除
+                  </el-button>
+                </template>
+                
+                <!-- 编辑模式 -->
+                <template v-else>
+                  <!-- 已有收货地址 -->
+                  <template v-if="row.id">
+                    <!-- 非编辑状态 -->
+                    <template v-if="editingAddressIndex !== $index">
+                      <el-button 
+                        type="text" 
+                        size="mini" 
+                        @click="startEditAddress($index)"
+                      >
+                        编辑
+                      </el-button>
+                      <el-button 
+                        type="text" 
+                        size="mini" 
+                        @click="deleteAddressRow($index)"
+                        style="color: #F56C6C;"
+                      >
+                        删除
+                      </el-button>
+                    </template>
+                    <!-- 编辑状态 -->
+                    <template v-else>
+                      <el-button 
+                        type="text" 
+                        size="mini" 
+                        @click="saveEditAddress($index)"
+                        style="color: #67C23A;"
+                      >
+                        保存
+                      </el-button>
+                      <el-button 
+                        type="text" 
+                        size="mini" 
+                        @click="cancelEditAddress($index)"
+                      >
+                        取消
+                      </el-button>
+                    </template>
+                  </template>
+                  
+                  <!-- 新增的收货地址（没有id） -->
+                  <template v-else>
+                    <el-button 
+                      type="text" 
+                      size="mini" 
+                      @click="saveNewAddress($index)"
+                      style="color: #67C23A;"
+                    >
+                      保存
+                    </el-button>
+                    <el-button 
+                      type="text" 
+                      size="mini" 
+                      @click="deleteAddressRow($index)"
+                      style="color: #F56C6C;"
+                    >
+                      删除
+                    </el-button>
+                  </template>
+                </template>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </fieldset>
+
       <!-- 深度调研 -->
       <fieldset class="form-fieldset">
         <legend>深度调研</legend>
@@ -528,6 +684,7 @@
         </el-row>
       </fieldset>
 
+   
  
     </el-form>
 
@@ -553,6 +710,12 @@ import {
   updateCustomerContact,
   deleteCustomerContact 
 } from '@/api/third/customerContact'
+import {
+  listCustomerAddress,
+  addCustomerAddress,
+  updateCustomerAddress,
+  deleteCustomerAddress
+} from '@/api/crm/customerAddress'
 
 import ElUploadSortable from '@/components/el-upload-sortable'
 
@@ -650,7 +813,15 @@ export default {
       // 正在编辑的联系人索引
       editingContactIndex: null,
       // 编辑前的联系人数据备份
-      contactBackup: null
+      contactBackup: null,
+      // 收货地址列表
+      addressList: [],
+      // 记录原始收货地址ID，用于判断是新增还是更新
+      originalAddressIds: [],
+      // 正在编辑的收货地址索引
+      editingAddressIndex: null,
+      // 编辑前的收货地址数据备份
+      addressBackup: null
     }
   },
   computed: {
@@ -674,9 +845,10 @@ export default {
           if (!this.settlementPeriodOptions.length) {
             await this.loadSettlementPeriodOptions()
           }
-          // 如果是编辑模式，加载联系人列表
+          // 如果是编辑模式，加载联系人列表和收货地址列表
           if (newCustomer.id) {
             await this.loadCustomerContacts(newCustomer.id)
+            await this.loadCustomerAddresses(newCustomer.id)
           }
           Object.assign(this.form, {
             // 基本信息字段
@@ -809,6 +981,12 @@ export default {
       this.editingContactIndex = null
       this.contactBackup = null
       
+      // 重置收货地址列表
+      this.addressList = []
+      this.originalAddressIds = []
+      this.editingAddressIndex = null
+      this.addressBackup = null
+      
       // 清空表单验证状态
       this.$nextTick(() => {
         if (this.$refs.formRef) {
@@ -865,10 +1043,11 @@ export default {
         status: this.customer.status !== undefined ? this.customer.status : 0
       })
       
-      // 加载联系人列表
-      if (this.customer.id) {
-        await this.loadCustomerContacts(this.customer.id)
-      }
+          // 加载联系人列表和收货地址列表
+          if (this.customer.id) {
+            await this.loadCustomerContacts(this.customer.id)
+            await this.loadCustomerAddresses(this.customer.id)
+          }
       
       console.log('fillFormData 完成后的表单数据:', this.form)
       console.log('fillFormData 完成后的联系人数据:', this.contactList)
@@ -886,11 +1065,16 @@ export default {
       const valid = await this.$refs.formRef.validate().catch(() => false)
       if (!valid) return
 
-      // 新增模式：验证联系人姓名
+      // 新增模式：验证联系人姓名和收货地址联系人姓名
       if (!this.isEdit) {
         const hasEmptyContactName = this.contactList.some(contact => !contact.contactName)
         if (hasEmptyContactName) {
           this.$message.warning('请填写所有联系人姓名')
+          return
+        }
+        const hasEmptyAddressContactName = this.addressList.some(address => !address.contactName)
+        if (hasEmptyAddressContactName) {
+          this.$message.warning('请填写所有收货地址联系人姓名')
           return
         }
       }
@@ -945,24 +1129,36 @@ export default {
       payload.status = toNumberOrNull(payload.status)
       if (payload.status === null) payload.status = 0
 
-      // 只在新增模式下添加联系人列表
-      if (!this.isEdit && this.contactList && this.contactList.length > 0) {
-        payload.customerContactList = this.contactList.map(contact => ({
-          id: contact.id || undefined,
-          contactName: contact.contactName || '',
-          department: contact.department || '',
-          position: contact.position || '',
-          email: contact.email || '',
-          contactPhone: contact.contactPhone || '',
-          wechat: contact.wechat || '',
-          isDecisionMaker: contact.isDecisionMaker || 0,
-          belongDepartment: contact.belongDepartment || '',
-          responsiblePerson: contact.responsiblePerson || '',
-          collaborator: contact.collaborator || '',
-          contactDetails: contact.contactDetails || '',
-          cardImage: contact.cardImage || '',
-          customerId: this.form.id || ''
-        }))
+      // 只在新增模式下添加联系人列表和收货地址列表
+      if (!this.isEdit) {
+        if (this.contactList && this.contactList.length > 0) {
+          payload.customerContactList = this.contactList.map(contact => ({
+            id: contact.id || undefined,
+            contactName: contact.contactName || '',
+            department: contact.department || '',
+            position: contact.position || '',
+            email: contact.email || '',
+            contactPhone: contact.contactPhone || '',
+            wechat: contact.wechat || '',
+            isDecisionMaker: contact.isDecisionMaker || 0,
+            belongDepartment: contact.belongDepartment || '',
+            responsiblePerson: contact.responsiblePerson || '',
+            collaborator: contact.collaborator || '',
+            contactDetails: contact.contactDetails || '',
+            cardImage: contact.cardImage || '',
+            customerId: this.form.id || ''
+          }))
+        }
+        
+        if (this.addressList && this.addressList.length > 0) {
+          payload.customerAddressList = this.addressList.map(address => ({
+            id: address.id || undefined,
+            contactName: address.contactName || '',
+            contactPhone: address.contactPhone || '',
+            remark: address.remark || '',
+            customerId: this.form.id || ''
+          }))
+        }
       }
 
       return payload
@@ -1277,6 +1473,168 @@ export default {
     // 注意：不再需要批量保存联系人的方法
     // 新增模式：联系人通过 customerContactList 字段自动创建
     // 编辑模式：联系人通过表格中的"保存"按钮单独处理（saveEditContact 和 saveNewContact）
+    
+    // ==================== 收货地址相关方法 ====================
+    
+    // 加载客户收货地址列表
+    async loadCustomerAddresses(customerId) {
+      if (!customerId) {
+        this.addressList = []
+        return
+      }
+      
+      try {
+        const res = await listCustomerAddress({ customerId })
+        if (res.code === 200 && res.data) {
+          this.addressList = (res.data.list || res.data || []).map(address => ({
+            id: address.id,
+            contactName: address.contactName || '',
+            contactPhone: address.contactPhone || '',
+            remark: address.remark || '',
+            customerId: customerId
+          }))
+          // 记录原始收货地址ID
+          this.originalAddressIds = this.addressList.map(a => a.id).filter(id => id)
+        } else {
+          this.addressList = []
+        }
+      } catch (error) {
+        console.error('加载收货地址列表失败:', error)
+        this.addressList = []
+      }
+    },
+    
+    // 添加收货地址行
+    addAddressRow() {
+      this.addressList.push({
+        id: null, // 新增的收货地址没有ID
+        contactName: '',
+        contactPhone: '',
+        address: '',
+        remark: '',
+        customerId: this.form.id || ''
+      })
+    },
+    
+    // 开始编辑收货地址
+    startEditAddress(index) {
+      // 保存当前编辑的索引
+      this.editingAddressIndex = index
+      // 备份原始数据
+      this.addressBackup = { ...this.addressList[index] }
+    },
+    
+    // 保存编辑的收货地址
+    async saveEditAddress(index) {
+      const address = this.addressList[index]
+      
+      // 验证联系人姓名
+      if (!address.contactName) {
+        this.$message.warning('请填写联系人姓名')
+        return
+      }
+      
+      try {
+        const addressData = {
+          id: address.id,
+          contactName: address.contactName || '',
+          contactPhone: address.contactPhone || '',
+          remark: address.remark || '',
+          customerId: this.form.id
+        }
+        
+        const res = await updateCustomerAddress(addressData)
+        
+        if (res.code === 200) {
+          this.$message.success('收货地址更新成功')
+          this.editingAddressIndex = null
+          this.addressBackup = null
+          // 重新加载收货地址列表
+          await this.loadCustomerAddresses(this.form.id)
+        } else {
+          this.$message.error(res.msg || '更新失败')
+        }
+      } catch (error) {
+        console.error('更新收货地址失败:', error)
+        this.$message.error('更新失败')
+      }
+    },
+    
+    // 取消编辑收货地址
+    cancelEditAddress(index) {
+      // 恢复原始数据
+      if (this.addressBackup) {
+        this.$set(this.addressList, index, { ...this.addressBackup })
+      }
+      this.editingAddressIndex = null
+      this.addressBackup = null
+    },
+    
+    // 保存新增的收货地址
+    async saveNewAddress(index) {
+      const address = this.addressList[index]
+      
+      // 验证联系人姓名
+      if (!address.contactName) {
+        this.$message.warning('请填写联系人姓名')
+        return
+      }
+      
+      try {
+        const addressData = {
+          contactName: address.contactName || '',
+          contactPhone: address.contactPhone || '',
+          remark: address.remark || '',
+          customerId: this.form.id
+        }
+        
+        const res = await addCustomerAddress(addressData)
+        
+        if (res.code === 200) {
+          this.$message.success('收货地址添加成功')
+          // 重新加载收货地址列表
+          await this.loadCustomerAddresses(this.form.id)
+        } else {
+          this.$message.error(res.msg || '添加失败')
+        }
+      } catch (error) {
+        console.error('添加收货地址失败:', error)
+        this.$message.error('添加失败')
+      }
+    },
+    
+    // 删除收货地址行
+    async deleteAddressRow(index) {
+      const address = this.addressList[index]
+      
+      // 编辑模式下，如果是已保存的收货地址，需要调用删除API
+      if (this.isEdit && address.id) {
+        try {
+          await this.$confirm('确定要删除该收货地址吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+          
+          await deleteCustomerAddress(address.id)
+          this.$message.success('删除成功')
+          // 重新加载收货地址列表
+          await this.loadCustomerAddresses(this.form.id)
+        } catch (error) {
+          if (error !== 'cancel') {
+            console.error('删除收货地址失败:', error)
+            this.$message.error('删除失败')
+          }
+        }
+      } else {
+        // 新增模式或未保存的收货地址，直接从列表中移除
+        this.addressList.splice(index, 1)
+      }
+    },
+    
+    // 注意：不再需要批量保存收货地址的方法
+    // 新增模式：收货地址通过 customerAddressList 字段自动创建
+    // 编辑模式：收货地址通过表格中的"保存"按钮单独处理（saveEditAddress 和 saveNewAddress）
   }
 }
 </script>
@@ -1309,6 +1667,17 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* 收货地址表格样式 */
+.address-fieldset legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.address-table-wrapper {
+  margin-top: 10px;
 }
 
 /* 必填项样式 */

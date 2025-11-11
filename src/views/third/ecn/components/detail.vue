@@ -298,33 +298,70 @@
               <span class="text-green">最终审核状态</span>
             </div>
             <div style="min-height: 50px">
-              <el-row class="margin-bottom-sm" type="flex" align="middle">
-                <el-col :span="3">
-                  <span>审核状态：</span>
-
-                  <el-tag type="warning" v-show="form.secondState === 0">
-                    待审核
-                  </el-tag>
-                  <el-tag type="success" v-show="form.secondState === 1">
-                    已审核
-                  </el-tag>
-                  <el-tag type="danger" v-show="form.secondState === 2">
-                    已驳回
-                  </el-tag>
-                </el-col>
-                <el-col :span="6">
-                  <span>审核人: {{ form.secondPerson }}</span>
-                </el-col>
-              </el-row>
-              <el-card shadow="nerver" v-if="form.secondState !== 0">
-                <template v-if="form.secondState === 1 && form.systemRemark">
-                  备注： {{ form.systemRemark }}
-                </template>
-                <template v-if="form.secondState === 2 && form.finalResult">
-                  <span class="text-red">拒绝原因：</span>
-                  {{ form.finalResult }}
-                </template>
-              </el-card>
+              <!-- 终审人员列表（使用 secondList，每人一行，显示各自状态） -->
+              <template v-if="form.secondList && Array.isArray(form.secondList) && form.secondList.length > 0">
+                <div 
+                  v-for="(auditRecord, index) in form.secondList" 
+                  :key="`second-${auditRecord.id || auditRecord.auditor || index}`"
+                  class="margin-bottom-sm"
+                >
+                  <el-row class="margin-bottom-sm" type="flex" align="middle">
+                    <el-col :span="3">
+                      <span>审核状态：</span>
+                      <el-tag type="warning" v-show="auditRecord.auditStatus === 0">
+                        待审核
+                      </el-tag>
+                      <el-tag type="success" v-show="auditRecord.auditStatus === 1">
+                        已审核
+                      </el-tag>
+                      <el-tag type="danger" v-show="auditRecord.auditStatus === 2">
+                        已驳回
+                      </el-tag>
+                    </el-col>
+                    <el-col :span="6">
+                      <span>审核人: {{ auditRecord.auditor }}</span>
+                    </el-col>
+                  </el-row>
+                  <!-- 只有已审核或已驳回状态，且有对应的备注或结果时才显示 -->
+                  <el-card shadow="nerver" v-if="auditRecord.auditStatus === 1 && auditRecord.auditRemark">
+                    备注： {{ auditRecord.auditRemark }}
+                  </el-card>
+                  <el-card shadow="nerver" v-if="auditRecord.auditStatus === 2 && auditRecord.auditResult">
+                    <span class="text-red">拒绝原因：</span>
+                    {{ auditRecord.auditResult }}
+                  </el-card>
+                  <el-divider v-if="index < form.secondList.length - 1"></el-divider>
+                </div>
+              </template>
+              <!-- 兼容：如果没有 secondList，使用 secondPerson 或 secondPersonList -->
+              <template v-else>
+                <el-row class="margin-bottom-sm" type="flex" align="middle">
+                  <el-col :span="3">
+                    <span>审核状态：</span>
+                    <el-tag type="warning" v-show="form.secondState === 0">
+                      待审核
+                    </el-tag>
+                    <el-tag type="success" v-show="form.secondState === 1">
+                      已审核
+                    </el-tag>
+                    <el-tag type="danger" v-show="form.secondState === 2">
+                      已驳回
+                    </el-tag>
+                  </el-col>
+                  <el-col :span="6">
+                    <span>审核人: {{ form.secondPerson || (form.secondPersonList ? form.secondPersonList.split(',').join('、') : '--') }}</span>
+                  </el-col>
+                </el-row>
+                <el-card shadow="nerver" v-if="form.secondState !== 0">
+                  <template v-if="form.secondState === 1 && form.finalRemark">
+                    备注： {{ form.finalRemark }}
+                  </template>
+                  <template v-if="form.secondState === 2 && form.finalResult">
+                    <span class="text-red">拒绝原因：</span>
+                    {{ form.finalResult }}
+                  </template>
+                </el-card>
+              </template>
             </div>
           </el-card>
         </el-form>

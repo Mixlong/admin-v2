@@ -38,7 +38,7 @@
             clearable
           ></el-input>
         </el-form-item>
-        <el-form-item label="料号" prop="partNo">
+        <el-form-item label="PCB料号" prop="partNo">
           <el-input
             v-model="form.partNo"
             placeholder="请输入料号"
@@ -88,6 +88,9 @@ export default {
           { required: true, message: "产品品类不能为空", trigger: "change" },
         ],
         name: [{ required: true, message: "版本号不能为空", trigger: "blur" }],
+        partNo: [
+          { required: true, message: "PCB料号不能为空", trigger: "blur" },
+        ],
         desc: [
           { required: true, message: "版本描述不能为空", trigger: "blur" },
         ],

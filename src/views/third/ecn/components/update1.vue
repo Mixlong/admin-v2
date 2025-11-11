@@ -282,8 +282,17 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="最终审核人员" label-width="110px" prop="secondPerson" class="margin-bottom-xs">
-            <el-select v-model="form.secondPerson" placeholder="请选择最终审核人员" filterable clearable :disabled="!!form.id">
+          <el-form-item label="最终审核人员" label-width="110px" prop="secondPersonList" class="margin-bottom-xs">
+            <el-select 
+              v-model="form.secondPersonList" 
+              placeholder="请选择最终审核人员" 
+              filterable 
+              clearable 
+              multiple
+              collapse-tags
+              style="width: 176px"
+              :disabled="!!form.id"
+            >
               <el-option v-for="item in finalJudgmentData" :label="item.personnel" :value="item.personnel"
                 :key="item.id"></el-option>
             </el-select>
@@ -398,6 +407,7 @@ export default {
         selMarketerData: [],
         marketerDataTxt: "",
         noMarketerDataTxt: "",
+        secondPersonList: [],
       },
       // 最终审核人员
       systemChangeData: [],
@@ -439,7 +449,7 @@ export default {
         thirdPerson: [
           { required: true, message: "请选择PMC人员", trigger: "change" },
         ],
-        secondPerson: [
+        secondPersonList: [
           { required: true, message: "请选择最终审核人员", trigger: "change" },
         ],
         systemPerson: [
@@ -482,6 +492,13 @@ export default {
         this.getPeopleList(9);
         this.getPeopleList(10);
         this.getPeopleList(11);
+        
+        // 处理终审人员：如果 secondPersonList 是字符串（逗号分隔），转换为数组
+        if (this.form.secondPersonList && typeof this.form.secondPersonList === 'string') {
+          this.form.secondPersonList = this.form.secondPersonList.split(',').filter(item => item.trim());
+        } else if (!this.form.secondPersonList) {
+          this.form.secondPersonList = [];
+        }
       }
     },
     "form.reqUnit"(reqUnit) {
@@ -601,6 +618,7 @@ export default {
         selMarketerData: [],
         marketerDataTxt: "",
         noMarketerDataTxt: "",
+        secondPersonList: [],
       };
       this.resetForm("form");
     },
@@ -786,6 +804,18 @@ export default {
           }
 
           param.changeCause = param.changeCause.toString();
+          
+          // 处理终审人员多选：将数组转换为逗号分隔的字符串
+          if (param.secondPersonList && Array.isArray(param.secondPersonList) && param.secondPersonList.length > 0) {
+            param.secondPersonList = param.secondPersonList.join(',');
+            // 如果需要保留 secondPerson 字段（用于兼容），设置为第一个选中的人员
+            param.secondPerson = param.secondPersonList.split(',')[0];
+          } else {
+            // 如果没有选择，设置为空字符串
+            param.secondPersonList = '';
+            param.secondPerson = '';
+          }
+          
           if (param.id) {
             bomUpdate(param).then((response) => {
               if (response.code === 200) {

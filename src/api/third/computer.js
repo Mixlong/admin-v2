@@ -113,3 +113,12 @@ export function specificationFinalAudit(data) {
   });
 }
 
+// 获取型号简单列表（用于BIST关联型号选择）
+export function getModelSimpleList(isBist,categoryId) {
+  return request({
+    url: '/model/config/simple/list',
+    method: 'get',
+    params: { isBist,categoryId }
+  });
+}
+
