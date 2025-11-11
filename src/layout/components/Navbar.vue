@@ -214,8 +214,13 @@ export default {
           
           // 根据操作系统设置默认文件名
           const defaultFileName = os === 'mac' ? 'DigiSmart-1.0.3.dmg' : 'DigiSmart-Setup-1.0.3.exe';
-          const fileName = urlMatch ? urlMatch[1] : defaultFileName;
+          let fileName = urlMatch ? urlMatch[1] : defaultFileName;
           const version = versionMatch ? versionMatch[1] : '';
+          
+          // Mac手动下载强制使用.dmg文件（yml中的.zip是给自动更新用的）
+          if (os === 'mac' && fileName.endsWith('.zip')) {
+            fileName = fileName.replace(/\.zip$/, '.dmg');
+          }
           
           // 构建完整的下载URL
           const downloadUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/${fileName}`;
