@@ -97,11 +97,9 @@ export default {
         });
         
         try {
-          // 获取latest.yml文件
-          const response = await fetch('https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml', {
-            mode: 'cors',
-            credentials: 'omit'
-          });
+          // 获取latest.yml文件，添加时间戳防止缓存
+          const timestamp = new Date().getTime();
+          const response = await fetch(`https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml?t=${timestamp}`);
           
           if (!response.ok) {
             throw new Error('获取版本信息失败');
@@ -113,6 +111,7 @@ export default {
           const urlMatch = ymlText.match(/url:\s*(\S+)/);
           const versionMatch = ymlText.match(/version:\s*(\S+)/);
           const fileName = urlMatch ? urlMatch[1] : 'DigiSmart-Setup-1.0.3.exe';
+          console.log("🚀 ~ file: Navbar.vue:116 ~ fileName:", fileName)
           const version = versionMatch ? versionMatch[1] : '';
           
           // 构建完整的下载URL
