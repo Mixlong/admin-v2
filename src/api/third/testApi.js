@@ -360,6 +360,105 @@ export function sopAuth(data) {
   });
 }
 
+// SOP 审批流程接口
+// 初审
+export function sopFirstState(data) {
+  return request({
+    url: "/management/firstState",
+    method: "put",
+    data,
+  });
+}
+
+// 会审（品质审核）
+export function sopFieldState(data) {
+  return request({
+    url: "/management/fieldState",
+    method: "put",
+    data,
+  });
+}
+
+// 终审
+export function sopSecondState(data) {
+  return request({
+    url: "/management/secondState",
+    method: "put",
+    data,
+  });
+}
+
+// 撤销审核
+export function sopResetCheck(data) {
+  return request({
+    url: "/management/resetCheck",
+    method: "put",
+    data,
+  });
+}
+
+// 获取审核人员列表
+// 参数: { p: 1, l: 9999, type: 5 } - 带type参数获取指定类型人员，不带参数获取所有已配置人员
+// type: 2品质 3生产 5研发 8终审 9工程审
+// 返回格式: { code: 200, data: { list: [{ personnel: string, type: integer }], total: number } }
+export function sopPersonList(params) {
+  return request({
+    url: "/sop/change/personnel/list",
+    method: "get",
+    params,
+  });
+}
+
+// 编辑审核人员配置
+// 参数格式: list: Array[{ personnel: string, type: integer, changeType: integer }]
+export function sopPersonEdit(data) {
+  return request({
+    url: "/sop/change/personnel/edit",
+    method: "put",
+    data,
+  });
+}
+
+// 获取SOP审核列表
+// 参数: { p, l, ecn, sopId, categoryId, versionCode }
+export function sopAuditList(params) {
+  return request({
+    url: "/sop/change/list",
+    method: "get",
+    params,
+  });
+}
+
+// SOP会审（研发、品质、生产）
+// 参数: { id, field, fieldName, state, remark, result, ... }
+export function sopFieldAudit(data) {
+  return request({
+    url: "/sop/change/field/state",
+    method: "put",
+    data,
+  });
+}
+
+// SOP工程审
+// 参数: { id, state, remark, result, secondPerson }
+export function sopEngineerAudit(data) {
+  return request({
+    url: "/sop/change/engineering/state",
+    method: "put",
+    data,
+  });
+}
+
+// SOP终审
+// 参数: { id, state, remark, result, secondPerson }
+export function sopFinalAudit(data) {
+  return request({
+    url: "/sop/change/second/state",
+    method: "put",
+    data,
+  });
+}
+
 // 用例导入
 export function caseUpload(data) {
   return request({

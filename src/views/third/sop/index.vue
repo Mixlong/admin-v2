@@ -1,61 +1,92 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" inline>
-      <el-form-item label="产品品类" prop="categoryId">
-        <TypedSelectLoadMore
-              v-model="queryParams.categoryId"
-              type="category"
-              customStyle="width: 150px"
-              size="mini"
-              @change="handleQuery"
-            />
-      </el-form-item>
-      <el-form-item label="审核状态" prop="state">
-        <el-select v-model="queryParams.state" style="width: 140px" clearable placeholder="请选择审核状态">
-          <el-option label="待审核" value="0" />
-          <el-option label="审核通过" value="1" />
-          <el-option label="审核拒绝" value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="版本号" prop="versionCode">
-        <el-input v-model.trim="queryParams.versionCode" clearable style="width: 140px" placeholder="请选择版本号"></el-input>
-      </el-form-item>
-    <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+      <div style="flex: 1;">
+        <el-form :model="queryParams" ref="queryForm" inline>
+          <el-form-item label="产品品类" prop="categoryId">
+            <TypedSelectLoadMore
+                  v-model="queryParams.categoryId"
+                  type="category"
+                  customStyle="width: 150px"
+                  size="mini"
+                />
+          </el-form-item>
+          <el-form-item label="审核状态" prop="state">
+            <el-select v-model="queryParams.state" style="width: 140px" clearable placeholder="请选择审核状态">
+              <el-option label="待审核" value="0" />
+              <el-option label="审核通过" value="1" />
+              <el-option label="审核拒绝" value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="版本号" prop="versionCode">
+            <el-input v-model.trim="queryParams.versionCode" clearable style="width: 140px" placeholder="请选择版本号"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+              搜索
+            </el-button>
+            <el-button icon="el-icon-refresh" @click="resetQuery">
+              重置
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div style="flex-shrink: 0; margin-left: 10px;">
+        <el-button type="primary" icon="el-icon-user-solid" v-hasPermi="['sop:people:add']" @click="handleAddPeople">
+          人员管理
         </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery">
-          重置
+        <el-button v-hasPermi="['sop:add:btn']" type="primary" icon="el-icon-plus" @click="handleAdd">
+          新增
         </el-button>
-      </el-form-item>
-      <el-row :gutter="20" type="flex" align="middle" justify="start" class="fr mt5">
-        <el-col :span="1.5">
-          <el-button v-hasPermi="['sop:add:btn']" type="primary" icon="el-icon-plus" @click="handleAdd">
-            新增
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button type="info" icon="el-icon-folder-opened" @click="handleOpenDraftBox">
-            草稿箱
-          </el-button>
-        </el-col>
-      </el-row>
-    </el-form>
+        <el-button type="info" icon="el-icon-folder-opened" @click="handleOpenDraftBox">
+          草稿箱
+        </el-button>
+      </div>
+    </div>
 
     <el-table class="afterSaleBox" :row-class-name="rowName" v-loading="loading" :data="brandList"
       :height="tableHeight()" border>
-      <el-table-column label="品类" prop="categoryName" align="center" width="150" />
-      <el-table-column label="版本号" prop="versionCode" align="center" width="150" />
-      <el-table-column label="描述" prop="desc" align="center" />
-      <el-table-column label="审核状态" prop="model" align="center" width="100">
-        <template slot-scope="{ row }">
-          <span v-if="row.state === 0" class="text-cyan">待审核</span>
-          <span v-if="row.state === 1" class="text-green">审核通过</span>
-          <span v-if="row.state === 2" class="text-red">审核拒绝</span>
+      <el-table-column label="序号" type="index" width="60" align="center">
+        <template slot-scope="scope">
+          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="创建人" prop="createBy" align="center" width="100" show-overflow-tooltip />
-      <el-table-column label="更新时间" prop="updateTime" align="center" width="140">
+      <el-table-column label="品类" prop="categoryName" align="center" min-width="120" />
+      <el-table-column label="版本号" prop="versionCode" align="center" min-width="100" />
+      <el-table-column label="描述" prop="desc" align="center" min-width="150" show-overflow-tooltip />
+      
+      <!-- 会审状态（品质） -->
+      <el-table-column label="会审状态" prop="qualityState" align="center" min-width="110">
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="row.qualityState === 0">待审核</el-tag>
+          <el-tag type="success" v-if="row.qualityState === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="row.qualityState === 2">已驳回</el-tag>
+          <div style="margin-top: 5px" v-if="row.qualityPerson">{{ row.qualityPerson }}</div>
+        </template>
+      </el-table-column>
+      
+      <!-- 工程审状态 -->
+      <el-table-column label="工程审状态" prop="engineerState" align="center" min-width="110">
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="row.engineerState === 0">待审核</el-tag>
+          <el-tag type="success" v-if="row.engineerState === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="row.engineerState === 2">已驳回</el-tag>
+          <div style="margin-top: 5px" v-if="row.engineerPerson">{{ row.engineerPerson }}</div>
+        </template>
+      </el-table-column>
+      
+      <!-- 终审状态 -->
+      <el-table-column label="终审状态" prop="finalState" align="center" min-width="110">
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="row.finalState === 0">待审核</el-tag>
+          <el-tag type="success" v-if="row.finalState === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="row.finalState === 2">已驳回</el-tag>
+          <div style="margin-top: 5px" v-if="row.finalPerson">{{ row.finalPerson }}</div>
+        </template>
+      </el-table-column>
+      
+      <el-table-column label="创建人" prop="createBy" align="center" min-width="100" show-overflow-tooltip />
+      <el-table-column label="更新时间" prop="updateTime" align="center" min-width="140">
         <template slot-scope="{ row }">
           {{ parseTime(row.updateTime || row.createTime) }}
         </template>
@@ -64,21 +95,39 @@
         <template slot-scope="{ row }">
           <div class=" ">
             <el-button v-if="row.state === 0" v-hasPermi="['sop:check:btn']" class="text-orange" type="text"
-              @click="handleCheck(row)">
+              @click="handleAudit(row)">
               审核
             </el-button>
             <el-button v-hasPermi="['sop:detail:btn']" class="text-green" type="text" @click="handleDetail(row)">
               查看
             </el-button>
-            <el-button v-hasPermi="['sop:update:btn']" class="text-blue" type="text" @click="handleUpdate(row)">
+            <el-button
+              v-if="row.createBy === nickName && row.finalState !== 1"
+              v-hasPermi="['sop:update:btn']"
+              class="text-blue"
+              type="text"
+              size="small"
+              @click="handleUpdate(row)">
               编辑
             </el-button>
-            <el-button v-hasPermi="['sop:delete:btn']" class="text-red" type="text" @click="handleDelete(row)">
+            <el-button
+              v-if="row.createBy === nickName"
+              v-hasPermi="['sop:delete:btn']"
+              class="text-red"
+              type="text"
+              size="small"
+              @click="handleDelete(row)">
               删除
             </el-button>
-            <el-button v-if="row.historyFile" class="text-blue" type="text" @click="handleHistory(row)">
+            <el-button
+              v-if="row.historyFile"
+              class="text-blue"
+              type="text"
+              size="small"
+              @click="handleHistory(row)">
               历史文件
             </el-button>
+ 
           </div>
         </template>
       </el-table-column>
@@ -116,11 +165,83 @@
 
     <!-- 草稿箱 -->
     <DraftBox :visible.sync="isDraftBoxVisible" @edit-draft="handleEditDraft" />
+    
+    <!-- 审核人员管理 -->
+    <el-dialog title="SOP审核人员管理" :visible.sync="isPeopleManageVisible" top="2vh" center append-to-body width="600px"
+      :close-on-click-modal="false">
+      <el-row type="flex" justify="center">
+        <el-col :xs="0" :span="2"></el-col>
+        <el-col :xs="24" :span="20">
+          <el-form ref="peopleForm" :model="peopleManageForm" :rules="peopleManageRules" label-width="110px"
+            label-position="left" class="input-width">
+            <!-- 会审人员 -->
+            <el-form-item label="会审人员："></el-form-item>
+            <el-form-item label-width="20px">
+              <el-form-item label="研发：" prop="rdData"  label-width="90px">
+                <el-select class="w100" v-model="peopleManageForm.rdData" filterable multiple clearable
+                  placeholder="请选择研发人员">
+                  <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="品质：" prop="qualityData"  label-width="90px">
+                <el-select class="w100" v-model="peopleManageForm.qualityData" filterable multiple clearable
+                  placeholder="请选择品质人员">
+                  <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="生产：" prop="productionData"  label-width="90px">
+                <el-select class="w100" v-model="peopleManageForm.productionData" filterable multiple clearable
+                  placeholder="请选择生产人员">
+                  <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-form-item>
+            
+            <el-form-item label="工程审人员：" prop="engineerData" >
+              <el-select class="w100" v-model="peopleManageForm.engineerData" filterable multiple clearable
+                placeholder="请选择工程审人员">
+                <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            
+            <el-form-item label="终审人员：" prop="finalData">
+              <el-select class="w100" v-model="peopleManageForm.finalData" filterable multiple clearable
+                placeholder="请选择终审人员">
+                <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </el-col>
+        <el-col :xs="0" :span="2"></el-col>
+      </el-row>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitPeopleForm">确 定</el-button>
+        <el-button @click="isPeopleManageVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
+    
   </div>
 </template>
 
 <script>
-import { sopList, sopDelete, sopState } from "@/api/third/testApi";
+import { 
+  sopList, 
+  sopDelete, 
+  sopState,
+  sopPersonList,
+  sopPersonEdit
+} from "@/api/third/testApi";
+import { dictUserList } from "@/api/system/user";
 import { mapGetters } from "vuex";
 
 export default {
@@ -136,7 +257,6 @@ export default {
       urls: [],
       // 遮罩层
       loading: true,
-      authDialogVisible: false,
       // 新增、修改弹窗
       isSopAddDia: false,
       // 详情弹窗
@@ -145,6 +265,8 @@ export default {
       historyFileDialogVisible: false,
       // 草稿箱弹窗
       isDraftBoxVisible: false,
+      // 人员管理弹窗
+      isPeopleManageVisible: false,
       // 历史文件列表
       historyFileList: [],
       // 待处理 、 全部
@@ -161,10 +283,40 @@ export default {
         state: undefined,
         versionCode: undefined,
       },
+      // 用户列表
+      userListOptions: [],
+      // 字典列表（传递给子组件）
+      dictList: [],
+      // 人员管理表单
+      peopleManageForm: {
+        rdData: [], // 会审-研发
+        qualityData: [], // 会审-品质
+        productionData: [], // 会审-生产
+        engineerData: [], // 工程审
+        finalData: [], // 终审
+      },
+      // 人员管理校验规则
+      peopleManageRules: {
+        rdData: [
+          { required: true, message: "请选择会审-研发人员", trigger: "change" },
+        ],
+        qualityData: [
+          { required: true, message: "请选择会审-品质人员", trigger: "change" },
+        ],
+        productionData: [
+          { required: true, message: "请选择会审-生产人员", trigger: "change" },
+        ],
+        engineerData: [
+          { required: true, message: "请选择工程审人员", trigger: "change" },
+        ],
+        finalData: [
+          { required: true, message: "请选择终审人员", trigger: "change" },
+        ],
+      },
     };
   },
   computed: {
-    ...mapGetters(["userId", "name"]),
+    ...mapGetters(["userId", "name", "nickName"]),
     directionDir() {
       return (dataList, direction) => {
         return (
@@ -186,6 +338,7 @@ export default {
       this.queryParams.product = name;
     }
     this.getList();
+    this.getUserList();
   },
   methods: {
     /** 查询品牌列表 */
@@ -311,6 +464,17 @@ export default {
         this.historyFileDialogVisible = true;
       }
     },
+    // 跳转到审核页面
+    handleAudit(row) {
+      this.$router.push({
+        name: 'AuditList',
+        query: { 
+          sopId: row.id,
+          categoryId: row.categoryId,
+          versionCode: row.versionCode
+        }
+      });
+    },
     // 打开草稿箱
     handleOpenDraftBox() {
       this.isDraftBoxVisible = true;
@@ -326,6 +490,85 @@ export default {
         }
       });
     },
+    // 获取用户列表
+    getUserList() {
+      dictUserList().then(res => {
+        this.userListOptions = res.data || [];
+      });
+    },
+    // 打开人员管理
+    async handleAddPeople() {
+      this.isPeopleManageVisible = true;
+      // 获取当前审核人员配置（分别获取各类型人员，和addSop.vue逻辑一致）
+      try {
+        const [rdRes, qualityRes, productionRes, engineerRes, finalRes] = await Promise.all([
+          sopPersonList({ type: 5 }), // 研发
+          sopPersonList({ type: 2 }), // 品质
+          sopPersonList({ type: 3 }), // 生产
+          sopPersonList({ type: 9 }), // 工程审
+          sopPersonList({ type: 8 })  // 终审
+        ]);
+        
+        this.peopleManageForm = {
+          rdData: rdRes.code === 200 && rdRes.data?.list 
+            ? rdRes.data.list.map(item => item.personnel) : [],
+          qualityData: qualityRes.code === 200 && qualityRes.data?.list 
+            ? qualityRes.data.list.map(item => item.personnel) : [],
+          productionData: productionRes.code === 200 && productionRes.data?.list 
+            ? productionRes.data.list.map(item => item.personnel) : [],
+          engineerData: engineerRes.code === 200 && engineerRes.data?.list 
+            ? engineerRes.data.list.map(item => item.personnel) : [],
+          finalData: finalRes.code === 200 && finalRes.data?.list 
+            ? finalRes.data.list.map(item => item.personnel) : [],
+        };
+      } catch (error) {
+        console.error('加载审核人员配置失败:', error);
+      }
+    },
+    // 提交人员管理表单
+    submitPeopleForm() {
+      this.$refs.peopleForm.validate(valid => {
+        if (valid) {
+          // 将人员数据转换为API要求的数组格式
+          // type: 5研发 2品质 3生产 9工程审 8终审
+          // changeType: 1 (SOP变更类型)
+          const list = [];
+          
+          // 会审-研发 (type: 5)
+          this.peopleManageForm.rdData.forEach(personnel => {
+            list.push({ personnel, type: 5, changeType: 1 });
+          });
+          
+          // 会审-品质 (type: 2)
+          this.peopleManageForm.qualityData.forEach(personnel => {
+            list.push({ personnel, type: 2, changeType: 1 });
+          });
+          
+          // 会审-生产 (type: 3)
+          this.peopleManageForm.productionData.forEach(personnel => {
+            list.push({ personnel, type: 3, changeType: 1 });
+          });
+          
+          // 工程审 (type: 9)
+          this.peopleManageForm.engineerData.forEach(personnel => {
+            list.push({ personnel, type: 9, changeType: 1 });
+          });
+          
+          // 终审 (type: 8)
+          this.peopleManageForm.finalData.forEach(personnel => {
+            list.push({ personnel, type: 8, changeType: 1 });
+          });
+          
+          sopPersonEdit( list ).then(res => {
+            if (res.code === 200) {
+              this.msgSuccess("人员配置成功");
+              this.isPeopleManageVisible = false;
+              this.getList();
+            }
+          });
+        }
+      });
+    },
   },
 };
 </script>
@@ -338,5 +581,33 @@ export default {
 .reject-row td,
 .reject-row:hover td {
   background-color: rgba(224, 82, 99, 0.3) !important;
+}
+
+.text-orange {
+  color: #e6a23c;
+}
+
+.text-grey {
+  color: #909399;
+}
+
+.text-green {
+  color: #67c23a;
+}
+
+.text-blue {
+  color: #409eff;
+}
+
+.text-red {
+  color: #f56c6c;
+}
+
+.text-cyan {
+  color: #17a2b8;
+}
+
+.w100 {
+  width: 100%;
 }
 </style>
