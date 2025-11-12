@@ -1065,7 +1065,7 @@ export default {
       const valid = await this.$refs.formRef.validate().catch(() => false)
       if (!valid) return
 
-      // 新增模式：验证联系人姓名和收货地址联系人姓名
+      // 新增模式：验证联系人姓名和收货地址联系人姓名、收货地址
       if (!this.isEdit) {
         const hasEmptyContactName = this.contactList.some(contact => !contact.contactName)
         if (hasEmptyContactName) {
@@ -1075,6 +1075,11 @@ export default {
         const hasEmptyAddressContactName = this.addressList.some(address => !address.contactName)
         if (hasEmptyAddressContactName) {
           this.$message.warning('请填写所有收货地址联系人姓名')
+          return
+        }
+        const hasEmptyAddress = this.addressList.some(address => !address.address)
+        if (hasEmptyAddress) {
+          this.$message.warning('请填写所有收货地址')
           return
         }
       }
@@ -1155,6 +1160,7 @@ export default {
             id: address.id || undefined,
             contactName: address.contactName || '',
             contactPhone: address.contactPhone || '',
+            address: address.address || '',
             remark: address.remark || '',
             customerId: this.form.id || ''
           }))
@@ -1490,6 +1496,7 @@ export default {
             id: address.id,
             contactName: address.contactName || '',
             contactPhone: address.contactPhone || '',
+            address: address.address || '',
             remark: address.remark || '',
             customerId: customerId
           }))
@@ -1534,11 +1541,18 @@ export default {
         return
       }
       
+      // 验证收货地址
+      if (!address.address) {
+        this.$message.warning('请填写收货地址')
+        return
+      }
+      
       try {
         const addressData = {
           id: address.id,
           contactName: address.contactName || '',
           contactPhone: address.contactPhone || '',
+          address: address.address || '',
           remark: address.remark || '',
           customerId: this.form.id
         }
@@ -1580,10 +1594,17 @@ export default {
         return
       }
       
+      // 验证收货地址
+      if (!address.address) {
+        this.$message.warning('请填写收货地址')
+        return
+      }
+      
       try {
         const addressData = {
           contactName: address.contactName || '',
           contactPhone: address.contactPhone || '',
+          address: address.address || '',
           remark: address.remark || '',
           customerId: this.form.id
         }
