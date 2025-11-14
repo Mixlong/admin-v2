@@ -649,6 +649,7 @@ import {
   trialApplyPersonList,
 } from "@/api/third/trialApply";
 import { dictUserList } from "@/api/system/user";
+import { listDept } from "@/api/system/dept";
 import { categoryComputerDict } from "@/api/third/fileConfig";
 import FormDialog from "./components/form";
 import AuditDialog from "./components/audit";
@@ -667,7 +668,7 @@ export default {
       total: 0,
       queryParams: {
         p: 1,
-        l: 10,
+        l: 30,
         ecn: "",
         categoryName: "",
         computerName: "",
@@ -676,6 +677,7 @@ export default {
       pmDictListOptions: [],
       dictList: [],
       computerOptions: [],
+      deptOptions: [], // 部门选项数据
       // 会审部门字典
       TriageList: {
         2: "采购",
@@ -741,8 +743,12 @@ export default {
     },
 
     reqUnitFormatter(row, column, cellvalue, index) {
-      return this.deptOptions.find((item) => item.deptId === +row.reqUnit)
-        ?.deptName;
+      // 添加安全检查，防止deptOptions为undefined
+      if (!this.deptOptions || !Array.isArray(this.deptOptions)) {
+        return row.reqUnit || '--';
+      }
+      const dept = this.deptOptions.find((item) => item.deptId === +row.reqUnit);
+      return dept ? dept.deptName : (row.reqUnit || '--');
     },
     // 品类变更处理
     changeCategory(categoryName) {
@@ -763,7 +769,7 @@ export default {
     resetQuery() {
       this.queryParams = {
         p: 1,
-        l: 10,
+        l: 30,
         ecn: "",
         categoryName: "",
         computerName: "",
@@ -988,6 +994,10 @@ export default {
     cellStyle({ row, column, rowIndex, columnIndex }) {
       return "cursor: pointer;";
     },
+  },
+  created() {
+    // 初始化时加载部门数据
+    this.getTreeselect();
   },
 };
 </script>
