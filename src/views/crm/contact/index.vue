@@ -195,7 +195,7 @@
           :current-page="currentPage"
           :page-size="pageSize"
           :total="total"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="[10, 20, 30,50, 100]"
           size="small"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
@@ -404,7 +404,7 @@ export default {
 
       // 分页
       currentPage: 1,
-      pageSize: 20,
+      pageSize: 30,
       total: 0
     }
   },
@@ -535,8 +535,8 @@ export default {
       try {
         // 构建查询参数，使用正确的API参数
         const params = {
-          pageNum: this.currentPage,
-          pageSize: this.pageSize,
+          p: this.currentPage,
+          l: this.pageSize,
           // 联系人查询参数
           contactName: this.searchForm.contactName,
           contactPhone: this.searchForm.contactPhone,
