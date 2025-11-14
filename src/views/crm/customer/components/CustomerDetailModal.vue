@@ -540,7 +540,7 @@
         <el-tab-pane label="收货地址" name="addresses">
           <div class="tab-content">
             <div class="section-header">
-              <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddAddress" v-hasPermi="['crm:address:add']">
+              <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddAddress" v-hasPermi="['crm:customer:address:add']">
                 添加收货地址
               </el-button>
             </div>
@@ -582,7 +582,7 @@
               </el-table-column>
               <el-table-column label="操作" width="80" align="center">
                 <template slot-scope="{ row }">
-                  <el-button type="text" size="mini" icon="el-icon-edit" @click="handleEditAddress(row)" v-hasPermi="['crm:address:edit']">
+                  <el-button type="text" size="mini" icon="el-icon-edit" @click="handleEditAddress(row)" v-hasPermi="['crm:customer:address:edit']">
                     编辑
                   </el-button>
                 </template>

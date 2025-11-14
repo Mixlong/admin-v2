@@ -133,16 +133,18 @@
     </el-table>
 
     <!-- 分页 -->
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="searchForm.p"
-      :limit.sync="searchForm.l"
-      :ls="[10, 20, 30,50, 100]"
-      size="small"
-      layout="total, sizes, prev, pager, next, jumper"
-      @pagination="handleSearch"
-    />
+    <div class="mt-5 flex justify-end" style="margin-top: 10px;">
+      <el-pagination
+        :current-page="searchForm.p"
+        :page-size="searchForm.l"
+        :total="total"
+        :page-sizes="[10, 20, 30, 50, 100]"
+        size="small"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 收货地址表单弹窗 -->
     <CustomerAddressFormDialog
@@ -351,6 +353,19 @@ export default {
     /** 拨打电话 */
     handleCall(phone) {
       window.location.href = `tel:${phone}`
+    },
+
+    /** 分页大小改变 */
+    handleSizeChange(val) {
+      this.searchForm.l = val
+      this.searchForm.p = 1
+      this.getList()
+    },
+
+    /** 当前页改变 */
+    handleCurrentChange(val) {
+      this.searchForm.p = val
+      this.getList()
     }
   }
 }
