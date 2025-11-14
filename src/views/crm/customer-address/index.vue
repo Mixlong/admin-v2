@@ -249,9 +249,10 @@ export default {
       return new Promise((resolve) => {
         getCustomerList({
           p: page,
+          l: 20,
           name: keyword,
         }).then((res) => {
-          const { list, total, pageNum, pageSize } = res.data;
+          const { list, total } = res.data;
           const filteredList = list.filter((item) => item.status === 0);
 
           if (more) {
@@ -260,7 +261,7 @@ export default {
             this.customerData.data = filteredList;
           }
 
-          this.customerData.page = pageNum;
+          this.customerData.page = page;
           this.customerData.more = this.customerData.data.length < total;
           
           resolve({
@@ -300,7 +301,7 @@ export default {
     handleReset() {
       this.searchForm = {
         p: 1,
-        l: 10,
+        l: 30,
         customerId: null,
         contactName: null,
         contactPhone: null

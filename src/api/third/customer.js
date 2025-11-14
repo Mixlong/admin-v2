@@ -51,3 +51,11 @@ export function editCustomer(data) {
     data: data
   })
 }
+
+// 删除客户
+export function deleteCustomer(customerId) {
+  return request({
+    url: `/so/customer/delete/${customerId}`,
+    method: 'delete'
+  })
+}

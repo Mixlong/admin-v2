@@ -65,8 +65,8 @@
                 v-model="form.planTime"
                 type="datetime"
                 placeholder="请选择计划时间"
-                format="yyyy-MM-dd"
-                value-format="yyyy-MM-dd"
+                format="yyyy-MM-dd HH:mm:ss"
+                value-format="yyyy-MM-dd HH:mm:ss"
                 style="width: 100%"
               />
             </el-form-item>
