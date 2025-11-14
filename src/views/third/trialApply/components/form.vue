@@ -1,24 +1,31 @@
 <template>
-  <el-dialog class="ECN-Dialog-Box Header_Fixed" :title="title" :visible.sync="dialogVisible" fullscreen top="2vh"
+  <el-dialog class="Trial-Apply-Dialog Header_Fixed" :title="title" :visible.sync="dialogVisible" fullscreen top="2vh"
     center append-to-body :close-on-click-modal="false">
     <el-row type="flex" justify="space-between">
       <el-col :xs="0" :span="2"></el-col>
       <el-col :xs="24" :span="20">
         <el-form ref="form" :model="form" :rules="rules" label-width="85px" label-position="left" class="input-width">
+          <!-- 基本信息 -->
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="ECR/N编号" prop="ecn">
-                <el-input v-model="form.ecn" placeholder="请输入ECR/N编号" readonly clearable />
+              <el-form-item label="ECN编号" prop="ecn">
+                <el-input v-model="form.ecn" placeholder="请输入ECN编号" readonly clearable />
               </el-form-item>
             </el-col>
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="项目名称" prop="projectName">
-                <el-input v-model="form.projectName" clearable placeholder="请输入项目名称" />
+              <el-form-item label="产品品类" prop="categoryName">
+                <el-select v-model="form.categoryName" @change="changeCategory" placeholder="请选择产品品类" clearable filterable
+                  style="width: 100%">
+                  <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="产品代号" prop="productCode">
-                <el-input v-model="form.productCode" clearable placeholder="请输入产品代号" />
+              <el-form-item label="产品型号" prop="computerName">
+                <el-select v-model="form.computerName" clearable filterable placeholder="请选择产品型号"
+                  style="width: 100%">
+                  <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :sm="24" :md="12" :lg="6">
@@ -29,35 +36,28 @@
             </el-col>
           </el-row>
 
-          <el-row :gutter="10" class="margin-bottom-xs">
-            <el-col :span="24">
-              <el-form-item label="分类" prop="changeCause">
-                <el-checkbox-group v-model="form.changeCause" class="grid_column_two">
-                  <el-checkbox v-for="(item, index) in classifyList" :label="item.dictValue" :key="index" border>
-                    {{ item.dictLabel }}
-                  </el-checkbox>
-                </el-checkbox-group>
-              </el-form-item>
-            </el-col>
-          </el-row>
-
+          <!-- 初审人员 -->
           <el-form-item label="初审人员" prop="firstPerson" class="margin-bottom-xs">
-            <el-select v-model="form.firstPerson" placeholder="请选择初审人员" filterable clearable :disabled="!!form.id">
+            <el-select v-model="form.firstPerson" placeholder="请选择初审人员" filterable clearable   >
               <el-option v-for="item in firstAuditorData" :label="item.personnel" :value="item.personnel"
                 :key="item.id"></el-option>
             </el-select>
           </el-form-item>
 
+          <!-- 变更涉及领域 -->
           <div class="involveUnit-box margin-bottom-xs">
             <p>变更涉及领域</p>
             <el-row type="flex" style="overflow-x: auto">
               <el-col :span="1" class="involveUnit-left">
                 <el-form-item prop="involveUnit" label-width="0">
                   <div class="each_item_box">
-                    <div v-for="(item, index) in involveUnitList" :label="+item.dictValue" :key="index"
-                      class="each_unit">
-                      {{ item.dictLabel }}：
-                    </div>
+                    <div class="each_unit">采购：</div>
+                    <div class="each_unit">品质：</div>
+                    <div class="each_unit">生产：</div>
+                    <div class="each_unit">工程：</div>
+                    <div class="each_unit">研发：</div>
+                    <div class="each_unit">仓库：</div>
+                    <div class="each_unit">市场：</div>
                   </div>
                 </el-form-item>
               </el-col>
@@ -279,10 +279,11 @@
             </el-row>
           </div>
 
+          <!-- 审核人员 (无系统变更人员) -->
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="8">
               <el-form-item label="PMC终审人员" prop="thirdPerson" label-width="120px">
-                <el-select v-model="form.thirdPerson" placeholder="请选择PMC终审人员" filterable clearable :disabled="!!form.id">
+                <el-select v-model="form.thirdPerson" placeholder="请选择PMC终审人员" filterable clearable   >
                   <el-option v-for="item in pmcData" :label="item.personnel" :value="item.personnel"
                     :key="item.id"></el-option>
                 </el-select>
@@ -297,67 +298,22 @@
                   clearable 
                   multiple
                   collapse-tags
-                  :disabled="!!form.id"
+                    
                 >
                   <el-option v-for="item in finalJudgmentData" :label="item.personnel" :value="item.personnel"
                     :key="item.id"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :sm="24" :md="12" :lg="8">
-              <el-form-item label="系统变更人员" prop="systemPerson" label-width="120px">
-                <el-select v-model="form.systemPerson" placeholder="请选择系统变更人员" filterable clearable :disabled="!!form.id">
-                  <el-option v-for="item in systemChangeData" :label="item.personnel" :value="item.personnel"
-                    :key="item.id"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <div class="flex margin-bottom-xs">
-            <el-form-item label="导入方式" prop="importType">
-              <el-radio-group v-model="form.importType" class="grid_column_two">
-                <el-radio :label="1" border>立即导入</el-radio>
-                <el-radio :label="2" border> 自然导入 </el-radio>
-                <el-radio :label="3" border>条件导入</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label-width="30px" prop="importTime" v-if="form.importType == 2">
-              <el-date-picker ref="datePicker" v-model="form.importTime" type="datetime" placeholder="请选择时间"
-                format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss">
-              </el-date-picker>
-            </el-form-item>
-            <el-form-item label-width="30px" prop="importCondition" v-if="form.importType == 3">
-              <el-input v-model="form.importCondition" placeholder="请输入导入条件" clearable style="width: 345px" />
-            </el-form-item>
-          </div>
-
-          <el-row :gutter="15" class="margin-bottom-xs">
-            <el-col :span="24" :lg="12">
-              <el-form-item label="BOM版本" prop="beforeVersion">
-                <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="请输入变更前BOM版本"
-                  v-model="form.beforeVersion"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :lg="12">
-              <el-form-item label="变更原因" prop="changeCauseNote">
-                <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="请输入变更内容"
-                  v-model="form.changeCauseNote"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :lg="12">
-              <el-form-item label="变更内容" prop="changeContent">
-                <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="请输入变更内容"
-                  v-model="form.changeContent"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :lg="12">
-              <el-form-item label="变更结果" prop="afterVersion">
-                <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="请输入变更结果"
-                  v-model="form.afterVersion"></el-input>
-              </el-form-item>
-            </el-col>
           </el-row>
 
+          <!-- 试产说明 -->
+          <el-form-item label="试产说明" prop="trialInfo" class="margin-bottom-xs">
+            <el-input type="textarea" :autosize="{ minRows: 4, maxRows: 6 }" placeholder="请输入试产说明"
+              v-model="form.trialInfo"></el-input>
+          </el-form-item>
+
+          <!-- 附件 -->
           <el-form-item label="附件" prop="file">
             <DrUpload v-model="form.file" :limit="1" :isOnePic="1">
               <div class="text-left">
@@ -365,48 +321,6 @@
               </div>
             </DrUpload>
           </el-form-item>
-
-          <el-row :gutter="15" class="margin-bottom-xs">
-            <el-col :span="24" :lg="12">
-              <el-form-item label="硬件验证报告" prop="hardwareVerificationReport" label-width="125px">
-                <DrUpload v-model="form.hardwareVerificationReport" :limit="1" :isOnePic="1">
-                  <div class="text-left">
-                    <el-button size="mini" type="primary">硬件验证报告上传</el-button>
-                  </div>
-                </DrUpload>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :lg="12">
-              <el-form-item label="工程验证报告" prop="engineeringVerificationReport" label-width="125px">
-                <DrUpload v-model="form.engineeringVerificationReport" :limit="1" :isOnePic="1">
-                  <div class="text-left">
-                    <el-button size="mini" type="primary">工程验证报告上传</el-button>
-                  </div>
-                </DrUpload>
-              </el-form-item>
-            </el-col>
-          </el-row>
-
-          <el-row :gutter="15" class="margin-bottom-xs">
-            <el-col :span="24" :lg="12">
-              <el-form-item label="结构组研发报告" prop="structureDevelopmentReport" label-width="125px">
-                <DrUpload v-model="form.structureDevelopmentReport" :limit="1" :isOnePic="1">
-                  <div class="text-left">
-                    <el-button size="mini" type="primary">结构组研发报告上传</el-button>
-                  </div>
-                </DrUpload>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :lg="12">
-              <el-form-item label="工程组研发报告" prop="engineeringDevelopmentReport" label-width="125px">
-                <DrUpload v-model="form.engineeringDevelopmentReport" :limit="1" :isOnePic="1">
-                  <div class="text-left">
-                    <el-button size="mini" type="primary">工程组研发报告上传</el-button>
-                  </div>
-                </DrUpload>
-              </el-form-item>
-            </el-col>
-          </el-row>
         </el-form>
       </el-col>
       <el-col :xs="0" :span="2"></el-col>
@@ -419,350 +333,395 @@
 </template>
 
 <script>
-import { bomAdd, bomUpdate, ecnPersonList } from "@/api/third/ecn";
-import { treeselect, listDept } from "@/api/system/dept";
-import tinymce from "@/views/components/Editor";
-import Treeselect from "@riophae/vue-treeselect";
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { cloneDeep } from "lodash";
+import { trialApplyAdd, trialApplyUpdate, trialApplyPersonList } from '@/api/third/trialApply'
+import { treeselect, listDept } from '@/api/system/dept'
+import { categoryComputerDict } from '@/api/third/fileConfig'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import { cloneDeep } from 'lodash'
 
 export default {
-  components: { tinymce, Treeselect },
-  props: ["classifyList", "involveUnitList"],
+  components: { Treeselect },
+  props: ['dictList'],
   data() {
     return {
       dialogVisible: false,
-      title: "",
-      // 部门列表
+      title: '',
       deptOptions: [],
-      // 表单参数
       form: {
-        importType: 1,
-        ecn: "",
-        projectName: "",
-        productCode: "",
+        ecn: '',
+        categoryName: '',
+        computerName: '',
         reqUnit: undefined,
-        changeCause: [],
+        firstPerson: '',
         selBuyerData: [],
-        buyerTxt: "",
+        buyerTxt: '',
         selQAData: [],
-        QADataTxt: "",
+        QADataTxt: '',
         selProductData: [],
-        productDataTxt: "",
+        productDataTxt: '',
         selEngineerData: [],
-        engineerDataTxt: "",
+        engineerDataTxt: '',
         selResearchData: [],
-        researchDataTxt: "",
+        researchDataTxt: '',
         selWarehouseData: [],
-        warehouseDataTxt: "",
-        finishedHandleTxt: "",
+        warehouseDataTxt: '',
+        finishedHandleTxt: '',
         selMarketerData: [],
-        marketerDataTxt: "",
-        noMarketerDataTxt: "",
+        marketerDataTxt: '',
+        noMarketerDataTxt: '',
         secondPersonList: [],
-        hardwareVerificationReport: "",
-        engineeringVerificationReport: "",
-        structureDevelopmentReport: "",
-        engineeringDevelopmentReport: "",
+        thirdPerson: '',
+        trialInfo: '',
+        file: ''
       },
-      // 最终审核人员
-      systemChangeData: [],
-      // 初审人员
       firstAuditorData: [],
-      // 终审人员
-      finalJudgmentData: [],
-      // 采购人员
       buyerData: [],
-      // 品质人员
       QAData: [],
-      // 生产人员
       productData: [],
-      // 工程人员
       engineerData: [],
-      // 研发人员
       researchData: [],
-      // 仓库人员
       warehouseData: [],
-      // 市场人员
       marketerData: [],
-      // PMC人员
+      finalJudgmentData: [],
       pmcData: [],
-      // 表单校验
+      computerOptions: [],
       rules: {
-        ecn: [{ required: true, message: "请输入ECR/N编号", trigger: "blur" }],
-        projectName: [
-          { required: true, message: "请输入项目名称", trigger: "blur" },
-        ],
-        productCode: [
-          { required: true, message: "请输入产品代号", trigger: "blur" },
-        ],
-        changeCause: [
-          { required: true, message: "请选择分类项", trigger: "change" },
-        ],
-        firstPerson: [
-          { required: true, message: "请选择初审人员", trigger: "change" },
-        ],
-        thirdPerson: [
-          { required: true, message: "请选择PMC人员", trigger: "change" },
-        ],
-        secondPersonList: [
-          { required: true, message: "请选择最终审核人员", trigger: "change" },
-        ],
-        systemPerson: [
-          { required: true, message: "请选择系统变更人员", trigger: "change" },
-        ],
-        reqUnit: [
-          {
-            required: true,
-            message: "请选择申请单位",
-            trigger: "change",
-          },
-        ],
-        beforeVersion: [
-          { required: true, message: "请输入变更前BOM版本", trigger: "blur" },
-        ],
-        file: [
-          { required: true, message: "请输入上传附件", trigger: "change" },
-        ],
-        hardwareVerificationReport: [
-          { required: true, message: "请上传硬件验证报告", trigger: "change" },
-        ],
-        structureDevelopmentReport: [
-          { required: true, message: "请上传结构组研发报告", trigger: "change" },
-        ],
-        engineeringDevelopmentReport: [
-          { required: true, message: "请上传工程组研发报告", trigger: "change" },
-        ],
-      },
-    };
-  },
-  computed: {
-    isRequired() {
-      return (type) => {
-        return this.form.involveUnit.includes(type);
-      };
-    },
+        ecn: [{ required: true, message: '请输入ECN编号', trigger: 'blur' }],
+        categoryName: [{ required: true, message: '请选择产品品类', trigger: 'change' }],
+        computerName: [{ required: true, message: '请选择产品型号', trigger: 'change' }],
+        reqUnit: [{ required: true, message: '请选择申请部门', trigger: 'change' }],
+        firstPerson: [{ required: true, message: '请选择初审人员', trigger: 'change' }],
+        thirdPerson: [{ required: true, message: '请选择PMC人员', trigger: 'change' }],
+        secondPersonList: [{ required: true, message: '请选择最终审核人员', trigger: 'change' }],
+        trialInfo: [{ required: true, message: '请输入试产说明', trigger: 'blur' }],
+        file: [{ required: true, message: '请上传附件', trigger: 'change' }]
+      }
+    }
   },
   watch: {
     dialogVisible(bool) {
       if (bool) {
-        this.getPeopleList(1);
-        this.getPeopleList(2);
-        this.getPeopleList(3);
-        this.getPeopleList(4);
-        this.getPeopleList(5);
-        this.getPeopleList(6);
-        this.getPeopleList(7);
-        this.getPeopleList(8);
-        this.getPeopleList(9);
-        this.getPeopleList(10);
-        this.getPeopleList(11);
-        
-        // 处理终审人员：如果 secondPersonList 是字符串（逗号分隔），转换为数组
+        this.getPeopleList(1)
+        this.getPeopleList(2)
+        this.getPeopleList(3)
+        this.getPeopleList(4)
+        this.getPeopleList(5)
+        this.getPeopleList(6)
+        this.getPeopleList(7)
+        this.getPeopleList(8)
+        this.getPeopleList(9)
+        this.getPeopleList(10)
+
         if (this.form.secondPersonList && typeof this.form.secondPersonList === 'string') {
-          this.form.secondPersonList = this.form.secondPersonList.split(',').filter(item => item.trim());
+          this.form.secondPersonList = this.form.secondPersonList.split(',').filter(item => item.trim())
         } else if (!this.form.secondPersonList) {
-          this.form.secondPersonList = [];
+          this.form.secondPersonList = []
+        }
+
+        // 编辑模式下，加载品类对应的型号列表
+        if (this.form.id && this.form.categoryName) {
+          this.changeCategory(this.form.categoryName)
         }
       }
     },
-    "form.reqUnit"(reqUnit) {
-      if (reqUnit) this.clearValidateItem("form", "reqUnit");
+    'form.reqUnit'(reqUnit) {
+      if (reqUnit) this.clearValidateItem('form', 'reqUnit')
     },
-    "form.file"(file) {
-      if (file) this.clearValidateItem("form", "file");
-    },
+    'form.file'(file) {
+      if (file) this.clearValidateItem('form', 'file')
+    }
   },
   created() {
-    this.getTreeselect();
+    this.getTreeselect()
   },
   methods: {
-    /** 查询部门下拉树结构 */
     getTreeselect() {
       listDept().then((res) => {
         const data = res.data.map((item) => {
           return {
             parentId: item.parentId,
             id: item.deptId,
-            label: item.deptName,
-          };
-        });
-
-        this.deptOptions = this.handleTree(data);
-      });
+            label: item.deptName
+          }
+        })
+        this.deptOptions = this.handleTree(data)
+      })
     },
-    // 获取人员列表
+    // 品类变更处理
+    changeCategory(categoryName) {
+      this.form.computerName = ''
+      if (categoryName) {
+        this.computerOptions = this.dictList.filter(
+          (item) => item.name === categoryName
+        )[0]?.computerList || []
+      } else {
+        this.computerOptions = []
+      }
+    },
     getPeopleList(type) {
-      ecnPersonList({ type, p: 1, l: 50 }).then((res) => {
-        const { list } = res.data;
-
+      trialApplyPersonList({ type, changeType: 4, p: 1, l: 50 }).then((res) => {
+        const { list } = res.data
         switch (type) {
           case 1:
-            this.firstAuditorData = list;
-            break;
+            this.firstAuditorData = list
+            break
           case 2:
-            this.buyerData = this.handleSetCheckList(list, 2);
-            break;
+            this.buyerData = this.handleSetCheckList(list, 2)
+            break
           case 3:
-            this.QAData = this.handleSetCheckList(list, 3);
-            break;
+            this.QAData = this.handleSetCheckList(list, 3)
+            break
           case 4:
-            this.productData = this.handleSetCheckList(list, 4);
-            break;
+            this.productData = this.handleSetCheckList(list, 4)
+            break
           case 5:
-            this.engineerData = this.handleSetCheckList(list, 5);
-            break;
+            this.engineerData = this.handleSetCheckList(list, 5)
+            break
           case 6:
-            this.researchData = this.handleSetCheckList(list, 6);
-            break;
+            this.researchData = this.handleSetCheckList(list, 6)
+            break
           case 7:
-            this.warehouseData = this.handleSetCheckList(list, 7);
-            break;
+            this.warehouseData = this.handleSetCheckList(list, 7)
+            break
           case 8:
-            this.marketerData = this.handleSetCheckList(list, 8);
-            break;
+            this.marketerData = this.handleSetCheckList(list, 8)
+            break
           case 9:
-            this.finalJudgmentData = list;
-            break;
+            this.finalJudgmentData = list
+            break
           case 10:
-            this.pmcData = list;
-            break;
-          case 11:
-            this.systemChangeData = list;
-
+            this.pmcData = list
+            break
         }
-      });
+      })
     },
     handleSetCheckList(data, field) {
-      const copyData = cloneDeep(data);
-      const { id, list } = this.form;
+      const copyData = cloneDeep(data)
+      const { id, list } = this.form
       if (id) {
-        // 编辑
         const selectedData = list.filter(
           (item) => item.field === field && item.state !== 0
-        );
+        )
         copyData.forEach((item) => {
           selectedData.forEach((cItem) => {
-            item.disabled = item.personnel === cItem.fieldName;
-          });
-        });
-
-        return copyData;
+            item.disabled = item.personnel === cItem.fieldName
+          })
+        })
+        return copyData
       } else {
-        // 新增
         return data.map((item) => {
           return {
             ...item,
-            disabled: false,
-          };
-        });
+            disabled: false
+          }
+        })
       }
     },
-    // 表单重置
     reset() {
       this.form = {
-        importType: 1,
-        ecn: "",
-        projectName: "",
-        productCode: "",
+        ecn: '',
+        categoryName: '',
+        computerName: '',
         reqUnit: undefined,
-        changeCause: [],
+        firstPerson: '',
         selBuyerData: [],
-        buyerTxt: "",
+        buyerTxt: '',
         selQAData: [],
-        QADataTxt: "",
+        QADataTxt: '',
         selProductData: [],
-        productDataTxt: "",
+        productDataTxt: '',
         selEngineerData: [],
-        engineerDataTxt: "",
+        engineerDataTxt: '',
         selResearchData: [],
-        researchDataTxt: "",
+        researchDataTxt: '',
         selWarehouseData: [],
-        warehouseDataTxt: "",
-        finishedHandleTxt: "",
+        warehouseDataTxt: '',
+        finishedHandleTxt: '',
         selMarketerData: [],
-        marketerDataTxt: "",
-        noMarketerDataTxt: "",
+        marketerDataTxt: '',
+        noMarketerDataTxt: '',
         secondPersonList: [],
-        hardwareVerificationReport: "",
-        engineeringVerificationReport: "",
-        structureDevelopmentReport: "",
-        engineeringDevelopmentReport: "",
-      };
-      this.resetForm("form");
+        thirdPerson: '',
+        trialInfo: '',
+        file: ''
+      }
+      this.resetForm('form')
+    },
+    initEditData(row) {
+      // 复制编辑数据
+      const editData = cloneDeep(row)
+      
+      // 基本信息
+      this.form = {
+        id: editData.id,
+        ecn: editData.ecn,
+        categoryName: editData.categoryName,
+        computerName: editData.computerName,
+        reqUnit: editData.reqUnit,
+        firstPerson: editData.firstPerson,
+        thirdPerson: editData.thirdPerson,
+        trialInfo: editData.trialInfo,
+        file: editData.file,
+        list: editData.list || [],
+        selBuyerData: [],
+        buyerTxt: '',
+        selQAData: [],
+        QADataTxt: '',
+        selProductData: [],
+        productDataTxt: '',
+        selEngineerData: [],
+        engineerDataTxt: '',
+        selResearchData: [],
+        researchDataTxt: '',
+        selWarehouseData: [],
+        warehouseDataTxt: '',
+        finishedHandleTxt: '',
+        selMarketerData: [],
+        marketerDataTxt: '',
+        noMarketerDataTxt: '',
+        secondPersonList: []
+      }
+
+      // 处理最终审核人员（从字符串转数组）
+      if (editData.finalPerson) {
+        this.form.secondPersonList = editData.finalPerson.split(',').filter(item => item.trim())
+      }
+
+      // 从 list 数组中提取各部门的人员和方案
+      if (editData.list && editData.list.length > 0) {
+        editData.list.forEach(item => {
+          switch (item.field) {
+            case 2: // 采购
+              if (!this.form.selBuyerData.includes(item.fieldName)) {
+                this.form.selBuyerData.push(item.fieldName)
+              }
+              if (!this.form.buyerTxt) {
+                this.form.buyerTxt = item.programme || ''
+              }
+              break
+            case 3: // 品质
+              if (!this.form.selQAData.includes(item.fieldName)) {
+                this.form.selQAData.push(item.fieldName)
+              }
+              if (!this.form.QADataTxt) {
+                this.form.QADataTxt = item.programme || ''
+              }
+              break
+            case 4: // 生产
+              if (!this.form.selProductData.includes(item.fieldName)) {
+                this.form.selProductData.push(item.fieldName)
+              }
+              if (!this.form.productDataTxt) {
+                this.form.productDataTxt = item.programme || ''
+              }
+              break
+            case 5: // 工程
+              if (!this.form.selEngineerData.includes(item.fieldName)) {
+                this.form.selEngineerData.push(item.fieldName)
+              }
+              if (!this.form.engineerDataTxt) {
+                this.form.engineerDataTxt = item.programme || ''
+              }
+              break
+            case 6: // 研发
+              if (!this.form.selResearchData.includes(item.fieldName)) {
+                this.form.selResearchData.push(item.fieldName)
+              }
+              if (!this.form.researchDataTxt) {
+                this.form.researchDataTxt = item.programme || ''
+              }
+              break
+            case 7: // 仓库
+              if (!this.form.selWarehouseData.includes(item.fieldName)) {
+                this.form.selWarehouseData.push(item.fieldName)
+              }
+              if (!this.form.warehouseDataTxt) {
+                this.form.warehouseDataTxt = item.programme || ''
+              }
+              if (!this.form.finishedHandleTxt) {
+                this.form.finishedHandleTxt = item.treatment || ''
+              }
+              break
+            case 8: // 市场
+              if (!this.form.selMarketerData.includes(item.fieldName)) {
+                this.form.selMarketerData.push(item.fieldName)
+              }
+              if (!this.form.marketerDataTxt) {
+                this.form.marketerDataTxt = item.programme || ''
+              }
+              if (!this.form.noMarketerDataTxt) {
+                this.form.noMarketerDataTxt = item.treatment || ''
+              }
+              break
+          }
+        })
+      }
     },
     handleAddJointPeople(paramCopyData) {
-      const newList = [];
-
+      const newList = []
       if (paramCopyData.selBuyerData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selBuyerData, 2, {
-          programme: paramCopyData.buyerTxt,
-        });
+          programme: paramCopyData.buyerTxt
+        })
       }
-
       if (paramCopyData.selQAData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selQAData, 3, {
-          programme: paramCopyData.QADataTxt,
-        });
+          programme: paramCopyData.QADataTxt
+        })
       }
-
       if (paramCopyData.selProductData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selProductData, 4, {
-          programme: paramCopyData.productDataTxt,
-        });
+          programme: paramCopyData.productDataTxt
+        })
       }
-
       if (paramCopyData.selEngineerData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selEngineerData, 5, {
-          programme: paramCopyData.engineerDataTxt,
-        });
+          programme: paramCopyData.engineerDataTxt
+        })
       }
-
       if (paramCopyData.selResearchData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selResearchData, 6, {
-          programme: paramCopyData.researchDataTxt,
-        });
+          programme: paramCopyData.researchDataTxt
+        })
       }
-
       if (paramCopyData.selWarehouseData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selWarehouseData, 7, {
           programme: paramCopyData.warehouseDataTxt,
-          treatment: paramCopyData.finishedHandleTxt,
-        });
+          treatment: paramCopyData.finishedHandleTxt
+        })
       }
-
       if (paramCopyData.selMarketerData.length) {
         this.handleAddEachJointPeople(newList, paramCopyData.selMarketerData, 8, {
           programme: paramCopyData.marketerDataTxt,
-          treatment: paramCopyData.noMarketerDataTxt,
-        });
+          treatment: paramCopyData.noMarketerDataTxt
+        })
       }
-
-      return newList;
+      return newList
     },
     handleAddEachJointPeople(newList, checkPeopleData, field, params) {
       checkPeopleData.forEach((name) => {
         newList.push({
           field,
           fieldName: name,
-          ...params,
-        });
-      });
+          ...params
+        })
+      })
     },
     handleEditJointPeople(paramCopyData) {
       if (paramCopyData.list.length) {
-        const newList = [];
+        const newList = []
 
         if (paramCopyData.selBuyerData.length) {
           this.handleEditEachJointPeople(newList, paramCopyData.selBuyerData, 2, {
-            programme: paramCopyData.buyerTxt,
-          });
+            programme: paramCopyData.buyerTxt
+          })
         }
 
         if (paramCopyData.selQAData.length) {
           this.handleEditEachJointPeople(newList, paramCopyData.selQAData, 3, {
-            programme: paramCopyData.QADataTxt,
-          });
+            programme: paramCopyData.QADataTxt
+          })
         }
 
         if (paramCopyData.selProductData.length) {
@@ -771,9 +730,9 @@ export default {
             paramCopyData.selProductData,
             4,
             {
-              programme: paramCopyData.productDataTxt,
+              programme: paramCopyData.productDataTxt
             }
-          );
+          )
         }
 
         if (paramCopyData.selEngineerData.length) {
@@ -782,9 +741,9 @@ export default {
             paramCopyData.selEngineerData,
             5,
             {
-              programme: paramCopyData.engineerDataTxt,
+              programme: paramCopyData.engineerDataTxt
             }
-          );
+          )
         }
 
         if (paramCopyData.selResearchData.length) {
@@ -793,9 +752,9 @@ export default {
             paramCopyData.selResearchData,
             6,
             {
-              programme: paramCopyData.researchDataTxt,
+              programme: paramCopyData.researchDataTxt
             }
-          );
+          )
         }
 
         if (paramCopyData.selWarehouseData.length) {
@@ -805,9 +764,9 @@ export default {
             7,
             {
               programme: paramCopyData.warehouseDataTxt,
-              treatment: paramCopyData.finishedHandleTxt,
+              treatment: paramCopyData.finishedHandleTxt
             }
-          );
+          )
         }
 
         if (paramCopyData.selMarketerData.length) {
@@ -817,26 +776,24 @@ export default {
             8,
             {
               programme: paramCopyData.marketerDataTxt,
-              treatment: paramCopyData.noMarketerDataTxt,
+              treatment: paramCopyData.noMarketerDataTxt
             }
-          );
+          )
         }
-        // for (let key of newList) {
-        //   delete key.id
-        // }
-        return newList;
+        
+        return newList
       }
     },
     handleEditEachJointPeople(newList, checkPeopleData, field, params) {
-      const { list: editListData } = this.form;
+      const { list: editListData } = this.form
 
       // 获取当前部门已存在的人员记录，确保每个人只取一条记录
-      const existingItems = new Map();
+      const existingItems = new Map()
       editListData.forEach(item => {
         if (item.field === field && !existingItems.has(item.fieldName)) {
-          existingItems.set(item.fieldName, item);
+          existingItems.set(item.fieldName, item)
         }
-      });
+      })
 
       // 处理选中的人员
       checkPeopleData.forEach((name) => {
@@ -844,73 +801,65 @@ export default {
           // 更新已存在的记录
           newList.push({
             ...existingItems.get(name),
-            ...params,
-          });
+            ...params
+          })
         } else {
           // 创建新记录
           newList.push({
             field,
             fieldName: name,
-            ...params,
-          });
+            ...params
+          })
         }
-      });
+      })
 
-      return newList;
+      return newList
     },
-    /** 提交按钮 */
-    submitForm: function () {
-      this.$refs["form"].validate((valid) => {
+    submitForm() {
+      this.$refs['form'].validate((valid) => {
         if (valid) {
-          let param = cloneDeep(this.form);
+          let param = cloneDeep(this.form)
 
           if (param.id) {
-            const list = this.handleEditJointPeople(param);
-            param.list = list;
+            const list = this.handleEditJointPeople(param)
+            param.list = list
           } else {
-            const list = this.handleAddJointPeople(param);
-            param.list = list;
+            const list = this.handleAddJointPeople(param)
+            param.list = list
           }
 
-          param.changeCause = param.changeCause.toString();
-          
-          // 处理终审人员多选：将数组转换为逗号分隔的字符串
           if (param.secondPersonList && Array.isArray(param.secondPersonList) && param.secondPersonList.length > 0) {
-            param.secondPersonList = param.secondPersonList.join(',');
-            // 如果需要保留 secondPerson 字段（用于兼容），设置为第一个选中的人员
-            param.secondPerson = param.secondPersonList.split(',')[0];
+            param.finalPerson = param.secondPersonList.join(',')
           } else {
-            // 如果没有选择，设置为空字符串
-            param.secondPersonList = '';
-            param.secondPerson = '';
+            param.finalPerson = ''
           }
-          
+
           if (param.id) {
-            bomUpdate(param).then((response) => {
+            trialApplyUpdate(param).then((response) => {
               if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
+                this.msgSuccess('修改成功')
+                this.dialogVisible = false
+                this.$parent.getList()
               }
-            });
+            })
           } else {
-            bomAdd(param).then((response) => {
+            trialApplyAdd(param).then((response) => {
               if (response.code === 200) {
-                this.msgSuccess("创建成功");
-                this.dialogVisible = false;
-                this.$parent.getList();
+                this.msgSuccess('创建成功')
+                this.dialogVisible = false
+                this.$parent.getList()
               }
-            });
+            })
           }
         }
-      });
-    },
-  },
-};
+      })
+    }
+  }
+}
 </script>
 
 <style lang="scss">
-.ECN-Dialog-Box {
+.Trial-Apply-Dialog {
   .el-dialog__body {
     padding-bottom: 60px;
   }
@@ -964,12 +913,6 @@ export default {
       flex-direction: column;
       row-gap: 1px;
     }
-  }
-
-  .card-box {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-      0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
   }
 }
 </style>

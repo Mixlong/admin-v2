@@ -73,7 +73,9 @@ export default {
         data: [],
         page: 1,
         more: true
-      }
+      },
+      // 缓存所有用户数据
+      allUsersCache: null
     };
   },
   computed: {
@@ -133,7 +135,18 @@ export default {
   methods: {
     // 处理请求
     handleRequest(params) {
-      return this.loadData(params);
+      const { page = 1, more = false, keyword = "" } = params;
+      
+      console.log('TypedSelectLoadMore handleRequest:', params);
+      
+      // 如果是搜索请求（page=1且不是加载更多），重置数据
+      if (page === 1 && !more) {
+        this.componentData.data = [];
+        this.componentData.page = 1;
+        this.componentData.more = true;
+      }
+      
+      return this.loadData({ page, more, keyword });
     },
     
     // 根据类型加载数据
@@ -184,16 +197,25 @@ export default {
     
     // 获取用户数据
     async getUserData({ page = 1, more = false, keyword = "" } = {}) {
+      console.log('getUserData params:', { page, more, keyword });
+      
+      // 如果有缓存且不是加载更多，直接使用缓存进行筛选
+      if (this.allUsersCache && !more) {
+        return this.filterAndSetUserData(this.allUsersCache, keyword);
+      }
+      
+      // 如果没有缓存，从API获取数据
       const { dictUserList } = await import('@/api/system/user');
       
       return new Promise((resolve) => {
         dictUserList({
-          p: page,
-          pageSize: 20,
-          nickName: keyword,
+          p: 1, // 始终获取第一页的所有数据
+          pageSize: 1000, // 获取足够多的数据
         }).then((res) => {
+          console.log('dictUserList response:', res);
           if (res && res.data) {
-            let list = res.data.map(user => ({
+            // 缓存所有用户数据
+            this.allUsersCache = res.data.map(user => ({
               id: user.id,
               userName: user.userName,
               displayName: user.nickName || user.userName
@@ -202,22 +224,16 @@ export default {
             // 去重处理
             const uniqueUsers = [];
             const userNameSet = new Set();
-            list.forEach(user => {
+            this.allUsersCache.forEach(user => {
               if (!userNameSet.has(user.userName)) {
                 userNameSet.add(user.userName);
                 uniqueUsers.push(user);
               }
             });
+            this.allUsersCache = uniqueUsers;
 
-            if (more) {
-              this.componentData.data = [...this.componentData.data, ...uniqueUsers];
-            } else {
-              this.componentData.data = uniqueUsers;
-            }
-
-            // 计算是否还有更多数据
-            this.componentData.more = uniqueUsers.length >= 20;
-            this.componentData.page = page;
+            // 筛选并设置数据
+            this.filterAndSetUserData(this.allUsersCache, keyword);
           } else {
             console.error('获取用户数据失败:', res?.msg);
             this.componentData.data = [];
@@ -231,6 +247,24 @@ export default {
           resolve();
         });
       });
+    },
+
+    // 筛选并设置用户数据
+    filterAndSetUserData(allUsers, keyword) {
+      let filteredUsers = allUsers;
+      
+      // 如果有搜索关键字，进行筛选
+      if (keyword) {
+        filteredUsers = allUsers.filter(user => 
+          user.displayName.toLowerCase().includes(keyword.toLowerCase()) ||
+          user.userName.toLowerCase().includes(keyword.toLowerCase())
+        );
+      }
+
+      // 设置筛选后的数据
+      this.componentData.data = filteredUsers;
+      this.componentData.page = 1;
+      this.componentData.more = false; // 前端筛选不需要分页
     },
     
     // 获取客户数据

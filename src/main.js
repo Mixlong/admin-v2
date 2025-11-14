@@ -30,7 +30,7 @@ import directives from '@/directives'
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 import VersionChecker from '@/utils/versionChecker';
 import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
-
+import IntelligentSearchForm from '@/components/IntelligentSearchForm'
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };
@@ -53,6 +53,7 @@ Vue.config.productionTip = false;
 Vue.use(plugins)
 Vue.use(MainComponent)
 Vue.use(TypedSelectLoadMore)
+Vue.component('IntelligentSearchForm', IntelligentSearchForm) // 全局注册组件
 Vue.use(directives) // 注册自定义指令
 Vue.use(WujieVue) // 注册无界组件
 

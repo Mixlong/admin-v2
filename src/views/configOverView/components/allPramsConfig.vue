@@ -386,7 +386,7 @@
         :filters="handleDataFilter(serialLevelData)" :filter-method="filterHandler">
         <span slot-scope="{ row }" v-NoData="serialLevelData[row.serialLevel]" />
       </el-table-column>
-      <el-table-column label="实际协议" prop="showAgreement" align="center" width="90" />
+         <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="95" />
       <el-table-column label="配置协议" prop="agreement" align="center" width="95" column-key="agreement"
         :filters="handleDataFilter(dicts_agreement)" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="dicts_agreement[scope.row.agreement]" />
@@ -398,11 +398,6 @@
       <el-table-column label="欠压门限" prop="undervoltage" align="center" width="95" column-key="undervoltage"
         :filters="getFiltersData('undervoltage')" :filter-method="filterHandler">
         <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
-      </el-table-column>
-      <el-table-column label="实际轮径" prop="showWheelDiameter" align="center" width="95" />
-      <el-table-column label="配置轮径" prop="wheelDiameter" align="center" width="95" column-key="wheelDiameter"
-        :filters="handleDataFilter(wheelDiameterData)" :filter-method="filterHandler">
-        <span slot-scope="scope" v-NoData="wheelDiameterData[scope.row.wheelDiameter]"></span>
       </el-table-column>
       <el-table-column label="周长" prop="perimeter" align="center" width="95" column-key="perimeter"
         :filters="getFiltersData('perimeter')" :filter-method="filterHandler">

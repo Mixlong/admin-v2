@@ -1923,7 +1923,7 @@ import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
 import PackagingInfoEdit from "@/views/configOverView/components/packagingInfoEdit.vue";
-import { add } from "lodash";
+import { add, isEqual, omit } from "lodash";
 export default {
   mixins: [mixin, commonData],
   props: {
@@ -2032,6 +2032,8 @@ export default {
           relatedModelIdList: [],
         },
       },
+      // 原始表单数据，用于比较字段变化
+      originalForm: null,
       title: "",
       disabled: false,
       // 包装信息编辑弹窗
@@ -2217,6 +2219,24 @@ export default {
       if (labelRuleImg) {
         this.clearValidateItem("form", "instrumentModel.labelRuleImg");
       }
+    },
+    // 监听form的变化，当form被外部设置时保存原始数据
+    form: {
+      handler(newVal) {
+        // 只有在form有id（编辑模式）且不是复制模式时才保存原始数据
+        if (newVal && newVal.id && !this.isCopyProduct && !this.isLoadingDetail) {
+          // 使用nextTick确保数据完全加载后再保存
+          this.$nextTick(() => {
+            if (!this.originalForm) {
+              // 深拷贝保存原始数据，只在第一次设置时保存
+              this.originalForm = JSON.parse(JSON.stringify(newVal));
+              console.log('保存原始表单数据:', this.originalForm);
+            }
+          });
+        }
+      },
+      deep: true,
+      immediate: true
     },
   },
   created() {
@@ -2728,6 +2748,7 @@ export default {
     reset() {
       this.disabled = false;
       this.resetForm("form");
+      this.originalForm = null; // 清空原始表单数据
       this.form = {
         isSts: 1,
         isBist: 0,
@@ -3121,6 +3142,23 @@ export default {
               .map((id) => String(id))
               .filter((id) => id !== "undefined" && id !== "null" && id !== "");
 
+          // 检测字段变化，判断是否需要修改状态
+          if (this.form.id && !this.isCopyProduct && this.originalForm) {
+            // 只在编辑模式下检测字段变化
+            const vehicleConfigResult = this.checkVehicleConfigChanges();
+            console.log('车型配置字段变化检测结果:', vehicleConfigResult);
+            
+            if (vehicleConfigResult.hasOtherFieldsChanged) {
+              // 如果车型配置区域有非特殊字段变化，设置状态为0
+              console.log('车型配置区域检测到非特殊字段变化，设置instrumentModel.state为0');
+              this.form.instrumentModel.state = 0;
+            } else {
+              // 其他情况都保持原有状态不变
+              console.log('保持原有instrumentModel.state:', this.originalForm.instrumentModel?.state);
+              this.form.instrumentModel.state = this.originalForm.instrumentModel?.state;
+            }
+          }
+
           // 包装信息已经通过编辑弹窗保存到 form.instrumentModel.packagingInfo 中
           console.log(this.form);
           if (this.form.id && !this.isCopyProduct) {
@@ -3130,6 +3168,110 @@ export default {
           }
         }
       });
+    },
+    // 检测车型配置区域的字段变化
+    checkVehicleConfigChanges() {
+      if (!this.originalForm || !this.form) {
+        console.log('缺少原始表单数据或当前表单数据');
+        return { hasOtherFieldsChanged: false };
+      }
+      
+      // 车型配置区域的所有字段（根据模板中 v-if="form.isSts === 1" 的fieldset内容）
+      const vehicleConfigFields = [
+        'backlightBrightness',    // 背光亮度 - 特殊字段
+        'sleepTime',              // 休眠时间 - 特殊字段
+        'voltage',                // 系统电压
+        'undervoltage',           // 欠压门限
+        'powerGear',              // 助力档位数
+        'assistStartMagnetNumber', // 助力开始磁钢数
+        'assistPercentage',       // 助力比例
+        'currentlimiting',        // 限流门限
+        'assistLimit',            // 助力限速门限
+        'showWheelsize',          // 显示轮径
+        'tiresSize',              // 车轮宽度
+        'slowStart',              // 缓启动
+        'wheelDiameter',          // 轮径
+        'showWheelDiameter',      // 实际轮径(inch) - 特殊字段
+        'perimeter',              // 周长
+        'unit',                   // 单位
+        'agreement',              // 协议
+        'showAgreement',          // 实际协议 - 特殊字段
+        'power',                  // 电量计算
+        'speedSteel',             // 速度磁钢数
+        'batteryVoltageChangeTime', // 电池电压变化时间
+        'smoothLevel',            // 平滑等级
+        'allLineErrTimeOut',      // 总线错误超时
+        'ebikeName',              // 电动车名称
+        'carModel',               // 车型
+        'defaultGear',            // 默认档位
+        'logo',                   // LOGO界面
+        'startupPasswd',          // 开机密码
+        'highMenuPasswd',         // 高级菜单密码
+        'menuPasswd',             // 菜单密码
+        'motorSys',               // 电机系统
+        'batteryCap',             // 电池容量
+        'highSpeedBuzzerRemind',  // 高速蜂鸣器提醒
+        'bluetooth',              // 蓝牙
+        'driveAssist',            // 驾驶辅助
+        'factoryReset',           // 恢复出厂设置
+        'rotateHandle',           // 转把
+        'buzzerSwitch',           // 蜂鸣器开关
+        'cruise',                 // 巡航
+        'turnOnPasswd',           // 开机密码
+        'menuPassword',           // 菜单密码
+        'isHighMenuPassword',     // 高级菜单密码设置
+        'rotateHandleSpeedLimit', // 转把限速
+        'assist',                 // 助力
+        'serialLevelLog'          // 串口电平日志
+      ];
+      
+      // 特殊字段（实际轮径、实际协议）
+      const specialFields = ['showWheelDiameter', 'showAgreement'];
+      
+      // 获取当前和原始的instrumentModel数据
+      const currentModel = this.form.instrumentModel || {};
+      const originalModel = this.originalForm.instrumentModel || {};
+      
+      // 检测车型配置区域的字段变化
+      const fieldChanges = {};
+      let hasVehicleConfigChanges = false;
+      let hasSpecialFieldChanges = false;
+      let hasOtherVehicleFieldChanges = false;
+      
+      for (const field of vehicleConfigFields) {
+        const currentValue = currentModel[field];
+        const originalValue = originalModel[field];
+        const hasChanged = !isEqual(currentValue, originalValue);
+        
+        if (hasChanged) {
+          hasVehicleConfigChanges = true;
+          fieldChanges[field] = {
+            original: originalValue,
+            current: currentValue,
+            isSpecial: specialFields.includes(field)
+          };
+          
+          if (specialFields.includes(field)) {
+            hasSpecialFieldChanges = true;
+          } else {
+            hasOtherVehicleFieldChanges = true;
+          }
+        }
+      }
+      
+      console.log('车型配置区域字段变化详情:', {
+        fieldChanges,
+        hasVehicleConfigChanges,
+        hasSpecialFieldChanges,
+        hasOtherVehicleFieldChanges
+      });
+      
+      return {
+        hasOtherFieldsChanged: hasOtherVehicleFieldChanges,
+        hasSpecialFieldChanges,
+        hasVehicleConfigChanges,
+        fieldChanges
+      };
     },
     // 新增操作
     handleSubmitAdd() {

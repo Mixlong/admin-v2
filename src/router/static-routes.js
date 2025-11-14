@@ -32,6 +32,22 @@ export default [
         ]
     },
     {
+        path: '/base',
+        component: Layout,
+        hidden: true,
+        children: [
+            {
+                path: 'process-route',
+                component: () => import('@/views/base/process-route/index'),
+                name: 'ProcessRoute',
+                meta: {
+                    title: '工艺路线管理',
+                    keepAlive: true
+                }
+            }
+        ]
+    },
+    {
         path: '/smartScreen',
         component: () => import('@/views/smartScreen/index'),
         meta: {
@@ -55,6 +71,28 @@ export default [
                 meta: {
                     title: '生产报警管理',
                     icon: 'el-icon-warning',
+                    keepAlive: true
+                }
+            }
+        ]
+    },
+    {
+        path: '/shipment-management',
+        component: Layout,
+        redirect: '/shipment-management/shipment-order',
+        name: 'ShipmentManagement',
+        meta: {
+            title: '出货管理',
+            icon: 'el-icon-truck'
+        },
+        children: [
+            {
+                path: 'shipment-order',
+                component: () => import('@/views/shipment-management/shipment-order/index'),
+                name: 'ShipmentOrder',
+                meta: {
+                    title: '出货订单管理',
+                    icon: 'el-icon-document',
                     keepAlive: true
                 }
             }

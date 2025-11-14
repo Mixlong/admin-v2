@@ -39,47 +39,61 @@
       
       <el-table-column label="版本号" prop="versionCode" min-width="100" align="center" show-overflow-tooltip />
       
-      <el-table-column label="ECN编号" prop="ecn" min-width="120" align="center" show-overflow-tooltip />
+      <el-table-column label="ECN编号" prop="ecn"  align="center"  />
       
-      <el-table-column label="申请人" prop="applicant" min-width="100" align="center" show-overflow-tooltip />
+      
       
       <!-- 会审状态 -->
-      <el-table-column label="会审状态" min-width="120" align="center">
+      <el-table-column label="会审状态" width="170" align="center">
         <template slot-scope="scope">
           <div v-if="scope.row.list && scope.row.list.length > 0">
-            <el-tag 
+            <div 
               v-for="(item, index) in scope.row.list" 
               :key="index"
-              :type="getAuditTagType(item.state)"
-              size="mini"
-              style="margin: 2px;">
-              {{ getFieldName(item.field) }}: {{ getAuditStateName(item.state) }}
-            </el-tag>
+              style="margin: 4px 0;">
+              <el-tag 
+                type="info"
+                size="mini">
+                {{ getFieldName(item.field) }}
+              </el-tag>
+              <span style="margin: 0 4px;">{{ item.fieldName }}</span>
+              <el-tag 
+                :type="getAuditTagType(item.state)"
+                size="mini">
+                {{ getAuditStateName(item.state) }}
+              </el-tag>
+            </div>
           </div>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      
-      <!-- 工程审状态 -->
-      <el-table-column label="工程审" min-width="100" align="center">
-        <template slot-scope="scope">
-          <el-tag :type="getAuditTagType(scope.row.engineeringState)" size="small">
-            {{ getAuditStateName(scope.row.engineeringState) }}
-          </el-tag>
-        </template>
-      </el-table-column>
+   
       
       <!-- 终审状态 -->
-      <el-table-column label="终审" min-width="100" align="center">
+      <el-table-column label="终审" width="120" align="center">
         <template slot-scope="scope">
-          <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
-            {{ getAuditStateName(scope.row.secondState) }}
-          </el-tag>
+          <div>
+            <div style="margin-bottom: 4px;">{{ scope.row.secondPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
+              {{ getAuditStateName(scope.row.secondState) }}
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
-      
-      <el-table-column label="创建时间" prop="createTime" min-width="160" align="center" show-overflow-tooltip />
-      
+          
+      <!-- 工程审状态 -->
+      <el-table-column label="工程审" width="120" align="center">
+        <template slot-scope="scope">
+          <div>
+            <div style="margin-bottom: 4px;">{{ scope.row.engineeringPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.engineeringState)" size="small">
+              {{ getAuditStateName(scope.row.engineeringState) }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" prop="createTime" width="120" align="center" />
+       <el-table-column label="申请人" prop="applicant" width="100" align="center"   />
       <el-table-column label="操作" width="150" align="center" fixed="right">
         <template slot-scope="scope">
           <el-button 
@@ -87,7 +101,15 @@
             size="small" 
             icon="el-icon-view"
             @click="handleViewDetail(scope.row)">
-            查看详情
+            详情
+          </el-button>
+          <el-button 
+            v-if="canAudit(scope.row)"
+            type="text" 
+            size="small" 
+            icon="el-icon-edit"
+            @click="handleAudit(scope.row)">
+            审核
           </el-button>
         </template>
       </el-table-column>
@@ -101,98 +123,144 @@
       :limit.sync="queryParams.l"
       @pagination="getList"
     />
+    
+    <!-- 审核弹窗 -->
+    <AuditDialog ref="auditDialog" @success="getList" />
+    
+    <!-- 详情对话框 -->
+    <AuditDetailDialog ref="auditDetailDialog" />
   </div>
 </template>
 
 <script>
-import { sopAuditList } from "@/api/third/testApi";
+import { sopAuditList, sopDelete } from "@/api/third/testApi";
+import { parseTime, resetForm } from "@/utils/ruoyi";
+import Pagination from "@/components/Pagination";
+import RightToolbar from "@/components/RightToolbar";
+import AuditDialog from "./components/AuditDialog";
+import AuditDetailDialog from "./components/AuditDetailDialog";
+import { mapGetters } from "vuex";
 
 export default {
-  name: "SopAuditList",
+  name: "AuditList",
+  components: {
+    Pagination,
+    RightToolbar,
+    AuditDialog,
+    AuditDetailDialog
+  },
+  // computed: {
+  //   ...mapGetters(["nickName"])
+  // },
   data() {
     return {
-      loading: false,
-      auditList: [],
+      nickName:'孙国祥',
+      // 遮罩层
+      loading: true,
+      detailLoading: false,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
       total: 0,
+      // 审核列表数据
+      auditList: [],
+      // 查询参数
       queryParams: {
         p: 1,
-        l: 10,
-        categoryId: '',
-        versionCode: '',
-        ecn: '',
-        sopId: '' // 从路由参数获取
-      }
+        l: 30,
+        ecn: null,
+        categoryId: null,
+        versionCode: null
+      },
+      // 对话框标题
+      detailTitle: "审核详情",
+      // 是否显示对话框
+      open: false,
+      // 详情数据
+      detailData: {},
+      // 会审人员数据
+      jointAuditors: []
     };
   },
   created() {
-    // 从路由参数获取查询条件
-    if (this.$route.query.sopId) {
-      this.queryParams.sopId = this.$route.query.sopId;
-    }
-    if (this.$route.query.categoryId) {
-      this.queryParams.categoryId = this.$route.query.categoryId;
-    }
-    if (this.$route.query.versionCode) {
-      this.queryParams.versionCode = this.$route.query.versionCode;
-    }
     this.getList();
   },
   methods: {
-    /** 查询列表 */
+    /** 查询审核列表 */
     getList() {
       this.loading = true;
-      sopAuditList(this.queryParams).then(res => {
-        if (res.code === 200) {
-          this.auditList = res.data.list || [];
-          this.total = res.data.total || 0;
-        }
-      }).finally(() => {
+      sopAuditList(this.queryParams).then(response => {
+        this.auditList = response.data.list;
+        this.total = response.data.total;
         this.loading = false;
       });
     },
-    
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
       this.getList();
     },
-    
     /** 重置按钮操作 */
     resetQuery() {
-      this.resetForm("queryForm");
-      // 保留从路由获取的参数
-      const sopId = this.queryParams.sopId;
-      const categoryId = this.$route.query.categoryId || '';
-      const versionCode = this.$route.query.versionCode || '';
-      this.queryParams = {
-        p: 1,
-        l: 10,
-        categoryId: categoryId,
-        versionCode: versionCode,
-        ecn: '',
-        sopId: sopId
-      };
+      resetForm.call(this, "queryForm");
       this.handleQuery();
     },
-    
-    /** 查看详情 */
-    handleViewDetail(row) {
-      this.$router.push({
-        path: '/sop/audit/detail',
-        query: { id: row.id }
-      });
+    /** 多选框选中数据 */
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length!==1
+      this.multiple = !selection.length
     },
-    
+    /** 获取会审状态 */
+    getJointAuditStatus(list) {
+      if (!list || list.length === 0) return 0;
+      
+      const pending = list.filter(item => item.state === 0).length;
+      const approved = list.filter(item => item.state === 1).length;
+      const rejected = list.filter(item => item.state === 2).length;
+      
+      if (rejected > 0) return 2; // 拒绝
+      if (pending === 0 && approved > 0) return 1; // 全部通过
+      if (pending > 0 && (approved > 0 || rejected > 0)) return 3; // 部分完成
+      return 0; // 待审核
+    },
+    /** 查看详情按钮操作 */
+    handleView(row) {
+      this.detailLoading = true;
+      this.open = true;
+      this.detailData = { ...row };
+      this.jointAuditors = row.list || [];
+      this.detailLoading = false;
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const ids = row.id || this.ids;
+      this.$confirm('是否确认删除审核编号为"' + ids + '"的数据项?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return sopDelete(ids);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
     /** 获取审核状态标签类型 */
     getAuditTagType(state) {
       const typeMap = {
-        0: 'warning', // 待审核
-        1: 'success', // 通过
-        2: 'danger'   // 驳回
+        0: 'warning',  // 待审核 - 橙色
+        1: 'success',  // 已通过 - 绿色
+        2: 'danger'    // 已驳回 - 红色
       };
       return typeMap[state] || 'info';
     },
-    
     /** 获取审核状态名称 */
     getAuditStateName(state) {
       const nameMap = {
@@ -202,36 +270,133 @@ export default {
       };
       return nameMap[state] || '-';
     },
-    
-    /** 获取领域名称 */
+    /** 获取字段名称（部门类型映射） */
     getFieldName(field) {
+      // type: 2品质 3生产 5研发 8终审 9工程审
       const fieldMap = {
-        2: '采购',
-        3: '品质',
-        4: '生产',
-        5: '工程',
-        6: '研发',
-        7: '仓库',
-        8: '市场'
+        2: '品质',
+        3: '生产',
+        5: '研发',
+        8: '终审',
+        9: '工程审',
+        '2': '品质',
+        '3': '生产',
+        '5': '研发',
+        '8': '终审',
+        '9': '工程审'
       };
-      return fieldMap[field] || '';
+      return fieldMap[field] || field;
     },
-    
-    /** 行样式 */
-    rowClassName({ row }) {
-      // 全部通过显示绿色
-      const allPassed = row.list && row.list.every(item => item.state === 1) 
-        && row.engineeringState === 1 
-        && row.secondState === 1;
-      if (allPassed) return 'success-row';
+    /** 判断是否可以审核 */
+    canAudit(row) {
+      // 获取当前用户信息
+      const currentUser = this.nickName || '';
       
-      // 有驳回显示红色
-      const hasReject = (row.list && row.list.some(item => item.state === 2))
-        || row.engineeringState === 2
-        || row.secondState === 2;
-      if (hasReject) return 'danger-row';
+      // 检查是否有会审被驳回
+      const hasJointAuditRejected = row.list && row.list.length > 0 
+        ? row.list.some(item => item.state === 2)
+        : false;
+      
+      // 如果有会审被驳回，后续流程都不能进行
+      if (hasJointAuditRejected) {
+        // 只有待审核的会审人员可以继续审核
+        if (row.list && row.list.length > 0) {
+          const myAudit = row.list.find(item => item.fieldName === currentUser && item.state === 0);
+          if (myAudit) return true;
+        }
+        return false;
+      }
+      
+      // 1. 检查会审状态（第一阶段，可以并行审核）
+      if (row.list && row.list.length > 0) {
+        const myAudit = row.list.find(item => item.fieldName === currentUser && item.state === 0);
+        if (myAudit) return true;
+      }
+      
+      // 2. 检查终审状态（第二阶段，需要所有会审都通过）
+      if (row.secondPerson === currentUser && row.secondState === 0) {
+        // 检查是否所有会审都已通过
+        const allJointAuditPassed = row.list && row.list.length > 0 
+          ? row.list.every(item => item.state === 1)
+          : false;
+        
+        // 只有会审全部通过后，才能终审
+        if (allJointAuditPassed) {
+          return true;
+        }
+      }
+      
+      // 3. 检查工程审状态（第三阶段，需要终审通过）
+      if (row.engineeringPerson === currentUser && row.engineeringState === 0) {
+        // 检查是否所有会审都已通过
+        const allJointAuditPassed = row.list && row.list.length > 0 
+          ? row.list.every(item => item.state === 1)
+          : false;
+        
+        // 检查终审是否已通过（未驳回）
+        const finalPassed = row.secondState === 1;
+        const finalRejected = row.secondState === 2;
+        
+        // 如果终审被驳回，不能进行工程审
+        if (finalRejected) {
+          return false;
+        }
+        
+        // 只有会审全部通过且终审通过后，才能工程审
+        if (allJointAuditPassed && finalPassed) {
+          return true;
+        }
+      }
+      
+      return false;
+    },
+    /** 审核按钮操作 */
+    handleAudit(row) {
+      const currentUser = this.nickName || '';
+      
+      // 判断当前用户的审核类型
+      // 1. 检查是否是会审人员
+      if (row.list && row.list.length > 0) {
+        const myAudit = row.list.find(item => item.fieldName === currentUser && item.state === 0);
+        if (myAudit) {
+          this.$refs.auditDialog.open('field', row, myAudit);
+          return;
+        }
+      }
+      
+      // 2. 检查是否是终审人员（第二阶段）
+      if (row.secondPerson === currentUser && row.secondState === 0) {
+        this.$refs.auditDialog.open('final', row);
+        return;
+      }
+      
+      // 3. 检查是否是工程审人员（第三阶段）
+      if (row.engineeringPerson === currentUser && row.engineeringState === 0) {
+        this.$refs.auditDialog.open('engineering', row);
+        return;
+      }
+    },
+    /** 查看详情按钮操作 */
+    handleViewDetail(row) {
+      this.$refs.auditDetailDialog.open(row);
+    },
+    /** 表格行样式 */
+    rowClassName({ row }) {
+      // 全部通过 - 绿色背景
+      const allApproved = row.engineeringState === 1 && row.secondState === 1 &&
+        (!row.list || row.list.every(item => item.state === 1));
+      if (allApproved) return 'success-row';
+      
+      // 有驳回 - 红色背景
+      const hasRejected = row.engineeringState === 2 || row.secondState === 2 ||
+        (row.list && row.list.some(item => item.state === 2));
+      if (hasRejected) return 'danger-row';
       
       return '';
+    },
+    /** 计算表格高度 */
+    tableHeight() {
+      return window.innerHeight - 280;
     }
   }
 };

@@ -33,6 +33,10 @@
                 :request="getOrderData"
                 placeholder="请选择或输入订单号"
                 :disabled="isView"
+                clearable
+                filterable
+                remote
+                :remote-method="handleOrderSearch"
                 style="width: 100%">
                 <template v-slot="{ proOption }">
                   <span style="float: left">{{ proOption.salesOrderNo }}</span>
@@ -98,7 +102,48 @@
               </el-input-number>
             </el-form-item>
             </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
             <el-col :span="8">
+              <el-form-item label="措施人员" prop="measurePerson">
+                <TypedSelectLoadMore 
+                  v-model="form.measurePerson" 
+                  type="user"
+                  placeholder="请选择措施人员"
+                  :disabled="isView"
+                  clearable
+                  customStyle="width: 100%">
+                </TypedSelectLoadMore>
+              </el-form-item>
+            </el-col>
+            
+            <el-col :span="8">
+              <el-form-item label="分析人员" prop="analysisPerson">
+                <TypedSelectLoadMore 
+                  v-model="form.analysisPerson" 
+                  type="user"
+                  placeholder="请选择分析人员"
+                  :disabled="isView"
+                  clearable
+                  customStyle="width: 100%">
+                </TypedSelectLoadMore>
+              </el-form-item>
+            </el-col>
+            
+            <el-col :span="8">
+              <el-form-item label="确认人" prop="confirmer">
+                <TypedSelectLoadMore 
+                  v-model="form.confirmer" 
+                  type="user"
+                  placeholder="请选择确认人"
+                  :disabled="isView"
+                  clearable
+                  customStyle="width: 100%">
+                </TypedSelectLoadMore>
+              </el-form-item>
+            </el-col>
+            <!-- <el-col :span="8">
               <el-form-item label="责任部门" prop="responsibility">
                 <treeselect 
                   v-model="form.responsibilityDeptId" 
@@ -111,7 +156,7 @@
                   @input="handleDeptChange"
                   :loading="deptLoading" />
               </el-form-item>
-            </el-col>
+            </el-col> -->
           </el-row>
         </div>
       </fieldset>
@@ -140,7 +185,7 @@
               <Editor 
                 v-model="form.causeAnalysis" 
                 :min-height="150" 
-                :read-only="isView"
+                :read-only="isView || !canEditCauseAnalysis"
                 placeholder="请分析问题产生的根本原因，可从人员、设备、方法、材料、环境等方面进行分析"
                 :config="editorConfig">
               </Editor>
@@ -148,13 +193,13 @@
           </el-col>
         </el-row>
         
-        <el-row :gutter="20">
+        <el-row :gutter="20" v-if="editMode">
           <el-col :span="24">
             <el-form-item label="临时措施" prop="temporaryMeasures">
               <Editor 
                 v-model="form.temporaryMeasures" 
                 :min-height="150" 
-                :read-only="isView"
+                :read-only="isView || !canEditTemporaryMeasures"
                 placeholder="请输入针对问题采取的临时处理措施"
                 :config="editorConfig">
               </Editor>
@@ -162,13 +207,13 @@
           </el-col>
         </el-row>
         
-        <el-row :gutter="20">
+        <el-row :gutter="20" v-if="editMode">
           <el-col :span="24">
             <el-form-item label="长期措施" prop="longTermImprovement">
               <Editor 
                 v-model="form.longTermImprovement" 
                 :min-height="150" 
-                :read-only="isView"
+                :read-only="isView || !canEditLongTermMeasures"
                 placeholder="请输入防止问题再次发生的长期改善措施"
                 :config="editorConfig">
               </Editor>
@@ -176,33 +221,20 @@
           </el-col>
         </el-row>
         
-        <el-row :gutter="20">
+        <el-row :gutter="20" v-if="editMode">
           <el-col :span="24">
             <el-form-item label="效果确认" prop="effectConfirmation">
               <Editor 
                 v-model="form.effectConfirmation" 
                 :min-height="150" 
-                :read-only="isView"
+                :read-only="isView || !canEditEffectConfirmation"
                 placeholder="请输入措施实施后的效果确认情况"
                 :config="editorConfig">
               </Editor>
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        </div>
-      </fieldset>
-      
-      
-      <!-- 确认信息与附件 -->
-      <fieldset class="form-fieldset">
-        <legend class="fieldset-legend">图片</legend>
-        <div class="fieldset-content">
+          </el-row>
           <el-row :gutter="20">
- 
-        </el-row>
-        
-        <el-row :gutter="20">
           <el-col :span="24">
             <el-form-item label="问题图片" prop="problemImages">
               <div class="upload-section">
@@ -215,9 +247,13 @@
               </div>
             </el-form-item>
           </el-col>
-          </el-row>
+        </el-row>
+        
         </div>
       </fieldset>
+      
+      
+ 
     </el-form>
     
     <div slot="footer" class="dialog-footer" v-if="!isView">
@@ -241,20 +277,21 @@ import {
 } from '@/api/base/qualityIssue'
 import { listDept } from '@/api/system/dept'
 import { getDicts } from '@/api/system/dict/data'
-import { dictUserList } from '@/api/system/user'
 import { getToken } from '@/utils/auth'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import Editor from '@/components/Editor'
 import ImageUpload from '@/components/el-upload-sortable/index.vue'
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore'
 import { mapGetters } from "vuex";
 export default {
   name: 'AddIssueDialog',
   components: {
     Treeselect,
     Editor,
-    ImageUpload
-},
+    ImageUpload,
+    TypedSelectLoadMore
+  },
   props: {
     visible: {
       type: Boolean,
@@ -277,8 +314,6 @@ export default {
       deptLoading: false,
       // 线号字典选项
       sopLineOptions: [],
-      // 用户列表选项
-      userListOptions: [],
       orderData: {
         data: [],
         page: 1,
@@ -306,6 +341,8 @@ export default {
         responsibility: '',
         responsibilityDeptId: null,
         causeAnalysis: '',
+        measurePerson: '',
+        analysisPerson: '',
         confirmer: '',
         effectConfirmation: '',
         problemImages: '',
@@ -341,7 +378,7 @@ export default {
           { required: true, message: '请选择责任归属部门', trigger: 'change' }
         ],
         confirmer:[
-          { required: true, message: '请选择确认人', trigger: 'change' }
+          { required: false, message: '请选择确认人', trigger: 'change' }
         ]
       }
     }
@@ -351,6 +388,30 @@ export default {
     // 是否为编辑模式
     editMode() {
       return this.editData !== null
+    },
+    // 是否可以编辑原因分析
+    canEditCauseAnalysis() {
+      if (!this.editMode) return true; // 新增模式下可以编辑
+      // 编辑模式下，只有分析人员可以编辑
+      return this.form.analysisPerson === this.nickName || !this.form.analysisPerson;
+    },
+    // 是否可以编辑临时措施
+    canEditTemporaryMeasures() {
+      if (!this.editMode) return true; // 新增模式下可以编辑
+      // 编辑模式下，只有措施人员可以编辑
+      return this.form.measurePerson === this.nickName || !this.form.measurePerson;
+    },
+    // 是否可以编辑长期措施
+    canEditLongTermMeasures() {
+      if (!this.editMode) return true; // 新增模式下可以编辑
+      // 编辑模式下，只有措施人员可以编辑
+      return this.form.measurePerson === this.nickName || !this.form.measurePerson;
+    },
+    // 是否可以编辑效果确认
+    canEditEffectConfirmation() {
+      if (!this.editMode) return true; // 新增模式下可以编辑
+      // 编辑模式下，只有确认人可以编辑
+      return this.form.confirmer === this.nickName || !this.form.confirmer;
     }
   },
   watch: {
@@ -405,6 +466,8 @@ export default {
           responsibility: this.editData.responsibility || '',
           responsibilityDeptId: this.editData.responsibilityDeptId || null,
           causeAnalysis: this.editData.causeAnalysis || '',
+          measurePerson: this.editData.measurePerson || '',
+          analysisPerson: this.editData.analysisPerson || '',
           confirmer: this.editData.confirmer || '',
           effectConfirmation: this.editData.effectConfirmation || '',
           problemImages: this.editData.problemImages || '',
@@ -426,6 +489,8 @@ export default {
           responsibility: '',
           responsibilityDeptId: null,
           causeAnalysis: '',
+          measurePerson: '',
+          analysisPerson: '',
           confirmer: '',
           effectConfirmation: '',
           problemImages: '',
@@ -471,7 +536,7 @@ export default {
         createTime: this.formatDateTime(new Date()),
         updateTime: this.formatDateTime(new Date())
       }
-      this.submitData.confirmer=this.nickName;
+      submitData.confirmer = this.nickName;
       addQualityIssue(submitData).then(res => {
         if (res.code === 200) {
           this.$message.success('创建成功')
@@ -479,7 +544,7 @@ export default {
           this.$emit('success')
         } else {
           this.$message.error(res.msg || '创建失败')
-        }
+        } 
       }).catch(() => {
         this.$message.error('创建失败，请稍后重试')
       }).finally(() => {
@@ -524,6 +589,50 @@ export default {
           dialogBody.scrollTop = 0
         }
       })
+    },
+
+    // 处理订单搜索
+    handleOrderSearch(keyword) {
+      // 重置分页数据
+      this.orderData.page = 1;
+      this.orderData.data = [];
+      this.orderData.more = true;
+      
+      // 调用搜索
+      this.getOrderData({ page: 1, keyword });
+    },
+
+    // 获取订单数据
+    getOrderData(params = {}) {
+      const { page = 1, keyword = '' } = params;
+      
+      return getOrderList({
+        pageNum: page,
+        pageSize: 10,
+        salesOrderNo: keyword
+      }).then(res => {
+        if (res.code === 200) {
+          const newData = res.rows || [];
+          
+          if (page === 1) {
+            this.orderData.data = newData;
+          } else {
+            this.orderData.data = [...this.orderData.data, ...newData];
+          }
+          
+          this.orderData.page = page;
+          this.orderData.more = newData.length === 10;
+          
+          return {
+            data: newData,
+            total: res.total,
+            hasMore: this.orderData.more
+          };
+        }
+      }).catch(() => {
+        console.error('获取订单列表失败');
+        return { data: [], total: 0, hasMore: false };
+      });
     },
 
     // 获取部门树结构

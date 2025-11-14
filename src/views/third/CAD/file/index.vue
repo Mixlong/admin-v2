@@ -270,7 +270,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 100,
         key: undefined,
         status: undefined,
         type: undefined,
