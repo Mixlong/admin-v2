@@ -52,7 +52,7 @@
       @selection-change="handleSelectionChange"
       row-key="id"
       border
-      :height="tableHeight(30)"
+      :height="tableHeight(10)"
       class="crm-address-table"
     >
       <el-table-column
@@ -133,13 +133,18 @@
     </el-table>
 
     <!-- 分页 -->
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="searchForm.pageNum"
-      :limit.sync="searchForm.pageSize"
-      @pagination="handleSearch"
-    />
+    <div class="mt-5 flex justify-end" style="margin-top: 10px;">
+      <el-pagination
+        :current-page="searchForm.p"
+        :page-size="searchForm.l"
+        :total="total"
+        :page-sizes="[10, 20, 30, 50, 100]"
+        size="small"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 收货地址表单弹窗 -->
     <CustomerAddressFormDialog
@@ -187,8 +192,8 @@ export default {
       
       // 智能搜索表单
       searchForm: {
-        pageNum: 1,
-        pageSize: 10,
+        p: 1,
+        l: 30,
         customerId: null,
         contactName: null,
         contactPhone: null
@@ -246,9 +251,10 @@ export default {
       return new Promise((resolve) => {
         getCustomerList({
           p: page,
+          l: 20,
           name: keyword,
         }).then((res) => {
-          const { list, total, pageNum, pageSize } = res.data;
+          const { list, total } = res.data;
           const filteredList = list.filter((item) => item.status === 0);
 
           if (more) {
@@ -257,7 +263,7 @@ export default {
             this.customerData.data = filteredList;
           }
 
-          this.customerData.page = pageNum;
+          this.customerData.page = page;
           this.customerData.more = this.customerData.data.length < total;
           
           resolve({
@@ -289,15 +295,15 @@ export default {
 
     /** 智能搜索 */
     handleSearch() {
-      this.searchForm.pageNum = 1
+      this.searchForm.p = 1
       this.getList()
     },
 
     /** 重置搜索 */
     handleReset() {
       this.searchForm = {
-        pageNum: 1,
-        pageSize: 10,
+        p: 1,
+        l: 30,
         customerId: null,
         contactName: null,
         contactPhone: null
@@ -347,6 +353,19 @@ export default {
     /** 拨打电话 */
     handleCall(phone) {
       window.location.href = `tel:${phone}`
+    },
+
+    /** 分页大小改变 */
+    handleSizeChange(val) {
+      this.searchForm.l = val
+      this.searchForm.p = 1
+      this.getList()
+    },
+
+    /** 当前页改变 */
+    handleCurrentChange(val) {
+      this.searchForm.p = val
+      this.getList()
     }
   }
 }

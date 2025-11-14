@@ -515,12 +515,12 @@
               </el-table-column>
               <el-table-column prop="createBy" label="创建人" width="100" align="center" />
               <el-table-column prop="updateBy" label="更新人" width="100" align="center" />
-              <el-table-column prop="createTime" label="创建时间" width="150" align="center">
+              <el-table-column prop="createTime" label="创建时间" width="180" align="center">
                 <template slot-scope="{ row }">
                   {{ formatDate(row.createTime) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="updateTime" label="更新时间" width="150" align="center">
+              <el-table-column prop="updateTime" label="更新时间" width="180" align="center">
                 <template slot-scope="{ row }">
                   {{ formatDate(row.updateTime) }}
                 </template>
@@ -540,7 +540,7 @@
         <el-tab-pane label="收货地址" name="addresses">
           <div class="tab-content">
             <div class="section-header">
-              <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddAddress" v-hasPermi="['crm:address:add']">
+              <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddAddress" v-hasPermi="['crm:customer:address:add']">
                 添加收货地址
               </el-button>
             </div>
@@ -582,7 +582,7 @@
               </el-table-column>
               <el-table-column label="操作" width="80" align="center">
                 <template slot-scope="{ row }">
-                  <el-button type="text" size="mini" icon="el-icon-edit" @click="handleEditAddress(row)" v-hasPermi="['crm:address:edit']">
+                  <el-button type="text" size="mini" icon="el-icon-edit" @click="handleEditAddress(row)" v-hasPermi="['crm:customer:address:edit']">
                     编辑
                   </el-button>
                 </template>
@@ -720,9 +720,9 @@ import FollowPlanFormDialog from '../../followPlan/components/FollowPlanFormDial
 import AddFollowRecordDialog from '../../followRecord/components/AddFollowRecordDialog.vue'
 import { getDicts } from '@/api/system/dict/data'
 import { getContactsByCustomerId } from '@/api/third/customerContact'
-import { getFollowRecordsByCustomerId, addFollowRecord } from '@/api/crm/followRecord'
+import { getFollowRecordList, addFollowRecord } from '@/api/crm/followRecord'
 import { getFollowPlanList } from '@/api/crm/followPlan'
-import { getProjectFollowByCustomerId } from '@/api/crm/projectFollow'
+import { getProjectFollowList } from '@/api/crm/projectFollow'
 import { listCustomerAddress } from '@/api/crm/customerAddress'
 import ProjectFollowFormDialog from '../../projectFollow/components/ProjectFollowFormDialog.vue'
 import CustomerAddressFormDialog from '../../customer-address/components/CustomerAddressFormDialog.vue'
@@ -1140,9 +1140,13 @@ export default {
     async loadFollowRecords(customerId) {
       this.followUpLoading = true
       try {
-        const response = await getFollowRecordsByCustomerId(customerId)
+        const response = await getFollowRecordList({
+          customerId,
+          p: 1,
+          l: 999
+        })
         if (response && response.data) {
-          this.followUpList = response.data
+          this.followUpList = response.data.list || response.data
           console.log('跟进记录数据:', this.followUpList)
         }
       } catch (error) {
@@ -1159,8 +1163,8 @@ export default {
       try {
         const response = await getFollowPlanList({
           customerId,
-          pageNum: 1,
-          pageSize: 100
+          p: 1,
+          l: 999
         })
         if (response && response.data && response.data.list) {
           this.planList = response.data.list
@@ -1178,9 +1182,13 @@ export default {
     async loadProjectFollows(customerId) {
       this.projectFollowLoading = true
       try {
-        const response = await getProjectFollowByCustomerId(customerId)
+        const response = await getProjectFollowList({
+          customerId,
+          p: 1,
+          l: 999
+        })
         if (response && response.data) {
-          this.projectFollowList = response.data
+          this.projectFollowList = response.data.list || response.data
           console.log('项目跟进数据:', this.projectFollowList)
         }
       } catch (error) {
@@ -1195,7 +1203,11 @@ export default {
     async loadAddresses(customerId) {
       this.addressLoading = true
       try {
-        const response = await listCustomerAddress({ customerId })
+        const response = await listCustomerAddress({ 
+          customerId,
+          p: 1,
+          l: 999
+        })
         if (response && response.code === 200 && response.data) {
           this.addressList = response.data.list || response.data || []
           console.log('收货地址数据:', this.addressList)

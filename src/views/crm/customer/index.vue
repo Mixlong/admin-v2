@@ -449,11 +449,19 @@ export default {
           }
         )
 
-        // TODO: 调用删除API
-        this.$message.success('删除成功')
-        this.getCustomerList()
-      } catch {
-        // 用户取消删除
+        // 调用删除API
+        const response = await deleteSoCustomer(row.id)
+        if (response.code === 200) {
+          this.$message.success('删除成功')
+          this.getCustomerList()
+        } else {
+          this.$message.error(response.msg || '删除失败')
+        }
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('删除客户失败:', error)
+          this.$message.error('删除失败，请稍后重试')
+        }
       }
     },
 

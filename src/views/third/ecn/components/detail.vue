@@ -293,7 +293,7 @@
             </div>
           </el-card>
 
-          <el-card shadow="never">
+          <el-card shadow="never" class="margin-bottom-sm">
             <div slot="header" class="clearfix">
               <span class="text-green">最终审核状态</span>
             </div>
@@ -362,6 +362,40 @@
                   </template>
                 </el-card>
               </template>
+            </div>
+          </el-card>
+
+          <el-card shadow="never" v-if="form.systemPerson">
+            <div slot="header" class="clearfix">
+              <span class="text-blue">系统变更信息</span>
+            </div>
+            <div style="min-height: 50px">
+              <el-row class="margin-bottom-sm" type="flex" align="middle">
+                <el-col :span="3">
+                  <span>审核状态：</span>
+                  <el-tag type="warning" v-show="form.systemState === 0">
+                    待审核
+                  </el-tag>
+                  <el-tag type="success" v-show="form.systemState === 1">
+                    已审核
+                  </el-tag>
+                  <el-tag type="danger" v-show="form.systemState === 2">
+                    已驳回
+                  </el-tag>
+                </el-col>
+                <el-col :span="6">
+                  <span>审核人: {{ form.systemPerson }}</span>
+                </el-col>
+              </el-row>
+              <el-card shadow="nerver" v-if="form.systemState !== 0">
+                <template v-if="form.systemState === 1 && form.systemRemark">
+                  备注： {{ form.systemRemark }}
+                </template>
+                <template v-if="form.systemState === 2 && form.systemResult">
+                  <span class="text-red">拒绝原因：</span>
+                  {{ form.systemResult }}
+                </template>
+              </el-card>
             </div>
           </el-card>
         </el-form>

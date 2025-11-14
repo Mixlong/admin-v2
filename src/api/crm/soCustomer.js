@@ -32,13 +32,12 @@ export function updateSoCustomer(soCustomer) {
 
 /**
  * 删除销售订单客户
- * @param {string|Array} ids - 客户ID，可以是单个ID或ID数组
+ * @param {string} customerId - 客户ID
  * @returns {Promise}
  */
-export function deleteSoCustomer(ids) {
-  const idsStr = Array.isArray(ids) ? ids.join(',') : ids
+export function deleteSoCustomer(customerId) {
   return request({
-    url: `/so/customer/${idsStr}`,
+    url: `/so/customer/delete/${customerId}`,
     method: 'delete'
   })
 }

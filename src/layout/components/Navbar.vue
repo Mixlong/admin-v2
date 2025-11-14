@@ -161,20 +161,46 @@ export default {
         console.log('检查新版本状态失败:', error);
       }
     },
+    /**
+     * 检测用户操作系统
+     */
+    detectOS() {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const platform = window.navigator.platform.toLowerCase();
+      
+      if (platform.includes('mac') || userAgent.includes('mac')) {
+        return 'mac';
+      } else if (platform.includes('win') || userAgent.includes('win')) {
+        return 'windows';
+      }
+      return 'windows'; // 默认返回 Windows
+    },
+    
     async handleDownload() {
       try {
+        // 检测操作系统
+        const os = this.detectOS();
+        const osText = os === 'mac' ? 'Mac' : 'Windows';
+        
         const loading = this.$loading({
           lock: true,
-          text: '正在获取最新版本...',
+          text: `正在获取${osText}版本...`,
           spinner: 'el-icon-loading'
         });
         
         try {
-          // 获取latest.yml文件
-          const response = await fetch('https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml', {
-            mode: 'cors',
-            credentials: 'omit'
-          });
+          // 获取latest.yml文件，添加时间戳防止缓存
+          const timestamp = new Date().getTime();
+          
+          // 根据操作系统选择不同的配置文件
+          let ymlUrl = '';
+          if (os === 'mac') {
+            ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest-mac.yml?t=${timestamp}`;
+          } else {
+            ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml?t=${timestamp}`;
+          }
+          
+          const response = await fetch(ymlUrl);
           
           if (!response.ok) {
             throw new Error('获取版本信息失败');
@@ -182,11 +208,19 @@ export default {
           
           const ymlText = await response.text();
           
-          // 解析yml文件获取文件名
+          // 解析yml文件获取文件名和版本
           const urlMatch = ymlText.match(/url:\s*(\S+)/);
           const versionMatch = ymlText.match(/version:\s*(\S+)/);
-          const fileName = urlMatch ? urlMatch[1] : 'DigiSmart-Setup-1.0.3.exe';
+          
+          // 根据操作系统设置默认文件名
+          const defaultFileName = os === 'mac' ? 'DigiSmart-1.0.3.dmg' : 'DigiSmart-Setup-1.0.3.exe';
+          let fileName = urlMatch ? urlMatch[1] : defaultFileName;
           const version = versionMatch ? versionMatch[1] : '';
+          
+          // Mac手动下载强制使用.dmg文件（yml中的.zip是给自动更新用的）
+          if (os === 'mac' && fileName.endsWith('.zip')) {
+            fileName = fileName.replace(/\.zip$/, '.dmg');
+          }
           
           // 构建完整的下载URL
           const downloadUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/${fileName}`;
@@ -202,12 +236,15 @@ export default {
           link.click();
           document.body.removeChild(link);
           
-          this.$message.success(`开始下载最新版本 ${version}`);
+          this.$message.success(`开始下载${osText}版 ${version}`);
         } catch (fetchError) {
-          this.$message.success('开始下载迪大圣Windows版');
+          loading.close();
+          console.error('获取版本信息失败:', fetchError);
+          this.$message.warning(`无法获取最新版本信息，请联系管理员`);
         }
       } catch (error) {
         console.error('下载失败:', error);
+        this.$message.error('下载失败，请稍后重试');
       }
     },
     jumpApi() {
