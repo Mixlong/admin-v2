@@ -74,9 +74,10 @@
         <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
           <el-select v-model="searchForm[field.key]" placeholder="请选择异常状态" clearable size="mini" @change="handleSearch">
             <el-option label="待处理" :value="1" />
-            <el-option label="处理中" :value="2" />
-            <el-option label="已完善" :value="3" />
-            <el-option label="已确认" :value="4" />
+            <el-option label="原因分析中" :value="2" />
+            <el-option label="对策制定中" :value="3" />
+            <el-option label="已关闭" :value="5" />
+            <el-option label="已关闭" :value="6" />
           </el-select>
         </el-form-item>
       </template>
@@ -127,13 +128,19 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="computerName" label="产品型号" align="center" width="180">
+          <template slot-scope="scope">
+            <span>{{ scope.row.computerName || '--' }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="productionLine" label="线号" align="center" width="100">
           <template slot-scope="scope">
             <span>{{ scope.row.productionLine || '--' }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="customerModel" label="机型" align="center" width="120">
+        <el-table-column prop="customerModel" label="机型" align="center" width="100">
           <template slot-scope="scope">
             <span>{{ scope.row.customerModel || '--' }}</span>
           </template>
@@ -164,7 +171,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="defectRate" label="不良率" align="center" width="100">
+        <el-table-column prop="defectRate" label="不良率" align="center" width="80">
           <template slot-scope="scope">
             <span>{{ scope.row.defectRate || '0' }}</span>
           </template>
@@ -177,10 +184,28 @@
             </el-tag>
           </template>
         </el-table-column>
-
-        <el-table-column prop="responsibility" label="责任归属部门" align="center" width="150">
+        
+        <el-table-column prop="responsiblePerson" label="责任人" align="center" width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.responsibility || '--' }}</span>
+            <span>{{ scope.row.responsiblePerson || '--' }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="measurePerson" label="对策人员" align="center" width="100">
+          <template slot-scope="scope">
+            <span>{{ scope.row.measurePerson || '--' }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="analysisPerson" label="分析人员" align="center" width="100">
+          <template slot-scope="scope">
+            <span>{{ scope.row.analysisPerson || '--' }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="confirmer" label="效果确认人" align="center" width="100">
+          <template slot-scope="scope">
+            <span>{{ scope.row.confirmer || '--' }}</span>
           </template>
         </el-table-column>
 
@@ -190,18 +215,73 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="220" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button size="mini" type="text" icon="el-icon-view" @click="handleView(scope.row)">查看</el-button>
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
+            
+            <!-- 管理员可以编辑 -->
+            <el-button 
+              v-if="isAdmin"
+              size="mini" 
+              type="text" 
+              icon="el-icon-edit" 
+              @click="handleEdit(scope.row)">
+              编辑
+            </el-button>
+            
+            <!-- 分析人员：待处理状态下填写原因分析 -->
             <el-button
-              v-if="canModifyStatus(scope.row)"
+              v-if="isRowAnalysisPerson(scope.row) && scope.row.exceptionStatus === 1"
               size="mini"
               type="text"
-              icon="el-icon-setting"
-              @click="handleModifyStatus(scope.row)"
+              icon="el-icon-edit-outline"
+              @click="handleProjectAnalysis(scope.row)"
             >
-              修改状态
+              原因分析
+            </el-button>
+            
+            <!-- 对策人员：原因分析状态下填写临时对策 -->
+            <el-button
+              v-if="isRowMeasurePerson(scope.row) && scope.row.exceptionStatus === 2 && !scope.row.temporaryMeasures"
+              size="mini"
+              type="text"
+              icon="el-icon-document-add"
+              @click="handleFillTemporaryMeasures(scope.row)"
+            >
+              临时对策
+            </el-button>
+            
+            <!-- 责任人：对策制定中状态下长期对策 -->
+            <el-button
+              v-if="isRowResponsiblePerson(scope.row) && scope.row.exceptionStatus === 3 && !scope.row.longTermImprovement"
+              size="mini"
+              type="text"
+              icon="el-icon-document-checked"
+              @click="handleFillLongTermMeasures(scope.row)"
+            >
+              长期对策
+            </el-button>
+            
+            <!-- 确认人：确认效果 -->
+            <el-button
+              v-if="isRowConfirmer(scope.row) && scope.row.exceptionStatus == 4 && !scope.row.effectConfirmation"
+              size="mini"
+              type="text"
+              icon="el-icon-circle-check"
+              @click="handleConfirmEffect(scope.row)"
+            >
+              确认效果
+            </el-button>
+            
+            <!-- 创建人：关闭任务 -->
+            <el-button
+              v-if="isRowCreator(scope.row) && scope.row.exceptionStatus === 5"
+              size="mini"
+              type="text"
+              icon="el-icon-close"
+              @click="handleCloseIssue(scope.row)"
+            >
+              关闭
             </el-button>
           </template>
         </el-table-column>
@@ -237,73 +317,110 @@
       @edit="handleEditFromView"
     />
 
+    <!-- 原因分析对话框 -->
+    <AnalysisDialog
+      :visible.sync="analysisDialogVisible"
+      :issue-data="analysisData"
+      @success="handleDialogSuccess"
+    />
+
     <!-- 修改状态弹窗 -->
     <el-dialog
-      title="修改异常状态"
+      :title="statusDialogTitle"
       :visible.sync="statusDialogVisible"
-      width="600px"
-      top="0vh"
+      width="800px"
+      top="5vh"
       :close-on-click-modal="false"
     >
-      <el-form ref="statusForm" :model="statusForm" :rules="statusRules" label-width="100px">
-        <el-form-item label="异常状态" prop="exceptionStatus">
-          <el-select v-model="statusForm.exceptionStatus" placeholder="请选择异常状态" style="width: 100%">
-            <!-- 管理员和部门负责人可以选择的状态 -->
-            <el-option v-if="canModifyGeneralStatus()" label="处理中" :value="2" />
-            <el-option v-if="canModifyGeneralStatus()" label="已完善" :value="3" />
-            <!-- 确认人和管理员可以选择确认状态 -->
-            <el-option
-              v-if="canConfirmStatus()"
-              label="已确认"
-              :value="4"
-            />
-            <el-option v-if="canModifyGeneralStatus()" label="已关闭" :value="5" />  
-          </el-select>
-        </el-form-item>
+      <el-form ref="statusForm" :model="statusForm" :rules="statusRules" label-width="120px">
 
-        <!-- 当状态为处理中时，显示改善措施字段 -->
-        <el-form-item
-          v-if="statusForm.exceptionStatus === 2"
-          label="临时措施"
-          prop="temporaryMeasures"
-        >
-          <el-input
-            v-model="statusForm.temporaryMeasures"
-            type="textarea"
-            :rows="4"
-            placeholder="请描述为控制问题影响而采取的紧急应对措施"
-            style="width: 100%"
-          />
-        </el-form-item>
+        <!-- 对策人员临时对策：原因分析(2) -> 对策制定中(3) -->
+        <template v-if="currentOperation === 'fillTemporaryMeasures'">
+          <!-- 展示上一环节：原因分析 -->
+          <el-form-item label="原因分析 ">
+            <div class="readonly-content" v-html="currentStatusRow.causeAnalysis || '未填写'"></div>
+          </el-form-item>
+          
+          <el-divider></el-divider>
+          
+          <!-- 当前环节：临时对策 -->
+          <el-form-item
+            label="临时对策"
+            prop="temporaryMeasures"
+          >
+            <Editor 
+              v-model="statusForm.temporaryMeasures" 
+              :min-height="200" 
+              placeholder="请描述为控制问题影响而采取的紧急应对措施"
+              :config="editorConfig">
+            </Editor>
+          </el-form-item>
+        </template>
 
-        <el-form-item
-          v-if="statusForm.exceptionStatus === 2"
-          label="长期改善对策"
-          prop="longTermImprovement"
-        >
-          <el-input
-            v-model="statusForm.longTermImprovement"
-            type="textarea"
-            :rows="4"
-            placeholder="请制定长期的改善对策，防止问题再次发生"
-            style="width: 100%"
-          />
-        </el-form-item>
+        <!-- 责任人填写长期改善对策：状态保持为已完善(3) -->
+        <template v-if="currentOperation === 'fillLongTermMeasures'">
+          <!-- 展示上一环节：原因分析 -->
+          <el-form-item label="原因分析 ">
+            <div class="readonly-content" v-html="currentStatusRow.causeAnalysis || '未填写'"></div>
+          </el-form-item>
+          
+          <!-- 展示上一环节：临时对策 -->
+          <el-form-item label="临时对策 ">
+            <div class="readonly-content" v-html="currentStatusRow.temporaryMeasures || '未填写'"></div>
+          </el-form-item>
+          
+          <el-divider></el-divider>
+          
+          <!-- 当前环节：填写长期改善对策 -->
+          <el-form-item
+            label="长期改善对策"
+            prop="longTermImprovement"
+          >
+            <Editor 
+              v-model="statusForm.longTermImprovement" 
+              :min-height="200" 
+              placeholder="请制定长期的改善对策，防止问题再次发生"
+              :config="editorConfig">
+            </Editor>
+          </el-form-item>
+        </template>
 
-        <!-- 当选择已确认状态时，显示确认效果录入字段 -->
-        <el-form-item
-          v-if="statusForm.exceptionStatus === 4"
-          label="确认效果"
-          prop="effectConfirmation"
-        >
-          <el-input
-            v-model="statusForm.effectConfirmation"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入确认效果"
-            style="width: 100%"
-          />
-        </el-form-item>
+        <!-- 已确认状态：显示效果确认 - 由确认人填写 -->
+        <template v-if="currentOperation === 'confirmEffect'">
+          <!-- 展示上一环节：原因分析 -->
+          <el-form-item label="原因分析 ">
+            <div class="readonly-content" v-html="currentStatusRow.causeAnalysis || '未填写'"></div>
+          </el-form-item>
+          
+          <!-- 展示上一环节：临时对策 -->
+          <el-form-item label="临时对策 ">
+            <div class="readonly-content" v-html="currentStatusRow.temporaryMeasures || '未填写'"></div>
+          </el-form-item>
+          
+          <!-- 展示上一环节：长期改善对策 -->
+          <el-form-item label="长期改善对策 ">
+            <div class="readonly-content" v-html="currentStatusRow.longTermImprovement || '未填写'"></div>
+          </el-form-item>
+          
+          <el-divider></el-divider>
+          
+          <!-- 当前环节：填写效果确认 -->
+          <el-form-item
+            label="效果确认"
+            prop="effectConfirmation"
+          >
+            <Editor 
+              v-model="statusForm.effectConfirmation" 
+              :min-height="200" 
+              placeholder="请输入确认效果"
+              :read-only="!isConfirmer && !isAdmin"
+              :config="editorConfig">
+            </Editor>
+            <div v-if="!isConfirmer && !isAdmin" style="color: #E6A23C; font-size: 12px; margin-top: 5px;">
+              <i class="el-icon-warning"></i> 此字段只能由确认人（{{ currentStatusRow.confirmer || '未指定' }}）填写
+            </div>
+          </el-form-item>
+        </template>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="handleStatusDialogClose">取 消</el-button>
@@ -316,6 +433,7 @@
 <script>
 import AddIssueDialog from './components/AddIssueDialog'
 import ViewIssueDialog from './components/ViewIssueDialog'
+import AnalysisDialog from './components/AnalysisDialog'
 import {
 
   getQualityIssueList,
@@ -326,16 +444,29 @@ import {
 import { afterCategoryList } from '@/api/third/sale'
 import { getDicts } from '@/api/system/dict/data'
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
+import Editor from '@/components/Editor'
 import { mapGetters } from "vuex"
 export default {
   name: 'QualityIssue',
   components: {
     AddIssueDialog,
     ViewIssueDialog,
-    IntelligentSearchForm
+    AnalysisDialog,
+    IntelligentSearchForm,
+    Editor
   },
   data() {
     return {
+      // 富文本编辑器配置
+      editorConfig: {
+        height: 200,
+        menubar: false,
+        toolbar: 'bold italic underline | bullist numlist | removeformat',
+        plugins: 'lists',
+        statusbar: false,
+        resize: false,
+        branding: false
+      },
       // 搜索表单
       searchForm: {
         orderNo: '',
@@ -360,16 +491,20 @@ export default {
       // 弹窗控制
       addDialogVisible: false,
       viewDialogVisible: false,
+      analysisDialogVisible: false,
       // 编辑数据
       editData: null,
       viewData: null,
+      analysisData: null,
       // 是否查看模式
       isViewMode: false,
       // 修改状态对话框控制
       statusDialogVisible: false,
+      statusDialogTitle: '修改异常状态', // 对话框标题
+      currentOperation: '', // 当前操作类型：fillTemporaryMeasures | fillLongTermMeasures | confirmEffect
       statusForm: {
         id: null,
-        exceptionStatus: '',
+        exceptionStatus: null,
         temporaryMeasures: '',
         longTermImprovement: '',
         effectConfirmation: ''
@@ -380,13 +515,55 @@ export default {
           { required: true, message: '请选择异常状态', trigger: 'change' }
         ],
         temporaryMeasures: [
-          { required: true, message: '请输入临时措施', trigger: 'blur' }
+          { 
+            validator: (rule, value, callback) => {
+              // 对策人员临时对策时验证
+              if (this.currentOperation === 'fillTemporaryMeasures') {
+                if (!value || value.trim() === '') {
+                  callback(new Error('请输入临时对策'))
+                } else {
+                  callback()
+                }
+              } else {
+                callback()
+              }
+            }, 
+            trigger: 'blur' 
+          }
         ],
         longTermImprovement: [
-          { required: true, message: '请输入长期改善对策', trigger: 'blur' }
+          { 
+            validator: (rule, value, callback) => {
+              // 责任人填写长期改善对策时验证
+              if (this.currentOperation === 'fillLongTermMeasures') {
+                if (!value || value.trim() === '') {
+                  callback(new Error('请输入长期改善对策'))
+                } else {
+                  callback()
+                }
+              } else {
+                callback()
+              }
+            }, 
+            trigger: 'blur' 
+          }
         ],
         effectConfirmation: [
-          { required: true, message: '请输入确认效果', trigger: 'blur' }
+          { 
+            validator: (rule, value, callback) => {
+              // 确认人确认效果时验证
+              if (this.currentOperation === 'confirmEffect') {
+                if (!value || value.trim() === '') {
+                  callback(new Error('请输入效果确认'))
+                } else {
+                  callback()
+                }
+              } else {
+                callback()
+              }
+            }, 
+            trigger: 'blur' 
+          }
         ]
       },
       // 当前操作的行数据
@@ -454,7 +631,30 @@ export default {
       'deptId',
       'deptName',
       'roles'
-    ])
+    ]),
+    // 判断当前用户是否为对策人员
+    isMeasurePerson() {
+      if (!this.currentStatusRow) return false
+      return this.nickName === this.currentStatusRow.measurePerson
+    },
+    // 判断当前用户是否为确认人
+    isConfirmer() {
+      if (!this.currentStatusRow) return false
+      return this.nickName === this.currentStatusRow.confirmer
+    },
+    // 判断当前用户是否为责任人
+    isResponsiblePerson() {
+      if (!this.currentStatusRow) return false
+      return this.nickName === this.currentStatusRow.responsiblePerson
+    },
+    // 判断当前用户是否可以长期对策（仅责任人）
+    canFillLongTermMeasures() {
+      return this.isResponsiblePerson
+    },
+    // 判断当前用户是否为管理员
+    isAdmin() {
+      return this.nickName === 'admin' || (this.roles && this.roles.some(role => role.includes('admin')))
+    }
   },
   created() {
     this.fetchData()
@@ -463,7 +663,7 @@ export default {
   },
   methods: {
     // 获取列表数据
-    fetchData() {
+    async fetchData() {
       this.loading = true
 
       // 过滤空值参数
@@ -484,6 +684,12 @@ export default {
         if (res.code === 200) {
           this.tableData = res.data?.list || []
           this.pagination.total = res.data?.total || 0
+          // 调试：打印第一条数据的所有字段
+          if (this.tableData.length > 0) {
+            console.log('第一条数据的所有字段:', Object.keys(this.tableData[0]))
+            console.log('第一条数据:', this.tableData[0])
+            console.log('当前用户 nickName:', this.nickName)
+          }
           // 同步分页信息
           if (res.data?.pageNum) this.pagination.current = res.data.pageNum
           if (res.data?.pageSize) this.pagination.size = res.data.pageSize
@@ -578,8 +784,8 @@ export default {
     },
 
     // 弹窗成功回调
-    handleDialogSuccess() {
-      this.fetchData()
+    async handleDialogSuccess() {
+      await this.fetchData()
     },
 
     // 从查看详情切换到编辑
@@ -592,11 +798,12 @@ export default {
     // 获取状态类型
     getStatusType(status) {
       const statusMap = {
-        1: 'warning', // 待处理
-        2: 'primary', // 处理中
-        3: 'success', // 已完善
-        4: 'info', // 已确认
-        5: 'info' // 已关闭
+        1: 'info', // 待处理
+        2: 'warning', // 原因分析
+        3: 'primary', // 对策制定中（对策人员填写临时对策）
+        4: 'primary', // 对策制定中（责任人长期对策）
+        5: 'info', // 已关闭
+        6: 'info' // 已关闭
       }
       return statusMap[status] || 'info'
     },
@@ -605,10 +812,11 @@ export default {
     getStatusText(status) {
       const statusMap = {
         1: '待处理',
-        2: '处理中',
-        3: '已完善',
-        4: '已确认',
-        5: '已关闭'
+        2: '原因分析中',
+        3: '对策制定中',
+        4: '对策制定中',
+        5: '已关闭',
+        6: '已关闭'
       }
       return statusMap[status] || '未知'
     },
@@ -806,34 +1014,41 @@ export default {
       // 保存当前操作的行数据，用于权限检查
       this.currentStatusRow = { ...row }
 
+      // 加载已有的字段内容
+      this.statusForm.temporaryMeasures = row.temporaryMeasures || ''
+      this.statusForm.longTermImprovement = row.longTermImprovement || ''
+      this.statusForm.effectConfirmation = row.effectConfirmation || ''
+
       // 等待下一个tick后再设置默认值，确保权限检查方法可以正确执行
       this.$nextTick(() => {
-        // 如果确认人只能确认（只有已确认选项），默认设置为已确认状态
-        if (this.canConfirmStatus() && !this.canModifyGeneralStatus()) {
-          this.statusForm.exceptionStatus = '4' // 已确认
-          console.log('确认人默认设置状态为已确认')
-        } else {
-          // 默认选中下一个状态（当前状态+1），最大为4
+        // 管理员可以选择任何状态，默认为下一状态
+        if (this.isAdmin) {
           const currentStatus = parseInt(row.exceptionStatus) || 1
           const nextStatus = Math.min(currentStatus + 1, 4)
-          this.statusForm.exceptionStatus = nextStatus
-          console.log(`当前状态: ${currentStatus}, 默认选择下一状态: ${nextStatus}`)
+          this.statusForm.exceptionStatus = Number(nextStatus)
+        } else {
+          // 普通用户根据角色自动设置，不可修改
+          const currentStatus = parseInt(row.exceptionStatus) || 1
+          const nextStatus = Math.min(currentStatus + 1, 4)
+          this.statusForm.exceptionStatus = Number(nextStatus)
         }
       })
       
-      console.log("🚀 ~ file: index.vue:804 ~ this.statusForm.exceptionStatus:", this.statusForm.exceptionStatus)
       this.statusDialogVisible = true
     },
 
     // 关闭状态修改对话框
     handleStatusDialogClose() {
       this.statusDialogVisible = false
+      this.statusDialogTitle = '修改异常状态' // 重置标题
+      this.currentOperation = '' // 重置操作类型
       this.currentStatusRow = null
       // 重置表单
       if (this.$refs.statusForm) {
         this.$refs.statusForm.resetFields()
       }
       // 重置所有字段
+      this.statusForm.exceptionStatus = null
       this.statusForm.temporaryMeasures = ''
       this.statusForm.longTermImprovement = ''
       this.statusForm.effectConfirmation = ''
@@ -853,23 +1068,34 @@ export default {
             exceptionStatus: this.statusForm.exceptionStatus
           }
 
-          // 如果选择的是处理中状态，需要传递改善措施
-          if (this.statusForm.exceptionStatus === 2) {
-            params.temporaryMeasures = this.statusForm.temporaryMeasures
-            params.longTermImprovement = this.statusForm.longTermImprovement
+          // 根据当前操作类型添加对应字段
+          if (this.currentOperation === 'fillTemporaryMeasures') {
+            // 对策人员临时对策
+            if (this.statusForm.temporaryMeasures) {
+              params.temporaryMeasures = this.statusForm.temporaryMeasures
+            }
+          } else if (this.currentOperation === 'fillLongTermMeasures') {
+            // 责任人填写长期改善对策
+            if (this.statusForm.longTermImprovement) {
+              params.longTermImprovement = this.statusForm.longTermImprovement
+            }
+          } else if (this.currentOperation === 'confirmEffect') {
+            // 确认人确认效果
+            if (this.statusForm.effectConfirmation) {
+              params.effectConfirmation = this.statusForm.effectConfirmation
+            }
           }
 
-          // 如果选择的是已确认状态，需要传递确认效果
-          if (this.statusForm.exceptionStatus === 4) {
-            params.effectConfirmation = this.statusForm.effectConfirmation
-          }
+          console.log('提交参数:', params)
 
           const response = await updateQualityIssue(params)
 
           if (response.code === 200) {
             this.$message.success('状态修改成功')
+            // 先关闭对话框
             this.handleStatusDialogClose()
-            this.fetchData() // 刷新列表数据
+            // 等待数据刷新完成
+            await this.fetchData()
           } else {
             this.$message.error(response.msg || '状态修改失败')
           }
@@ -878,6 +1104,148 @@ export default {
           this.$message.error('修改状态失败')
         }
       })
+    },
+
+    // 判断当前用户是否为某行的分析人员
+    isRowAnalysisPerson(row) {
+      return this.nickName === row.analysisPerson
+    },
+    
+    // 判断当前用户是否为某行的对策人员
+    isRowMeasurePerson(row) {
+      return this.nickName === row.measurePerson
+    },
+    
+    // 判断当前用户是否为某行的确认人
+    isRowConfirmer(row) {
+      return this.nickName === row.confirmer
+    },
+    
+    // 判断当前用户是否为某行的责任人
+    isRowResponsiblePerson(row) {
+      return this.nickName === row.responsiblePerson
+    },
+    
+    // 判断当前用户是否可以填写某行的长期措施（仅责任人）
+    canRowFillLongTermMeasures(row) {
+      return this.isRowResponsiblePerson(row)
+    },
+    
+    // 判断当前用户是否为某行的创建人
+    isRowCreator(row) {
+      // 检查 createBy 或 creator 字段
+      const isCreator = this.nickName === row.createBy || this.nickName === row.creator
+      console.log(`isRowCreator 检查: 当前用户=${this.nickName}, row.createBy=${row.createBy}, row.creator=${row.creator}, status=${row.exceptionStatus}, 结果=${isCreator}`)
+      return isCreator
+    },
+    
+    // 处理原因分析
+    handleProjectAnalysis(row) {
+      this.analysisData = { ...row }
+      this.analysisDialogVisible = true
+    },
+    
+    // 对策人员填写临时对策：原因分析(2) -> 对策制定中(3)
+    handleFillTemporaryMeasures(row) {
+      this.statusDialogTitle = '临时对策'
+      this.currentOperation = 'fillTemporaryMeasures' // 设置当前操作类型
+      // 从表格数据中获取最新的行数据
+      const latestRow = this.tableData.find(item => item.id === row.id) || row
+      this.currentStatusRow = { ...latestRow }
+      this.statusForm.id = latestRow.id
+      this.statusForm.exceptionStatus = 3 // 填写后更新为对策制定中(3)
+      this.statusForm.temporaryMeasures = latestRow.temporaryMeasures || ''
+      this.statusForm.longTermImprovement = latestRow.longTermImprovement || ''
+      this.statusForm.effectConfirmation = latestRow.effectConfirmation || ''
+      
+      console.log('填写临时对策 - 最新数据:', {
+        causeAnalysis: latestRow.causeAnalysis,
+        temporaryMeasures: latestRow.temporaryMeasures
+      })
+      
+      this.statusDialogVisible = true
+    },
+    
+    // 责任人填写长期改善对策：对策制定中(3) -> 对策制定中(4)
+    handleFillLongTermMeasures(row) {
+      this.statusDialogTitle = '填写长期改善对策'
+      this.currentOperation = 'fillLongTermMeasures' // 设置当前操作类型
+      // 从表格数据中获取最新的行数据
+      const latestRow = this.tableData.find(item => item.id === row.id) || row
+      this.currentStatusRow = { ...latestRow }
+      this.statusForm.id = latestRow.id
+      this.statusForm.exceptionStatus = 4 // 状态保持为对策制定中(4)
+      this.statusForm.temporaryMeasures = latestRow.temporaryMeasures || ''
+      this.statusForm.longTermImprovement = latestRow.longTermImprovement || ''
+      this.statusForm.effectConfirmation = latestRow.effectConfirmation || ''
+      
+      console.log('长期对策 - 最新数据:', {
+        causeAnalysis: latestRow.causeAnalysis,
+        temporaryMeasures: latestRow.temporaryMeasures,
+        longTermImprovement: latestRow.longTermImprovement
+      })
+      
+      this.statusDialogVisible = true
+    },
+    
+    // 确认人确认效果：对策制定中(4) -> 已关闭(5)
+    handleConfirmEffect(row) {
+      this.statusDialogTitle = '确认效果'
+      this.currentOperation = 'confirmEffect' // 设置当前操作类型
+      // 从表格数据中获取最新的行数据
+      const latestRow = this.tableData.find(item => item.id === row.id) || row
+      this.currentStatusRow = { ...latestRow }
+      this.statusForm.id = latestRow.id
+      this.statusForm.exceptionStatus = 5 // 更新为已关闭(5)
+      this.statusForm.temporaryMeasures = latestRow.temporaryMeasures || ''
+      this.statusForm.longTermImprovement = latestRow.longTermImprovement || ''
+      this.statusForm.effectConfirmation = latestRow.effectConfirmation || ''
+      
+      console.log('确认效果 - 最新数据:', {
+        causeAnalysis: latestRow.causeAnalysis,
+        temporaryMeasures: latestRow.temporaryMeasures,
+        longTermImprovement: latestRow.longTermImprovement,
+        effectConfirmation: latestRow.effectConfirmation
+      })
+      
+      this.statusDialogVisible = true
+    },
+    
+    // 创建人关闭任务：已关闭(5) -> 已关闭(6)
+    handleCloseIssue(row) {
+      this.$modal.confirm('确认要关闭这个质量问题吗？').then(() => {
+        const params = {
+          id: row.id,
+          exceptionStatus: 6, // 更新为已关闭(6)
+          updateTime: this.formatDateTime(new Date())
+        }
+        
+        updateQualityIssue(params).then(res => {
+          if (res.code === 200) {
+            this.$message.success('关闭成功')
+            this.fetchData() // 刷新列表数据
+          } else {
+            this.$message.error(res.msg || '关闭失败')
+          }
+        }).catch(() => {
+          this.$message.error('关闭失败')
+        })
+      }).catch(() => {
+        // 用户取消操作
+      })
+    },
+    
+    // 格式化日期时间为后端期望的格式 yyyy-MM-dd HH:mm:ss
+    formatDateTime(date) {
+      if (!date) return ''
+      const d = new Date(date)
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      const seconds = String(d.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     },
 
     // 导出质量异常数据
@@ -920,6 +1288,46 @@ export default {
 .pagination-section {
   margin-top: 20px;
   text-align: right;
+}
+
+/* 只读内容显示样式 */
+.readonly-content {
+  padding: 12px;
+  background-color: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  color: #606266;
+  line-height: 1.6;
+  min-height: 50px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.readonly-content p {
+  margin: 0 0 8px 0;
+}
+
+.readonly-content p:last-child {
+  margin-bottom: 0;
+}
+
+.readonly-content ul,
+.readonly-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.readonly-content li {
+  margin: 4px 0;
+}
+
+.readonly-content strong {
+  font-weight: bold;
+  color: #303133;
+}
+
+.readonly-content em {
+  font-style: italic;
 }
 </style>
 

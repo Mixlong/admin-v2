@@ -9,7 +9,13 @@
     class="add-issue-dialog"
     top="0vh">
     
+    <!-- 数据加载提示 -->
+    <div v-if="!dataReady" v-loading="true" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+      <span>加载中...</span>
+    </div>
+    
     <el-form 
+      v-if="dataReady"
       :model="form" 
       :rules="rules" 
       ref="form" 
@@ -46,6 +52,29 @@
           </el-col>
           
           <el-col :span="8">
+            <el-form-item label="产品型号" prop="computerId">
+              <el-select 
+                v-model="form.computerId" 
+                :loading="computerLoading"
+                filterable 
+                remote 
+                clearable
+                placeholder="请选择产品型号"
+                :disabled="isView"
+                :remote-method="getComputerNameList"
+                @focus="getComputerData"
+                style="width: 100%">
+                <el-option
+                  v-for="dict in computerOptions"
+                  :key="dict.model"
+                  :label="dict.name"
+                  :value="dict.model">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          
+          <el-col :span="8">
             <el-form-item label="线号" prop="productionLine">
               <el-select 
                 v-model="form.productionLine" 
@@ -62,7 +91,9 @@
               </el-select>
             </el-form-item>
           </el-col>
-          
+        </el-row>
+        
+        <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="日期" prop="issueDate">
               <el-date-picker
@@ -72,13 +103,12 @@
                 :disabled="isView"
                 format="yyyy-MM-dd"
                 value-format="yyyy-MM-dd"
+                :picker-options="pickerOptions"
                 style="width: 100%">
               </el-date-picker>
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row :gutter="20">
+          
           <el-col :span="8">
             <el-form-item label="不良数量" prop="defectQuantity">
               <el-input-number 
@@ -101,23 +131,10 @@
                 style="width: 100%">
               </el-input-number>
             </el-form-item>
-            </el-col>
-          </el-row>
+          </el-col>
+        </el-row>
           
           <el-row :gutter="20">
-            <el-col :span="8">
-              <el-form-item label="措施人员" prop="measurePerson">
-                <TypedSelectLoadMore 
-                  v-model="form.measurePerson" 
-                  type="user"
-                  placeholder="请选择措施人员"
-                  :disabled="isView"
-                  clearable
-                  customStyle="width: 100%">
-                </TypedSelectLoadMore>
-              </el-form-item>
-            </el-col>
-            
             <el-col :span="8">
               <el-form-item label="分析人员" prop="analysisPerson">
                 <TypedSelectLoadMore 
@@ -130,33 +147,6 @@
                 </TypedSelectLoadMore>
               </el-form-item>
             </el-col>
-            
-            <el-col :span="8">
-              <el-form-item label="确认人" prop="confirmer">
-                <TypedSelectLoadMore 
-                  v-model="form.confirmer" 
-                  type="user"
-                  placeholder="请选择确认人"
-                  :disabled="isView"
-                  clearable
-                  customStyle="width: 100%">
-                </TypedSelectLoadMore>
-              </el-form-item>
-            </el-col>
-            <!-- <el-col :span="8">
-              <el-form-item label="责任部门" prop="responsibility">
-                <treeselect 
-                  v-model="form.responsibilityDeptId" 
-                  :options="deptOptions" 
-                  :disable-branch-nodes="true"
-                  placeholder="请选择责任部门" 
-                  :clearable="true" 
-                  :searchable="true" 
-                  :disabled="isView"
-                  @input="handleDeptChange"
-                  :loading="deptLoading" />
-              </el-form-item>
-            </el-col> -->
           </el-row>
         </div>
       </fieldset>
@@ -179,61 +169,6 @@
             </el-col>
           </el-row>
         
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-form-item label="原因分析" prop="causeAnalysis">
-              <Editor 
-                v-model="form.causeAnalysis" 
-                :min-height="150" 
-                :read-only="isView || !canEditCauseAnalysis"
-                placeholder="请分析问题产生的根本原因，可从人员、设备、方法、材料、环境等方面进行分析"
-                :config="editorConfig">
-              </Editor>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20" v-if="editMode">
-          <el-col :span="24">
-            <el-form-item label="临时措施" prop="temporaryMeasures">
-              <Editor 
-                v-model="form.temporaryMeasures" 
-                :min-height="150" 
-                :read-only="isView || !canEditTemporaryMeasures"
-                placeholder="请输入针对问题采取的临时处理措施"
-                :config="editorConfig">
-              </Editor>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20" v-if="editMode">
-          <el-col :span="24">
-            <el-form-item label="长期措施" prop="longTermImprovement">
-              <Editor 
-                v-model="form.longTermImprovement" 
-                :min-height="150" 
-                :read-only="isView || !canEditLongTermMeasures"
-                placeholder="请输入防止问题再次发生的长期改善措施"
-                :config="editorConfig">
-              </Editor>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20" v-if="editMode">
-          <el-col :span="24">
-            <el-form-item label="效果确认" prop="effectConfirmation">
-              <Editor 
-                v-model="form.effectConfirmation" 
-                :min-height="150" 
-                :read-only="isView || !canEditEffectConfirmation"
-                placeholder="请输入措施实施后的效果确认情况"
-                :config="editorConfig">
-              </Editor>
-            </el-form-item>
-          </el-col>
-          </el-row>
           <el-row :gutter="20">
           <el-col :span="24">
             <el-form-item label="问题图片" prop="problemImages">
@@ -310,10 +245,22 @@ export default {
     return {
       dialogVisible: false,
       loading: false,
+      dataReady: false, // 数据是否加载完成
       deptOptions: [],
       deptLoading: false,
       // 线号字典选项
       sopLineOptions: [],
+      // 产品型号相关
+      computerOptions: [],
+      computerAllOptions: [], // 保存所有产品型号数据
+      computerLoading: false,
+      // 日期选择器配置
+      pickerOptions: {
+        disabledDate(time) {
+          // 禁用今天之后的日期
+          return time.getTime() > Date.now()
+        }
+      },
       orderData: {
         data: [],
         page: 1,
@@ -332,12 +279,13 @@ export default {
       form: {
         id: '',
         orderNo: '',
+        computerId: '',
         productionLine: '',
         issueDate: '',
         problemDescription: '',
         defectQuantity: 0,
         productionQuantity: 0,
-        exceptionStatus: 1,
+        exceptionStatus: 1, // 新建时初始状态为待处理
         responsibility: '',
         responsibilityDeptId: null,
         causeAnalysis: '',
@@ -353,6 +301,9 @@ export default {
       rules: {
         orderNo: [
           { required: true, message: '请输入订单号', trigger: 'blur' }
+        ],
+        computerId: [
+          { required: true, message: '请选择产品型号', trigger: 'change' }
         ],
         productionLine: [
           { required: true, message: '请输入线号', trigger: 'blur' }
@@ -395,7 +346,7 @@ export default {
       // 编辑模式下，只有分析人员可以编辑
       return this.form.analysisPerson === this.nickName || !this.form.analysisPerson;
     },
-    // 是否可以编辑临时措施
+    // 是否可以编辑临时对策
     canEditTemporaryMeasures() {
       if (!this.editMode) return true; // 新增模式下可以编辑
       // 编辑模式下，只有措施人员可以编辑
@@ -404,8 +355,8 @@ export default {
     // 是否可以编辑长期措施
     canEditLongTermMeasures() {
       if (!this.editMode) return true; // 新增模式下可以编辑
-      // 编辑模式下，只有措施人员可以编辑
-      return this.form.measurePerson === this.nickName || !this.form.measurePerson;
+      // 编辑模式下，只有责任人可以编辑
+      return this.form.responsiblePerson === this.nickName;
     },
     // 是否可以编辑效果确认
     canEditEffectConfirmation() {
@@ -418,9 +369,18 @@ export default {
     visible(val) {
       this.dialogVisible = val
       if (val) {
-        this.initForm()
+        this.dataReady = false // 重置数据加载状态
+        
+        // 先加载字典数据
         this.loadDictData()
-        this.loadUserList()
+        
+        // 先加载产品型号数据，然后再初始化表单（确保回显正确）
+        this.getComputerData().then(() => {
+          // 产品型号数据加载完成后再初始化表单
+          this.initForm()
+          this.dataReady = true // 标记数据加载完成
+        })
+        
         // 先加载部门数据，然后在回调中设置部门回显
         this.getTreeselect().then(() => {
           // 部门数据加载完成后，设置编辑模式下的部门回显
@@ -428,6 +388,7 @@ export default {
             this.setDeptFromName(this.editData.responsibility)
           }
         })
+        
         // 重置滚动条到顶部
         this.$nextTick(() => {
           const dialogBody = document.querySelector('.add-issue-dialog .el-dialog__body')
@@ -457,6 +418,7 @@ export default {
         this.form = {
           id: this.editData.id || '',
           orderNo: this.editData.orderNo || '',
+          computerId: this.editData.computerId || '',
           productionLine: this.editData.productionLine || '',
           issueDate: this.editData.issueDate || '',
           problemDescription: this.editData.problemDescription || '',
@@ -469,6 +431,7 @@ export default {
           measurePerson: this.editData.measurePerson || '',
           analysisPerson: this.editData.analysisPerson || '',
           confirmer: this.editData.confirmer || '',
+          responsiblePerson: this.editData.responsiblePerson || '',
           effectConfirmation: this.editData.effectConfirmation || '',
           problemImages: this.editData.problemImages || '',
           temporaryMeasures: this.editData.temporaryMeasures || '',
@@ -480,18 +443,20 @@ export default {
         this.form = {
           id: '',
           orderNo: '',
+          computerId: '',
           productionLine: '',
           issueDate: '',
           problemDescription: '',
           defectQuantity: 0,
           productionQuantity: 0,
-          exceptionStatus: 1,
+          exceptionStatus: 1, // 新建时初始状态为待处理
           responsibility: '',
           responsibilityDeptId: null,
           causeAnalysis: '',
           measurePerson: '',
           analysisPerson: '',
           confirmer: '',
+          responsiblePerson: '',
           effectConfirmation: '',
           problemImages: '',
           temporaryMeasures: '',
@@ -503,6 +468,7 @@ export default {
 
     // 取消
     handleCancel() {
+      this.dataReady = false
       this.dialogVisible = false
     },
 
@@ -536,7 +502,7 @@ export default {
         createTime: this.formatDateTime(new Date()),
         updateTime: this.formatDateTime(new Date())
       }
-      submitData.confirmer = this.nickName;
+      // 新增时不自动设置确认人，由分析人员在原因分析时指定
       addQualityIssue(submitData).then(res => {
         if (res.code === 200) {
           this.$message.success('创建成功')
@@ -576,6 +542,7 @@ export default {
 
     // 关闭弹窗
     handleClose() {
+      this.dataReady = false
       if (this.$refs.form) {
         this.$refs.form.resetFields()
       }
@@ -786,25 +753,49 @@ export default {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     },
 
-    // 加载用户列表
-    loadUserList() {
-      dictUserList().then((res) => {
-        // 对数据进行去重处理，避免重复键值问题
-        const uniqueUsers = [];
-        const userNameSet = new Set();
 
-        res.data.forEach(user => {
-          if (!userNameSet.has(user.userName)) {
-            userNameSet.add(user.userName);
-            uniqueUsers.push(user);
-          }
+    // 获取产品型号数据（焦点事件）
+    getComputerData() {
+      // 如果已经有数据，不重复加载
+      if (this.computerAllOptions.length > 0) {
+        this.computerOptions = [...this.computerAllOptions];
+        return Promise.resolve();
+      }
+      
+      this.computerLoading = true;
+      // 导入并调用产品型号字典API，获取所有数据
+      return import('@/api/computer/index').then(({ dictList }) => {
+        return dictList().then((res) => {
+          this.computerAllOptions = res.data || [];
+          this.computerOptions = [...this.computerAllOptions];
+        }).catch(() => {
+          this.computerAllOptions = [];
+          this.computerOptions = [];
+          console.error('获取产品型号失败');
+        }).finally(() => {
+          this.computerLoading = false;
         });
-
-        this.userListOptions = uniqueUsers;
-      }).catch(() => {
-        console.error('获取用户列表失败');
-        this.userListOptions = [];
       });
+    },
+
+    // 远程搜索产品型号（前端筛选）
+    getComputerNameList(name) {
+      if (!name) {
+        // 如果没有搜索词，显示所有数据
+        this.computerOptions = [...this.computerAllOptions];
+        return;
+      }
+      
+      // 如果还没有加载过数据，先加载
+      if (this.computerAllOptions.length === 0) {
+        this.getComputerData();
+        return;
+      }
+      
+      // 前端筛选：根据名称过滤，不修改原始数据
+      this.computerOptions = this.computerAllOptions.filter(item => 
+        item.name && item.name.toLowerCase().includes(name.toLowerCase())
+      );
     }
   }
 }

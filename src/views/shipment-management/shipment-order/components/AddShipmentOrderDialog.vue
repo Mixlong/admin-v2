@@ -42,12 +42,27 @@
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="按键型号" prop="keyModel">
-                <el-input v-model="form.keyModel" placeholder="请输入按键型号" clearable />
+                <TypedSelectLoadMore 
+                  v-model="form.keyModel" 
+                  type="category"
+                  placeholder="请选择按键型号" 
+                  clearable
+                  returnLabel
+                  customStyle="width: 100%;"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="客户订单号" prop="customerOrderNo">
                 <el-input v-model="form.customerOrderNo" placeholder="请输入客户订单号" clearable />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="E树订单号" prop="etreeOrderNo">
+                <el-input v-model="form.etreeOrderNo" placeholder="请输入E树订单号" clearable />
               </el-form-item>
             </el-col>
           </el-row>
@@ -121,6 +136,15 @@
                 <div class="detail-item">
                   <span class="detail-label">客户订单号</span>
                   <span class="detail-value">{{ form.customerOrderNo || '-' }}</span>
+                </div>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="40" class="detail-row">
+              <el-col :span="12">
+                <div class="detail-item">
+                  <span class="detail-label">E树订单号</span>
+                  <span class="detail-value">{{ form.etreeOrderNo || '-' }}</span>
                 </div>
               </el-col>
             </el-row>
@@ -350,9 +374,13 @@
 <script>
 import { addShipmentOrder, updateShipmentOrder } from '@/api/shipment-management/shipmentOrder.mock'
 import { checkPermi } from '@/utils/permission'
+import TypedSelectLoadMore from '@/components/TypedSelectLoadMore'
 
 export default {
   name: 'AddShipmentOrderDialog',
+  components: {
+    TypedSelectLoadMore
+  },
   props: {
     visible: {
       type: Boolean,

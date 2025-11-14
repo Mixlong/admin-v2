@@ -66,14 +66,14 @@
             </el-col>
             <el-col :span="8">
               <div class="info-item">
-                <label class="info-label">责任归属部门：</label>
-                <span class="info-value">{{ issueData.responsibility || '--' }}</span>
+                <label class="info-label">机型：</label>
+                <span class="info-value">{{ issueData.customerModel || '--' }}</span>
               </div>
             </el-col>
             <el-col :span="8">
               <div class="info-item">
-                <label class="info-label">机型：</label>
-                <span class="info-value">{{ issueData.customerModel || '--' }}</span>
+                <label class="info-label">产品型号：</label>
+                <span class="info-value">{{ issueData.computerName || '--' }}</span>
               </div>
             </el-col>
           </el-row>
@@ -83,6 +83,42 @@
               <div class="info-item">
                 <label class="info-label">物料编码：</label>
                 <span class="info-value">{{ issueData.materialNo || '--' }}</span>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </fieldset>
+      
+      <!-- 人员信息 -->
+      <fieldset class="form-fieldset">
+        <legend class="fieldset-legend">人员信息</legend>
+        <div class="fieldset-content">
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <div class="info-item">
+                <label class="info-label">分析人员：</label>
+                <span class="info-value">{{ issueData.analysisPerson || '--' }}</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div class="info-item">
+                <label class="info-label">措施人员：</label>
+                <span class="info-value">{{ issueData.measurePerson || '--' }}</span>
+              </div>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <div class="info-item">
+                <label class="info-label">项目责任人：</label>
+                <span class="info-value">{{ issueData.responsiblePerson || '--' }}</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div class="info-item">
+                <label class="info-label">效果确认人：</label>
+                <span class="info-value">{{ issueData.confirmer || '--' }}</span>
               </div>
             </el-col>
           </el-row>
@@ -126,7 +162,7 @@
           <el-row :gutter="20" v-if="issueData.temporaryMeasures">
             <el-col :span="24">
               <div class="info-item">
-                <label class="info-label">临时措施：</label>
+                <label class="info-label">临时对策：</label>
                 <div class="info-content" v-html="issueData.temporaryMeasures"></div>
               </div>
             </el-col>
@@ -274,10 +310,12 @@ export default {
     // 获取状态类型
     getStatusType(status) {
       const statusMap = {
-        1: 'warning', // 待处理
-        2: 'primary', // 处理中
-        3: 'success', // 已完善
-        4: 'info' // 已确认
+        1: 'info', // 待处理
+        2: 'warning', // 原因分析
+        3: 'primary', // 对策制定中
+        4: 'primary', // 对策制定中
+        5: 'info', // 已关闭
+        6: 'info' // 已关闭
       }
       return statusMap[status] || 'info'
     },
@@ -286,10 +324,11 @@ export default {
     getStatusText(status) {
       const statusMap = {
         1: '待处理',
-        2: '处理中',
-        3: '已完善',
-        4: '已确认',
-        5: '已关闭'
+        2: '原因分析中',
+        3: '对策制定中',
+        4: '对策制定中',
+        5: '已关闭',
+        6: '已关闭'
       }
       return statusMap[status] || '未知'
     },
