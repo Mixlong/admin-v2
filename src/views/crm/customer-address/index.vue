@@ -52,7 +52,7 @@
       @selection-change="handleSelectionChange"
       row-key="id"
       border
-      :height="tableHeight(30)"
+      :height="tableHeight(10)"
       class="crm-address-table"
     >
       <el-table-column
@@ -136,8 +136,11 @@
     <pagination
       v-show="total > 0"
       :total="total"
-      :page.sync="searchForm.pageNum"
-      :limit.sync="searchForm.pageSize"
+      :page.sync="searchForm.p"
+      :limit.sync="searchForm.l"
+      :ls="[10, 20, 30,50, 100]"
+      size="small"
+      layout="total, sizes, prev, pager, next, jumper"
       @pagination="handleSearch"
     />
 
@@ -187,8 +190,8 @@ export default {
       
       // 智能搜索表单
       searchForm: {
-        pageNum: 1,
-        pageSize: 10,
+        p: 1,
+        l: 30,
         customerId: null,
         contactName: null,
         contactPhone: null
@@ -289,15 +292,15 @@ export default {
 
     /** 智能搜索 */
     handleSearch() {
-      this.searchForm.pageNum = 1
+      this.searchForm.p = 1
       this.getList()
     },
 
     /** 重置搜索 */
     handleReset() {
       this.searchForm = {
-        pageNum: 1,
-        pageSize: 10,
+        p: 1,
+        l: 10,
         customerId: null,
         contactName: null,
         contactPhone: null
