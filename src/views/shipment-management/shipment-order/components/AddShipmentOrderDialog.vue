@@ -8,11 +8,137 @@
     @close="handleClose" 
     class="add-shipment-order-dialog"
   >
+    <!-- 模式切换 -->
+    <div class="mode-switch" v-if="!isEdit && hasMarketPermission">
+      <el-radio-group v-model="isQuickMode" size="small">
+        <el-radio-button :label="false">标准订单</el-radio-button>
+        <el-radio-button :label="true">快速订单</el-radio-button>
+      </el-radio-group>
+      <span class="mode-tip" v-if="isQuickMode">（适用于返修/返工等特殊订单，仅需填写基本信息）</span>
+    </div>
+
     <el-form :model="form" :rules="rules" ref="form" label-width="140px" size="small">
       
+      <!-- ==================== 快速订单模式 ==================== -->
+      <template v-if="isQuickMode && !isEdit">
+        <fieldset class="form-fieldset quick-order-fieldset">
+          <legend>快速订单信息</legend>
+          
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="订单类型" prop="orderType">
+                <el-select v-model="form.orderType" placeholder="请选择订单类型" style="width: 100%">
+                  <el-option label="售后返修" value="售后返修"></el-option>
+                  <el-option label="返工订单" value="返工订单"></el-option>
+                  <el-option label="其他特殊订单" value="其他特殊订单"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="客户名称" prop="customerName">
+                <el-input
+                  v-model="form.customerName"
+                  placeholder="请输入客户名称"
+                  clearable
+                  @keyup.enter.native="handleCustomerInputEnter"
+                >
+                  <el-button 
+                    slot="append" 
+                    icon="el-icon-search"
+                    @click="showCustomerOptions = !showCustomerOptions"
+                  ></el-button>
+                </el-input>
+                <!-- 客户选择下拉列表 -->
+                <el-select
+                  v-if="showCustomerOptions"
+                  v-model="form.customerName"
+                  filterable
+                  placeholder="或从列表选择"
+                  style="width: 100%; margin-top: 5px"
+                  clearable
+                  @change="showCustomerOptions = false"
+                >
+                  <el-option
+                    v-for="item in customerOptions"
+                    :key="item.value || item.name"
+                    :label="item.label || item.name"
+                    :value="item.value || item.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="产品型号" prop="configModel">
+                <el-select 
+                  v-model="form.configModel" 
+                  :loading="computerLoading"
+                  filterable 
+                  allow-create
+                  default-first-option
+                  remote 
+                  clearable
+                  placeholder="请选择或输入产品型号"
+                  :remote-method="getComputerNameList"
+                  @focus="getComputerData"
+                  style="width: 100%">
+                  <el-option
+                    v-for="dict in computerOptions"
+                    :key="dict.model"
+                    :label="dict.name"
+                    :value="dict.model">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="订单数量" prop="orderQuantity">
+                <el-input-number 
+                  v-model="form.orderQuantity" 
+                  :min="0" 
+                  :controls="true" 
+                  placeholder="请输入订单数量"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="交货计划" prop="deliveryPlan">
+                <el-date-picker 
+                  v-model="form.deliveryPlan" 
+                  type="date" 
+                  placeholder="请选择交货计划日期" 
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="24">
+              <el-form-item label="备注说明" prop="specialRemark">
+                <el-input 
+                  v-model="form.specialRemark" 
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入备注说明"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+      </template>
+      
+      <!-- ==================== 标准订单模式 ==================== -->
       <!-- ==================== 市场专员：新增/编辑订单 ==================== -->
       <!-- 市场专员可编辑表单，其他角色查看纯文本 -->
-      <template v-if="hasMarketPermission || (isEdit && (hasBomPermission || hasPmcPermission))">
+      <template v-if="(!isQuickMode || isEdit) && (hasMarketPermission || (isEdit && (hasBomPermission || hasPmcPermission)))">
         <fieldset class="form-fieldset market-fieldset" :class="{ 'readonly-text-fieldset': !hasMarketPermission && isEdit }">
           <legend v-if="!isEdit">订单基础信息</legend>
           <legend v-else-if="!hasMarketPermission">市场信息（只读）</legend>
@@ -33,8 +159,24 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="配置型号" prop="configModel">
-                <el-input v-model="form.configModel" placeholder="请输入配置型号" clearable />
+              <el-form-item label="产品型号" prop="configModel">
+                <el-select 
+                  v-model="form.configModel" 
+                  :loading="computerLoading"
+                  filterable 
+                  remote 
+                  clearable
+                  placeholder="请选择产品型号"
+                  :remote-method="getComputerNameList"
+                  @focus="getComputerData"
+                  style="width: 100%">
+                  <el-option
+                    v-for="dict in computerOptions"
+                    :key="dict.model"
+                    :label="dict.name"
+                    :value="dict.model">
+                  </el-option>
+                </el-select>
               </el-form-item>
             </el-col>
           </el-row>
@@ -65,9 +207,19 @@
                 <el-input v-model="form.etreeOrderNo" placeholder="请输入E树订单号" clearable />
               </el-form-item>
             </el-col>
+            <el-col :span="12">
+              <el-form-item label="U8单号" prop="u8OrderNo">
+                <el-input v-model="form.u8OrderNo" placeholder="请输入U8单号" clearable />
+              </el-form-item>
+            </el-col>
           </el-row>
 
           <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="BOM编码" prop="bomCode">
+                <el-input v-model="form.bomCode" placeholder="请输入BOM编码" clearable />
+              </el-form-item>
+            </el-col>
             <el-col :span="12">
               <el-form-item label="上单时间" prop="orderDate">
                 <el-date-picker 
@@ -79,6 +231,9 @@
                 />
               </el-form-item>
             </el-col>
+          </el-row>
+
+          <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="订单数量" prop="orderQuantity">
                 <el-input-number 
@@ -90,9 +245,6 @@
                 />
               </el-form-item>
             </el-col>
-          </el-row>
-
-          <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="交货计划" prop="deliveryPlan">
                 <el-date-picker 
@@ -119,7 +271,7 @@
               </el-col>
               <el-col :span="12">
                 <div class="detail-item">
-                  <span class="detail-label">配置型号</span>
+                  <span class="detail-label">产品型号</span>
                   <span class="detail-value">{{ form.configModel || '-' }}</span>
                 </div>
               </el-col>
@@ -147,24 +299,36 @@
                   <span class="detail-value">{{ form.etreeOrderNo || '-' }}</span>
                 </div>
               </el-col>
+              <el-col :span="12">
+                <div class="detail-item">
+                  <span class="detail-label">U8单号</span>
+                  <span class="detail-value">{{ form.u8OrderNo || '-' }}</span>
+                </div>
+              </el-col>
             </el-row>
 
             <el-row :gutter="40" class="detail-row">
+              <el-col :span="12">
+                <div class="detail-item">
+                  <span class="detail-label">BOM编码</span>
+                  <span class="detail-value">{{ form.bomCode || '-' }}</span>
+                </div>
+              </el-col>
               <el-col :span="12">
                 <div class="detail-item">
                   <span class="detail-label">上单时间</span>
                   <span class="detail-value">{{ form.orderDate || '-' }}</span>
                 </div>
               </el-col>
+            </el-row>
+
+            <el-row :gutter="40" class="detail-row">
               <el-col :span="12">
                 <div class="detail-item">
                   <span class="detail-label">订单数量</span>
                   <span class="detail-value">{{ form.orderQuantity || 0 }}</span>
                 </div>
               </el-col>
-            </el-row>
-
-            <el-row :gutter="40" class="detail-row">
               <el-col :span="12">
                 <div class="detail-item">
                   <span class="detail-label">交货计划</span>
@@ -185,39 +349,63 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="客供物料情况" prop="customerMaterial">
-                  <el-input 
-                    v-model="form.customerMaterial" 
-                    type="textarea"
-                    :rows="2"
-                    placeholder="请输入客供物料情况" 
+                  <el-select 
+                    v-model="form.customerMaterial"
+                    filterable
+                    allow-create
+                    default-first-option
+                    placeholder="请选择或输入客供物料情况"
                     clearable
-                  />
+                    multiple
+                    style="width: 100%"
+                  >
+                    <el-option label="/" value="/"></el-option>
+                    <el-option label="中控线" value="中控线"></el-option>
+                    <el-option label="按键线" value="按键线"></el-option>
+                    <el-option label="丝印保护膜" value="丝印保护膜"></el-option>
+                    <el-option label="蓝牙模块" value="蓝牙模块"></el-option>
+                    <el-option label="安全芯片" value="安全芯片"></el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="24">
                 <el-form-item label="到料时间" prop="customerMaterialArrival">
-                  <el-date-picker 
+                  <Editor 
                     v-model="form.customerMaterialArrival" 
-                    type="date" 
-                    placeholder="请选择到料时间" 
-                    value-format="yyyy-MM-dd"
-                    style="width: 100%"
+                    :min-height="150"
+                    placeholder="请输入到料时间信息"
+                    />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            
+   
+
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form-item label="特殊备注" prop="specialRemark">
+                  <Editor 
+                    v-model="form.specialRemark" 
+                    :min-height="200"
+                    placeholder="请输入特殊备注（支持图片）"
                   />
                 </el-form-item>
               </el-col>
             </el-row>
-
+            
             <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="特殊备注" prop="specialRemark">
-                  <el-input 
-                    v-model="form.specialRemark" 
-                    type="textarea" 
-                    :rows="2" 
-                    placeholder="请输入特殊备注"
+              <el-col :span="24">
+                <el-form-item label="交期变更履历" prop="deliveryChangeLog">
+                  <Editor 
+                    v-model="form.deliveryChangeLog" 
+                    :min-height="150"
+                    placeholder="请输入交期变更履历（支持富文本）"
                   />
                 </el-form-item>
               </el-col>
+            </el-row>
+            
+            <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="订单是否已回签" prop="orderSigned">
                   <el-switch v-model="form.orderSigned" />
@@ -245,12 +433,24 @@
               </el-row>
 
               <el-row :gutter="40" class="detail-row">
-                <el-col :span="12">
+                <el-col :span="24">
                   <div class="detail-item">
                     <span class="detail-label">特殊备注</span>
-                    <span class="detail-value">{{ form.specialRemark || '-' }}</span>
+                    <div class="detail-value" v-html="form.specialRemark || '-'"></div>
                   </div>
                 </el-col>
+              </el-row>
+
+              <el-row :gutter="40" class="detail-row">
+                <el-col :span="24">
+                  <div class="detail-item">
+                    <span class="detail-label">交期变更履历</span>
+                    <div class="detail-value" v-html="form.deliveryChangeLog || '-'"></div>
+                  </div>
+                </el-col>
+              </el-row>
+
+              <el-row :gutter="40" class="detail-row">
                 <el-col :span="12">
                   <div class="detail-item">
                     <span class="detail-label">订单是否已回签</span>
@@ -273,20 +473,6 @@
           <div class="sub-section-title">U8信息</div>
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-form-item label="BOM编码" prop="bomCode">
-                <el-input v-model="form.bomCode" placeholder="请输入BOM编码" clearable />
-              </el-form-item>
-              
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="U8单号" prop="u8OrderNo">
-                <el-input v-model="form.u8OrderNo" placeholder="请输入U8单号" clearable />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          
-          <el-row :gutter="20">
-            <el-col :span="12">
               <el-form-item label="U8是否可用" prop="u8Available">
                 <el-switch v-model="form.u8Available" />
               </el-form-item>
@@ -298,14 +484,13 @@
         <div class="sub-section">
           <div class="sub-section-title">E树信息</div>
           <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="E树订单号" prop="etreeOrderNo">
-                <el-input v-model="form.etreeOrderNo" placeholder="请输入E树订单号" clearable />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="E树BOM是否审核" prop="etreeBomAudited">
-                <el-switch v-model="form.etreeBomAudited" />
+            <el-col :span="24">
+              <el-form-item label="E树BOM审核状态" prop="etreeBomAudited">
+                <el-radio-group v-model="form.etreeBomAudited">
+                  <el-radio label="已审核">已审核</el-radio>
+                  <el-radio label="未审核">未审核</el-radio>
+                  <el-radio label="有遗留">有遗留</el-radio>
+                </el-radio-group>
               </el-form-item>
             </el-col>
           </el-row>
@@ -333,12 +518,10 @@
         <el-row :gutter="20">
           <el-col :span="24">
             <el-form-item label="PMC可达成交期" prop="pmcDeliveryDate">
-              <el-date-picker 
+              <Editor 
                 v-model="form.pmcDeliveryDate" 
-                type="date" 
-                placeholder="请选择PMC可达成交期" 
-                value-format="yyyy-MM-dd"
-                style="width: 100%"
+                :min-height="150"
+                placeholder="请输入PMC可达成交期（支持富文本）"
               />
             </el-form-item>
           </el-col>
@@ -375,11 +558,13 @@
 import { addShipmentOrder, updateShipmentOrder } from '@/api/shipment-management/shipmentOrder.mock'
 import { checkPermi } from '@/utils/permission'
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore'
+import Editor from '@/components/Editor'
 
 export default {
   name: 'AddShipmentOrderDialog',
   components: {
-    TypedSelectLoadMore
+    TypedSelectLoadMore,
+    Editor
   },
   props: {
     visible: {
@@ -407,7 +592,25 @@ export default {
     return {
       dialogVisible: false,
       submitLoading: false,
+      isQuickMode: false, // 快速订单模式
+      showCustomerOptions: false, // 显示客户选择下拉
+      // 产品型号相关
+      computerOptions: [],
+      computerAllOptions: [], // 保存所有产品型号数据
+      computerLoading: false,
+      // 到料时间选项
+      materialArrivalOptions: [
+        '蓝牙模块',
+        '安全芯片',
+        '主板',
+        'LCD屏幕',
+        '外壳',
+        '电池',
+        '摄像头',
+        '其他'
+      ],
       form: {
+        orderType: '', // 订单类型（快速订单使用）
         customerName: '',
         u8Available: true,
         u8OrderNo: '',
@@ -424,10 +627,10 @@ export default {
         shippedQuantity: 0,
         deliveryPlan: '',
         pmcDeliveryDate: '',
-        softwareStatus: '',
+  
         deliveryChangeLog: '',
         customerMaterial: '',
-        customerMaterialArrival: '',
+        customerMaterialArrival: [],  // 改为数组支持多选
         qrCodeFilmStatus: '',
         nylonShellStatus: '',
         productionStatus: '',
@@ -443,7 +646,7 @@ export default {
           { required: true, message: '请选择客户', trigger: 'change' }
         ],
         configModel: [
-          { required: true, message: '请输入配置型号', trigger: 'blur' }
+          { required: true, message: '请选择产品型号', trigger: 'change' }
         ],
         customerOrderNo: [
           { required: true, message: '请输入客户订单号', trigger: 'blur' }
@@ -455,7 +658,7 @@ export default {
           { required: true, message: '请选择上单时间', trigger: 'change' }
         ],
         deliveryPlan: [
-          { required: true, message: '请选择交货计划', trigger: 'change' }
+          { required: false, message: '请选择交货计划', trigger: 'change' }
         ]
       }
     }
@@ -519,6 +722,12 @@ export default {
   methods: {
     checkPermi,
     
+    // 处理客户名称输入回车
+    handleCustomerInputEnter() {
+      // 回车后自动关闭下拉选项
+      this.showCustomerOptions = false
+    },
+    
     // 检查角色（支持父组件传递的模拟角色）
     checkRole(roles) {
       // 优先使用父组件的模拟角色（用于测试）
@@ -554,6 +763,8 @@ export default {
           // 复制模式：复制数据但清空 id，确保走新增逻辑
           this.form = { ...this.editData }
           delete this.form.id
+          // 复制模式下，上单时间重置为当天
+          this.form.orderDate = this.getCurrentDate()
         } else {
           // 编辑模式：直接复制所有数据
           this.form = { ...this.editData }
@@ -566,6 +777,7 @@ export default {
 
     // 重置表单
     resetForm() {
+      this.showCustomerOptions = false // 重置客户下拉显示状态
       this.form = {
         customerName: '',
         u8Available: true,
@@ -578,15 +790,15 @@ export default {
         keyModel: '',
         customerOrderNo: '',
         etreeOrderNo: '',
-        orderDate: '',
+        orderDate: this.getCurrentDate(),
         orderQuantity: 0,
         shippedQuantity: 0,
         deliveryPlan: '',
         pmcDeliveryDate: '',
-        softwareStatus: '',
+    
         deliveryChangeLog: '',
         customerMaterial: '',
-        customerMaterialArrival: '',
+        customerMaterialArrival: [],  // 改为数组支持多选
         qrCodeFilmStatus: '',
         nylonShellStatus: '',
         productionStatus: '',
@@ -651,6 +863,59 @@ export default {
     handleClose() {
       this.resetForm()
       this.dialogVisible = false
+    },
+
+    // 获取产品型号数据（焦点事件）
+    getComputerData() {
+      // 如果已经有数据，不重复加载
+      if (this.computerAllOptions.length > 0) {
+        this.computerOptions = [...this.computerAllOptions];
+        return Promise.resolve();
+      }
+      
+      this.computerLoading = true;
+      // 导入并调用产品型号字典API，获取所有数据
+      return import('@/api/computer/index').then(({ dictList }) => {
+        return dictList().then((res) => {
+          this.computerAllOptions = res.data || [];
+          this.computerOptions = [...this.computerAllOptions];
+        }).catch(() => {
+          this.computerAllOptions = [];
+          this.computerOptions = [];
+          console.error('获取产品型号失败');
+        }).finally(() => {
+          this.computerLoading = false;
+        });
+      });
+    },
+
+    // 远程搜索产品型号（前端筛选）
+    getComputerNameList(name) {
+      if (!name) {
+        // 如果没有搜索词，显示所有数据
+        this.computerOptions = [...this.computerAllOptions];
+        return;
+      }
+      
+      // 如果还没有加载过数据，先加载
+      if (this.computerAllOptions.length === 0) {
+        this.getComputerData();
+        return;
+      }
+      
+      // 前端筛选：根据名称过滤，不修改原始数据
+      this.computerOptions = this.computerAllOptions.filter(item => 
+        item.name && item.name.toLowerCase().includes(name.toLowerCase())
+      );
+    },
+
+    // 获取当前日期（yyyy-MM-dd格式）
+    getCurrentDate() {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
     }
   }
 }
@@ -658,6 +923,32 @@ export default {
 
 <style lang="scss" scoped>
 .add-shipment-order-dialog {
+  // 模式切换样式
+  .mode-switch {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    
+    .mode-tip {
+      font-size: 13px;
+      color: #909399;
+    }
+  }
+  
+  // 快速订单样式
+  .quick-order-fieldset {
+    border-color: #67C23A;
+    background-color: #f0f9ff;
+    
+    legend {
+      color: #67C23A;
+    }
+  }
+  
   ::v-deep .el-dialog__body {
     max-height: 70vh;
     overflow-y: auto;
@@ -765,6 +1056,36 @@ export default {
         color: #303133;
         font-size: 14px;
         word-break: break-all;
+        
+        // 富文本内容样式
+        ::v-deep {
+          p {
+            margin: 5px 0;
+            line-height: 1.6;
+          }
+          
+          img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 8px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          
+          ul, ol {
+            padding-left: 20px;
+            margin: 5px 0;
+          }
+          
+          strong {
+            font-weight: 600;
+          }
+          
+          em {
+            font-style: italic;
+          }
+        }
       }
     }
   }

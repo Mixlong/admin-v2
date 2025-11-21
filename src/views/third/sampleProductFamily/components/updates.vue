@@ -25,11 +25,11 @@
         <div style="width:100%"></div>
         <CopyBtn @config="handleCopy2" />
       </el-form>
-
-      <el-switch class="margin-bottom-sm" v-model="form.isSts" :active-value="1" :inactive-value="0"
-        active-color="#13ce66" inactive-color="#ff4949" active-text="STS" inactive-text="非STS"
-        @change="handleStsChange">
-      </el-switch>
+      <div class="flex  alince-center margin-bottom-sm" style="align-items: center;">
+        <el-switch v-model="form.isSts" :active-value="1" :inactive-value="0" active-color="#13ce66"
+          inactive-color="#ff4949" active-text="STS" inactive-text="非STS" @change="handleStsChange">
+        </el-switch>
+      </div>
 
       <el-form ref="form" :rules="formRules" :model="form" label-width="150px">
         <fieldset>
@@ -100,6 +100,12 @@
                   :page="customerNameData.page" :hasMore="customerNameData.more" dictLabel="name" dictValue="name"
                   :request="getCustomerNameList" placeholder="请选择客户名称">
                 </select-loadMore>
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="6">
+              <el-form-item label="腾讯文档链接" prop="txFileUrl">
+                <el-input v-model="form.txFileUrl" placeholder="请输入腾讯文档链接" clearable />
               </el-form-item>
             </el-col>
 
@@ -969,6 +975,7 @@ import commonSampleData from "@/mixins/commonSampleData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
 import CopyBtn from "./copyBtn.vue";
+import MyUpload from "@/components/MyUpload";
 import {
   detailComputer,
 } from "@/api/third/computer";
@@ -1142,7 +1149,8 @@ export default {
   components: {
     ElUploadSortable,
     tinymce,
-    CopyBtn
+    CopyBtn,
+    MyUpload
   },
   computed: {
     isCheckConfigItem() {
@@ -1344,6 +1352,7 @@ export default {
         name: null,
         sn: "",
         pcbaSn: "",
+        txFileUrl: null,
         instrumentModel: {
           packagingInfo: "",
           showWheelDiameter: null,
@@ -1858,5 +1867,20 @@ export default {
 
 /deep/.el-radio:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio__inner {
   box-shadow: none !important;
+}
+
+::v-deep .tx-upload {
+  display: flex;
+  align-items: center;
+  margin-left: 50px;
+
+  .upload-demo {
+    height: 28px;
+    display: flex;
+
+    .el-upload-list__item:first-child {
+      margin-top: 5px;
+    }
+  }
 }
 </style>

@@ -433,20 +433,42 @@ export default {
       if (type) {
         this.queryParams.type = type;
       }
-      let { categoryId, status } = this.$route.query;
+      let { categoryId, categoryName, status, version } = this.$route.query;
+
+      // 如果传入了品类名称，需要转换为品类ID
+      if (categoryName && !categoryId) {
+        const category = this.dictList.find(item => item.name === categoryName);
+        if (category) {
+          categoryId = category.id;
+        }
+      }
 
       if (categoryId) {
         this.queryParams.categoryId = categoryId;
-        this.changeCategory(categoryId);
-        let computerId = this.$route.query.model;
-        if (computerId) {
-          this.queryParams.computerId = computerId;
+        this.changeCategory(categoryId).then(() => {
+          // 如果传入了版本号参数
+          if (version) {
+            // 在computerOptions中查找匹配的版本号
+            const versionOption = this.computerOptions.find(
+              item => item.name === version || item.model === version
+            );
+            if (versionOption) {
+              this.queryParams.versionId = versionOption.model;
+            }
+          }
+          // 兼容旧的model参数
+          let computerId = this.$route.query.model;
+          if (computerId && !version) {
+            this.queryParams.computerId = computerId;
+          }
+          this.getList();
+        });
+      } else {
+        if (status) {
+          this.queryParams.status = status;
         }
+        this.getList();
       }
-      if (status) {
-        this.queryParams.status = status;
-      }
-      this.getList();
     });
   },
   methods: {

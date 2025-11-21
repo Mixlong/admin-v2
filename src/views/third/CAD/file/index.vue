@@ -3,10 +3,8 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="所属品类" prop="categoryId">
-        <el-select v-model="validCategoryId" filterable clearable placeholder="请选择品类"
-          style="width: 140px" @change="changeCategory" 
-          :loading="isDictLoading" 
-          :disabled="isDictLoading">
+        <el-select v-model="validCategoryId" filterable clearable placeholder="请选择品类" style="width: 140px"
+          @change="changeCategory" :loading="isDictLoading" :disabled="isDictLoading">
           <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.id">
             {{ dict.name }}
           </el-option>
@@ -70,6 +68,18 @@
         <b>pcbaSn：</b>
         {{ fileConfigSnData.pcbaSn || "- - -" }}
       </span>
+      <span class="margin-left" v-if="fileConfigSnData.txFileUrl">
+        <b>腾讯文档：</b>
+        <a :href="fileConfigSnData.txFileUrl" v-if="fileConfigSnData.txFileUrl" target="_blank"
+          style="color: #409eff; display: inline-block; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {{ fileConfigSnData.txFileUrl }}
+        </a>
+        <el-link :underline="false" icon="el-icon-document-copy" v-clipboard:copy="fileConfigSnData.txFileUrl"
+          v-clipboard:success="() => {
+            msgSuccess('复制成功')
+          }" style="float:right" v-if="fileConfigSnData.txFileUrl">复制</el-link>
+      </span>
+
     </div>
     <el-table ref="multipleTableRef" v-loading="loading" :data="brandList" :row-key="getRowKeys"
       :height="tableHeight(0)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
@@ -196,7 +206,8 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <CompUpdate ref="compUpdate" v-model="showUpdateDialog" :dictList="dictList" :isStsType="isStsType" v-if="showUpdateDialog" />
+    <CompUpdate ref="compUpdate" v-model="showUpdateDialog" :dictList="dictList" :isStsType="isStsType"
+      v-if="showUpdateDialog" />
 
     <!-- 任务令 -->
     <task-code :visible.sync="isTaskCodeFlag" :createTaskData="createTaskData"></task-code>
@@ -353,7 +364,7 @@ export default {
       async handler(route) {
         if (route.name === "FileConfig") {
           const { categoryId, computerId } = route?.params;
-          
+
           // 如果已经初始化过，只有在有参数传入时才更新
           if (this.isInitialized) {
             if (categoryId && computerId) {
@@ -371,11 +382,11 @@ export default {
           this.queryParams.categoryId = "";
           this.queryParams.computerId = "";
           this.isDictLoading = true; // 开始加载
-          
+
           try {
             // 先加载品类数据
             this.dictList = await this.getCategoryData();
-            
+
             if (categoryId && computerId) {
               // 确保categoryId在dictList中存在
               const validCategory = this.dictList.find(dict => dict.id === categoryId);
@@ -391,7 +402,7 @@ export default {
 
               this.handleQuery();
             }
-            
+
             this.isInitialized = true; // 标记已初始化
           } finally {
             this.isDictLoading = false; // 加载完成
@@ -670,16 +681,16 @@ export default {
       if (!isBatchSync && this.handleProPermit(row.isLicense)) return;
 
       let copyRow = JSON.parse(JSON.stringify(row));
-      
+
       // 先打开对话框，然后等待组件创建完成
       this.showUpdateDialog = true;
-      
+
       this.$nextTick(() => {
         // 确保组件已经创建
         if (this.$refs.compUpdate) {
           this.$refs.compUpdate.reset();
           this.$refs.compUpdate.changeCategory2(copyRow.categoryId);
-          
+
           // 蓝牙地址转化
           const bleVersionList = this.handleBleVersionlist(copyRow);
 

@@ -208,8 +208,7 @@
                   <span
                     class="status-badge"
                     :class="{
-                      success: detailData.systemState === 1,
-                      error: detailData.systemState === 2,
+                      success: detailData.systemState === 1 || detailData.systemState === 2,
                       warning: detailData.systemState === 0,
                       info: !detailData.systemState
                     }"
@@ -222,8 +221,7 @@
                   <span
                     class="status-badge"
                     :class="{
-                      success: detailData.orderChangeState === 1,
-                      error: detailData.orderChangeState === 2,
+                      success: detailData.orderChangeState === 1 || detailData.orderChangeState === 2,
                       warning: detailData.orderChangeState === 0,
                       info: !detailData.orderChangeState
                     }"
@@ -236,8 +234,7 @@
                   <span
                     class="status-badge"
                     :class="{
-                      success: detailData.workOrderChangeState === 1,
-                      error: detailData.workOrderChangeState === 2,
+                      success: detailData.workOrderChangeState === 1 || detailData.workOrderChangeState === 2,
                       warning: detailData.workOrderChangeState === 0,
                       info: !detailData.workOrderChangeState
                     }"
@@ -424,8 +421,7 @@
                 <span
                   class="status-badge"
                   :class="{
-                    success: detailData.systemState === 1,
-                    error: detailData.systemState === 2,
+                    success: detailData.systemState === 1 || detailData.systemState === 2,
                     warning: detailData.systemState === 0,
                     info: !detailData.systemState
                   }"
@@ -437,7 +433,7 @@
               </div>
               <div v-if="detailData.systemResult" class="info-item">
                 <span class="info-label">变更结果</span>
-                <span class="info-value" :class="{ 'reject-text': detailData.systemState === 2 }">
+                <span class="info-value">
                   {{ detailData.systemResult }}
                 </span>
               </div>
@@ -452,8 +448,7 @@
                 <span
                   class="status-badge"
                   :class="{
-                    success: detailData.orderChangeState === 1,
-                    error: detailData.orderChangeState === 2,
+                    success: detailData.orderChangeState === 1 || detailData.orderChangeState === 2,
                     warning: detailData.orderChangeState === 0,
                     info: !detailData.orderChangeState
                   }"
@@ -461,7 +456,7 @@
               </div>
               <div v-if="detailData.orderChangeResult" class="info-item">
                 <span class="info-label">变更结果</span>
-                <span class="info-value" :class="{ 'reject-text': detailData.orderChangeState === 2 }">
+                <span class="info-value">
                   {{ detailData.orderChangeResult }}
                 </span>
               </div>
@@ -476,8 +471,7 @@
                 <span
                   class="status-badge"
                   :class="{
-                    success: detailData.workOrderChangeState === 1,
-                    error: detailData.workOrderChangeState === 2,
+                    success: detailData.workOrderChangeState === 1 || detailData.workOrderChangeState === 2,
                     warning: detailData.workOrderChangeState === 0,
                     info: !detailData.workOrderChangeState
                   }"
@@ -485,7 +479,7 @@
               </div>
               <div v-if="detailData.workOrderChangeResult" class="info-item">
                 <span class="info-label">变更结果</span>
-                <span class="info-value" :class="{ 'reject-text': detailData.workOrderChangeState === 2 }">
+                <span class="info-value">
                   {{ detailData.workOrderChangeResult }}
                 </span>
               </div>
@@ -663,13 +657,12 @@
             </div>
 
             <!-- 系统变更阶段 - 只有配置了系统变更人员才显示 -->
-            <div v-if="detailData.systemPerson" class="timeline-item" :class="getTimelineClass(detailData.systemState)">
+            <div v-if="detailData.systemPerson" class="timeline-item" :class="getTimelineClass(detailData.systemState, true)">
               <div
                 class="timeline-dot"
                 :class="{
-                  success: detailData.systemState === 1,
-                  error: detailData.systemState === 2,
-                  active: detailData.systemState === 1
+                  success: detailData.systemState === 1 || detailData.systemState === 2,
+                  active: detailData.systemState === 1 || detailData.systemState === 2
                 }"
               />
               <div class="timeline-content">
@@ -678,8 +671,7 @@
                   <span
                     class="status-badge small"
                     :class="{
-                      success: detailData.systemState === 1,
-                      error: detailData.systemState === 2,
+                      success: detailData.systemState === 1 || detailData.systemState === 2,
                       warning: detailData.systemState === 0,
                       info: !detailData.systemState
                     }"
@@ -690,13 +682,12 @@
             </div>
 
             <!-- 订单变更阶段 - 只有配置了订单变更人员才显示 -->
-            <div v-if="detailData.orderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.orderChangeState)">
+            <div v-if="detailData.orderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.orderChangeState, true)">
               <div
                 class="timeline-dot"
                 :class="{
-                  success: detailData.orderChangeState === 1,
-                  error: detailData.orderChangeState === 2,
-                  active: detailData.orderChangeState === 1
+                  success: detailData.orderChangeState === 1 || detailData.orderChangeState === 2,
+                  active: detailData.orderChangeState === 1 || detailData.orderChangeState === 2
                 }"
               />
               <div class="timeline-content">
@@ -705,8 +696,7 @@
                   <span
                     class="status-badge small"
                     :class="{
-                      success: detailData.orderChangeState === 1,
-                      error: detailData.orderChangeState === 2,
+                      success: detailData.orderChangeState === 1 || detailData.orderChangeState === 2,
                       warning: detailData.orderChangeState === 0,
                       info: !detailData.orderChangeState
                     }"
@@ -717,13 +707,12 @@
             </div>
 
             <!-- 工单变更阶段 - 只有配置了工单变更人员才显示 -->
-            <div v-if="detailData.workOrderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.workOrderChangeState)">
+            <div v-if="detailData.workOrderChangePerson" class="timeline-item" :class="getTimelineClass(detailData.workOrderChangeState, true)">
               <div
                 class="timeline-dot"
                 :class="{
-                  success: detailData.workOrderChangeState === 1,
-                  error: detailData.workOrderChangeState === 2,
-                  active: detailData.workOrderChangeState === 1
+                  success: detailData.workOrderChangeState === 1 || detailData.workOrderChangeState === 2,
+                  active: detailData.workOrderChangeState === 1 || detailData.workOrderChangeState === 2
                 }"
               />
               <div class="timeline-content">
@@ -732,8 +721,7 @@
                   <span
                     class="status-badge small"
                     :class="{
-                      success: detailData.workOrderChangeState === 1,
-                      error: detailData.workOrderChangeState === 2,
+                      success: detailData.workOrderChangeState === 1 || detailData.workOrderChangeState === 2,
                       warning: detailData.workOrderChangeState === 0,
                       info: !detailData.workOrderChangeState
                     }"
@@ -885,7 +873,7 @@ export default {
       const stateMap = {
         0: '待变更',
         1: '已变更',
-        2: '变更失败'
+        2: '不涉及'
       }
       return stateMap[state] || '未知'
     },
@@ -905,17 +893,21 @@ export default {
       const typeMap = {
         0: 'warning',
         1: 'success',
-        2: 'danger'
+        2: 'success'  // 不涉及也算通过，显示为成功状态
       }
       return typeMap[state] || 'info'
     },
 
     // 获取时间线样式类
-    getTimelineClass(state) {
+    getTimelineClass(state, isChangeStage = false) {
       if (state === 'review') {
         return this.isAllReviewsPassed() ? 'completed' : 'pending'
       }
-      return state === 1 ? 'completed' : state === 2 ? 'rejected' : 'pending'
+      // 对于变更阶段（系统变更、订单变更、工单变更），state === 2 表示"不涉及"，也算完成
+      // 对于审核阶段（会审、初审、终审），state === 2 表示"已驳回"
+      if (state === 1) return 'completed'
+      if (state === 2) return isChangeStage ? 'completed' : 'rejected'
+      return 'pending'
     },
 
     // 检查所有会审是否通过

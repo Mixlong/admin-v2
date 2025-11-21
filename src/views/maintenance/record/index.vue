@@ -216,7 +216,7 @@ import {
   deleteMaintenanceRecord,
   exportMaintenanceRecord
 } from '@/api/maintenance/record'
-import { getCategoryList } from '@/api/quote-management/quotation'
+import { categoryComputerDict } from "@/api/third/fileConfig";
 import { getDicts } from '@/api/system/dict/data'
 import { dictUserList } from '@/api/system/user'
 
@@ -288,12 +288,6 @@ export default {
           label: '线号',
           component: 'el-input',
           placeholder: '请输入线号'
-        },
-        {
-          key: 'badResult',
-          label: '不良原因',
-          component: 'el-input',
-          placeholder: '请输入不良原因'
         },
         {
           key: 'serviceResult',
@@ -561,9 +555,9 @@ export default {
 
     // 加载品类选项
     loadCategoryOptions() {
-      getCategoryList().then(res => {
+      categoryComputerDict().then(res => {
         if (res.code === 200 && res.data) {
-          this.categoryOptions = res.data.filter(item => item.isSample === 1)
+          this.categoryOptions = res.data
         } else {
           this.categoryOptions = []
         }

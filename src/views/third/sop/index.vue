@@ -102,7 +102,6 @@
               查看
             </el-button>
             <el-button
-              v-if="row.createBy === nickName && row.finalState !== 1"
               v-hasPermi="['sop:update:btn']"
               class="text-blue"
               type="text"
@@ -111,7 +110,6 @@
               编辑
             </el-button>
             <el-button
-              v-if="row.createBy === nickName"
               v-hasPermi="['sop:delete:btn']"
               class="text-red"
               type="text"
@@ -137,7 +135,7 @@
       @pagination="getList" />
 
   <!-- 新增、修改 -->
-    <add-sop ref="isAddSopRef" :visible.sync="isSopAddDia" :dictList="dictList" />
+    <add-sop ref="isAddSopRef" :visible.sync="isSopAddDia" :dictList="dictList" :userListOptions="userListOptions" />
 
     <!-- 详情 -->
     <sop-detail ref="isSopDetailRef" :visible.sync="isSopDetailDia" />
@@ -177,14 +175,6 @@
             <!-- 会审人员 -->
             <el-form-item label="会审人员："></el-form-item>
             <el-form-item label-width="20px">
-              <el-form-item label="研发：" prop="rdData"  label-width="90px">
-                <el-select class="w100" v-model="peopleManageForm.rdData" filterable multiple clearable
-                  placeholder="请选择研发人员">
-                  <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
-                    :value="item.userName">
-                  </el-option>
-                </el-select>
-              </el-form-item>
               <el-form-item label="品质：" prop="qualityData"  label-width="90px">
                 <el-select class="w100" v-model="peopleManageForm.qualityData" filterable multiple clearable
                   placeholder="请选择品质人员">
@@ -201,20 +191,40 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item label="研发：" prop="rdData"  label-width="90px">
+                <el-select class="w100" v-model="peopleManageForm.rdData" filterable multiple clearable
+                  placeholder="请选择研发人员">
+                  <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                    :value="item.userName">
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form-item>
             
-            <el-form-item label="工程审人员：" prop="engineerData" >
+            <!-- 工程人员 -->
+            <el-form-item label="工程人员：" prop="engineerData">
               <el-select class="w100" v-model="peopleManageForm.engineerData" filterable multiple clearable
-                placeholder="请选择工程审人员">
+                placeholder="请选择工程人员">
                 <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
                   :value="item.userName">
                 </el-option>
               </el-select>
             </el-form-item>
             
+            <!-- 终审人员 -->
             <el-form-item label="终审人员：" prop="finalData">
               <el-select class="w100" v-model="peopleManageForm.finalData" filterable multiple clearable
                 placeholder="请选择终审人员">
+                <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
+                  :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            
+            <!-- 项目人员 -->
+            <el-form-item label="项目人员：" prop="projectData">
+              <el-select class="w100" v-model="peopleManageForm.projectData" filterable multiple clearable
+                placeholder="请选择项目人员">
                 <el-option v-for="(item, index) in userListOptions" :key="index" :label="item.userName"
                   :value="item.userName">
                 </el-option>
@@ -289,17 +299,15 @@ export default {
       dictList: [],
       // 人员管理表单
       peopleManageForm: {
-        rdData: [], // 会审-研发
-        qualityData: [], // 会审-品质
-        productionData: [], // 会审-生产
-        engineerData: [], // 工程审
-        finalData: [], // 终审
+        qualityData: [], // 会审-品质 (type: 3)
+        productionData: [], // 会审-生产 (type: 4)
+        engineerData: [], // 会审-工程 (type: 5)
+        rdData: [], // 会审-研发 (type: 6)
+        finalData: [], // 终审 (type: 10)
+        projectData: [], // 项目人员 (type: 14)
       },
       // 人员管理校验规则
       peopleManageRules: {
-        rdData: [
-          { required: true, message: "请选择会审-研发人员", trigger: "change" },
-        ],
         qualityData: [
           { required: true, message: "请选择会审-品质人员", trigger: "change" },
         ],
@@ -307,10 +315,16 @@ export default {
           { required: true, message: "请选择会审-生产人员", trigger: "change" },
         ],
         engineerData: [
-          { required: true, message: "请选择工程审人员", trigger: "change" },
+          { required: true, message: "请选择会审-工程人员", trigger: "change" },
+        ],
+        rdData: [
+          { required: true, message: "请选择会审-研发人员", trigger: "change" },
         ],
         finalData: [
           { required: true, message: "请选择终审人员", trigger: "change" },
+        ],
+        projectData: [
+          { required: true, message: "请选择项目人员", trigger: "change" },
         ],
       },
     };
@@ -412,7 +426,7 @@ export default {
     handleUpdate(row) {
       this.isSopAddDia = true;
       this.$nextTick(() => {
-        this.$refs.isAddSopRef.setFormData(JSON.parse(JSON.stringify(row)));
+        this.$refs.isAddSopRef.setFormData(JSON.parse(JSON.stringify({ccPersons:'',...row})));
       });
     },
     // 详情
@@ -466,14 +480,85 @@ export default {
     },
     // 跳转到审核页面
     handleAudit(row) {
-      this.$router.push({
-        name: 'AuditList',
-        query: { 
-          sopId: row.id,
-          categoryId: row.categoryId,
-          versionCode: row.versionCode
-        }
-      });
+      // 如果是旧版SOP（isOldSop === 1），使用旧的审核逻辑
+      if (row.isOldSop === 1) {
+        this.handleOldAudit(row);
+      } else {
+        // 新版SOP，跳转到审核列表页面
+        this.$router.push({
+          name: 'AuditList',
+          query: { 
+            sopId: row.id,
+            categoryId: row.categoryId,
+            versionCode: row.versionCode
+          }
+        });
+      }
+    },
+    // 旧版SOP审核逻辑（直接审核通过/驳回）
+    handleOldAudit(row) {
+      let loading = null;
+
+      this.$confirm("是否审核通过？", "警告", {
+        confirmButtonText: "通 过",
+        cancelButtonText: "驳 回",
+        type: "warning",
+        distinguishCancelAndClose: true,
+      })
+        .then(() => {
+          loading = this.$loading({
+            lock: true,
+            text: "审核中...",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)",
+          });
+          
+          // 审核通过
+          sopState({ id: row.id, state: 1 })
+            .then((res) => {
+              if (res.code === 200) {
+                this.$message.success("审核通过");
+                this.getList();
+              }
+            })
+            .finally(() => {
+              if (loading) loading.close();
+            });
+        })
+        .catch((action) => {
+          if (action === "cancel") {
+            // 用户点击驳回
+            this.$prompt("请输入驳回原因", "驳回", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              inputPattern: /.+/,
+              inputErrorMessage: "驳回原因不能为空",
+            })
+              .then(({ value }) => {
+                loading = this.$loading({
+                  lock: true,
+                  text: "审核中...",
+                  spinner: "el-icon-loading",
+                  background: "rgba(0, 0, 0, 0.7)",
+                });
+                
+                // 审核驳回
+                sopState({ id: row.id, state: 2, remark: value })
+                  .then((res) => {
+                    if (res.code === 200) {
+                      this.$message.success("已驳回");
+                      this.getList();
+                    }
+                  })
+                  .finally(() => {
+                    if (loading) loading.close();
+                  });
+              })
+              .catch(() => {
+                // 用户取消输入驳回原因
+              });
+          }
+        });
     },
     // 打开草稿箱
     handleOpenDraftBox() {
@@ -500,26 +585,30 @@ export default {
     async handleAddPeople() {
       this.isPeopleManageVisible = true;
       // 获取当前审核人员配置（分别获取各类型人员，和addSop.vue逻辑一致）
+      // 领域编码: 3品质 4生产 5工程 6研发 10终审 14项目人员
       try {
-        const [rdRes, qualityRes, productionRes, engineerRes, finalRes] = await Promise.all([
-          sopPersonList({ type: 5 }), // 研发
-          sopPersonList({ type: 2 }), // 品质
-          sopPersonList({ type: 3 }), // 生产
-          sopPersonList({ type: 9 }), // 工程审
-          sopPersonList({ type: 8 })  // 终审
+        const [qualityRes, productionRes, engineerRes, rdRes, finalRes, projectRes] = await Promise.all([
+          sopPersonList({ type: 3 }),  // 品质
+          sopPersonList({ type: 4 }),  // 生产
+          sopPersonList({ type: 5 }),  // 工程
+          sopPersonList({ type: 6 }),  // 研发
+          sopPersonList({ type: 10 }), // 终审
+          sopPersonList({ type: 14 })  // 项目人员
         ]);
         
         this.peopleManageForm = {
-          rdData: rdRes.code === 200 && rdRes.data?.list 
-            ? rdRes.data.list.map(item => item.personnel) : [],
           qualityData: qualityRes.code === 200 && qualityRes.data?.list 
             ? qualityRes.data.list.map(item => item.personnel) : [],
           productionData: productionRes.code === 200 && productionRes.data?.list 
             ? productionRes.data.list.map(item => item.personnel) : [],
           engineerData: engineerRes.code === 200 && engineerRes.data?.list 
             ? engineerRes.data.list.map(item => item.personnel) : [],
+          rdData: rdRes.code === 200 && rdRes.data?.list 
+            ? rdRes.data.list.map(item => item.personnel) : [],
           finalData: finalRes.code === 200 && finalRes.data?.list 
             ? finalRes.data.list.map(item => item.personnel) : [],
+          projectData: projectRes.code === 200 && projectRes.data?.list 
+            ? projectRes.data.list.map(item => item.personnel) : [],
         };
       } catch (error) {
         console.error('加载审核人员配置失败:', error);
@@ -530,33 +619,38 @@ export default {
       this.$refs.peopleForm.validate(valid => {
         if (valid) {
           // 将人员数据转换为API要求的数组格式
-          // type: 5研发 2品质 3生产 9工程审 8终审
+          // 领域编码: 3品质 4生产 5工程 6研发 10终审 14项目人员
           // changeType: 1 (SOP变更类型)
           const list = [];
           
-          // 会审-研发 (type: 5)
-          this.peopleManageForm.rdData.forEach(personnel => {
-            list.push({ personnel, type: 5, changeType: 1 });
-          });
-          
-          // 会审-品质 (type: 2)
+          // 会审-品质 (type: 3)
           this.peopleManageForm.qualityData.forEach(personnel => {
-            list.push({ personnel, type: 2, changeType: 1 });
-          });
-          
-          // 会审-生产 (type: 3)
-          this.peopleManageForm.productionData.forEach(personnel => {
             list.push({ personnel, type: 3, changeType: 1 });
           });
           
-          // 工程审 (type: 9)
-          this.peopleManageForm.engineerData.forEach(personnel => {
-            list.push({ personnel, type: 9, changeType: 1 });
+          // 会审-生产 (type: 4)
+          this.peopleManageForm.productionData.forEach(personnel => {
+            list.push({ personnel, type: 4, changeType: 1 });
           });
           
-          // 终审 (type: 8)
+          // 会审-工程 (type: 5)
+          this.peopleManageForm.engineerData.forEach(personnel => {
+            list.push({ personnel, type: 5, changeType: 1 });
+          });
+          
+          // 会审-研发 (type: 6)
+          this.peopleManageForm.rdData.forEach(personnel => {
+            list.push({ personnel, type: 6, changeType: 1 });
+          });
+          
+          // 终审 (type: 10)
           this.peopleManageForm.finalData.forEach(personnel => {
-            list.push({ personnel, type: 8, changeType: 1 });
+            list.push({ personnel, type: 10, changeType: 1 });
+          });
+          
+          // 项目人员 (type: 14)
+          this.peopleManageForm.projectData.forEach(personnel => {
+            list.push({ personnel, type: 14, changeType: 1 });
           });
           
           sopPersonEdit( list ).then(res => {

@@ -32,7 +32,37 @@
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="产品型号" prop="name" align="center" width="140" />
+      <el-table-column label="产品型号" prop="name" align="center" width="140" >
+         <template slot-scope="{ row }">
+            <div class="copy-wrap">
+              <!-- 有链接时显示为可点击的蓝色带下划线文本 -->
+              <a
+                v-if="row.txFileUrl"
+                :href="row.txFileUrl"
+                target="_blank"
+                class="model-link"
+              >
+                {{ row.name || '-' }}
+              </a>
+              <!-- 无链接时显示普通文本 -->
+              <span v-else v-NoData="row.name"></span>
+              
+              <!-- 复制按钮 -->
+              <el-link
+                class="copy-btn"
+                :underline="false"
+                icon="el-icon-document-copy"
+                v-clipboard:copy="row.txFileUrl"
+                v-clipboard:success="
+                  () => {
+                    msgSuccess('复制成功');
+                  }
+                "
+                v-if="row.txFileUrl"
+              ></el-link>
+            </div>
+          </template>
+        </el-table-column>
       <el-table-column label="描述" prop="desc" align="center">
         <span slot-scope="scope" v-NoData="scope.row.desc" />
       </el-table-column>
@@ -331,7 +361,7 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .auth {
   text-align: center;
   margin-bottom: 10px;
@@ -365,4 +395,31 @@ export default {
     width: 120px;
   }
 }
+  ::v-deep .copy-wrap {
+    position: relative;
+    padding-right: 30px; /* 为复制按钮留出空间 */
+    min-height: 24px;
+    
+    .model-link {
+      color: #409eff;
+      text-decoration: underline;
+      cursor: pointer;
+      
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+    
+    .copy-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 14px;
+      padding: 4px;
+      
+      &:hover {
+        color: #409eff;
+      }
+    }
+  }
 </style>

@@ -102,11 +102,11 @@
         >
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="客户订单号:" prop="orderNo">
+     <el-form-item label="订单号:" prop="orderCode">
         <el-input
-          v-model.number="form.orderNo"
+          v-model.number="form.orderCode"
           clearable
-          placeholder="请输入客户订单号"
+          placeholder="请输入订单号"
         />
       </el-form-item>
       <el-form-item label="批次号" prop="batchNo">
@@ -286,8 +286,8 @@ export default {
         dateRange: [
           { required: true, message: "请选择时间", trigger: "change" },
         ],
-        orderNo: [
-          { required: true, message: "请输入客户订单号", trigger: "blur" },
+                orderCode: [
+          { required: false, message: "请输入客户订单号", trigger: "blur" },
         ],
         num: [{ required: true, validator: checkScheduleNum, trigger: "blur" }],
         batchNo: [

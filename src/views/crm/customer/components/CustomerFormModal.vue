@@ -27,7 +27,11 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="客户来源" prop="customerSource">
-              <el-select v-model="form.customerSource" placeholder="请选择客户来源" style="width: 100%" clearable>
+              <el-select v-model="form.customerSource" placeholder="请选择客户来源" style="width: 100%"      
+                clearable
+                filterable
+                allow-create
+                default-first-option>
                 <el-option
                   v-for="dict in dict.type.customer_source"
                   :key="dict.value"
@@ -878,7 +882,7 @@ export default {
             bankPhone: newCustomer.bankPhone || '',
             
             // 产品相关字段
-            productIntent: newCustomer.productIntent || '',
+            productIntent: newCustomer.productIntent ? newCustomer.productIntent.split(',').filter(item => item.trim()) : [],
             annualShipments: newCustomer.annualShipments || '',
             assemblyFactory: newCustomer.assemblyFactory || '',
             electricalControlType: newCustomer.electricalControlType || '',

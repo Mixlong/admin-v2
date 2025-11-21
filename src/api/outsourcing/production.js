@@ -91,3 +91,28 @@ export function importOutsourcingProduction(data) {
     data
   })
 }
+
+/**
+ * 获取请购单号列表
+ */
+export function getPurchaseRequestCodeList() {
+  return request({
+    url: '/outsourcing/production/order/code/list',
+    method: 'get'
+  })
+}
+
+/**
+ * 同步采购信息
+ * @param {Object} data - 采购信息对象
+ * @param {Array} data.orderCodeList - 请购单号列表
+ * @param {String} data.purchaseOrderCode - 采购单号
+ * @param {String} data.purchaseOrderImg - 采购订单图
+ */
+export function syncPurchaseInfo(data) {
+  return request({
+    url: '/outsourcing/production/sync-purchase-info',
+    method: 'put',
+    data
+  })
+}

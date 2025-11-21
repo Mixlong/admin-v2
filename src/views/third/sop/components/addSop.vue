@@ -1,7 +1,23 @@
 <template>
-  <el-dialog class="sop-form-dialog" :title="isTitle" :visible="visible" width="1000px" append-to-body center top="0vh"
-    :close-on-click-modal="false" @close="close">
-    <el-form ref="form" :model="form" :rules="rules" label-width="80px" class="sop-form" v-form-scroll-error>
+  <el-dialog
+    class="sop-form-dialog"
+    :title="isTitle"
+    :visible="visible"
+    width="1000px"
+    append-to-body
+    center
+    top="0vh"
+    :close-on-click-modal="false"
+    @close="close"
+  >
+    <el-form
+      ref="form"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      class="sop-form"
+      v-form-scroll-error
+    >
       <!-- 基本信息 -->
       <fieldset class="form-fieldset">
         <legend class="fieldset-legend">基本信息</legend>
@@ -10,54 +26,70 @@
             <el-col :span="12">
               <el-form-item label="品类" prop="categoryId">
                 <TypedSelectLoadMore
-              ref="categorySelect"
-              v-model="form.categoryId"
-              type="category"
-              customStyle="width: 100%"
-              size="mini"
-              @change="handleCategoryChange"
-            />
+                  ref="categorySelect"
+                  v-model="form.categoryId"
+                  type="category"
+                  customStyle="width: 100%"
+                  size="mini"
+                  @change="handleCategoryChange"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="版本号" prop="versionCode">
-                <el-input v-model="form.versionCode" clearable placeholder="请输入版本号" />
-              </el-form-item> 
+                <el-input
+                  v-model="form.versionCode"
+                  clearable
+                  placeholder="请输入版本号"
+                />
+              </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :span="12" v-if="!form.id">
               <el-form-item label="ECN编号" prop="ecn">
-                <el-input :value="displayEcn" readonly placeholder="系统自动生成"  />
+                <el-input
+                  :value="displayEcn"
+                  readonly
+                  placeholder="系统自动生成"
+                />
               </el-form-item>
             </el-col>
           </el-row>
           <el-form-item label="版本描述" prop="desc">
-            <el-input v-model="form.desc" type="textarea" clearable :rows="3" placeholder="请输入版本描述" />
+            <el-input
+              v-model="form.desc"
+              type="textarea"
+              clearable
+              :rows="3"
+              placeholder="请输入版本描述"
+            />
           </el-form-item>
           <el-form-item label="封面图" prop="topImg">
-            <ImageUpload 
-              v-model="form.topImg" 
+            <ImageUpload
+              v-model="form.topImg"
               :accept="'image/*'"
               :showFileList="true"
-                   :sortable="true"
+              :sortable="true"
               listType="picture-card"
               css="width: 200px; height: 120px;"
-              class="top-img-upload">
+              class="top-img-upload"
+            >
               <div class="upload-placeholder">
                 <i class="el-icon-plus"></i>
               </div>
             </ImageUpload>
           </el-form-item>
           <el-form-item label="排拉表" prop="sortImg">
-            <ImageUpload 
-              v-model="form.sortImg" 
+            <ImageUpload
+              v-model="form.sortImg"
               :accept="'image/*'"
               :showFileList="true"
               :sortable="true"
               listType="picture-card"
               css="width: 200px; height: 120px;"
-              class="top-img-upload">
+              class="top-img-upload"
+            >
               <div class="upload-placeholder">
                 <i class="el-icon-plus"></i>
               </div>
@@ -67,63 +99,98 @@
       </fieldset>
 
       <!-- 审核人员配置 -->
-      <fieldset class="form-fieldset" v-if="form.state!=0">
+      <fieldset class="form-fieldset" v-if="form.state != 0">
         <legend class="fieldset-legend">
-          <i class="el-icon-user-solid" style="margin-right: 5px;"></i>
+          <i class="el-icon-user-solid" style="margin-right: 5px"></i>
           审核人员配置
         </legend>
         <div class="fieldset-content">
           <!-- 编辑时的审核调整类型选择（只有在有审核记录时才显示） -->
           <div v-if="canSwitchAuditType" class="audit-type-selector">
+            <!-- 如果 sopChangeNotice 为 null，必须走重新审核 -->
+            <div v-if="mustFullAudit" class="audit-notice warning mb10">
+              <i class="el-icon-warning"></i>
+              <span
+                >该SOP尚未配置审核记录，必须走完整的审核流程（会审 → 工程审 →
+                终审）</span
+              >
+            </div>
+
             <div class="audit-type-label">审核调整方式</div>
             <el-row :gutter="10">
               <el-col :span="8">
-                <div 
-                  class="audit-type-card" 
-                  :class="{ 'active': form.auditAdjustType === 'none' }"
-                  @click="handleAuditTypeChange('none')">
+                <div
+                  class="audit-type-card"
+                  :class="{
+                    active: form.auditAdjustType === 'none',
+                    disabled: mustFullAudit,
+                  }"
+                  @click="!mustFullAudit && handleAuditTypeChange('none')"
+                >
                   <div class="card-icon">
                     <i class="el-icon-check"></i>
                   </div>
                   <div class="card-title">无需审核</div>
                   <div class="card-desc">保持当前状态</div>
+                  <div v-if="mustFullAudit" class="card-disabled-mask">
+                    不可用
+                  </div>
                 </div>
               </el-col>
               <el-col :span="8">
-                <div 
-                  class="audit-type-card" 
-                  :class="{ 'active': form.auditAdjustType === 'engineer' }"
-                  @click="handleAuditTypeChange('engineer')">
+                <div
+                  class="audit-type-card"
+                  :class="{
+                    active: form.auditAdjustType === 'engineer',
+                    disabled: mustFullAudit,
+                  }"
+                  @click="!mustFullAudit && handleAuditTypeChange('engineer')"
+                >
                   <div class="card-icon">
                     <i class="el-icon-setting"></i>
                   </div>
                   <div class="card-title">仅工程审核</div>
                   <div class="card-desc">只需工程审</div>
+                  <div v-if="mustFullAudit" class="card-disabled-mask">
+                    不可用
+                  </div>
                 </div>
               </el-col>
               <el-col :span="8">
-                <div 
-                  class="audit-type-card" 
-                  :class="{ 'active': form.auditAdjustType === 'full' }"
-                  @click="handleAuditTypeChange('full')">
+                <div
+                  class="audit-type-card"
+                  :class="{ active: form.auditAdjustType === 'full' }"
+                  @click="handleAuditTypeChange('full')"
+                >
                   <div class="card-icon">
                     <i class="el-icon-refresh"></i>
                   </div>
                   <div class="card-title">重新审核</div>
                   <div class="card-desc">全流程审核</div>
+                  <div v-if="mustFullAudit" class="card-required-badge">
+                    必选
+                  </div>
                 </div>
               </el-col>
             </el-row>
           </div>
-          
+
           <!-- 首次配置审核流程的提示 -->
-          <div v-if="form.id && !canSwitchAuditType" class="audit-notice warning">
+          <div
+            v-if="form.id && !canSwitchAuditType"
+            class="audit-notice warning"
+          >
             <i class="el-icon-warning"></i>
-            <span>首次配置审核流程，需要填写完整的审核人员信息（会审、工程审、终审）</span>
+            <span
+              >首次配置审核流程，需要填写完整的审核人员信息（会审、工程审、终审）</span
+            >
           </div>
-          
+
           <!-- 会审人员配置 -->
-          <div v-if="!form.id || form.auditAdjustType === 'full'" class="auditor-section">
+          <div
+            v-if="!form.id || form.auditAdjustType === 'full'"
+            class="auditor-section"
+          >
             <div class="section-header">
               <i class="el-icon-user"></i>
               <span>会审人员</span>
@@ -133,60 +200,78 @@
               <!-- 会审 - 研发 -->
               <el-col :span="8">
                 <div class="auditor-card">
-                  <el-form-item label="研发部门" prop="rdAuditors" label-width="65px">
-                    <el-select 
-                      v-model="form.rdAuditors" 
-                      multiple 
-                      filterable 
-                      placeholder="选择研发人员" 
-                      style="width: 100%;">
-                      <el-option 
-                        v-for="item in rdAuditorOptions" 
-                        :key="item" 
-                        :label="item" 
-                        :value="item">
+                  <el-form-item
+                    label="研发部门"
+                    prop="rdAuditors"
+                    label-width="75px"
+                  >
+                    <el-select
+                      v-model="form.rdAuditors"
+                      multiple
+                      filterable
+                      placeholder="选择研发人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in rdAuditorOptions"
+                        :key="`rd-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
                       </el-option>
                     </el-select>
                   </el-form-item>
                 </div>
               </el-col>
-              
+
               <!-- 会审 - 品质 -->
               <el-col :span="8">
                 <div class="auditor-card">
-                  <el-form-item label="品质部门" prop="qualityAuditors" label-width="65px">
-                    <el-select 
-                      v-model="form.qualityAuditors" 
-                      multiple 
-                      filterable 
-                      placeholder="选择品质人员" 
-                      style="width: 100%;">
-                      <el-option 
-                        v-for="item in qualityAuditorOptions" 
-                        :key="item" 
-                        :label="item" 
-                        :value="item">
+                  <el-form-item
+                    label="品质部门"
+                    prop="qualityAuditors"
+                    label-width="75px"
+                  >
+                    <el-select
+                      v-model="form.qualityAuditors"
+                      multiple
+                      filterable
+                      placeholder="选择品质人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in qualityAuditorOptions"
+                        :key="`quality-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
                       </el-option>
                     </el-select>
                   </el-form-item>
                 </div>
               </el-col>
-              
+
               <!-- 会审 - 生产 -->
               <el-col :span="8">
                 <div class="auditor-card">
-                  <el-form-item label="生产部门" prop="productionAuditors" label-width="65px">
-                    <el-select 
-                      v-model="form.productionAuditors" 
-                      multiple 
-                      filterable 
-                      placeholder="选择生产人员" 
-                      style="width: 100%;">
-                      <el-option 
-                        v-for="item in productionAuditorOptions" 
-                        :key="item" 
-                        :label="item" 
-                        :value="item">
+                  <el-form-item
+                    label="生产部门"
+                    prop="productionAuditors"
+                    label-width="75px"
+                  >
+                    <el-select
+                      v-model="form.productionAuditors"
+                      multiple
+                      filterable
+                      placeholder="选择生产人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in productionAuditorOptions"
+                        :key="`production-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
                       </el-option>
                     </el-select>
                   </el-form-item>
@@ -195,46 +280,166 @@
             </el-row>
           </div>
 
-          <!-- 工程审和终审人员配置 -->
-          <div v-if="!form.id || form.auditAdjustType === 'full'" class="auditor-section">
+          <!-- 工程审、终审和项目人员配置 -->
+          <div
+            v-if="
+              !form.id ||
+              form.auditAdjustType === 'full' ||
+              form.auditAdjustType === 'engineer'
+            "
+            class="auditor-section"
+          >
             <div class="section-header">
               <i class="el-icon-s-tools"></i>
-              <span>{{ form.auditAdjustType === 'engineer' ? '工程审人员' : '工程审 & 终审人员' }}</span>
+              <span>{{
+                form.auditAdjustType === "engineer"
+                  ? "工程审人员"
+                  : "工程审 & 项目人员 & 终审人员"
+              }}</span>
             </div>
             <el-row :gutter="12">
-              <el-col :span="form.id && form.auditAdjustType === 'engineer' ? 24 : 12">
+              <!-- 工程审人员 -->
+              <el-col
+                v-if="
+                  !(isOldEngineerMode && form.auditAdjustType === 'engineer')
+                "
+                :span="form.id && form.auditAdjustType === 'engineer' ? 24 : 8"
+              >
                 <div class="auditor-card highlight">
-                  <el-form-item label="工程审人员" prop="engineerAuditors" label-width="85px">
-                    <el-select 
-                      v-model="form.engineerAuditors" 
-                      filterable 
-                      placeholder="选择工程审人员" 
-                      style="width: 100%;">
-                      <el-option 
-                        v-for="item in engineerAuditorOptions" 
-                        :key="item" 
-                        :label="item" 
-                        :value="item">
+                  <el-form-item
+                    label="工程审人员"
+                    prop="engineerAuditors"
+                    label-width="85px"
+                  >
+                    <el-select
+                      v-model="form.engineerAuditors"
+                      filterable
+                      placeholder="选择工程审人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in engineerAuditorOptions"
+                        :key="`engineer-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
                       </el-option>
                     </el-select>
                   </el-form-item>
                 </div>
               </el-col>
-              
-              <!-- 终审人员 - 仅在新增或重新审核时显示 -->
-              <el-col :span="12" v-if="!form.id || form.auditAdjustType === 'full'">
+
+              <!-- 抄送人员 - 仅在工程审核模式显示 -->
+              <el-col
+                :span="12"
+                v-if="isOldEngineerMode && form.auditAdjustType === 'engineer'"
+              >
                 <div class="auditor-card highlight">
-                  <el-form-item label="终审人员" prop="finalAuditors" label-width="75px">
-                    <el-select 
-                      v-model="form.finalAuditors" 
-                      filterable 
-                      placeholder="选择终审人员" 
-                      style="width: 100%;">
-                      <el-option 
-                        v-for="item in finalAuditorOptions" 
-                        :key="item" 
-                        :label="item" 
-                        :value="item">
+                  <el-form-item
+                    label="抄送人员"
+                    prop="ccPersons"
+                    label-width="85px"
+                  >
+                    <el-select
+                      multiple
+                      v-model="form.ccPersons"
+                      filterable
+                      placeholder="请输入抄送人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in userListOptions"
+                        :key="item.userId || item.userName || item"
+                        :label="item.userName"
+                        :value="item.userName"
+                      >
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </div>
+              </el-col>
+
+              <!-- 旧工程审人员 - 仅在工程审核模式显示 -->
+              <el-col
+                :span="12"
+                v-if="isOldEngineerMode && form.auditAdjustType === 'engineer'"
+              >
+                <div class="auditor-card highlight">
+                  <el-form-item
+                    label="工程审人员"
+                    prop="engineeringPerson"
+                    label-width="110px"
+                  >
+                    <el-select
+                      v-model="form.engineeringPerson"
+                      filterable
+                      placeholder="选择工程审人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in engineerAuditorOptions"
+                        :key="`legacy-engineer-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </div>
+              </el-col>
+
+              <!-- 项目人员 - 仅在新增或重新审核时显示 -->
+              <el-col
+                :span="8"
+                v-if="!form.id || form.auditAdjustType === 'full'"
+              >
+                <div class="auditor-card highlight">
+                  <el-form-item
+                    label="项目人员"
+                    prop="projectPerson"
+                    label-width="75px"
+                  >
+                    <el-select
+                      v-model="form.projectPerson"
+                      filterable
+                      placeholder="选择项目人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in projectAuditorOptions"
+                        :key="`project-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </div>
+              </el-col>
+
+              <!-- 终审人员 - 仅在新增或重新审核时显示 -->
+              <el-col
+                :span="8"
+                v-if="!form.id || form.auditAdjustType === 'full'"
+              >
+                <div class="auditor-card highlight">
+                  <el-form-item
+                    label="终审人员"
+                    prop="finalAuditors"
+                    label-width="75px"
+                  >
+                    <el-select
+                      v-model="form.finalAuditors"
+                      filterable
+                      placeholder="选择终审人员"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="item in finalAuditorOptions"
+                        :key="`final-${item}`"
+                        :label="item"
+                        :value="item"
+                      >
                       </el-option>
                     </el-select>
                   </el-form-item>
@@ -242,17 +447,20 @@
               </el-col>
             </el-row>
           </div>
-          
+
           <!-- 无需审核时的提示 -->
-          <div v-if="form.id && form.auditAdjustType === 'none'" class="audit-notice">
+          <div
+            v-if="form.id && form.auditAdjustType === 'none'"
+            class="audit-notice"
+          >
             <i class="el-icon-info"></i>
             <span>本次修改不会触发审核流程，保持当前审核状态</span>
           </div>
-          
+
           <!-- 仅工程审核时的提示 -->
-          <div v-if="form.id && form.auditAdjustType === 'engineer'" class="audit-notice">
+          <div v-if="form.auditAdjustType === 'engineer'" class="audit-notice">
             <i class="el-icon-info"></i>
-            <span>本次修改仅需工程审核，无需填写审核人员</span>
+            <span>请完善工程审核信息（工程审人员、抄送人员）</span>
           </div>
         </div>
       </fieldset>
@@ -261,19 +469,43 @@
       <fieldset class="form-fieldset">
         <legend class="fieldset-legend">
           历史文件
-          <DrUpload v-model="form.historyFile" :useObjectFormat="true" :showFileList="false" class="legend-upload">
-            <el-button size="small" type="text">
-              点击上传
-            </el-button>
+          <DrUpload
+            v-model="form.historyFile"
+            :useObjectFormat="true"
+            :showFileList="false"
+            class="legend-upload"
+          >
+            <el-button size="small" type="text"> 点击上传 </el-button>
           </DrUpload>
         </legend>
         <div class="fieldset-content">
           <!-- 用表格展示已上传的文件 -->
-          <el-table :data="historyFileList" border style="width: 100%" empty-text="暂无历史文件" max-height="300px">
-            <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
-            <el-table-column prop="name" label="文件名" min-width="200" align="center">
+          <el-table
+            :data="historyFileList"
+            border
+            style="width: 100%"
+            empty-text="暂无历史文件"
+            max-height="300px"
+          >
+            <el-table-column
+              type="index"
+              label="序号"
+              width="60"
+              align="center"
+            ></el-table-column>
+            <el-table-column
+              prop="name"
+              label="文件名"
+              min-width="200"
+              align="center"
+            >
               <template slot-scope="{ row }">
-                <el-link :href="row.url" target="_blank" type="primary" :underline="false">
+                <el-link
+                  :href="row.url"
+                  target="_blank"
+                  type="primary"
+                  :underline="false"
+                >
                   <i class="el-icon-document"></i>
                   {{ row.name }}
                 </el-link>
@@ -286,38 +518,63 @@
             </el-table-column>
             <el-table-column label="操作" width="120" align="center">
               <template slot-scope="{ row, $index }">
-                <el-button size="mini" type="text" @click="previewFile(row)">预览</el-button>
-                <el-button size="mini" type="text" style="color: #f56c6c;"
-                  @click="removeHistoryFile($index)">删除</el-button>
+                <el-button size="mini" type="text" @click="previewFile(row)"
+                  >预览</el-button
+                >
+                <el-button
+                  size="mini"
+                  type="text"
+                  style="color: #f56c6c"
+                  @click="removeHistoryFile($index)"
+                  >删除</el-button
+                >
               </template>
             </el-table-column>
           </el-table>
         </div>
       </fieldset>
       <!-- 工位管理 -->
-      <div ref="stationBoxRef" v-loading="isSubLoading" element-loading-text="处理中...">
+      <div
+        ref="stationBoxRef"
+        v-loading="isSubLoading"
+        element-loading-text="处理中..."
+      >
         <!-- 工序类型tabs -->
         <div class="tabs-container">
           <div class="tabs-header">
-            <el-tabs v-model="activeProcessType" type="border-card" class="process-tabs">
-              <el-tab-pane 
-                v-for="processType in processTypeOptions" 
+            <el-tabs
+              v-model="activeProcessType"
+              type="border-card"
+              class="process-tabs"
+            >
+              <el-tab-pane
+                v-for="processType in processTypeOptions"
                 :key="processType.dictValue"
-                :label="processType.dictLabel" 
-                :name="processType.dictValue">
-                
+                :label="processType.dictLabel"
+                :name="processType.dictValue"
+              >
                 <!-- 每个tab的工位列表 -->
                 <div class="workstation-list">
-                  <transition-group name="workstation-list" tag="div" class="workstation-transition-group">
+                  <transition-group
+                    name="workstation-list"
+                    tag="div"
+                    class="workstation-transition-group"
+                  >
                     <WorkstationItem
-                      v-for="(workstation, index) in form.workstations[processType.dictValue] || []"
-                      :key="`${processType.dictValue}_${workstation.id || index}_${workstation._renderKey || ''}`"
+                      v-for="(workstation, index) in form.workstations[
+                        processType.dictValue
+                      ] || []"
+                      :key="`${processType.dictValue}_${
+                        workstation.id || index
+                      }_${workstation._renderKey || ''}`"
                       :workstation="workstation"
                       :item-index="index"
                       :process-type="processType.dictValue"
                       :equipment-options="equipmentOptions"
                       :process-type-options="processTypeOptions"
-                      :total-items-in-process="(form.workstations[processType.dictValue] || []).length"
+                      :total-items-in-process="
+                        (form.workstations[processType.dictValue] || []).length
+                      "
                       :is-focused="focusedWorkstationId === workstation.id"
                       :rules="rules"
                       :action-url="actionUrl"
@@ -336,34 +593,47 @@
                       @validate-field="validateField"
                     />
                   </transition-group>
-                  
+
                   <!-- 添加工位按钮 -->
                   <div class="add-workstation-btn">
-                    <el-button type="dashed" size="large" @click="addWorkstation(processType.dictValue)" icon="el-icon-plus">
+                    <el-button
+                      type="dashed"
+                      size="large"
+                      @click="addWorkstation(processType.dictValue)"
+                      icon="el-icon-plus"
+                    >
                       添加{{ processType.dictLabel }}工位
                     </el-button>
                   </div>
                 </div>
-                
               </el-tab-pane>
             </el-tabs>
-            
+
             <!-- PDF上传按钮 (Element UI 2.3兼容版本) -->
             <div class="pdf-upload-container">
-              <el-tooltip 
-                :content="`上传PDF到${getProcessTypeLabel(activeProcessType)}工序`" 
-                placement="bottom">
-                <el-button 
-                  type="primary" 
-                  size="small" 
-                  :disabled="isSubLoading" 
-                  @click="handlePdfUpload" 
-                  icon="el-icon-upload2">
-                  {{ isSubLoading ? '上传中...' : '上传PDF' }}
+              <el-tooltip
+                :content="`上传PDF到${getProcessTypeLabel(
+                  activeProcessType
+                )}工序`"
+                placement="bottom"
+              >
+                <el-button
+                  type="primary"
+                  size="small"
+                  :disabled="isSubLoading"
+                  @click="handlePdfUpload"
+                  icon="el-icon-upload2"
+                >
+                  {{ isSubLoading ? "上传中..." : "上传PDF" }}
                 </el-button>
               </el-tooltip>
-              <input ref="pdfFileInput" type="file" accept="application/pdf" style="display: none"
-                @change="onPdfFileSelected">
+              <input
+                ref="pdfFileInput"
+                type="file"
+                accept="application/pdf"
+                style="display: none"
+                @change="onPdfFileSelected"
+              />
             </div>
           </div>
         </div>
@@ -373,11 +643,16 @@
     <!-- 底部操作区 -->
     <div slot="footer" class="dialog-footer">
       <el-button @click="close">取消</el-button>
-      <el-button v-if="!form.id" type="info" :loading="isSavingDraft" @click="saveDraft">
-        {{ isSavingDraft ? '保存中...' : '保存草稿' }}
+      <el-button
+        v-if="!form.id"
+        type="info"
+        :loading="isSavingDraft"
+        @click="saveDraft"
+      >
+        {{ isSavingDraft ? "保存中..." : "保存草稿" }}
       </el-button>
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
-        {{ isSubLoading ? '保存中...' : '确定' }}
+        {{ isSubLoading ? "保存中..." : "确定" }}
       </el-button>
     </div>
   </el-dialog>
@@ -408,6 +683,7 @@ export default {
       type: Boolean,
       default: false,
     },
+    userListOptions: Array,
   },
   data() {
     return {
@@ -429,10 +705,10 @@ export default {
       pendingUpload: null, // 待上传文件信息
       auditPanelVisible: false, // 审核面板显示状态
       equipmentOptions: [], // 装备字典选项
-      processTypeOptions: [ // 工序类型字典选项（默认值，避免模板报错）
- 
+      processTypeOptions: [
+        // 工序类型字典选项（默认值，避免模板报错）
       ],
-      activeProcessType: '1', // 当前激活的工序类型tab
+      activeProcessType: "1", // 当前激活的工序类型tab
       focusedWorkstationId: null, // 当前聚焦的工位ID
       // 审核人员选项
       rdAuditorOptions: [], // 会审-研发人员选项
@@ -440,6 +716,7 @@ export default {
       productionAuditorOptions: [], // 会审-生产人员选项
       engineerAuditorOptions: [], // 工程审人员选项
       finalAuditorOptions: [], // 终审人员选项
+      projectAuditorOptions: [], // 项目人员选项
       // 表单参数
       form: {
         categoryId: "",
@@ -452,14 +729,19 @@ export default {
         rdAuditors: [], // 会审-研发人员
         qualityAuditors: [], // 会审-品质人员
         productionAuditors: [], // 会审-生产人员
-        engineerAuditors: '', // 工程审人员（单选）
-        finalAuditors: '', // 终审人员（单选）
+        engineerAuditors: "", // 工程审人员（单选）
+        finalAuditors: "", // 终审人员（单选）
+        projectPerson: "", // 项目人员（单选）
+        isSample: 0, // 品类是否样品
+        isOldSop: 0, // 是否旧版SOP
+        ccPersons: [], // 抄送人员
+        legacyEngineeringPerson: "", // 旧工程审核人员
         tsopChangeNotice: {}, // T-SOP 变更通知对象 (确保是对象而不是null)
         sopChangeNotice: {}, // SOP 变更通知对象 (确保是对象而不是null)
         workstations: {
-          '1': [], // 生产工位
-          '2': [], // 组装工位  
-          '3': [], // 包装工位
+          1: [], // 生产工位
+          2: [], // 组装工位
+          3: [], // 包装工位
         },
       },
       cloneForm: {},
@@ -471,11 +753,25 @@ export default {
           { required: true, message: "请选择品类", trigger: "change" },
         ],
         versionCode: [
-          { required: true, message: "请输入版本号", trigger: ["blur", "change"] },
+          {
+            required: true,
+            message: "请输入版本号",
+            trigger: ["blur", "change"],
+          },
         ],
-        desc: [{ required: true, message: "请输入版本描述", trigger: ["blur", "change"] }],
+        desc: [
+          {
+            required: true,
+            message: "请输入版本描述",
+            trigger: ["blur", "change"],
+          },
+        ],
         topImg: [
-          { required: true, message: "请上传封面图", trigger: ["blur", "change"] }
+          {
+            required: true,
+            message: "请上传封面图",
+            trigger: ["blur", "change"],
+          },
         ],
         indexNum: [
           { required: true, message: "请输入序号", trigger: "change" },
@@ -486,31 +782,34 @@ export default {
             message: "请上传图片或视频文件",
             trigger: ["change", "blur"],
             validator: (rule, value, callback) => {
-              if (!value || value.trim() === '') {
-                callback(new Error('请上传图片或视频文件'));
+              if (!value || value.trim() === "") {
+                callback(new Error("请上传图片或视频文件"));
                 return;
               }
-              
+
               // 简单检查文件字符串是否包含有效URL
-              const urls = value.split(',').filter(url => url.trim());
+              const urls = value.split(",").filter((url) => url.trim());
               if (urls.length === 0) {
-                callback(new Error('请上传图片或视频文件'));
+                callback(new Error("请上传图片或视频文件"));
                 return;
               }
-              
+
               // 检查是否有有效的URL格式
-              const hasValidUrl = urls.some(url => {
+              const hasValidUrl = urls.some((url) => {
                 const trimmedUrl = url.trim();
-                return trimmedUrl && (trimmedUrl.startsWith('http') || trimmedUrl.startsWith('//'));
+                return (
+                  trimmedUrl &&
+                  (trimmedUrl.startsWith("http") || trimmedUrl.startsWith("//"))
+                );
               });
-              
+
               if (!hasValidUrl) {
-                callback(new Error('文件无效，请重新上传'));
+                callback(new Error("文件无效，请重新上传"));
                 return;
               }
-              
+
               callback();
-            }
+            },
           },
         ],
         // 审核人员动态验证规则
@@ -518,128 +817,210 @@ export default {
           {
             validator: (rule, value, callback) => {
               // 新增时或编辑且选择重新审核时必填
-              if (!this.form.id || this.form.auditAdjustType === 'full') {
+              if (!this.form.id || this.form.auditAdjustType === "full") {
                 if (!value || value.length === 0) {
-                  callback(new Error('请选择会审-研发人员'));
+                  callback(new Error("请选择会审-研发人员"));
                   return;
                 }
               }
               callback();
             },
-            trigger: 'change'
-          }
+            trigger: "change",
+          },
         ],
         qualityAuditors: [
           {
             validator: (rule, value, callback) => {
-              if (!this.form.id || this.form.auditAdjustType === 'full') {
+              if (!this.form.id || this.form.auditAdjustType === "full") {
                 if (!value || value.length === 0) {
-                  callback(new Error('请选择会审-品质人员'));
+                  callback(new Error("请选择会审-品质人员"));
                   return;
                 }
               }
               callback();
             },
-            trigger: 'change'
-          }
+            trigger: "change",
+          },
         ],
         productionAuditors: [
           {
             validator: (rule, value, callback) => {
-              if (!this.form.id || this.form.auditAdjustType === 'full') {
+              if (!this.form.id || this.form.auditAdjustType === "full") {
                 if (!value || value.length === 0) {
-                  callback(new Error('请选择会审-生产人员'));
+                  callback(new Error("请选择会审-生产人员"));
                   return;
                 }
               }
               callback();
             },
-            trigger: 'change'
-          }
+            trigger: "change",
+          },
         ],
         engineerAuditors: [
           {
             validator: (rule, value, callback) => {
               // 新增、重新审核或仅工程审核时必填
-              if (!this.form.id || this.form.auditAdjustType === 'full' || this.form.auditAdjustType === 'engineer') {
-                if (!value || value.trim() === '') {
-                  callback(new Error('请选择工程审人员'));
+              if (
+                (!this.form.id ||
+                  this.form.auditAdjustType === "full" ||
+                  this.form.auditAdjustType === "engineer") &&
+                !(
+                  Number(this.form.isOldSop) === 1 &&
+                  this.form.auditAdjustType === "engineer"
+                )
+              ) {
+                if (!value || value.trim() === "") {
+                  callback(new Error("请选择工程审人员"));
                   return;
                 }
               }
               callback();
             },
-            trigger: 'change'
-          }
+            trigger: "change",
+          },
         ],
         finalAuditors: [
           {
             validator: (rule, value, callback) => {
               // 新增或重新审核时必填
-              if (!this.form.id || this.form.auditAdjustType === 'full') {
-                if (!value || value.trim() === '') {
-                  callback(new Error('请选择终审人员'));
+              if (!this.form.id || this.form.auditAdjustType === "full") {
+                if (!value || value.trim() === "") {
+                  callback(new Error("请选择终审人员"));
                   return;
                 }
               }
               callback();
             },
-            trigger: 'change'
-          }
+            trigger: "change",
+          },
+        ],
+        ccPersons: [
+          {
+            validator: (rule, value, callback) => {
+              if (
+                Number(this.form.isSample) === 1 &&
+                this.form.auditAdjustType === "engineer" &&
+                Number(this.form.isOldSop) !== 1
+              ) {
+                const hasCcPersons = Array.isArray(value)
+                  ? value.length > 0
+                  : String(value || "").trim() !== "";
+                if (!hasCcPersons) {
+                  callback(new Error("请输入抄送人员"));
+                  return;
+                }
+              }
+              callback();
+            },
+            trigger: ["blur", "change"],
+          },
+        ],
+        legacyEngineeringPerson: [
+          {
+            validator: (rule, value, callback) => {
+              if (
+                Number(this.form.isSample) === 1 &&
+                this.form.auditAdjustType === "engineer" &&
+                Number(this.form.isOldSop) !== 1
+              ) {
+                if (!value || value.trim() === "") {
+                  callback(new Error("请输入旧工程审人员"));
+                  return;
+                }
+              }
+              callback();
+            },
+            trigger: ["blur", "change"],
+          },
         ],
         remark: [
-          { required: false, message: "工位文件描述为空", trigger: ["blur", "change"] },
+          {
+            required: false,
+            message: "工位文件描述为空",
+            trigger: ["blur", "change"],
+          },
         ],
         spendTime: [
           {
             validator: (rule, value, callback) => {
               // 工时必填
-              if (value === null || value === undefined || value === '') {
-                callback(new Error('请输入工时'));
+              if (value === null || value === undefined || value === "") {
+                callback(new Error("请输入工时"));
               } else if (isNaN(value) || parseFloat(value) <= 0) {
-                callback(new Error('工时必须大于0'));
+                callback(new Error("工时必须大于0"));
               } else {
                 callback();
               }
             },
-            trigger: ["blur", "change"]
-          }
-        ]
+            trigger: ["blur", "change"],
+          },
+        ],
       },
     };
   },
   computed: {
+    isOldEngineerMode() {
+      return this.form.isOldSop == 1;
+    },
     isTitle() {
       return this.form.id ? "编辑SOP" : "添加SOP";
     },
     // 判断是否已配置审核人员
     hasAuditors() {
-      return (this.form.rdAuditors && this.form.rdAuditors.length > 0) ||
-             (this.form.qualityAuditors && this.form.qualityAuditors.length > 0) ||
-             (this.form.productionAuditors && this.form.productionAuditors.length > 0) ||
-             (this.form.engineerAuditors && this.form.engineerAuditors.length > 0) ||
-             (this.form.finalAuditors && this.form.finalAuditors.length > 0);
+      return (
+        (this.form.rdAuditors && this.form.rdAuditors.length > 0) ||
+        (this.form.qualityAuditors && this.form.qualityAuditors.length > 0) ||
+        (this.form.productionAuditors &&
+          this.form.productionAuditors.length > 0) ||
+        (this.form.engineerAuditors && this.form.engineerAuditors.length > 0) ||
+        (this.form.finalAuditors && this.form.finalAuditors.length > 0)
+      );
     },
     // 判断是否可以切换审核模式（只有编辑且有审核记录时才能切换）
     canSwitchAuditType() {
-      return this.form.id && (this.form.sopChangeNotice || this.form.tsopChangeNotice);
+      if (Number(this.form?.isOldSop) === 1) {
+        return true;
+      }
+      return (
+        this.form.id &&
+        (this.form.sopChangeNotice || this.form.tsopChangeNotice)
+      );
+    },
+    // 判断是否强制走重新审核（sopChangeNotice 为 null 或空对象时必须重新审核）
+    mustFullAudit() {
+      if (Number(this.form?.isSample) === 1) {
+        return false;
+      }
+      if (Number(this.form?.isOldSop) === 1) {
+        return false;
+      }
+      if (!this.form.id) return false;
+
+      // 检查 sopChangeNotice 是否为 null、undefined 或空对象
+      const notice = this.form.sopChangeNotice;
+      if (!notice) return true; // null 或 undefined
+
+      // 检查是否为空对象（没有任何属性，或只有 __ob__ 等 Vue 内部属性）
+      const keys = Object.keys(notice).filter((key) => !key.startsWith("__"));
+      return keys.length === 0;
     },
     // 计算属性：获取 ECN 编号
     displayEcn() {
       // 确保 form 存在
-      if (!this.form) return '';
-      
+      if (!this.form) return "";
+
       try {
         // 优先从 tsopChangeNotice 或 sopChangeNotice 中获取
-        const changeNotice = this.form.tsopChangeNotice || this.form.sopChangeNotice;
+        const changeNotice =
+          this.form.tsopChangeNotice || this.form.sopChangeNotice;
         if (changeNotice && changeNotice.ecn) {
           return changeNotice.ecn;
         }
         // 兜底使用 form.ecn
-        return this.form.ecn || '';
+        return this.form.ecn || "";
       } catch (error) {
-        console.error('Error getting ECN:', error);
-        return '';
+        console.error("Error getting ECN:", error);
+        return "";
       }
     },
   },
@@ -650,11 +1031,15 @@ export default {
         this.$nextTick(() => {
           // 初始化 tsopChangeNotice 对象
           if (!this.form.tsopChangeNotice) {
-            this.$set(this.form, 'tsopChangeNotice', {});
+            this.$set(this.form, "tsopChangeNotice", {});
           }
           // 生成 ECN 编号（如果没有的话）
           if (!(this.form.tsopChangeNotice && this.form.tsopChangeNotice.ecn)) {
-            this.$set(this.form.tsopChangeNotice, 'ecn', this.generateDTString());
+            this.$set(
+              this.form.tsopChangeNotice,
+              "ecn",
+              this.generateDTString()
+            );
           }
         });
       } else {
@@ -662,16 +1047,16 @@ export default {
       }
     },
     // 监听 form.historyFile 的变化，同步更新表格数据
-    'form.historyFile': {
+    "form.historyFile": {
       handler(newFileList) {
-        console.log('form.historyFile 变化:', newFileList);
+        console.log("form.historyFile 变化:", newFileList);
         if (Array.isArray(newFileList)) {
           this.updateHistoryFileList(newFileList);
         }
       },
       deep: true,
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   created() {
     // 加载装备字典数据
@@ -687,6 +1072,23 @@ export default {
     });
   },
   methods: {
+    normalizeCcPersonsArray(value) {
+      if (Array.isArray(value)) {
+        return value
+          .map((item) => (item == null ? "" : String(item).trim()))
+          .filter((item) => item);
+      }
+      if (value === undefined || value === null) {
+        return [];
+      }
+      if (typeof value === "string") {
+        return value
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item);
+      }
+      return [String(value).trim()].filter((item) => item);
+    },
     // 生成ECN编号
     generateDTString() {
       const date = new Date(); // 获取当前日期和时间
@@ -698,21 +1100,23 @@ export default {
       const seconds = date.getSeconds().toString().padStart(2, "0"); // 获取秒
       const milliseconds = date.getMilliseconds().toString().padStart(3, "0"); // 获取毫秒
       // 拼接字符串
-      const dtString = `DT-ECN${String(year).slice(-2)}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
+      const dtString = `DT-ECN${String(year).slice(
+        -2
+      )}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
       return dtString;
     },
     // 加载装备字典数据
     async loadEquipmentDict() {
       try {
         const [response, response2] = await Promise.all([
-          getDicts('sop_equipment'),
-          getDicts('sop_process_type')
-        ])
-         
+          getDicts("sop_equipment"),
+          getDicts("sop_process_type"),
+        ]);
+
         if (response && response.data) {
           this.equipmentOptions = response.data;
         }
-        if(response2 && response2.data) {
+        if (response2 && response2.data) {
           this.processTypeOptions = response2.data;
           // 字典数据加载完成后，重新排序工位序号
           this.$nextTick(() => {
@@ -720,7 +1124,7 @@ export default {
           });
         }
       } catch (error) {
-        console.error('加载装备字典数据失败:', error);
+        console.error("加载装备字典数据失败:", error);
         this.equipmentOptions = [];
         // 保持默认的processTypeOptions，不清空
       }
@@ -728,38 +1132,56 @@ export default {
     // 加载审核人员选项
     async loadAuditorOptions() {
       try {
-        // type: 2品质 3生产 5研发 8终审 9工程审
-        const [rdRes, qualityRes, productionRes, engineerRes, finalRes] = await Promise.all([
-          sopPersonList({ p: 1, l: 9999, type: 5 }), // 研发（会审）
-          sopPersonList({ p: 1, l: 9999, type: 2 }), // 品质（会审）
-          sopPersonList({ p: 1, l: 9999, type: 3 }), // 生产（会审）
-          sopPersonList({ p: 1, l: 9999, type: 9 }), // 工程审（单独环节）
-          sopPersonList({ p: 1, l: 9999, type: 8 })  // 终审
+        // 领域编码: 3品质 4生产 5工程 6研发 10终审 14项目人员
+        const [
+          rdRes,
+          qualityRes,
+          productionRes,
+          engineerRes,
+          finalRes,
+          projectRes,
+        ] = await Promise.all([
+          sopPersonList({ p: 1, l: 9999, type: 6 }), // 研发（会审）
+          sopPersonList({ p: 1, l: 9999, type: 3 }), // 品质（会审）
+          sopPersonList({ p: 1, l: 9999, type: 4 }), // 生产（会审）
+          sopPersonList({ p: 1, l: 9999, type: 5 }), // 工程审（单独环节）
+          sopPersonList({ p: 1, l: 9999, type: 10 }), // 终审
+          sopPersonList({ p: 1, l: 9999, type: 14 }), // 项目人员
         ]);
-        
+
         // 提取人员名称
-        this.rdAuditorOptions = rdRes.code === 200 && rdRes.data?.list 
-          ? rdRes.data.list.map(item => item.personnel) 
-          : [];
-        this.qualityAuditorOptions = qualityRes.code === 200 && qualityRes.data?.list 
-          ? qualityRes.data.list.map(item => item.personnel) 
-          : [];
-        this.productionAuditorOptions = productionRes.code === 200 && productionRes.data?.list 
-          ? productionRes.data.list.map(item => item.personnel) 
-          : [];
-        this.engineerAuditorOptions = engineerRes.code === 200 && engineerRes.data?.list 
-          ? engineerRes.data.list.map(item => item.personnel) 
-          : [];
-        this.finalAuditorOptions = finalRes.code === 200 && finalRes.data?.list 
-          ? finalRes.data.list.map(item => item.personnel) 
-          : [];
+        this.rdAuditorOptions =
+          rdRes.code === 200 && rdRes.data?.list
+            ? rdRes.data.list.map((item) => item.personnel)
+            : [];
+        this.qualityAuditorOptions =
+          qualityRes.code === 200 && qualityRes.data?.list
+            ? qualityRes.data.list.map((item) => item.personnel)
+            : [];
+        this.productionAuditorOptions =
+          productionRes.code === 200 && productionRes.data?.list
+            ? productionRes.data.list.map((item) => item.personnel)
+            : [];
+        this.engineerAuditorOptions =
+          engineerRes.code === 200 && engineerRes.data?.list
+            ? engineerRes.data.list.map((item) => item.personnel)
+            : [];
+        this.finalAuditorOptions =
+          finalRes.code === 200 && finalRes.data?.list
+            ? finalRes.data.list.map((item) => item.personnel)
+            : [];
+        this.projectAuditorOptions =
+          projectRes.code === 200 && projectRes.data?.list
+            ? projectRes.data.list.map((item) => item.personnel)
+            : [];
       } catch (error) {
-        console.error('加载审核人员配置失败:', error);
+        console.error("加载审核人员配置失败:", error);
         this.rdAuditorOptions = [];
         this.qualityAuditorOptions = [];
         this.productionAuditorOptions = [];
         this.engineerAuditorOptions = [];
         this.finalAuditorOptions = [];
+        this.projectAuditorOptions = [];
       }
     },
     close() {
@@ -774,78 +1196,109 @@ export default {
     handleAuditTypeChange(type) {
       // 设置审核调整类型
       this.form.auditAdjustType = type;
-      
+
       // 切换类型时，清除对应的校验错误
       this.$nextTick(() => {
         if (this.$refs.form) {
           // 清除所有审核人员字段的验证错误
-          this.$refs.form.clearValidate(['rdAuditors', 'qualityAuditors', 'productionAuditors', 'engineerAuditors', 'finalAuditors']);
-          
+          this.$refs.form.clearValidate([
+            "rdAuditors",
+            "qualityAuditors",
+            "productionAuditors",
+            "engineerAuditors",
+            "finalAuditors",
+          ]);
+
           // 如果选择无需审核，清空审核人员选择
-          if (type === 'none') {
+          if (type === "none") {
             this.form.rdAuditors = [];
             this.form.qualityAuditors = [];
             this.form.productionAuditors = [];
-            this.form.engineerAuditors = '';
-            this.form.finalAuditors = '';
+            this.form.engineerAuditors = "";
+            this.form.finalAuditors = "";
+            this.form.ccPersons = [];
+            this.form.legacyEngineeringPerson = "";
           }
           // 如果选择仅工程审核，保留工程审人员，清空其他
-          else if (type === 'engineer') {
+          else if (type === "engineer") {
             this.form.rdAuditors = [];
             this.form.qualityAuditors = [];
             this.form.productionAuditors = [];
-            this.form.finalAuditors = '';
-            
+            this.form.finalAuditors = "";
+
             // 从sopChangeNotice中回显工程审人员（取第一个）
-            const changeNotice = this.form.sopChangeNotice || this.form.tsopChangeNotice;
+            const changeNotice =
+              this.form.sopChangeNotice || this.form.tsopChangeNotice;
             if (changeNotice && changeNotice.engineeringPerson) {
-              const persons = changeNotice.engineeringPerson.split(',').filter(item => item.trim());
-              this.form.engineerAuditors = persons.length > 0 ? persons[0] : '';
+              const persons = changeNotice.engineeringPerson
+                .split(",")
+                .filter((item) => item.trim());
+              this.form.engineerAuditors = persons.length > 0 ? persons[0] : "";
             }
+            this.form.ccPersons = this.normalizeCcPersonsArray(
+              changeNotice && changeNotice.ccPersons
+            );
+            this.form.legacyEngineeringPerson =
+              changeNotice && changeNotice.engineeringPerson
+                ? changeNotice.engineeringPerson
+                : "";
           }
           // 如果选择重新审核，从sopChangeNotice中回显所有审核人员
-          else if (type === 'full') {
-            const changeNotice = this.form.sopChangeNotice || this.form.tsopChangeNotice;
+          else if (type === "full") {
+            const changeNotice =
+              this.form.sopChangeNotice || this.form.tsopChangeNotice;
             if (changeNotice) {
               // 解析会审人员
               if (changeNotice.list && Array.isArray(changeNotice.list)) {
                 // 研发 (field: 5)
                 this.form.rdAuditors = changeNotice.list
-                  .filter(item => item.field === 5)
-                  .map(item => item.fieldName)
-                  .filter(name => name);
-                
+                  .filter((item) => item.field === 5)
+                  .map((item) => item.fieldName)
+                  .filter((name) => name);
+
                 // 品质 (field: 2)
                 this.form.qualityAuditors = changeNotice.list
-                  .filter(item => item.field === 2)
-                  .map(item => item.fieldName)
-                  .filter(name => name);
-                
+                  .filter((item) => item.field === 2)
+                  .map((item) => item.fieldName)
+                  .filter((name) => name);
+
                 // 生产 (field: 3)
                 this.form.productionAuditors = changeNotice.list
-                  .filter(item => item.field === 3)
-                  .map(item => item.fieldName)
-                  .filter(name => name);
+                  .filter((item) => item.field === 3)
+                  .map((item) => item.fieldName)
+                  .filter((name) => name);
               }
-              
+
               // 解析工程审人员（取第一个）
               if (changeNotice.engineeringPerson) {
-                const persons = changeNotice.engineeringPerson.split(',').filter(item => item.trim());
-                this.form.engineerAuditors = persons.length > 0 ? persons[0] : '';
+                const persons = changeNotice.engineeringPerson
+                  .split(",")
+                  .filter((item) => item.trim());
+                this.form.engineerAuditors =
+                  persons.length > 0 ? persons[0] : "";
               }
-              
+              this.form.legacyEngineeringPerson =
+                changeNotice.engineeringPerson || "";
+
               // 解析终审人员（取第一个）
               if (changeNotice.secondPerson) {
-                const persons = changeNotice.secondPerson.split(',').filter(item => item.trim());
-                this.form.finalAuditors = persons.length > 0 ? persons[0] : '';
+                const persons = changeNotice.secondPerson
+                  .split(",")
+                  .filter((item) => item.trim());
+                this.form.finalAuditors = persons.length > 0 ? persons[0] : "";
               }
+              this.form.ccPersons = this.normalizeCcPersonsArray(
+                changeNotice.ccPersons
+              );
             } else {
               // 如果没有sopChangeNotice，清空所有审核人员
               this.form.rdAuditors = [];
               this.form.qualityAuditors = [];
               this.form.productionAuditors = [];
-              this.form.engineerAuditors = '';
-              this.form.finalAuditors = '';
+              this.form.engineerAuditors = "";
+              this.form.finalAuditors = "";
+              this.form.ccPersons = [];
+              this.form.legacyEngineeringPerson = "";
             }
           }
         }
@@ -854,32 +1307,44 @@ export default {
     /** 处理品类选择变化 */
     handleCategoryChange(value) {
       // value 是选中的品类ID
-      console.log('品类ID变化:', value);
-      
+      console.log("品类ID变化:", value);
+
       // 确保 tsopChangeNotice 对象存在
       if (!this.form.tsopChangeNotice) {
-        this.$set(this.form, 'tsopChangeNotice', {});
+        this.$set(this.form, "tsopChangeNotice", {});
       }
-      
+
       // 自动生成ECN编号（如果没有的话）
       if (!(this.form.tsopChangeNotice && this.form.tsopChangeNotice.ecn)) {
-        this.$set(this.form.tsopChangeNotice, 'ecn', this.generateDTString());
+        this.$set(this.form.tsopChangeNotice, "ecn", this.generateDTString());
       }
-      
+
       // 从 TypedSelectLoadMore 组件中获取对应的品类名称
       this.$nextTick(() => {
-        if (this.$refs.categorySelect && this.$refs.categorySelect.componentData) {
-          const categoryData = this.$refs.categorySelect.componentData.data || [];
-          const selectedCategory = categoryData.find(item => {
+        if (
+          this.$refs.categorySelect &&
+          this.$refs.categorySelect.componentData
+        ) {
+          const categoryData =
+            this.$refs.categorySelect.componentData.data || [];
+          const selectedCategory = categoryData.find((item) => {
             // 根据 type="category" 的配置，dictValue 是 'id'
             return item.id == value || item.id === value;
           });
-          
+
           if (selectedCategory) {
             // 根据 type="category" 的配置，dictLabel 是 'name'
-            const categoryName = selectedCategory.name || selectedCategory.label || value;
-            console.log('品类名称:', categoryName);
-            this.$set(this.form, 'categoryName', categoryName);
+            const categoryName =
+              selectedCategory.name || selectedCategory.label || value;
+            console.log("品类名称:", categoryName);
+            this.$set(this.form, "categoryName", categoryName);
+            this.$set(
+              this.form,
+              "isSample",
+              selectedCategory && selectedCategory.isSample
+                ? Number(selectedCategory.isSample)
+                : 0
+            );
           }
         }
       });
@@ -902,18 +1367,23 @@ export default {
         rdAuditors: [], // 会审-研发人员
         qualityAuditors: [], // 会审-品质人员
         productionAuditors: [], // 会审-生产人员
-        engineerAuditors: '', // 工程审人员（单选）
-        finalAuditors: '', // 终审人员（单选）
+        engineerAuditors: "", // 工程审人员（单选）
+        finalAuditors: "", // 终审人员（单选）
+        projectPerson: "", // 项目人员（单选）
+        isSample: 0,
+        isOldSop: 0,
+        ccPersons: [],
+        legacyEngineeringPerson: "",
         tsopChangeNotice: {}, // T-SOP 变更通知对象 (确保是对象而不是null)
         sopChangeNotice: {}, // SOP 变更通知对象 (确保是对象而不是null)
         workstations: {
-          '1': [], // 生产工位
-          '2': [], // 组装工位  
-          '3': [], // 包装工位
+          1: [], // 生产工位
+          2: [], // 组装工位
+          3: [], // 包装工位
         },
       };
       this.historyFileList = []; // 重置历史文件表格数据
-      this.activeProcessType = '1'; // 重置到第一个tab
+      this.activeProcessType = "1"; // 重置到第一个tab
       this.currentDraftId = null; // 清除草稿ID
       // 确保表单引用存在后再重置
       this.$nextTick(() => {
@@ -927,9 +1397,11 @@ export default {
       if (!this.form.workstations[processType]) {
         this.form.workstations[processType] = [];
       }
-      
+
       const newWorkstation = {
-        id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+        id: `ws_${Date.now().toString(36)}_${Math.random()
+          .toString(36)
+          .substring(2, 8)}`, // 唯一ID
         indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
         file: "",
         remark: "",
@@ -938,7 +1410,7 @@ export default {
         processType: processType, // 工序类型
         isProcess: 0, // 默认未发布
       };
-      
+
       this.form.workstations[processType].push(newWorkstation);
       // 重新排序所有工位的序号（从第一个tabs开始连续编号）
       this.reorderAllWorkstationIndexes();
@@ -948,12 +1420,12 @@ export default {
     // 将分组工位数据转换为列表格式
     convertWorkstationsToList(workstations) {
       let list = [];
-      
+
       // 遍历所有工序类型
-      this.processTypeOptions.forEach(processType => {
+      this.processTypeOptions.forEach((processType) => {
         const processValue = processType.dictValue;
         const workstationList = workstations[processValue] || [];
-        
+
         workstationList.forEach((workstation) => {
           list.push({
             ...workstation,
@@ -963,42 +1435,46 @@ export default {
           });
         });
       });
-      
+
       return list;
     },
 
     // 将列表数据转换为分组格式
     convertListToWorkstations(list) {
       const workstations = {
-        '1': [],
-        '2': [],
-        '3': [],
+        1: [],
+        2: [],
+        3: [],
       };
-      
+
       if (list && list.length > 0) {
-        list.forEach(item => {
-          const processType = item.processType || '1'; // 默认生产工序
+        list.forEach((item) => {
+          const processType = item.processType || "1"; // 默认生产工序
           if (!workstations[processType]) {
             workstations[processType] = [];
           }
           workstations[processType].push({
             ...item,
-            id: item.id || `workstation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 确保有ID
+            id:
+              item.id ||
+              `workstation_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 9)}`, // 确保有ID
             equipment: this.processEquipmentField(item.equipment),
           });
         });
       }
-      
+
       // 重新编排序号
       this.reorderWorkstationsIndexes(workstations);
-      
+
       return workstations;
     },
 
     // WorkstationItem组件事件处理方法
     onFileChange(workstation, index, processType) {
       // 文件变化时触发，可以在这里添加额外的业务逻辑
-      console.log('文件变化:', workstation, index, processType);
+      console.log("文件变化:", workstation, index, processType);
     },
 
     onCopyItem(index, processType) {
@@ -1006,7 +1482,9 @@ export default {
       if (workstationList && workstationList[index]) {
         const item = {
           ...workstationList[index],
-          id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 新的唯一ID
+          id: `ws_${Date.now().toString(36)}_${Math.random()
+            .toString(36)
+            .substring(2, 8)}`, // 新的唯一ID
           indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
         };
         workstationList.splice(index + 1, 0, item);
@@ -1020,15 +1498,15 @@ export default {
       if (workstationList && index > 0) {
         // 获取被移动工位的ID
         const movedWorkstationId = workstationList[index].id;
-        
+
         // 交换位置
         const temp = workstationList[index];
         this.$set(workstationList, index, workstationList[index - 1]);
         this.$set(workstationList, index - 1, temp);
-        
+
         // 重新排序所有工位的序号（从第一个tabs开始连续编号）
         this.reorderAllWorkstationIndexes();
-        
+
         // 设置聚焦状态
         this.setWorkstationFocus(movedWorkstationId);
       }
@@ -1039,15 +1517,15 @@ export default {
       if (workstationList && index < workstationList.length - 1) {
         // 获取被移动工位的ID
         const movedWorkstationId = workstationList[index].id;
-        
+
         // 交换位置
         const temp = workstationList[index];
         this.$set(workstationList, index, workstationList[index + 1]);
         this.$set(workstationList, index + 1, temp);
-        
+
         // 重新排序所有工位的序号（从第一个tabs开始连续编号）
         this.reorderAllWorkstationIndexes();
-        
+
         // 设置聚焦状态
         this.setWorkstationFocus(movedWorkstationId);
       }
@@ -1056,37 +1534,41 @@ export default {
     onMoveToProcess(index, sourceProcessType, targetProcessType) {
       const sourceList = this.form.workstations[sourceProcessType];
       const targetList = this.form.workstations[targetProcessType];
-      
+
       if (sourceList && targetList && sourceList[index]) {
         // 从源列表中移除工位
         const workstation = sourceList.splice(index, 1)[0];
-        
+
         // 更新工序类型
         workstation.processType = targetProcessType;
-        
+
         // 添加到目标列表
         targetList.push(workstation);
-        
+
         // 重新排序所有工位的序号（从第一个tabs开始连续编号）
         this.reorderAllWorkstationIndexes();
-        
+
         // 切换到目标tab
         this.activeProcessType = targetProcessType;
-        
-        this.$message.success(`工位已移动到${this.getProcessTypeLabel(targetProcessType)}`);
+
+        this.$message.success(
+          `工位已移动到${this.getProcessTypeLabel(targetProcessType)}`
+        );
       }
     },
 
     // 获取工序类型标签
     getProcessTypeLabel(processType) {
-      const option = this.processTypeOptions.find(opt => opt.dictValue === processType);
+      const option = this.processTypeOptions.find(
+        (opt) => opt.dictValue === processType
+      );
       return option ? option.dictLabel : processType;
     },
 
     // 设置工位聚焦状态
     setWorkstationFocus(workstationId) {
       this.focusedWorkstationId = workstationId;
-      
+
       // 2秒后自动清除聚焦状态
       setTimeout(() => {
         if (this.focusedWorkstationId === workstationId) {
@@ -1098,22 +1580,23 @@ export default {
     // 重新编排所有工位的序号，从第一个tabs开始连续编号
     reorderAllWorkstationIndexes() {
       let globalIndex = 1;
-      
+
       // 如果processTypeOptions还没加载完成，使用默认顺序
-      const processTypes = this.processTypeOptions.length > 0 
-        ? this.processTypeOptions 
-        : [
-            { dictValue: '1', dictLabel: '生产' },
-            { dictValue: '2', dictLabel: '组装' },
-            { dictValue: '3', dictLabel: '包装' }
-          ];
-      
+      const processTypes =
+        this.processTypeOptions.length > 0
+          ? this.processTypeOptions
+          : [
+              { dictValue: "1", dictLabel: "生产" },
+              { dictValue: "2", dictLabel: "组装" },
+              { dictValue: "3", dictLabel: "包装" },
+            ];
+
       // 按照工序类型的顺序重新编号
-      processTypes.forEach(processType => {
+      processTypes.forEach((processType) => {
         const processValue = processType.dictValue;
         const workstationList = this.form.workstations[processValue] || [];
-        
-        workstationList.forEach(workstation => {
+
+        workstationList.forEach((workstation) => {
           workstation.indexNum = globalIndex++;
         });
       });
@@ -1122,22 +1605,23 @@ export default {
     // 重新编排工位对象的序号（用于数据加载时）
     reorderWorkstationsIndexes(workstations) {
       let globalIndex = 1;
-      
+
       // 如果processTypeOptions还没加载完成，使用默认顺序
-      const processTypes = this.processTypeOptions.length > 0 
-        ? this.processTypeOptions 
-        : [
-            { dictValue: '1', dictLabel: '生产' },
-            { dictValue: '2', dictLabel: '组装' },
-            { dictValue: '3', dictLabel: '包装' }
-          ];
-      
+      const processTypes =
+        this.processTypeOptions.length > 0
+          ? this.processTypeOptions
+          : [
+              { dictValue: "1", dictLabel: "生产" },
+              { dictValue: "2", dictLabel: "组装" },
+              { dictValue: "3", dictLabel: "包装" },
+            ];
+
       // 按照工序类型的顺序重新编号
-      processTypes.forEach(processType => {
+      processTypes.forEach((processType) => {
         const processValue = processType.dictValue;
         const workstationList = workstations[processValue] || [];
-        
-        workstationList.forEach(workstation => {
+
+        workstationList.forEach((workstation) => {
           workstation.indexNum = globalIndex++;
         });
       });
@@ -1154,7 +1638,7 @@ export default {
 
     onSaveItem(workstation, index, processType) {
       // 保存工位时的回调，可以添加业务逻辑
-      console.log('保存工位:', workstation, index, processType);
+      console.log("保存工位:", workstation, index, processType);
     },
 
     validateField(fieldProp) {
@@ -1166,13 +1650,13 @@ export default {
     onSetStationBoxRef() {
       // 检查 stationBoxRef 是否存在
       if (!this.$refs.stationBoxRef) {
-        console.warn('stationBoxRef 不存在，跳过滚动操作');
+        console.warn("stationBoxRef 不存在，跳过滚动操作");
         return;
       }
 
       const scrollRef = this.$refs.stationBoxRef.$el;
       if (!scrollRef) {
-        console.warn('stationBoxRef.$el 不存在，跳过滚动操作');
+        console.warn("stationBoxRef.$el 不存在，跳过滚动操作");
         return;
       }
 
@@ -1187,11 +1671,11 @@ export default {
     /** 获取文件列表 - 将字符串转换为对象数组 */
     getFileList(fileString) {
       if (!fileString) return [];
-      const urls = fileString.split(',').filter(url => url.trim());
+      const urls = fileString.split(",").filter((url) => url.trim());
       return urls.map((url, index) => ({
         id: `${Date.now()}_${index}`,
         url: url.trim(),
-        name: url.split('/').pop() || `文件${index + 1}`
+        name: url.split("/").pop() || `文件${index + 1}`,
       }));
     },
 
@@ -1202,44 +1686,43 @@ export default {
 
     /** 拖拽开始事件 */
     onDragStart(evt, rowIndex) {
-      console.log('开始拖拽，行索引:', rowIndex);
+      console.log("开始拖拽，行索引:", rowIndex);
       this.dragSourceIndex = rowIndex;
     },
 
     /** 拖拽结束事件 */
     onDragEnd(evt) {
-      console.log('拖拽结束');
+      console.log("拖拽结束");
       this.dragSourceIndex = -1;
     },
-
 
     /** 验证工位数量 */
     checkWorkStationCount() {
       let totalCount = 0;
-      
+
       // 统计所有工序类型的工位总数
       for (const processType of this.processTypeOptions) {
         const processValue = processType.dictValue;
         const workstationList = this.form.workstations[processValue] || [];
         totalCount += workstationList.length;
       }
-      
+
       if (totalCount === 0) {
         this.msgError("请至少添加一个工位");
         return true;
       }
-      
+
       return false;
     },
 
     checkListItem() {
       let arr = [];
-      
+
       // 遍历所有工序类型的工位
       for (const processType of this.processTypeOptions) {
         const processValue = processType.dictValue;
         const workstationList = this.form.workstations[processValue] || [];
-        
+
         for (const { indexNum } of workstationList) {
           if (arr.includes(indexNum)) {
             this.msgError("工位序号不能重复");
@@ -1255,43 +1738,49 @@ export default {
     /** 验证工序文件 */
     checkWorkStationFiles() {
       let workstationIndex = 1;
-      
+
       // 遍历所有工序类型
       for (const processType of this.processTypeOptions) {
         const processValue = processType.dictValue;
         const workstationList = this.form.workstations[processValue] || [];
-        
+
         for (let i = 0; i < workstationList.length; i++) {
           const item = workstationList[i];
-          
+
           // 检查文件是否为空
-          if (!item.file || item.file.trim() === '') {
-            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`);
+          if (!item.file || item.file.trim() === "") {
+            this.msgError(
+              `第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`
+            );
             return true;
           }
-          
+
           // 检查文件是否有效（有实际的URL）
           const fileList = this.getFileList(item.file);
           if (fileList.length === 0) {
-            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`);
+            this.msgError(
+              `第${workstationIndex}个工位（${processType.dictLabel}）必须上传图片或视频文件`
+            );
             return true;
           }
-          
+
           // 验证每个文件URL是否有效
-          const hasValidFile = fileList.some(file => {
+          const hasValidFile = fileList.some((file) => {
             const url = file.url && file.url.trim();
-            return url && url !== '';
+            return url && url !== "";
           });
-          
+
           if (!hasValidFile) {
-            this.msgError(`第${workstationIndex}个工位（${processType.dictLabel}）的文件无效，请重新上传`);
+            this.msgError(
+              `第${workstationIndex}个工位（${processType.dictLabel}）的文件无效，请重新上传`
+            );
             return true;
           }
-          
+
           workstationIndex++;
         }
       }
-      
+
       return false; // 验证通过
     },
     /** 触发PDF文件选择 */
@@ -1305,30 +1794,34 @@ export default {
       this.isSubLoading = true;
       if (!file) return;
 
-      if (file.type !== 'application/pdf') {
-        this.msgError('请上传PDF格式文件');
+      if (file.type !== "application/pdf") {
+        this.msgError("请上传PDF格式文件");
         return;
       }
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       this.isSubLoading = true;
       // 调用后端接口转换PDF为图片并上传至OSS
-      axios.post(reqUrl + '/file/converterToOss', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      }).then(response => {
-        this.processPdfResponse(response.data);
-      }).catch(error => {
-        console.error('PDF转换失败:', error);
-        this.msgError('PDF转换上传失败，请重试');
-      }).finally(() => {
-        this.isSubLoading = false;
-        // 重置文件输入框，以便于再次选择同一文件
-        this.$refs.pdfFileInput.value = '';
-      });
+      axios
+        .post(reqUrl + "/file/converterToOss", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          this.processPdfResponse(response.data);
+        })
+        .catch((error) => {
+          console.error("PDF转换失败:", error);
+          this.msgError("PDF转换上传失败，请重试");
+        })
+        .finally(() => {
+          this.isSubLoading = false;
+          // 重置文件输入框，以便于再次选择同一文件
+          this.$refs.pdfFileInput.value = "";
+        });
     },
 
     /** 处理PDF转换响应数据 */
@@ -1339,8 +1832,9 @@ export default {
           // 查找当前最大序号
           let maxIndexNum = 0;
           // 查找当前工序类型的所有工位的最大序号
-          const currentWorkstationList = this.form.workstations[this.activeProcessType] || [];
-          currentWorkstationList.forEach(item => {
+          const currentWorkstationList =
+            this.form.workstations[this.activeProcessType] || [];
+          currentWorkstationList.forEach((item) => {
             if (item.indexNum && parseInt(item.indexNum) > maxIndexNum) {
               maxIndexNum = parseInt(item.indexNum);
             }
@@ -1350,12 +1844,14 @@ export default {
           data.data.forEach((imageData, idx) => {
             // 清理URL中的反引号和空格
             let cleanUrl = imageData.url;
-            if (typeof cleanUrl === 'string') {
-              cleanUrl = cleanUrl.replace(/`/g, '').trim();
+            if (typeof cleanUrl === "string") {
+              cleanUrl = cleanUrl.replace(/`/g, "").trim();
             }
 
             // 查找空项或添加新项
-            const emptyIndex = currentWorkstationList.findIndex(item => !item.file);
+            const emptyIndex = currentWorkstationList.findIndex(
+              (item) => !item.file
+            );
             if (emptyIndex !== -1) {
               // 更新空项
               currentWorkstationList[emptyIndex].file = cleanUrl;
@@ -1365,15 +1861,20 @@ export default {
               }
               // 触发验证以清除错误提示
               this.$nextTick(() => {
-                this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${emptyIndex}].file`);
+                this.$refs.form &&
+                  this.$refs.form.validateField(
+                    `workstations.${this.activeProcessType}[${emptyIndex}].file`
+                  );
               });
             } else {
               // 如果没有空项，则添加新项
               const newWorkstation = {
-                id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+                id: `ws_${Date.now().toString(36)}_${Math.random()
+                  .toString(36)
+                  .substring(2, 8)}`, // 唯一ID
                 indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
                 file: cleanUrl,
-                remark: '',
+                remark: "",
                 spendTime: null,
                 equipment: [], // 装备字段（多选）
                 processType: this.activeProcessType,
@@ -1383,7 +1884,10 @@ export default {
               const newIndex = currentWorkstationList.length - 1;
               // 触发验证以清除错误提示
               this.$nextTick(() => {
-                this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${newIndex}].file`);
+                this.$refs.form &&
+                  this.$refs.form.validateField(
+                    `workstations.${this.activeProcessType}[${newIndex}].file`
+                  );
               });
             }
           });
@@ -1391,29 +1895,37 @@ export default {
           this.reorderAllWorkstationIndexes();
           // 更新站位盒子引用
           this.onSetStationBoxRef();
-          this.msgSuccess('PDF转换成功');
+          this.msgSuccess("PDF转换成功");
         } else {
           // 处理单个URL的情况
           let cleanUrl = data.data;
-          if (typeof cleanUrl === 'string') {
-            cleanUrl = cleanUrl.replace(/`/g, '').trim();
+          if (typeof cleanUrl === "string") {
+            cleanUrl = cleanUrl.replace(/`/g, "").trim();
           }
 
-          const currentWorkstationList = this.form.workstations[this.activeProcessType] || [];
-          const emptyIndex = currentWorkstationList.findIndex(item => !item.file);
+          const currentWorkstationList =
+            this.form.workstations[this.activeProcessType] || [];
+          const emptyIndex = currentWorkstationList.findIndex(
+            (item) => !item.file
+          );
           if (emptyIndex !== -1) {
             currentWorkstationList[emptyIndex].file = cleanUrl;
             // 触发验证以清除错误提示
             this.$nextTick(() => {
-              this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${emptyIndex}].file`);
+              this.$refs.form &&
+                this.$refs.form.validateField(
+                  `workstations.${this.activeProcessType}[${emptyIndex}].file`
+                );
             });
           } else {
             // 如果没有空项，则添加新项
             const newWorkstation = {
-              id: `ws_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, // 唯一ID
+              id: `ws_${Date.now().toString(36)}_${Math.random()
+                .toString(36)
+                .substring(2, 8)}`, // 唯一ID
               indexNum: 1, // 临时序号，会通过reorderAllWorkstationIndexes重新计算
               file: cleanUrl,
-              remark: '',
+              remark: "",
               spendTime: null,
               equipment: [], // 装备字段（多选）
               processType: this.activeProcessType,
@@ -1423,16 +1935,19 @@ export default {
             const newIndex = currentWorkstationList.length - 1;
             // 触发验证以清除错误提示
             this.$nextTick(() => {
-              this.$refs.form && this.$refs.form.validateField(`workstations.${this.activeProcessType}[${newIndex}].file`);
+              this.$refs.form &&
+                this.$refs.form.validateField(
+                  `workstations.${this.activeProcessType}[${newIndex}].file`
+                );
             });
           }
           // 重新排序所有工位的序号（从第一个tabs开始连续编号）
           this.reorderAllWorkstationIndexes();
           this.onSetStationBoxRef();
-          this.msgSuccess('PDF转换成功');
+          this.msgSuccess("PDF转换成功");
         }
       } else {
-        this.msgError(data.msg || 'PDF转换失败');
+        this.msgError(data.msg || "PDF转换失败");
       }
     },
 
@@ -1444,14 +1959,17 @@ export default {
         return equipment;
       }
 
-      if (typeof equipment === 'string') {
+      if (typeof equipment === "string") {
         // 尝试解析JSON
         try {
           const parsed = JSON.parse(equipment);
           return Array.isArray(parsed) ? parsed : [parsed];
         } catch (e) {
           // JSON解析失败，尝试按逗号分割
-          return equipment.split(',').filter(code => code.trim()).map(code => code.trim());
+          return equipment
+            .split(",")
+            .filter((code) => code.trim())
+            .map((code) => code.trim());
         }
       }
 
@@ -1462,24 +1980,26 @@ export default {
     /** 获取装备字段的显示文本 */
     getEquipmentDisplayText(equipment) {
       if (!equipment || !Array.isArray(equipment) || equipment.length === 0) {
-        return '暂无装备';
+        return "暂无装备";
       }
 
-      const labels = equipment.map(code => {
-        const option = this.equipmentOptions.find(opt => opt.dictCode === code);
+      const labels = equipment.map((code) => {
+        const option = this.equipmentOptions.find(
+          (opt) => opt.dictCode === code
+        );
         return option ? option.dictLabel : code;
       });
 
-      return labels.join('、');
+      return labels.join("、");
     },
 
     /** 提交按钮 */
     submitForm: function () {
       // 验证是否至少有一个工位
       if (this.checkWorkStationCount()) return;
-      
+
       if (this.checkListItem()) return;
-      
+
       // 验证每个工序都必须有文件
       if (this.checkWorkStationFiles()) return;
 
@@ -1489,79 +2009,140 @@ export default {
 
           // 深拷贝表单数据
           const submitData = _.cloneDeep(this.form);
+          const normalizeCcPersonsValue = () => {
+            const value = submitData.ccPersons;
+            if (value === undefined || value === null) return "";
+            if (Array.isArray(value)) {
+              return value
+                .map((item) =>
+                  item !== undefined && item !== null ? String(item).trim() : ""
+                )
+                .filter((item) => item)
+                .join(",");
+            }
+            return String(value)
+              .split(",")
+              .map((item) => item.trim())
+              .filter((item) => item)
+              .join(",");
+          };
+          const normalizedCcPersons = normalizeCcPersonsValue();
+          submitData.ccPersons = normalizedCcPersons;
 
           // 将 historyFile 对象数组转换为原格式字符串
           if (submitData.historyFile && Array.isArray(submitData.historyFile)) {
-            submitData.historyFile = JSON.stringify(submitData.historyFile)
+            submitData.historyFile = JSON.stringify(submitData.historyFile);
           }
 
           // 构建审核人员数据结构
           // 根据新增/编辑和审核类型，构建tsopChangeNotice对象
+          const resolveEngineeringPersonValue = () => {
+            if (
+              submitData.legacyEngineeringPerson &&
+              submitData.legacyEngineeringPerson.trim() !== ""
+            ) {
+              return submitData.legacyEngineeringPerson.trim();
+            }
+            if (
+              submitData.engineerAuditors &&
+              submitData.engineerAuditors.trim() !== ""
+            ) {
+              return submitData.engineerAuditors.trim();
+            }
+            return "";
+          };
+
           if (!submitData.id) {
             // 新增：构建完整的tsopChangeNotice对象
             // 确保 tsopChangeNotice 存在并获取 ECN
-            const ecn = (submitData.tsopChangeNotice && submitData.tsopChangeNotice.ecn) || submitData.ecn || '';
+            const ecn =
+              (submitData.tsopChangeNotice &&
+                submitData.tsopChangeNotice.ecn) ||
+              submitData.ecn ||
+              "";
             submitData.tsopChangeNotice = {
               auditNode: 1, // 1.重新审核
               ecn: ecn, // ECN编号
               list: [], // 会审人员列表（研发、品质、生产）
-              engineeringPerson: '', // 工程审人员
+              engineeringPerson: "", // 工程审人员
               engineerState: 0, // 工程审状态
-              secondPerson: '', // 终审人员
-              secondState: 0 // 终审状态
+              secondPerson: "", // 终审人员
+              secondState: 0, // 终审状态
             };
-            
+
             // 会审人员 - 研发 (field: 5)
             if (submitData.rdAuditors && submitData.rdAuditors.length > 0) {
-              submitData.rdAuditors.forEach(name => {
+              submitData.rdAuditors.forEach((name) => {
                 submitData.tsopChangeNotice.list.push({
                   fieldName: name,
                   field: 5, // 研发
                   bomChangeType: 5, // sop审核
                   isChoose: 1, // 选中
-                  state: 0 // 待审核
+                  state: 0, // 待审核
                 });
               });
             }
-            
+
             // 会审人员 - 品质 (field: 2)
-            if (submitData.qualityAuditors && submitData.qualityAuditors.length > 0) {
-              submitData.qualityAuditors.forEach(name => {
+            if (
+              submitData.qualityAuditors &&
+              submitData.qualityAuditors.length > 0
+            ) {
+              submitData.qualityAuditors.forEach((name) => {
                 submitData.tsopChangeNotice.list.push({
                   fieldName: name,
                   field: 2, // 品质
                   bomChangeType: 5,
                   isChoose: 1,
-                  state: 0
+                  state: 0,
                 });
               });
             }
-            
+
             // 会审人员 - 生产 (field: 3)
-            if (submitData.productionAuditors && submitData.productionAuditors.length > 0) {
-              submitData.productionAuditors.forEach(name => {
+            if (
+              submitData.productionAuditors &&
+              submitData.productionAuditors.length > 0
+            ) {
+              submitData.productionAuditors.forEach((name) => {
                 submitData.tsopChangeNotice.list.push({
                   fieldName: name,
                   field: 3, // 生产
                   bomChangeType: 5,
                   isChoose: 1,
-                  state: 0
+                  state: 0,
                 });
               });
             }
-            
+
             // 工程审人员（单选，直接赋值）
-            if (submitData.engineerAuditors && submitData.engineerAuditors.trim() !== '') {
-              submitData.tsopChangeNotice.engineeringPerson = submitData.engineerAuditors;
+            const engineerValue = resolveEngineeringPersonValue();
+            if (engineerValue) {
+              submitData.tsopChangeNotice.engineeringPerson = engineerValue;
               submitData.tsopChangeNotice.engineerState = 0; // 待审核
             }
-            
+
+            delete submitData.tsopChangeNotice.ccPersons;
+
             // 终审人员（单选，直接赋值）
-            if (submitData.finalAuditors && submitData.finalAuditors.trim() !== '') {
-              submitData.tsopChangeNotice.secondPerson = submitData.finalAuditors;
+            if (
+              submitData.finalAuditors &&
+              submitData.finalAuditors.trim() !== ""
+            ) {
+              submitData.tsopChangeNotice.secondPerson =
+                submitData.finalAuditors;
               submitData.tsopChangeNotice.secondState = 0; // 待审核
             }
-            
+
+            // 项目人员（单选，直接赋值）
+            if (
+              submitData.projectPerson &&
+              submitData.projectPerson.trim() !== ""
+            ) {
+              submitData.tsopChangeNotice.projectPerson =
+                submitData.projectPerson;
+            }
+
             // 删除临时字段
             delete submitData.ecn;
             delete submitData.rdAuditors;
@@ -1569,84 +2150,118 @@ export default {
             delete submitData.productionAuditors;
             delete submitData.engineerAuditors;
             delete submitData.finalAuditors;
+            delete submitData.projectAuditors;
+            delete submitData.legacyEngineeringPerson;
           } else {
             // 编辑：根据auditAdjustType设置auditNode
             submitData.tsopChangeNotice = submitData.tsopChangeNotice || {};
-            
+
             // 更新ECN编号（优先从 tsopChangeNotice 获取，兜底使用 form.ecn）
-            if (!(submitData.tsopChangeNotice && submitData.tsopChangeNotice.ecn)) {
-              submitData.tsopChangeNotice.ecn = submitData.ecn || '';
+            if (
+              !(submitData.tsopChangeNotice && submitData.tsopChangeNotice.ecn)
+              && !submitData.id
+            ) {
+              submitData.tsopChangeNotice.ecn = submitData.ecn || "";
             }
-            
-            if (submitData.auditAdjustType === 'none') {
+
+            if (submitData.auditAdjustType === "none") {
               // 无需审核
               submitData.tsopChangeNotice.auditNode = 3;
-            } else if (submitData.auditAdjustType === 'engineer') {
+              if (this.isOldEngineerMode) {
+                delete submitData.tsopChangeNotice;
+              }
+            } else if (submitData.auditAdjustType === "engineer") {
               // 仅工程审核
               submitData.tsopChangeNotice.auditNode = 2;
-              
+
               // 设置工程审人员（单选，直接赋值）
-              if (submitData.engineerAuditors && submitData.engineerAuditors.trim() !== '') {
-                submitData.tsopChangeNotice.engineeringPerson = submitData.engineerAuditors;
+              const engineerValue = resolveEngineeringPersonValue();
+              if (engineerValue) {
+                submitData.tsopChangeNotice.engineeringPerson = engineerValue;
                 submitData.tsopChangeNotice.engineerState = 0;
               }
-            } else if (submitData.auditAdjustType === 'full') {
+
+              delete submitData.tsopChangeNotice.ccPersons;
+              if (this.isOldEngineerMode) {
+                delete submitData.tsopChangeNotice;
+              }
+            } else if (submitData.auditAdjustType === "full") {
               // 重新审核：构建完整的审核人员数据
               submitData.tsopChangeNotice.auditNode = 1;
               submitData.tsopChangeNotice.list = [];
-              
+
               // 会审人员 - 研发
               if (submitData.rdAuditors && submitData.rdAuditors.length > 0) {
-                submitData.rdAuditors.forEach(name => {
+                submitData.rdAuditors.forEach((name) => {
                   submitData.tsopChangeNotice.list.push({
                     fieldName: name,
                     field: 5,
                     bomChangeType: 5,
                     isChoose: 1,
-                    state: 0
+                    state: 0,
                   });
                 });
               }
-              
+
               // 会审人员 - 品质
-              if (submitData.qualityAuditors && submitData.qualityAuditors.length > 0) {
-                submitData.qualityAuditors.forEach(name => {
+              if (
+                submitData.qualityAuditors &&
+                submitData.qualityAuditors.length > 0
+              ) {
+                submitData.qualityAuditors.forEach((name) => {
                   submitData.tsopChangeNotice.list.push({
                     fieldName: name,
                     field: 2,
                     bomChangeType: 5,
                     isChoose: 1,
-                    state: 0
+                    state: 0,
                   });
                 });
               }
-              
+
               // 会审人员 - 生产
-              if (submitData.productionAuditors && submitData.productionAuditors.length > 0) {
-                submitData.productionAuditors.forEach(name => {
+              if (
+                submitData.productionAuditors &&
+                submitData.productionAuditors.length > 0
+              ) {
+                submitData.productionAuditors.forEach((name) => {
                   submitData.tsopChangeNotice.list.push({
                     fieldName: name,
                     field: 3,
                     bomChangeType: 5,
                     isChoose: 1,
-                    state: 0
+                    state: 0,
                   });
                 });
               }
-              
+
               // 工程审人员（单选，直接赋值）
-              if (submitData.engineerAuditors && submitData.engineerAuditors.trim() !== '') {
-                submitData.tsopChangeNotice.engineeringPerson = submitData.engineerAuditors;
+              const engineerValue = resolveEngineeringPersonValue();
+              if (engineerValue) {
+                submitData.tsopChangeNotice.engineeringPerson = engineerValue;
                 submitData.tsopChangeNotice.engineerState = 0;
               }
-              
+
               // 终审人员（单选，直接赋值）
-              if (submitData.finalAuditors && submitData.finalAuditors.trim() !== '') {
-                submitData.tsopChangeNotice.secondPerson = submitData.finalAuditors;
+              if (
+                submitData.finalAuditors &&
+                submitData.finalAuditors.trim() !== ""
+              ) {
+                submitData.tsopChangeNotice.secondPerson =
+                  submitData.finalAuditors;
                 submitData.tsopChangeNotice.secondState = 0;
               }
+
+              // 项目人员（单选，直接赋值）
+              if (
+                submitData.projectPerson &&
+                submitData.projectPerson.trim() !== ""
+              ) {
+                submitData.tsopChangeNotice.projectPerson =
+                  submitData.projectPerson;
+              }
             }
-            
+
             // 删除临时字段
             delete submitData.ecn;
             delete submitData.rdAuditors;
@@ -1654,16 +2269,20 @@ export default {
             delete submitData.productionAuditors;
             delete submitData.engineerAuditors;
             delete submitData.finalAuditors;
+            delete submitData.projectPerson;
             delete submitData.auditAdjustType;
+            delete submitData.legacyEngineeringPerson;
           }
 
           // 将分组的工位数据转换为列表格式
-          submitData.list = this.convertWorkstationsToList(submitData.workstations);
+          submitData.list = this.convertWorkstationsToList(
+            submitData.workstations
+          );
           delete submitData.workstations; // 删除分组数据，使用list格式
 
           // 处理装备字段和工时字段的提交格式
           if (submitData.list && submitData.list.length > 0) {
-            submitData.list.forEach(item => {
+            submitData.list.forEach((item) => {
               if (item.equipment && Array.isArray(item.equipment)) {
                 // 将装备数组转换为JSON字符串
                 item.equipment = JSON.stringify(item.equipment);
@@ -1675,7 +2294,7 @@ export default {
               }
 
               // 新增的工位不传ID，让后端自动生成
-              if (item.id && item.id.startsWith('ws_')) {
+              if (item.id && item.id.startsWith("ws_")) {
                 delete item.id;
               }
             });
@@ -1717,9 +2336,11 @@ export default {
     /** 编辑时数据回显 */
     setFormData(data) {
       let formData = { ...data };
-      console.log("🚀 ~ setFormData ~  formData.historyFile:", formData.historyFile)
-      formData.historyFile = formData.historyFile ? JSON.parse(formData.historyFile) : [];
-      console.log("🚀 ~ setFormData ~ formData.historyFile:", formData.historyFile)
+      formData.isSample = Number(data.isSample) || 0;
+      formData.isOldSop = Number(data.isOldSop) || 0;
+      formData.historyFile = formData.historyFile
+        ? JSON.parse(formData.historyFile)
+        : [];
 
       // 编辑时设置审核调整类型
       // 如果sopChangeNotice为null，默认走重新审核流程；否则默认为无需审核
@@ -1730,59 +2351,76 @@ export default {
       }
 
       // 从sopChangeNotice中解析审核人员数据和ECN编号
-      const changeNotice = formData.sopChangeNotice || formData.tsopChangeNotice;
+      const changeNotice =
+        formData.sopChangeNotice || formData.tsopChangeNotice;
       if (changeNotice) {
         // 解析ECN编号
-        formData.ecn = changeNotice.ecn || '';
-        
+        formData.ecn = changeNotice.ecn || "";
+
         // 解析会审人员（从list中按field分组）
         if (changeNotice.list && Array.isArray(changeNotice.list)) {
           // 研发 (field: 5)
           formData.rdAuditors = changeNotice.list
-            .filter(item => item.field === 5)
-            .map(item => item.fieldName)
-            .filter(name => name);
-          
+            .filter((item) => item.field === 5)
+            .map((item) => item.fieldName)
+            .filter((name) => name);
+
           // 品质 (field: 2)
           formData.qualityAuditors = changeNotice.list
-            .filter(item => item.field === 2)
-            .map(item => item.fieldName)
-            .filter(name => name);
-          
+            .filter((item) => item.field === 2)
+            .map((item) => item.fieldName)
+            .filter((name) => name);
+
           // 生产 (field: 3)
           formData.productionAuditors = changeNotice.list
-            .filter(item => item.field === 3)
-            .map(item => item.fieldName)
-            .filter(name => name);
+            .filter((item) => item.field === 3)
+            .map((item) => item.fieldName)
+            .filter((name) => name);
         } else {
           formData.rdAuditors = [];
           formData.qualityAuditors = [];
           formData.productionAuditors = [];
         }
-        
+
         // 解析工程审人员（单选，取第一个）
-        if (changeNotice.engineeringPerson && typeof changeNotice.engineeringPerson === 'string') {
-          const persons = changeNotice.engineeringPerson.split(',').filter(item => item.trim());
-          formData.engineerAuditors = persons.length > 0 ? persons[0] : '';
+        if (
+          changeNotice.engineeringPerson &&
+          typeof changeNotice.engineeringPerson === "string"
+        ) {
+          const persons = changeNotice.engineeringPerson
+            .split(",")
+            .filter((item) => item.trim());
+          formData.engineerAuditors = persons.length > 0 ? persons[0] : "";
         } else {
-          formData.engineerAuditors = '';
+          formData.engineerAuditors = "";
         }
-        
+        formData.legacyEngineeringPerson = changeNotice.engineeringPerson || "";
+        formData.ccPersons = this.normalizeCcPersonsArray(
+          changeNotice.ccPersons
+        );
+
         // 解析终审人员（单选，取第一个）
-        if (changeNotice.secondPerson && typeof changeNotice.secondPerson === 'string') {
-          const persons = changeNotice.secondPerson.split(',').filter(item => item.trim());
-          formData.finalAuditors = persons.length > 0 ? persons[0] : '';
+        if (
+          changeNotice.secondPerson &&
+          typeof changeNotice.secondPerson === "string"
+        ) {
+          const persons = changeNotice.secondPerson
+            .split(",")
+            .filter((item) => item.trim());
+          formData.finalAuditors = persons.length > 0 ? persons[0] : "";
         } else {
-          formData.finalAuditors = '';
+          formData.finalAuditors = "";
         }
       } else {
         // 如果没有sopChangeNotice，初始化为空
-        formData.ecn = '';
+        formData.ecn = "";
         formData.rdAuditors = [];
         formData.qualityAuditors = [];
         formData.productionAuditors = [];
-        formData.engineerAuditors = '';
-        formData.finalAuditors = '';
+        formData.engineerAuditors = "";
+        formData.finalAuditors = "";
+        formData.ccPersons = [];
+        formData.legacyEngineeringPerson = "";
       }
 
       // 确保 tsopChangeNotice 和 sopChangeNotice 对象存在
@@ -1794,7 +2432,14 @@ export default {
       }
 
       // 如果是编辑模式且没有ECN，则生成一个新的ECN
-      if (formData.id && !(formData.tsopChangeNotice.ecn || formData.sopChangeNotice.ecn || formData.ecn)) {
+      if (
+        formData.id &&
+        !(
+          formData.tsopChangeNotice.ecn ||
+          formData.sopChangeNotice.ecn ||
+          formData.ecn
+        )
+      ) {
         // 确保 tsopChangeNotice 对象存在
         if (!formData.tsopChangeNotice) {
           formData.tsopChangeNotice = {};
@@ -1808,37 +2453,37 @@ export default {
         url: file.url,
         size: file.size || 0,
         uploadTime: file.uploadTime || new Date(),
-        id: file.id || (Date.now() + index)
+        id: file.id || Date.now() + index,
       }));
 
       // 将列表数据转换为分组数据
       if (formData.list && formData.list.length > 0) {
         // 确保工时是数字格式，处理装备字段的多选格式
-        formData.list.forEach(item => {
-          if (item.spendTime && typeof item.spendTime === 'string') {
+        formData.list.forEach((item) => {
+          if (item.spendTime && typeof item.spendTime === "string") {
             item.spendTime = parseFloat(item.spendTime) || null;
           }
 
           // 处理装备字段的多选格式
           item.equipment = this.processEquipmentField(item.equipment);
         });
-        
+
         // 转换为分组格式
         formData.workstations = this.convertListToWorkstations(formData.list);
         delete formData.list; // 删除原来的list字段
       } else {
         // 如果没有list数据，初始化为空的分组结构
         formData.workstations = {
-          '1': [],
-          '2': [],
-          '3': [],
+          1: [],
+          2: [],
+          3: [],
         };
       }
 
       this.form = formData;
       // 保存原始数据副本用于对比
       this.originalForm = _.cloneDeep(formData);
-      
+
       // 确保数据加载后重新排序工位序号（连续编号）
       this.$nextTick(() => {
         this.reorderAllWorkstationIndexes();
@@ -1847,7 +2492,7 @@ export default {
 
     /** 格式化工时显示 */
     formatSpendTime(seconds) {
-      if (!seconds || seconds === 0) return '';
+      if (!seconds || seconds === 0) return "";
 
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
@@ -1856,151 +2501,175 @@ export default {
       let result = [];
       if (hours > 0) result.push(`${hours}时`);
       if (minutes > 0) result.push(`${minutes}分`);
-      if (remainingSeconds > 0 || result.length === 0) result.push(`${remainingSeconds}秒`);
+      if (remainingSeconds > 0 || result.length === 0)
+        result.push(`${remainingSeconds}秒`);
 
-      return result.join('');
+      return result.join("");
     },
 
     /** 处理工时变化 */
     handleSpendTimeChange(value, index, processType) {
       // 更新对应工序类型的工位数据
-      if (this.form.workstations[processType] && this.form.workstations[processType][index]) {
-        this.$set(this.form.workstations[processType][index], 'spendTime', value);
+      if (
+        this.form.workstations[processType] &&
+        this.form.workstations[processType][index]
+      ) {
+        this.$set(
+          this.form.workstations[processType][index],
+          "spendTime",
+          value
+        );
       }
     },
 
     /** 处理序号输入，只允许数字 */
     handleIndexNumInput(value, index, processType) {
       // 移除非数字字符
-      const numericValue = value.replace(/[^\d]/g, '');
+      const numericValue = value.replace(/[^\d]/g, "");
 
       // 转换为数字，如果为空则设为null
-      const numberValue = numericValue === '' ? null : parseInt(numericValue, 10);
+      const numberValue =
+        numericValue === "" ? null : parseInt(numericValue, 10);
 
       // 更新对应工序类型的工位数据
-      if (this.form.workstations[processType] && this.form.workstations[processType][index]) {
+      if (
+        this.form.workstations[processType] &&
+        this.form.workstations[processType][index]
+      ) {
         this.form.workstations[processType][index].indexNum = numberValue;
       }
     },
 
-
     /** 更新历史文件表格数据 */
     updateHistoryFileList(fileList) {
-      console.log('更新历史文件表格数据:', fileList);
+      console.log("更新历史文件表格数据:", fileList);
 
       // 将 DrUpload 组件的文件列表转换为表格数据
       this.historyFileList = (fileList || []).map((file, index) => ({
-        name: file.name || file.fileName || file.originalName || '未知文件',
+        name: file.name || file.fileName || file.originalName || "未知文件",
         url: file.url || file.fileUrl || file.downloadUrl,
         size: file.size || file.fileSize || 0,
-        uploadTime: file.uploadTime || file.createTime || file.time || new Date(),
-        id: file.id || file.fileId || (Date.now() + index)
+        uploadTime:
+          file.uploadTime || file.createTime || file.time || new Date(),
+        id: file.id || file.fileId || Date.now() + index,
       }));
 
-      console.log('转换后的表格数据:', this.historyFileList);
+      console.log("转换后的表格数据:", this.historyFileList);
     },
 
     /** 删除历史文件 */
     removeHistoryFile(index) {
       this.historyFileList.splice(index, 1);
       this.form.historyFile.splice(index, 1);
-      this.$message.success('删除成功');
+      this.$message.success("删除成功");
     },
 
     /** 预览文件 */
     previewFile(file) {
-      window.open(file.url, '_blank');
+      window.open(file.url, "_blank");
     },
 
     /** 格式化文件大小 */
     formatFileSize(size) {
-      if (!size) return '-';
+      if (!size) return "-";
       if (size < 1024) {
-        return size + ' B';
+        return size + " B";
       } else if (size < 1048576) {
-        return (size / 1024).toFixed(1) + ' KB';
+        return (size / 1024).toFixed(1) + " KB";
       } else {
-        return (size / 1048576).toFixed(1) + ' MB';
+        return (size / 1048576).toFixed(1) + " MB";
       }
     },
 
     /** 格式化上传时间 */
     formatUploadTime(time) {
-      if (!time) return '-';
+      if (!time) return "-";
       const date = new Date(time);
-      return date.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+      return date.toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     },
-
 
     /** 判断是否为视频文件 */
     isVideoFile(url) {
       if (!url) return false;
-      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.m4v'];
-      const extension = url.toLowerCase().substring(url.lastIndexOf('.'));
+      const videoExtensions = [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".mkv",
+        ".m4v",
+      ];
+      const extension = url.toLowerCase().substring(url.lastIndexOf("."));
       return videoExtensions.includes(extension);
     },
 
     /** 获取图片URL列表（用于预览，排除视频） */
     getImageUrls(fileString) {
       const fileList = this.getFileList(fileString);
-      return fileList.filter(file => !this.isVideoFile(file.url)).map(img => img.url);
+      return fileList
+        .filter((file) => !this.isVideoFile(file.url))
+        .map((img) => img.url);
     },
 
     /** 保存草稿到 localStorage */
     saveDraft() {
       // 基本验证：至少需要品类
       if (!this.form.categoryId) {
-        this.msgWarning('请至少选择品类后再保存草稿');
+        this.msgWarning("请至少选择品类后再保存草稿");
         return;
       }
 
       this.isSavingDraft = true;
-      
+
       try {
         // 获取品类名称（优先从 form.categoryName，否则从 categoryId）
-        const categoryName = this.form.categoryName || this.getCategoryName(this.form.categoryId);
-        
+        const categoryName =
+          this.form.categoryName || this.getCategoryName(this.form.categoryId);
+
         // 准备草稿数据
         const draftData = {
           id: this.currentDraftId || `draft_${Date.now()}`,
-          createTime: this.currentDraftId ? this.getDraftById(this.currentDraftId)?.createTime : new Date().toISOString(),
+          createTime: this.currentDraftId
+            ? this.getDraftById(this.currentDraftId)?.createTime
+            : new Date().toISOString(),
           updateTime: new Date().toISOString(),
           formData: _.cloneDeep(this.form),
           categoryName: categoryName, // 保存品类名称用于显示
           categoryId: this.form.categoryId, // 同时保存品类ID
-          versionCode: this.form.versionCode || '',
-          desc: this.form.desc || '',
+          versionCode: this.form.versionCode || "",
+          desc: this.form.desc || "",
         };
 
         // 获取现有草稿列表
         const drafts = this.getDraftList();
-        
+
         // 查找是否存在相同ID的草稿
-        const existingIndex = drafts.findIndex(d => d.id === draftData.id);
-        
+        const existingIndex = drafts.findIndex((d) => d.id === draftData.id);
+
         if (existingIndex !== -1) {
           // 更新现有草稿
           drafts[existingIndex] = draftData;
-          this.msgSuccess('草稿已更新');
+          this.msgSuccess("草稿已更新");
         } else {
           // 添加新草稿
           drafts.unshift(draftData); // 最新的放在前面
-          this.msgSuccess('草稿已保存');
+          this.msgSuccess("草稿已保存");
         }
 
         // 保存到 localStorage
-        localStorage.setItem('sop_drafts', JSON.stringify(drafts));
+        localStorage.setItem("sop_drafts", JSON.stringify(drafts));
         this.currentDraftId = draftData.id;
-        
       } catch (error) {
-        console.error('保存草稿失败:', error);
-        this.msgError('保存草稿失败，请重试');
+        console.error("保存草稿失败:", error);
+        this.msgError("保存草稿失败，请重试");
       } finally {
         this.isSavingDraft = false;
       }
@@ -2009,10 +2678,10 @@ export default {
     /** 获取草稿列表 */
     getDraftList() {
       try {
-        const draftsStr = localStorage.getItem('sop_drafts');
+        const draftsStr = localStorage.getItem("sop_drafts");
         return draftsStr ? JSON.parse(draftsStr) : [];
       } catch (error) {
-        console.error('读取草稿列表失败:', error);
+        console.error("读取草稿列表失败:", error);
         return [];
       }
     },
@@ -2020,17 +2689,17 @@ export default {
     /** 根据ID获取草稿 */
     getDraftById(draftId) {
       const drafts = this.getDraftList();
-      return drafts.find(d => d.id === draftId);
+      return drafts.find((d) => d.id === draftId);
     },
 
     /** 删除指定ID的草稿 */
     deleteDraftById(draftId) {
       try {
         const drafts = this.getDraftList();
-        const filteredDrafts = drafts.filter(d => d.id !== draftId);
-        localStorage.setItem('sop_drafts', JSON.stringify(filteredDrafts));
+        const filteredDrafts = drafts.filter((d) => d.id !== draftId);
+        localStorage.setItem("sop_drafts", JSON.stringify(filteredDrafts));
       } catch (error) {
-        console.error('删除草稿失败:', error);
+        console.error("删除草稿失败:", error);
       }
     },
 
@@ -2038,21 +2707,24 @@ export default {
     loadDraft(draftId) {
       const draft = this.getDraftById(draftId);
       if (!draft) {
-        this.msgError('草稿不存在');
+        this.msgError("草稿不存在");
         return;
       }
 
       try {
         // 加载表单数据
         this.form = _.cloneDeep(draft.formData);
+        this.form.ccPersons = this.normalizeCcPersonsArray(
+          this.form.ccPersons
+        );
         this.currentDraftId = draftId;
-        
+
         // 确保工位数据格式正确
         if (!this.form.workstations) {
           this.form.workstations = {
-            '1': [],
-            '2': [],
-            '3': [],
+            1: [],
+            2: [],
+            3: [],
           };
         }
 
@@ -2061,28 +2733,33 @@ export default {
           this.reorderAllWorkstationIndexes();
         });
       } catch (error) {
-        this.msgError('加载草稿失败，请重试');
+        this.msgError("加载草稿失败，请重试");
       }
     },
 
     /** 获取品类名称（用于草稿列表显示） */
     getCategoryName(categoryId) {
-      if (!categoryId) return '未选择品类';
-      
+      if (!categoryId) return "未选择品类";
+
       // 尝试从表单的 categoryName 字段获取（编辑时会有）
       if (this.form.categoryName) {
         return this.form.categoryName;
       }
-      
+
       // 尝试从 TypedSelectLoadMore 组件中获取
-      if (this.$refs.categorySelect && this.$refs.categorySelect.componentData) {
+      if (
+        this.$refs.categorySelect &&
+        this.$refs.categorySelect.componentData
+      ) {
         const categoryData = this.$refs.categorySelect.componentData.data || [];
-        const selectedCategory = categoryData.find(item => item.id == categoryId || item.id === categoryId);
+        const selectedCategory = categoryData.find(
+          (item) => item.id == categoryId || item.id === categoryId
+        );
         if (selectedCategory) {
           return selectedCategory.name || selectedCategory.label || categoryId;
         }
       }
-      
+
       // 如果没有名称，返回 ID
       return categoryId;
     },
@@ -2100,9 +2777,13 @@ export default {
       }
 
       // 检测workstations数据是否变化
-      const originalList = this.convertWorkstationsToList(this.originalForm.workstations || { '1': [], '2': [], '3': [] });
-      const currentList = this.convertWorkstationsToList(this.form.workstations || { '1': [], '2': [], '3': [] });
-      
+      const originalList = this.convertWorkstationsToList(
+        this.originalForm.workstations || { 1: [], 2: [], 3: [] }
+      );
+      const currentList = this.convertWorkstationsToList(
+        this.form.workstations || { 1: [], 2: [], 3: [] }
+      );
+
       // 检测list数组长度是否变化（新增数据）
       if (originalList.length !== currentList.length) {
         return true;
@@ -2130,7 +2811,6 @@ export default {
 
       return false;
     },
-
   },
 };
 </script>
@@ -2234,7 +2914,7 @@ export default {
         background: none;
         padding: 0;
         font-size: 14px;
-        color: #409EFF;
+        color: #409eff;
 
         &:hover {
           background: none;
@@ -2274,7 +2954,7 @@ export default {
   padding: 12px 16px;
   background: #f8f9fa;
   border-radius: 6px;
-  
+
   .audit-type-label {
     font-size: 13px;
     font-weight: 500;
@@ -2282,17 +2962,17 @@ export default {
     margin-bottom: 10px;
     display: flex;
     align-items: center;
-    
+
     &:before {
-      content: '';
+      content: "";
       width: 3px;
       height: 14px;
-      background: #409EFF;
+      background: #409eff;
       margin-right: 6px;
       border-radius: 2px;
     }
   }
-  
+
   .audit-type-card {
     background: #ffffff;
     border: 2px solid #e4e7ed;
@@ -2302,28 +2982,85 @@ export default {
     cursor: pointer;
     transition: all 0.3s ease;
     height: 100%;
-    
+    position: relative;
+
     &:hover {
-      border-color: #409EFF;
+      border-color: #409eff;
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(64, 158, 255, 0.12);
     }
-    
+
     &.active {
-      border-color: #409EFF;
+      border-color: #409eff;
       background: linear-gradient(135deg, #ecf5ff 0%, #ffffff 100%);
       box-shadow: 0 2px 8px rgba(64, 158, 255, 0.15);
-      
+
       .card-icon {
-        background: #409EFF;
+        background: #409eff;
         color: #ffffff;
       }
-      
+
       .card-title {
-        color: #409EFF;
+        color: #409eff;
       }
     }
-    
+
+    // 禁用状态
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      background: #f5f7fa;
+
+      &:hover {
+        border-color: #e4e7ed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .card-icon,
+      .card-title,
+      .card-desc {
+        color: #c0c4cc;
+      }
+    }
+
+    // 禁用遮罩
+    .card-disabled-mask {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #f56c6c;
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    // 必选标识
+    .card-required-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #67c23a;
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
     .card-icon {
       width: 36px;
       height: 36px;
@@ -2336,19 +3073,19 @@ export default {
       font-size: 18px;
       color: #909399;
       transition: all 0.3s ease;
-      
+
       i {
         font-size: 18px;
       }
     }
-    
+
     .card-title {
       font-size: 14px;
       font-weight: 500;
       color: #303133;
       margin-bottom: 4px;
     }
-    
+
     .card-desc {
       font-size: 11px;
       color: #909399;
@@ -2360,66 +3097,66 @@ export default {
 // 审核人员区块样式
 .auditor-section {
   margin-top: 16px;
-  
+
   &:first-child {
     margin-top: 0;
   }
-  
+
   .section-header {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     padding-bottom: 8px;
     border-bottom: 1px solid #e8e8e8;
-    
+
     i {
       font-size: 16px;
-      color: #409EFF;
+      color: #409eff;
       margin-right: 6px;
     }
-    
+
     span {
       font-size: 14px;
       font-weight: 500;
       color: #303133;
     }
-    
+
     .section-badge {
       margin-left: 8px;
       padding: 1px 8px;
       background: #ecf5ff;
-      color: #409EFF;
+      color: #409eff;
       font-size: 11px;
       border-radius: 10px;
       font-weight: normal;
     }
   }
-  
+
   .auditor-card {
     background: #fafbfc;
     border: 1px solid #e4e7ed;
     border-radius: 4px;
     padding: 14px 12px;
     transition: all 0.3s ease;
-    
+
     &:hover {
       border-color: #c0c4cc;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
-    
+
     &.highlight {
       background: linear-gradient(135deg, #fff9f0 0%, #fafbfc 100%);
       border-color: #ffa940;
-      
+
       &:hover {
         border-color: #ff8800;
       }
     }
-    
+
     ::v-deep .el-form-item {
       margin-bottom: 0;
     }
-    
+
     ::v-deep .el-form-item__label {
       font-weight: 500;
       color: #606266;
@@ -2435,32 +3172,32 @@ export default {
   align-items: center;
   padding: 10px 16px;
   background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
-  border-left: 3px solid #409EFF;
+  border-left: 3px solid #409eff;
   border-radius: 4px;
   margin-top: 12px;
-  
+
   i {
     font-size: 16px;
-    color: #409EFF;
+    color: #409eff;
     margin-right: 10px;
     flex-shrink: 0;
   }
-  
+
   span {
     font-size: 13px;
     color: #606266;
     line-height: 1.4;
   }
-  
+
   // 警告样式变体
   &.warning {
     background: linear-gradient(135deg, #fff7e6 0%, #fffbf0 100%);
     border-left: 3px solid #fa8c16;
-    
+
     i {
       color: #fa8c16;
     }
-    
+
     span {
       color: #8c6800;
       font-weight: 500;
@@ -2663,19 +3400,19 @@ export default {
 
 // 封面图上传样式
 .top-img-upload {
-  .my-upload-demo{
-    width: 100%!important;
-    height: auto!important;
+  .my-upload-demo {
+    width: 100% !important;
+    height: auto !important;
   }
   ::v-deep .el-upload-list {
     display: flex;
     gap: 10px;
     .el-upload-list__item {
-      margin: 0!important;
-      margin-right: 10px!important;
+      margin: 0 !important;
+      margin-right: 10px !important;
     }
   }
-  
+
   .upload-placeholder {
     display: flex;
     flex-direction: column;
@@ -2683,13 +3420,13 @@ export default {
     justify-content: center;
     height: 100%;
     width: 100%;
-    
+
     i {
       font-size: 32px;
       color: #c0c4cc;
       transition: color 0.3s;
     }
-    
+
     &:hover i {
       color: #409eff;
     }
@@ -2703,7 +3440,7 @@ export default {
       opacity: 1 !important;
     }
   }
-  
+
   .el-upload-list__item-actions {
     opacity: 0 !important;
     transition: opacity 0.3s ease !important;
@@ -2757,27 +3494,27 @@ export default {
   border: 1px solid #e4e7ed;
   border-radius: 8px;
   background: #fff;
-  
+
   ::v-deep .el-tabs__header {
     margin: 0;
     background: #f8f9fa;
     border-radius: 8px 8px 0 0;
-    
+
     .el-tabs__nav-wrap {
       padding: 0 16px;
     }
-    
+
     .el-tabs__item {
       font-weight: 500;
       color: #606266;
-      
+
       &.is-active {
         color: #409eff;
         font-weight: 600;
       }
     }
   }
-  
+
   ::v-deep .el-tabs__content {
     padding: 20px;
   }
@@ -2789,7 +3526,7 @@ export default {
   top: 4px;
   right: 16px;
   z-index: 10;
-  
+
   .el-button {
     height: 32px;
     padding: 8px 15px;
@@ -2841,7 +3578,7 @@ export default {
   justify-content: center;
   align-items: center;
   padding: 40px 0;
-  
+
   .el-button {
     min-width: 200px;
     height: 60px;
@@ -2849,13 +3586,13 @@ export default {
     border: 2px dashed #d9d9d9;
     background: #fafafa;
     transition: all 0.3s ease;
-    
+
     &:hover {
       border-color: #409eff;
       background: #ecf5ff;
       color: #409eff;
     }
-    
+
     .el-icon-plus {
       font-size: 20px;
       margin-right: 8px;

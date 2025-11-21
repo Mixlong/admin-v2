@@ -133,6 +133,166 @@
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="$router.go(-1)">取 消</el-button>
       </div>
+
+      <el-dialog
+        title="预测订单"
+        :visible.sync="forecastDialogVisible"
+        width="70%"
+        :append-to-body="true"
+        top='0vh'
+      >
+        <div v-if="!forecastLoading && !forecastList.length" class="empty-state">
+          暂无预测订单数据
+        </div>
+
+        <el-table
+          v-loading="forecastLoading"
+          :data="forecastList"
+          border
+          height="50vh"
+          style="width: 100%"
+        >
+          <el-table-column label="客户名称" prop="customerName" width="160"  align="center" />
+          <el-table-column label="产品品类" prop="categoryName" width="160"  align="center" />
+          <el-table-column label="预测数量" prop="forecastQuantity" width="140"  align="center" />
+          <el-table-column
+            label="预计下单日期"
+            prop="expectedOrderDate"
+            width="160"
+            align="center"
+          />
+          <el-table-column
+            label="期望交货日期"
+            prop="expectedDeliveryDate"
+            width="160"
+            align="center"
+          />
+          <el-table-column
+            prop="rdRiskCountermeasure"
+            min-width="220"
+            align="center"
+          >
+            <template slot="header">
+              <span>研发关键风险&对策<br/>(项目经理)</span>
+            </template>
+            <template slot-scope="{ row }">
+              <div
+                class="rich-text-cell"
+                v-if="row.rdRiskCountermeasure"
+                v-html="row.rdRiskCountermeasure"
+              ></div>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="procurementRiskCountermeasure"
+            min-width="220"
+            align="center"
+          >
+            <template slot="header">
+              <span>关键物料采购风险&备货对策<br/>(采购)</span>
+            </template>
+            <template slot-scope="{ row }">
+              <div
+                class="rich-text-cell"
+                v-if="row.procurementRiskCountermeasure"
+                v-html="row.procurementRiskCountermeasure"
+              ></div>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="productionRiskCountermeasure"
+            min-width="220"
+            align="center"
+          >
+            <template slot="header">
+              <span>生产计划风险&对策<br/>(PMC)</span>
+            </template>
+            <template slot-scope="{ row }">
+              <div
+                class="rich-text-cell"
+                v-if="row.productionRiskCountermeasure"
+                v-html="row.productionRiskCountermeasure"
+              ></div>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="decisionRemark"
+            min-width="220"
+            align="center"
+          >
+            <template slot="header">
+              <span>相关决策意见备注<br/>(市场)</span>
+            </template>
+            <template slot-scope="{ row }">
+              <div
+                class="rich-text-cell"
+                v-if="row.decisionRemark"
+                v-html="row.decisionRemark"
+              ></div>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <!-- <el-table-column
+            label="订单取消"
+            prop="orderCancel"
+            width="110"
+          >
+            <template slot-scope="{ row }">
+              <el-tag v-if="row.orderCancel === 0" type="success">否</el-tag>
+              <el-tag v-else-if="row.orderCancel === 1" type="danger">是</el-tag>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="转正式订单"
+            prop="convertToFormal"
+            width="130"
+          >
+            <template slot-scope="{ row }">
+              <el-tag v-if="row.convertToFormal === 0" type="info">否</el-tag>
+              <el-tag v-else-if="row.convertToFormal === 1" type="success">是</el-tag>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="正式订单录入时间"
+            prop="formalOrderTime"
+            width="180"
+          >
+            <template slot-scope="{ row }">
+              <span
+                v-NoData="parseTime(row.formalOrderTime, '{y}-{m}-{d} {h}:{i}')"
+              ></span>
+            </template>
+          </el-table-column> -->
+          <el-table-column label="创建时间" prop="createTime" width="150" align="center">
+            <template slot-scope="{ row }">
+              <span
+                v-NoData="parseTime(row.createTime, '{y}-{m}-{d} {h}:{i}')"
+              ></span>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div slot="footer" class="dialog-footer">
+          <el-pagination
+            v-if="forecastTotal > forecastPagination.l"
+            :current-page="forecastPagination.p"
+            :page-size="forecastPagination.l"
+            :total="forecastTotal"
+            layout="prev, pager, next"
+            @current-change="handleForecastPageChange"
+            style="float: left;"
+          />
+          <el-button @click="forecastDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleForecastConfirm">
+            确认新增
+          </el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -146,6 +306,7 @@ import {
 } from "@/api/order";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import commomFile from "../mixins";
+import { getForecastList } from "@/api/order/forecast";
 
 export default {
   mixins: [commomFile],
@@ -160,6 +321,14 @@ export default {
       dictList: [],
       // 型号
       computerOptions: [],
+      forecastDialogVisible: false,
+      forecastLoading: false,
+      forecastList: [],
+      forecastTotal: 0,
+      forecastPagination: {
+        p: 1,
+        l: 5,
+      },
       // 芯片版本
       chipVersionList: [],
       form: {},
@@ -377,6 +546,65 @@ export default {
         }
       });
     },
+    openForecastConfirm() {
+      if (!this.form.categoryId) {
+        this.doAddOrder();
+        return;
+      }
+
+      this.forecastPagination.p = 1;
+      this.fetchForecastList().then(() => {
+        if (this.forecastList.length) {
+          this.forecastDialogVisible = true;
+        } else {
+          this.doAddOrder();
+        }
+      });
+    },
+    fetchForecastList() {
+      if (!this.form.categoryId) {
+        this.forecastList = [];
+        this.forecastTotal = 0;
+        return Promise.resolve();
+      }
+      this.forecastLoading = true;
+
+      // 根据 categoryId 获取 categoryName
+      const category = this.dictList.find((item) => item.id === this.form.categoryId);
+      const categoryName = category ? category.name : '';
+
+      return getForecastList({
+        ...this.forecastPagination,
+        categoryName: categoryName,
+      })
+        .then((res) => {
+          const data = res.data || {};
+          this.forecastList = data.list || [];
+          this.forecastTotal = data.total || 0;
+        })
+        .catch(() => {
+          this.forecastList = [];
+          this.forecastTotal = 0;
+        })
+        .finally(() => {
+          this.forecastLoading = false;
+        });
+    },
+    handleForecastPageChange(page) {
+      this.forecastPagination.p = page;
+      this.fetchForecastList();
+    },
+    handleForecastConfirm() {
+      this.forecastDialogVisible = false;
+      this.doAddOrder();
+    },
+    doAddOrder() {
+      addOrder(this.form).then((response) => {
+        if (response.code === 200) {
+          this.msgSuccess("添加成功");
+        }
+      });
+    },
     // 复制回显
     copyReplay() {
       const copyRowData =
@@ -418,12 +646,7 @@ export default {
               this.onUpdateOrder(this.form);
             }
           } else {
-            addOrder(this.form).then((response) => {
-              if (response.code === 200) {
-                this.msgSuccess("添加成功");
-                // this.$router.push("/www/order");
-              }
-            });
+            this.openForecastConfirm();
           }
         }
       });
@@ -439,10 +662,34 @@ export default {
     line-height: 20px;
   }
 }
+
+.empty-state {
+  text-align: center;
+  color: #909399;
+  padding: 32px 0;
+}
 </style>
 
 <style lang="scss" scoped>
 .el_divider_line {
   height: inherit;
+}
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px 0 0;
+  border-top: 1px solid #ebeef5;
+  gap: 8px;
+}
+
+.rich-text-cell {
+  max-height: 120px;
+  overflow-y: auto;
+  text-align: left;
+  line-height: 1.6;
+  font-size: 13px;
+  word-break: break-word;
 }
 </style>

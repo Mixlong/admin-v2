@@ -1,5 +1,5 @@
 <template>
-  <el-dialog class="ECN-Dialog-Box Header_Fixed" :title="title" :visible.sync="dialogVisible" fullscreen top="2vh"
+  <el-dialog class="ECN-Dialog-Box   dialog-scroll" :title="title" :visible.sync="dialogVisible"   top="0vh" width="80%"
     center append-to-body :close-on-click-modal="false">
     <el-row type="flex" justify="space-between">
       <el-col :xs="0" :span="2"></el-col>
@@ -430,6 +430,16 @@ export default {
   components: { tinymce, Treeselect },
   props: ["classifyList", "involveUnitList"],
   data() {
+    // 自定义验证器：至少上传一个报告
+    const validateAtLeastOneReport = (rule, value, callback) => {
+      const { hardwareVerificationReport, structureDevelopmentReport, engineeringDevelopmentReport } = this.form;
+      if (!hardwareVerificationReport && !structureDevelopmentReport && !engineeringDevelopmentReport) {
+        callback(new Error('硬件验证报告、结构组研发报告、工程组研发报告至少上传一个'));
+      } else {
+        callback();
+      }
+    };
+
     return {
       dialogVisible: false,
       title: "",
@@ -525,13 +535,13 @@ export default {
           { required: true, message: "请输入上传附件", trigger: "change" },
         ],
         hardwareVerificationReport: [
-          { required: true, message: "请上传硬件验证报告", trigger: "change" },
+          { validator: validateAtLeastOneReport, trigger: "change" },
         ],
         structureDevelopmentReport: [
-          { required: true, message: "请上传结构组研发报告", trigger: "change" },
+          { validator: validateAtLeastOneReport, trigger: "change" },
         ],
         engineeringDevelopmentReport: [
-          { required: true, message: "请上传工程组研发报告", trigger: "change" },
+          { validator: validateAtLeastOneReport, trigger: "change" },
         ],
       },
     };
@@ -571,6 +581,22 @@ export default {
     },
     "form.file"(file) {
       if (file) this.clearValidateItem("form", "file");
+    },
+    // 监听三个报告字段，当任何一个变化时，触发其他字段的验证
+    "form.hardwareVerificationReport"() {
+      this.$nextTick(() => {
+        this.$refs.form?.validateField(['structureDevelopmentReport', 'engineeringDevelopmentReport']);
+      });
+    },
+    "form.structureDevelopmentReport"() {
+      this.$nextTick(() => {
+        this.$refs.form?.validateField(['hardwareVerificationReport', 'engineeringDevelopmentReport']);
+      });
+    },
+    "form.engineeringDevelopmentReport"() {
+      this.$nextTick(() => {
+        this.$refs.form?.validateField(['hardwareVerificationReport', 'structureDevelopmentReport']);
+      });
     },
   },
   created() {
@@ -911,18 +937,9 @@ export default {
 
 <style lang="scss">
 .ECN-Dialog-Box {
-  .el-dialog__body {
-    padding-bottom: 60px;
+  &.dialog-scroll .el-dialog__body {
+    max-height:80vh;
   }
-
-  .el-dialog__footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #fff;
-  }
-
   .involveUnit-box {
     background: #f0f2f5;
     border-radius: 8px;

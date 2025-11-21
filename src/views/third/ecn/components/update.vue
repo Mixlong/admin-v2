@@ -847,70 +847,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.ECN-Dialog-Box {
-  .el-dialog__body {
-    padding-bottom: 60px;
-  }
-
-  .el-dialog__footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #fff;
-  }
-
-  .involveUnit-box {
-    background: #f0f2f5;
-    border-radius: 8px;
-    padding: 10px;
-    box-sizing: border-box;
-
-    .iterm-box {
-      .el-form-item__label {
-        white-space: nowrap;
-        min-width: 145px !important;
-      }
-
-      .el-form-item__content {
-        width: 100%;
-        margin-left: 0 !important;
-      }
-    }
-
-    .involveUnit-left {
-      min-width: 65px;
-
-      .each_item_box {
-        display: flex;
-        flex-direction: column;
-        row-gap: 20px;
-
-        .each_unit {
-          text-align: center;
-
-          &:nth-last-child(1) {
-            margin-top: 50px;
-          }
-        }
-      }
-    }
-
-    .involveUnit-right {
-      display: flex;
-      flex-direction: column;
-      row-gap: 1px;
-    }
-  }
-
-  .card-box {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-      0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-  }
-}
-</style>
+ 
 
 <style lang="scss" scoped>
 @media screen and(max-width: 768px) {

@@ -2,9 +2,7 @@
   <div class="micro-app-container">
     <!-- 无界微应用容器 -->
     <WujieVue v-if="microAppConfig.url && !reloading" :key="microAppKey" :name="microAppConfig.name" :url="microAppUrl"
-      :sync="true" :alive="true" :props="microAppProps" :attrs="{
-        style: 'width: 100%; height: 100%;'
-      }" :plugins="wujiePlugins" @beforeLoad="handleBeforeLoad" @beforeMount="handleBeforeMount"
+      :sync="true" :alive="true" :props="microAppProps" :style="{ width: '100%', height: '100%' }" :plugins="wujiePlugins" @beforeLoad="handleBeforeLoad" @beforeMount="handleBeforeMount"
       @afterMount="handleAfterMount" @beforeUnmount="handleBeforeUnmount" @afterUnmount="handleAfterUnmount"
       @activated="handleActivated" @deactivated="handleDeactivated" class="wujie-container" />
 

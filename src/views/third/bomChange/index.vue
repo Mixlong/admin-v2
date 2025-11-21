@@ -4,39 +4,39 @@
     <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" 
       
     @search="handleSearch"
-        :defaultVisibleCount="4" @reset="handleReset" @field-change="handleFieldChange">
-        
-        <!-- 自定义客户字段渲染 -->
-        <template #field-customer="{ field, searchForm }">
-            <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
-                <select-loadMore v-model="searchForm[field.key]" :data="customerData.data" :page="customerData.page"
-                  :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData" size="mini"
-                    placeholder="请选择客户名称" style="width: 100%;">
-                </select-loadMore>
-            </el-form-item>
-        </template>
+      :defaultVisibleCount="4" @reset="handleReset" @field-change="handleFieldChange">
 
-        <!-- 自定义配置型号字段渲染 -->
-        <template #field-configModel="{ field, searchForm }">
-            <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
-                <el-select filterable remote clearable v-model="searchForm[field.key]" placeholder="请选择配置型号"
-                    :remote-method="getComputerNameList" size="mini" style="width: 100%">
-                    <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
-                </el-select>
-            </el-form-item>
-        </template>
+      <!-- 自定义客户字段渲染 -->
+      <template #field-customer="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+          <select-loadMore v-model="searchForm[field.key]" :data="customerData.data" :page="customerData.page"
+            :hasMore="customerData.more" dictLabel="name" dictValue="name" :request="getCustomerData" size="mini"
+            placeholder="请选择客户名称" style="width: 100%;">
+          </select-loadMore>
+        </el-form-item>
+      </template>
 
-        <!-- 页面操作按钮 -->
-        <template #page-actions>
+      <!-- 自定义配置型号字段渲染 -->
+      <template #field-configModel="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key" :label-width="field.labelWidth">
+          <el-select filterable remote clearable v-model="searchForm[field.key]" placeholder="请选择配置型号"
+            :remote-method="getComputerNameList" size="mini" style="width: 100%">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 页面操作按钮 -->
+      <template #page-actions>
             <el-button type="primary" @click="handleAdd" icon="el-icon-plus" size="mini" v-hasPermi="['bomChange:add']"
              >
-                新增变更申请
-            </el-button>
-            <el-button type="info" plain @click="handleAddPeople" icon="el-icon-user" v-hasPermi="['bomChange:people']"
-                size="mini">
-                人员管理
-            </el-button>
-        </template>
+          新增变更申请
+        </el-button>
+        <el-button type="info" plain @click="handleAddPeople" icon="el-icon-user" v-hasPermi="['bomChange:people']"
+          size="mini">
+          人员管理
+        </el-button>
+      </template>
     </IntelligentSearchForm>
 
     <el-table v-loading="loading" :data="bomChangeList" :height="tableHeight()" border>
@@ -278,14 +278,14 @@
 
           <!-- 订单变更按钮 -->
           <el-button
-            v-if="row && row.orderChangePerson === nickName && row.orderChangeState === 0 && (row.systemPerson ? row.systemState === 1 : row.secondState === 1)"
+            v-if="row && row.orderChangePerson === nickName && row.orderChangeState === 0 && (row.systemPerson ? (row.systemState === 1 || row.systemState === 2) : row.secondState === 1)"
             size="mini" type="primary" @click="handleAuthFlag(row, 7)" style="margin-left: 5px;">
             <i class="el-icon-document"></i> 订单变更
           </el-button>
 
           <!-- 工单变更按钮 -->
           <el-button
-            v-if="row && row.workOrderChangePerson === nickName && row.workOrderChangeState === 0 && row.orderChangeState === 1"
+            v-if="row && row.workOrderChangePerson === nickName && row.workOrderChangeState === 0 && (row.orderChangeState === 1 || row.orderChangeState === 2)"
             size="mini" type="info" @click="handleAuthFlag(row, 6)" style="margin-left: 5px;">
             <i class="el-icon-tickets"></i> 工单变更
           </el-button>
@@ -315,16 +315,24 @@
 
         <!-- 系统变更专用字段 -->
         <template v-if="isSystemStateFlag">
+          <el-form-item label="系统是否已做变更" prop="systemState">
+            <el-select v-model="authForm.systemState" placeholder="请选择" style="width: 100%">
+              <el-option label="已变更" :value="1"></el-option>
+              <el-option label="不涉及" :value="2"></el-option>
+            </el-select>
+          </el-form-item>
 
-          <el-form-item label="变更前BOM编码" prop="beforeOrderBom">
-            <el-input v-model="authForm.beforeOrderBom" placeholder="请输入变更前BOM编码" />
-          </el-form-item>
-          <el-form-item label="变更后BOM编码" prop="afterOrderBom">
-            <el-input v-model="authForm.afterOrderBom" placeholder="请输入变更后BOM编码" />
-          </el-form-item>
-          <el-form-item label="变更内容" prop="systemChangResult">
-            <el-input v-model="authForm.systemChangResult" type="textarea" :rows="3" placeholder="请输入变更内容" />
-          </el-form-item>
+          <template v-if="authForm.systemState === 1">
+            <el-form-item label="变更前BOM编码" prop="beforeOrderBom">
+              <el-input v-model="authForm.beforeOrderBom" placeholder="请输入变更前BOM编码" />
+            </el-form-item>
+            <el-form-item label="变更后BOM编码" prop="afterOrderBom">
+              <el-input v-model="authForm.afterOrderBom" placeholder="请输入变更后BOM编码" />
+            </el-form-item>
+            <el-form-item label="变更内容" prop="systemChangResult">
+              <el-input v-model="authForm.systemChangResult" type="textarea" :rows="3" placeholder="请输入变更内容" />
+            </el-form-item>
+          </template>
         </template>
 
         <!-- 订单变更专用字段 -->
@@ -336,7 +344,7 @@
               <el-option label="不涉及" :value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="变更结果" prop="orderChangeResult">
+          <el-form-item v-if="authForm.orderChangeState === 1" label="变更结果" prop="orderChangeResult">
             <el-input v-model="authForm.orderChangeResult" type="textarea" :rows="3" placeholder="请输入变更结果" />
           </el-form-item>
         </template>
@@ -346,11 +354,11 @@
 
           <el-form-item label="工单是否已做变更" prop="workOrderChangeState">
             <el-select v-model="authForm.workOrderChangeState" placeholder="请选择" style="width: 100%">
-              <el-option label="已变更" value="1"></el-option>
-              <el-option label="不涉及" value="2"></el-option>
+              <el-option label="已变更" :value="1"></el-option>
+              <el-option label="不涉及" :value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="变更结果" prop="workOrderChangeResult">
+          <el-form-item v-if="authForm.workOrderChangeState === 1" label="变更结果" prop="workOrderChangeResult">
             <el-input v-model="authForm.workOrderChangeResult" type="textarea" :rows="3" placeholder="请输入变更结果" />
           </el-form-item>
         </template>
@@ -614,6 +622,7 @@ export default {
   },
   data() {
     return {
+      nickName: '杨贵来',
       // 型号
       computerOptions: [],
       customerData: {
@@ -898,19 +907,64 @@ export default {
         result: [{ required: true, message: '请输入不通过理由', trigger: 'blur' }],
         isCorrelation: [{ required: true, message: '请选择相关性', trigger: 'change' }],
         isComplete: [{ required: true, message: '请选择是否完成', trigger: 'change' }],
-        // 系统变更专用字段验证（已改为非必填）
-        // systemPerson: [{ required: true, message: '请选择系统变更人员', trigger: 'change' }],
-        beforeBomCode: [{ required: true, message: '请输入变更前BOM编码', trigger: 'blur' }],
-        afterBomCode: [{ required: true, message: '请输入变更后BOM编码', trigger: 'blur' }],
-        changeContent: [{ required: true, message: '请输入变更内容', trigger: 'blur' }],
+        // 系统变更专用字段验证
+        systemState: [{ required: true, message: '请选择系统是否已做变更', trigger: 'change' }],
+        beforeBomCode: [{
+          validator: (rule, value, callback) => {
+            if (this.authForm.systemState === 1 && !value) {
+              callback(new Error('请输入变更前BOM编码'));
+            } else {
+              callback();
+            }
+          },
+          trigger: 'blur'
+        }],
+        afterBomCode: [{
+          validator: (rule, value, callback) => {
+            if (this.authForm.systemState === 1 && !value) {
+              callback(new Error('请输入变更后BOM编码'));
+            } else {
+              callback();
+            }
+          },
+          trigger: 'blur'
+        }],
+        changeContent: [{
+          validator: (rule, value, callback) => {
+            if (this.authForm.systemState === 1 && !value) {
+              callback(new Error('请输入变更内容'));
+            } else {
+              callback();
+            }
+          },
+          trigger: 'blur'
+        }],
         // 订单变更专用字段验证
         orderChangePerson: [{ required: true, message: '请选择订单变更人员', trigger: 'change' }],
         orderChangeState: [{ required: true, message: '请选择订单是否已做变更', trigger: 'change' }],
-        orderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }],
+        orderChangeResult: [{
+          validator: (rule, value, callback) => {
+            if (this.authForm.orderChangeState === 1 && !value) {
+              callback(new Error('请输入变更结果'));
+            } else {
+              callback();
+            }
+          },
+          trigger: 'blur'
+        }],
         // 工单变更专用字段验证
         workOrderChangePerson: [{ required: true, message: '请选择工单变更人员', trigger: 'change' }],
-        workOrderChangeStatus: [{ required: true, message: '请选择工单是否已做变更', trigger: 'change' }],
-        workOrderChangeResult: [{ required: true, message: '请输入变更结果', trigger: 'blur' }],
+        workOrderChangeState: [{ required: true, message: '请选择工单是否已做变更', trigger: 'change' }],
+        workOrderChangeResult: [{
+          validator: (rule, value, callback) => {
+            if (this.authForm.workOrderChangeState === 1 && !value) {
+              callback(new Error('请输入变更结果'));
+            } else {
+              callback();
+            }
+          },
+          trigger: 'blur'
+        }],
         // 部门特定方案字段验证（会审时使用 - 动态验证）
         programme: [{
           validator: (rule, value, callback) => {
@@ -954,7 +1008,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId","nickName"]),
+    // ...mapGetters(["userId","nickName"]),
     // 判断是否为初审状态
     isFirstStateFlag() {
       return this.isAuthFlag === 1;
@@ -1061,7 +1115,7 @@ export default {
       this.queryParams.uNo = this.searchForm.uNo
       this.queryParams.eNo = this.searchForm.eNo
       this.queryParams.configModel = this.searchForm.configModel
-      
+
       this.queryParams.p = 1
       this.getList()
     },
@@ -1076,14 +1130,14 @@ export default {
         eNo: null,
         configModel: null
       }
-      
+
       // 重置查询参数
       this.queryParams.customer = null
       this.queryParams.customerNo = null
       this.queryParams.uNo = null
       this.queryParams.eNo = null
       this.queryParams.configModel = null
-      
+
       this.queryParams.p = 1
       this.getList()
     },
@@ -1343,7 +1397,7 @@ export default {
       if (row.systemPerson && row.secondState === 1) {
         let systemStatus = '待变更';
         if (row.systemState === 1) systemStatus = '已变更';
-        else if (row.systemState === 2) systemStatus = '已驳回';
+        else if (row.systemState === 2) systemStatus = '不涉及';
         steps.push(`系统变更: ${row.systemPerson} (${systemStatus})`);
       }
 
@@ -1351,7 +1405,7 @@ export default {
       if (row.orderChangeState !== undefined) {
         let orderStatus = '待变更';
         if (row.orderChangeState === 1) orderStatus = '已变更';
-        else if (row.orderChangeState === 2) orderStatus = '已驳回';
+        else if (row.orderChangeState === 2) orderStatus = '不涉及';
         const orderPerson = row.orderChangePerson || '未指定';
         steps.push(`订单变更: ${orderPerson} (${orderStatus})`);
       }
@@ -1360,12 +1414,12 @@ export default {
       if (row.workOrderChangePerson && row.systemState === 1) {
         let workOrderStatus = '待变更';
         if (row.workOrderChangeState === 1) workOrderStatus = '已变更';
-        else if (row.workOrderChangeState === 2) workOrderStatus = '已驳回';
+        else if (row.workOrderChangeState === 2) workOrderStatus = '不涉及';
         steps.push(`工单变更: ${row.workOrderChangePerson} (${workOrderStatus})`);
       } else if (row.workOrderChangeState !== undefined) {
         let workOrderStatus = '待变更';
         if (row.workOrderChangeState === 1) workOrderStatus = '已变更';
-        else if (row.workOrderChangeState === 2) workOrderStatus = '已驳回';
+        else if (row.workOrderChangeState === 2) workOrderStatus = '不涉及';
         const workOrderPerson = row.workOrderChangePerson || '未指定';
         steps.push(`工单变更: ${workOrderPerson} (${workOrderStatus})`);
       }
@@ -1577,10 +1631,10 @@ export default {
         if (row.secondState === 1) return 'step-completed';
         return 'step-disabled';
       }
-      
+
       if (row.secondState !== 1) return 'step-disabled';
-      if (row.systemState === 1) return 'step-completed';
-      if (row.systemState === 2) return 'step-rejected';
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成
+      if (row.systemState === 1 || row.systemState === 2) return 'step-completed';
       // 检查前置条件：终审通过，且当前可以进行系统变更
       if (row.secondState === 1 && row.systemState === 0) return 'step-active';
       return 'step-pending';
@@ -1593,10 +1647,10 @@ export default {
         if (row.secondState === 1) return 'el-icon-check';
         return 'el-icon-setting';
       }
-      
+
       if (row.secondState !== 1) return 'el-icon-setting';
-      if (row.systemState === 1) return 'el-icon-check';
-      if (row.systemState === 2) return 'el-icon-close';
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成图标
+      if (row.systemState === 1 || row.systemState === 2) return 'el-icon-check';
       // 检查前置条件：终审通过，且当前可以进行系统变更
       if (row.secondState === 1 && row.systemPerson && row.systemState === 0) return 'el-icon-loading';
       return 'el-icon-setting';
@@ -1605,11 +1659,11 @@ export default {
     /** 订单变更阶段样式类 */
     getOrderStepClass(row) {
       if (row.orderChangeState === undefined) return 'step-disabled';
-      if (row.orderChangeState === 1) return 'step-completed';
-      if (row.orderChangeState === 2) return 'step-rejected';
-      
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成
+      if (row.orderChangeState === 1 || row.orderChangeState === 2) return 'step-completed';
+
       // 检查前置条件：如果没有系统变更人员，基于终审状态；否则基于系统变更状态
-      const prerequisitePassed = !row.systemPerson ? row.secondState === 1 : row.systemState === 1;
+      const prerequisitePassed = !row.systemPerson ? row.secondState === 1 : (row.systemState === 1 || row.systemState === 2);
       if (prerequisitePassed && row.orderChangeState === 0) return 'step-active';
       return 'step-pending';
     },
@@ -1617,11 +1671,11 @@ export default {
     /** 订单变更阶段图标 */
     getOrderStepIcon(row) {
       if (row.orderChangeState === undefined) return 'el-icon-document';
-      if (row.orderChangeState === 1) return 'el-icon-check';
-      if (row.orderChangeState === 2) return 'el-icon-close';
-      
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成图标
+      if (row.orderChangeState === 1 || row.orderChangeState === 2) return 'el-icon-check';
+
       // 检查前置条件：如果没有系统变更人员，基于终审状态；否则基于系统变更状态
-      const prerequisitePassed = !row.systemPerson ? row.secondState === 1 : row.systemState === 1;
+      const prerequisitePassed = !row.systemPerson ? row.secondState === 1 : (row.systemState === 1 || row.systemState === 2);
       if (prerequisitePassed && row.orderChangeState === 0) return 'el-icon-loading';
       return 'el-icon-document';
     },
@@ -1629,20 +1683,20 @@ export default {
     /** 工单变更阶段样式类 */
     getWorkOrderStepClass(row) {
       if (row.workOrderChangeState === undefined) return 'step-disabled';
-      if (row.workOrderChangeState === 1) return 'step-completed';
-      if (row.workOrderChangeState === 2) return 'step-rejected';
-      // 检查前置条件：订单变更通过，且当前可以进行工单变更
-      if (row.orderChangeState === 1 && row.workOrderChangeState === 0) return 'step-active';
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成
+      if (row.workOrderChangeState === 1 || row.workOrderChangeState === 2) return 'step-completed';
+      // 检查前置条件：订单变更通过或不涉及，且当前可以进行工单变更
+      if ((row.orderChangeState === 1 || row.orderChangeState === 2) && row.workOrderChangeState === 0) return 'step-active';
       return 'step-pending';
     },
 
     /** 工单变更阶段图标 */
     getWorkOrderStepIcon(row) {
       if (row.workOrderChangeState === undefined) return 'el-icon-tickets';
-      if (row.workOrderChangeState === 1) return 'el-icon-check';
-      if (row.workOrderChangeState === 2) return 'el-icon-close';
-      // 检查前置条件：订单变更通过，且当前可以进行工单变更
-      if (row.orderChangeState === 1 && row.workOrderChangeState === 0) return 'el-icon-loading';
+      // state === 1 已变更，state === 2 不涉及，都显示为已完成图标
+      if (row.workOrderChangeState === 1 || row.workOrderChangeState === 2) return 'el-icon-check';
+      // 检查前置条件：订单变更通过或不涉及，且当前可以进行工单变更
+      if ((row.orderChangeState === 1 || row.orderChangeState === 2) && row.workOrderChangeState === 0) return 'el-icon-loading';
       return 'el-icon-tickets';
     },
 
@@ -1651,7 +1705,7 @@ export default {
       switch (state) {
         case 0: return '待变更';
         case 1: return '已变更';
-        case 2: return '已驳回';
+        case 2: return '不涉及';
         default: return '未开始';
       }
     },
@@ -1661,7 +1715,7 @@ export default {
       switch (state) {
         case 0: return '待变更';
         case 1: return '已变更';
-        case 2: return '已驳回';
+        case 2: return '不涉及';
         default: return '未开始';
       }
     },
@@ -1671,7 +1725,7 @@ export default {
       switch (state) {
         case 0: return '待变更';
         case 1: return '已变更';
-        case 2: return '已驳回';
+        case 2: return '不涉及';
         default: return '未开始';
       }
     },
@@ -2517,7 +2571,7 @@ export default {
         text-align: center;
         line-height: 1;
         margin-bottom: 1px;
-        height: 9px;
+        height: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2530,7 +2584,7 @@ export default {
         padding: 1px 3px;
         border-radius: 2px;
         line-height: 1;
-        height: 10px;
+        height: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2549,7 +2603,7 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        height: 10px;
+        height: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2564,7 +2618,7 @@ export default {
         padding: 1px 3px;
         border-radius: 2px;
         line-height: 1;
-        height: 10px;
+        height: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2802,28 +2856,28 @@ export default {
 // 订单信息列表样式
 .order-info-list {
   text-align: left;
-  
+
   .order-info-item {
     margin-bottom: 8px;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
-    
+
     .order-info-row {
       display: flex;
       align-items: center;
       gap: 4px;
       margin-bottom: 2px;
       font-size: 12px;
-      
+
       .info-label {
         color: #666;
         font-size: 11px;
         min-width: 50px;
         flex-shrink: 0;
       }
-      
+
       .info-value {
         color: #333;
         font-weight: 500;
@@ -2834,14 +2888,14 @@ export default {
         white-space: nowrap;
       }
     }
-    
+
     .order-divider {
       height: 1px;
       background: #e8e8e8;
       margin: 6px 0;
     }
   }
-  
+
   .no-data {
     color: #999;
     font-style: italic;

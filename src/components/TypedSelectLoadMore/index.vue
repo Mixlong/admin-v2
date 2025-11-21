@@ -93,8 +93,13 @@ export default {
       const configs = {
         category: {
           dictLabel: 'name',
+          dictValue: 'name',
+          placeholder: '请选择产品品类'
+        },
+        categoryId: {
+          dictLabel: 'name',
           dictValue: 'id',
-          placeholder: '请选择仪表型号'
+          placeholder: '请选择产品品类'
         },
         user: {
           dictLabel: 'displayName',

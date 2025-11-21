@@ -93,7 +93,12 @@
         </template>
       </el-table-column>
       <el-table-column label="创建时间" prop="createTime" width="120" align="center" />
-       <el-table-column label="申请人" prop="applicant" width="100" align="center"   />
+      <el-table-column label="申请人" prop="applicant" width="100" align="center" />
+      <el-table-column label="抄送人员" prop="ccPersons" width="150" align="center" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ scope.row.ccPersons || '-' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="150" align="center" fixed="right">
         <template slot-scope="scope">
           <el-button 
@@ -149,12 +154,11 @@ export default {
     AuditDialog,
     AuditDetailDialog
   },
-  // computed: {
-  //   ...mapGetters(["nickName"])
-  // },
+  computed: {
+    ...mapGetters(["nickName"])
+  },
   data() {
     return {
-      nickName:'孙国祥',
       // 遮罩层
       loading: true,
       detailLoading: false,
