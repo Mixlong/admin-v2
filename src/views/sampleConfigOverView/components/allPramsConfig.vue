@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class='all-prams-config-sample'>
       <el-form :model="queryParams" ref="queryForm" :inline="true">
         <el-form-item label="所属品类" prop="categoryId">
           <el-select
@@ -192,7 +192,36 @@
           :filters="getFiltersData('computerName')"
           :filter-method="filterHandler"
         >
-          <span slot-scope="scope" v-NoData="scope.row.computerName"></span>
+        <template slot-scope="{ row }"> 
+     
+        <div class="copy-wrap">
+              <!-- 有链接时显示为可点击的蓝色带下划线文本 -->
+              <a
+                v-if="row.txFileUrl"
+                :href="row.txFileUrl"
+                target="_blank"
+                class="model-link"
+              >
+                {{ row.computerName || '-' }}
+              </a>
+              <!-- 无链接时显示普通文本 -->
+              <span v-else v-NoData="row.computerName"></span>
+              
+              <!-- 复制按钮 -->
+              <el-link
+                class="copy-btn"
+                :underline="false"
+                icon="el-icon-document-copy"
+                v-clipboard:copy="row.txFileUrl"
+                v-clipboard:success="
+                  () => {
+                    msgSuccess('复制成功');
+                  }
+                "
+                v-if="row.txFileUrl"
+              ></el-link>
+            </div>
+                </template>
         </el-table-column>
         <el-table-column
           label="规格书"
@@ -1500,7 +1529,7 @@
   import { getCustomerList } from "@/api/order";
   
   export default {
-    name: "ConfigOverview",
+    name: "SampleConfigOverView",
     mixins: [commonData, dragTableFn],
     components: {
       CategoryComputer: () => import("@/components/CategoryComputer"),
@@ -1771,3 +1800,33 @@
     },
   };
   </script>
+  <style scoped lang="scss">
+.all-prams-config-sample{
+  ::v-deep .copy-wrap {
+    position: relative;
+    padding-right: 30px; /* 为复制按钮留出空间 */
+    min-height: 24px;
+    .model-link {
+      color: #409eff;
+      text-decoration: underline;
+      cursor: pointer;
+      
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+    
+    .copy-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 14px;
+      padding: 4px;
+      
+      &:hover {
+        color: #409eff;
+      }
+    }
+  }
+}
+</style>

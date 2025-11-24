@@ -306,13 +306,14 @@
           <Tooltip
             icon="el-icon-view"
             content="详情"
+            v-hasPermi="['order:forecast:view']"
             @click="handleView(row)"
           />
 
           <Tooltip
             icon="el-icon-edit"
             content="编辑"
-            v-hasPermi="['order:forecast:update']"
+            v-hasPermi="['order:forecast:edit']"
             @click="handleUpdate(row)"
           />
 
@@ -326,6 +327,7 @@
               slot="reference"
               icon="el-icon-delete"
               :className="['text-red']"
+              v-hasPermi="['order:forecast:delete']"
               content="删除"
             />
           </el-popconfirm>

@@ -25,14 +25,14 @@
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="品类" prop="categoryId">
-                <TypedSelectLoadMore
-                  ref="categorySelect"
-                  v-model="form.categoryId"
-                  type="category"
-                  customStyle="width: 100%"
-                  size="mini"
-                  @change="handleCategoryChange"
-                />
+            
+                    <CategorySelect
+          v-model="form.categoryId"
+          :return-id="true"
+          placeholder="请选择产品品类"
+          clearable
+          style="width:100%"
+        />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -669,6 +669,7 @@ import _ from "lodash";
 import DrUpload from "@/components/Upload";
 import ImageUpload from "@/components/el-upload-sortable/index.vue";
 import WorkstationItem from "./WorkstationItem.vue";
+import CategorySelect from "@/components/CategorySelect/index.vue";
 export default {
   components: {
     draggable,
@@ -676,6 +677,7 @@ export default {
     DrUpload,
     ImageUpload,
     WorkstationItem,
+    CategorySelect
   },
   props: {
     dictList: Array,

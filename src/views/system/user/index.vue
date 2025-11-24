@@ -210,6 +210,17 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="用户类型" prop="userType">
+          <el-radio-group v-model="form.userType">
+            <el-radio
+              v-for="dict in userTypeOptions"
+              :key="dict.dictValue"
+              :label="dict.dictValue"
+              >{{ dict.dictLabel }}</el-radio
+            >
+          </el-radio-group>
+        </el-form-item>
+
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
             <el-radio
@@ -325,6 +336,11 @@ export default {
       statusOptions: [],
       // 性别状态字典
       sexOptions: [],
+      // 用户类型字典
+      userTypeOptions: [
+        { dictValue: '00', dictLabel: '系统用户' },
+        { dictValue: '01', dictLabel: '系统管理员' }
+      ],
       // 岗位选项
       postOptions: [],
       // 角色选项
@@ -369,6 +385,9 @@ export default {
         ],
         password: [
           { required: true, message: "用户密码不能为空", trigger: "blur" },
+        ],
+        userType: [
+          { required: true, message: "请选择用户类型", trigger: "change" },
         ],
       },
     };
@@ -463,6 +482,7 @@ export default {
         email: undefined,
         sex: undefined,
         status: "0",
+        userType: "00", // 默认为系统用户
         remark: undefined,
         postIds: [],
         roleIds: [],

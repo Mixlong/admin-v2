@@ -93,12 +93,12 @@ export default {
       const configs = {
         category: {
           dictLabel: 'name',
-          dictValue: 'name',
+          dictValue: 'id',
           placeholder: '请选择产品品类'
         },
-        categoryId: {
+        categoryName: {
           dictLabel: 'name',
-          dictValue: 'id',
+          dictValue: 'name',
           placeholder: '请选择产品品类'
         },
         user: {
@@ -157,7 +157,7 @@ export default {
     // 根据类型加载数据
     async loadData({ page = 1, more = false, keyword = "" } = {}) {
       try {
-        if (this.type === 'category') {
+        if (this.type === 'category' || this.type === 'categoryName') {
           await this.getCategoryData({ page, more, keyword });
         } else if (this.type === 'user') {
           await this.getUserData({ page, more, keyword });

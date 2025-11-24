@@ -283,23 +283,24 @@ export default {
           component: 'el-input',
           placeholder: '请输入品类名称'
         },
-        {
-          key: 'lineNum',
-          label: '线号',
+               {
+          key: 'repairPlan',
+          label: '维修方案',
           component: 'el-input',
-          placeholder: '请输入线号'
+          placeholder: '请输入维修方案'
         },
+        
         {
           key: 'serviceResult',
           label: '维修结果',
           component: 'el-input',
           placeholder: '请输入维修结果'
         },
-        {
-          key: 'repairPlan',
-          label: '维修方案',
+   {
+          key: 'lineNum',
+          label: '线号',
           component: 'el-input',
-          placeholder: '请输入维修方案'
+          placeholder: '请输入线号'
         },
         {
           key: 'pcbaSn',
