@@ -84,9 +84,12 @@ const user = {
         getInfo(state.token)
           .then(res => {
             const user = res.user;
+            // 处理头像 URL：如果是完整 URL 则直接使用，否则拼接 BASE_API
             const avatar = user.avatar == ''
               ? require('@/assets/image/profile.jpg')
-              : process.env.VUE_APP_BASE_API + user.avatar;
+              : user.avatar.startsWith('http') 
+                ? user.avatar 
+                : process.env.VUE_APP_BASE_API + user.avatar;
             if (res.roles && res.roles.length > 0) {
               // 验证返回的roles是否是一个非空数组
               commit('SET_ROLES', res.roles);

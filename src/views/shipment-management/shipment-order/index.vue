@@ -361,7 +361,6 @@
         </el-table-column>
         
  
-        
         <el-table-column prop="deliveryChangeLog" label="交期变更履历" align="left" min-width="200" v-if="isColumnVisible('deliveryChangeLog')">
           <template slot-scope="scope">
             <div class="rich-text-cell" v-if="scope.row.deliveryChangeLog" v-html="scope.row.deliveryChangeLog"></div>
@@ -1807,10 +1806,38 @@ export default {
 
   // 富文本单元格样式
   .rich-text-cell {
-    max-height: 200px;
-    overflow-y: auto;
+    max-height: 80px !important;
+    height: 80px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     text-align: left;
-    line-height: 1.6;
+    line-height: 1.4;
+    padding: 6px !important;
+    border: 1px solid #EBEEF5;
+    border-radius: 4px;
+    background-color: #FAFAFA;
+    word-wrap: break-word;
+    word-break: break-all;
+    display: block !important;
+    
+    // 自定义滚动条样式
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
     
     ::v-deep {
       p {
@@ -1868,6 +1895,26 @@ export default {
 </style>
 
 <style lang="scss">
+// 表格富文本单元格高度限制（全局样式）
+.el-table .rich-text-cell {
+  max-height: 80px !important;
+  height: 80px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+// 表格单元格内容限制
+.el-table td .cell {
+  .rich-text-cell {
+    max-height: 80px !important;
+    height: 80px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
 // 列设置下拉菜单（挂载到 body，需要全局样式）
 .column-setting-dropdown-menu {
   padding: 0 !important;

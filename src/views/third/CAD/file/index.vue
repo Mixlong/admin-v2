@@ -36,11 +36,11 @@
           搜索
         </el-button>
         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button type="warning" v-if="checkRole(['f_test'])" v-hasPermi="['third:cad:batchFirstCheck']"
+        <el-button type="warning" v-hasPermi="['third:cad:batchFirstCheck']"
           @click="handleAuthBatchChange(1)">
           批量初审
         </el-button>
-        <el-button type="warning" v-if="checkRole(['fo_test'])" v-hasPermi="['third:cad:batchFinalCheck']"
+        <el-button type="warning" v-hasPermi="['third:cad:batchFinalCheck']"
           @click="handleAuthBatchChange(2)">
           批量终审
         </el-button>
@@ -140,10 +140,10 @@
           <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:cad:edit']" @click="handleUpdate(scope.row)" />
 
           <Tooltip icon="el-icon-coordinate" class="text-orange" content="初审" v-hasPermi="['third:cad:firstCheck']"
-            v-if="scope.row.status == 1 && checkRole(['f_test'])" @click="handleAuthChange(scope.row, 1)" />
+            v-if="scope.row.status == 1" @click="handleAuthChange(scope.row, 1)" />
 
           <Tooltip icon="el-icon-coordinate" class="text-orange" content="终审" v-hasPermi="['third:cad:finalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['fo_test'])" @click="handleAuthChange(scope.row, 4)" />
+            v-if="scope.row.status == 4" @click="handleAuthChange(scope.row, 4)" />
 
           <Tooltip icon="el-icon-circle-check" class="text-orange" content="重置审核" v-hasPermi="['third:cad:resetCheck']"
             v-if="isSResetCheck(scope.row)" @click="handleResetCheck(scope.row)" />
@@ -154,7 +154,7 @@
           <!-- 模拟脚本文件 -->
           <template v-if="scope.row.type === 'simulate_script_file' && scope.row.file">
             <Tooltip icon="el-icon-download" class="text-orange" :content="`下载${scope.row.content}脚本`"
-              @click="zipFile(scope.row.file)" />
+              v-hasPermi="['third:cad:downloadFile']" @click="zipFile(scope.row.file)" />
           </template>
           <template v-else>
             <Tooltip v-if="isDownloadUrl(scope.row)" icon="el-icon-download" class="text-orange"
@@ -163,10 +163,10 @@
           </template>
 
           <Tooltip icon="el-icon-refresh-right" content="初审撤回" v-hasPermi="['third:cad:resetFinalCheck']"
-            v-if="scope.row.status == 4 && checkRole(['f_test'])" @click="handleRevocation(scope.row)" />
+            v-if="scope.row.status == 4" @click="handleRevocation(scope.row)" />
 
           <Tooltip icon="el-icon-refresh-right" content="终审撤回" v-hasPermi="['third:cad:resetChecked']"
-            v-if="scope.row.status == 2 && checkRole(['fo_test'])" @click="handleRevocation(scope.row)" />
+            v-if="scope.row.status == 2" @click="handleRevocation(scope.row)" />
 
           <!-- 批量同步 -->
           <Tooltip v-hasPermi="['third:cad:batch']" icon="el-icon-s-claim" content="批量同步"
@@ -195,7 +195,7 @@
           <el-button @click="handleStatusChange(3)">不通过</el-button>
           <el-button type="primary" @click="
             handleStatusChange(
-              checkRole(['fo_test']) &&
+              checkPermi(['third:cad:finalCheck']) &&
                 (auth.status === 4 || isBatchType === 2)
                 ? 2
                 : 4
@@ -319,7 +319,7 @@ export default {
     isSResetCheck() {
       return ({ computerStatus, status }) => {
         return (
-          this.checkRole(["product"]) &&
+          this.checkPermi(['third:cad:resetCheck']) &&
           !computerStatus &&
           (status === 2 || status === 4)
         );
@@ -496,14 +496,13 @@ export default {
       });
     },
     checkSelectable(row) {
-      if (row.computerStatus) {
-        return false;
-      } else if (
-        (this.checkRole(["f_test"]) && row.status === 1) ||
-        (this.checkRole(["fo_test"]) && row.status === 4)
+      if (
+        (this.checkPermi(['third:cad:batchFirstCheck']) && row.status === 1) ||
+        (this.checkPermi(['third:cad:batchFinalCheck']) && row.status === 4)
       ) {
         return true;
       }
+      return false;
     },
     handleAuthChange(row, status) {
       if (this.handleProPermit(row.isLicense)) return;

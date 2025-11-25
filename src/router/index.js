@@ -190,6 +190,17 @@ export const constantRoutes = [
       microApp: ' micro:ruoyi-admin:schedule'
     }
   },
+  // 中转页面 - 不需要权限验证
+  {
+    path: "/digiSmart/redirect",
+    component: (resolve) => require(["@/views/redirect/index"], resolve),
+    name: "DigiSmartRedirect",
+    hidden: true,
+    meta: {
+      title: "页面跳转中...",
+      noCache: true
+    }
+  },
  
 ];
 

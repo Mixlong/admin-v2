@@ -160,8 +160,11 @@ export default {
         formData.append("avatarfile", data);
         uploadAvatar(formData).then((response) => {
           this.open = false;
-          this.options.img = process.env.VUE_APP_BASE_API + response.imgUrl;
+          // 后端返回的是完整 URL，直接使用
+          this.options.img = response.imgUrl;
           store.commit("SET_AVATAR", this.options.img);
+          // 重新获取用户信息，确保导航栏头像也更新
+          store.dispatch("GetInfo");
           this.msgSuccess("修改成功");
           this.visible = false;
         });

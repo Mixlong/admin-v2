@@ -94,7 +94,11 @@
       <el-table-column label="操作" align="center" width="180">
         <template slot-scope="{ row }">
           <div class=" ">
-            <el-button v-if="row.state === 0" v-hasPermi="['sop:check:btn']" class="text-orange" type="text"
+            <el-button v-if="row.isOldSop==0&&row.state === 0"  class="text-orange" type="text"
+              @click="handleAudit(row)">
+              审核
+            </el-button>
+            <el-button v-else-if="row.isOldSop==1&&row.state === 0&&row.engineeringPerson==nickName"  class="text-orange" type="text"
               @click="handleAudit(row)">
               审核
             </el-button>

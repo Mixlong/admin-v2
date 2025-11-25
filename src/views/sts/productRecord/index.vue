@@ -164,11 +164,8 @@
       </el-table>
     </el-dialog>
     <!-- 物料追溯记录弹框 -->
-    <MaterialsTrackRecord 
-      v-model="materialsTrackRecord" 
-      :order-code="queryDialogParams.searchOrderCode"
-      :sn="queryDialogParams.sn"
-    />
+    <MaterialsTrackRecord v-model="materialsTrackRecord" :order-code="queryDialogParams.searchOrderCode"
+      :sn="queryDialogParams.sn" />
     <el-dialog :visible.sync="stsTestResult" width="90%" append-to-body :title="stsTestResulTtitle" v-if="stsTestResult"
       class="dialog-scroll custom-dialog" :class="{ 'surface-board': stsTestResulTtitle === '通用仪表2' }">
       <StsTestResult :sn="queryDialogParams.sn" :pcbaSn="queryDialogParams.pcbaSn" />
@@ -220,7 +217,7 @@ export default {
       queryParams: {
         p: 1,
         l: 40,
-        categoryName: "",
+        categoryId: "",
         computerName: "",
         sn: "",
         pcbaSn: "",
@@ -378,7 +375,7 @@ export default {
         this.$message.warning("sn为空，无法查看物料追溯记录");
         return;
       }
-      
+
       this.materialsTrackRecord = true;
       this.queryDialogParams.searchOrderCode = row.orderCode;
       this.queryDialogParams.sn = row.sn || '';

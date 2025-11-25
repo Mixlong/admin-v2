@@ -3,22 +3,26 @@
     class="sop-form-dialog"
     :title="isTitle"
     :visible="visible"
-    width="1000px"
+    width="1280px"
     append-to-body
     center
     top="0vh"
     :close-on-click-modal="false"
     @close="close"
   >
-    <el-form
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="80px"
-      class="sop-form"
-      v-form-scroll-error
-    >
-      <!-- 基本信息 -->
+    <!-- 左右布局容器 -->
+    <div class="form-layout-container">
+      <!-- 左侧：主表单区域（可滚动） -->
+      <div class="form-left-content">
+        <el-form
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="80px"
+          class="sop-form"
+          v-form-scroll-error
+        >
+          <!-- 基本信息 -->
       <fieldset class="form-fieldset">
         <legend class="fieldset-legend">基本信息</legend>
         <div class="fieldset-content">
@@ -64,36 +68,6 @@
               :rows="3"
               placeholder="请输入版本描述"
             />
-          </el-form-item>
-          <el-form-item label="封面图" prop="topImg">
-            <ImageUpload
-              v-model="form.topImg"
-              :accept="'image/*'"
-              :showFileList="true"
-              :sortable="true"
-              listType="picture-card"
-              css="width: 200px; height: 120px;"
-              class="top-img-upload"
-            >
-              <div class="upload-placeholder">
-                <i class="el-icon-plus"></i>
-              </div>
-            </ImageUpload>
-          </el-form-item>
-          <el-form-item label="排拉表" prop="sortImg">
-            <ImageUpload
-              v-model="form.sortImg"
-              :accept="'image/*'"
-              :showFileList="true"
-              :sortable="true"
-              listType="picture-card"
-              css="width: 200px; height: 120px;"
-              class="top-img-upload"
-            >
-              <div class="upload-placeholder">
-                <i class="el-icon-plus"></i>
-              </div>
-            </ImageUpload>
           </el-form-item>
         </div>
       </fieldset>
@@ -533,7 +507,8 @@
           </el-table>
         </div>
       </fieldset>
-      <!-- 工位管理 -->
+
+          <!-- 工位管理 -->
       <div
         ref="stationBoxRef"
         v-loading="isSubLoading"
@@ -638,7 +613,67 @@
           </div>
         </div>
       </div>
-    </el-form>
+        </el-form>
+      </div>
+
+      <!-- 右侧：封面与排拉表（固定不滚动） -->
+      <div class="form-right-sidebar">
+        <div class="sidebar-sticky">
+          <div class="sidebar-header">
+            <i class="el-icon-picture-outline"></i>
+            <span>封面与排拉表</span>
+          </div>
+          <div class="sidebar-content">
+            <el-form
+              ref="sidebarForm"
+              :model="form"
+              :rules="rules"
+              label-width="0"
+            >
+              <div class="image-upload-section">
+                <div class="section-label">封面图</div>
+                <el-form-item prop="topImg">
+                  <ImageUpload
+                    v-model="form.topImg"
+                    :accept="'image/*'"
+                    :showFileList="true"
+                    :sortable="true"
+                    listType="picture-card"
+                    css="width: 100%; height: 160px;"
+                    class="sidebar-img-upload"
+                  >
+                    <div class="upload-placeholder">
+                      <i class="el-icon-plus"></i>
+                      <div class="upload-text">上传封面</div>
+                    </div>
+                  </ImageUpload>
+                </el-form-item>
+              </div>
+              
+              <div class="image-upload-section">
+                <div class="section-label">排拉表</div>
+                <el-form-item prop="sortImg">
+                  <ImageUpload
+                    v-model="form.sortImg"
+                    :accept="'image/*'"
+                    :showFileList="true"
+                    :sortable="true"
+                    listType="picture-card"
+                    css="width: 100%; height: 160px;"
+                    class="sidebar-img-upload"  
+                  >
+                    <div class="upload-placeholder">
+                      <i class="el-icon-plus"></i>
+                      <div class="upload-text">上传排拉表</div>
+                    </div>
+                  </ImageUpload>
+                </el-form-item>
+              </div>
+            </el-form>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 底部操作区 -->
     <div slot="footer" class="dialog-footer">
@@ -1189,6 +1224,16 @@ export default {
     close() {
       this.$emit("update:visible", false);
       this.auditPanelVisible = false; // 关闭弹窗时也关闭审核面板
+      
+      // 重置表单
+      this.$nextTick(() => {
+        if (this.$refs.form) {
+          this.$refs.form.clearValidate();
+        }
+        if (this.$refs.sidebarForm) {
+          this.$refs.sidebarForm.clearValidate();
+        }
+      });
     },
     // 切换审核面板显示
     toggleAuditPanel() {
@@ -2005,7 +2050,24 @@ export default {
       // 验证每个工序都必须有文件
       if (this.checkWorkStationFiles()) return;
 
-      this.$refs["form"].validate((valid) => {
+      // 同时验证主表单和侧边栏表单
+      Promise.all([
+        new Promise((resolve) => {
+          this.$refs["form"].validate((valid) => {
+            resolve(valid);
+          });
+        }),
+        new Promise((resolve) => {
+          if (this.$refs["sidebarForm"]) {
+            this.$refs["sidebarForm"].validate((valid) => {
+              resolve(valid);
+            });
+          } else {
+            resolve(true);
+          }
+        })
+      ]).then(([mainFormValid, sidebarFormValid]) => {
+        const valid = mainFormValid && sidebarFormValid;
         if (valid) {
           this.isSubLoading = true;
 
@@ -2330,6 +2392,8 @@ export default {
                 this.close();
               });
           }
+        } else {
+          this.$message.error("请完善表单信息");
         }
         // 指令会自动处理校验失败时的滚动，这里不需要额外代码
       });
@@ -2836,9 +2900,9 @@ export default {
   }
 
   ::v-deep .el-dialog__body {
-    padding: 20px;
+    padding: 0;
     max-height: 75vh;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   ::v-deep .el-dialog__footer {
@@ -2846,6 +2910,181 @@ export default {
     background: #ffffff;
     border-top: 1px solid #e8e8e8;
     text-align: right;
+  }
+}
+
+// 左右布局容器
+.form-layout-container {
+  display: flex;
+  height: 75vh;
+  overflow: hidden;
+}
+
+// 左侧主表单区域（可滚动）
+.form-left-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  padding-right: 10px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+
+    &:hover {
+      background: #a0aec0;
+    }
+  }
+}
+
+// 右侧固定侧边栏
+.form-right-sidebar {
+  width: 215px;
+  flex-shrink: 0;
+  background: #f8fafc;
+  border-left: 1px solid #e8e8e8;
+  overflow: hidden;
+
+  ::v-deep .el-upload-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    >span {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom:10px;
+    }
+      .sortable-enabled{
+    width:300px;
+  }
+  }
+
+  .sidebar-sticky {
+    position: sticky;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    padding: 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: #409eff;
+      font-size: 16px;
+    }
+  }
+
+  .sidebar-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e0;
+      border-radius: 2px;
+
+      &:hover {
+        background: #a0aec0;
+      }
+    }
+  }
+
+  .image-upload-section {
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    ::v-deep .el-form-item {
+      margin-bottom: 0;
+    }
+
+    ::v-deep .el-form-item__content {
+      line-height: normal;
+    }
+  }
+
+  .sidebar-img-upload {
+    ::v-deep .el-upload--picture-card {
+      width: 100%;
+      height: 160px;
+      border: 2px dashed #d9d9d9;
+      border-radius: 6px;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: #409eff;
+      }
+    }
+
+    ::v-deep .el-upload-list--picture-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    ::v-deep .el-upload-list--picture-card .el-upload-list__item {
+      width: 100%;
+      height: 160px;
+      margin: 0 !important;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .upload-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #999;
+
+      i {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .upload-text {
+        font-size: 12px;
+        color: #999;
+      }
+    }
   }
 }
 
@@ -3600,5 +3839,7 @@ export default {
       margin-right: 8px;
     }
   }
+ 
 }
+ 
 </style>

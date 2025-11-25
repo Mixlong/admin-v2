@@ -31,6 +31,10 @@ import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 import VersionChecker from '@/utils/versionChecker';
 import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
+import { syncTokenFromUrl } from '@/utils/auth'
+
+// 处理外部携带 token 的场景，优先写入 Cookie
+syncTokenFromUrl()
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };

@@ -4,7 +4,7 @@ import { Message } from "element-ui";
 import { getToken } from "@/utils/auth";
 import { start, done } from "@/utils/nprogress";
 
-const whiteList = ["/login", "/auth-redirect", "/bind", "/register", "/survey"];
+const whiteList = ["/login", "/auth-redirect", "/bind", "/register", "/survey", "/digiSmart/redirect"];
 
 // 获取第一个可访问的菜单路径
 function getFirstAccessibleRoute(routes) {
