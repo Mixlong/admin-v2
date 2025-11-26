@@ -16,6 +16,9 @@
       <el-form-item label="ECN编号" prop="ecn">
         <el-input v-model.trim="queryParams.ecn" clearable style="width: 140px" placeholder="请输入ECN编号"></el-input>
       </el-form-item>
+      <!-- <el-form-item label="流程ID" prop="id">
+        <el-input v-model.trim="queryParams.id" clearable style="width: 140px" placeholder="请输入ID"></el-input>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
           搜索
@@ -145,6 +148,7 @@ import RightToolbar from "@/components/RightToolbar";
 import AuditDialog from "./components/AuditDialog";
 import AuditDetailDialog from "./components/AuditDetailDialog";
 import { mapGetters } from "vuex";
+import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 
 export default {
   name: "AuditList",
@@ -154,6 +158,7 @@ export default {
     AuditDialog,
     AuditDetailDialog
   },
+  mixins: [digiSmartJumpMixin],
   computed: {
     ...mapGetters(["nickName"])
   },
@@ -180,7 +185,8 @@ export default {
         l: 30,
         ecn: null,
         categoryId: null,
-        versionCode: null
+        versionCode: null,
+        id: null
       },
       // 对话框标题
       detailTitle: "审核详情",
@@ -203,6 +209,8 @@ export default {
         this.auditList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
+        // 查询完成后清除 DigiSmart 跳转ID
+        this.clearDigiSmartId();
       });
     },
     /** 搜索按钮操作 */

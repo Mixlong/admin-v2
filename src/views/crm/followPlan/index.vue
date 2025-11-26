@@ -140,10 +140,12 @@ import SelectLoadMore from '@/components/selectLoadMore'
 import { getFollowPlanList, deleteFollowPlan, updateFollowPlanState } from '@/api/crm/followPlan'
 import { getSoCustomerList } from '@/api/crm/soCustomer'
 import { listUser } from '@/api/system/user'
+import digiSmartJumpMixin from '@/mixins/digiSmartJump'
 
 export default {
   name: 'CrmFollowPlan',
   components: { IntelligentSearchForm, FollowPlanFormDialog, AddFollowRecordDialog, SelectLoadMore },
+  mixins: [digiSmartJumpMixin],
   data() {
     return {
       loading: false,
@@ -165,6 +167,9 @@ export default {
       // 用户列表
       userList: [],
       // 搜索
+      queryParams: {
+        id: null,
+      },
       searchForm: {
         customerId: '',
         planContent: '',
@@ -353,7 +358,8 @@ export default {
           customerId: this.searchForm.customerId || undefined,
           planContent: this.searchForm.planContent || undefined,
           planExecutor: this.searchForm.planExecutor || undefined,
-          planState: this.searchForm.planState === '' ? undefined : Number(this.searchForm.planState)
+          planState: this.searchForm.planState === '' ? undefined : Number(this.searchForm.planState),
+          id: this.queryParams.id || undefined
         }
         
         // 如果有日期范围，添加日期参数
@@ -379,6 +385,8 @@ export default {
           this.plans = []
           this.total = 0
         }
+        // 查询完成后清除 DigiSmart 跳转ID
+        this.clearDigiSmartId();
       } catch (e) {
         console.error('获取跟进计划列表失败:', e)
         this.$message.error('获取跟进计划列表失败')

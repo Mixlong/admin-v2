@@ -355,6 +355,7 @@ import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
 import { cloneDeep } from "lodash";
 import CompUpdate1 from "./components/update1";
+import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 
 export default {
   name: "Ecn",
@@ -363,6 +364,7 @@ export default {
     CompDetail,
     CompUpdate1
   },
+  mixins: [digiSmartJumpMixin],
   data() {
     return {
       open: false,
@@ -399,6 +401,7 @@ export default {
         ecn: "",
         categoryName: "",
         computerName: "",
+        id: null,
       },
       // 品类字典
       dictList: [],
@@ -525,6 +528,8 @@ export default {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
+        // 查询完成后清除 DigiSmart 跳转ID
+        this.clearDigiSmartId();
       });
     },
     // 生成ECN

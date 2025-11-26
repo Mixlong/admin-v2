@@ -611,6 +611,7 @@ import {
 } from "@/api/order";
 import { computerNameList } from "@/api/third/fileConfig";
 import { mapGetters } from "vuex";
+import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 export default {
   name: "BomChange",
   components: {
@@ -620,6 +621,7 @@ export default {
     Editor,
     IntelligentSearchForm
   },
+  mixins: [digiSmartJumpMixin],
   data() {
     return {
       nickName: '杨贵来',
@@ -655,7 +657,8 @@ export default {
         customerNo: null,   // 客户单号
         uNo: null,         // U8单号
         eNo: null,         // E树单号
-        configModel: null   // 配置型号
+        configModel: null,   // 配置型号
+        id: null,
       },
 
       // IntelligentSearchForm 搜索表单
@@ -1762,6 +1765,8 @@ export default {
           this.total = 0;
         }
         this.loading = false;
+        // 查询完成后清除 DigiSmart 跳转ID
+        this.clearDigiSmartId();
       }).catch(() => {
         this.loading = false;
       });

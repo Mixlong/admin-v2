@@ -660,6 +660,7 @@ import ContactManagement from "../contact/index.vue";
 import ImageUpload from "@/components/el-upload-sortable/index.vue";
 import BatchImportDialog from "./components/BatchImportDialog.vue";
 import MyUpload from "@/components/MyUpload";
+import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 export default {
   name: "OutsourcingProduction",
   components: {
@@ -669,9 +670,13 @@ export default {
     BatchImportDialog,
     MyUpload,
   },
+  mixins: [digiSmartJumpMixin],
   data() {
     return {
       // 搜索表单
+      queryParams: {
+        id: null,
+      },
       searchForm: {
         categoryId: "",
         computerId: "",
@@ -873,6 +878,7 @@ export default {
         p: this.pagination.current,
         l: this.pagination.size,
         ...this.searchForm,
+        id: this.queryParams.id || undefined,
       };
 
       getOutsourcingProductionList(params)
@@ -884,6 +890,8 @@ export default {
             this.tableData = [];
             this.pagination.total = 0;
           }
+          // 查询完成后清除 DigiSmart 跳转ID
+          this.clearDigiSmartId();
         })
         .finally(() => {
           this.loading = false;
