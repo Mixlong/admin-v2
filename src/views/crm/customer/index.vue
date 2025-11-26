@@ -86,12 +86,28 @@
         <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
 
         <el-table-column prop="customerBrand" label="客户品牌" width="120" align="center" />
-        <el-table-column prop="customerAttribute" label="客户属性" width="120" align="center">
+        <el-table-column 
+          prop="customerAttribute" 
+          label="客户属性" 
+          width="120" 
+          align="center"
+          :filters="customerAttributeFilters"
+          :filter-method="filterCustomerAttribute"
+          column-key="customerAttribute"
+        >
           <template slot-scope="{ row }">
             {{ getDictLabel('customer_attribute_enum', row.customerAttribute) || row.customerAttribute || '--' }}
           </template>
         </el-table-column>
-        <el-table-column prop="country" label="所属国家" width="100" align="center">
+        <el-table-column 
+          prop="country" 
+          label="所属国家" 
+          width="100" 
+          align="center"
+          :filters="countryFilters"
+          :filter-method="filterCountry"
+          column-key="country"
+        >
           <template slot-scope="{ row }">
             {{ getDictLabel('country_origin', row.country) || row.country || '--' }}
           </template>
@@ -104,7 +120,15 @@
 
         <el-table-column prop="annualShipments" label="年出货量" width="120" align="center" />
         <el-table-column prop="backgroundCheck" label="背景调查" width="200" show-overflow-tooltip align="center" />
-        <el-table-column prop="customerLevel" label="客户级别" width="100" align="center">
+        <el-table-column 
+          prop="customerLevel" 
+          label="客户级别" 
+          width="100" 
+          align="center"
+          :filters="customerLevelFilters"
+          :filter-method="filterCustomerLevel"
+          column-key="customerLevel"
+        >
           <template slot-scope="{ row }">
             <el-tag :type="getLevelType(row.customerLevel)" size="small" v-if="row.customerLevel">
               {{ getDictLabel('customer_type_enum', row.customerLevel) || row.customerLevel }}
@@ -114,14 +138,30 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="customerStatus" label="客户状态" width="100" align="center">
+        <el-table-column 
+          prop="customerStatus" 
+          label="客户状态" 
+          width="100" 
+          align="center"
+          :filters="customerStatusFilters"
+          :filter-method="filterCustomerStatus"
+          column-key="customerStatus"
+        >
           <template slot-scope="scope">
             <el-tag v-if="scope.row.customerStatus" size="mini" :type="getCustomerStatusType(scope.row.customerStatus)">
               {{ scope.row.customerStatus }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="customerSource" label="客户来源" width="100" align="center" />
+        <el-table-column 
+          prop="customerSource" 
+          label="客户来源" 
+          width="100" 
+          align="center"
+          :filters="customerSourceFilters"
+          :filter-method="filterCustomerSource"
+          column-key="customerSource"
+        />
 
 
         <el-table-column prop="productIntent" label="产品意向" width="200" show-overflow-tooltip align="center">
@@ -273,7 +313,7 @@ import { getSoCustomerList, deleteSoCustomer } from '@/api/crm/soCustomer'
 
 export default {
   name: 'CrmCustomer',
-  dicts: ['customer_type_enum', 'control_type', 'product_intention', 'settlement_period', 'tax_type', 'bank_account', 'country_origin'],
+  dicts: ['customer_type_enum', 'customer_attribute_enum', 'customer_source', 'control_type', 'product_intention', 'settlement_period', 'tax_type', 'bank_account', 'country_origin'],
   components: {
     CustomerDetailModal,
     CustomerFormModal,
@@ -352,6 +392,61 @@ export default {
     // 直接使用从API获取的customers数据
     filteredCustomers() {
       return this.customers
+    },
+
+    // 客户属性筛选选项（使用中文标签作为筛选值）
+    customerAttributeFilters() {
+      if (!this.dict || !this.dict.type || !this.dict.type.customer_attribute_enum) {
+        return []
+      }
+      return this.dict.type.customer_attribute_enum.map(item => ({
+        text: item.label,
+        value: item.label  // 使用 label（中文）作为筛选值
+      }))
+    },
+
+    // 客户级别筛选选项（使用字典value作为筛选值，因为数据库存储的是value）
+    customerLevelFilters() {
+      if (!this.dict || !this.dict.type || !this.dict.type.customer_type_enum) {
+        return []
+      }
+      return this.dict.type.customer_type_enum.map(item => ({
+        text: item.label,      // 显示中文标签
+        value: item.value      // 使用 value（如 "2"）作为筛选值，匹配数据库存储
+      }))
+    },
+
+    // 客户状态筛选选项（固定的几个选项）
+    customerStatusFilters() {
+      return [
+        { text: '潜在客户', value: '潜在客户' },
+        { text: '意向客户', value: '意向客户' },
+        { text: '送样客户', value: '送样客户' },
+        { text: '成交客户', value: '成交客户' },
+        { text: '流失客户', value: '流失客户' }
+      ]
+    },
+
+    // 所属国家筛选选项（使用中文标签作为筛选值）
+    countryFilters() {
+      if (!this.dict || !this.dict.type || !this.dict.type.country_origin) {
+        return []
+      }
+      return this.dict.type.country_origin.map(item => ({
+        text: item.label,
+        value: item.label  // 使用 label（中文）作为筛选值
+      }))
+    },
+
+    // 客户来源筛选选项（使用中文标签作为筛选值）
+    customerSourceFilters() {
+      if (!this.dict || !this.dict.type || !this.dict.type.customer_source) {
+        return []
+      }
+      return this.dict.type.customer_source.map(item => ({
+        text: item.label,
+        value: item.label  // 使用 label（中文）作为筛选值
+      }))
     }
   },
 
@@ -705,6 +800,31 @@ export default {
           value: dict.value
         }))
       }
+    },
+
+    // 表格筛选方法
+    filterCustomerAttribute(value, row) {
+      // 直接比较中文值
+      return row.customerAttribute === value
+    },
+
+    filterCustomerLevel(value, row) {
+      // 直接比较中文值
+      return row.customerLevel === value
+    },
+
+    filterCustomerStatus(value, row) {
+      return row.customerStatus === value
+    },
+
+    filterCountry(value, row) {
+      // 直接比较中文值
+      return row.country === value
+    },
+
+    filterCustomerSource(value, row) {
+      // 直接比较中文值
+      return row.customerSource === value
     }
   },
 
