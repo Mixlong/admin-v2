@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { sopFieldAudit, sopEngineerAudit, sopFinalAudit } from "@/api/third/testApi";
+import { sopFieldAudit, sopEngineerAudit, sopFinalAudit, sopProjectAudit } from "@/api/third/testApi";
 
 export default {
   name: "AuditDialog",
@@ -58,7 +58,7 @@ export default {
     return {
       visible: false,
       submitLoading: false,
-      auditType: '', // 'field' | 'engineering' | 'final'
+      auditType: '', // 'field' | 'engineering' | 'project' | 'final'
       rowData: null,
       currentFieldItem: null,
       form: {
@@ -81,6 +81,7 @@ export default {
       const typeMap = {
         field: '会审',
         engineering: '工程审',
+        project: '项目审',
         final: '终审'
       };
       return typeMap[this.auditType] || '审核';
@@ -89,6 +90,7 @@ export default {
       const typeMap = {
         field: '会审',
         engineering: '工程审',
+        project: '项目审',
         final: '终审'
       };
       return typeMap[this.auditType] || '';
@@ -97,6 +99,7 @@ export default {
       const tagMap = {
         field: 'primary',
         engineering: 'warning',
+        project: 'info',
         final: 'success'
       };
       return tagMap[this.auditType] || 'info';
@@ -109,6 +112,14 @@ export default {
       this.currentFieldItem = fieldItem;
       this.visible = true;
       this.resetForm();
+      
+      // 调试信息
+      console.log('审核类型:', type);
+      console.log('行数据:', rowData);
+      console.log('sopChangeNotice:', rowData.sopChangeNotice);
+      if (type === 'project') {
+        console.log('项目审核人:', rowData.sopChangeNotice?.projectPerson);
+      }
     },
     
     handleClose() {
@@ -141,7 +152,7 @@ export default {
       try {
         let apiFunc = null;
         let params = {
-          id: this.rowData.id,
+          id: this.rowData.sopChangeNotice?.id || this.rowData.id,
           state: this.form.state,
           result: this.form.result,
           remark: this.form.remark
@@ -152,6 +163,7 @@ export default {
           apiFunc = sopFieldAudit;
           params = {
             ...this.currentFieldItem,
+            id: this.rowData.sopChangeNotice?.id || this.rowData.id,
             state: this.form.state,
             result: this.form.result,
             remark: this.form.remark
@@ -159,13 +171,18 @@ export default {
         } else if (this.auditType === 'engineering') {
           // 工程审
           apiFunc = sopEngineerAudit;
-          params.secondPerson = this.rowData.engineeringPerson;
+          params.secondPerson = this.rowData.sopChangeNotice?.engineeringPerson || '';
+        } else if (this.auditType === 'project') {
+          // 项目审
+          apiFunc = sopProjectAudit;
+          params.secondPerson = this.rowData.sopChangeNotice?.projectPerson || '';
         } else if (this.auditType === 'final') {
           // 终审
           apiFunc = sopFinalAudit;
-          params.secondPerson = this.rowData.secondPerson;
+          params.secondPerson = this.rowData.sopChangeNotice?.secondPerson || '';
         }
         
+        console.log('审核参数:', params);
         const res = await apiFunc(params);
         
         if (res.code === 200) {

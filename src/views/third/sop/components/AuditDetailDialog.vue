@@ -13,8 +13,6 @@
       <el-descriptions title="基本信息" :column="2" border class="detail-section" :label-style="{ width: '120px' }">
         <el-descriptions-item label="品类名称">{{ detailData.categoryName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="版本号">{{ detailData.versionCode || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="ECN编号">{{ detailData.ecn || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="申请人">{{ detailData.applicant || '-' }}</el-descriptions-item>
         <el-descriptions-item label="创建时间" :span="2">{{ detailData.createTime || '-' }}</el-descriptions-item>
       </el-descriptions>
 
@@ -54,28 +52,6 @@
         </el-table>
       </div>
 
-      <!-- 终审信息 -->
-      <div class="audit-stage-section">
-        <div class="section-title">
-          <i class="el-icon-finished"></i>
-          <span>终审信息</span>
-        </div>
-        
-        <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
-          <el-descriptions-item label="终审人员">
-            {{ detailData.secondPerson || '-' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="审核状态">
-            <el-tag :type="getAuditTagType(detailData.secondState)" size="small">
-              {{ getAuditStateName(detailData.secondState) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="审核备注" :span="2">
-            {{ detailData.finalRemark || '-' }}
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-
       <!-- 工程审信息 -->
       <div class="audit-stage-section">
         <div class="section-title">
@@ -85,15 +61,59 @@
         
         <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
           <el-descriptions-item label="工程审人员">
-            {{ detailData.engineeringPerson || '-' }}
+            {{ sopChangeNotice.engineeringPerson || '-' }}
           </el-descriptions-item>
           <el-descriptions-item label="审核状态">
-            <el-tag :type="getAuditTagType(detailData.engineeringState)" size="small">
-              {{ getAuditStateName(detailData.engineeringState) }}
+            <el-tag :type="getAuditTagType(sopChangeNotice.engineeringState)" size="small">
+              {{ getAuditStateName(sopChangeNotice.engineeringState) }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="审核备注" :span="2">
-            {{ detailData.engineeringRemark || '-' }}
+            {{ sopChangeNotice.engineeringRemark || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <!-- 项目审信息 -->
+      <div v-if="sopChangeNotice.projectPerson" class="audit-stage-section">
+        <div class="section-title">
+          <i class="el-icon-user-solid"></i>
+          <span>项目审信息</span>
+        </div>
+        
+        <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
+          <el-descriptions-item label="项目审人员">
+            {{ sopChangeNotice.projectPerson || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="审核状态">
+            <el-tag :type="getAuditTagType(sopChangeNotice.projectState)" size="small">
+              {{ getAuditStateName(sopChangeNotice.projectState) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="审核备注" :span="2">
+            {{ sopChangeNotice.projectRemark || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <!-- 终审信息 -->
+      <div class="audit-stage-section">
+        <div class="section-title">
+          <i class="el-icon-finished"></i>
+          <span>终审信息</span>
+        </div>
+        
+        <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
+          <el-descriptions-item label="终审人员">
+            {{ sopChangeNotice.secondPerson || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="审核状态">
+            <el-tag :type="getAuditTagType(sopChangeNotice.secondState)" size="small">
+              {{ getAuditStateName(sopChangeNotice.secondState) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="审核备注" :span="2">
+            {{ sopChangeNotice.finalRemark || '-' }}
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -112,12 +132,17 @@ export default {
       jointAuditList: []
     };
   },
+  computed: {
+    sopChangeNotice() {
+      return this.detailData.sopChangeNotice || {};
+    }
+  },
   methods: {
     /** 打开对话框 */
     open(row) {
       this.visible = true;
       this.detailData = { ...row };
-      this.jointAuditList = row.list || [];
+      this.jointAuditList = row.sopChangeNotice?.list || [];
     },
     
     /** 关闭对话框 */

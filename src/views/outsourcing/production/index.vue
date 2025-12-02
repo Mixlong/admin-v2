@@ -46,10 +46,6 @@
         <el-button type="primary" size="mini" @click="handleAdd" v-hasPermi="['outsourcing:production:add']">
           新增
         </el-button>
-        <el-button type="primary" size="mini" icon="el-icon-document-copy" @click="handleSyncPurchase"
-          v-hasPermi="['outsourcing:production:syncPurchase']">
-          新增采购
-        </el-button>
         <el-button type="warning" size="mini" icon="el-icon-upload2" @click="handleBatchImport"
           v-hasPermi="['outsourcing:production:import']">
           导入打板
@@ -63,9 +59,17 @@
     </IntelligentSearchForm>
 
     <!-- 表格区域 -->
-    <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%" :height="tableHeight(-50)"
-      row-key="id">
-      <!-- 排产单号/料号 -->
+    <el-table
+      ref="table"
+      :data="tableData"
+      v-loading="loading"
+      border
+      style="width: 100%"
+      :height="tableHeight(-50)"
+      row-key="id"
+      @selection-change="handleSelectionChange"
+    >
+      <!-- 勾选 -->
       <el-table-column label="排产单号/料号" align="center" width="130">
         <template slot-scope="scope">
           <span v-if="scope.row.productionProcess === 'SMT'">{{
@@ -76,21 +80,21 @@
       </el-table-column>
 
       <!-- 请购单号 -->
-      <el-table-column prop="orderCode" label="请购单号" align="center" width="130">
+      <el-table-column prop="orderCode" label="采购单号" align="center" width="130">
         <template slot-scope="scope">
           <span>{{ scope.row.orderCode || "--" }}</span>
         </template>
       </el-table-column>
 
       <!-- 品类名称 -->
-      <el-table-column prop="categoryName" label="品类" align="center" width="120">
+      <el-table-column prop="categoryName" label="品类" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.categoryName || "--" }}</span>
         </template>
       </el-table-column>
 
       <!-- 型号/硬件版本号 -->
-      <el-table-column label="型号/硬件版本号" align="center" width="150">
+      <el-table-column label="型号/硬件版本号" align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.productionProcess === 'SMT'">{{
             scope.row.computerName || "--"
@@ -117,13 +121,6 @@
             ">
             {{ scope.row.productionProcess || "--" }}
           </el-tag>
-        </template>
-      </el-table-column>
-
-      <!-- 采购单号 -->
-      <el-table-column prop="purchaseOrderCode" label="采购单号" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.purchaseOrderCode || "--" }}</span>
         </template>
       </el-table-column>
 
@@ -174,7 +171,7 @@
       </el-table-column>
 
       <!-- 发布时间 -->
-      <el-table-column prop="publishTime" label="发布时间" align="center" width="140">
+      <el-table-column prop="publishTime" label="发布时间" align="center">
         <template slot-scope="scope">
           <span>{{
             parseTime(scope.row.publishTime, "{y}-{m}-{d} {h}:{i}:{s}") || "--"
@@ -206,13 +203,13 @@
           </el-tooltip>
 
           <!-- 初审 -->
-          <el-tooltip content="初审" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 0">
+          <!-- <el-tooltip content="初审" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 0">
             <el-button size="mini" type="text" icon="el-icon-s-check" @click="handleFirstAudit(scope.row)"
               v-hasPermi="['outsourcing:production:first-audit']" class="icon-btn icon-btn-success" />
-          </el-tooltip>
+          </el-tooltip> -->
 
           <!-- 终审 -->
-          <el-tooltip content="终审" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 1">
+          <el-tooltip content="终审" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 0">
             <el-button size="mini" type="text" icon="el-icon-circle-check" @click="handleFinalAudit(scope.row)"
               v-hasPermi="['outsourcing:production:final-audit']" class="icon-btn icon-btn-success" />
           </el-tooltip>
@@ -306,8 +303,8 @@
               <legend><i class="el-icon-shopping-cart-2"></i> 订单信息</legend>
               <el-row :gutter="20">
                 <el-col :span="12" v-if="!formData.id">
-                  <el-form-item label="请购单号" prop="orderCode">
-                    <el-input v-model="formData.orderCode" placeholder="请输入请购单号" maxlength="100"
+                  <el-form-item label="采购单号" prop="orderCode">
+                    <el-input v-model="formData.orderCode" placeholder="请输入采购单号" maxlength="100"
                       prefix-icon="el-icon-document-copy" />
                   </el-form-item>
                 </el-col>
@@ -323,55 +320,17 @@
                       controls-position="right" style="width: 100%" />
                   </el-form-item>
                 </el-col>
-              </el-row>
-
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  <el-form-item label="生产地点" prop="address">
-                    <el-select v-model="formData.address" placeholder="请选择生产地点" style="width: 100%" filterable clearable
-                      prefix-icon="el-icon-location">
-                      <el-option v-for="(item, index) in filteredProductAddressList" :key="index"
-                        :label="item.dictLabel" :value="item.dictLabel" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
+                 <el-col :span="12">
                   <el-form-item label="出货日期" prop="sellDate">
                     <el-date-picker v-model="formData.sellDate" type="date" placeholder="请选择出货日期" format="yyyy-MM-dd"
                       value-format="timestamp" style="width: 100%" prefix-icon="el-icon-date" />
                   </el-form-item>
                 </el-col>
               </el-row>
+
+           
             </fieldset>
           </template>
-
-          <!-- 编辑模式下的采购信息 -->
-          <fieldset class="form-fieldset" v-if="isEdit">
-            <legend><i class="el-icon-goods"></i> 采购信息</legend>
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <el-form-item label="采购单号" prop="purchaseOrderCode">
-                  <el-input v-model="formData.purchaseOrderCode" placeholder="请输入采购单号" maxlength="100"
-                    prefix-icon="el-icon-document" :disabled="formData.auditStatus >= 1" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="24">
-                <el-form-item label="请购单号" prop="orderCode">
-                  <el-input v-model="formData.orderCode" placeholder="请输入请购单号" maxlength="100"
-                    prefix-icon="el-icon-notebook-2" :disabled="formData.auditStatus >= 1" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <el-form-item label="采购订单图" prop="purchaseOrderImg">
-                  <ImageUpload v-model="formData.purchaseOrderImg" :accept="'image/*'" :max="1" :sortable="false"
-                    :isDisabled="formData.auditStatus >= 1" class="purchase-order-img-upload" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </fieldset>
         </el-form>
       </div>
 
@@ -406,7 +365,7 @@
           <el-descriptions-item label="排产单号">
             {{ bomUploadData.schedulingNo || '--' }}
           </el-descriptions-item>
-          <el-descriptions-item label="请购单号">
+          <el-descriptions-item label="采购单号">
             {{ bomUploadData.orderCode || '--' }}
           </el-descriptions-item>
           <el-descriptions-item label="品类名称">
@@ -435,44 +394,10 @@
         </el-button>
       </div>
     </el-dialog>
-
-    <!-- 同步采购信息对话框 -->
-    <el-dialog title="新增采购" :visible.sync="syncPurchaseDialogVisible" width="600px" :close-on-click-modal="false"
-      @close="handleSyncPurchaseDialogClose" top="0">
-      <div class="sync-purchase-container">
-        <!-- 采购信息表单 -->
-        <el-form ref="syncPurchaseFormRef" :model="syncPurchaseForm" :rules="syncPurchaseRules" label-width="120px">
-          <el-form-item label="请购单号：" prop="orderCodeList">
-            <el-select v-model="syncPurchaseForm.orderCodeList" multiple filterable placeholder="请选择请购单号"
-              style="width: 100%">
-              <el-option v-for="code in purchaseRequestCodeList" :key="code" :label="code" :value="code" />
-            </el-select>
-            <div class="form-tip">可同时选择多个请购单号</div>
-          </el-form-item>
-
-          <el-form-item label="采购单号：">
-            <el-input v-model.trim="syncPurchaseForm.purchaseOrderCode" placeholder="请输入采购单号" clearable />
-          </el-form-item>
-
-          <el-form-item label="采购订单图：">
-            <ImageUpload v-model="syncPurchaseForm.purchaseOrderImg" :accept="'image/*'" :max="5" :sortable="false" />
-            <div class="form-tip">采购单号和采购订单图至少填写一个</div>
-          </el-form-item>
-        </el-form>
-      </div>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="syncPurchaseDialogVisible = false">
-          取消
-        </el-button>
-        <el-button type="primary" size="mini" @click="handleSyncPurchaseSubmit" :loading="syncPurchaseLoading">
-          确定
-        </el-button>
-      </div>
-    </el-dialog>
+ 
 
     <!-- 查看详情对话框 -->
-    <el-dialog title="详情" :visible.sync="viewDialogVisible" width="1200px" top="0" :close-on-click-modal="false">
+    <el-dialog title="详情" :visible.sync="viewDialogVisible" width="1200px" top="0" :close-on-click-modal="false" class="dialog-scroll">
       <div v-if="viewData" class="detail-container">
         <el-descriptions :column="3" border>
           <!-- 排产单号/料号 - 根据生产流程显示 -->
@@ -483,7 +408,7 @@
                 : viewData.partNo || "--"
             }}
           </el-descriptions-item>
-          <el-descriptions-item label="请购单号">{{
+          <el-descriptions-item label="采购单号">{{
             viewData.orderCode || "--"
             }}</el-descriptions-item>
           <el-descriptions-item label="客户订单号">{{
@@ -514,16 +439,6 @@
           <el-descriptions-item label="生产地点">{{
             viewData.address || "--"
             }}</el-descriptions-item>
-          <el-descriptions-item label="采购单号">{{ viewData.purchaseOrderCode || "--"
-          }}</el-descriptions-item>
-          <el-descriptions-item label="请购单号" :span="2">
-            {{
-              formatPurchaseRequestCodes(
-                viewData.purchaseRequestCodeList,
-                viewData.purchaseRequestCode
-              )
-            }}
-          </el-descriptions-item>
           <el-descriptions-item label="出货日期">
             {{
               viewData.sellDate
@@ -551,17 +466,6 @@
             <el-tag :type="viewData.materialStatus === 1 ? 'success' : 'warning'" size="small">
               {{ viewData.materialStatus === 1 ? "齐套" : "未齐套" }}
             </el-tag>
-          </el-descriptions-item>
-
-          <el-descriptions-item label="初审者">{{
-            viewData.firstAuditor || "--"
-            }}</el-descriptions-item>
-          <el-descriptions-item label="初审时间">
-            {{
-              viewData.firstAuditTime
-                ? parseTime(viewData.firstAuditTime, "{y}-{m}-{d} {h}:{i}:{s}")
-                : "--"
-            }}
           </el-descriptions-item>
           <el-descriptions-item label="发布时间">
             {{
@@ -813,7 +717,7 @@ export default {
         ],
         partNo: [{ required: true, message: "请输入料号", trigger: "blur" }],
         address: [
-          { required: true, message: "请选择生产地点", trigger: "change" },
+          { required: false, message: "请选择生产地点", trigger: "change" },
         ],
         sellDate: [
           { required: true, message: "请选择出货日期", trigger: "change" },
@@ -836,14 +740,25 @@ export default {
         orderCodeList: [], // 请购单号列表
         purchaseOrderCode: '',
         purchaseOrderImg: '',
+        address: '',
       },
       syncPurchaseRules: {
         orderCodeList: [
           { required: true, message: '请选择请购单号', trigger: 'change' },
         ],
+        address: [
+          { required: false, message: '请选择生产地点', trigger: 'change' },
+        ],
       },
       syncPurchaseLoading: false,
       purchaseRequestCodeList: [], // 请购单号列表
+      // 选中行
+      selectedRows: [],
+      // 撤销对话框
+      cancelDialogVisible: false,
+      cancelType: '', // 'order' 或 'material'
+      cancelRowData: null,
+      cancelLoading: false,
     };
   },
   computed: {
@@ -1468,16 +1383,16 @@ export default {
       })
         .then(() => {
           // 调用修改接口，将 orderStatus 改为 -1
-          const updateData = {
+      const updateData = {
             id: row.id,
             orderStatus: -1,
-          };
+      };
 
           updateOutsourcingProduction(updateData).then((response) => {
-            if (response.code === 200) {
+          if (response.code === 200) {
               this.$message.success("撤销成功");
-              this.fetchData();
-            }
+            this.fetchData();
+          }
           });
         })
         .catch(() => {
@@ -1529,6 +1444,11 @@ export default {
             });
         }
       });
+    },
+
+    /** 勾选变更 */
+    handleSelectionChange(selection) {
+      this.selectedRows = selection || [];
     },
 
     /** 对话框关闭 */
@@ -1585,7 +1505,7 @@ export default {
     getAuditStatusText(status) {
       const statusMap = {
         "-1": "拒审",
-        0: "待初审",
+        0: "待终审",
         1: "待终审",
         2: "已审核",
       };
@@ -1714,6 +1634,24 @@ export default {
     async handleSyncPurchase() {
       // 获取请购单号列表
       await this.getPurchaseRequestCodes();
+      // 只录入勾选行的请购单号（不再回退其他字段）
+      const selectedOrderCodes = (this.selectedRows || [])
+        .map((item) => String(item.orderCode || '').trim())
+        .filter((code) => !!code);
+      this.syncPurchaseForm.orderCodeList = selectedOrderCodes;
+
+      // 确保选中的值在下拉选项中可见
+      const optionSet = new Set(this.purchaseRequestCodeList);
+      selectedOrderCodes.forEach((code) => {
+        if (code && !optionSet.has(code)) {
+          this.purchaseRequestCodeList.push(code);
+          optionSet.add(code);
+        }
+      });
+
+      this.$nextTick(() => {
+        this.$refs.syncPurchaseFormRef && this.$refs.syncPurchaseFormRef.clearValidate();
+      });
       this.syncPurchaseDialogVisible = true;
     },
 
@@ -1736,6 +1674,7 @@ export default {
         orderCodeList: [],
         purchaseOrderCode: '',
         purchaseOrderImg: '',
+        address: '',
       };
       this.$refs.syncPurchaseFormRef && this.$refs.syncPurchaseFormRef.clearValidate();
     },
@@ -1747,7 +1686,7 @@ export default {
           return;
         }
 
-        const { orderCodeList, purchaseOrderCode, purchaseOrderImg } = this.syncPurchaseForm;
+        const { orderCodeList, purchaseOrderCode, purchaseOrderImg, address } = this.syncPurchaseForm;
 
         // 验证：采购单号和采购订单图至少填写一个
         if (!purchaseOrderCode && !purchaseOrderImg) {
@@ -1761,6 +1700,7 @@ export default {
           orderCodeList,
           purchaseOrderCode,
           purchaseOrderImg,
+          address,
         })
           .then((response) => {
             if (response.code === 200) {
@@ -2341,5 +2281,126 @@ export default {
   color: #909399;
   margin-top: 5px;
   line-height: 1.5;
+}
+
+/* ========== 撤销确认对话框样式 ========== */
+.cancel-dialog-content {
+  padding: 10px 0;
+}
+
+.cancel-warning {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fef0e6;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border-left: 3px solid #e6a23c;
+}
+
+.cancel-warning i {
+  font-size: 18px;
+  color: #e6a23c;
+  margin-right: 10px;
+}
+
+.cancel-warning span {
+  font-size: 14px;
+  color: #606266;
+}
+
+.cancel-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cancel-option {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.cancel-option:hover {
+  border-color: #409eff;
+  background: #f5f7fa;
+}
+
+.cancel-option.active {
+  border-color: #409eff;
+  background: #ecf5ff;
+}
+
+.option-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background: #f56c6c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.cancel-option.active .option-icon {
+  background: #409eff;
+}
+
+.option-icon.material {
+  background: #e6a23c;
+}
+
+.cancel-option.active .option-icon.material {
+  background: #409eff;
+}
+
+.option-icon i {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 4px;
+}
+
+.option-desc {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.5;
+}
+
+.option-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #dcdfe6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.cancel-option.active .option-radio {
+  border-color: #409eff;
+  background: #409eff;
+}
+
+.option-radio i {
+  font-size: 12px;
+  color: #ffffff;
 }
 </style>

@@ -694,7 +694,7 @@
 </template>
 
 <script>
-import { sopSave, sopUpdate, sopPersonList } from "@/api/third/testApi";
+import { sopSave, sopUpdate, sopPersonList, sopState } from "@/api/third/testApi";
 import { getDicts } from "@/api/system/dict/data";
 import axios from "axios";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -2205,6 +2205,7 @@ export default {
             ) {
               submitData.tsopChangeNotice.projectPerson =
                 submitData.projectPerson;
+              submitData.tsopChangeNotice.projectState = 0;
             }
 
             // 删除临时字段
@@ -2231,6 +2232,7 @@ export default {
             if (submitData.auditAdjustType === "none") {
               // 无需审核
               submitData.tsopChangeNotice.auditNode = 3;
+              
               if (this.isOldEngineerMode) {
                 delete submitData.tsopChangeNotice;
               }
@@ -2323,9 +2325,11 @@ export default {
               ) {
                 submitData.tsopChangeNotice.projectPerson =
                   submitData.projectPerson;
+                submitData.tsopChangeNotice.projectState = 0;
               }
             }
 
+        
             // 删除临时字段
             delete submitData.ecn;
             delete submitData.rdAuditors;
@@ -2367,11 +2371,35 @@ export default {
           // 添加isModified字段，告诉后端是否修改了SOP
           submitData.isModified = this.checkDataModified() ? 1 : 0;
 
+          // 调试：打印提交数据
+          console.log('提交数据:', JSON.stringify(submitData.tsopChangeNotice, null, 2));
+
           if (this.form.id) {
+            // 旧SOP编辑时，如果不是重新审核，删除tsopChangeNotice字段
+            const isOldSopNoAudit = submitData.isOldSop == 1 && this.form.auditAdjustType === 'none';
+            if (submitData.id && submitData.isOldSop == 1 && this.form.auditAdjustType !== 'full') {
+              delete submitData.tsopChangeNotice;
+            }
+
             sopUpdate(submitData)
               .then(() => {
-                this.msgSuccess("修改成功");
-                this.$parent.getList();
+                // 旧版SOP选择"无需审核"时，调用审核接口自动通过
+                if (isOldSopNoAudit) {
+                  return sopState({
+                    id: submitData.id,
+                    state: 1 // 1=通过
+                  }).then(() => {
+                    this.msgSuccess("修改成功，已自动审核通过");
+                    this.$parent.getList();
+                  }).catch((err) => {
+                    console.error("自动审核失败:", err);
+                    this.msgWarning("修改成功，但自动审核失败，请手动审核");
+                    this.$parent.getList();
+                  });
+                } else {
+                  this.msgSuccess("修改成功");
+                  this.$parent.getList();
+                }
               })
               .finally(() => {
                 this.isSubLoading = false;

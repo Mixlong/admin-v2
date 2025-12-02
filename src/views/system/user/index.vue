@@ -338,8 +338,8 @@ export default {
       sexOptions: [],
       // 用户类型字典
       userTypeOptions: [
-        { dictValue: '00', dictLabel: '系统用户' },
-        { dictValue: '01', dictLabel: '系统管理员' }
+        { dictValue: '00', dictLabel: '普通用户' },
+        { dictValue: '01', dictLabel: '管理员' }
       ],
       // 岗位选项
       postOptions: [],
@@ -525,6 +525,8 @@ export default {
       const userId = row.userId || this.ids;
       getUser(userId).then((response) => {
         this.form = response.data;
+        this.form.userType =response.data.userType|| row.userType  ;
+        console.log("🚀 ~ file: index.vue:529 ~ response.data.userType|| row.userType :", response.data,row )
         this.postOptions = response.posts;
         this.roleOptions = response.roles;
         this.form.postIds = response.postIds;

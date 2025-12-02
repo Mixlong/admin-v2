@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import { createVxeStyleBridgePlugin, syncVxeStylesFromIframe } from '@/plugins/wujieStyleBridge'
+
 export default {
   name: 'MicroAppContainer',
   data() {
@@ -25,7 +27,8 @@ export default {
       currentSubPath: '',
       storeUnwatch: null,  // 存储取消监听函数
       syncTimer: null,     // 防抖计时器
-      wujiePlugins: []     // 无界插件配置
+      // 无界插件配置（默认开启 vxe-table 样式桥接，需接受样式污染风险）
+      wujiePlugins: [createVxeStyleBridgePlugin()]
     }
   },
   computed: {
@@ -190,6 +193,9 @@ export default {
         name: this.microAppConfig.name,
         route: this.$route
       })
+
+      // ⏬ 兜底同步 vxe 样式到主应用
+      this.syncVxeStylesFromIframe()
     },
 
     // 同步store数据到微应用
@@ -257,6 +263,8 @@ export default {
       console.log(`微应用 ${this.microAppConfig.name} 被激活`)
       // 激活时重新导航到正确的路由
       this.navigateToCorrectRoute()
+      // 再次兜底同步样式
+      this.syncVxeStylesFromIframe()
     },
 
     // 微应用失活时的处理
@@ -388,6 +396,16 @@ export default {
           console.log('用户取消重新登录')
         })
       }
+    },
+
+    // 从当前微应用 iframe 同步 vxe 样式到主应用
+    syncVxeStylesFromIframe() {
+      this.$nextTick(() => {
+        const iframe = this.$el?.querySelector?.('iframe')
+        if (iframe && iframe.contentWindow) {
+          syncVxeStylesFromIframe(iframe.contentWindow)
+        }
+      })
     }
   }
 }

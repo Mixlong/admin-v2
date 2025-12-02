@@ -17,6 +17,7 @@ const getters = {
   deptId: state => state.user.deptId,
   deptName: state => state.user.deptName,
   permission_routes: state => state.permission.routes,
-  isNODE_ENV: () => process.env.NODE_ENV === 'production'
+  isNODE_ENV: () => process.env.NODE_ENV === 'production',
+  isFromExternal: state => state.app.isFromExternal
 }
 export default getters

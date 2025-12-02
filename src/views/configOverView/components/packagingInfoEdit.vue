@@ -77,7 +77,7 @@
                       v-if="dialogVisible"
                       :key="`editor-${groupKey}-${fieldKey}-${editorKey}`"
                       v-model="formData[groupKey][fieldKey]" 
-                      :min-height="fieldConfig.minHeight || 284"
+                      :height="fieldConfig.minHeight || 284"
                       placeholder="请输入其它附件要求，可使用工具栏的图片按钮上传图片或文件"
                       :toolbar="customToolbar"
                     />

@@ -1,48 +1,55 @@
 <template>
   <div class="navbar-wrap-style">
     <!-- <div style="font-size: 25px; padding: 0 25px 0 25px" class="hamburger-container text-shadow text-blue"> -->
-      <!-- 迪太云后台管理 -->
-      <!-- <img :src="customImage == 0
+    <!-- 迪太云后台管理 -->
+    <!-- <img :src="customImage == 0
           ? require('@/assets/logo/logo.png')
           : require('@/assets/logo/logo1.png')
         " alt="" class="logo-image" style="vertical-align: middle; width: 100px" /> -->
-      <!-- <div class="text-center font20 company-name">迪太云</div> -->
+    <!-- <div class="text-center font20 company-name">迪太云</div> -->
     <!-- </div> -->
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container"
-      @toggleClick="toggleSideBar" />
+    <hamburger
+      id="hamburger-container"
+      :is-active="sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
 
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
-
-    <div class="right-menu">
+    <div class="right-menu" v-if="!externalFlag">
       <template v-if="device !== 'mobile'">
-        <search id="header-search" class="right-menu-item" v-if="name === 'admin' || nickName=='黄江龙'" />
-        
+        <search
+          id="header-search"
+          class="right-menu-item"
+          v-if="name === 'admin' || nickName == '黄江龙'"
+        />
+
         <!-- 版本更新入口 -->
         <el-tooltip content="查看版本更新" placement="bottom">
-          <div 
+          <div
             class="version-btn-container right-menu-item hover-effect"
             @click="openVersionHistory"
           >
             <i class="el-icon-bell"></i>
-            <el-badge 
-              v-if="hasNewVersion" 
-              is-dot 
-              class="version-badge"
-            />
+            <el-badge v-if="hasNewVersion" is-dot class="version-badge" />
           </div>
         </el-tooltip>
-        
+
         <!-- Windows版迪太云管理下载 -->
-        <div 
-          @click="handleDownload"
-          class="download-btn-container"
-        >
-          <img src="@/assets/logo/desktop_on.png" class="download-icon" alt="下载" />
+        <div @click="handleDownload" class="download-btn-container">
+          <img
+            src="@/assets/logo/desktop_on.png"
+            class="download-icon"
+            alt="下载"
+          />
           <span class="download-text">迪大圣Windows版</span>
         </div>
       </template>
-        
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+
+      <el-dropdown
+        class="avatar-container right-menu-item hover-effect"
+        trigger="click"
+      >
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar" />
         </div>
@@ -58,10 +65,21 @@
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      
-      <div class="user-info   padding-right-xs">
+
+      <div class="user-info padding-right-xs">
         <span class="user-name">{{ nickName }}</span>
       </div>
+    </div>
+    <!-- 外部系统访问时显示的右侧菜单 -->
+    <div v-else class="right-menu external-menu">
+      <el-button 
+        type="text" 
+        icon="el-icon-refresh-right"
+        @click="handleReload"
+        class="reload-btn"
+      >
+        刷新
+      </el-button>
     </div>
     
     <!-- 版本历史弹窗 -->
@@ -97,7 +115,22 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["sidebar", "avatar", "nickName", "readNum", "device", "name"]),
+    ...mapGetters([
+      "sidebar",
+      "avatar",
+      "nickName",
+      "readNum",
+      "device",
+      "name",
+      "isFromExternal",
+    ]),
+    externalFlag() {
+      // 兼容未及时写入 Vuex 的场景，回落到 sessionStorage
+      return (
+        this.isFromExternal ||
+        sessionStorage.getItem("isFromExternal") === "true"
+      );
+    },
     setting: {
       get() {
         return this.$store.state.settings.showSettings;
@@ -111,11 +144,27 @@ export default {
     },
   },
 
-  mounted() { 
+  mounted() {
     // 检查是否有新版本（用于显示红点提示）
     this.checkNewVersionStatus();
   },
   methods: {
+    /**
+     * 重新加载当前页面
+     */
+    handleReload() {
+      this.$confirm('确定要重新加载当前页面吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        // 刷新当前路由
+        this.$router.go(0);
+      }).catch(() => {
+        // 取消操作
+      });
+    },
+    
     /**
      * 打开版本历史弹窗
      */
@@ -125,20 +174,20 @@ export default {
       }
       // 点击后隐藏红点，并标记为已查看
       this.hasNewVersion = false;
-      
+
       // 在 sessionStorage 中添加已查看标记
       try {
-        const stored = localStorage.getItem('app_latest_version');
+        const stored = localStorage.getItem("app_latest_version");
         if (stored) {
           const storedInfo = JSON.parse(stored);
           const sessionKey = `version_shown_${storedInfo.version}`;
-          sessionStorage.setItem(sessionKey, 'true');
+          sessionStorage.setItem(sessionKey, "true");
         }
       } catch (error) {
-        console.log('设置版本已查看标记失败:', error);
+        console.log("设置版本已查看标记失败:", error);
       }
     },
-    
+
     /**
      * 检查是否有新版本（用于显示红点）
      */
@@ -147,7 +196,7 @@ export default {
         // 调用全局的版本检查
         if (window.$version && window.$version.check) {
           // 静默检查，不弹窗
-          const stored = localStorage.getItem('app_latest_version');
+          const stored = localStorage.getItem("app_latest_version");
           if (stored) {
             const storedInfo = JSON.parse(stored);
             // 简单检查：如果有存储但是首次登录，显示红点
@@ -158,7 +207,7 @@ export default {
           }
         }
       } catch (error) {
-        console.log('检查新版本状态失败:', error);
+        console.log("检查新版本状态失败:", error);
       }
     },
     /**
@@ -167,84 +216,85 @@ export default {
     detectOS() {
       const userAgent = window.navigator.userAgent.toLowerCase();
       const platform = window.navigator.platform.toLowerCase();
-      
-      if (platform.includes('mac') || userAgent.includes('mac')) {
-        return 'mac';
-      } else if (platform.includes('win') || userAgent.includes('win')) {
-        return 'windows';
+
+      if (platform.includes("mac") || userAgent.includes("mac")) {
+        return "mac";
+      } else if (platform.includes("win") || userAgent.includes("win")) {
+        return "windows";
       }
-      return 'windows'; // 默认返回 Windows
+      return "windows"; // 默认返回 Windows
     },
-    
+
     async handleDownload() {
       try {
         // 检测操作系统
         const os = this.detectOS();
-        const osText = os === 'mac' ? 'Mac' : 'Windows';
-        
+        const osText = os === "mac" ? "Mac" : "Windows";
+
         const loading = this.$loading({
           lock: true,
           text: `正在获取${osText}版本...`,
-          spinner: 'el-icon-loading'
+          spinner: "el-icon-loading",
         });
-        
+
         try {
           // 获取latest.yml文件，添加时间戳防止缓存
           const timestamp = new Date().getTime();
-          
+
           // 根据操作系统选择不同的配置文件
-          let ymlUrl = '';
-          if (os === 'mac') {
+          let ymlUrl = "";
+          if (os === "mac") {
             ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest-mac.yml?t=${timestamp}`;
           } else {
             ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml?t=${timestamp}`;
           }
-          
+
           const response = await fetch(ymlUrl);
-          
+
           if (!response.ok) {
-            throw new Error('获取版本信息失败');
+            throw new Error("获取版本信息失败");
           }
-          
+
           const ymlText = await response.text();
-          
+
           // 解析yml文件获取文件名和版本
           const urlMatch = ymlText.match(/url:\s*(\S+)/);
           const versionMatch = ymlText.match(/version:\s*(\S+)/);
-          
+
           // 根据操作系统设置默认文件名
-          const defaultFileName = os === 'mac' ? 'DigiSmart-1.0.3.dmg' : 'DigiSmart-Setup-1.0.3.exe';
+          const defaultFileName =
+            os === "mac" ? "DigiSmart-1.0.3.dmg" : "DigiSmart-Setup-1.0.3.exe";
           let fileName = urlMatch ? urlMatch[1] : defaultFileName;
-          const version = versionMatch ? versionMatch[1] : '';
-          
+          const version = versionMatch ? versionMatch[1] : "";
+
           // Mac手动下载强制使用.dmg文件（yml中的.zip是给自动更新用的）
-          if (os === 'mac' && fileName.endsWith('.zip')) {
-            fileName = fileName.replace(/\.zip$/, '.dmg');
+          if (os === "mac" && fileName.endsWith(".zip")) {
+            fileName = fileName.replace(/\.zip$/, ".dmg");
           }
-          
+
           // 构建完整的下载URL
           const downloadUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/${fileName}`;
-          
+
           loading.close();
-          
+
           // 创建隐藏的a标签触发下载
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.href = downloadUrl;
           link.download = fileName;
-          link.target = '_blank';
+          link.target = "_blank";
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           this.$message.success(`开始下载${osText}版 ${version}`);
         } catch (fetchError) {
           loading.close();
-          console.error('获取版本信息失败:', fetchError);
+          console.error("获取版本信息失败:", fetchError);
           this.$message.warning(`无法获取最新版本信息，请联系管理员`);
         }
       } catch (error) {
-        console.error('下载失败:', error);
-        this.$message.error('下载失败，请稍后重试');
+        console.error("下载失败:", error);
+        this.$message.error("下载失败，请稍后重试");
       }
     },
     jumpApi() {
@@ -333,15 +383,15 @@ export default {
     display: flex;
     align-items: center;
     margin-right: 20px;
-    
+
     .user-name {
       color: #515a6e !important;
       font-size: 14px;
       position: relative;
       display: inline-block;
-      margin-left:5px;
+      margin-left: 5px;
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         left: 0;
         bottom: 10px;
@@ -375,43 +425,46 @@ export default {
         transition: background 0.3s;
 
         &:hover {
-          background: if($darkTheme, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.025));
+          background: if(
+            $darkTheme,
+            rgba(255, 255, 255, 0.1),
+            rgba(0, 0, 0, 0.025)
+          );
         }
       }
-      
     }
-    
+
     .version-btn-container {
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       font-size: 20px;
-      
+
       i {
         color: #515a6e;
         transition: all 0.3s;
       }
-      
+
       &:hover i {
         color: #409eff;
         transform: scale(1.1);
       }
-      
+
       .version-badge {
         ::v-deep .el-badge__content {
           background-color: #f56c6c;
         }
       }
     }
-    
+
     .download-btn-container {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 0px 12px;
       margin: 5px 8px;
-      margin-top: 10px ;
+      margin-top: 10px;
       height: auto;
       background: rgb(56, 128, 246);
       border-radius: 16px;
@@ -426,10 +479,10 @@ export default {
       line-height: 35px;
       position: relative;
       overflow: hidden;
-      
+
       // 镜子光动画效果
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: -100%;
@@ -444,17 +497,17 @@ export default {
         transform: skewX(-25deg);
         animation: shine 4s ease-in-out infinite;
       }
-      
+
       &:hover {
         background: rgba(56, 128, 246, 0.85);
         border-color: rgba(56, 128, 246, 0.85);
       }
-      
+
       &:active {
         background: rgba(56, 128, 246, 0.7);
         border-color: rgba(56, 128, 246, 0.7);
       }
-      
+
       .download-icon {
         width: 18px;
         height: 18px;
@@ -462,7 +515,7 @@ export default {
         position: relative;
         z-index: 1;
       }
-      
+
       .download-text {
         color: #fff;
         white-space: nowrap;
@@ -471,7 +524,7 @@ export default {
         z-index: 1;
       }
     }
-    
+
     // 镜子光动画关键帧
     @keyframes shine {
       0% {
@@ -484,7 +537,7 @@ export default {
         left: 100%;
       }
     }
-
+    
     .avatar-container {
       margin-right: 0;
 
@@ -501,6 +554,27 @@ export default {
           border-radius: 10px;
         }
       }
+    }
+  }
+}
+
+.right-menu.external-menu {
+  padding-right: 16px;
+
+  .reload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #409eff;
+    padding: 6px 14px;
+    margin-right: 24px;
+    border-radius: 18px;
+
+    i {
+      margin-right: 4px;
+      transition: transform 0.3s ease;
     }
   }
 }

@@ -838,19 +838,20 @@
             width="95"
           />
           <el-table-column
-            label="配置协议"
-            prop="agreement"
+            label="实际协议"
+            prop="showAgreement"
             align="center"
             width="95"
-            column-key="agreement"
-            :filters="handleDataFilter(dicts_agreement)"
+            column-key="showAgreement"
+            :filters="getAgreementFilters"
             :filter-method="filterHandler"
           >
             <span
-              slot-scope="scope"
-              v-NoData="dicts_agreement[scope.row.agreement]"
+              slot-scope="{ row }"
+              v-NoData="getAgreementLabel(row.showAgreement)"
             />
           </el-table-column>
+       
           <el-table-column
             label="系统电压"
             prop="voltage"
@@ -1856,6 +1857,7 @@ import {
 import commonData from "@/mixins/commonData";
 import ParamsCompare from "./ParamsCompare.vue";
 import { getCustomerList } from "@/api/order";
+import { getDicts } from "@/api/system/dict/data";
 import addDialog from "@/views/third/productFamily/index.vue";
 import ElImageViewer from "element-ui/packages/image/src/image-viewer";
 import axios from "axios";
@@ -1870,6 +1872,7 @@ import { checkPermi } from "@/utils/permission";
 
 export default {
   name: "ConfigOverview",
+  dicts: ["instrument_agreement"],
   mixins: [commonData],
   props: {
     categoryId: {
@@ -1962,6 +1965,8 @@ export default {
         page: 1,
         more: true,
       },
+      // 协议字典数据
+      agreementDictData: {},
       // 查询参数
       queryParams: {
         p: 1,
@@ -2056,6 +2061,38 @@ export default {
         return newList.sort((a, b) => a.text - b.text);
       };
     },
+    // 获取协议字典的筛选选项（showAgreement 字段存储的是中文值）
+    getAgreementFilters() {
+      // 优先使用直接加载的字典数据
+      if (this.agreementDictData && Object.keys(this.agreementDictData).length > 0) {
+        return Object.entries(this.agreementDictData).map(([key, value]) => ({
+          text: value,  // 显示中文
+          value: value  // 筛选也用中文（因为数据库存的是中文）
+        }));
+      }
+      // 备用：使用 dicts_agreement（mixin中的字典）
+      if (this.dicts_agreement && Object.keys(this.dicts_agreement).length > 0) {
+        return Object.entries(this.dicts_agreement).map(([key, value]) => ({
+          text: value,
+          value: value
+        }));
+      }
+      // 再备用：使用 this.dict.instrument_agreement（Vue字典系统）
+      if (this.dict && this.dict.instrument_agreement && this.dict.instrument_agreement.length > 0) {
+        return this.dict.instrument_agreement.map(item => ({
+          text: item.label || item.dictLabel,
+          value: item.label || item.dictLabel
+        }));
+      }
+      return [];
+    },
+    // 获取协议的中文标签（showAgreement 已经是中文，直接返回）
+    getAgreementLabel() {
+      return (value) => {
+        // showAgreement 字段已经存储的是中文，直接返回即可
+        return value;
+      };
+    },
     isKm5s() {
       if (this.isSample) {
         return this.deployData.agreement === 0;
@@ -2065,6 +2102,18 @@ export default {
     },
   },
   created() {
+    // 协议字典（用于筛选器）
+    getDicts("instrument_agreement").then((res) => {
+      this.agreementDictData = {};
+      if (res.data && Array.isArray(res.data)) {
+        res.data.forEach(item => {
+          this.agreementDictData[item.dictValue] = item.dictLabel;
+        });
+      }
+      console.log("✅ 协议字典加载成功:", this.agreementDictData);
+    }).catch(err => {
+      console.error("❌ 协议字典加载失败:", err);
+    });
     // 车把尺寸
     this.getConfigDicts("handleBar_size", "handlebarSizeData");
     // uart波特率
@@ -2279,6 +2328,8 @@ export default {
         // 调试：打印第一条数据查看审核状态字段
         if (list && list.length > 0) {
           console.log("📋 列表数据示例:", list[0]);
+          console.log("实际协议字段 showAgreement:", list[0].showAgreement);
+          console.log("协议字典数据 agreementDictData:", this.agreementDictData);
           console.log("包装审核状态:", list[0].packagingAuditStatus);
           console.log("规格书审核状态:", list[0].specificationAuditStatus);
           console.log("包装信息:", list[0].packagingInfo);

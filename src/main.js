@@ -33,8 +33,12 @@ import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
 import { syncTokenFromUrl } from '@/utils/auth'
 
-// 处理外部携带 token 的场景，优先写入 Cookie
-syncTokenFromUrl()
+// 处理外部携带 token 的场景，优先写入 Cookie，并标记外部跳转（10分钟有效）
+const isExternalJump = syncTokenFromUrl()
+store.dispatch('app/initExternalFlag')
+if (isExternalJump) {
+  store.dispatch('app/setExternalFlag', { value: true })
+}
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: 'success' });
 };

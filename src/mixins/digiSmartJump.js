@@ -62,7 +62,14 @@ export default {
     clearDigiSmartId() {
       if (this.$route.query.id) {
         // 移除 URL 中的 DigiSmart 跳转参数
-        this.$router.replace({ query: {} }).catch(() => {});
+        try {
+          if (this.$router && this.$router.replace) {
+            // 统一包 Promise，避免返回 undefined 时直接调用 catch 报错
+            Promise.resolve(this.$router.replace({ query: {} })).catch(() => {})
+          }
+        } catch (err) {
+          console.warn('[DigiSmart跳转] 清理URL失败（忽略）:', err)
+        }
         // 清空 queryParams 中的 id
         if (this.queryParams) {
           this.queryParams.id = null;

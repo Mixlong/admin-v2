@@ -459,6 +459,16 @@ export function sopFinalAudit(data) {
   });
 }
 
+// SOP项目审
+// 参数: { id, state, remark, result, secondPerson }
+export function sopProjectAudit(data) {
+  return request({
+    url: "/sop/change/project/state",
+    method: "put",
+    data,
+  });
+}
+
 // 用例导入
 export function caseUpload(data) {
   return request({

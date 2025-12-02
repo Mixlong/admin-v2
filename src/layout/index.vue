@@ -12,9 +12,7 @@
     <!-- 右侧主要内容区域 -->
     <div :class="{ hasTagsView: needTagsView }" class="main-container">
       <div :class="{ 'fixed-header': fixedHeader }">
-        <div>
-          <navbar />
-        </div>
+        <navbar/>
         <tags-view v-if="needTagsView" />
       </div>
       <app-main />
@@ -50,6 +48,7 @@ export default {
       showSettings: (state) => state.settings.showSettings,
       needTagsView: (state) => state.settings.tagsView,
       fixedHeader: (state) => state.settings.fixedHeader,
+      isFromExternal: (state) => state.app.isFromExternal,
     }),
     classObj() {
       return {
@@ -59,6 +58,10 @@ export default {
         mobile: this.device === "mobile",
       };
     },
+  },
+  created() {
+    // 初始化外部跳转标记（从Vuex持久化读取）
+    this.$store.dispatch('app/initExternalFlag');
   },
   methods: {
     handleClickOutside() {
@@ -110,6 +113,12 @@ export default {
   width: calc(100vw - #{$hideSideBarWidth});
 }
 
+.main-container.no-sidebar {
+  margin-left: 0;
+  max-width: 100vw;
+  width: 100vw;
+}
+
 .drawer-bg {
   background: #000;
   opacity: 0.3;
@@ -138,5 +147,13 @@ export default {
 .mobile .fixed-header {
   left: 0;
   width: 100%;
+}
+
+// 外部跳转时隐藏navbar，app-main占满高度
+.main-container.no-navbar {
+  .app-main {
+    padding-top: 0 !important;
+    min-height: 100vh !important;
+  }
 }
 </style>

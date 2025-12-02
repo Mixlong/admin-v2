@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container shipment-order-container">
     <!-- 智能搜索区域 -->
     <IntelligentSearchForm 
       :searchForm="searchForm" 
@@ -150,7 +150,9 @@
     </IntelligentSearchForm>
 
     <!-- 数据表格 -->
-    <div class="table-wrapper">
+    <div class="table-wrapper" 
+      ref="tableContainer"
+    >
       <el-table 
         ref="mainTable"
         :key="tableKey"
@@ -226,13 +228,30 @@
         </el-table-column>
         
         <!-- BOM信息 - 平铺的3个列 -->
-        <el-table-column prop="etreeBomBefore" label="E树BOM刷新前" align="center"  v-if="isColumnVisible('etreeBomBefore')">
+        <el-table-column 
+          prop="etreeBomBefore" 
+          label="E树BOM刷新前" 
+          align="center"  
+          v-if="isColumnVisible('etreeBomBefore')"
+          :filters="getColumnFilters('etreeBomBefore')"
+          :filter-method="filterHandler"
+          column-key="etreeBomBefore"
+        >
           <template slot-scope="scope">
             {{ scope.row.etreeBomBefore || '-' }}
           </template>
         </el-table-column>
         
-        <el-table-column prop="etreeBomAfter" label="E树BOM刷新后" align="center" width="140" v-if="isColumnVisible('etreeBomAfter')">
+        <el-table-column 
+          prop="etreeBomAfter" 
+          label="E树BOM刷新后" 
+          align="center" 
+          width="140" 
+          v-if="isColumnVisible('etreeBomAfter')"
+          :filters="getColumnFilters('etreeBomAfter')"
+          :filter-method="filterHandler"
+          column-key="etreeBomAfter"
+        >
           <template slot-scope="scope">
             {{ scope.row.etreeBomAfter || '-' }}
           </template>
@@ -316,7 +335,16 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="orderDate" label="上单时间" align="center" width="110" v-if="isColumnVisible('orderDate')">
+        <el-table-column 
+          prop="orderDate" 
+          label="上单时间" 
+          align="center" 
+          width="110" 
+          v-if="isColumnVisible('orderDate')"
+          :filters="getColumnFilters('orderDate')"
+          :filter-method="filterHandler"
+          column-key="orderDate"
+        >
           <template slot-scope="scope">
             {{ scope.row.orderDate || '-' }}
           </template>
@@ -324,19 +352,46 @@
         
         <!-- 数量信息 -->
         <el-table-column label="数量信息" align="center" header-align="center" v-if="isColumnVisible('orderQuantity') || isColumnVisible('shippedQuantity') || isColumnVisible('unshippedQuantity')">
-          <el-table-column prop="orderQuantity" label="订单数量" align="center" width="100" v-if="isColumnVisible('orderQuantity')">
+          <el-table-column 
+            prop="orderQuantity" 
+            label="订单数量" 
+            align="center" 
+            width="100" 
+            v-if="isColumnVisible('orderQuantity')"
+            :filters="getColumnFilters('orderQuantity')"
+            :filter-method="filterHandler"
+            column-key="orderQuantity"
+          >
             <template slot-scope="scope">
               <span class="quantity-text text-green">{{ scope.row.orderQuantity || 0 }}</span>
             </template>
           </el-table-column>
           
-          <el-table-column prop="shippedQuantity" label="已发货量" align="center" width="100" v-if="isColumnVisible('shippedQuantity')">
+          <el-table-column 
+            prop="shippedQuantity" 
+            label="已发货量" 
+            align="center" 
+            width="100" 
+            v-if="isColumnVisible('shippedQuantity')"
+            :filters="getColumnFilters('shippedQuantity')"
+            :filter-method="filterHandler"
+            column-key="shippedQuantity"
+          >
             <template slot-scope="scope">
               <span class="shipped-text">{{ scope.row.shippedQuantity || 0 }}</span>
             </template>
           </el-table-column>
           
-          <el-table-column prop="unshippedQuantity" label="未发货量" align="center" width="100" v-if="isColumnVisible('unshippedQuantity')">
+          <el-table-column 
+            prop="unshippedQuantity" 
+            label="未发货量" 
+            align="center" 
+            width="100" 
+            v-if="isColumnVisible('unshippedQuantity')"
+            :filters="getColumnFilters('unshippedQuantity')"
+            :filter-method="filterHandler"
+            column-key="unshippedQuantity"
+          >
             <template slot-scope="scope">
               <span class="unshipped-text text-red" :class="{ 'has-unshipped': scope.row.unshippedQuantity > 0 }">
                 {{ scope.row.unshippedQuantity || 0 }}
@@ -347,13 +402,31 @@
         
         <!-- 交期信息 -->
         <el-table-column label="交期信息" align="center" header-align="center" v-if="isColumnVisible('deliveryPlan') || isColumnVisible('pmcDeliveryDate')">
-          <el-table-column prop="deliveryPlan" label="交货计划" align="center" width="110" v-if="isColumnVisible('deliveryPlan')">
+          <el-table-column 
+            prop="deliveryPlan" 
+            label="交货计划" 
+            align="center" 
+            width="110" 
+            v-if="isColumnVisible('deliveryPlan')"
+            :filters="getColumnFilters('deliveryPlan')"
+            :filter-method="filterHandler"
+            column-key="deliveryPlan"
+          >
             <template slot-scope="scope">
               {{ scope.row.deliveryPlan || '-' }}
             </template>
           </el-table-column>
           
-          <el-table-column prop="pmcDeliveryDate" label="PMC可达成交期" align="center" width="130" v-if="isColumnVisible('pmcDeliveryDate')">
+          <el-table-column 
+            prop="pmcDeliveryDate" 
+            label="PMC可达成交期" 
+            align="center" 
+            width="130" 
+            v-if="isColumnVisible('pmcDeliveryDate')"
+            :filters="getColumnFilters('pmcDeliveryDate')"
+            :filter-method="filterHandler"
+            column-key="pmcDeliveryDate"
+          >
             <template slot-scope="scope">
               {{ scope.row.pmcDeliveryDate || '-' }}
             </template>
@@ -648,7 +721,6 @@ export default {
       tableKey: 0
     }
   },
-  computed: {},
   mounted() {
     // 先加载自定义方案，再加载列配置（确保能正确恢复方案）
     this.loadCustomSchemesFromStorage()
@@ -1656,7 +1728,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.shipment-order-page {
+.shipment-order-container {
   padding: 20px;
   
   // 操作列表头
@@ -1894,26 +1966,10 @@ export default {
 }
 </style>
 
-<style lang="scss">
-// 表格富文本单元格高度限制（全局样式）
-.el-table .rich-text-cell {
-  max-height: 80px !important;
-  height: 80px !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  display: block !important;
-  box-sizing: border-box !important;
-}
 
-// 表格单元格内容限制
-.el-table td .cell {
-  .rich-text-cell {
-    max-height: 80px !important;
-    height: 80px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-  }
-}
+
+<style lang="scss">
+// 全局样式（列设置下拉菜单挂载到 body，需要全局样式）
 
 // 列设置下拉菜单（挂载到 body，需要全局样式）
 .column-setting-dropdown-menu {

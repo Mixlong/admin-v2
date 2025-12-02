@@ -1219,6 +1219,8 @@
                       placeholder="请选择实际协议"
                       class="w100"
                       clearable
+                        filterable
+                          allow-create
                     >
                       <el-option
                         v-for="item in dicts_agreement"

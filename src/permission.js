@@ -33,7 +33,9 @@ function getFirstAccessibleRoute(routes) {
 
 router.beforeEach((to, from, next) => {
   start();
-  if (getToken()) {
+  const token = getToken();
+  console.log('[Permission] 路由守卫检查 - to:', to.path, '- hasToken:', !!token);
+  if (token) {
 
     // 注释掉：这段代码会删除路由的中间层级，导致面包屑和标签页显示错误
     // console.log('🌟 进入路由前 to.matched:', to.matched.map(m => ({path: m.path, name: m.name, title: m.meta?.title, component: m.components?.default?.name})));
@@ -54,9 +56,11 @@ router.beforeEach((to, from, next) => {
     } else {
       if (store.getters.roles.length === 0) {
         // 判断当前用户是否已拉取完user_info信息
+        console.log('[Permission] 开始获取用户信息...');
         store
           .dispatch("GetInfo")
           .then((res) => {
+            console.log('[Permission] 用户信息获取成功:', res);
             // 拉取user_info
             const roles = res.roles;
             store.dispatch("GenerateRoutes", { roles }).then((accessRoutes) => {
@@ -92,6 +96,7 @@ router.beforeEach((to, from, next) => {
             });
           })
           .catch((err) => {
+            console.error('[Permission] 获取用户信息失败:', err);
             store.dispatch("FedLogOut").then(() => {
               Message.error(err);
               next({ path: "/" });
