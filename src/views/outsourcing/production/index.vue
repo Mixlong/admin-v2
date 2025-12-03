@@ -509,18 +509,18 @@
 
         <!-- BOM 文件 -->
         <div class="bom-file-section" v-if="viewData.productionProcess === 'SMT' && viewData.smtBomFile">
-          <h3 class="section-title">BOM 文件</h3>
+          <h3 class="section-title">BOM 文件    <el-tag size="small" type="success" style="margin-left: 10px;">已上传</el-tag></h3>
           <div class="bom-file-list">
             <div class="bom-file-item">
               <div class="file-info">
                 <i class="el-icon-document file-icon"></i>
                 <span class="file-name">{{ viewData.smtBomFile }}</span>
-                <el-tag size="small" type="success" style="margin-left: 10px;">已上传</el-tag>
               </div>
               <el-button 
                 size="small" 
                 type="primary" 
                 icon="el-icon-download" 
+                style="margin-left:10px"
                 @click="handleDownloadBom(viewData.smtBomFile)">
                 下载
               </el-button>
@@ -1603,17 +1603,7 @@ export default {
         this.$message.warning("文件地址为空");
         return;
       }
-
-      // 创建一个隐藏的 a 标签进行下载
-      const link = document.createElement("a");
-      link.href = fileUrl;
-      link.download = fileName || "下载文件";
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      this.$message.success("开始下载文件");
+      this.urlDownload(fileUrl);
     },
 
     /** 下载 BOM 文件 */
