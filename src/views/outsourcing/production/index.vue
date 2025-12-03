@@ -137,8 +137,11 @@
       <!-- BOM文件 -->
       <el-table-column prop="orderStatus" label="BOM文件" align="center" width="90">
         <template slot-scope="scope">
-          <el-tag v-if='scope.row.productionProcess == "SMT"' :type="!!scope.row.smtBomFile ? 'success' : 'danger'"
-            size="small" :style="!scope.row.smtBomFile ? 'cursor: pointer;' : ''" @click="handleUploadBom(scope.row)">
+          <el-tag v-if='scope.row.productionProcess == "SMT"' 
+            :type="!!scope.row.smtBomFile ? 'success' : 'danger'"
+            size="small" 
+            :style="scope.row.auditStatus === 2 ? 'cursor: not-allowed; opacity: 0.6;' : 'cursor: pointer;'" 
+            @click="handleUploadBom(scope.row)">
             {{ !!scope.row.smtBomFile ? "已上传" : "未上传" }}
           </el-tag>
           <span v-else>--</span>
@@ -161,11 +164,20 @@
           </el-tag>
         </template>
       </el-table-column>
-      <!-- 订单状态 -->
-      <el-table-column prop="orderStatus" label="订单状态" align="center" width="90">
+      <!-- 订单状态（合并显示） -->
+      <el-table-column prop="orderStatus" label="订单状态" align="center" width="110">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.orderStatus === -1 ? 'danger' : 'success'" size="small">
-            {{ scope.row.orderStatus === -1 ? "已撤销" : "正常" }}
+          <!-- 已撤销 -->
+          <el-tag v-if="scope.row.orderStatus === -1" type="danger" size="small">
+            已撤销
+          </el-tag>
+          <!-- 未上传 -->
+          <el-tag v-else-if="!scope.row.purchaseOrderImg" type="warning" size="small">
+            未上传
+          </el-tag>
+          <!-- 已上传（正常状态不显示） -->
+          <el-tag v-else-if="scope.row.purchaseOrderImg" type="success" size="small">
+            已上传
           </el-tag>
         </template>
       </el-table-column>
@@ -174,7 +186,7 @@
       <el-table-column prop="publishTime" label="发布时间" align="center">
         <template slot-scope="scope">
           <span>{{
-            parseTime(scope.row.publishTime, "{y}-{m}-{d} {h}:{i}:{s}") || "--"
+            parseTime(scope.row.publishTime, "{y}-{m}-{d}") || "--"
             }}</span>
         </template>
       </el-table-column>
@@ -187,7 +199,7 @@
       </el-table-column>
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="130" fixed="right">
+      <el-table-column label="操作" align="center" width="130">
         <template slot-scope="scope">
           <!-- 查看 -->
           <el-tooltip content="查看" placement="top" :open-delay="300">
@@ -451,12 +463,6 @@
               {{ getAuditStatusText(viewData.auditStatus) }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="BOM文件" v-if="viewData.productionProcess == 'SMT'">
-            <el-tag :type="!!viewData.smtBomFile ? 'success' : 'danger'" size="small">
-              {{ !!viewData.smtBomFile ? "已上传" : "未上传" }}
-            </el-tag>
-          </el-descriptions-item>
-
           <el-descriptions-item label="订单状态">
             <el-tag :type="viewData.orderStatus === -1 ? 'danger' : 'success'" size="small">
               {{ viewData.orderStatus === -1 ? "已撤销" : "正常" }}
@@ -498,6 +504,27 @@
           <div class="img-gallery">
             <el-image v-for="(img, index) in (viewData.purchaseOrderImg || '').split(',')" :key="index" :src="img"
               :preview-src-list="(viewData.purchaseOrderImg || '').split(',')" class="purchase-img-item" fit="cover" />
+          </div>
+        </div>
+
+        <!-- BOM 文件 -->
+        <div class="bom-file-section" v-if="viewData.productionProcess === 'SMT' && viewData.smtBomFile">
+          <h3 class="section-title">BOM 文件</h3>
+          <div class="bom-file-list">
+            <div class="bom-file-item">
+              <div class="file-info">
+                <i class="el-icon-document file-icon"></i>
+                <span class="file-name">{{ viewData.smtBomFile }}</span>
+                <el-tag size="small" type="success" style="margin-left: 10px;">已上传</el-tag>
+              </div>
+              <el-button 
+                size="small" 
+                type="primary" 
+                icon="el-icon-download" 
+                @click="handleDownloadBom(viewData.smtBomFile)">
+                下载
+              </el-button>
+            </div>
           </div>
         </div>
 
@@ -1589,15 +1616,25 @@ export default {
       this.$message.success("开始下载文件");
     },
 
+    /** 下载 BOM 文件 */
+    handleDownloadBom(fileUrl) {
+      if (!fileUrl) {
+        this.$message.warning("BOM 文件地址为空");
+        return;
+      }
+      this.urlDownload(fileUrl);
+    },
+
     /** 点击上传 BOM 文件 */
     handleUploadBom(row) {
-      // 只有未上传时才能点击
-      if (!!row.smtBomFile) {
+      // 只有 SMT 流程才能上传 BOM
+      if (row.productionProcess !== 'SMT') {
         return;
       }
 
-      // 只有 SMT 流程才能上传 BOM
-      if (row.productionProcess !== 'SMT') {
+      // 已审核的订单不允许上传 BOM
+      if (row.auditStatus === 2) {
+        this.$message.warning('已审核的订单不允许修改 BOM 文件');
         return;
       }
 
@@ -2156,6 +2193,51 @@ export default {
 .purchase-order-img-section .purchase-img-item:hover {
   transform: scale(1.05);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* BOM 文件区域样式 */
+.bom-file-section {
+  margin-top: 20px;
+}
+
+.bom-file-list {
+  background: #f5f7fa;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.bom-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.bom-file-item:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+}
+
+.bom-file-item .file-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.bom-file-item .file-icon {
+  font-size: 24px;
+  color: #409eff;
+  margin-right: 12px;
+}
+
+.bom-file-item .file-name {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
 }
 
 /* 齐套信息段落样式 */

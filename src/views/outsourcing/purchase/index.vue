@@ -12,7 +12,13 @@
     >
       <!-- 页面操作按钮 -->
       <template #page-actions>
-        <el-button type="primary" size="mini" icon="el-icon-plus" @click="handleAdd">
+        <el-button 
+          v-hasPermi="['outsourcing:purchase:add']"
+          type="primary" 
+          size="mini" 
+          icon="el-icon-plus" 
+          @click="handleAdd"
+        >
           新增采购订单
         </el-button>
       </template>
@@ -64,9 +70,10 @@
       <el-table-column prop="createTime" label="创建时间" align="center" width="160">
         <template slot-scope="scope">{{ scope.row.createTime || '--' }}</template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="180" fixed="right">
+      <el-table-column label="操作" align="center" width="180">
         <template slot-scope="scope">
           <el-button 
+            v-hasPermi="['outsourcing:purchase:edit']"
             size="mini" 
             type="text" 
             icon="el-icon-edit" 
@@ -75,12 +82,30 @@
           >
             编辑
           </el-button>
-          <el-button size="mini" type="text" icon="el-icon-upload2" @click="handlePublish(scope.row)" 
-            v-if="scope.row.cancelStatus === 1">发布</el-button>
-          <el-button size="mini" type="text" icon="el-icon-refresh-left" @click="handleCancel(scope.row)"
-            v-if="scope.row.cancelStatus === 0">撤销</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" 
-            style="color: #F56C6C">删除</el-button>
+          <el-button 
+            v-hasPermi="['outsourcing:purchase:publish']"
+            size="mini" 
+            type="text" 
+            icon="el-icon-upload2" 
+            @click="handlePublish(scope.row)" 
+            v-show="scope.row.cancelStatus === 1"
+          >发布</el-button>
+          <el-button 
+            v-hasPermi="['outsourcing:purchase:cancel']"
+            size="mini" 
+            type="text" 
+            icon="el-icon-refresh-left" 
+            @click="handleCancel(scope.row)"
+            v-show="scope.row.cancelStatus === 0"
+          >撤销</el-button>
+          <el-button 
+            v-hasPermi="['outsourcing:purchase:delete']"
+            size="mini" 
+            type="text" 
+            icon="el-icon-delete" 
+            @click="handleDelete(scope.row)" 
+            style="color: #F56C6C"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
