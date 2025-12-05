@@ -162,8 +162,8 @@ export default {
           // 会审
           apiFunc = sopFieldAudit;
           params = {
-            ...this.currentFieldItem,
             id: this.rowData.sopChangeNotice?.id || this.rowData.id,
+            ...this.currentFieldItem,
             state: this.form.state,
             result: this.form.result,
             remark: this.form.remark
