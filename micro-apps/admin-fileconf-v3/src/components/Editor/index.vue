@@ -111,7 +111,18 @@ onMounted(() => {
         quill.format("image", false)
       }
     })
-    quill.root.addEventListener('paste', handlePasteCapture, true)
+    // 在编辑器元素上监听粘贴，只处理图片粘贴
+    quill.root.addEventListener('paste', handlePasteCapture, false)
+  }
+})
+
+// 组件卸载时移除事件监听
+onBeforeUnmount(() => {
+  if (props.type == 'url' && quillEditorRef.value) {
+    const quill = quillEditorRef.value.getQuill()
+    if (quill && quill.root) {
+      quill.root.removeEventListener('paste', handlePasteCapture, false)
+    }
   }
 })
 
@@ -157,19 +168,26 @@ function handleUploadError() {
   proxy.$modal.msgError("图片插入失败")
 }
 
-// 复制粘贴图片处理
+// 复制粘贴图片处理（只处理图片，文本粘贴由编辑器默认处理）
 function handlePasteCapture(e) {
   const clipboard = e.clipboardData || window.clipboardData
-  if (clipboard && clipboard.items) {
-    for (let i = 0; i < clipboard.items.length; i++) {
-      const item = clipboard.items[i]
-      if (item.type.indexOf('image') !== -1) {
-        e.preventDefault()
-        const file = item.getAsFile()
+  if (!clipboard || !clipboard.items) return
+  
+  // 检查是否有图片
+  for (let i = 0; i < clipboard.items.length; i++) {
+    const item = clipboard.items[i]
+    if (item.type.indexOf('image') !== -1) {
+      // 只有粘贴图片时才阻止默认行为
+      e.preventDefault()
+      e.stopPropagation()
+      const file = item.getAsFile()
+      if (file) {
         insertImage(file)
       }
+      return
     }
   }
+  // 如果没有图片，让编辑器默认处理文本粘贴
 }
 
 function insertImage(file) {

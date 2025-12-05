@@ -7,6 +7,12 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import locale from 'element-plus/es/locale/lang/zh-cn'
 
+// VXE Table + VXE PC UI
+import VxeUI from 'vxe-pc-ui'
+import 'vxe-pc-ui/es/style.css'
+import VXETable from 'vxe-table'
+import 'vxe-table/es/style.css'
+
 import '@/assets/styles/index.scss' // global css
 
 import App from './App'
@@ -98,6 +104,11 @@ function render(props = {}) {
     // 支持 large、default、small
     size: Cookies.get('size') || 'default'
   })
+  
+  // 使用 VXE PC UI + VXE Table（VxeUI 必须在 VXETable 之前注册）
+  app.use(VxeUI)
+  app.use(VXETable)
+  console.log('✅ VXE PC UI + VXE Table 已注册')
 
   const mountElement = container ? container.querySelector('#app') : '#app'
   app.mount(mountElement)

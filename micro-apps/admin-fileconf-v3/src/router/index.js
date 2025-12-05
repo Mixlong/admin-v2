@@ -52,16 +52,13 @@ export const constantRoutes = [
   //   component: () => import('@/views/error/401'),
   //   hidden: true
   // },
+ 
   {
-    path: '/test',
-    component: () => import('@/views/test.vue'),
-    hidden: true
-  },
-  {
-    path: '/test2',
-    component: () => import('@/views/test2.vue'),
-    hidden: true
-  },
+    path: '/shipment/order',
+    component: () => import('@/views/shipment/order/index-draggable.vue'),
+    hidden: false,
+    meta: { title: '出货订单(拖拽选区)', icon: 'order' }
+  }
 ]
 
 // 动态路由，基于用户权限动态去加载

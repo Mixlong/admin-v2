@@ -1,0 +1,15 @@
+# Build outputs
+admin-v3/
+dist/
+node_modules/
+
+# Config files
+*.config.js
+*.config.cjs
+vite/
+
+# Public assets
+public/
+
+# Logs
+*.log

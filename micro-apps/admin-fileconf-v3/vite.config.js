@@ -23,7 +23,9 @@ export default defineConfig(({ mode, command }) => {
         '@': path.resolve(__dirname, './src')
       },
       // https://cn.vitejs.dev/config/#resolve-extensions
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      // 去重 redi 依赖，防止多次加载
+      dedupe: ['@wendellhu/redi']
     },
     // 打包配置
     build: {
@@ -36,7 +38,14 @@ export default defineConfig(({ mode, command }) => {
         output: {
           chunkFileNames: 'static/js/[name]-[hash].js',
           entryFileNames: 'static/js/[name]-[hash].js',
-          assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
+          assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
+          manualChunks: {
+            'vxe-table': ['vxe-table', 'xe-utils'],
+            'element-plus': ['element-plus', '@element-plus/icons-vue'],
+            'quill': ['quill', '@vueup/vue-quill'],
+            'exceljs': ['exceljs'],
+            'vue-vendor': ['vue', 'vue-router', 'pinia']
+          }
         }
       }
     },
@@ -45,6 +54,14 @@ export default defineConfig(({ mode, command }) => {
       port: 3002,
       host: '0.0.0.0', // 允许外部访问
       open: false,
+      // 允许跨域访问
+      cors: true,
+      // 配置 headers 允许被嵌入
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+      },
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         '/dev-api': {

@@ -103,6 +103,13 @@
         </template>
       </el-table-column>
 
+      <!-- BOM编码 -->
+      <el-table-column prop="bomCode" label="BOM编码" align="center" width="150">
+        <template slot-scope="scope">
+          <span>{{ scope.row.bomCode || "--" }}</span>
+        </template>
+      </el-table-column>
+
       <!-- 数量 -->
       <el-table-column prop="num" label="数量" align="center" width="80">
         <template slot-scope="scope">
@@ -386,6 +393,9 @@
           <el-descriptions-item label="型号">
             {{ bomUploadData.computerName || '--' }}
           </el-descriptions-item>
+          <el-descriptions-item label="BOM编码">
+            {{ bomUploadData.bomCode || '--' }}
+          </el-descriptions-item>
         </el-descriptions>
 
         <!-- BOM文件上传区域 -->
@@ -438,6 +448,9 @@
                 : viewData.computerName || "--"
             }}
           </el-descriptions-item>
+          <el-descriptions-item label="BOM编码">{{
+            viewData.bomCode || "--"
+            }}</el-descriptions-item>
           <el-descriptions-item label="芯片版本">{{
             viewData.chipVersion || "--"
             }}</el-descriptions-item>

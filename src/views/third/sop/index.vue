@@ -158,6 +158,7 @@
               }}
             </el-tag>
           </div>
+          <span v-else-if="scope.row.engineeringPerson">{{ scope.row.engineeringPerson }}</span>
           <span v-else>-</span>
         </template>
       </el-table-column>
@@ -237,15 +238,15 @@
             >
               审核
             </el-button>
-            <!-- 审核详情按钮（新版SOP） -->
+            <!-- 审核详情按钮 -->
             <el-button
-              v-if="row.isOldSop == 0"
-              class="text-blue"
+              v-if="(row.isOldSop == 0 && row.sopChangeNotice) || (row.isOldSop == 1 && row.engineeringPerson)"
+              class="text-purple"
               type="text"
               size="small"
               @click="handleViewDetail(row)"
             >
-              审核详情
+              详情
             </el-button>
             <!-- 查看详情按钮 -->
             <el-button
@@ -1101,21 +1102,29 @@ export default {
     },
     /** 获取审核状态标签类型 */
     getAuditTagType(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return "warning";
+      }
       const typeMap = {
         0: "warning", // 待审核 - 橙色
         1: "success", // 已通过 - 绿色
         2: "danger", // 已驳回 - 红色
       };
-      return typeMap[state] || "info";
+      return typeMap[state] || "warning";
     },
     /** 获取审核状态名称 */
     getAuditStateName(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return "待审核";
+      }
       const nameMap = {
         0: "待审核",
         1: "已通过",
         2: "已驳回",
       };
-      return nameMap[state] || "-";
+      return nameMap[state] || "待审核";
     },
     /** 获取字段名称（部门类型映射） */
     getFieldName(field) {
@@ -1170,6 +1179,10 @@ export default {
 
 .text-cyan {
   color: #17a2b8;
+}
+
+.text-purple {
+  color: #9c27b0;
 }
 
 .w100 {

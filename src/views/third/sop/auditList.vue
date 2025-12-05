@@ -72,18 +72,6 @@
       </el-table-column>
    
       
-      <!-- 终审状态 -->
-      <el-table-column label="终审" width="120" align="center">
-        <template slot-scope="scope">
-          <div>
-            <div style="margin-bottom: 4px;">{{ scope.row.secondPerson || '-' }}</div>
-            <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
-              {{ getAuditStateName(scope.row.secondState) }}
-            </el-tag>
-          </div>
-        </template>
-      </el-table-column>
-          
       <!-- 工程审状态 -->
       <el-table-column label="工程审" width="120" align="center">
         <template slot-scope="scope">
@@ -91,6 +79,30 @@
             <div style="margin-bottom: 4px;">{{ scope.row.engineeringPerson || '-' }}</div>
             <el-tag :type="getAuditTagType(scope.row.engineeringState)" size="small">
               {{ getAuditStateName(scope.row.engineeringState) }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      
+      <!-- 项目审状态 -->
+      <el-table-column label="项目审" width="120" align="center">
+        <template slot-scope="scope">
+          <div>
+            <div style="margin-bottom: 4px;">{{ scope.row.projectPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.projectState)" size="small">
+              {{ getAuditStateName(scope.row.projectState) }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+          
+      <!-- 终审状态 -->
+      <el-table-column label="终审" width="120" align="center">
+        <template slot-scope="scope">
+          <div>
+            <div style="margin-bottom: 4px;">{{ scope.row.secondPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
+              {{ getAuditStateName(scope.row.secondState) }}
             </el-tag>
           </div>
         </template>
@@ -266,21 +278,29 @@ export default {
     },
     /** 获取审核状态标签类型 */
     getAuditTagType(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return 'warning';
+      }
       const typeMap = {
         0: 'warning',  // 待审核 - 橙色
         1: 'success',  // 已通过 - 绿色
         2: 'danger'    // 已驳回 - 红色
       };
-      return typeMap[state] || 'info';
+      return typeMap[state] || 'warning';
     },
     /** 获取审核状态名称 */
     getAuditStateName(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return '待审核';
+      }
       const nameMap = {
         0: '待审核',
         1: '已通过',
         2: '已驳回'
       };
-      return nameMap[state] || '-';
+      return nameMap[state] || '待审核';
     },
     /** 获取字段名称（部门类型映射） */
     getFieldName(field) {
@@ -325,37 +345,50 @@ export default {
         if (myAudit) return true;
       }
       
-      // 2. 检查终审状态（第二阶段，需要所有会审都通过）
-      if (row.secondPerson === currentUser && row.secondState === 0) {
-        // 检查是否所有会审都已通过
-        const allJointAuditPassed = row.list && row.list.length > 0 
-          ? row.list.every(item => item.state === 1)
-          : false;
-        
-        // 只有会审全部通过后，才能终审
-        if (allJointAuditPassed) {
-          return true;
-        }
-      }
-      
-      // 3. 检查工程审状态（第三阶段，需要终审通过）
+      // 2. 检查工程审状态（第二阶段，需要所有会审都通过）
       if (row.engineeringPerson === currentUser && row.engineeringState === 0) {
         // 检查是否所有会审都已通过
         const allJointAuditPassed = row.list && row.list.length > 0 
           ? row.list.every(item => item.state === 1)
           : false;
         
-        // 检查终审是否已通过（未驳回）
-        const finalPassed = row.secondState === 1;
-        const finalRejected = row.secondState === 2;
-        
-        // 如果终审被驳回，不能进行工程审
-        if (finalRejected) {
-          return false;
+        // 只有会审全部通过后，才能工程审
+        if (allJointAuditPassed) {
+          return true;
         }
+      }
+      
+      // 3. 检查项目审状态（第三阶段，需要工程审通过）
+      if (row.projectPerson === currentUser && row.projectState === 0) {
+        // 检查是否所有会审都已通过
+        const allJointAuditPassed = row.list && row.list.length > 0 
+          ? row.list.every(item => item.state === 1)
+          : false;
         
-        // 只有会审全部通过且终审通过后，才能工程审
-        if (allJointAuditPassed && finalPassed) {
+        // 检查工程审是否已通过
+        const engineeringPassed = row.engineeringState === 1;
+        
+        // 只有会审全部通过且工程审通过后，才能项目审
+        if (allJointAuditPassed && engineeringPassed) {
+          return true;
+        }
+      }
+      
+      // 4. 检查终审状态（第四阶段，需要项目审通过）
+      if (row.secondPerson === currentUser && row.secondState === 0) {
+        // 检查是否所有会审都已通过
+        const allJointAuditPassed = row.list && row.list.length > 0 
+          ? row.list.every(item => item.state === 1)
+          : false;
+        
+        // 检查工程审是否已通过
+        const engineeringPassed = row.engineeringState === 1;
+        
+        // 检查项目审是否已通过（如果有项目人员）
+        const projectPassed = !row.projectPerson || row.projectState === 1;
+        
+        // 只有会审全部通过、工程审通过、项目审通过后，才能终审
+        if (allJointAuditPassed && engineeringPassed && projectPassed) {
           return true;
         }
       }
@@ -367,7 +400,7 @@ export default {
       const currentUser = this.nickName || '';
       
       // 判断当前用户的审核类型
-      // 1. 检查是否是会审人员
+      // 1. 检查是否是会审人员（第一阶段）
       if (row.list && row.list.length > 0) {
         const myAudit = row.list.find(item => item.fieldName === currentUser && item.state === 0);
         if (myAudit) {
@@ -376,15 +409,21 @@ export default {
         }
       }
       
-      // 2. 检查是否是终审人员（第二阶段）
-      if (row.secondPerson === currentUser && row.secondState === 0) {
-        this.$refs.auditDialog.open('final', row);
+      // 2. 检查是否是工程审人员（第二阶段）
+      if (row.engineeringPerson === currentUser && row.engineeringState === 0) {
+        this.$refs.auditDialog.open('engineering', row);
         return;
       }
       
-      // 3. 检查是否是工程审人员（第三阶段）
-      if (row.engineeringPerson === currentUser && row.engineeringState === 0) {
-        this.$refs.auditDialog.open('engineering', row);
+      // 3. 检查是否是项目审人员（第三阶段）
+      if (row.projectPerson === currentUser && row.projectState === 0) {
+        this.$refs.auditDialog.open('project', row);
+        return;
+      }
+      
+      // 4. 检查是否是终审人员（第四阶段）
+      if (row.secondPerson === currentUser && row.secondState === 0) {
+        this.$refs.auditDialog.open('final', row);
         return;
       }
     },
@@ -394,14 +433,21 @@ export default {
     },
     /** 表格行样式 */
     rowClassName({ row }) {
-      // 全部通过 - 绿色背景
-      const allApproved = row.engineeringState === 1 && row.secondState === 1 &&
-        (!row.list || row.list.every(item => item.state === 1));
-      if (allApproved) return 'success-row';
+      // 全部通过 - 绿色背景（会审、工程审、项目审、终审都通过）
+      const allJointAuditPassed = !row.list || row.list.every(item => item.state === 1);
+      const engineeringPassed = row.engineeringState === 1;
+      const projectPassed = !row.projectPerson || row.projectState === 1; // 如果没有项目人员，视为通过
+      const finalPassed = row.secondState === 1;
+      
+      if (allJointAuditPassed && engineeringPassed && projectPassed && finalPassed) {
+        return 'success-row';
+      }
       
       // 有驳回 - 红色背景
-      const hasRejected = row.engineeringState === 2 || row.secondState === 2 ||
-        (row.list && row.list.some(item => item.state === 2));
+      const hasRejected = row.engineeringState === 2 || 
+                         row.secondState === 2 || 
+                         row.projectState === 2 ||
+                         (row.list && row.list.some(item => item.state === 2));
       if (hasRejected) return 'danger-row';
       
       return '';

@@ -13,10 +13,39 @@
       <el-descriptions title="基本信息" :column="2" border class="detail-section" :label-style="{ width: '120px' }">
         <el-descriptions-item label="品类名称">{{ detailData.categoryName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="版本号">{{ detailData.versionCode || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间" :span="2">{{ detailData.createTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="SOP类型">{{ isOldSop ? '旧版SOP' : '新版SOP' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
       </el-descriptions>
 
-      <!-- 会审信息 -->
+      <!-- 旧版SOP：只显示工程审 -->
+      <template v-if="isOldSop">
+        <div v-if="detailData.engineeringPerson" class="audit-stage-section">
+          <div class="section-title">
+            <i class="el-icon-setting"></i>
+            <span>工程审信息</span>
+          </div>
+          
+          <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
+            <el-descriptions-item label="工程审人员">
+              {{ detailData.engineeringPerson || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="审核状态">
+              <el-tag :type="getAuditTagType(detailData.state)" size="small">
+                {{ getAuditStateName(detailData.state) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="审核备注" :span="2">
+              {{ detailData.auditRemark || '-' }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+        
+        <el-empty v-else description="暂无审核信息" :image-size="100"></el-empty>
+      </template>
+
+      <!-- 新版SOP：显示完整4阶段审核流程 -->
+      <template v-else>
+        <!-- 会审信息 -->
       <div class="audit-stage-section">
         <div class="section-title">
           <i class="el-icon-user"></i>
@@ -96,27 +125,28 @@
         </el-descriptions>
       </div>
 
-      <!-- 终审信息 -->
-      <div class="audit-stage-section">
-        <div class="section-title">
-          <i class="el-icon-finished"></i>
-          <span>终审信息</span>
+        <!-- 终审信息 -->
+        <div class="audit-stage-section">
+          <div class="section-title">
+            <i class="el-icon-finished"></i>
+            <span>终审信息</span>
+          </div>
+          
+          <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
+            <el-descriptions-item label="终审人员">
+              {{ sopChangeNotice.secondPerson || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="审核状态">
+              <el-tag :type="getAuditTagType(sopChangeNotice.secondState)" size="small">
+                {{ getAuditStateName(sopChangeNotice.secondState) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="审核备注" :span="2">
+              {{ sopChangeNotice.finalRemark || '-' }}
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
-        
-        <el-descriptions :column="2" border style="margin-top: 10px;" :label-style="{ width: '120px' }">
-          <el-descriptions-item label="终审人员">
-            {{ sopChangeNotice.secondPerson || '-' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="审核状态">
-            <el-tag :type="getAuditTagType(sopChangeNotice.secondState)" size="small">
-              {{ getAuditStateName(sopChangeNotice.secondState) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="审核备注" :span="2">
-            {{ sopChangeNotice.finalRemark || '-' }}
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
+      </template>
     </div>
   </el-dialog>
 </template>
@@ -135,6 +165,10 @@ export default {
   computed: {
     sopChangeNotice() {
       return this.detailData.sopChangeNotice || {};
+    },
+    // 判断是否为旧版SOP
+    isOldSop() {
+      return this.detailData.isOldSop === 1;
     }
   },
   methods: {
@@ -154,22 +188,30 @@ export default {
     
     /** 获取审核状态标签类型 */
     getAuditTagType(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return 'warning';
+      }
       const typeMap = {
         0: 'warning',  // 待审核 - 橙色
         1: 'success',  // 已通过 - 绿色
         2: 'danger'    // 已驳回 - 红色
       };
-      return typeMap[state] || 'info';
+      return typeMap[state] || 'warning';
     },
     
     /** 获取审核状态名称 */
     getAuditStateName(state) {
+      // null 或 undefined 默认为待审核
+      if (state === null || state === undefined) {
+        return '待审核';
+      }
       const nameMap = {
         0: '待审核',
         1: '已通过',
         2: '已驳回'
       };
-      return nameMap[state] || '-';
+      return nameMap[state] || '待审核';
     },
     
     /** 获取部门名称 */

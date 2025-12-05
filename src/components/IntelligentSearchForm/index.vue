@@ -259,6 +259,20 @@ export default {
           this.initTempSearchForm();
         }
       }
+    },
+    // 监听 tempSearchForm 变化，实时同步到父组件的 searchForm
+    tempSearchForm: {
+      handler(newVal) {
+        // 深度同步 tempSearchForm 的变化到 searchForm（queryParams）
+        if (newVal && this.searchForm) {
+          Object.keys(newVal).forEach(key => {
+            if (this.searchForm[key] !== newVal[key]) {
+              this.$set(this.searchForm, key, newVal[key]);
+            }
+          });
+        }
+      },
+      deep: true
     }
   },
   mounted() {

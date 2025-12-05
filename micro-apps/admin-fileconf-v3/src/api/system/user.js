@@ -134,3 +134,12 @@ export function deptTreeSelect() {
     method: 'get'
   })
 }
+
+
+// 查询所有用户（字典）
+export function dictUserList() {
+  return request({
+    url: '/system/user/list/dict',
+    method: 'get'
+  })
+}
