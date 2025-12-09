@@ -579,6 +579,7 @@ export default {
       queryParams: {
         p: 1,
         l: 20,
+        id: null, // DigiSmart 跳转 ID
         categoryId: undefined,
         state: undefined,
         versionCode: undefined,
@@ -655,6 +656,9 @@ export default {
 
           this.brandList = list;
           this.total = total;
+          
+          // 清除 DigiSmart 跳转 ID
+          this.clearDigiSmartId();
         })
         .finally(() => {
           this.loading = false;

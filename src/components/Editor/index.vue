@@ -136,7 +136,9 @@ export default {
         if (val !== this.currentValue) {
           this.currentValue = val === null ? "" : val;
           if (this.Quill) {
-            this.Quill.pasteHTML(this.currentValue);
+            // 使用 setContents 替代 pasteHTML，避免触发滚动
+            const delta = this.Quill.clipboard.convert(this.currentValue);
+            this.Quill.setContents(delta, 'silent');
           }
         }
       },
@@ -196,7 +198,12 @@ export default {
         }
       });
       
-      this.Quill.pasteHTML(this.currentValue);
+      // 设置初始内容，使用 clipboard 模块避免触发滚动
+      if (this.currentValue) {
+        const delta = this.Quill.clipboard.convert(this.currentValue);
+        this.Quill.setContents(delta, 'silent');
+      }
+      
       this.Quill.on("text-change", (delta, oldDelta, source) => {
         const html = this.$refs.editor.children[0].innerHTML;
         const text = this.Quill.getText();

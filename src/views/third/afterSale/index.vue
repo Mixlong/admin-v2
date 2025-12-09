@@ -1,159 +1,226 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" inline>
-      <el-form-item label="日期类型" prop="type">
-        <el-select
-          v-model="queryParams.type"
-          filterable
-          clearable
-          style="width: 110px"
-        >
-          <el-option
-            v-for="(label, value) in typeDateList"
-            :label="label"
-            :value="value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="客诉日期" prop="returnDate">
-        <el-date-picker
-          v-model="queryParams.returnDate"
-          type="date"
-          clearable
-          value-format="yyyy-MM-dd"
-          style="width: 140px"
-          placeholder="请选择"
-        />
-      </el-form-item>
-      <el-form-item label="客户名称" prop="customerName">
-        <select-loadMore
-          v-model="queryParams.customerName"
-          style="width: 140px"
-          :data="customerNameData.data"
-          :page="customerNameData.page"
-          :hasMore="customerNameData.more"
-          dictLabel="name"
-          dictValue="name"
-          :request="getCustomerNameList"
-          placeholder="请选择客户名称"
-        >
-        </select-loadMore>
-      </el-form-item>
-      <el-form-item label="品类" prop="categoryName">
-        <el-select
-          filterable
-          allow-create
-          clearable
-          v-model="queryParams.categoryName"
-          style="width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="型号" prop="computerName">
-        <el-select
-          :loading="isCLoading"
-          filterable
-          remote
-          clearable
-          style="width: 140px"
-          v-model="queryParams.computerName"
-          :remote-method="getComputerNameList"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="产品SN" prop="sn">
-        <el-input
-          v-model.trim="queryParams.sn"
-          placeholder="请输入"
-          clearable
-          style="width: 140px"
-        />
-      </el-form-item>
-      <el-form-item label="问题状态" prop="status">
-        <el-select v-model="queryParams.status" style="width: 120px" clearable>
-          <el-option label="OPEN" value="0" />
-          <el-option label="CLOSE" value="1" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="处理进展" prop="state">
-        <el-select
-          v-model="queryParams.state"
-          filterable
-          style="width: 120px"
-          clearable
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="(label, value) in stateList"
-            :key="value"
-            :label="label"
-            :value="value"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-row
-        :gutter="20"
-        type="flex"
-        align="middle"
-        justify="space=between"
-        class="mt5 mb5"
-      >
-        <el-col>
-          <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-            搜索
-          </el-button>
-          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
-        </el-col>
-
-        <el-col class="flex justify-end">
-          <el-button type="danger" @click="clearFilter">
-            清除所有过滤器
-          </el-button>
-          <el-button
-            type="success"
-            icon="el-icon-download"
-            @click="handleMultipleExport"
+    <!-- 智能搜索表单 -->
+    <IntelligentSearchForm
+      :searchForm="queryParams"
+      :fields="searchFields"
+      @search="handleQuery"
+      :defaultVisibleCount="4"
+      :maxVisibleCount="8"
+      @reset="resetQuery"
+    >
+      <!-- 自定义字段：日期类型 -->
+      <template #field-type="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            filterable
+            clearable
+            style="width: 110px"
+            @change="handleDateTypeChange"
           >
-            批量导出
-          </el-button>
-          <!-- <el-col :span="1.5">
-          <el-button
-            type="success"
-            icon="el-icon-download"
-            @click="handleExport"
+            <el-option
+              v-for="(label, value) in typeDateList"
+              :key="value"
+              :label="label"
+              :value="value"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义字段：客退日期 -->
+      <template #field-returnDate="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <!-- 当选择"日"时，显示日期范围选择器 -->
+          <el-date-picker
+            v-if="queryParams.type === '3'"
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd"
+            style="width: 240px"
+            clearable
+            @change="handleDateRangeChange"
+          />
+          <!-- 其他类型显示单个日期选择器 -->
+          <el-date-picker
+            v-else
+            v-model="searchForm[field.key]"
+            :type="datePickerType"
+            placeholder="请选择"
+            clearable
+            value-format="yyyy-MM-dd"
+            style="width: 140px"
+          />
+        </el-form-item>
+      </template>
+
+      <!-- 自定义字段：一级问题 -->
+      <template #field-confirmMajorClass="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="queryParams.confirmMajorClass"
+            placeholder="请选择一级问题"
+            clearable
+            style="width: 140px"
+            @change="handleMajorClassChange"
           >
-            全部导出
-          </el-button>
-        </el-col> -->
+            <el-option
+              v-for="dict in dict.type.after_problem_major_class"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.label"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
 
-          <el-button type="warning" @click="handleTypeIn"> 批量修改 </el-button>
+      <!-- 自定义字段：二级问题 -->
+      <template #field-confirmMinorClass="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="queryParams.confirmMinorClass"
+            placeholder="请选择二级问题"
+            clearable
+            style="width: 140px"
+            :disabled="!searchForm.confirmMajorClass"
+            @change="handleQuery"
+          >
+            <el-option
+              v-for="dict in filteredMinorOptions"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.label"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
 
-          <el-button type="info" @click="handleDeal"> 批量处理 </el-button>
+      <!-- 自定义字段：客户名称 -->
+      <template #field-customerName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <select-loadMore
+            v-model="queryParams.customerName"
+            style="width: 100%"
+            :data="customerNameData.data"
+            :page="customerNameData.page"
+            :hasMore="customerNameData.more"
+            dictLabel="name"
+            dictValue="name"
+            :request="getCustomerNameList"
+            placeholder="请选择客户名称"
+            @getChange="handleQuery"
+          />
+        </el-form-item>
+      </template>
 
-          <el-button :type="isWaitOrAllType" @click="handleSeeWaitOrAllData">
-            {{ isWaitOrAllTxt }}
-          </el-button>
+      <!-- 自定义字段：一级责任 -->
+      <template #field-parentResponsibilityPerson="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="queryParams.parentResponsibilityPerson"
+            placeholder="请选择一级责任"
+            clearable
+            style="width: 100%"
+            @change="handleParentResponsibilityChange"
+          >
+            <el-option
+              v-for="dict in dict.type.responsibility_group"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.label"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
 
-          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">
-            新增
-          </el-button>
-        </el-col>
-      </el-row>
-    </el-form>
+      <!-- 自定义字段：二级责任 -->
+      <template #field-responsibilityPerson="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="queryParams.responsibilityPerson"
+            placeholder="请选择二级责任"
+            clearable
+            style="width: 100%"
+            :disabled="!queryParams.parentResponsibilityPerson"
+            @change="handleQuery"
+          >
+            <el-option
+              v-for="dict in filteredResponsibilityOptions"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.label"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义字段：品类 -->
+      <template #field-categoryName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            filterable
+            clearable
+            style="width: 100%"
+            @change="handleCategoryChange"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 自定义字段：型号 -->
+      <template #field-computerName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="queryParams.computerName"
+            filterable
+            clearable
+            style="width: 100%"
+            @change="handleQuery"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <!-- 操作按钮区域 -->
+      <template #page-actions>
+        <el-button type="danger" @click="clearFilter">
+          清除所有过滤器
+        </el-button>
+        <el-button
+          v-hasPermi="['third:afterSale:export']"
+          type="success"
+          icon="el-icon-download"
+          @click="handleMultipleExport"
+        >
+          导出
+        </el-button>
+        <el-button
+          v-hasPermi="['third:afterSale:add']"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+        >
+          新增
+        </el-button>
+      </template>
+    </IntelligentSearchForm>
 
     <el-alert
       title="表格可通过按住Ctrl + 鼠标左键左右拖动"
@@ -167,12 +234,14 @@
       v-loading="loading"
       :data="brandList"
       :height="tableHeight(-50)"
+      @row-click="handleRowClick"
       @cell-click="cellClick"
       :cell-style="cellStyle"
       row-key="id"
       @selection-change="handleSelectionChange"
       border
     >
+      <!-- 1. 客退日期 -->
       <el-table-column
         type="selection"
         width="55"
@@ -181,48 +250,59 @@
         fixed
       />
       <el-table-column
-        label="客诉日期"
+        label="客退日期"
         prop="returnDate"
         align="center"
-        width="90"
+        width="100"
         column-key="returnDate"
         :filters="getFiltersData('returnDate')"
         :filter-method="filterHandler"
         filter-placement="bottom"
         fixed
       />
+
+      <!-- 2. 客退类型 -->
       <el-table-column
-        label="处理时效(h)"
-        prop="handleHour"
+        label="客退类型"
+        prop="afterType"
         align="center"
-        width="100"
+        width="90"
+        column-key="afterType"
+        :filters="handleDataFilter({ 1: '大货', 2: '样品' })"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
         fixed
-      />
+      >
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.afterType === 1" type="primary">大货</el-tag>
+          <el-tag v-else-if="row.afterType === 2" type="warning">样品</el-tag>
+          <span v-else v-NoData="row.afterType"></span>
+        </template>
+      </el-table-column>
+
+      <!-- 3. 发生阶段 -->
       <el-table-column
         label="发生阶段"
         prop="generatorStage"
         align="center"
-        width="120"
+        width="100"
         column-key="generatorStage"
         :filters="happenStageFilters"
         :filter-method="filterHandler"
         filter-placement="bottom"
-        fixed="left"
+        fixed
       >
         <span slot-scope="{ row }" v-NoData="row.generatorStage"></span>
       </el-table-column>
+
+      <!-- 4. 问题状态 -->
       <el-table-column
         label="问题状态"
         prop="status"
         align="center"
         width="90"
         column-key="status"
-        :filters="
-          handleDataFilter({
-            '0': 'OPEN',
-            '1': 'CLOSE',
-          })
-        "
+        :filters="handleDataFilter({ '0': 'OPEN', '1': 'CLOSE' })"
         :filter-method="filterHandler"
         filter-placement="bottom"
         fixed
@@ -232,303 +312,268 @@
           <el-tag v-else type="success">CLOSE</el-tag>
         </template>
       </el-table-column>
+
+      <!-- 5. 处理时效(h) -->
       <el-table-column
-        label="不良仪表去向"
-        prop="direction"
+        label="处理时效(h)"
+        prop="handleTime"
         align="center"
-        width="120"
-        column-key="direction"
-        :filters="handleDataFilter(modelDirList)"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        fixed
+        width="110"
       >
         <template slot-scope="{ row }">
-          <el-tag :type="directionListClass(modelDirList, row.direction)">
-            {{ directionLabel(modelDirList, row.direction) }}
-          </el-tag>
+           <span>
+            {{ row.processingTime }}
+           </span>
         </template>
       </el-table-column>
+
+      <!-- 6. 客户名称 -->
+      <el-table-column
+        label="客户名称"
+        prop="customerName"
+        align="center"
+        width="140"
+        column-key="customerName"
+        :filters="getFiltersData('customerName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+
+      <!-- 7. 客退方 -->
+      <el-table-column
+        label="客退方"
+        prop="returnParty"
+        align="center"
+        width="120"
+        column-key="returnParty"
+        :filters="getFiltersData('returnParty')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+
+      <!-- 8. 品类 -->
+      <el-table-column
+        label="品类"
+        prop="categoryName"
+        align="center"
+        width="120"
+        column-key="categoryName"
+        :filters="getFiltersData('categoryName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      />
+
+      <!-- 9. 仪表型号 -->
+      <el-table-column
+        label="仪表型号"
+        prop="computerName"
+        align="center"
+        width="140"
+        column-key="computerName"
+        :filters="getFiltersData('computerName')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
+        <span slot-scope="{ row }" v-NoData="row.computerName"></span>
+      </el-table-column>
+
+      <!-- 10. 产品SN -->
       <el-table-column
         label="产品SN"
         prop="sn"
         align="center"
+        width="140"
         column-key="sn"
         :filters="getFiltersData('sn')"
         :filter-method="filterHandler"
         filter-placement="bottom"
-        width="120"
       >
         <template slot-scope="{ row }">
           <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
         </template>
       </el-table-column>
-      <el-table-column
-        label="客户名称"
-        prop="customerName"
-        align="center"
-        column-key="customerName"
-        :filters="getFiltersData('customerName')"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        width="120"
-      />
-      <el-table-column
-        label="品类"
-        prop="categoryName"
-        align="center"
-        column-key="categoryName"
-        :filters="getFiltersData('categoryName')"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        width="120"
-      />
-      <el-table-column
-        label="型号"
-        prop="computerName"
-        align="center"
-        column-key="computerName"
-        :filters="getFiltersData('computerName')"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        width="120"
-      >
-        <span slot-scope="{ row }" v-NoData="row.computerName"></span>
-      </el-table-column>
+
+      <!-- 11. 客诉现象 -->
       <el-table-column
         label="客诉现象"
         prop="result"
         align="center"
+        width="150"
         column-key="result"
         :filters="getFiltersData('result')"
         :filter-method="filterHandler"
         filter-placement="bottom"
-        width="120"
+        show-overflow-tooltip
       />
+
+      <!-- 13. 一级问题 -->
       <el-table-column
-        label="客退清单"
-        prop="inventory"
-        align="center"
-        min-width="120"
-      >
-        <template slot-scope="{ row }">
-          <div class="inventory-box">
-            <el-tag
-              v-for="(item, index) in setInventory(row.inventory)"
-              :key="index"
-            >
-              {{ item }}
-            </el-tag>
-          </div>
-        </template>
-      </el-table-column>
-       
-      <el-table-column
-        label="客退方"
-        prop="returnParty"
-        align="center"
-        column-key="returnParty"
-        :filters="getFiltersData('returnParty')"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        width="120"
-      />
-      <el-table-column
-        label="复测结果"
-        prop="retestResult"
-        align="center"
-        column-key="retestResult"
-        :filters="handleDataFilter(againCheckResultData)"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
-        width="120"
-      >
-        <template slot-scope="{ row }">
-          {{ againCheckResultData[row.retestResult] }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="处理进展"
-        prop="state"
+        label="一级问题"
+        prop="confirmMajorClass"
         align="center"
         width="120"
-        column-key="state"
-        :filters="handleDataFilter(stateList)"
+        column-key="confirmMajorClass"
+        :filters="dictFilterOptions('after_problem_major_class')"
         :filter-method="filterHandler"
         filter-placement="bottom"
       >
-        <template slot-scope="{ row }">
-          <span v-if="row.state === 1" class="text-orange">处理类型</span>
-          <span v-if="row.state === 2" class="text-red">现象复测</span>
-          <span v-if="row.state === 3" class="text-blue">分类处理</span>
-          <span v-if="row.state === 4" class="text-cyan">问题处理</span>
-          <span v-if="row.state === 5" class="text-yellow">维修处理</span>
-          <span v-if="row.state === 6" class="text-yellow">返厂处理</span>
-          <span v-if="row.state === 7" class="text-green">处理完成</span>
-        </template>
+        <span slot-scope="{ row }" v-NoData="row.confirmMajorClass"></span>
       </el-table-column>
+
+      <!-- 14. 二级问题 -->
       <el-table-column
-        label="处理人"
-        prop="handleName"
+        label="二级问题"
+        prop="confirmMinorClass"
         align="center"
         width="120"
-        column-key="handleName"
-        :filters="getFiltersData('handleName')"
+        column-key="confirmMinorClass"
+        :filters="dictFilterOptions('after_problem_minor_class')"
         :filter-method="filterHandler"
         filter-placement="bottom"
       >
-        <template slot-scope="{ row }">
-          <span v-if="row.state === 7" class="text-green">已完成</span>
-          <span v-if="row.state === 6 && !row.handleName" class="text-red">
-            无
-          </span>
-          <span v-else>{{ row.handleName }}</span>
-        </template>
+        <span slot-scope="{ row }" v-NoData="row.confirmMinorClass"></span>
       </el-table-column>
       <el-table-column
-        label="是否异常"
-        prop="isProblem"
+        label="分析负责人"
+        prop="locationAnalyst"
         align="center"
         width="120"
-        column-key="isProblem"
-        :filters="
-          handleDataFilter({
-            0: '是',
-            1: '否',
-          })
-        "
+        column-key="locationAnalyst"
+        :filters="getFiltersData('locationAnalyst')"
+        :filter-method="filterHandler"
+        filter-placement="bottom"
+      >
+        <span slot-scope="{ row }" v-NoData="row.locationAnalyst"></span>
+      </el-table-column>
+      <!-- 15. 发生原因 -->
+      <el-table-column
+        label="发生原因"
+        prop="analysisCause"
+        align="center"
+        width="200"
+      >
+        <template slot-scope="{ row }">
+          <RichTextDisplay
+            :content="row.analysisCause"
+            max-height="120px"
+            placeholder="-"
+          />
+        </template>
+      </el-table-column>
+
+      <!-- 16. 流出原因 -->
+      <el-table-column
+        label="流出原因"
+        prop="analysisOutflowCause"
+        align="center"
+        width="200"
+      >
+        <template slot-scope="{ row }">
+          <RichTextDisplay
+            :content="row.analysisOutflowCause"
+            max-height="120px"
+            placeholder="-"
+          />
+        </template>
+      </el-table-column>
+
+      <!-- 17. 责任判定 -->
+      <el-table-column
+        label="一级责任"
+        prop="parentResponsibilityPerson"
+        align="center"
+        width="180"
+        column-key="parentResponsibilityPerson"
+        :filters="dictFilterOptions('responsibility_group')"
         :filter-method="filterHandler"
         filter-placement="bottom"
       >
         <template slot-scope="{ row }">
-          <el-tag v-if="row.isProblem === 0" type="primary">是</el-tag>
-          <el-tag v-else type="danger">否</el-tag>
+          {{  row.parentResponsibilityPerson }}
         </template>
       </el-table-column>
+      <!-- 17. 责任判定 -->
       <el-table-column
-        label="跟进人"
-        prop="followName"
+        label="二级责任"
+        prop="responsibilityPerson"
         align="center"
-        width="120"
-      >
-      </el-table-column>
-      <el-table-column
-        label="问题根因"
-        prop="rootMatter"
-        align="center"
-        column-key="rootMatter"
-        :filters="getFiltersData('rootMatter')"
+        width="180"
+        column-key="responsibilityPerson"
+        :filters="dictFilterOptions('responsibility_determination')"
         :filter-method="filterHandler"
         filter-placement="bottom"
-        width="120"
       >
-        <span slot-scope="scope" v-NoData="scope.row.rootMatter"></span>
+        <template slot-scope="{ row }">
+          {{ row.responsibilityPerson}}
+        </template>
       </el-table-column>
+
+      <!-- 18. 内部对策 -->
       <el-table-column
-        label="根因分类"
-        prop="rootMatterType"
+        label="内部对策"
+        prop="internalMeasures"
         align="center"
-        column-key="rootMatterType"
-        :filters="handleDataFilter(rootClassify)"
-        :filter-method="filterHandler"
-        filter-placement="bottom"
+        width="150"
+        show-overflow-tooltip
+      >
+        <span slot-scope="{ row }" v-NoData="row.internalMeasures"></span>
+      </el-table-column>
+
+      <!-- 19. 外部对策 -->
+      <el-table-column
+        label="外部对策"
+        prop="externalMeasures"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
+        <span slot-scope="{ row }" v-NoData="row.externalMeasures"></span>
+      </el-table-column>
+
+      <!-- 20. 改善责任人 -->
+      <el-table-column
+        label="改善责任人"
+        prop="problemResponsiblePerson"
+        align="center"
         width="120"
       >
         <span
-          slot-scope="scope"
-          v-NoData="directionLabel(rootClassify, scope.row.rootMatterType)"
+          slot-scope="{ row }"
+          v-NoData="row.problemResponsiblePerson"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="160" fixed="right">
+
+      <!-- 21. 返回日期 -->
+      <el-table-column
+        label="返回日期"
+        prop="logistics.returnDate"
+        align="center"
+        width="100"
+      >
+        <span
+          slot-scope="{ row }"
+          v-NoData="row.logistics && row.logistics.returnDate"
+        ></span>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="200" fixed="right">
         <template slot-scope="{ row }">
           <div class="flex justify-center align-center">
-            <el-button class="text-blue" type="text" @click="handleUpdate(row)">
+            <el-button
+              v-hasPermi="['third:afterSale:edit']"
+              class="text-blue"
+              type="text"
+              @click="handleUpdate(row)"
+            >
               编辑
             </el-button>
-            <el-tooltip
-              v-if="isHandlerType(row)"
-              effect="dark"
-              content="处理类型人员确认中"
-              placement="top-end"
+            <el-button
+              v-hasPermi="['third:afterSale:analysis']"
+              class="text-orange"
+              type="text"
+              @click="handleAnalysis(row)"
             >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="isRetester(row)"
-              effect="dark"
-              content="现象复测人员确认中"
-              placement="top-end"
-            >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="isClassifiedBy(row)"
-              effect="dark"
-              content="分类处理人员确认中"
-              placement="top-end"
-            >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="isHandlerBy(row)"
-              effect="dark"
-              content="问题处理人员确认中"
-              placement="top-end"
-            >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="isServiceBy(row)"
-              effect="dark"
-              content="维修处理人员确认中"
-              placement="top-end"
-            >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
-            <el-tooltip
-              v-if="isWarehousingBy(row)"
-              effect="dark"
-              content="返厂处理人员确认中"
-              placement="top-end"
-            >
-              <el-button
-                type="text"
-                class="text-orange"
-                @click="handleProblem(row)"
-              >
-                处理
-              </el-button>
-            </el-tooltip>
+              售后分析
+            </el-button>
             <el-dropdown
               size="mini"
               class="margin-left-xs"
@@ -540,7 +585,7 @@
                 ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>
+                <el-dropdown-item v-hasPermi="['third:afterSale:query']">
                   <el-button
                     class="w100"
                     type="text"
@@ -549,7 +594,7 @@
                     详情
                   </el-button>
                 </el-dropdown-item>
-                <el-dropdown-item>
+                <el-dropdown-item v-hasPermi="['third:afterSale:remove']">
                   <el-button
                     class="w100"
                     type="text"
@@ -623,6 +668,13 @@
     />
     <!-- 当前处理进展 -->
     <deal-progress ref="isDealProgressRef" :visible.sync="isDealProgressDia" />
+
+    <!-- 售后分析弹窗 -->
+    <after-analysis
+      :visible.sync="analysisDialogVisible"
+      :row-data="currentAnalysisRow"
+      @refresh="getList"
+    />
   </div>
 </template>
 
@@ -652,6 +704,7 @@ export default {
     HandleProblem: () => import("./components/handleProblem"),
     DealProgress: () => import("./components/dealProgress"),
     SaleInfo: () => import("./components/saleInfo"),
+    AfterAnalysis: () => import("./components/AfterAnalysis"),
   },
   data() {
     return {
@@ -669,6 +722,9 @@ export default {
       handleProblemData: {},
       // 当前处理进展
       isDealProgressDia: false,
+      // 售后分析弹窗
+      analysisDialogVisible: false,
+      currentAnalysisRow: null,
       // 待处理 、 全部
       isWaitDispose: true,
       //
@@ -739,22 +795,208 @@ export default {
         },
       ],
       pmDictListOptions: [],
+      // 日期选择器类型
+      datePickerType: "date",
       // 查询参数
       queryParams: {
         p: 1,
         l: 50,
+        type: undefined,
         returnDate: undefined,
+        returnEndDate: undefined, // 客诉结束日期（仅当type=3时生效）
+        confirmMajorClass: undefined, // 一级问题
+        confirmMinorClass: undefined, // 二级问题
         customerName: undefined,
+        parentResponsibilityPerson: undefined, // 一级责任
+        responsibilityPerson: undefined, // 二级责任
         categoryName: undefined,
         computerName: undefined,
-        sn: undefined,
         status: undefined,
-        state: undefined,
       },
+      // 日期范围（用于type=3时的双向绑定）
+      dateRange: [],
+      // 搜索字段配置
+      searchFields: [
+        {
+          key: "type",
+          label: "日期类型",
+          component: "custom",
+          sort: 1,
+        },
+        {
+          key: "returnDate",
+          label: "客退日期",
+          component: "custom",
+          sort: 2,
+        },
+        {
+          key: "confirmMajorClass",
+          label: "一级问题",
+          component: "custom",
+          sort: 3,
+        },
+        {
+          key: "confirmMinorClass",
+          label: "二级问题",
+          component: "custom",
+          sort: 4,
+        },
+        {
+          key: "customerName",
+          label: "客户名称",
+          component: "custom",
+          sort: 2,
+        },
+        {
+          key: "parentResponsibilityPerson",
+          label: "一级责任",
+          component: "custom",
+          sort: 6,
+        },
+        {
+          key: "responsibilityPerson",
+          label: "二级责任",
+          component: "custom",
+          sort: 7,
+        },
+        {
+          key: "categoryName",
+          label: "品类",
+          component: "custom",
+          sort: 8,
+        },
+        {
+          key: "computerName",
+          label: "仪表型号",
+          component: "custom",
+          sort: 9,
+        },
+        {
+          key: "status",
+          label: "问题状态",
+          component: "el-select",
+          componentProps: {
+            placeholder: "请选择",
+            clearable: true,
+            style: "width: 120px",
+          },
+          props: {
+            options: [
+              { label: "OPEN", value: "0" },
+              { label: "CLOSE", value: "1" },
+            ],
+          },
+          sort: 2,
+        },
+      ],
     };
   },
+  dicts: [
+    "after_problem_major_class",
+    "after_problem_minor_class",
+    "responsibility_group",
+    "responsibility_determination",
+  ],
   computed: {
     ...mapGetters(["userId", "nickName"]),
+    // 过滤后的二级问题选项（根据一级问题）
+    filteredMinorOptions() {
+      const majorDict = this.dict.type.after_problem_major_class || [];
+      const minorDict = this.dict.type.after_problem_minor_class || [];
+      const normalize = (val) =>
+        val === undefined || val === null
+          ? ""
+          : String(val).trim().toLowerCase();
+
+      if (!this.queryParams.confirmMajorClass) {
+        return [];
+      }
+
+      const selectedMajorNormalized = normalize(this.queryParams.confirmMajorClass);
+      const selectedMajor =
+        majorDict.find(
+          (item) =>
+            normalize(item.label) === selectedMajorNormalized ||
+            normalize(item.value) === selectedMajorNormalized
+        ) || {};
+      const selectedMajorLabel = normalize(
+        selectedMajor.label || this.queryParams.confirmMajorClass
+      );
+      const selectedMajorValue = normalize(selectedMajor.value);
+
+      return minorDict.filter((item) => {
+        const remarkRaw =
+          item.raw?.remark ?? item.raw?.dictRemark ?? item.remark ?? "";
+        const remarkList = remarkRaw
+          .split(/[,，]/)
+          .map((v) => normalize(v))
+          .filter(Boolean);
+
+        if (remarkList.length === 0) {
+          return false;
+        }
+
+        return remarkList.some(
+          (remark) =>
+            remark === selectedMajorLabel ||
+            (selectedMajorValue && remark === selectedMajorValue)
+        );
+      });
+    },
+    // 过滤后的二级责任选项（根据一级责任）
+    filteredResponsibilityOptions() {
+      const groupDict = this.dict.type.responsibility_group || [];
+      const determinationDict = this.dict.type.responsibility_determination || [];
+      const normalize = (val) =>
+        val === undefined || val === null
+          ? ""
+          : String(val).trim().toLowerCase();
+
+      if (!this.queryParams.parentResponsibilityPerson) {
+        return [];
+      }
+
+      const selectedGroupNormalized = normalize(this.queryParams.parentResponsibilityPerson);
+      const selectedGroup =
+        groupDict.find(
+          (item) =>
+            normalize(item.label) === selectedGroupNormalized ||
+            normalize(item.value) === selectedGroupNormalized
+        ) || {};
+      const selectedGroupLabel = normalize(
+        selectedGroup.label || this.queryParams.parentResponsibilityPerson
+      );
+      const selectedGroupValue = normalize(selectedGroup.value);
+
+      return determinationDict.filter((item) => {
+        const remarkRaw =
+          item.raw?.remark ?? item.raw?.dictRemark ?? item.remark ?? "";
+        const remarkList = remarkRaw
+          .split(/[,，]/)
+          .map((v) => normalize(v))
+          .filter(Boolean);
+
+        if (remarkList.length === 0) {
+          return false;
+        }
+
+        return remarkList.some(
+          (remark) =>
+            remark === selectedGroupLabel ||
+            (selectedGroupValue && remark === selectedGroupValue)
+        );
+      });
+    },
+    // 根据字典生成表格筛选项
+    dictFilterOptions() {
+      return (dictKey) => {
+        const dictList = this.dict.type[dictKey] || [];
+        return dictList.map((item) => ({
+          text: item.label,
+          value: item.label,
+        }));
+      };
+    },
     setInventory() {
       return (inventory) => {
         if (inventory) {
@@ -875,6 +1117,23 @@ export default {
       };
     },
   },
+  watch: {
+    // 监听queryParams中的日期字段，同步到dateRange（用于回显）
+    'queryParams.returnDate': {
+      handler(newVal) {
+        if (this.queryParams.type === '3') {
+          this.syncDateRange();
+        }
+      },
+    },
+    'queryParams.returnEndDate': {
+      handler(newVal) {
+        if (this.queryParams.type === '3') {
+          this.syncDateRange();
+        }
+      },
+    },
+  },
   created() {
     let { name } = this.$route.query;
     if (name) {
@@ -886,6 +1145,90 @@ export default {
     this.getList();
   },
   methods: {
+    // 格式化责任判定显示（一级 / 二级）
+    formatResponsibility(group, determination) {
+      if (!group && !determination) return '-';
+      if (group && determination) {
+        return `${group} / ${determination}`;
+      }
+      return group || determination;
+    },
+    
+    // 一级问题变化处理
+    handleMajorClassChange() {
+      // 清空二级问题
+      this.queryParams.confirmMinorClass = undefined;
+      this.handleQuery();
+    },
+    
+    // 一级责任变化处理
+    handleParentResponsibilityChange() {
+      // 清空二级责任
+      this.queryParams.responsibilityPerson = undefined;
+      this.handleQuery();
+    },
+    
+    // 日期类型变化处理
+    handleDateTypeChange(type) {
+      // 清空日期
+      this.queryParams.returnDate = undefined;
+      this.queryParams.returnEndDate = undefined;
+      this.dateRange = [];
+
+      // 根据类型设置日期选择器类型
+      if (type === "1") {
+        // 年
+        this.datePickerType = "year";
+      } else if (type === "2") {
+        // 月
+        this.datePickerType = "month";
+      } else if (type === "3") {
+        // 日 - 使用日期范围选择器
+        this.datePickerType = "date";
+      } else {
+        // 默认按天
+        this.datePickerType = "date";
+      }
+    },
+    // 日期范围变化处理
+    handleDateRangeChange(dateRange) {
+      if (dateRange && dateRange.length === 2) {
+        this.queryParams.returnDate = dateRange[0];
+        this.queryParams.returnEndDate = dateRange[1];
+      } else {
+        this.queryParams.returnDate = undefined;
+        this.queryParams.returnEndDate = undefined;
+      }
+    },
+    // 同步日期范围（用于回显）
+    syncDateRange() {
+      const { returnDate, returnEndDate } = this.queryParams;
+      if (returnDate && returnEndDate) {
+        this.dateRange = [returnDate, returnEndDate];
+      } else if (returnDate) {
+        this.dateRange = [returnDate, returnDate];
+      } else {
+        this.dateRange = [];
+      }
+    },
+    // 品类变化处理 - 清空型号并从 dictList 中加载型号列表
+    handleCategoryChange(categoryName) {
+      // 清空型号
+      this.queryParams.computerName = undefined;
+
+      // 根据品类从 dictList 中加载对应的型号列表
+      if (categoryName) {
+        const data = this.dictList.filter((item) => item.name === categoryName);
+        this.computerOptions = data[0]?.computerList || [];
+      } else {
+        this.computerOptions = [];
+      }
+
+      // 触发查询（IntelligentSearchForm 组件已自动同步 categoryName 到 queryParams）
+      this.$nextTick(() => {
+        this.handleQuery();
+      });
+    },
     async getMemberDictUser() {
       try {
         const { data } = await memberDictUser();
@@ -916,58 +1259,6 @@ export default {
       this.multipleList = selection;
       this.saleIdList = selection.map((item) => item.id);
       this.uploadIds = selection.map((item) => item.id);
-    },
-    // 批量修改物流信息
-    handleTypeIn() {
-      if (!this.saleIdList.length) {
-        return this.msgError("请选择批量修改物流项");
-      }
-      this.isSaleIdFlag = true;
-      this.isSaleInfoFlag = true;
-    },
-    // 批量处理
-    handleDeal() {
-      let { state } = this.queryParams;
-
-      if (this.isWaitDispose) {
-        return this.msgError("请先点击“待处理”按钮");
-      }
-
-      if (this.Is_Empty(state)) {
-        return this.msgError("请先选择“处理进展”筛选项");
-      }
-
-      state = +state;
-
-      let multipleDealIds = this.multipleList
-        .filter(
-          (item) => item.state === state && item.handleName === this.nickName
-        )
-        .map((item) => item.id);
-
-      if (!multipleDealIds.length) {
-        return this.msgError("请选择批量处理物流项");
-      }
-
-      this.isHandleProblemDia = true;
-      this.isSaleIdFlag = false;
-      this.$refs.isHandleProblemRef.isMultipleDeal = true;
-
-      if (state === 5) {
-        this.handleProblemData = {
-          state,
-          materialLossList: [
-            {
-              materialName: "",
-              materialCode: "",
-              materialNum: "",
-            },
-          ],
-          list: multipleDealIds,
-        };
-      } else {
-        this.handleProblemData = { state, list: multipleDealIds };
-      }
     },
     clearSaleSelection() {
       this.$refs.afterSaleRef.clearSelection();
@@ -1003,7 +1294,27 @@ export default {
     // 修改
     handleUpdate(row) {
       this.isSaleAddDia = true;
-      let { logisticsEntity, inventory, categoryId, computerId, sn } = row;
+      let {
+        logisticsEntity,
+        inventory,
+        categoryId,
+        computerId,
+        sn,
+        file,
+        video,
+      } = row;
+      const defaultLogistics = {
+        id: "",
+        afterId: "",
+        returnDate: "",
+        sender: "",
+        mailingDepartment: "",
+        mailingNumber: "",
+        recipient: "",
+        phone: "",
+        address: "",
+        isPay: "",
+      };
       let dataCopy;
       if (this.Is_Empty(logisticsEntity)) {
         dataCopy = {
@@ -1015,9 +1326,22 @@ export default {
         dataCopy = { ...row, inventory: JSON.parse(inventory) };
       }
       // 兼容字段重命名：编辑时将 happenStage 映射为 generatorStage
-      if (dataCopy && dataCopy.happenStage !== undefined && dataCopy.generatorStage === undefined) {
+      if (
+        dataCopy &&
+        dataCopy.happenStage !== undefined &&
+        dataCopy.generatorStage === undefined
+      ) {
         dataCopy.generatorStage = dataCopy.happenStage;
       }
+
+      // 处理图片和视频回显：逗号分隔字符串转数组
+      if (file && typeof file === "string") {
+        dataCopy.file = file.split(",").filter((item) => item);
+      }
+      if (video && typeof video === "string") {
+        dataCopy.video = video.split(",").filter((item) => item);
+      }
+
       const list = [
         {
           categoryId,
@@ -1025,14 +1349,31 @@ export default {
           sn,
         },
       ];
-      this.$refs.isAddSaleRef.form = { ...dataCopy, list };
+      this.$refs.isAddSaleRef.form = {
+        ...dataCopy,
+        list,
+        // 确保 logistics 不是 null
+        logistics: {
+          ...defaultLogistics,
+          ...(dataCopy.logistics || dataCopy.logisticsEntity || {}),
+        },
+      };
+      console.log(
+        "🚀 ~ file: index.vue:1122 ~ this.$refs.isAddSaleRef.form :",
+        this.$refs.isAddSaleRef.form
+      );
       this.$refs.isAddSaleRef.active =
         dataCopy.state === 7 ? 7 : dataCopy.state - 1;
+    },
+    // 打开售后分析弹窗
+    handleAnalysis(row) {
+      this.currentAnalysisRow = row;
+      this.analysisDialogVisible = true;
     },
     // 详情
     handleDetail(row) {
       this.isAfterDetailDia = true;
-      this.$refs.isAfterDetailRef.getAfterInfo(row.id);
+      this.$refs.isAfterDetailRef.getAfterInfo(row.id,row);
     },
     /** 删除按钮操作 */
     handleDelete(row) {
@@ -1042,7 +1383,7 @@ export default {
         type: "warning",
       })
         .then(() => {
-          return saleDelete([row.id]);
+          return saleDelete(row.id);
         })
         .then(() => {
           this.getList();
@@ -1065,11 +1406,7 @@ export default {
           this.msgSuccess(`问题${this.isStatusTxt(status)}成功`);
         });
     },
-    // 待处理、全部
-    handleSeeWaitOrAllData() {
-      this.isWaitDispose = !this.isWaitDispose;
-      this.getList();
-    },
+
     // 处理问题
     handleProblem(row) {
       this.isHandleProblemDia = true;
@@ -1101,13 +1438,39 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.datePickerType = "date";
       this.dateRange = [];
-      this.resetForm("queryForm");
+      this.queryParams = {
+        p: 1,
+        l: 50,
+        type: undefined,
+        returnDate: undefined,
+        returnEndDate: undefined,
+        confirmMajorClass: undefined,
+        customerName: undefined,
+        responsibilityPerson: undefined,
+        categoryName: undefined,
+        computerName: undefined,
+        status: undefined,
+      };
       this.handleQuery();
     },
     toPage(sn) {
-      this.$router.push(`/afterSaleSupport/material/PartInfoView/productRecord?sn=${sn}`);
+      this.$router.push(
+        `/afterSaleSupport/material/PartInfoView/productRecord?sn=${sn}`
+      );
     },
+    // 点击行打开详情
+    handleRowClick(row, column, event) {
+      // 排除特殊列的点击（这些列有自己的点击逻辑）
+      const excludeColumns = ['操作', '产品SN', '处理进展'];
+      if (column && excludeColumns.includes(column.label)) {
+        return;
+      }
+      // 打开详情弹窗
+      this.handleDetail(row);
+    },
+    
     cellClick(row, column, cell, event) {
       const { label } = column;
       switch (label) {
@@ -1118,7 +1481,12 @@ export default {
     },
     cellStyle({ row, column, rowIndex, columnIndex }) {
       const { label } = column;
+      // 特殊列显示手型光标
       if (label === "产品SN" || label === "处理进展") {
+        return `cursor: pointer;`;
+      }
+      // 其他列显示默认光标（行点击）
+      if (label && label !== '操作') {
         return `cursor: pointer;`;
       }
     },
@@ -1190,5 +1558,52 @@ export default {
   flex-wrap: wrap;
   grid-gap: 5px;
   justify-content: center;
+}
+
+// 修复固定列遮挡滚动条的问题
+.afterSaleBox {
+  // 固定列右侧不遮挡滚动条
+  /deep/ .el-table__fixed-right {
+    height: calc(100% - 13px) !important;
+    z-index: 15 !important;
+    box-shadow: -1px 0 8px rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  // 固定列左侧不遮挡滚动条
+  /deep/ .el-table__fixed-left {
+    height: calc(100% - 13px) !important;
+    z-index: 15 !important;
+    box-shadow: 1px 0 8px rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  // 确保固定列背景色正确
+  /deep/ .el-table__fixed-left .el-table__cell,
+  /deep/ .el-table__fixed-right .el-table__cell {
+    background-color: #fff !important;
+    z-index: 1;
+    position: relative;
+  }
+  
+  // 确保滚动条可见且可以交互
+  /deep/ .el-table__body-wrapper {
+    &::-webkit-scrollbar {
+      height: 12px;
+      width: 12px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 6px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
 }
 </style>

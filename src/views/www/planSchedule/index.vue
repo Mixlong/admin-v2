@@ -83,6 +83,9 @@
       </el-table-column>
       <el-table-column label="产品品类" align="center" prop="categoryName" width="100" />
       <el-table-column label="产品型号" align="center" prop="computerName" min-width="150" />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" min-width="150">
+        <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
+      </el-table-column>
       <el-table-column label="排产单号" align="center" prop="no" min-width="150" />
       <el-table-column label="订单编号" align="center" prop="orderCode" min-width="150" />
       <el-table-column label="生产地点" align="center" prop="address" width="90" />

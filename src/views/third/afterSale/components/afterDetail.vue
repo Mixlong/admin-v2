@@ -1,11 +1,11 @@
 <template>
   <el-dialog
-    class="after-detail-box"
+    class="after-detail-box dialog-scroll"
     :visible="visible"
-    width="1000px"
+    width="1200px"
     append-to-body
     center
-    top="0vh"
+    top="2vh"
     :close-on-click-modal="false"
     @close="close"
   >
@@ -17,96 +17,182 @@
     </template>
     <el-descriptions
       title="基本信息"
-      direction="vertical"
       :colon="false"
-      :column="4"
+      :column="3"
+      :label-style="{ width: '120px', textAlign: 'center' }"
       border
     >
-      <el-descriptions-item label="问题编号">
-        {{ detailInfo.reportNum }}
+      <!-- 第一行：客退日期、客户名称、迪太接收人 -->
+      <el-descriptions-item label="客退日期">
+        {{ detailInfo.returnDate }}
       </el-descriptions-item>
-      <el-descriptions-item label="产品SN">
-        {{ detailInfo.sn }}
-      </el-descriptions-item>
-      <el-descriptions-item label="客退人">
-        {{ detailInfo.returnName }}
-      </el-descriptions-item>
-      <el-descriptions-item label="客退物流单号">
-        {{ detailInfo.logisticsNo }}
+      <el-descriptions-item label="客户名称">
+        {{ detailInfo.customerName }}
       </el-descriptions-item>
       <el-descriptions-item label="迪太接收人">
         {{ detailInfo.receiveName }}
       </el-descriptions-item>
+
+      <!-- 第二行：客退类型、客诉现象、客退单号 -->
+      <el-descriptions-item label="客退类型">
+        {{
+          detailInfo.afterType === 1
+            ? "大货"
+            : detailInfo.afterType === 2
+            ? "样品"
+            : "-"
+        }}
+      </el-descriptions-item>
       <el-descriptions-item label="客诉现象">
-        {{ detailInfo.result }}
+        {{ detailInfo.result || "-" }}
       </el-descriptions-item>
-      <el-descriptions-item label="处理进展">
-        <span v-if="detailInfo.state == 1" class="text-orange">处理类型</span>
-        <span v-if="detailInfo.state == 2" class="text-red">现象复测</span>
-        <span v-if="detailInfo.state == 3" class="text-blue">分类处理</span>
-        <span v-if="detailInfo.state == 4" class="text-cyan">问题处理</span>
-        <span v-if="detailInfo.state == 5" class="text-yellow">维修处理</span>
-        <span v-if="detailInfo.state == 6" class="text-green">处理完成</span>
+      <el-descriptions-item label="客退单号">
+        {{ detailInfo.logisticsNo || "-" }}
       </el-descriptions-item>
-      <el-descriptions-item label="是否到附件">
+
+      <!-- 第三行：发生阶段、客退清单、是否到付件 -->
+      <el-descriptions-item label="发生阶段">
+        {{ detailInfo.generatorStage || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="客退清单">
+        {{ formatInventory(detailInfo.inventory) }}
+      </el-descriptions-item>
+      <el-descriptions-item label="是否到付件">
         {{ detailInfo.isFreight === 0 ? "是" : "否" }}
       </el-descriptions-item>
-      <el-descriptions-item label="问题根因" :span="3">
-        {{ detailInfo.rootMatter }}
+
+      <!-- 第四行：客退方、客退方信息（占2列） -->
+      <el-descriptions-item label="客退方">
+        {{ detailInfo.returnParty || "-" }}
       </el-descriptions-item>
-      <el-descriptions-item label="根因分类">
-        {{ directionLabel(rootClassify, detailInfo.rootMatterType) }}
+      <el-descriptions-item label="客退方信息" :span="2">
+        {{ detailInfo.returnName }} / {{ detailInfo.returnPhone }} -
+        {{ detailInfo.returnAddress }}
+      </el-descriptions-item>
+
+      <!-- 仪表信息行 -->
+      <el-descriptions-item label="品类">
+        {{ detailInfo.categoryName || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="仪表型号">
+        {{ detailInfo.computerName || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="产品SN">
+        {{ detailInfo.sn || "-" }}
+      </el-descriptions-item>
+
+      <!-- 问题状态 -->
+      <el-descriptions-item label="问题状态">
+        <el-tag v-if="detailInfo.status === 0" type="danger">OPEN</el-tag>
+        <el-tag v-else-if="detailInfo.status === 1" type="success"
+          >CLOSE</el-tag
+        >
+      </el-descriptions-item>
+      <el-descriptions-item label="处理时效(h)">
+        {{ detailInfo.processingTime || "-" }}
       </el-descriptions-item>
     </el-descriptions>
 
     <el-descriptions
-      v-if="isCustomerShow"
+      v-if="isLogisticsShow"
       class="margin-top-sm"
-      title="返回客户信息"
-      direction="vertical"
+      title="返还信息"
       :colon="false"
-      :column="4"
+      :column="3"
+      :label-style="{ width: '120px', textAlign: 'center' }"
       border
     >
       <el-descriptions-item label="返回日期">
         {{ isReturnDate }}
       </el-descriptions-item>
-      <el-descriptions-item label="寄件部门">
-        {{ detailInfo.logisticsEntity.mailingDepartment }}
-      </el-descriptions-item>
       <el-descriptions-item label="寄件人">
-        {{ detailInfo.logisticsEntity.sender }}
+        {{ detailInfo.logistics.sender }}
       </el-descriptions-item>
-      <el-descriptions-item label="处理周期">
-        {{ isTreat }}
+      <el-descriptions-item label="寄件单号">
+        {{ detailInfo.logistics.mailingNumber }}
       </el-descriptions-item>
       <el-descriptions-item label="收件人">
-        {{ detailInfo.logisticsEntity.recipient }}
+        {{ detailInfo.logistics.recipient }}
       </el-descriptions-item>
       <el-descriptions-item label="联系电话">
-        {{ detailInfo.logisticsEntity.phone }}
-      </el-descriptions-item>
-      <el-descriptions-item label="物流付款方式">
-        {{ detailInfo.logisticsEntity.isPay === 0 ? "月付" : "到付" }}
-      </el-descriptions-item>
-      <el-descriptions-item label="物流单号">
-        {{ detailInfo.logisticsEntity.mailingNumber }}
+        {{ detailInfo.logistics.phone }}
       </el-descriptions-item>
       <el-descriptions-item label="收件地址" :span="3">
-        {{ detailInfo.logisticsEntity.address }}
+        {{ detailInfo.logistics.address }}
       </el-descriptions-item>
     </el-descriptions>
 
     <el-descriptions
-      v-if="isAttachmentInfo"
       class="margin-top-sm"
-      title="附件信息"
-      direction="vertical"
+      title="问题分析与对策"
       :colon="false"
-      :column="1"
+      :column="3"
+      :label-style="{ width: '120px', textAlign: 'center' }"
       border
     >
-      <el-descriptions-item label="不良图片">
+      <el-descriptions-item label="一级问题">
+        {{ detailInfo.confirmMajorClass || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="二级问题">
+        {{ detailInfo.confirmMinorClass || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="分析负责人">
+        {{ detailInfo.locationAnalyst || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="一级责任">
+        {{ detailInfo.parentResponsibilityPerson }}
+      </el-descriptions-item>
+      <el-descriptions-item label="二级责任">
+        {{ detailInfo.responsibilityPerson }}
+      </el-descriptions-item>
+      <el-descriptions-item label="处理完成时间">
+        {{ detailInfo.locationHandleTime || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="改善责任人">
+        {{ detailInfo.problemResponsiblePerson || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="完成时间">
+        {{ detailInfo.completionTime || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="备注" :span="3">
+        {{ detailInfo.locationRemark || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="定位结果" :span="3">
+        <RichTextDisplay
+          :content="detailInfo.locationResult"
+          max-height="200px"
+          placeholder="-"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="发生原因" :span="3">
+        <RichTextDisplay
+          :content="detailInfo.analysisCause"
+          max-height="2000px"
+          placeholder="-"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="流出原因" :span="3">
+        <RichTextDisplay
+          :content="detailInfo.analysisOutflowCause"
+          max-height="2000px"
+          placeholder="-"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="内部对策" :span="3">
+        <RichTextDisplay
+          :content="detailInfo.internalMeasures"
+          max-height="2000px"
+          placeholder="-"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="外部对策" :span="3">
+        <RichTextDisplay
+          :content="detailInfo.externalMeasures"
+          max-height="200px"
+          placeholder="-"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="问题照片" :span="3">
         <preview-img
           v-show="detailInfo.file"
           width="80px"
@@ -117,8 +203,9 @@
           :url="item"
           :srcList="[item]"
         />
+        <span v-if="!detailInfo.file">-</span>
       </el-descriptions-item>
-      <el-descriptions-item label="不良视频">
+      <el-descriptions-item label="问题视频" :span="3">
         <el-upload-sortable
           v-show="detailInfo.video"
           v-model="detailInfo.video"
@@ -129,59 +216,7 @@
           :imgW="150"
           :imgH="98"
         />
-      </el-descriptions-item>
-      <el-descriptions-item label="8D报告文件">
-        {{ detailInfo.report }}
-        <el-button
-          v-if="detailInfo.report"
-          class="text-blue"
-          type="text"
-          @click="urlDownload(detailInfo.report)"
-        >
-          下载
-        </el-button>
-      </el-descriptions-item>
-    </el-descriptions>
-
-    <el-descriptions
-      v-if="isAgainCheckInfo"
-      class="margin-top-sm"
-      title="复测信息"
-      direction="vertical"
-      :colon="false"
-      :column="1"
-      border
-    >
-      <el-descriptions-item label="复测结果">
-        {{ againCheckResultData[detailInfo.retestResult] }}
-      </el-descriptions-item>
-      <el-descriptions-item
-        v-if="detailInfo.retestDesc !== ''"
-        label="问题描述"
-      >
-        {{ detailInfo.retestDesc }}
-      </el-descriptions-item>
-      <el-descriptions-item label="复测图片">
-        <preview-img
-          width="80px"
-          height="80px"
-          class="margin-right-sm"
-          v-for="(item, index) in checkListArr(detailInfo.retestFile)"
-          :key="index"
-          :url="item"
-          :srcList="[item]"
-        />
-      </el-descriptions-item>
-      <el-descriptions-item label="复测视频">
-        <el-upload-sortable
-          v-model="detailInfo.retestVideo"
-          :isVideo="true"
-          isDisabled
-          :max="videoListLen(detailInfo.retestVideo)"
-          accept="video/mp4"
-          :imgW="150"
-          :imgH="98"
-        />
+        <span v-if="!detailInfo.video">-</span>
       </el-descriptions-item>
     </el-descriptions>
   </el-dialog>
@@ -191,6 +226,7 @@
 import { afterInfo } from "@/api/third/sale";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import globalData from "../mixins/global";
+import { formattedTime } from "@/utils/ruoyi";
 
 export default {
   mixins: [globalData],
@@ -206,13 +242,11 @@ export default {
       type: String,
       default: "",
     },
-    rootClassify: Array,
-    directionLabel: Function,
   },
   data() {
     return {
       detailInfo: {
-        logisticsEntity: {},
+        logistics: {},
       },
     };
   },
@@ -236,42 +270,59 @@ export default {
         if (!this.Is_Empty(video)) return this.checkListArr(video).length;
       };
     },
-    isAttachmentInfo() {
-      const { file, video, report } = this.detailInfo;
-      return !(!file && !video && !report);
-    },
-    isAgainCheckInfo() {
-      const { retestDesc, retestFile, retestVideo, retestResult } = this.detailInfo;
-      return !(!retestDesc && !retestFile && !retestVideo && !retestResult);
-    },
-    isCustomerShow() {
-      return !this.Is_Empty(this.detailInfo.logisticsEntity);
+    isLogisticsShow() {
+      return !this.Is_Empty(this.detailInfo.logistics);
     },
     isReturnDate() {
-      const { returnDate } = this.detailInfo.logisticsEntity;
-      return this.moment(returnDate).format("YYYY-MM-DD");
-    },
-    isTreat() {
-      const { returnDate } = this.detailInfo;
-      const returnCustomerDate = this.isReturnDate;
-      if (returnDate && returnCustomerDate) {
-        const remainingDay =
-          new Date(returnCustomerDate) - new Date(returnDate);
-        return remainingDay / (24 * 3600 * 1000) + "天";
-      }
+      const { returnDate } = this.detailInfo.logistics || {};
+      return returnDate ? this.moment(returnDate).format("YYYY-MM-DD") : "";
     },
   },
   methods: {
+    formattedTime,
     close() {
       this.$emit("update:visible", false);
     },
-    async getAfterInfo(detailId) {
+    async getAfterInfo(detailId, item) {
       try {
         const { data } = await afterInfo(detailId);
-        this.detailInfo = data;
+        this.detailInfo = { ...item, ...data };
       } catch (error) {
         console.error(error);
       }
+    },
+    // 格式化客退清单显示
+    formatInventory(inventory) {
+      if (!inventory) return "";
+
+      // 如果是数组，直接用顿号连接
+      if (Array.isArray(inventory)) {
+        return inventory.join("、");
+      }
+
+      // 如果是字符串，尝试解析 JSON
+      if (typeof inventory === "string") {
+        try {
+          const parsed = JSON.parse(inventory);
+          if (Array.isArray(parsed)) {
+            return parsed.join("、");
+          }
+          return inventory;
+        } catch (e) {
+          // 不是 JSON 格式，直接返回
+          return inventory;
+        }
+      }
+
+      return inventory;
+    },
+    // 格式化责任判定显示（一级 / 二级）
+    formatResponsibility(group, determination) {
+      if (!group && !determination) return "-";
+      if (group && determination) {
+        return `${group} / ${determination}`;
+      }
+      return group || determination;
     },
   },
 };
@@ -279,10 +330,40 @@ export default {
 
 <style lang="scss" scoped>
 .after-detail-box {
-  /deep/ .el-dialog__body {
-    max-height: 90vh;
-    overflow: hidden;
-    overflow-y: auto;
+  // 统一所有描述列表的列宽
+  /deep/ .el-descriptions {
+    margin-bottom: 20px;
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .el-descriptions-item__label {
+      width: 120px !important;
+      min-width: 120px;
+      max-width: 120px;
+      background-color: #fafafa;
+    }
+
+    .el-descriptions-item__content {
+      width: calc((100% - 360px) / 3) !important;
+      word-break: break-word;
+    }
+
+    // 跨列的内容（如备注、富文本字段）
+    .el-descriptions-item__cell[colspan="3"] {
+      .el-descriptions-item__content {
+        width: calc(100% - 120px) !important;
+      }
+    }
+  }
+
+  // 描述列表标题样式
+  /deep/ .el-descriptions__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
   }
 }
 </style>

@@ -31,6 +31,7 @@ import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
 import VersionChecker from '@/utils/versionChecker';
 import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
+import RichTextDisplay from '@/components/RichTextDisplay'
 import { syncTokenFromUrl } from '@/utils/auth'
 
 // 处理外部携带 token 的场景，优先写入 Cookie，并标记外部跳转（10分钟有效）
@@ -62,6 +63,7 @@ Vue.use(plugins)
 Vue.use(MainComponent)
 Vue.use(TypedSelectLoadMore)
 Vue.component('IntelligentSearchForm', IntelligentSearchForm) // 全局注册组件
+Vue.component('RichTextDisplay', RichTextDisplay) // 全局注册富文本预览组件
 Vue.use(directives) // 注册自定义指令
 Vue.use(WujieVue) // 注册无界组件
 

@@ -71,18 +71,18 @@
         </template>
       </el-table-column>
    
-      
-      <!-- 工程审状态 -->
-      <el-table-column label="工程审" width="120" align="center">
+            <!-- 终审状态 -->
+      <el-table-column label="终审" width="120" align="center">
         <template slot-scope="scope">
           <div>
-            <div style="margin-bottom: 4px;">{{ scope.row.engineeringPerson || '-' }}</div>
-            <el-tag :type="getAuditTagType(scope.row.engineeringState)" size="small">
-              {{ getAuditStateName(scope.row.engineeringState) }}
+            <div style="margin-bottom: 4px;">{{ scope.row.secondPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
+              {{ getAuditStateName(scope.row.secondState) }}
             </el-tag>
           </div>
         </template>
       </el-table-column>
+     
       
       <!-- 项目审状态 -->
       <el-table-column label="项目审" width="120" align="center">
@@ -96,13 +96,13 @@
         </template>
       </el-table-column>
           
-      <!-- 终审状态 -->
-      <el-table-column label="终审" width="120" align="center">
+   <!-- 工程审状态 -->
+      <el-table-column label="工程审" width="120" align="center">
         <template slot-scope="scope">
           <div>
-            <div style="margin-bottom: 4px;">{{ scope.row.secondPerson || '-' }}</div>
-            <el-tag :type="getAuditTagType(scope.row.secondState)" size="small">
-              {{ getAuditStateName(scope.row.secondState) }}
+            <div style="margin-bottom: 4px;">{{ scope.row.engineeringPerson || '-' }}</div>
+            <el-tag :type="getAuditTagType(scope.row.engineeringState)" size="small">
+              {{ getAuditStateName(scope.row.engineeringState) }}
             </el-tag>
           </div>
         </template>
@@ -148,7 +148,7 @@
     <AuditDialog ref="auditDialog" @success="getList" />
     
     <!-- 详情对话框 -->
-    <AuditDetailDialog ref="auditDetailDialog" />
+    <NewAuditDetailDialog ref="auditDetailDialog" />
   </div>
 </template>
 
@@ -158,7 +158,7 @@ import { parseTime, resetForm } from "@/utils/ruoyi";
 import Pagination from "@/components/Pagination";
 import RightToolbar from "@/components/RightToolbar";
 import AuditDialog from "./components/AuditDialog";
-import AuditDetailDialog from "./components/AuditDetailDialog";
+import NewAuditDetailDialog from "./components/NewAuditDetailDialog";
 import { mapGetters } from "vuex";
 import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 
@@ -168,7 +168,7 @@ export default {
     Pagination,
     RightToolbar,
     AuditDialog,
-    AuditDetailDialog
+    NewAuditDetailDialog
   },
   mixins: [digiSmartJumpMixin],
   computed: {

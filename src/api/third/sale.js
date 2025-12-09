@@ -48,10 +48,10 @@ export function saleState(query) {
   });
 }
 
-// 售后支持
+// 售后支持 - 分页查询列表
 export function afterList(params) {
   return request({
-    url: "/after/list",
+    url: "/after/new/list",
     method: "get",
     params,
   });
@@ -60,7 +60,7 @@ export function afterList(params) {
 // 新增
 export function saleSave(data) {
   return request({
-    url: "/after/save",
+    url: "/after/new/add",
     method: "post",
     data,
   });
@@ -69,7 +69,7 @@ export function saleSave(data) {
 // 修改
 export function saleUpdate(data) {
   return request({
-    url: "/after/update",
+    url: "/after/new/update",
     method: "put",
     data,
   });
@@ -85,18 +85,17 @@ export function saleOperation(data) {
 }
 
 // 删除
-export function saleDelete(data) {
+export function saleDelete(id) {
   return request({
-    url: "/after/delete",
+    url: `/after/new/delete/${id}`,
     method: "delete",
-    data,
   });
 }
 
 // 详情
 export function afterInfo(detailId) {
   return request({
-    url: `/after/info/${detailId}`,
+    url: `/after/new/detail/${detailId}`,
     method: "get",
   });
 }
@@ -130,7 +129,7 @@ export function saleExport(params) {
 // 批量导出
 export function afterMultipleDownload(data) {
   return request({
-    url: "/after/export",
+    url: "/after/new/export",
     method: "post",
     data,
   });

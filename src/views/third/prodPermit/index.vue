@@ -51,10 +51,10 @@
       </el-table-column>
       <el-table-column label="许可有效期" align="center" width="120">
         <template slot-scope="{ row }">
-          <span v-if="row.licenseValidityPeriod">
-            {{ parseTime(row.licenseValidityPeriod, '{y}-{m}-{d}') }}
+          <span v-if="row.validityDate">
+            {{ parseTime(row.validityDate, '{y}-{m}-{d}') }}
           </span>
-          <span v-else-if="row.isLicense === 1" class="text-warning">
+          <span v-else-if="row.validityType === 1" class="text-warning">
             长期有效
           </span>
           <span v-else class="text-muted">

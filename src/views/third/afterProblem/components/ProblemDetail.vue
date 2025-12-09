@@ -10,75 +10,92 @@
     @close="close"
   >
     <div v-loading="loading" class="detail-container">
-      <!-- 基本信息 -->
+      <!-- 问题点 -->
       <el-descriptions
-        title="基本信息"
-        :column="3"
+        title="问题点"
+        :column="2"
         border
         :label-style="labelStyle"
       >
         <el-descriptions-item label="问题来源">
-          {{ detailData.problemSource || '-' }}
+          <div class="flex align-center" v-if="afterSaleInfo">
+            <el-link type="primary" @click="viewAfterSale(detailData.problemSource)">
+              {{ afterSaleInfo.sn }}
+            </el-link>
+            <span style="margin-left: 8px; color: #909399; font-size: 12px;">
+              {{ afterSaleInfo.customerName }}
+            </span>
+          </div>
+          <span v-else>{{ detailData.problemSourceSn || detailData.problemSource || '-' }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="时间点">
           {{ parseTime(detailData.problemTime) || '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="责任人">
-          {{ detailData.responsiblePerson || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="问题描述" :span="3">
-          {{ detailData.problemDescription || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="影响面" :span="3">
-          {{ detailData.impactScope || '-' }}
+        <el-descriptions-item label="问题描述" :span="2">
+          <div class="text-content" v-html="detailData.problemDescription || '-'"></div>
+          <el-link 
+            v-if="hasBusinessRecords"
+            type="primary" 
+            :underline="false"
+            @click="handleViewBusinessRecords"
+            style="margin-top: 5px; font-size: 12px;"
+          >
+            {{ getBusinessLinkText(detailData.problemSource) }}
+          </el-link>
         </el-descriptions-item>
       </el-descriptions>
 
-      <!-- 分析信息 -->
+      <!-- 迪太研发&品质 -->
       <el-descriptions
-        title="分析信息"
+        title="迪太研发&品质"
         :column="1"
         border
         class="margin-top"
         :label-style="labelStyle"
       >
         <el-descriptions-item label="问题分析（过程）">
-          <div class="text-content">{{ detailData.problemAnalysis || '-' }}</div>
+          <div class="text-content" v-html="detailData.problemAnalysis || '-'"></div>
         </el-descriptions-item>
         <el-descriptions-item label="分析结果">
-          <div class="text-content">{{ detailData.analysisResult || '-' }}</div>
+          <div class="text-content" v-html="detailData.analysisResult || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
 
-      <!-- 对策信息 -->
+      <!-- 对策 -->
       <el-descriptions
-        title="对策信息"
-        :column="2"
+        title="对策"
+        :column="1"
         border
         class="margin-top"
         :label-style="labelStyle"
       >
+        <el-descriptions-item label="影响面">
+          <div class="text-content" v-html="detailData.impactScope || '-'"></div>
+        </el-descriptions-item>
         <el-descriptions-item label="内部对策">
-          <div class="text-content">{{ detailData.internalMeasures || '-' }}</div>
+          <div class="text-content" v-html="detailData.internalMeasures || '-'"></div>
         </el-descriptions-item>
         <el-descriptions-item label="外部对策">
-          <div class="text-content">{{ detailData.externalMeasures || '-' }}</div>
+          <div class="text-content" v-html="detailData.externalMeasures || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
 
-      <!-- 效果确认 -->
+      <!-- 改善跟踪 -->
       <el-descriptions
-        title="效果确认"
+        title="改善跟踪"
         :column="2"
         border
         class="margin-top"
         :label-style="labelStyle"
       >
-        <el-descriptions-item label="效果确认">
-          <div class="text-content">{{ detailData.effectivenessConfirmation || '-' }}</div>
+        <el-descriptions-item label="责任人">
+          {{ detailData.responsiblePerson || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="完成时间">
           {{ parseTime(detailData.completionTime) || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="效果确认" :span="2">
+          <div class="text-content" v-html="detailData.effectivenessConfirmation || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -92,15 +109,16 @@
         :label-style="labelStyle"
       >
         <el-descriptions-item label="新售后ID列表">
-          <el-tag
-            v-for="(id, index) in detailData.afterNewIdList"
-            :key="index"
-            type="info"
-            size="small"
-            class="margin-right-xs"
-          >
-            {{ id }}
-          </el-tag>
+          <div class="flex align-center" style="flex-wrap: wrap; gap: 8px;">
+            <el-tag
+              v-for="(id, index) in detailData.afterNewIdList"
+              :key="index"
+              type="info"
+              size="small"
+            >
+              {{ id }}
+            </el-tag>
+          </div>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -126,14 +144,44 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
+
+    <!-- 售后记录选择器 -->
+    <AfterSaleRecordSelector
+      :visible.sync="afterSaleDialogVisible"
+      :after-problem-id="detailData.id"
+      :view-only="true"
+    />
+
+    <!-- 制程记录选择器 -->
+    <ProductionRecordSelector
+      :visible.sync="productionDialogVisible"
+      :after-problem-id="detailData.id"
+      :view-only="true"
+    />
+
+    <!-- 品质记录选择器 -->
+    <QualityRecordSelector
+      :visible.sync="qualityDialogVisible"
+      :after-problem-id="detailData.id"
+      :view-only="true"
+    />
   </el-dialog>
 </template>
 
 <script>
 import { afterProblemDetail } from "@/api/third/afterProblem";
+import { afterInfo } from "@/api/third/sale";
+import AfterSaleRecordSelector from "./AfterSaleRecordSelector";
+import ProductionRecordSelector from "./ProductionRecordSelector";
+import QualityRecordSelector from "./QualityRecordSelector";
 
 export default {
   name: "ProblemDetail",
+  components: {
+    AfterSaleRecordSelector,
+    ProductionRecordSelector,
+    QualityRecordSelector
+  },
   props: {
     visible: {
       type: Boolean,
@@ -144,6 +192,11 @@ export default {
     return {
       loading: false,
       detailData: {},
+      afterSaleInfo: null, // 关联的售后记录信息
+      // 选择器对话框显示状态
+      afterSaleDialogVisible: false,
+      productionDialogVisible: false,
+      qualityDialogVisible: false,
       labelStyle: {
         width: '140px',
         textAlign: 'center',
@@ -152,27 +205,116 @@ export default {
       }
     };
   },
-  methods: {
-    /** 打开详情 */
-    async open(id) {
-      this.loading = true;
-      try {
-        const { data } = await afterProblemDetail(id);
-        this.detailData = data || {};
-        
-        // 处理 afterNewIdList
-        if (this.detailData.afterNewIdList && typeof this.detailData.afterNewIdList === 'string') {
+  computed: {
+    /** 是否有关联记录 */
+    hasBusinessRecords() {
+      return this.businessIdList && this.businessIdList.length > 0;
+    },
+    /** 关联记录ID列表 */
+    businessIdList() {
+      if (!this.detailData) return [];
+      
+      // 优先使用 businessIdList
+      if (this.detailData.businessIdList) {
+        if (Array.isArray(this.detailData.businessIdList)) {
+          return this.detailData.businessIdList;
+        }
+        // 如果是字符串，尝试解析
+        if (typeof this.detailData.businessIdList === 'string') {
           try {
-            this.detailData.afterNewIdList = JSON.parse(this.detailData.afterNewIdList);
+            // 先尝试 JSON 解析
+            return JSON.parse(this.detailData.businessIdList);
           } catch (e) {
-            this.detailData.afterNewIdList = [];
+            // JSON 解析失败，尝试逗号分隔
+            return this.detailData.businessIdList.split(',').map(id => id.trim()).filter(Boolean);
           }
         }
+      }
+      
+      // 其次使用 businessIds
+      if (this.detailData.businessIds) {
+        if (Array.isArray(this.detailData.businessIds)) {
+          return this.detailData.businessIds;
+        }
+        // 如果是字符串，尝试解析
+        if (typeof this.detailData.businessIds === 'string') {
+          try {
+            // 先尝试 JSON 解析
+            return JSON.parse(this.detailData.businessIds);
+          } catch (e) {
+            // JSON 解析失败，尝试逗号分隔
+            return this.detailData.businessIds.split(',').map(id => id.trim()).filter(Boolean);
+          }
+        }
+      }
+      
+      return [];
+    }
+  },
+  methods: {
+    /** 打开详情 */
+    open(row) {
+      // 直接使用列表数据，不再调用详情接口
+      this.detailData = { ...row };
+      
+      // 处理 afterNewIdList
+      if (this.detailData.afterNewIdList && typeof this.detailData.afterNewIdList === 'string') {
+        try {
+          this.detailData.afterNewIdList = JSON.parse(this.detailData.afterNewIdList);
+        } catch (e) {
+          this.detailData.afterNewIdList = [];
+        }
+      }
+      
+      // 加载关联的售后记录信息
+      if (this.detailData.problemSource) {
+        this.loadAfterSaleInfo(this.detailData.problemSource);
+      }
+    },
+
+    /** 加载售后记录信息 */
+    async loadAfterSaleInfo(afterSaleId) {
+      try {
+        const { data } = await afterInfo(afterSaleId);
+        this.afterSaleInfo = data;
       } catch (error) {
-        console.error("获取详情失败:", error);
-        this.msgError("获取详情失败");
-      } finally {
-        this.loading = false;
+        console.error("加载售后记录信息失败:", error);
+        this.afterSaleInfo = null;
+      }
+    },
+
+    /** 查看售后详情 */
+    viewAfterSale(afterSaleId) {
+      // 跳转到售后详情页面或打开售后详情弹窗
+      this.$router.push({
+        path: '/third/afterSale',
+        query: { id: afterSaleId }
+      });
+    },
+
+    /** 获取业务记录链接文本 */
+    getBusinessLinkText(source) {
+      const linkMap = {
+        '1': '查看售后记录',
+        '2': '查看制程记录',
+        '3': '查看品质记录'
+      };
+      return linkMap[String(source)] || '查看关联记录';
+    },
+
+    /** 查看业务记录 */
+    handleViewBusinessRecords() {
+      console.log('[详情页] 查看业务记录, 问题ID:', this.detailData.id);
+      console.log('[详情页] 问题来源:', this.detailData.problemSource);
+      
+      // 根据问题来源打开对应的对话框
+      const source = String(this.detailData.problemSource);
+      if (source === '1') {
+        this.afterSaleDialogVisible = true;
+      } else if (source === '2') {
+        this.productionDialogVisible = true;
+      } else if (source === '3') {
+        this.qualityDialogVisible = true;
       }
     },
 
@@ -180,6 +322,11 @@ export default {
     close() {
       this.$emit("update:visible", false);
       this.detailData = {};
+      this.afterSaleInfo = null;
+      // 关闭所有选择器对话框
+      this.afterSaleDialogVisible = false;
+      this.productionDialogVisible = false;
+      this.qualityDialogVisible = false;
     }
   }
 };
@@ -203,6 +350,19 @@ export default {
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.6;
+}
+
+// Flex布局样式
+.flex {
+  display: flex;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
 
 ::v-deep .el-descriptions__title {

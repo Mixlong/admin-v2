@@ -1,249 +1,197 @@
 <template>
-  <!-- 添加售后 -->
-  <el-dialog
-    class="after-sale-box"
-    :title="isTitle"
-    :visible="visible"
-    width="1250px"
-    append-to-body
-    center
-    top="2vh"
-    :close-on-click-modal="false"
-    @close="close"
-  >
+  <div >
+    <!-- 添加售后 -->
+    <el-dialog
+      class="dialog-scroll"
+      :title="isTitle"
+      :visible="visible"
+      width="1250px"
+      append-to-body
+      center
+      top="0vh"
+      :close-on-click-modal="false"
+      @close="close"
+    >
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-      <h3>售后基本信息</h3>
-      <el-row type="flex" justify="space-around">
-        <el-col :span="11">
-          <el-row>
-            <el-col>
-              <el-form-item label="客诉日期" prop="returnDate">
-                <el-date-picker
-                  v-model="form.returnDate"
-                  clearable
-                  type="date"
-                  style="width: 100%"
-                  :picker-options="returnDatePickerOptions"
-                  placeholder="请选择客诉日期"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客户名称" prop="customerName">
-                <select-loadMore
-                  v-model="form.customerName"
-                  style="width: 100%"
-                  :data="customerNameData.data"
-                  :page="customerNameData.page"
-                  :hasMore="customerNameData.more"
-                  dictLabel="name"
-                  :moreParams="true"
-                  :request="getCustomerNameList"
-                  @getChange="getCustomerNameId"
-                  placeholder="请选择客户名称"
-                >
-                </select-loadMore>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客退方" prop="returnParty">
-                <el-input
-                  v-model="form.returnParty"
-                  clearable
-                  style="width: 100%"
-                  placeholder="请输入客退方"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客退人" prop="returnName">
-                <el-input
-                  v-model="form.returnName"
-                  clearable
-                  style="width: 100%"
-                  placeholder="请输入客退人"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客退清单" prop="inventory">
-                <el-select
-                  v-model="form.inventory"
-                  filterable
-                  multiple
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择客退清单"
-                >
-                  <el-option
-                    v-for="item in returnList"
-                    :key="item.dictCode"
-                    :label="item.dictLabel"
-                    :value="item.dictLabel"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="发生阶段" prop="generatorStage">
-                <el-select
-                  v-model="form.generatorStage"
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择发生阶段"
-                >
-                  <el-option
-                    v-for="item in happenStageOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col v-if="isUpdateId">
-              <el-form-item label="问题根因" prop="rootMatter">
-                <el-input
-                  v-model="form.rootMatter"
-                  clearable
-                  :disabled="form.status === 1"
-                  placeholder="请输入问题根因"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="跟进人" prop="follow">
-                <el-select
-                  v-model="form.follow"
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择跟进人"
-                >
-                  <el-option
-                   v-for="(item, p) in roleList('after_sales_follow')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  />
-  
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
+      <h3>基本信息</h3>
+      <!-- 基本信息表格布局 -->
+      <el-row :gutter="20">
+        <!-- 第一行：客退日期、客户名称、迪太接收人 -->
+        <el-col :span="8">
+          <el-form-item label="客退日期" prop="returnDate">
+            <el-date-picker
+              v-model="form.returnDate"
+              clearable
+              type="date"
+              style="width: 100%"
+              value-format="yyyy-MM-dd"
+              :picker-options="returnDatePickerOptions"
+              placeholder="请选择客退日期"
+            />
+          </el-form-item>
         </el-col>
-        <el-col :span="11">
-          <el-row>
-            <el-col>
-              <el-form-item label="迪太接收人" prop="receiveName">
-                <el-input
-                  v-model="form.receiveName"
-                  clearable
-                  placeholder="请输入迪太接收人"
-                ></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客诉现象" prop="result">
-                <el-input
-                  v-model="form.result"
-                  clearable
-                  placeholder="请输入客诉现象"
-                ></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="仪表去向" prop="direction">
-                <el-select
-                  v-model="form.direction"
-                  filterable
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择仪表去向"
-                >
-                  <el-option
-                    v-for="dict in modelDirList"
-                    :key="dict.dictCode"
-                    :label="dict.dictLabel"
-                    :value="dict.dictValue"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="客退物流单号" prop="logisticsNo">
-                <el-input
-                  v-model="form.logisticsNo"
-                  clearable
-                  style="width: 100%"
-                  placeholder="请输入客退物流单号"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="是否到付件" prop="isFreight">
-                <el-select
-                  v-model="form.isFreight"
-                  placeholder="请选择是否到付件"
-                  clearable
-                  style="width: 100%"
-                >
-                  <el-option label="是" :value="0" />
-                  <el-option label="否" :value="1" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col v-if="isUpdateId">
-              <el-form-item label="根因分类" prop="rootMatterType">
-                <el-select
-                  v-model="form.rootMatterType"
-                  filterable
-                  allow-create
-                  clearable
-                  style="width: 100%"
-                  placeholder="请选择根因分类"
-                >
-                  <el-option
-                    v-for="dict in rootClassify"
-                    :key="dict.dictCode"
-                    :label="dict.dictLabel"
-                    :value="+dict.dictValue"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col>
-              <el-form-item label="改善措施" prop="measures">
-                <el-input
-                  type="textarea"
-                  v-model="form.measures"
-                  placeholder="请输入改善措施"
-                  :rows="4"
-                  maxlength="500"
-                  show-word-limit
-                />
-              </el-form-item>
-            </el-col>
-            
-            <!-- <el-col v-if="isStatus">
-              <el-form-item label="关闭问题" prop="status">
-                <el-switch
-                  v-model="form.status"
-                  active-color="#409EFF"
-                  inactive-color="#DCDFE6"
-                  :active-value="0"
-                  :inactive-value="1"
-                >
-                </el-switch>
-              </el-form-item>
-            </el-col> -->
-          </el-row>
+        <el-col :span="8">
+          <el-form-item label="客户名称" prop="customerName">
+            <select-loadMore
+              v-model="form.customerName"
+              style="width: 100%"
+              :data="customerNameData.data"
+              :page="customerNameData.page"
+              :hasMore="customerNameData.more"
+              dictLabel="name"
+              :moreParams="true"
+              :request="getCustomerNameList"
+              @getChange="getCustomerNameId"
+              placeholder="请选择客户名称"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="迪太接收人" prop="receiveName">
+            <TypedSelectLoadMore
+              v-model="form.receiveName"
+              type="user"
+              :return-label="true"
+              placeholder="请选择迪太接收人"
+              clearable
+              :custom-style="{ width: '100%' }"
+            />
+          </el-form-item>
         </el-col>
       </el-row>
+
+      <el-row :gutter="20">
+        <!-- 第二行：客退类型、客诉现象、客退单号 -->
+        <el-col :span="8">
+          <el-form-item label="客退类型" prop="afterType">
+            <el-select
+              v-model="form.afterType"
+              clearable
+              style="width: 100%"
+              placeholder="请选择客退类型"
+              @change="handleAfterTypeChange"
+            >
+              <el-option label="大货" :value="1" />
+              <el-option label="样品" :value="2" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="客诉现象" prop="result">
+            <el-input
+              v-model="form.result"
+              clearable
+              placeholder="请输入客诉现象"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="客退单号" prop="logisticsNo">
+            <el-input
+              v-model="form.logisticsNo"
+              clearable
+              placeholder="请输入客退单号"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <!-- 第三行：发生阶段、客退清单、是否到付件 -->
+        <el-col :span="8">
+          <el-form-item label="发生阶段" prop="generatorStage">
+            <el-select
+              v-model="form.generatorStage"
+              clearable
+              style="width: 100%"
+              placeholder="请选择发生阶段"
+            >
+              <el-option
+                v-for="item in happenStageOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="客退清单" prop="inventory">
+            <el-select
+              v-model="form.inventory"
+              filterable
+              multiple
+              allow-create
+              clearable
+              style="width: 100%"
+              placeholder="请选择客退清单"
+            >
+              <el-option
+                v-for="item in returnList"
+                :key="item.dictCode"
+                :label="item.dictLabel"
+                :value="item.dictLabel"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="是否到付件" prop="isFreight">
+            <el-select
+              v-model="form.isFreight"
+              placeholder="请选择是否到付件"
+              clearable
+              style="width: 100%"
+            >
+              <el-option label="是" :value="0" />
+              <el-option label="否" :value="1" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <!-- 第四行：客退方、客退方信息 -->
+        <el-col :span="8">
+          <el-form-item label="客退方" prop="returnParty">
+            <select-loadMore
+              v-model="form.returnParty"
+              style="width: 100%"
+              :data="returnPartyData.data"
+              :page="returnPartyData.page"
+              :hasMore="returnPartyData.more"
+              dictLabel="name"
+              dictValue="name"
+              :moreParams="true"
+              :request="getReturnPartyList"
+              @getChange="getReturnPartyId"
+              placeholder="请选择客退方"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="16">
+          <el-form-item label="客退方信息" prop="returnAddressInfo">
+            <div class="address-selector-wrapper">
+              <el-link 
+                type="primary" 
+                size="small" 
+                icon="el-icon-location"
+                @click="openReturnAddressDialog"
+                :disabled="!form.returnPartyId"
+              >
+                {{ form.returnAddressInfo ? '重新选择地址' : '选择收货地址' }}
+              </el-link>
+              <span v-if="!form.returnPartyId" class="address-tip">请先选择客退方</span>
+              <div v-if="form.returnAddressInfo" class="selected-address">
+                {{ form.returnName }} / {{ form.returnPhone }} - {{ form.returnAddress }}
+              </div>
+            </div>
+          </el-form-item>
+        </el-col>
+      </el-row>
+ 
       <div class="flex align-center justify-between">
-        <h3>{{ form.id ? "修改" : "添加"  }}仪表</h3>
+        <h3>仪表信息</h3>
         <el-button
           style="margin-right: 25px"
           v-if="form.list && form.list.length < 300 && !form.id"
@@ -342,174 +290,6 @@
         </el-row>
       </div>
 
-      <el-card
-        style="padding-top: 30px; margin: 0 30px 10px"
-        class="step-wrap"
-        shadow="never"
-      >
-        <el-steps :active="active" align-center finish-status="success">
-          <el-step>
-            <template slot="title">
-              <div class="title-top">处理类型</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(1)" @click.stop="stateChange(1)"></div>
-              <el-form-item label="" prop="handlerType" label-width="0">
-                <el-select
-                  v-model="form.handlerType"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, index) in roleList('sale')"
-                    :key="index"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">现象复测</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(2)" @click.stop="stateChange(2)"></div>
-              <el-form-item label="" prop="retester" label-width="0">
-                <el-select
-                  v-model="form.retester"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('afterSale')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">分类处理</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(3)" @click.stop="stateChange(3)" />
-              <el-form-item label="" prop="classifiedBy" label-width="0">
-                <el-select
-                  v-model="form.classifiedBy"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('afterSale')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">问题处理</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(4)" @click.stop="stateChange(4)"></div>
-              <el-form-item label="" prop="handlerBy" label-width="0">
-                <el-select
-                  v-model="form.handlerBy"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, index) in roleList('afterSale')"
-                    :key="index"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">维修处理</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(5)" @click.stop="stateChange(5)"></div>
-              <el-form-item label="" prop="serviceBy" label-width="0">
-                <el-select
-                  v-model="form.serviceBy"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('afterSale')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">返厂处理</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(6)" @click.stop="stateChange(6)"></div>
-              <el-form-item label="" prop="warehousing" label-width="0">
-                <el-select
-                  v-model="form.warehousing"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 100%"
-                  :disabled="isNoSelect"
-                >
-                  <el-option
-                    v-for="(item, p) in roleList('pmc')"
-                    :key="p"
-                    :label="item.dictLabel"
-                    :value="item.dictValue"
-                  >
-                  </el-option>
-                  <el-option label="无" value="-1"></el-option>
-                </el-select>
-              </el-form-item>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <div class="title-top">完成</div>
-            </template>
-            <template slot="description">
-              <div :class="isActiveClass(7)" @click.stop="stateChange(7)"></div>
-            </template>
-          </el-step>
-        </el-steps>
-      </el-card>
-
       <el-form-item label="不良图片" prop="file" style="width: 100%">
         <el-upload-sortable
           v-model="form.file"
@@ -525,117 +305,161 @@
           :action="actionUrl"
           :isVideo="true"
           accept="video/mp4"
-          :imgW="150"
-          :imgH="98"
+       :imgW="80"
+          :imgH="80"
         />
       </el-form-item>
-      <el-form-item label="上传8D报告" prop="report" v-if="isUpdateId">
-        <DrUpload v-model="form.report" :limit="1" :isOnePic="1">
-          <div class="text-left">
-            <el-button size="small" type="primary">点击上传</el-button>
-          </div>
-        </DrUpload>
-      </el-form-item>
-      <template v-if="isUpdateId">
-        <h3 class="margin-top-sm">返回客户信息</h3>
-        <el-row>
+      <template v-if="isUpdateId && form.logistics">
+        <h3 class="margin-top-sm">返还信息</h3>
+        <el-row :gutter="20">
+          <!-- 第一行 -->
           <el-col :span="8">
-            <el-form-item label="返回日期" prop="logisticsEntity.returnDate">
-              <el-date-picker
-                v-model="form.logisticsEntity.returnDate"
-                clearable
-                type="date"
-                style="width: 100%"
-                placeholder="请选择返回日期"
-              />
-            </el-form-item>
-          </el-col>
+            <el-form-item label="返回日期" prop="logistics.returnDate">
+            <el-date-picker
+              v-model="form.logistics.returnDate"
+              clearable
+              type="date"
+              style="width: 100%"
+              value-format="yyyy-MM-dd"
+              placeholder="请选择返回日期"
+            />
+          </el-form-item>
+        </el-col>
           <el-col :span="8">
-            <el-form-item label="收件人" prop="logisticsEntity.recipient">
-              <el-input
-                v-model="form.logisticsEntity.recipient"
-                clearable
-                style="width: 100%"
-                placeholder="请输入收件人"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="寄件单号" prop="logisticsEntity.mailingNumber">
-              <el-input
-                v-model="form.logisticsEntity.mailingNumber"
-                clearable
-                style="width: 100%"
-                placeholder="请输入寄件单号"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item
-              label="寄件部门"
-              prop="logisticsEntity.mailingDepartment"
-            >
-              <el-input
-                v-model="form.logisticsEntity.mailingDepartment"
-                clearable
-                style="width: 100%"
-                placeholder="请输入寄件部门"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="联系电话" prop="logisticsEntity.phone">
-              <el-input
-                v-model="form.logisticsEntity.phone"
-                clearable
-                style="width: 100%"
-                placeholder="请输入联系电话"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="物流付款方式" prop="logisticsEntity.isPay">
+            <el-form-item label="寄件人" prop="logistics.sender">
               <el-select
-                v-model="form.logisticsEntity.isPay"
-                placeholder="请选择物流付款方式"
+                v-model="form.logistics.sender"
+                filterable
                 clearable
                 style="width: 100%"
+                placeholder="请选择寄件人"
               >
-                <el-option label="月结" :value="0" />
-                <el-option label="到付" :value="1" />
+                <el-option
+                  v-for="(item, p) in roleList('afterSale')"
+                  :key="p"
+                  :label="item.dictLabel"
+                  :value="item.dictValue"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="寄件人" prop="logisticsEntity.sender">
+            <el-form-item label="寄件单号" prop="logistics.mailingNumber">
               <el-input
-                v-model="form.logisticsEntity.sender"
+                v-model="form.logistics.mailingNumber"
                 clearable
-                style="width: 100%"
-                placeholder="请输入寄件人"
+                placeholder="请输入寄件单号"
               />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="收货地址" prop="logisticsEntity.address">
+        </el-row>
+
+        <el-row :gutter="20">
+          <!-- 第二行 - 收方信息 -->
+          <el-col :span="24">
+            <el-form-item label="返还收货地址" prop="logisticsAddressInfo">
+              <div class="address-selector-wrapper">
+                <el-link 
+                  type="primary" 
+                  size="small" 
+                  icon="el-icon-location"
+                  @click="openLogisticsAddressDialog"
+                  :disabled="!form.returnPartyId"
+                >
+                  {{ form.logisticsAddressInfo ? '重新选择地址' : '选择收货地址' }}
+                </el-link>
+                <span v-if="!form.returnPartyId" class="address-tip">请先选择客退方</span>
+                <div v-if="form.logisticsAddressInfo" class="selected-address">
+                  {{ form.logistics.recipient }} / {{ form.logistics.phone }} - {{ form.logistics.address }}
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <!-- 第三行 -->
+          <el-col :span="24">
+            <el-form-item label="备注" prop="locationRemark">
               <el-input
-                v-model="form.logisticsEntity.address"
+                v-model="form.locationRemark"
                 type="textarea"
-                style="width: 100%"
-                placeholder="请输入收货地址"
+                :rows="3"
+                placeholder="各注特殊信息（如售后换货，需记录新的产品SN，以便追溯）"
+                maxlength="500"
+                show-word-limit
               />
             </el-form-item>
           </el-col>
         </el-row>
       </template>
     </el-form>
-    <div slot="footer" class="dialog-footer">
+    <div slot="footer" class="dialog-footer" style="text-align: right;">
+      <el-button @click="close">取 消</el-button>
       <el-button type="primary" :loading="isSubLoading" @click="submitForm">
         确 定
       </el-button>
-      <el-button @click="close">取 消</el-button>
     </div>
   </el-dialog>
+
+  <!-- 地址选择弹窗 -->
+  <el-dialog
+    title="选择收货地址"
+    :visible.sync="addressDialogVisible"
+    width="1200px"
+    append-to-body
+    :close-on-click-modal="false"
+    top="0vh"
+    custom-class="address-selection-dialog"
+  >
+    <div v-if="!form.returnPartyId" class="address-empty-tip">
+      <i class="el-icon-warning"></i>
+      <p>请先选择客退方</p>
+    </div>
+    <div v-else class="address-dialog-content">
+      <div class="address-search" style="margin-bottom: 15px;">
+        <el-input
+          v-model="addressSearchKeyword"
+          placeholder="搜索联系人、电话或地址"
+          prefix-icon="el-icon-search"
+          clearable
+          size="medium"
+          type="mini"
+          @input="handleAddressSearch"
+          style="width: 300px;"
+        />
+      </div>
+      <el-table
+        ref="addressTable"
+        :data="filteredAddressList"
+        border
+        style="width: 100%"
+        height="500"
+      >
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="contactName" label="联系人" width="120" align="center" />
+        <el-table-column prop="contactPhone" label="联系电话" width="140" align="center" />
+        <el-table-column prop="address" label="详细地址" min-width="200"   />
+        <el-table-column prop="remark" label="备注" width="250"  />
+        <el-table-column label="操作" width="100" align="center" fixed="right">
+          <template slot-scope="scope">
+            <el-button
+              type="primary"
+              size="mini"
+              @click="selectAddress(scope.row)"
+            >
+              选择
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div v-if="filteredAddressList.length === 0" class="address-empty-tip">
+        <i class="el-icon-info"></i>
+        <p>暂无收货地址数据</p>
+      </div>
+    </div>
+  </el-dialog>
+  </div>
 </template>
   
 
@@ -644,15 +468,18 @@ import { saleSave, saleUpdate } from "@/api/third/sale";
 import { getCustomerList } from "@/api/order";
 import { computerNameList } from "@/api/third/fileConfig";
 import { listCustomer } from "@/api/third/sample";
+import { listCustomerAddress } from "@/api/crm/customerAddress";
 import tinymce from "@/views/components/Editor";
 import globalData from "../mixins/global";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import reqUrl from "@/utils/requestUrl";
 
 export default {
   components: {
     tinymce,
     ElUploadSortable,
+    TypedSelectLoadMore,
   },
   props: {
     dictList: Array,
@@ -668,8 +495,6 @@ export default {
   data() {
     return {
       actionUrl: reqUrl + "/oss/batch-upload",
-      active: -1,
-      isState: -1,
       showName: "",
       isReset: false,
       // 提交loading
@@ -681,9 +506,42 @@ export default {
       ],
       // 表单参数
       form: {
+        id: "",
+        afterProblemId: "",
+        returnDate: "",
+        receiveName: "",
+        returnParty: "",
+        returnPartyId: "",
+        customerName: "",
+        customerId: "",
         generatorStage: "",
         inventory: [],
-        logisticsEntity: {},
+        afterType: "",
+        returnName: "",
+        returnPhone: "",
+        returnAddress: "",
+        returnAddressInfo: "",
+        returnOrderNo: "",
+        isFreight: "",
+        result: "",
+        logisticsNo: "",
+        direction: "",
+        file: "",
+        video: "",
+        locationRemark: "",
+        logisticsAddressInfo: "",
+        logistics: {
+          id: "",
+          afterId: "",
+          returnDate: "",
+          sender: "",
+          mailingDepartment: "",
+          mailingNumber: "",
+          recipient: "",
+          phone: "",
+          address: "",
+          isPay: "",
+        },
         list: [
           {
             categoryId: "",
@@ -698,10 +556,26 @@ export default {
         page: 1,
         more: true,
       },
+      // 客退方数据
+      returnPartyData: {
+        data: [],
+        page: 1,
+        more: true,
+      },
       dictForm: {},
       isCLoading: false,
       // 仪表型号
       computerOptions: [],
+      // 客户收货地址列表
+      customerAddressList: [],
+      // 地址搜索关键词
+      addressSearchKeyword: '',
+      // 过滤后的地址列表
+      filteredAddressList: [],
+      // 地址选择弹窗
+      addressDialogVisible: false,
+      selectedAddressId: "",
+      currentAddressType: "", // 'return' 或 'logistics'
       returnDatePickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now();
@@ -716,13 +590,19 @@ export default {
           { required: true, message: "请选择客户名称", trigger: "change" },
         ],
         returnParty: [
-          { required: true, message: "请输入客退方", trigger: "blur" },
+          { required: true, message: "请选择客退方", trigger: "change" },
+        ],
+        afterType: [
+          { required: true, message: "请选择客退类型", trigger: "change" },
         ],
         returnName: [
-          { required: true, message: "请输入客退方", trigger: "blur" },
+          { required: true, message: "请输入收件人", trigger: "blur" },
         ],
-        logisticsNo: [
-          { required: true, message: "请输入客退物流单号", trigger: "blur" },
+        returnPhone: [
+          { required: true, message: "请输入联系电话", trigger: "blur" },
+        ],
+        returnAddress: [
+          { required: true, message: "请输入收件地址", trigger: "blur" },
         ],
         isFreight: [
           { required: true, message: "请选择是否到付件", trigger: "change" },
@@ -751,27 +631,6 @@ export default {
         result: [
           { required: true, message: "请输入客诉现象", trigger: "blur" },
         ],
-        direction: [
-          { required: true, message: "请选择仪表去向", trigger: "change" },
-        ],
-        retester: [
-          { required: true, message: "请选择现象复测人", trigger: "change" },
-        ],
-        classifiedBy: [
-          { required: true, message: "请选择分类处理人", trigger: "change" },
-        ],
-        handlerBy: [
-          { required: true, message: "请选择问题处理人", trigger: "change" },
-        ],
-        handlerType: [
-          { required: true, message: "请选择处理类型人", trigger: "change" },
-        ],
-        serviceBy: [
-          { required: true, message: "请选择维修处理人", trigger: "change" },
-        ],
-        warehousing: [
-          { required: true, message: "请选择返厂处理人", trigger: "change" },
-        ],
       },
     };
   },
@@ -796,20 +655,6 @@ export default {
     isTitle() {
       return this.form.id ? "编辑售后" : "添加售后";
     },
-    isActiveClass() {
-      return (active) => {
-        return ["wrap-click", { pointer: this.isPointer(active) }];
-      };
-    },
-    isPointer() {
-      const { state, id } = this.form;
-      return (active) => {
-        return !!id && active < state && this.checkRole(["sale"]);
-      };
-    },
-    isNoSelect() {
-      return this.form.id && this.active === 7;
-    },
   },
   watch: {
     visible(isShow) {
@@ -817,12 +662,51 @@ export default {
         this.getReturnList();
         // 回显仪表型号
         this.changeCategory(0);
+        // 编辑时如果有客退方ID，自动加载地址列表
+        if (this.form.returnPartyId) {
+          this.$nextTick(() => {
+            this.loadCustomerAddresses();
+          });
+        }
+        // 编辑时如果有地址信息，设置地址信息标志以显示地址
+        if (this.form.returnName || this.form.returnPhone || this.form.returnAddress) {
+          this.form.returnAddressInfo = 'selected';
+        }
+        // 编辑时如果有返还地址信息，设置返还地址信息标志
+        if (this.form.logistics && (this.form.logistics.recipient || this.form.logistics.phone || this.form.logistics.address)) {
+          this.form.logisticsAddressInfo = 'selected';
+        }
       } else {
         this.reset();
       }
     },
+    // 监听客退类型变化，动态调整仪表型号必填规则
+    'form.afterType'(newVal) {
+      if (newVal === 2) {
+        // 样品：仪表型号非必填
+        this.rules.computerId = [
+          { required: false, message: "请选择仪表型号", trigger: "change" }
+        ];
+      } else {
+        // 大货：仪表型号必填
+        this.rules.computerId = [
+          { required: true, message: "请选择仪表型号", trigger: "change" }
+        ];
+      }
+    },
   },
   methods: {
+    // 处理客退类型变化
+    handleAfterTypeChange() {
+      // 清除所有仪表型号字段的验证错误
+      this.$nextTick(() => {
+        if (this.$refs.form) {
+          this.form.list.forEach((item, index) => {
+            this.$refs.form.clearValidate(`list[${index}].computerId`);
+          });
+        }
+      });
+    },
     close() {
       this.$emit("update:visible", false);
     },
@@ -848,6 +732,28 @@ export default {
         });
       });
     },
+    /** 客退方列表 */
+    getReturnPartyList({ page = 1, more = false, keyword = "" } = {}) {
+      return new Promise((resolve) => {
+        getCustomerList({
+          p: page,
+          name: keyword,
+        }).then((res) => {
+          const { list, total, pageNum, pageSize } = res.data;
+          if (more) {
+            this.returnPartyData.data = [
+              ...this.returnPartyData.data,
+              ...list,
+            ];
+          } else {
+            this.returnPartyData.data = list;
+          }
+          this.returnPartyData.more = pageNum * pageSize < total;
+          this.returnPartyData.page = pageNum;
+          resolve();
+        });
+      });
+    },
     getCustomerNameId(info) {
       if (!info) {
         this.form.customerId = "";
@@ -855,6 +761,20 @@ export default {
       }
       const { id } = JSON.parse(info);
       this.form.customerId = id;
+    },
+    getReturnPartyId(info) {
+      if (!info) {
+        this.form.returnPartyId = "";
+        this.customerAddressList = [];
+        this.filteredAddressList = [];
+        return;
+      }
+      const { id, name } = JSON.parse(info);
+      this.form.returnPartyId = id;
+      // 确保 returnParty 只存储 name，不存储 JSON 字符串
+      this.form.returnParty = name;
+      // 选择客退方后自动加载客户地址列表
+      this.loadCustomerAddresses();
     },
     onChangeCategory(index) {
       this.form.list[index].computerId = "";
@@ -898,11 +818,216 @@ export default {
         );
       });
     },
+    /** 加载客户收货地址列表 */
+    async loadCustomerAddresses() {
+      if (!this.form.returnPartyId) {
+        this.customerAddressList = [];
+        this.filteredAddressList = [];
+        return;
+      }
+      
+      try {
+        const res = await listCustomerAddress({ 
+          customerId: this.form.returnPartyId,
+          pageSize: 999
+        });
+        if (res.code === 200 && res.data) {
+          this.customerAddressList = (res.data.list || res.data || []).map(address => ({
+            id: address.id,
+            contactName: address.contactName || '',
+            contactPhone: address.contactPhone || '',
+            address: address.address || '',
+            remark: address.remark || '',
+            customerId: this.form.returnPartyId
+          }));
+          // 初始化过滤列表
+          this.filteredAddressList = this.customerAddressList;
+          this.addressSearchKeyword = '';
+        } else {
+          this.customerAddressList = [];
+          this.filteredAddressList = [];
+        }
+      } catch (error) {
+        console.error('加载客户地址失败:', error);
+        this.customerAddressList = [];
+        this.filteredAddressList = [];
+      }
+    },
+    /** 收件人搜索过滤方法 */
+    filterRecipientMethod(keyword) {
+      this.addressSearchKeyword = keyword;
+      if (!keyword) {
+        this.filteredAddressList = this.customerAddressList;
+        return;
+      }
+      
+      const lowerKeyword = keyword.toLowerCase();
+      this.filteredAddressList = this.customerAddressList.filter(addr => {
+        return (
+          (addr.contactName && addr.contactName.toLowerCase().includes(lowerKeyword)) ||
+          (addr.contactPhone && addr.contactPhone.includes(keyword)) ||
+          (addr.address && addr.address.toLowerCase().includes(lowerKeyword))
+        );
+      });
+    },
+    /** 处理收件人下拉框显示隐藏 */
+    handleRecipientVisibleChange(visible) {
+      if (visible && this.customerAddressList.length === 0) {
+        this.loadCustomerAddresses();
+      }
+    },
+    /** 处理收件人选择变化（物流信息） */
+    handleRecipientChange(recipientName) {
+      if (!recipientName) {
+        // 清空时不处理
+        return;
+      }
+      
+      // 根据收件人姓名查找对应的地址信息
+      const selectedAddress = this.customerAddressList.find(
+        addr => addr.contactName === recipientName
+      );
+      
+      if (selectedAddress) {
+        // 自动填充联系电话和收件地址
+        this.$set(this.form.logistics, 'phone', selectedAddress.contactPhone || '');
+        this.$set(this.form.logistics, 'address', selectedAddress.address || '');
+        this.$set(this.form.logistics, 'addressId', selectedAddress.id);
+      } else {
+        // 手动输入的收件人，清空 addressId
+        this.$set(this.form.logistics, 'addressId', '');
+      }
+    },
+    /** 处理返还信息收件人选择变化 */
+    handleReturnRecipientChange(recipientName) {
+      if (!recipientName) {
+        return;
+      }
+      
+      // 根据收件人姓名查找对应的地址信息
+      const selectedAddress = this.customerAddressList.find(
+        addr => addr.contactName === recipientName
+      );
+      
+      if (selectedAddress) {
+        // 自动填充联系电话和收件地址
+        this.form.returnPhone = selectedAddress.contactPhone || '';
+        this.form.returnAddress = selectedAddress.address || '';
+      }
+    },
+    /** 打开客退地址选择弹窗 */
+    openReturnAddressDialog() {
+      if (!this.form.returnPartyId) {
+        this.$message.warning('请先选择客退方');
+        return;
+      }
+      
+      // 确保地址列表已加载
+      if (this.customerAddressList.length === 0) {
+        this.loadCustomerAddresses().then(() => {
+          this.currentAddressType = 'return';
+          this.addressDialogVisible = true;
+          this.selectedAddressId = "";
+          this.addressSearchKeyword = "";
+          this.filteredAddressList = [...this.customerAddressList];
+        });
+      } else {
+        this.currentAddressType = 'return';
+        this.addressDialogVisible = true;
+        this.selectedAddressId = "";
+        this.addressSearchKeyword = "";
+        this.filteredAddressList = [...this.customerAddressList];
+      }
+    },
+    /** 打开返还地址选择弹窗 */
+    openLogisticsAddressDialog() {
+      if (!this.form.returnPartyId) {
+        this.$message.warning('请先选择客退方');
+        return;
+      }
+      
+      // 确保地址列表已加载
+      if (this.customerAddressList.length === 0) {
+        this.loadCustomerAddresses().then(() => {
+          this.currentAddressType = 'logistics';
+          this.addressDialogVisible = true;
+          this.selectedAddressId = "";
+          this.addressSearchKeyword = "";
+          this.filteredAddressList = [...this.customerAddressList];
+        });
+      } else {
+        this.currentAddressType = 'logistics';
+        this.addressDialogVisible = true;
+        this.selectedAddressId = "";
+        this.addressSearchKeyword = "";
+        this.filteredAddressList = [...this.customerAddressList];
+      }
+    },
+    /** 地址搜索 */
+    handleAddressSearch() {
+      const keyword = this.addressSearchKeyword.toLowerCase().trim();
+      if (!keyword) {
+        this.filteredAddressList = this.customerAddressList;
+        return;
+      }
+      this.filteredAddressList = this.customerAddressList.filter(addr => {
+        return (
+          (addr.contactName && addr.contactName.toLowerCase().includes(keyword)) ||
+          (addr.contactPhone && addr.contactPhone.includes(keyword)) ||
+          (addr.address && addr.address.toLowerCase().includes(keyword))
+        );
+      });
+    },
+    /** 选择地址（直接完成选择并关闭弹窗） */
+    selectAddress(address) {
+      if (!address) {
+        return;
+      }
+      
+      if (this.currentAddressType === 'return') {
+        // 客退地址
+        this.form.returnName = address.contactName || '';
+        this.form.returnPhone = address.contactPhone || '';
+        this.form.returnAddress = address.address || '';
+        this.form.returnAddressInfo = 'selected';
+      } else if (this.currentAddressType === 'logistics') {
+        // 返还地址
+        this.form.logistics.recipient = address.contactName || '';
+        this.form.logistics.phone = address.contactPhone || '';
+        this.form.logistics.address = address.address || '';
+        this.form.logisticsAddressInfo = 'selected';
+      }
+      
+      // 关闭弹窗
+      this.addressDialogVisible = false;
+    },
     // 表单重置
     reset() {
       this.form = {
+        id: "",
+        afterProblemId: "",
+        returnDate: "",
+        receiveName: "",
+        returnParty: "",
+        returnPartyId: "",
+        customerName: "",
+        customerId: "",
         generatorStage: "",
         inventory: [],
+        afterType: "",
+        returnName: "",
+        returnPhone: "",
+        returnAddress: "",
+        returnAddressInfo: "",
+        returnOrderNo: "",
+        isFreight: "",
+        result: "",
+        logisticsNo: "",
+        direction: "",
+        file: "",
+        video: "",
+        locationRemark: "",
+        logisticsAddressInfo: "",
         list: [
           {
             categoryId: "",
@@ -910,10 +1035,22 @@ export default {
             sn: "",
           },
         ],
-        logisticsEntity: {},
+        logistics: {
+          id: "",
+          afterId: "",
+          returnDate: "",
+          sender: "",
+          mailingDepartment: "",
+          mailingNumber: "",
+          recipient: "",
+          phone: "",
+          address: "",
+          isPay: "",
+        },
       };
-      this.active = -1;
-      this.isState = -1;
+      this.customerAddressList = [];
+      this.filteredAddressList = [];
+      this.addressSearchKeyword = '';
       this.resetForm("form");
     },
     onAddSaleItem() {
@@ -929,19 +1066,6 @@ export default {
         this.form.list.splice(index, 1);
       }
     },
-    stateChange(data) {
-      const { state, id } = this.form;
-      if (!this.checkRole(["sale"]) || data >= state) {
-        return;
-      }
-
-      this.isState = data > this.active ? data + 1 : data;
-
-      data = data <= this.active ? data - 1 : 7;
-      if (id) {
-        this.active = data;
-      }
-    },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
@@ -949,25 +1073,25 @@ export default {
           this.isSubLoading = true;
           let params = JSON.parse(JSON.stringify(this.form));
           params.inventory = JSON.stringify(params.inventory);
-          // 兼容后端字段仍为 happenStage 的情况
+          
+          // 处理图片和视频：数组转逗号分隔字符串
+          if (Array.isArray(params.file)) {
+            params.file = params.file.join(',');
+          }
+          if (Array.isArray(params.video)) {
+            params.video = params.video.join(',');
+          }
+          
+          // 字段映射：兼容后端字段名
           if (params.generatorStage !== undefined) {
             params.happenStage = params.generatorStage;
           }
 
           if (params.id) {
-            const { logisticsEntity, ...dataInfo } = params;
+            const { logistics, ...dataInfo } = params;
             let currentData = params;
-            if (!Object.keys(logisticsEntity).length) {
+            if (!Object.keys(logistics).length) {
               currentData = dataInfo;
-            }
-
-            if (this.isState !== -1) {
-              currentData.state = this.isState;
-            }
-
-            // 返厂入库为无的情况
-            if(currentData.warehousing === '-1' && currentData.state === 6) {
-              currentData.state = 7;
             }
 
             saleUpdate(currentData)
@@ -997,49 +1121,97 @@ export default {
 };
 </script>
   
-<style lang="scss">
-.after-sale-box {
-  .el-dialog__body {
-    max-height: 90vh;
-    overflow: hidden;
-    overflow-y: auto;
+<style lang="scss" scoped>
+// 地址选择弹窗样式
+.address-empty-tip {
+  text-align: center;
+  padding: 40px 20px;
+  color: #909399;
+
+  i {
+    font-size: 48px;
+    color: #c0c4cc;
+    margin-bottom: 16px;
+    display: block;
   }
 
-  .step-wrap {
-    .title-top {
-      position: absolute;
-      top: -38px;
-      left: 0;
-      width: 100%;
-      height: 38px;
-    }
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
 
-    .wrap-click {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 24px;
-      z-index: 10;
-    }
+.address-dialog-content {
+  .address-search {
+    margin-bottom: 15px;
+  }
+}
 
-    .el-step__description {
-      padding-top: 15px;
-    }
+// 地址选择器样式
+.address-selector-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
-    .el-form-item__error {
-      min-width: auto;
-      white-space: nowrap;
-    }
+  .address-tip {
+    color: #909399;
+    font-size: 13px;
   }
 
-  .sale-list-box {
-    max-height: 500px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    overflow-y: auto;
+  .selected-address {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    color: #606266;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    /* 美化滚动条 */
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: #dcdfe6;
+      border-radius: 3px;
+      
+      &:hover {
+        background-color: #c0c4cc;
+      }
+    }
+    
+    &::-webkit-scrollbar-track {
+      background-color: #f5f7fa;
+      border-radius: 3px;
+    }
   }
 }
 </style>
-  
-  
+
+<style lang="scss">
+// 地址选择表格全局样式
+.address-selection-dialog {
+  .el-table {
+    // 表格行hover效果
+    .el-table__body tr:hover > td {
+      background-color: #f5f7fa;
+    }
+  }
+
+  .el-dialog__header {
+    .el-dialog__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+  }
+
+  .el-dialog__body {
+    padding: 24px;
+  }
+}
+</style>
