@@ -169,6 +169,28 @@
             </el-form-item>
           </div>
         </fieldset>
+
+        <!-- 分析报告 -->
+        <fieldset class="form-fieldset">
+          <legend>分析报告</legend>
+          <div class="form-row">
+            <el-form-item label="是否需要报告" prop="needReport" class="form-item-flex-1">
+              <el-radio-group v-model="form.needReport">
+                <el-radio :label="0">否</el-radio>
+                <el-radio :label="1">是</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div v-if="form.needReport === 1" class="form-row">
+            <el-form-item label="上传分析报告" prop="reportFile" class="form-item-full">
+              <MyUpload
+                v-model="form.reportFile"
+                :limit="10"
+                btnTitle="点击上传分析报告"
+              />
+            </el-form-item>
+          </div>
+        </fieldset>
       </el-form>
 
     <div slot="footer" class="dialog-footer">
@@ -209,6 +231,7 @@ import {
 } from "@/api/third/afterProblem";
 import { dictPmProject } from "@/api/third/project";
 import Editor from "@/components/Editor";
+import MyUpload from "@/components/MyUpload";
 import AfterSaleRecordSelector from "./AfterSaleRecordSelector.vue";
 import ProductionRecordSelector from "./ProductionRecordSelector.vue";
 import QualityRecordSelector from "./QualityRecordSelector.vue";
@@ -217,6 +240,7 @@ export default {
   name: "ProblemForm",
   components: {
     Editor,
+    MyUpload,
     AfterSaleRecordSelector,
     ProductionRecordSelector,
     QualityRecordSelector
@@ -245,7 +269,9 @@ export default {
         analysisResult: "",
         effectivenessConfirmation: "",
         completionTime: "",
-        businessIdList: []  // 改名为 businessIdList
+        businessIdList: [],  // 改名为 businessIdList
+        needReport: 0,  // 是否需要报告 0.不需要 1.需要
+        reportFile: ""  // 分析报告文件
       },
       rules: {
         problemSource: [
@@ -467,7 +493,9 @@ export default {
         analysisResult: "",
         effectivenessConfirmation: "",
         completionTime: "",
-        businessIdList: []
+        businessIdList: [],
+        needReport: 0,
+        reportFile: ""
       };
       // 重置弹窗状态
       this.afterSaleDialogVisible = false;
@@ -547,6 +575,18 @@ export default {
       // 确保来源标识字符串存在（用于 SMT 排产单号等）
       if (this.form.problemSourceSn === null || this.form.problemSourceSn === undefined) {
         this.form.problemSourceSn = '';
+      }
+
+      // 确保 needReport 是数字类型
+      if (this.form.needReport === null || this.form.needReport === undefined) {
+        this.form.needReport = 0;
+      } else {
+        this.form.needReport = Number(this.form.needReport);
+      }
+
+      // 确保 reportFile 是字符串
+      if (this.form.reportFile === null || this.form.reportFile === undefined) {
+        this.form.reportFile = '';
       }
     },
 

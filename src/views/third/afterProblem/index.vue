@@ -156,7 +156,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="内部对策"
+          label="短期对策"
           prop="internalMeasures"
           align="center"
           min-width="150"
@@ -168,7 +168,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="外部对策"
+          label="长期对策"
           prop="externalMeasures"
           align="center"
           min-width="150"

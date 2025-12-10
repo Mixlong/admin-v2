@@ -5,7 +5,7 @@
     width="900px"
     append-to-body
     center
-    top="3vh"
+    top="0vh"
     :close-on-click-modal="false"
     @close="close"
     class="dialog-scroll"
@@ -28,20 +28,30 @@
             prop="problemCategory"
             class="form-item-flex"
           >
-            <el-select
-              v-model="form.problemCategory"
-              placeholder="请选择一级问题"
-              clearable
-              style="width: 100%"
-              @change="handleProblemCategoryChange"
-            >
-              <el-option
-                v-for="dict in dict.type.after_problem_major_class"
-                :key="dict.value"
-                :label="dict.label"
-                :value="dict.label"
+            <div class="select-with-btn">
+              <el-select
+                v-model="form.problemCategory"
+                placeholder="请选择一级问题"
+                clearable
+                style="width: 100%"
+                @change="handleProblemCategoryChange"
+              >
+                <el-option
+                  v-for="dict in dict.type.after_problem_major_class"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.label"
+                />
+              </el-select>
+              <el-button
+                v-hasPermi="['third:afterSale:dictAdd']"
+                type="primary"
+                icon="el-icon-plus"
+                circle
+                size="mini"
+                @click="openDictDialog('after_problem_major_class')"
               />
-            </el-select>
+            </div>
           </el-form-item>
 
           <el-form-item
@@ -49,20 +59,31 @@
             prop="problemSubCategory"
             class="form-item-flex"
           >
-            <el-select
-              v-model="form.problemSubCategory"
-              placeholder="请选择二级问题"
-              clearable
-              style="width: 100%"
-              :disabled="!form.problemCategory"
-            >
-              <el-option
-                v-for="dict in filteredProblemMinorOptions"
-                :key="dict.value"
-                :label="dict.label"
-                :value="dict.label"
+            <div class="select-with-btn">
+              <el-select
+                v-model="form.problemSubCategory"
+                placeholder="请选择二级问题"
+                clearable
+                style="width: 100%"
+                :disabled="!form.problemCategory"
+              >
+                <el-option
+                  v-for="dict in filteredProblemMinorOptions"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.label"
+                />
+              </el-select>
+              <el-button
+                v-hasPermi="['third:afterSale:dictAdd']"
+                type="primary"
+                icon="el-icon-plus"
+                circle
+                size="mini"
+                :disabled="!form.problemCategory"
+                @click="openDictDialog('after_problem_minor_class', form.problemCategory)"
               />
-            </el-select>
+            </div>
           </el-form-item>
         </div>
 
@@ -125,8 +146,8 @@
               :data="userListData.data"
               :page="userListData.page"
               :hasMore="userListData.more"
-              dictLabel="nickName"
-              dictValue="nickName"
+              dictLabel="userName"
+              dictValue="userName"
               :request="getUserList"
               placeholder="请选择分析负责人"
               clearable
@@ -192,26 +213,39 @@
         <legend>责任判定</legend>
         <div class="section-row">
           <el-form-item
-            label="责任判定"
+            label="一二级责任"
             prop="responsibilityCascader"
             class="form-item-flex"
           >
-            <el-cascader
-              v-model="form.responsibilityCascader"
-              :options="responsibilityOptions"
-              :props="{
-                value: 'label',
-                label: 'label',
-                children: 'children',
-                expandTrigger: 'hover',
-                checkStrictly: false
-              }"
-              placeholder="请选择责任判定"
-              clearable
-              filterable
-              style="width: 100%"
-              @change="handleResponsibilityCascaderChange"
-            />
+            <div class="select-with-btn">
+              <el-cascader
+                v-model="form.responsibilityCascader"
+                :options="responsibilityOptions"
+                :props="{
+                  value: 'label',
+                  label: 'label',
+                  children: 'children',
+                  expandTrigger: 'hover',
+                  checkStrictly: false
+                }"
+                placeholder="请选择责任判定"
+                clearable
+                filterable
+                style="width: 100%"
+                @change="handleResponsibilityCascaderChange"
+              />
+              <el-dropdown
+                v-hasPermi="['third:afterSale:dictAdd']"
+                trigger="click"
+                @command="handleResponsibilityDictAdd"
+              >
+                <el-button type="primary" icon="el-icon-plus" circle size="mini" />
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="responsibility_group">新增一级</el-dropdown-item>
+                  <el-dropdown-item command="responsibility_determination">新增二级</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </el-form-item>
         </div>
       </fieldset>
@@ -223,21 +257,32 @@
         确定
       </el-button>
     </div>
+
+    <!-- 字典数据弹窗 -->
+    <dict-data-dialog
+      ref="dictDataDialog"
+      :status-options="dictStatusOptions"
+      :remark-disabled="remarkDisabled"
+      @success="handleDictSuccess"
+    />
   </el-dialog>
 </template>
 
 <script>
 import Editor from "@/components/Editor";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import DictDataDialog from "@/components/DictDataDialog";
 import reqUrl from "@/utils/requestUrl";
 import { saleUpdate } from "@/api/third/sale";
-import { listUser } from "@/api/system/user";
+import { dictUserList } from "@/api/system/user";
+import { getDictsPublic } from "@/api/system/dict/data";
 
 export default {
   name: "AfterAnalysis",
   components: {
     Editor,
     ElUploadSortable,
+    DictDataDialog,
   },
   dicts: [
     "after_problem_major_class",
@@ -268,6 +313,17 @@ export default {
       },
       // 责任判定级联数据
       responsibilityOptions: [],
+      // 当前操作的字典类型
+      currentDictType: '',
+      // 当前关联的父级值（用于二级字典的remark）
+      currentParentValue: '',
+      // 备注是否禁用编辑
+      remarkDisabled: false,
+      // 字典状态选项
+      dictStatusOptions: [
+        { dictValue: '0', dictLabel: '正常' },
+        { dictValue: '1', dictLabel: '停用' }
+      ],
       // 当前时间（用于日期选择器默认时间）
       currentTime: this.getCurrentTimeString(),
       // 处理完成时间选择器配置
@@ -452,6 +508,75 @@ export default {
       this.ensureProblemSubCategoryValidity(value);
     },
 
+    // 打开字典弹窗
+    openDictDialog(dictType, parentValue = '') {
+      this.currentDictType = dictType;
+      this.currentParentValue = parentValue;
+      
+      // 如果有父级值，禁用remark编辑
+      this.remarkDisabled = !!parentValue;
+      
+      this.$refs.dictDataDialog.open(dictType);
+      
+      // 如果是二级字典，需要预设remark关联一级
+      if (parentValue) {
+        this.$nextTick(() => {
+          // 通过ref访问弹窗内部form，设置remark
+          const dialog = this.$refs.dictDataDialog;
+          if (dialog && dialog.form) {
+            dialog.form.remark = parentValue;
+          }
+        });
+      }
+    },
+
+    // 责任判定字典新增
+    handleResponsibilityDictAdd(command) {
+      if (command === 'responsibility_group') {
+        this.openDictDialog('responsibility_group');
+      } else if (command === 'responsibility_determination') {
+        // 二级需要选择关联的一级
+        if (this.form.responsibilityCascader && this.form.responsibilityCascader[0]) {
+          this.openDictDialog('responsibility_determination', this.form.responsibilityCascader[0]);
+        } else {
+          // 没有选择一级时，弹出选择框
+          this.$prompt('请输入关联的一级责任判定', '新增二级责任判定', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPlaceholder: '请输入一级责任判定名称'
+          }).then(({ value }) => {
+            if (value) {
+              this.openDictDialog('responsibility_determination', value);
+            }
+          }).catch(() => {});
+        }
+      }
+    },
+
+    // 字典新增成功回调
+    async handleDictSuccess() {
+      // 刷新对应的字典数据
+      try {
+        const res = await getDictsPublic(this.currentDictType);
+        if (res.code === 200 && res.data) {
+          // 更新本地字典数据
+          this.dict.type[this.currentDictType] = res.data.map(item => ({
+            label: item.dictLabel,
+            value: item.dictValue,
+            raw: item,
+            remark: item.remark
+          }));
+          
+          // 如果是责任判定相关，重新构建级联数据
+          if (['responsibility_group', 'responsibility_determination'].includes(this.currentDictType)) {
+            this.buildResponsibilityOptions();
+          }
+        }
+      } catch (error) {
+        console.error('刷新字典数据失败:', error);
+      }
+    },
+
     // 获取当前时间字符串（HH:mm:ss格式）
     getCurrentTimeString() {
       const now = new Date();
@@ -606,16 +731,16 @@ export default {
     async getUserList(p, l) {
       try {
         const params = {
-          pageNum: p || this.userListData.page,
-          pageSize: l || 20,
+          p: p || this.userListData.page,
+          l: l || 1000,
         };
-        const { rows, total } = await listUser(params);
+        const { data, total } = await dictUserList(params);
         
         // 累加数据
         if (p === 1) {
-          this.userListData.data = rows || [];
+          this.userListData.data = data || [];
         } else {
-          this.userListData.data = [...this.userListData.data, ...(rows || [])];
+          this.userListData.data = [...this.userListData.data, ...(data || [])];
         }
         
         // 更新分页信息
@@ -742,6 +867,24 @@ export default {
 
   .form-item-flex {
     flex: 1;
+  }
+}
+
+// 下拉框+按钮组合样式
+.select-with-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  .el-select,
+  .el-cascader {
+    flex: 1;
+  }
+
+  .el-button--mini.is-circle {
+    padding: 4px;
+    flex-shrink: 0;
   }
 }
 

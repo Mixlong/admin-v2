@@ -277,7 +277,16 @@
               </el-col>
             </el-row>
           </el-col>
-          <el-col :span="2">
+          <el-col :span="2" style="display: flex; gap: 5px;">
+            <el-button
+              type="success"
+              icon="el-icon-document-copy"
+              circle
+              style="height: 28px"
+              @click="copySaleItem(index)"
+              v-if="!form.id"
+              title="复制此行"
+            />
             <el-button
               v-if="index !== 0"
               type="danger"
@@ -385,7 +394,7 @@
                 v-model="form.locationRemark"
                 type="textarea"
                 :rows="3"
-                placeholder="各注特殊信息（如售后换货，需记录新的产品SN，以便追溯）"
+                placeholder="备注特殊信息（如售后换货，需记录新的产品SN，以便追溯）"
                 maxlength="500"
                 show-word-limit
               />
@@ -467,6 +476,7 @@
 import { saleSave, saleUpdate } from "@/api/third/sale";
 import { getCustomerList } from "@/api/order";
 import { computerNameList } from "@/api/third/fileConfig";
+import { sampleListComputer } from "@/api/third/sampleProductFamily";
 import { listCustomer } from "@/api/third/sample";
 import { listCustomerAddress } from "@/api/crm/customerAddress";
 import tinymce from "@/views/components/Editor";
@@ -698,6 +708,13 @@ export default {
   methods: {
     // 处理客退类型变化
     handleAfterTypeChange() {
+      // 清空所有仪表型号
+      this.form.list.forEach((item) => {
+        item.computerId = '';
+      });
+      // 清空仪表型号选项列表
+      this.computerOptions = [];
+      
       // 清除所有仪表型号字段的验证错误
       this.$nextTick(() => {
         if (this.$refs.form) {
@@ -783,28 +800,67 @@ export default {
       const categoryId = this.form.list[index].categoryId;
       this.computerIdIndex = index;
       if (categoryId) {
-        const data = this.categoryList.filter((item) => item.id === categoryId);
-        this.computerOptions = data[0]?.computerList;
+        // 根据客退类型选择不同的数据源
+        if (this.form.afterType === 2) {
+          // 样品：需要通过API查询，获取焦点时立即查询
+          this.computerOptions = [];
+          this.getSampleComputerList(categoryId);
+        } else {
+          // 大货：使用本地字典数据
+          const data = this.categoryList.filter((item) => item.id === categoryId);
+          this.computerOptions = data[0]?.computerList || [];
+        }
       } else {
         this.computerOptions = [];
       }
     },
-    getComputerNameList(name) {
-      if (name) {
-        this.isCLoading = true;
-        computerNameList({
-          name,
-          categoryId: this.form.list[this.computerIdIndex].categoryId,
+    // 样品模式：获取仪表型号列表（支持焦点触发）
+    getSampleComputerList(categoryId, name = '') {
+      this.isCLoading = true;
+      sampleListComputer({
+        key: categoryId,
+        name,
+        p:1,
+        l:10000
+      })
+        .then((res) => {
+          // 处理样品接口返回的数据格式
+          // 样品返回的数据结构：{ name: 型号名, id, desc, ... }
+          this.computerOptions = (res.data.list || res.data || []).map(item => ({
+            model: item.id,  // 使用 id 作为 model
+            name: item.name,   // 显示名称也用 name
+          }));
+          this.isCLoading = false;
         })
-          .then((res) => {
-            this.computerOptions = res.data;
-            this.isCLoading = false;
-          })
-          .catch(() => {
-            this.isCLoading = false;
-          });
+        .catch(() => {
+          this.isCLoading = false;
+        });
+    },
+    getComputerNameList(name) {
+      const categoryId = this.form.list[this.computerIdIndex].categoryId;
+      
+      // 根据客退类型选择不同的API
+      if (this.form.afterType === 2) {
+        // 样品：使用 /sample/computer/list 接口，支持空搜索
+        this.getSampleComputerList(categoryId, name || '');
       } else {
-        this.computerOptions = [];
+        // 大货：使用原有的 computer/name 接口，必须有搜索关键词
+        if (name) {
+          this.isCLoading = true;
+          computerNameList({
+            name,
+            categoryId,
+          })
+            .then((res) => {
+              this.computerOptions = res.data;
+              this.isCLoading = false;
+            })
+            .catch(() => {
+              this.isCLoading = false;
+            });
+        } else {
+          this.computerOptions = [];
+        }
       }
     },
     querySearchAsync(queryString, cb) {
@@ -1059,6 +1115,20 @@ export default {
         computerId: "",
         sn: "",
       });
+    },
+    copySaleItem(index) {
+      if (this.form.list.length >= 300) {
+        this.$message.warning('最多只能添加300条仪表信息');
+        return;
+      }
+      // 复制当前行的数据
+      const copiedItem = {
+        categoryId: this.form.list[index].categoryId,
+        computerId: this.form.list[index].computerId,
+        sn: this.form.list[index].sn,
+      };
+      // 在当前行的下一行插入复制的数据
+      this.form.list.splice(index + 1, 0, copiedItem);
     },
     removeSaleItem(item) {
       const index = this.form.list.indexOf(item);

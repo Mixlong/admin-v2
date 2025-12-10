@@ -1,5 +1,4 @@
 import Vue from 'vue';
-
 import Cookies from 'js-cookie';
 import App from './App';
 import store from '@/store';

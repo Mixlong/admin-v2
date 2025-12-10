@@ -202,3 +202,69 @@ export function afterLogistics(data) {
     data,
   });
 }
+
+
+// ========== 售后统计报表 API ==========
+
+// 每月客退趋势
+export function getMonthlyTrend(params) {
+  return request({
+    url: "/report/monthly-trend",
+    method: "get",
+    params,
+  });
+}
+
+// 客退类型占比
+export function getAfterTypeRatio(params) {
+  return request({
+    url: "/report/after-type-ratio",
+    method: "get",
+    params,
+  });
+}
+
+// 一级责任占比
+export function getParentResponsibilityRatio(params) {
+  return request({
+    url: "/report/parent-responsibility-ratio",
+    method: "get",
+    params,
+  });
+}
+
+// 二级责任占比
+export function getResponsibilityRatio(params) {
+  return request({
+    url: "/report/responsibility-ratio",
+    method: "get",
+    params,
+  });
+}
+
+// 一级问题帕累托图
+export function getProblemMajorPareto(params) {
+  return request({
+    url: "/report/problem-major-pareto",
+    method: "get",
+    params,
+  });
+}
+
+// 二级问题帕累托图
+export function getProblemMinorPareto(params) {
+  return request({
+    url: "/report/problem-minor-pareto",
+    method: "get",
+    params,
+  });
+}
+
+// 仪表型号帕累托图
+export function getComputerModelPareto(params) {
+  return request({
+    url: "/report/computer-model-pareto",
+    method: "get",
+    params,
+  });
+}

@@ -99,6 +99,48 @@
         </el-descriptions-item>
       </el-descriptions>
 
+      <!-- 分析报告 -->
+      <el-descriptions
+        title="分析报告"
+        :column="2"
+        border
+        class="margin-top"
+        :label-style="labelStyle"
+      >
+        <el-descriptions-item label="是否需要报告">
+          <el-tag :type="detailData.needReport === 1 ? 'success' : 'info'" size="small">
+            {{ detailData.needReport === 1 ? '是' : '否' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="分析报告文件">
+          <div v-if="detailData.needReport === 1 && detailData.reportFile">
+            <div v-for="(file, index) in reportFileList" :key="index" class="file-item">
+              <i class="el-icon-document"></i>
+              <span class="file-name">{{ file.name }}</span>
+              <div class="file-actions">
+                <el-link 
+                  type="primary"
+                  :underline="false"
+                  @click="handlePreview(file)"
+                >
+                  <i class="el-icon-view"></i> 预览
+                </el-link>
+                <el-link 
+                  type="primary"
+                  :underline="false"
+                  style="margin-left: 10px;"
+                  @click="urlDownload(file.url)"
+                >
+                  <i class="el-icon-download"></i> 下载
+                </el-link>
+              </div>
+            </div>
+          </div>
+          <span v-else-if="detailData.needReport === 1">未上传</span>
+          <span v-else>-</span>
+        </el-descriptions-item>
+      </el-descriptions>
+
       <!-- 关联售后 -->
       <el-descriptions
         v-if="detailData.afterNewIdList && detailData.afterNewIdList.length > 0"
@@ -165,22 +207,31 @@
       :after-problem-id="detailData.id"
       :view-only="true"
     />
+
+    <!-- 文件预览 -->
+    <FilePreview
+      :visible.sync="previewVisible"
+      :file-url="previewFileUrl"
+      :file-name="previewFileName"
+    />
   </el-dialog>
 </template>
 
 <script>
-import { afterProblemDetail } from "@/api/third/afterProblem";
 import { afterInfo } from "@/api/third/sale";
+import { urlDownload } from "@/utils";
 import AfterSaleRecordSelector from "./AfterSaleRecordSelector";
 import ProductionRecordSelector from "./ProductionRecordSelector";
 import QualityRecordSelector from "./QualityRecordSelector";
+import FilePreview from "@/components/FilePreview";
 
 export default {
   name: "ProblemDetail",
   components: {
     AfterSaleRecordSelector,
     ProductionRecordSelector,
-    QualityRecordSelector
+    QualityRecordSelector,
+    FilePreview
   },
   props: {
     visible: {
@@ -197,6 +248,10 @@ export default {
       afterSaleDialogVisible: false,
       productionDialogVisible: false,
       qualityDialogVisible: false,
+      // 文件预览
+      previewVisible: false,
+      previewFileUrl: "",
+      previewFileName: "",
       labelStyle: {
         width: '140px',
         textAlign: 'center',
@@ -249,6 +304,22 @@ export default {
       }
       
       return [];
+    },
+    /** 报告文件列表 */
+    reportFileList() {
+      if (!this.detailData.reportFile) return [];
+      
+      // reportFile 是逗号分隔的文件URL字符串
+      const fileUrls = this.detailData.reportFile.split(',').filter(Boolean);
+      
+      return fileUrls.map(url => {
+        // 从URL中提取文件名
+        const fileName = url.split('/').pop() || '分析报告';
+        return {
+          url: url,
+          name: decodeURIComponent(fileName)
+        };
+      });
     }
   },
   methods: {
@@ -318,6 +389,14 @@ export default {
       }
     },
 
+    /** 预览文件 */
+    handlePreview(file) {
+      // 所有支持的文件类型都使用预览组件
+      this.previewFileUrl = file.url;
+      this.previewFileName = file.name;
+      this.previewVisible = true;
+    },
+
     /** 关闭对话框 */
     close() {
       this.$emit("update:visible", false);
@@ -376,6 +455,38 @@ export default {
 
 ::v-deep .el-descriptions-item__content {
   word-break: break-word;
+}
+
+// 文件项样式
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  
+  > i {
+    color: #409eff;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .file-name {
+    margin-left: 8px;
+    flex: 1;
+    color: #303133;
+    font-size: 14px;
+  }
+
+  .file-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+  }
+  
+  & + .file-item {
+    border-top: 1px dashed #e4e7ed;
+    margin-top: 5px;
+    padding-top: 10px;
+  }
 }
 </style>
 

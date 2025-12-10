@@ -510,7 +510,7 @@
 
       <!-- 18. 内部对策 -->
       <el-table-column
-        label="内部对策"
+        label="短期对策"
         prop="internalMeasures"
         align="center"
         width="150"
@@ -521,7 +521,7 @@
 
       <!-- 19. 外部对策 -->
       <el-table-column
-        label="外部对策"
+        label="长期对策"
         prop="externalMeasures"
         align="center"
         width="150"
@@ -804,6 +804,7 @@ export default {
         type: undefined,
         returnDate: undefined,
         returnEndDate: undefined, // 客诉结束日期（仅当type=3时生效）
+        afterType: undefined, // 客退类型
         confirmMajorClass: undefined, // 一级问题
         confirmMinorClass: undefined, // 二级问题
         customerName: undefined,
@@ -830,46 +831,64 @@ export default {
           sort: 2,
         },
         {
-          key: "confirmMajorClass",
-          label: "一级问题",
-          component: "custom",
+          key: "afterType",
+          label: "客退类型",
+          component: "el-select",
+          componentProps: {
+            placeholder: "请选择",
+            clearable: true,
+            style: "width: 120px",
+          },
+          props: {
+            options: [
+              { label: "大货", value: "1" },
+              { label: "样品", value: "2" },
+            ],
+          },
           sort: 3,
-        },
-        {
-          key: "confirmMinorClass",
-          label: "二级问题",
-          component: "custom",
-          sort: 4,
         },
         {
           key: "customerName",
           label: "客户名称",
           component: "custom",
-          sort: 2,
+          sort: 3,
         },
+        {
+          key: "confirmMajorClass",
+          label: "一级问题",
+          component: "custom",
+          sort: 4,
+        },
+        {
+          key: "confirmMinorClass",
+          label: "二级问题",
+          component: "custom",
+          sort: 5,
+        },
+   
         {
           key: "parentResponsibilityPerson",
           label: "一级责任",
           component: "custom",
-          sort: 6,
+          sort: 7,
         },
         {
           key: "responsibilityPerson",
           label: "二级责任",
           component: "custom",
-          sort: 7,
+          sort: 8,
         },
         {
           key: "categoryName",
           label: "品类",
           component: "custom",
-          sort: 8,
+          sort: 9,
         },
         {
           key: "computerName",
           label: "仪表型号",
           component: "custom",
-          sort: 9,
+          sort: 10,
         },
         {
           key: "status",
@@ -886,7 +905,7 @@ export default {
               { label: "CLOSE", value: "1" },
             ],
           },
-          sort: 2,
+          sort: 11,
         },
       ],
     };
@@ -1135,9 +1154,13 @@ export default {
     },
   },
   created() {
-    let { name } = this.$route.query;
+    let { name, afterType } = this.$route.query;
     if (name) {
       this.queryParams.product = name;
+    }
+    // 处理客退类型参数
+    if (afterType) {
+      this.queryParams.afterType = afterType;
     }
     this.getMemberDictUser();
     this.getModelDirData();
@@ -1603,6 +1626,31 @@ export default {
       &:hover {
         background: #a8a8a8;
       }
+    }
+  }
+}
+
+// 售后统计报表弹窗样式
+.report-dialog {
+  /deep/ .el-dialog {
+    margin: 0 auto;
+    border-radius: 8px;
+    
+    .el-dialog__header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #ebeef5;
+      
+      .el-dialog__title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #303133;
+      }
+    }
+    
+    .el-dialog__body {
+      padding: 0;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
     }
   }
 }
