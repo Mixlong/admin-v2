@@ -75,14 +75,6 @@ router.beforeEach((to, from, next) => {
                 window.Vue.prototype.$preloadMicroApps()
               }
 
-              // 登录成功后触发版本检查
-              if (window.$versionCheck) {
-                console.log('🎯 登录成功，触发版本检查')
-                window.$versionCheck.check(true).catch(err => {
-                  console.error('版本检查失败:', err)
-                })
-              }
-
               // 如果访问的是根路径，重定向到第一个有权限的菜单
               if (to.path === '/' || to.path === '') {
                 const firstRoute = getFirstAccessibleRoute(accessRoutes);

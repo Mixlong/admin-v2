@@ -27,8 +27,6 @@ import '@/utils/mainOperation/mainFn'
 import directives from '@/directives'
 // import VueNativeSock from 'vue-native-websocket';
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
-import VersionChecker from '@/utils/versionChecker';
-import VersionUpdateDialog from '@/components/VersionUpdateDialog.vue';
 import IntelligentSearchForm from '@/components/IntelligentSearchForm'
 import RichTextDisplay from '@/components/RichTextDisplay'
 import { syncTokenFromUrl } from '@/utils/auth'
@@ -88,12 +86,9 @@ Vue.prototype.$preloadMicroApps = preloadMicroApps
 import { watchTokenChange } from '@/utils/microAppAuth'
 watchTokenChange()
 
-// 🆕 初始化版本更新检查
+// 🆕 版本检查插件（手动触发模式，不自动加载）
 import VersionCheckPlugin from '@/plugins/versionCheck'
-Vue.use(VersionCheckPlugin, {
-  autoCheck: true,        // 自动检查更新
-  interval: 30 * 60 * 1000  // 检查间隔：30分钟
-})
+Vue.use(VersionCheckPlugin)
 
 // 初始化性能监控 - 已禁用，避免干扰表单输入
 // import performanceMonitor from '@/utils/performanceMonitor'
@@ -150,76 +145,76 @@ new Vue({
   el: "#app",
   router,
   store,
-  created() {
-    window.Vue = Vue
+  // created() {
+  //   window.Vue = Vue
     
-    // 挂载版本检查调试工具到全局（方便开发调试）
-    window.$version = {
-      // 手动检查更新（弹出通知）
-      check: () => this.checkVersionUpdate(true),
+  //   // 挂载版本检查调试工具到全局（方便开发调试）
+  //   window.$version = {
+  //     // 手动检查更新（弹出通知）
+  //     check: () => this.checkVersionUpdate(true),
       
-      // 打开版本历史弹窗（查看所有版本）
-      open: () => {
-        this.$root.$emit('open-version-history')
-      },
+  //     // 打开版本历史弹窗（查看所有版本）
+  //     open: () => {
+  //       this.$root.$emit('open-version-history')
+  //     },
       
-      // 清除版本历史（用于测试）
-      clear: () => {
-        VersionChecker.clearVersionHistory()
-        sessionStorage.clear()
-        this.$message.success('已清除版本历史，刷新页面后会重新检测')
-      },
+  //     // 清除版本历史（用于测试）
+  //     clear: () => {
+  //       VersionChecker.clearVersionHistory()
+  //       sessionStorage.clear()
+  //       this.$message.success('已清除版本历史，刷新页面后会重新检测')
+  //     },
       
-      // 切换到远程模式
-      useRemote: (url) => {
-        VersionChecker.useRemoteExcel(url)
-        this.$message.success('已切换到远程模式')
-      },
+  //     // 切换到远程模式
+  //     useRemote: (url) => {
+  //       VersionChecker.useRemoteExcel(url)
+  //       this.$message.success('已切换到远程模式')
+  //     },
       
-      // 切换到本地模式
-      useLocal: () => {
-        VersionChecker.useLocalExcel()
-        this.$message.success('已切换到本地模式')
-      },
+  //     // 切换到本地模式
+  //     useLocal: () => {
+  //       VersionChecker.useLocalExcel()
+  //       this.$message.success('已切换到本地模式')
+  //     },
       
-      // 查看当前配置
-      info: () => {
-        console.log('📋 当前配置:')
-        console.log('- Excel URL:', VersionChecker.getExcelFileUrl())
-        console.log('- 本地存储:', localStorage.getItem('app_latest_version'))
-      }
-    }
+  //     // 查看当前配置
+  //     info: () => {
+  //       console.log('📋 当前配置:')
+  //       console.log('- Excel URL:', VersionChecker.getExcelFileUrl())
+  //       console.log('- 本地存储:', localStorage.getItem('app_latest_version'))
+  //     }
+  //   }
     
-    // 页面加载后自动检查版本更新已由 VersionCheckPlugin 插件自动处理
-    // 无需在这里重复调用，避免弹窗出现2次
+  //   // 页面加载后自动检查版本更新已由 VersionCheckPlugin 插件自动处理
+  //   // 无需在这里重复调用，避免弹窗出现2次
     
-    // 监听全局版本历史打开事件
-    this.$root.$on('open-version-history', () => {
-      console.log('📚 打开版本历史弹窗')
-    })
+  //   // 监听全局版本历史打开事件
+  //   this.$root.$on('open-version-history', () => {
+  //     console.log('📚 打开版本历史弹窗')
+  //   })
     
-    // 设置路由清理监听 - 已禁用，避免干扰表单输入
-    // if (process.env.NODE_ENV === 'development') {
-    //   let lastCleanupTime = 0
+  //   // 设置路由清理监听 - 已禁用，避免干扰表单输入
+  //   // if (process.env.NODE_ENV === 'development') {
+  //   //   let lastCleanupTime = 0
       
-    //   this.$router.afterEach((to, from) => {
-    //     const now = Date.now()
+  //   //   this.$router.afterEach((to, from) => {
+  //   //     const now = Date.now()
         
-    //     // 只有距离上次清理超过2分钟才执行清理
-    //     if (now - lastCleanupTime > 120000) {
-    //       console.log('🔄 路由变化，执行智能清理:', from.path, '->', to.path)
-    //       setTimeout(() => {
-    //         if (window.performanceMonitor) {
-    //           window.performanceMonitor.performCleanup()
-    //           lastCleanupTime = now
-    //         }
-    //       }, 2000) // 延长等待时间，让页面先稳定
-    //     } else {
-    //       console.log('🔄 路由变化，跳过清理 (距离上次清理不足2分钟):', from.path, '->', to.path)
-    //     }
-    //   })
-    // }
-  },
+  //   //     // 只有距离上次清理超过2分钟才执行清理
+  //   //     if (now - lastCleanupTime > 120000) {
+  //   //       console.log('🔄 路由变化，执行智能清理:', from.path, '->', to.path)
+  //   //       setTimeout(() => {
+  //   //         if (window.performanceMonitor) {
+  //   //           window.performanceMonitor.performCleanup()
+  //   //           lastCleanupTime = now
+  //   //         }
+  //   //       }, 2000) // 延长等待时间，让页面先稳定
+  //   //     } else {
+  //   //       console.log('🔄 路由变化，跳过清理 (距离上次清理不足2分钟):', from.path, '->', to.path)
+  //   //     }
+  //   //   })
+  //   // }
+  // },
   methods: {
     /**
      * 检查版本更新
