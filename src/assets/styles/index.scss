@@ -1549,6 +1549,7 @@ iframe[data-wujie-flag] {
 .dialog-scroll {
   .el-dialog {
     margin-top: 0 !important;
+    padding-bottom: 5px;
   }
   .el-dialog__body {
     max-height: 65vh;
