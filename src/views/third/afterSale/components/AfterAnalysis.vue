@@ -330,6 +330,10 @@ export default {
       completionTimePickerOptions: {
         selectableRange: this.getCurrentTimeString() + ' - ' + this.getCurrentTimeString()
       },
+      // 原始表单数据快照（用于检测是否有修改）
+      originalFormSnapshot: null,
+      // 是否有字段被修改
+      hasFormChanged: false,
       rules: {},
       form: {
         // 问题确认
@@ -416,8 +420,8 @@ export default {
         this.$nextTick(() => {
           this.buildResponsibilityOptions();
         });
-        // 每次打开弹窗时更新当前时间
-        this.updateCurrentTime();
+        // 重置修改标记
+        this.hasFormChanged = false;
       }
     },
     "form.problemCategory"(val) {
@@ -445,12 +449,10 @@ export default {
         
         // 延迟调用，确保字典数据已加载
         this.$nextTick(() => {
-          console.log("🔍 [loadData $nextTick] responsibilityDetermination:", this.form.responsibilityDetermination);
           
           // 从二级值反推一级值
           if (this.form.responsibilityDetermination) {
             const groupLabel = this.findGroupByDetermination(this.form.responsibilityDetermination);
-            console.log("🎯 [loadData] 反推结果 - 一级:", groupLabel, "二级:", this.form.responsibilityDetermination);
             
             this.form.responsibilityGroup = groupLabel || "";
             
@@ -460,18 +462,18 @@ export default {
                 this.form.responsibilityGroup,
                 this.form.responsibilityDetermination
               ];
-              console.log("✅ [loadData] 设置级联值:", this.form.responsibilityCascader);
             } else {
-              console.warn("⚠️ [loadData] 未找到一级值，无法设置级联");
             }
           } else {
-            console.warn("⚠️ [loadData] responsibilityDetermination 为空，跳过反推");
           }
+          
+          // 数据加载完成后保存快照（用于检测修改）
+          this.saveFormSnapshot();
         });
         this.form.analysisResponsiblePerson =
           this.rowData.locationAnalyst || "";
-        // completionTime 不从数据库加载，始终使用当前时间
-        // this.form.completionTime = this.rowData.locationHandleTime || "";
+        // 加载数据库中的处理完成时间（如果有的话）
+        this.form.completionTime = this.rowData.locationHandleTime || "";
         this.form.confirmRemark = this.rowData.locationRemark || "";
         this.form.faultDescription = this.rowData.locationResult || "";
         this.form.causeOfOccurrence = this.rowData.analysisCause || "";
@@ -480,6 +482,23 @@ export default {
       setTimeout(() => {
         this.loading = false;
       }, 300);
+    },
+    
+    // 获取用于对比的表单数据（排除 completionTime）
+    getFormSnapshotData() {
+      const { completionTime, ...rest } = this.form;
+      return JSON.stringify(rest);
+    },
+    
+    // 保存表单快照
+    saveFormSnapshot() {
+      this.originalFormSnapshot = this.getFormSnapshotData();
+      this.hasFormChanged = false;
+    },
+    
+    // 检测表单是否有修改
+    checkFormChanged() {
+      return this.getFormSnapshotData() !== this.originalFormSnapshot;
     },
 
     ensureProblemSubCategoryValidity(value) {
@@ -586,22 +605,16 @@ export default {
       return `${hours}:${minutes}:${seconds}`;
     },
 
-    // 更新当前时间（每次打开弹窗时调用）
-    updateCurrentTime() {
+    // 获取当前完整日期时间字符串
+    getCurrentFullDateTime() {
       const now = new Date();
-      const timeString = this.getCurrentTimeString();
-      
-      // 更新时间选择器的默认时间
-      this.currentTime = timeString;
-      this.completionTimePickerOptions = {
-        selectableRange: timeString + ' - ' + timeString
-      };
-      
-      // 设置表单的完成时间为当前完整日期时间
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
-      this.form.completionTime = `${year}-${month}-${day} ${timeString}`;
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     },
 
     // 构建责任判定级联数据
@@ -759,6 +772,15 @@ export default {
         }
 
         this.submitLoading = true;
+        
+        // 检测是否有字段被修改，如果有则更新处理完成时间为当前时间
+        let completionTime = this.form.completionTime;
+        if (this.checkFormChanged()) {
+          completionTime = this.getCurrentFullDateTime();
+          console.log("📝 检测到字段修改，更新处理完成时间:", completionTime);
+        } else {
+          console.log("✅ 未检测到字段修改，保持原处理完成时间:", completionTime);
+        }
 
         // 构建提交数据，映射到API参数
         const submitData = {
@@ -771,7 +793,7 @@ export default {
           parentResponsibilityPerson: this.form.responsibilityGroup, // 一级责任判定
           responsibilityDetermination: this.form.responsibilityDetermination, // 责任判定
           locationAnalyst: this.form.analysisResponsiblePerson,
-          locationHandleTime: this.form.completionTime,
+          locationHandleTime: completionTime,
           locationRemark: this.form.confirmRemark,
           locationResult: this.form.faultDescription,
           analysisCause: this.form.causeOfOccurrence,
@@ -830,6 +852,9 @@ export default {
         causeOfOccurrence: "",
         causeOfOutflow: "",
       };
+      // 重置快照和修改标记
+      this.originalFormSnapshot = null;
+      this.hasFormChanged = false;
     },
   },
 };
