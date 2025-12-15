@@ -175,7 +175,7 @@
           <legend>分析报告</legend>
           <div class="form-row">
             <el-form-item label="是否需要报告" prop="needReport" class="form-item-flex-1">
-              <el-radio-group v-model="form.needReport">
+              <el-radio-group v-model="form.needReport" style="height:28px; display:flex; align-items:center;">
                 <el-radio :label="0">否</el-radio>
                 <el-radio :label="1">是</el-radio>
               </el-radio-group>
@@ -719,9 +719,12 @@ export default {
   .form-item-flex-1 {
     flex: 1;
     min-width: 0; // 防止内容溢出
-
+    align-content: center;
     ::v-deep .editor {
       width: 100%;
+    }
+    ::v-deep .el-radio {
+      margin-bottom: 0;
     }
   }
 

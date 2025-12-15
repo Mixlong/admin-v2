@@ -118,7 +118,7 @@ export default {
       default: reqUrl + "/oss/batch-upload",
     },
     value: {
-      type: String,
+      type: [String, Array],
       default: "",
     },
     multiple: {
@@ -201,7 +201,11 @@ export default {
   },
   methods: {
     transImgVal(value) {
-      this.imgList = value ? value.split(",") : [];
+      if (Array.isArray(value)) {
+        this.imgList = value.filter(url => url);
+      } else {
+        this.imgList = value ? value.split(",").filter(url => url.trim()) : [];
+      }
     },
     updateList(list) {
       this.$emit("input", list.toString());

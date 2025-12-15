@@ -175,6 +175,7 @@ export default {
       return new Promise((resolve) => {
         listCategory({
           p: page,
+          l:1000,
           key: keyword
         }).then((res) => {
           if (res.code === 200 && res.data) {
@@ -215,7 +216,7 @@ export default {
       return new Promise((resolve) => {
         dictUserList({
           p: 1, // 始终获取第一页的所有数据
-          pageSize: 1000, // 获取足够多的数据
+          l: 1000, // 获取足够多的数据
         }).then((res) => {
           console.log('dictUserList response:', res);
           if (res && res.data) {
@@ -280,6 +281,7 @@ export default {
       return new Promise((resolve) => {
         getCustomerList({
           p: page,
+          l:100000,
           name: keyword
         }).then((res) => {
           // 直接使用res.data，与contact页面保持一致

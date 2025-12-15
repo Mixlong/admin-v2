@@ -222,6 +222,15 @@ export function computerNameList({ name, categoryId }) {
   })
 }
 
+// 送样-根据品类id或名称分页查询型号
+export function sampleComputerCategoryPage(params) {
+  return request({
+    url: '/sample/computer/computer/page',
+    method: 'get',
+    params
+  })
+}
+
 // 仪表型号名称
 export function categoryNameList({ name, categoryName }) {
   return request({

@@ -206,64 +206,46 @@ export function afterLogistics(data) {
 
 // ========== 售后统计报表 API ==========
 
-// 每月客退趋势
+// 每月客退趋势 (year, month 可选)
 export function getMonthlyTrend(params) {
   return request({
-    url: "/report/monthly-trend",
+    url: "/after/new/report/monthly-trend",
     method: "get",
     params,
   });
 }
 
-// 客退类型占比
+// 客退类型占比 (year, month, day 可选)
 export function getAfterTypeRatio(params) {
   return request({
-    url: "/report/after-type-ratio",
+    url: "/after/new/report/after-type-ratio",
     method: "get",
     params,
   });
 }
 
-// 一级责任占比
+// 一级责任占比 (year, month, day 可选)
 export function getParentResponsibilityRatio(params) {
   return request({
-    url: "/report/parent-responsibility-ratio",
+    url: "/after/new/report/parent-responsibility-ratio",
     method: "get",
     params,
   });
 }
 
-// 二级责任占比
+// 二级责任占比 (year, month, day 可选)
 export function getResponsibilityRatio(params) {
   return request({
-    url: "/report/responsibility-ratio",
+    url: "/after/new/report/responsibility-ratio",
     method: "get",
     params,
   });
 }
 
-// 一级问题帕累托图
-export function getProblemMajorPareto(params) {
+// 综合报表统计 - 一次返回4个维度数据（一级问题、一级责任、客户、品类）
+export function getComprehensiveReport(params) {
   return request({
-    url: "/report/problem-major-pareto",
-    method: "get",
-    params,
-  });
-}
-
-// 二级问题帕累托图
-export function getProblemMinorPareto(params) {
-  return request({
-    url: "/report/problem-minor-pareto",
-    method: "get",
-    params,
-  });
-}
-
-// 仪表型号帕累托图
-export function getComputerModelPareto(params) {
-  return request({
-    url: "/report/computer-model-pareto",
+    url: "/after/new/report/comprehensive",
     method: "get",
     params,
   });

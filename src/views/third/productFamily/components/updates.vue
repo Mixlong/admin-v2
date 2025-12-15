@@ -3262,7 +3262,7 @@ export default {
       ];
 
       // 特殊字段（实际轮径、实际协议）
-      const specialFields = ["showWheelDiameter", "showAgreement"];
+      const specialFields = ["showWheelDiameter", "showAgreement","isHighMenuPassword"];
 
       // 获取当前和原始的instrumentModel数据
       const currentModel = this.form.instrumentModel || {};
