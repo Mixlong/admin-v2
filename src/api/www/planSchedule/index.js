@@ -114,3 +114,29 @@ export function schedulingImport(data) {
     data
   });
 }
+
+// 删除箱子
+export function deleteBox(boxId) {
+  return request({
+    url: `/production/scheduling/box/delete/${boxId}`,
+    method: 'delete'
+  });
+}
+
+// 批量取消装箱
+export function cancelPacking(recordIds) {
+  return request({
+    url: '/production/scheduling/packing/cancel',
+    method: 'delete',
+    data: recordIds
+  });
+}
+
+// 根据箱号查看装箱记录
+export function getPackingRecords(params) {
+  return request({
+    url: '/production/scheduling/packing/records',
+    method: 'get',
+    params
+  });
+}

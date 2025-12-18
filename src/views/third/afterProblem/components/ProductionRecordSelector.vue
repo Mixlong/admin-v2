@@ -65,7 +65,7 @@
     <!-- 已选择的记录 -->
     <div v-if="!viewOnly && selectedRecords.length > 0" class="selected-tags-area">
       <div class="selected-header">已选择: {{ selectedRecords.length }} 条</div>
-      <div class="tags-container">
+      <!-- <div class="tags-container">
         <el-tag
           v-for="record in selectedRecords"
           :key="record.id"
@@ -76,7 +76,7 @@
         >
           {{ record.id }}
         </el-tag>
-      </div>
+      </div> -->
     </div>
 
     <!-- 表格区域 -->

@@ -8,28 +8,40 @@
     top="0vh"
     :close-on-click-modal="false"
     @close="close"
+    class="dialog-scroll after-detail-box"
   >
-    <div v-loading="loading" class="detail-container">
+    <div v-loading="loading">
       <!-- 问题点 -->
       <el-descriptions
         title="问题点"
         :column="2"
         border
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
         <el-descriptions-item label="问题来源">
-          <div class="flex align-center" v-if="afterSaleInfo">
-            <el-link type="primary" @click="viewAfterSale(detailData.problemSource)">
+          <div v-if="afterSaleInfo" class="flex align-center">
+            <el-tag type="success" size="small" style="margin-right: 8px;">
+              {{ getProblemSourceText(detailData.problemSource) }}
+            </el-tag>
+            <el-link type="primary" :underline="false" @click="viewAfterSale(detailData.problemSource)">
               {{ afterSaleInfo.sn }}
             </el-link>
-            <span style="margin-left: 8px; color: #909399; font-size: 12px;">
+            <span style="margin-left: 8px; color: #909399;">
               {{ afterSaleInfo.customerName }}
             </span>
           </div>
-          <span v-else>{{ detailData.problemSourceSn || detailData.problemSource || '-' }}</span>
+          <div v-else>
+            <el-tag type="info" size="small">
+              {{ getProblemSourceText(detailData.problemSource) }}
+            </el-tag>
+          </div>
         </el-descriptions-item>
         <el-descriptions-item label="时间点">
           {{ parseTime(detailData.problemTime) || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="问题追踪人">
+          {{ detailData.problemManager || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="问题描述" :span="2">
           <div class="text-content" v-html="detailData.problemDescription || '-'"></div>
@@ -38,7 +50,7 @@
             type="primary" 
             :underline="false"
             @click="handleViewBusinessRecords"
-            style="margin-top: 5px; font-size: 12px;"
+            style="margin-top: 5px;font-size: 12px;"
           >
             {{ getBusinessLinkText(detailData.problemSource) }}
           </el-link>
@@ -48,15 +60,19 @@
       <!-- 迪太研发&品质 -->
       <el-descriptions
         title="迪太研发&品质"
-        :column="1"
+        :column="2"
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
-        <el-descriptions-item label="问题分析（过程）">
+        <el-descriptions-item label="分析责任人">
+          {{ detailData.analysisResponsible || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="问题分析（过程）" :span="2">
           <div class="text-content" v-html="detailData.problemAnalysis || '-'"></div>
         </el-descriptions-item>
-        <el-descriptions-item label="分析结果">
+        <el-descriptions-item label="分析结果" :span="2">
           <div class="text-content" v-html="detailData.analysisResult || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
@@ -64,18 +80,22 @@
       <!-- 对策 -->
       <el-descriptions
         title="对策"
-        :column="1"
+        :column="2"
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
-        <el-descriptions-item label="影响面">
+        <el-descriptions-item label="对策责任人">
+          {{ detailData.countermeasureResponsible || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="影响面" :span="2">
           <div class="text-content" v-html="detailData.impactScope || '-'"></div>
         </el-descriptions-item>
-        <el-descriptions-item label="内部对策">
+        <el-descriptions-item label="内部对策" :span="2">
           <div class="text-content" v-html="detailData.internalMeasures || '-'"></div>
         </el-descriptions-item>
-        <el-descriptions-item label="外部对策">
+        <el-descriptions-item label="外部对策" :span="2">
           <div class="text-content" v-html="detailData.externalMeasures || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
@@ -87,6 +107,7 @@
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
         <el-descriptions-item label="责任人">
           {{ detailData.responsiblePerson || '-' }}
@@ -94,8 +115,15 @@
         <el-descriptions-item label="完成时间">
           {{ parseTime(detailData.completionTime) || '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="效果确认" :span="2">
-          <div class="text-content" v-html="detailData.effectivenessConfirmation || '-'"></div>
+        <el-descriptions-item label="效果确认">
+          <el-tag 
+            v-if="detailData.effectivenessConfirmation"
+            :type="getEffectivenessType(detailData.effectivenessConfirmation)"
+            size="small"
+          >
+            {{ detailData.effectivenessConfirmation }}
+          </el-tag>
+          <span v-else>-</span>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -106,6 +134,7 @@
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
         <el-descriptions-item label="是否需要报告">
           <el-tag :type="detailData.needReport === 1 ? 'success' : 'info'" size="small">
@@ -122,13 +151,14 @@
                   type="primary"
                   :underline="false"
                   @click="handlePreview(file)"
+                  style="font-size: 12px;"
                 >
                   <i class="el-icon-view"></i> 预览
                 </el-link>
                 <el-link 
                   type="primary"
                   :underline="false"
-                  style="margin-left: 10px;"
+                  style="margin-left: 10px;font-size: 12px;"
                   @click="urlDownload(file.url)"
                 >
                   <i class="el-icon-download"></i> 下载
@@ -149,6 +179,7 @@
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
         <el-descriptions-item label="新售后ID列表">
           <div class="flex align-center" style="flex-wrap: wrap; gap: 8px;">
@@ -171,6 +202,7 @@
         border
         class="margin-top"
         :label-style="labelStyle"
+        :content-style="contentStyle"
       >
         <el-descriptions-item label="创建人">
           {{ detailData.createBy || '-' }}
@@ -253,10 +285,17 @@ export default {
       previewFileUrl: "",
       previewFileName: "",
       labelStyle: {
-        width: '140px',
-        textAlign: 'center',
+        width: '130px',
+        minWidth: '130px',
+        maxWidth: '130px',
+        textAlign: 'left',
         fontWeight: '600',
-        backgroundColor: '#F5F7FA'
+        fontSize: '12px',
+        backgroundColor: '#F5F7FA',
+      },
+      contentStyle: {
+        fontSize: '12px',
+        lineHeight: '1.6'
       }
     };
   },
@@ -323,6 +362,28 @@ export default {
     }
   },
   methods: {
+    /** 获取问题来源文本 */
+    getProblemSourceText(source) {
+      const sourceMap = {
+        1: "客户反馈",
+        2: "生产反馈",
+        3: "品质反馈",
+        '1': "客户反馈",
+        '2': "生产反馈",
+        '3': "品质反馈",
+      };
+      return sourceMap[source] || "-";
+    },
+
+    /** 获取效果确认标签类型 */
+    getEffectivenessType(value) {
+      if (!value) return 'info';
+      const upper = String(value).trim().toUpperCase();
+      if (upper === 'PASS') return 'success';
+      if (upper === 'NG') return 'danger';
+      return 'info';
+    },
+
     /** 打开详情 */
     open(row) {
       // 直接使用列表数据，不再调用详情接口
@@ -412,80 +473,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.detail-container {
-  max-height: 70vh;
-  overflow-y: auto;
-}
+.after-detail-box {
+  // 统一所有描述列表的列宽
+  font-size: 12px;
+  /deep/ .el-descriptions {
+    margin-bottom: 20px;
+    
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
 
-.margin-top {
-  margin-top: 20px;
-}
+    .el-descriptions-item__label {
+      width: 120px !important;
+      min-width: 120px;
+      max-width: 120px;
+      background-color: #fafafa;
+    }
 
-.margin-right-xs {
-  margin-right: 5px;
-}
+    .el-descriptions-item__content {
+      width: calc((100% - 360px) / 3) !important;
+      word-break: break-word;
+    }
 
-.text-content {
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.6;
-}
+    // 跨列的内容（如备注、富文本字段）
+    .el-descriptions-item__cell[colspan="3"] {
+      .el-descriptions-item__content {
+        width: calc(100% - 120px) !important;
+      }
+    }
+  }
 
-// Flex布局样式
-.flex {
-  display: flex;
-}
-
-.align-center {
-  align-items: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-::v-deep .el-descriptions__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #DCDFE6;
-}
-
-::v-deep .el-descriptions-item__content {
-  word-break: break-word;
-}
-
-// 文件项样式
-.file-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-  
-  > i {
-    color: #409eff;
+  // 描述列表标题样式
+  /deep/ .el-descriptions__title {
     font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  .file-name {
-    margin-left: 8px;
-    flex: 1;
+    font-weight: 600;
     color: #303133;
-    font-size: 14px;
-  }
-
-  .file-actions {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-  }
-  
-  & + .file-item {
-    border-top: 1px dashed #e4e7ed;
-    margin-top: 5px;
-    padding-top: 10px;
   }
 }
 </style>

@@ -53,6 +53,21 @@
                 <el-option label="已许可" :value="1"></el-option>
               </el-select>
             </el-form-item>
+            <el-form-item label="项目经理" prop="pm">
+              <el-select
+                v-model="selectedPersonLiable"
+                filterable
+                clearable
+                style="width: 100px"
+                placeholder="请选择"
+                @change="handlePersonLiableChange"
+              >
+                <el-option v-for="item in pmList" :key="item.userId" :label="item.dictLabel" :value="item.dictLabel" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox v-model="onlyMyself" @change="handleOnlyMyselfChange">只看自己</el-checkbox>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" size="mini" @click="getList">
                 搜索
@@ -445,7 +460,7 @@
         </template>
       </el-table-column> -->
 
-      <el-table-column prop="isLicense" label="许可状态" align="center" width="76" fixed="right">
+      <el-table-column prop="isLicense" label="许可状态" align="center" width="79" fixed="right">
         <template v-slot="{ row, $index }">
           <template v-if="row.schedulingId">
             <div class="flex align-center justify-center">
@@ -502,9 +517,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="责任人" align="center" width="70" fixed="right">
+      <el-table-column label="项目经理" align="center" width="85" fixed="right">
         <template slot-scope="{ row }">
-          <el-link @click="seeChargePerson(row)">查看</el-link>
+          <!-- <el-link @click="seeChargePerson(row)">查看</el-link> -->
+          {{row.personLiable?row.personLiable:'--'}}
         </template>
       </el-table-column>
     </el-table>
@@ -694,6 +710,7 @@ import {
 } from "@/api/www/planSchedule";
 import { computerNameList } from "@/api/third/fileConfig";
 import { materialList } from "@/api/third/prodData";
+import { dictPmProject } from "@/api/third/project";
 import VueQr from "vue-qr";
 import CheckStatusLegend from "./checkStatusLegend.vue";
 import Carousel from "./carousel.vue";
@@ -706,6 +723,7 @@ export default {
   name: "proPlanOrder",
   data() {
     return {
+      pmList:[],
       dateRange: [],
       progressData: [],
       operationList: [],
@@ -738,6 +756,8 @@ export default {
       dateRange: [],
       productionList: [],
       computerOptions: [],
+      onlyMyself: false,
+      selectedPersonLiable: '',
       salesOrderNoData: {
         data: [],
         page: 1,
@@ -774,7 +794,9 @@ export default {
         process: "",
         address: "",
         myLag: "",
-        myTodo: ""
+        myTodo: "",
+        personLiable: "",
+        pm: ""
       },
       isView: "",
       tableKey: 0,
@@ -917,12 +939,22 @@ export default {
   created() {
     // 设置默认日期范围：今天到明天
     this.setDefaultDateRange();
+    this.selectedPersonLiable = this.queryParams.personLiable;
     this.getList();
     this.getOperationList();
     // this.getHomeProductionAll();
     this.getProductAddress();
+    this.getPmList();
   },
   methods: {
+    getPmList(){
+      dictPmProject().then((res) => {
+          if (res && res.data) {
+          this.pmList = res.data;
+          }
+        }).catch(error => {
+        });
+    },
     getList() {
       this.loading = true;
       materialList(this.addDateRange(this.queryParams, this.dateRange, {
@@ -968,11 +1000,29 @@ export default {
     resetQuery() {
       this.dateTime = [];
       this.dateRange = []; // 重置时清空日期范围
+      this.onlyMyself = false;
+      this.selectedPersonLiable = '';
       this.$set(this.queryParams, 'myLag', '');
       this.$set(this.queryParams, 'myTodo', '');
+      this.$set(this.queryParams, 'personLiable', '');
       this.resetForm("queryForm");
       this.getList();
       // this.getHomeProductionAll();
+    },
+    handlePersonLiableChange(value) {
+      if (this.onlyMyself) {
+        this.onlyMyself = false;
+      }
+      this.queryParams.personLiable = value || '';
+      this.getList();
+    },
+    handleOnlyMyselfChange(checked) {
+      if (checked) {
+        this.queryParams.personLiable = this.nickName;
+      } else {
+        this.queryParams.personLiable = this.selectedPersonLiable || '';
+      }
+      this.getList();
     },
     getHomeProductionAll(isUpdate = true) {
       isUpdate && (this.isLoading = true);

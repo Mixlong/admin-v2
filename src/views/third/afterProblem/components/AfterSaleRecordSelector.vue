@@ -62,7 +62,7 @@
     <!-- 已选择的记录 -->
     <div v-if="!viewOnly && selectedRecords.length > 0" class="selected-tags-area">
       <div class="selected-header">已选择: {{ selectedRecords.length }} 条</div>
-      <div class="tags-container">
+      <!-- <div class="tags-container">
         <el-tag
           v-for="record in selectedRecords"
           :key="record.id"
@@ -73,7 +73,7 @@
         >
           {{ record.id }}
         </el-tag>
-      </div>
+      </div> -->
     </div>
 
     <!-- 表格区域 -->
@@ -248,18 +248,18 @@ export default {
     async initSelectedRecords() {
       this.selectedRecords = [];
       
-      // 如果有 selectedIds，直接调用API获取这些记录的完整数据
+      // 如果有 selectedIds，逐个获取记录详情
       if (this.selectedIds && this.selectedIds.length > 0) {
+        console.log('[售后选择器] 初始化已选记录, selectedIds:', this.selectedIds);
         try {
-          const params = {
-            ids: this.selectedIds.join(','),
-            p: 1,
-            l: this.selectedIds.length // 一次性加载所有已选记录
-          };
-          const res = await afterList(params);
-          if (res.code === 200 && res.data) {
-            this.selectedRecords = res.data.list || [];
-          }
+          // 使用 afterInfo 逐个获取记录详情
+          const { afterInfo } = await import("@/api/third/sale");
+          const promises = this.selectedIds.map(id => afterInfo(id).catch(() => null));
+          const results = await Promise.all(promises);
+          this.selectedRecords = results
+            .filter(res => res && res.code === 200 && res.data)
+            .map(res => res.data);
+          console.log('[售后选择器] 已选记录加载完成:', this.selectedRecords);
         } catch (error) {
           console.error('[售后选择器] 加载已选记录失败:', error);
         }

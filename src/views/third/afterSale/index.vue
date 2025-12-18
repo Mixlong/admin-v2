@@ -579,43 +579,31 @@
               class="margin-left-xs"
               trigger="click"
               placement="bottom"
+              @visible-change="(visible) => visible && (currentDropdownRow = row)"
+              @command="handleDropdownCommand"
             >
               <span class="el-dropdown-link pointer">
                 <span class="text-green" style="font-size: 12px">更多操作</span
                 ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-hasPermi="['third:afterSale:query']">
-                  <el-button
-                    class="w100"
-                    type="text"
-                    @click="handleDetail(row)"
-                  >
-                    详情
-                  </el-button>
+                <el-dropdown-item v-hasPermi="['third:afterSale:query']" command="detail"  class="text-center">
+                  详情
                 </el-dropdown-item>
-                <el-dropdown-item v-hasPermi="['third:afterSale:remove']">
-                  <el-button
-                    class="w100"
-                    type="text"
-                    @click="handleDelete(row)"
-                  >
-                    删除
-                  </el-button>
+                <el-dropdown-item v-hasPermi="['third:afterProblem:add']" command="createProblem"  class="text-center">
+                  转进展看板
                 </el-dropdown-item>
-                <el-dropdown-item v-if="row.video">
-                  <el-button
-                    class="w100"
-                    type="text"
-                    @click="urlDownload(row.video)"
-                  >
-                    视频下载
-                  </el-button>
+                <el-dropdown-item v-hasPermi="['third:afterSale:log']" command="viewLog"  class="text-center">
+                  日志
                 </el-dropdown-item>
-                <el-dropdown-item v-if="!Is_Empty(row.rootMatter)">
-                  <el-button class="w100" type="text" @click="handleClose(row)">
-                    {{ isStatusTxt(row.status) }}
-                  </el-button>
+                <el-dropdown-item v-hasPermi="['third:afterSale:remove']" command="delete" class="text-red text-center">
+                  删除
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.video" command="downloadVideo" class="text-center">
+                  视频下载
+                </el-dropdown-item>
+                <el-dropdown-item v-if="!Is_Empty(row.rootMatter)" command="toggleStatus">
+                  {{ isStatusTxt(row.status) }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -675,6 +663,20 @@
       :row-data="currentAnalysisRow"
       @refresh="getList"
     />
+
+    <!-- 问题处理弹窗 -->
+    <problem-form
+      ref="problemFormRef"
+      :visible.sync="problemFormVisible"
+      @success="handleProblemFormSuccess"
+    />
+
+    <!-- 操作日志弹窗 -->
+    <oper-log-dialog
+      :visible.sync="operLogVisible"
+      :record-id="currentLogRecordId"
+      :dict-list="dictList"
+    />
   </div>
 </template>
 
@@ -705,6 +707,8 @@ export default {
     DealProgress: () => import("./components/dealProgress"),
     SaleInfo: () => import("./components/saleInfo"),
     AfterAnalysis: () => import("./components/AfterAnalysis"),
+    ProblemForm: () => import("@/views/third/afterProblem/components/ProblemForm"),
+    OperLogDialog: () => import("@/components/OperLogDialog"),
   },
   data() {
     return {
@@ -725,6 +729,13 @@ export default {
       // 售后分析弹窗
       analysisDialogVisible: false,
       currentAnalysisRow: null,
+      // 问题处理弹窗
+      problemFormVisible: false,
+      // 操作日志弹窗
+      operLogVisible: false,
+      currentLogRecordId: null,
+      // 当前下拉菜单操作的行
+      currentDropdownRow: null,
       // 待处理 、 全部
       isWaitDispose: true,
       //
@@ -1392,6 +1403,72 @@ export default {
     handleAnalysis(row) {
       this.currentAnalysisRow = row;
       this.analysisDialogVisible = true;
+    },
+    // 打开问题处理弹窗（从售后记录创建问题处理）
+    handleCreateProblem(row) {
+      // 先保存数据，避免闭包问题
+      const rowData = {
+        id: row.id,
+        locationHandleTime: row.locationHandleTime,
+        locationResult: row.locationResult,
+        sn: row.sn,
+        afterType: row.afterType  // 大货类型：1-大货，2-样品
+      };
+      this.problemFormVisible = true;
+      this.$nextTick(() => {
+        // 重置表单
+        this.$refs.problemFormRef.reset();
+        // 等待 reset 完成后再设置数据
+        this.$nextTick(() => {
+          // 映射售后记录数据到问题处理表单
+          // 完成时间 -> 时间点
+          // 定位结果 -> 问题描述
+          // 当前id -> 关联业务
+          // 问题来源默认客户反馈(1)
+          this.$refs.problemFormRef.form.problemSource = 1; // 客户反馈
+          this.$refs.problemFormRef.form.problemTime = rowData.locationHandleTime || ''; // 完成时间 -> 时间点
+          this.$refs.problemFormRef.form.problemDescription = rowData.locationResult || ''; // 定位结果 -> 问题描述
+          this.$refs.problemFormRef.form.businessIdList = rowData.id ? [rowData.id] : []; // 当前id -> 关联业务
+          // 保存来源SN用于显示
+          this.$refs.problemFormRef.form.problemSourceSn = rowData.sn || '';
+          // 根据大货类型设置问题管理员：大货->余美君，样品->袁祥
+          this.$refs.problemFormRef.form.problemManager = rowData.afterType === 1 ? '余美君' : '袁祥';
+          console.log('设置后的 businessIdList:', this.$refs.problemFormRef.form.businessIdList);
+        });
+      });
+    },
+    // 问题处理表单提交成功
+    handleProblemFormSuccess() {
+    },
+    // 处理下拉菜单命令
+    handleDropdownCommand(command) {
+      const row = this.currentDropdownRow;
+      if (!row) return;
+      switch (command) {
+        case 'detail':
+          this.handleDetail(row);
+          break;
+        case 'createProblem':
+          this.handleCreateProblem(row);
+          break;
+        case 'viewLog':
+          this.handleViewLog(row);
+          break;
+        case 'delete':
+          this.handleDelete(row);
+          break;
+        case 'downloadVideo':
+          this.urlDownload(row.video);
+          break;
+        case 'toggleStatus':
+          this.handleClose(row);
+          break;
+      }
+    },
+    // 查看日志
+    handleViewLog(row) {
+      this.currentLogRecordId = row.id;
+      this.operLogVisible = true;
     },
     // 详情
     handleDetail(row) {

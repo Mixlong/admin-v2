@@ -106,6 +106,10 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.chart = echarts.init(this.$refs.chartRef);
+      // 绑定图表点击事件
+      this.chart.on("click", (params) => {
+        this.$emit("chart-click", params);
+      });
       this.fetchData();
     });
     window.addEventListener("resize", this.handleResize);

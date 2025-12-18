@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :title="isEdit ? '编辑' : '新增'"
+    :title="dialogTitle"
     :visible="visible"
     width="900px"
     append-to-body
@@ -13,9 +13,9 @@
     class="dialog-scroll"
     @opened="handleDialogOpened"
   >
-      <el-form ref="form" :model="form" :rules="rules" label-width="140px">
+      <el-form ref="form" :model="form" :rules="currentRules" label-width="140px">
         <!-- 问题点 -->
-        <fieldset class="form-fieldset">
+        <fieldset v-if="showProblemModule" class="form-fieldset">
           <legend>问题点</legend>
           <div class="form-row">
             <el-form-item label="问题来源" prop="problemSource" class="form-item-flex-1">
@@ -38,6 +38,20 @@
                 placeholder="请选择时间点"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 style="width: 100%"
+              />
+            </el-form-item>
+          </div>
+
+          <!-- 问题跟踪人字段隐藏，但保留在提交数据中 -->
+          <div class="form-row">
+            <el-form-item label="问题跟踪人" prop="problemManager" class="form-item-flex-1">
+              <TypedSelectLoadMore
+                v-model="form.problemManager"
+                type="user"
+                :return-label="true"
+                placeholder="请选择问题追踪人"
+                clearable
+                :custom-style="{ width: '100%' }"
               />
             </el-form-item>
           </div>
@@ -73,10 +87,59 @@
             </el-form-item>
           </div>
         </fieldset>
+
+        <!-- 新增模式下的模块编辑按钮（非模块编辑模式） -->
+        <!-- <div v-if="!isEdit && !isModuleMode" class="module-buttons">
+          <el-button 
+            :type="expandedModules.research ? 'primary' : 'default'"
+            size="small"
+            @click="toggleModule('research')"
+          >
+            <i :class="expandedModules.research ? 'el-icon-minus' : 'el-icon-plus'"></i>
+            迪太研发&品质
+          </el-button>
+          <el-button 
+            :type="expandedModules.solution ? 'primary' : 'default'"
+            size="small"
+            @click="toggleModule('solution')"
+          >
+            <i :class="expandedModules.solution ? 'el-icon-minus' : 'el-icon-plus'"></i>
+            对策
+          </el-button>
+          <el-button 
+            :type="expandedModules.tracking ? 'primary' : 'default'"
+            size="small"
+            @click="toggleModule('tracking')"
+          >
+            <i :class="expandedModules.tracking ? 'el-icon-minus' : 'el-icon-plus'"></i>
+            改善跟踪
+          </el-button>
+          <el-button 
+            :type="expandedModules.report ? 'primary' : 'default'"
+            size="small"
+            @click="toggleModule('report')"
+          >
+            <i :class="expandedModules.report ? 'el-icon-minus' : 'el-icon-plus'"></i>
+            分析报告
+          </el-button>
+        </div> -->
   
         <!-- 迪太研发&品质 -->
-        <fieldset class="form-fieldset">
+        <fieldset v-if="showResearchModule" class="form-fieldset">
           <legend>迪太研发&品质</legend>
+          <div class="form-row">
+            <el-form-item label="分析责任人" prop="analysisResponsible" class="form-item-flex-1">
+              <TypedSelectLoadMore
+                v-model="form.analysisResponsible"
+                type="user"
+                :return-label="true"
+                placeholder="请选择分析责任人"
+                clearable
+                :custom-style="{ width: '100%' }"
+              />
+            </el-form-item>
+            <el-form-item class="form-item-flex-1" />
+          </div>
           <div class="form-row">
             <el-form-item label="问题分析（过程）" prop="problemAnalysis" class="form-item-full">
               <Editor
@@ -98,8 +161,21 @@
         </fieldset>
   
         <!-- 对策 -->
-        <fieldset class="form-fieldset">
+        <fieldset v-if="showSolutionModule" class="form-fieldset">
           <legend>对策</legend>
+          <div class="form-row">
+            <el-form-item label="对策责任人" prop="countermeasureResponsible" class="form-item-flex-1">
+              <TypedSelectLoadMore
+                v-model="form.countermeasureResponsible"
+                type="user"
+                :return-label="true"
+                placeholder="请选择对策责任人"
+                clearable
+                :custom-style="{ width: '100%' }"
+              />
+            </el-form-item>
+            <el-form-item class="form-item-flex-1" />
+          </div>
           <div class="form-row">
             <el-form-item label="影响面" prop="impactScope" class="form-item-full">
               <Editor
@@ -110,44 +186,38 @@
             </el-form-item>
           </div>
           <div class="form-row">
-            <el-form-item label="内部对策" prop="internalMeasures" class="form-item-full">
+            <el-form-item label="短期对策" prop="internalMeasures" class="form-item-full">
               <Editor
                 v-model="form.internalMeasures"
                 :min-height="150"
-                placeholder="请输入内部对策"
+                placeholder="请输入短期对策"
               />
             </el-form-item>
           </div>
           <div class="form-row">
-            <el-form-item label="外部对策" prop="externalMeasures" class="form-item-full">
+            <el-form-item label="长期对策" prop="externalMeasures" class="form-item-full">
               <Editor
                 v-model="form.externalMeasures"
                 :min-height="150"
-                placeholder="请输入外部对策"
+                placeholder="请输入长期对策"
               />
             </el-form-item>
           </div>
         </fieldset>
   
         <!-- 改善跟踪 -->
-        <fieldset class="form-fieldset">
+        <fieldset v-if="showTrackingModule" class="form-fieldset">
           <legend>改善跟踪</legend>
           <div class="form-row">
             <el-form-item label="责任人" prop="responsiblePerson" class="form-item-flex-1">
-              <el-select
+              <TypedSelectLoadMore
                 v-model="form.responsiblePerson"
-                filterable
-                clearable
+                type="user"
+                :return-label="true"
                 placeholder="请选择责任人"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="user in responsiblePersonList"
-                  :key="user.userId"
-                  :label="user.displayName"
-                  :value="user.displayName"
-                />
-              </el-select>
+                clearable
+                :custom-style="{ width: '100%' }"
+              />
             </el-form-item>
             <el-form-item label="完成时间" prop="completionTime" class="form-item-flex-1">
               <el-date-picker
@@ -160,18 +230,18 @@
             </el-form-item>
           </div>
           <div class="form-row">
-            <el-form-item label="效果确认" prop="effectivenessConfirmation" class="form-item-full">
-              <Editor
-                v-model="form.effectivenessConfirmation"
-                :min-height="150"
-                placeholder="请输入效果确认"
-              />
+            <el-form-item label="效果确认" prop="effectivenessConfirmation" class="form-item-flex-1">
+              <el-radio-group v-model="form.effectivenessConfirmation" style="height:28px; display:flex; align-items:center;">
+                <el-radio label="PASS">PASS</el-radio>
+                <el-radio label="NG">NG</el-radio>
+              </el-radio-group>
             </el-form-item>
+            <el-form-item class="form-item-flex-1" />
           </div>
         </fieldset>
 
         <!-- 分析报告 -->
-        <fieldset class="form-fieldset">
+        <fieldset v-if="showResearchModule" class="form-fieldset">
           <legend>分析报告</legend>
           <div class="form-row">
             <el-form-item label="是否需要报告" prop="needReport" class="form-item-flex-1">
@@ -229,9 +299,9 @@ import {
   afterProblemUpdate,
   afterProblemDetail
 } from "@/api/third/afterProblem";
-import { dictPmProject } from "@/api/third/project";
 import Editor from "@/components/Editor";
 import MyUpload from "@/components/MyUpload";
+import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import AfterSaleRecordSelector from "./AfterSaleRecordSelector.vue";
 import ProductionRecordSelector from "./ProductionRecordSelector.vue";
 import QualityRecordSelector from "./QualityRecordSelector.vue";
@@ -241,6 +311,7 @@ export default {
   components: {
     Editor,
     MyUpload,
+    TypedSelectLoadMore,
     AfterSaleRecordSelector,
     ProductionRecordSelector,
     QualityRecordSelector
@@ -249,18 +320,33 @@ export default {
     visible: {
       type: Boolean,
       default: false
+    },
+    // 模块编辑模式：只显示指定模块 (problem, research, solution, tracking, report)
+    moduleType: {
+      type: String,
+      default: ''
     }
   },
   data() {
     return {
       isEdit: false,
       submitLoading: false,
+      // 模块展开状态（新增模式下使用）
+      expandedModules: {
+        research: false,
+        solution: false,
+        tracking: false,
+        report: false
+      },
       form: {
         id: undefined,
         problemSource: "",
         problemSourceSn: "",
         problemDescription: "",
         problemTime: "",
+        problemManager: "",  // 问题管理员
+        analysisResponsible: "",  // 分析责任人
+        countermeasureResponsible: "",  // 对策责任人
         responsiblePerson: "",
         impactScope: "",
         problemAnalysis: "",
@@ -273,10 +359,31 @@ export default {
         needReport: 0,  // 是否需要报告 0.不需要 1.需要
         reportFile: ""  // 分析报告文件
       },
-      rules: {
-        problemSource: [
-          { required: true, message: "请输入问题来源", trigger: "blur" }
+      // 新增模式的验证规则（只验证问题点）
+      addRules: {
+        problemDescription: [
+          { required: true, message: "请输入问题描述", trigger: "blur" }
         ],
+        problemTime: [
+          { required: true, message: "请选择时间点", trigger: "change" }
+        ],
+        // businessIdList: [
+        //   { 
+        //     required: false, 
+        //     message: "请选择关联的业务记录", 
+        //     trigger: "change",
+        //     validator: (rule, value, callback) => {
+        //       if (!value || value.length === 0) {
+        //         callback(new Error("请选择至少一条业务记录"));
+        //       } else {
+        //         callback();
+        //       }
+        //     }
+        //   }
+        // ]
+      },
+      // 编辑模式的验证规则（完整验证）
+      editRules: {
         problemDescription: [
           { required: true, message: "请输入问题描述", trigger: "blur" }
         ],
@@ -285,20 +392,6 @@ export default {
         ],
         responsiblePerson: [
           { required: true, message: "请输入责任人", trigger: "blur" }
-        ],
-        businessIdList: [
-          { 
-            required: true, 
-            message: "请选择关联的业务记录", 
-            trigger: "change",
-            validator: (rule, value, callback) => {
-              if (!value || value.length === 0) {
-                callback(new Error("请选择至少一条业务记录"));
-              } else {
-                callback();
-              }
-            }
-          }
         ]
       },
       // 售后记录弹窗
@@ -308,23 +401,48 @@ export default {
       productionDialogVisible: false,
       
       // 品质记录弹窗
-      qualityDialogVisible: false,
-      
-      // 责任人列表
-      responsiblePersonList: []
+      qualityDialogVisible: false
     };
   },
-  watch: {
-    visible(val) {
-      if (val) {
-        // 加载责任人列表
-        if (this.responsiblePersonList.length === 0) {
-          this.loadResponsiblePersonList();
-        }
-      }
-    }
-  },
   computed: {
+    // 是否为模块编辑模式
+    isModuleMode() {
+      return !!this.moduleType;
+    },
+    // 弹窗标题
+    dialogTitle() {
+      return this.isEdit ? '编辑' : '新增';
+    },
+    // 根据模式返回对应的验证规则
+    currentRules() {
+      // 模块编辑模式不需要验证必填项
+      if (this.isModuleMode) return {};
+      return this.isEdit ? this.editRules : this.addRules;
+    },
+    // 是否显示问题点模块
+    showProblemModule() {
+      return !this.isModuleMode || this.moduleType === 'problem';
+    },
+    // 是否显示研发&品质模块
+    showResearchModule() {
+      if (this.isModuleMode) return this.moduleType === 'research';
+      return this.isEdit || this.expandedModules.research;
+    },
+    // 是否显示对策模块
+    showSolutionModule() {
+      if (this.isModuleMode) return this.moduleType === 'solution';
+      return this.isEdit || this.expandedModules.solution;
+    },
+    // 是否显示改善跟踪模块
+    showTrackingModule() {
+      if (this.isModuleMode) return this.moduleType === 'tracking';
+      return this.isEdit || this.expandedModules.tracking;
+    },
+    // 是否显示分析报告模块
+    showReportModule() {
+      if (this.isModuleMode) return this.moduleType === 'report';
+      return this.isEdit || this.expandedModules.report;
+    },
     // 根据问题来源动态显示标签
     businessLabel() {
       const labels = {
@@ -344,11 +462,6 @@ export default {
       return texts[this.form.problemSource] || '选择业务记录';
     }
   },
-  mounted() {
-    // 组件加载时获取责任人列表
-    this.loadResponsiblePersonList();
-  },
-
   methods: {
     /** 对话框打开后的处理 */
     handleDialogOpened() {
@@ -359,6 +472,11 @@ export default {
           dialogBody.scrollTop = 0;
         }
       });
+    },
+    
+    /** 切换模块展开状态 */
+    toggleModule(module) {
+      this.expandedModules[module] = !this.expandedModules[module];
     },
     /** 问题来源变化处理 */
     handleProblemSourceChange(value) {
@@ -442,56 +560,36 @@ export default {
       });
     },
 
-    /** 加载责任人列表 */
-    async loadResponsiblePersonList() {
-      try {
-        const response = await dictPmProject();
-        if (response && response.data) {
-          let list = [];
-          // 处理不同的数据结构
-          if (Array.isArray(response.data)) {
-            list = response.data;
-          } else if (response.data.list) {
-            list = response.data.list;
-          }
-          
-          // 统一数据格式
-          this.responsiblePersonList = list.map(item => ({
-            userId: item.id || item.dictValue || item.userId,
-            userName: item.dictValue || item.userName || item.name,
-            displayName: item.dictLabel || item.nickName || item.userName || item.name
-          }));
-          
-          // 去重
-          const uniqueMap = new Map();
-          this.responsiblePersonList.forEach(item => {
-            if (!uniqueMap.has(item.userId)) {
-              uniqueMap.set(item.userId, item);
-            }
-          });
-          this.responsiblePersonList = Array.from(uniqueMap.values());
-        }
-      } catch (error) {
-        console.error('获取责任人列表失败:', error);
-      }
-    },
-
     /** 重置表单 */
     reset() {
       this.isEdit = false;
+      // 获取当前时间，格式化为 yyyy-MM-dd HH:mm:ss
+      const now = new Date();
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      };
       this.form = {
         id: undefined,
         problemSource: "",
         problemSourceSn: "",
         problemDescription: "",
-        problemTime: "",
+        problemTime: formatDate(now),  // 新增时默认当前时间
+        problemManager: "",  // 问题管理员
+        analysisResponsible: "",  // 分析责任人
+        countermeasureResponsible: "",  // 对策责任人
         responsiblePerson: "",
         impactScope: "",
         problemAnalysis: "",
         internalMeasures: "",
         externalMeasures: "",
         analysisResult: "",
-        effectivenessConfirmation: "",
+        effectivenessConfirmation: "",  // 默认PASS
         completionTime: "",
         businessIdList: [],
         needReport: 0,
@@ -501,6 +599,14 @@ export default {
       this.afterSaleDialogVisible = false;
       this.productionDialogVisible = false;
       this.qualityDialogVisible = false;
+      
+      // 重置模块展开状态
+      this.expandedModules = {
+        research: false,
+        solution: false,
+        tracking: false,
+        report: false
+      };
       
       // 清空表单验证
       this.$nextTick(() => {
@@ -562,8 +668,7 @@ export default {
         'problemAnalysis',
         'internalMeasures',
         'externalMeasures',
-        'analysisResult',
-        'effectivenessConfirmation'
+        'analysisResult'
       ];
       
       richTextFields.forEach(field => {
@@ -621,8 +726,7 @@ export default {
             'problemAnalysis',
             'internalMeasures',
             'externalMeasures',
-            'analysisResult',
-            'effectivenessConfirmation'
+            'analysisResult'
           ];
           
           richTextFields.forEach(field => {
@@ -638,7 +742,10 @@ export default {
             'problemSource',
             'problemSourceSn',
             'problemTime',
-            'responsiblePerson',
+            'problemManager',  // 问题跟踪人
+            'analysisResponsible',  // 分析责任人
+            'countermeasureResponsible',  // 对策责任人
+            'responsiblePerson',  // 改善跟踪责任人
             'completionTime'
           ];
           
@@ -684,6 +791,24 @@ export default {
 
 <style lang="scss" scoped>
 .problem-form-dialog {
+  // 模块编辑按钮区域
+  .module-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f5f7fa;
+    border: 1px dashed #dcdfe6;
+    border-radius: 4px;
+    
+    .el-button {
+      i {
+        margin-right: 4px;
+      }
+    }
+  }
+
   // Fieldset 分组样式
   .form-fieldset {
     border: 1px solid #dcdfe6;

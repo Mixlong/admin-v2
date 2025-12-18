@@ -537,6 +537,20 @@
               v-NoData="scope.row.customerCarName"
             ></span>
           </el-table-column>
+
+          <el-table-column
+            label="项目经理"
+            prop="personLiable"
+            align="center"
+            width="120"
+            column-key="personLiable"
+          >
+            <span
+              slot-scope="scope"
+              v-NoData="scope.row.personLiable"
+            ></span>
+          </el-table-column>
+
           <el-table-column
             label="是否配置"
             prop="isStat"
@@ -1858,7 +1872,7 @@ import commonData from "@/mixins/commonData";
 import ParamsCompare from "./ParamsCompare.vue";
 import { getCustomerList } from "@/api/order";
 import { getDicts } from "@/api/system/dict/data";
-import addDialog from "@/views/third/productFamily/index.vue";
+import addDialog from "./productFamily/index.vue";
 import ElImageViewer from "element-ui/packages/image/src/image-viewer";
 import axios from "axios";
 import reqUrl from "@/utils/requestUrl";
@@ -2170,6 +2184,7 @@ export default {
         "客户",
         "客户料号",
         "实际客户车名",
+        "项目经理",
         "是否配置",
         "BIST型号",
         "关联型号",
@@ -3376,8 +3391,8 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  width: 442px;
-  /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名150 + 是否配置120 + BIST120 */
+  width: 562px;
+  /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名130 + 项目经理120 + 是否配置90 + BIST120 */
   height: 41px;
   line-height: 40px;
   box-sizing: border-box;

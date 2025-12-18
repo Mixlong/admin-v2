@@ -5,7 +5,7 @@
     width="1200px"
     append-to-body
     center
-    top="2vh"
+    top="0vh"
     :close-on-click-modal="false"
     @close="close"
   >

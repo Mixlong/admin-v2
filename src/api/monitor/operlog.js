@@ -33,3 +33,11 @@ export function exportOperlog(query) {
     params: query
   })
 }
+
+// 获取业务操作历史（带变更详情）
+export function getOperLogHistory(businessId) {
+  return request({
+    url: `/monitor/operlog/history/${businessId}`,
+    method: 'get'
+  })
+}

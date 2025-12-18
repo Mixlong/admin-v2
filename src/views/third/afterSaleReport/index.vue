@@ -11,20 +11,25 @@
         title="客退类型占比"
         :fetch-api="getAfterTypeRatio"
         :colors="afterTypeColors"
+        @chart-click="handleAfterTypeClick"
       />
       <pie-chart
+        ref="parentResponsibilityChart"
         title="一级责任占比"
         :fetch-api="getParentResponsibilityRatio"
+        :extra-params="parentResponsibilityParams"
+        :extra-filter-summary="selectedAfterTypeLabel"
         :colors="parentResponsibilityColors"
+        @reset="handleResetAfterType"
       />
       <pie-chart
         ref="responsibilityChart"
         title="二级责任占比"
         :fetch-api="getResponsibilityRatio"
         :extra-params="responsibilityParams"
-        :extra-filter-summary="selectedParentResponsibility"
+        :extra-filter-summary="responsibilityFilterSummary"
         :colors="responsibilityColors"
-        @reset="selectedParentResponsibility = ''"
+        @reset="handleResetResponsibility"
       >
         <template #extra-filter>
           <el-select
@@ -72,6 +77,7 @@ export default {
   data() {
     return {
       selectedParentResponsibility: "",
+      selectedAfterType: "", // 选中的客退类型：1=大货，2=样品
       // 客退类型占比颜色：大货-青蓝色、样品-橙红色
       afterTypeColors: ["#4fc3f7", "#ff5722"],
       // 一级责任占比颜色：蓝色、橙色、绿色、黄色、棕色
@@ -84,16 +90,67 @@ export default {
     responsibilityGroupOptions() {
       return this.dict?.type?.responsibility_group || [];
     },
-    responsibilityParams() {
+    // 一级责任占比的参数
+    parentResponsibilityParams() {
       return {
-        parentResponsibilityPerson: this.selectedParentResponsibility || undefined,
+        afterType: this.selectedAfterType || undefined,
       };
+    },
+    // 二级责任占比的参数
+    responsibilityParams() {
+      const params = {
+        parentResponsibilityPerson: this.selectedParentResponsibility || undefined,
+        afterType: this.selectedAfterType || undefined,
+      };
+      return params;
+    },
+    // 客退类型的显示文本
+    selectedAfterTypeLabel() {
+      if (!this.selectedAfterType) return "";
+      return this.selectedAfterType === 1 ? "大货" : this.selectedAfterType === 2 ? "样品" : "";
+    },
+    // 二级责任占比的筛选条件汇总
+    responsibilityFilterSummary() {
+      const parts = [];
+      if (this.selectedAfterTypeLabel) {
+        parts.push(this.selectedAfterTypeLabel);
+      }
+      if (this.selectedParentResponsibility) {
+        parts.push(this.selectedParentResponsibility);
+      }
+      return parts.join(" · ");
     },
   },
   methods: {
     getAfterTypeRatio,
     getParentResponsibilityRatio,
     getResponsibilityRatio,
+    
+    // 客退类型图表点击事件
+    handleAfterTypeClick(params) {
+      // params.name 是 "大货" 或 "样品"
+      if (params.name === "大货") {
+        this.selectedAfterType = 1;
+      } else if (params.name === "样品" || params.name === "送样") {
+        this.selectedAfterType = 2;
+      }
+      // 刷新一级责任和二级责任图表
+      this.$refs.parentResponsibilityChart?.fetchData();
+      this.$refs.responsibilityChart?.fetchData();
+    },
+    
+    // 重置客退类型筛选
+    handleResetAfterType() {
+      this.selectedAfterType = "";
+      this.$refs.parentResponsibilityChart?.fetchData();
+    },
+    
+    // 重置二级责任筛选
+    handleResetResponsibility() {
+      this.selectedParentResponsibility = "";
+      this.selectedAfterType = "";
+      this.$refs.responsibilityChart?.fetchData();
+    },
     
     handleParentResponsibilityChange() {
       // 触发二级责任图表刷新
