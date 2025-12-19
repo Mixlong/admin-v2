@@ -8,8 +8,8 @@
           <!-- 基本信息 -->
           <el-row :gutter="10" class="margin-bottom-xs">
             <el-col :sm="24" :md="12" :lg="6">
-              <el-form-item label="ECN编号" prop="ecn">
-                <el-input v-model="form.ecn" placeholder="请输入ECN编号" readonly clearable />
+              <el-form-item label="试产编号" prop="ecn">
+                <el-input v-model="form.ecn" placeholder="请输入试产编号" readonly clearable />
               </el-form-item>
             </el-col>
             <el-col :sm="24" :md="12" :lg="6">
@@ -315,7 +315,7 @@
 
           <!-- 附件 -->
           <el-form-item label="附件" prop="file">
-            <DrUpload v-model="form.file" :limit="1" :isOnePic="1">
+            <DrUpload v-model="form.file">
               <div class="text-left">
                 <el-button size="mini" type="primary">附件上传</el-button>
               </div>

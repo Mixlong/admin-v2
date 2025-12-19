@@ -10,7 +10,7 @@
       <el-form-item label="ECN编号" prop="ecn">
         <el-input
           v-model.trim="queryParams.ecn"
-          placeholder="请输入ECN编号"
+          placeholder="请输入试编号"
           clearable
           @keyup.enter.native="handleQuery"
           style="width: 200px"
@@ -332,7 +332,7 @@
                 row.thirdPerson === nickName &&
                 row.thirdState !== 1 &&
                 row.firstState === 1 &&
-                row.secondState === 1
+                isAllSecondReviewPassed(row)
               "
               class="text-orange"
               icon="el-icon-coordinate"
@@ -354,7 +354,7 @@
                 row.finalPerson === nickName &&
                 getFinalState(row) !== 1 &&
                 row.firstState === 1 &&
-                row.secondState === 1 &&
+                isAllSecondReviewPassed(row) &&
                 row.thirdState === 1
               "
               class="text-orange"
@@ -674,6 +674,7 @@ export default {
         computerName: "",
       },
       isPeopleManageVisible: false,
+      
       pmDictListOptions: [],
       dictList: [],
       computerOptions: [],
@@ -899,6 +900,7 @@ export default {
             if (res.data) {
               this.msgSuccess("操作成功");
               this.isPeopleManageVisible = false;
+              this.getList(); // 刷新列表数据
             }
           });
         }
@@ -914,7 +916,7 @@ export default {
       const seconds = date.getSeconds().toString().padStart(2, "0");
       const milliseconds = date.getMilliseconds().toString().padStart(3, "0");
 
-      const dtString = `DT-ECN${String(year).slice(
+      const dtString = `DT-${String(year).slice(
         -2
       )}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
       return dtString;
@@ -969,6 +971,15 @@ export default {
     },
     isFourthStateFlag(row) {
       return row.finalPerson === this.nickName && this.getFinalState(row) === 1;
+    },
+    // 判断会审是否全部通过（根据list中所有项的state判断）
+    isAllSecondReviewPassed(row) {
+      // 如果后端已更新secondState，直接使用
+      if (row.secondState === 1) return true;
+      // 否则根据list计算
+      const list = row.list || [];
+      if (list.length === 0) return false;
+      return list.every(item => item.state === 1);
     },
     getFinalState(row) {
       // 根据终审相关字段推断状态

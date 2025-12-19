@@ -27,6 +27,7 @@ import { trialApplyFirstAudit, trialApplySecondAudit, trialApplyThirdAudit, tria
 export default {
   data() {
     return {
+      
       dialogVisible: false,
       title: '',
       auditType: 0, // 1:初审 2:会审 3:终审 4:PMC审
@@ -136,6 +137,8 @@ export default {
     },
     submitAuditAPI(param, type) {
       let apiMethod
+      let submitParam = { ...param }
+      
       switch (type) {
         case 1:
           apiMethod = trialApplyFirstAudit
@@ -151,7 +154,7 @@ export default {
           break
       }
       
-      apiMethod(param).then((response) => {
+      apiMethod(submitParam).then((response) => {
         if (response.code === 200) {
           this.msgSuccess('审核成功')
           this.dialogVisible = false
