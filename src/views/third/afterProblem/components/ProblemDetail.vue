@@ -142,30 +142,11 @@
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="分析报告文件">
-          <div v-if="detailData.needReport === 1 && detailData.reportFile">
-            <div v-for="(file, index) in reportFileList" :key="index" class="file-item">
-              <i class="el-icon-document"></i>
-              <span class="file-name">{{ file.name }}</span>
-              <div class="file-actions">
-                <el-link 
-                  type="primary"
-                  :underline="false"
-                  @click="handlePreview(file)"
-                  style="font-size: 12px;"
-                >
-                  <i class="el-icon-view"></i> 预览
-                </el-link>
-                <el-link 
-                  type="primary"
-                  :underline="false"
-                  style="margin-left: 10px;font-size: 12px;"
-                  @click="urlDownload(file.url)"
-                >
-                  <i class="el-icon-download"></i> 下载
-                </el-link>
-              </div>
-            </div>
-          </div>
+          <FileDisplay 
+            v-if="detailData.needReport === 1 && detailData.reportFile"
+            :file-list="reportFileList"
+            empty-text="未上传"
+          />
           <span v-else-if="detailData.needReport === 1">未上传</span>
           <span v-else>-</span>
         </el-descriptions-item>
@@ -240,22 +221,15 @@
       :view-only="true"
     />
 
-    <!-- 文件预览 -->
-    <FilePreview
-      :visible.sync="previewVisible"
-      :file-url="previewFileUrl"
-      :file-name="previewFileName"
-    />
   </el-dialog>
 </template>
 
 <script>
 import { afterInfo } from "@/api/third/sale";
-import { urlDownload } from "@/utils";
 import AfterSaleRecordSelector from "./AfterSaleRecordSelector";
 import ProductionRecordSelector from "./ProductionRecordSelector";
 import QualityRecordSelector from "./QualityRecordSelector";
-import FilePreview from "@/components/FilePreview";
+import FileDisplay from "@/components/FileDisplay";
 
 export default {
   name: "ProblemDetail",
@@ -263,7 +237,7 @@ export default {
     AfterSaleRecordSelector,
     ProductionRecordSelector,
     QualityRecordSelector,
-    FilePreview
+    FileDisplay
   },
   props: {
     visible: {
@@ -280,10 +254,6 @@ export default {
       afterSaleDialogVisible: false,
       productionDialogVisible: false,
       qualityDialogVisible: false,
-      // 文件预览
-      previewVisible: false,
-      previewFileUrl: "",
-      previewFileName: "",
       labelStyle: {
         width: '130px',
         minWidth: '130px',
@@ -450,13 +420,7 @@ export default {
       }
     },
 
-    /** 预览文件 */
-    handlePreview(file) {
-      // 所有支持的文件类型都使用预览组件
-      this.previewFileUrl = file.url;
-      this.previewFileName = file.name;
-      this.previewVisible = true;
-    },
+
 
     /** 关闭对话框 */
     close() {

@@ -41,3 +41,12 @@ export function getOperLogHistory(businessId) {
     method: 'get'
   })
 }
+
+// 添加操作日志
+export function addOperLog(data) {
+  return request({
+    url: '/monitor/operlog',
+    method: 'post',
+    data: data
+  })
+}

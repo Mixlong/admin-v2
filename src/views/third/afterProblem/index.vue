@@ -293,12 +293,11 @@
             详情
           </el-button>
           <el-dropdown
-            v-hasPermi="['third:afterProblem:edit']"
             trigger="click"
             @command="(cmd) => handleModuleEdit(cmd, row)"
           >
             <el-button type="text" size="small">
-              操作<i class="el-icon-arrow-down el-icon--right"></i>
+              更多<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
