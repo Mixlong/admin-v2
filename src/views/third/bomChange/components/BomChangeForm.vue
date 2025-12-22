@@ -1,11 +1,11 @@
 <template>
-  <el-dialog :title="title" :visible.sync="open" width="70%" append-to-body :close-on-click-modal="false" top="0vh"
+  <el-dialog :title="title" :visible.sync="open" :width="isAttachmentOnly ? '600px' : '70%'" append-to-body :close-on-click-modal="false" top="0vh"
     custom-class="  dialog-scroll">
     <div class="form-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="140px" @submit.native.prevent class="modern-form">
         <!-- 基本信息卡片 -->
 
-        <div class="form-section">
+        <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
             <div class="header-left">
               <i class="el-icon-document"></i>
@@ -257,7 +257,7 @@
 
 
         <!-- 变更涉及领域 -->
-        <div class="form-section">
+        <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
             <i class="el-icon-s-cooperation"></i>
             <span class="section-title">变更涉及领域</span>
@@ -370,7 +370,7 @@
         </div>
 
         <!-- 审核人员 -->
-        <div class="form-section">
+        <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
             <i class="el-icon-s-check"></i>
             <span class="section-title">审核人员</span>
@@ -415,7 +415,7 @@
         </div>
 
         <!-- 开始执行领域 -->
-        <div class="form-section">
+        <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
             <i class="el-icon-s-operation"></i>
             <span class="section-title">开始执行领域</span>
@@ -514,6 +514,8 @@ export default {
       open: false,
       // 是否为审批模式
       isApprovalMode: false,
+      // 是否为仅附件模式
+      isAttachmentOnly: false,
       // 表单参数 - 简化的数据结构
       form: {
         // 主表单数据
@@ -1133,9 +1135,10 @@ export default {
     },
 
     /** 打开对话框 */
-    async openDialog(row, isApproval = false) {
+    async openDialog(row, isApproval = false, attachmentOnly = false) {
       this.reset();
       this.isApprovalMode = isApproval;
+      this.isAttachmentOnly = attachmentOnly;
 
       // 等待所有人员数据加载完成
       await Promise.all([
@@ -1196,7 +1199,7 @@ export default {
         // 重点：正确映射部门字段数据和ID
         this.mapDepartmentFieldsWithIds(row.list || []);
 
-        this.title = isApproval ? "审批订单变更" : "修改订单变更";
+        this.title = attachmentOnly ? "上传附件" : (isApproval ? "审批订单变更" : "修改订单变更");
       } else {
         this.title = "新增订单变更";
         // 明确设置部门相关字段为空，确保不会显示默认值
@@ -1734,6 +1737,9 @@ export default {
   margin-bottom: 24px;
   border: 1px solid #e8f4fd;
   overflow: visible;
+  &:last-child{
+    margin-bottom: 0;
+  }
 }
 
 // 区块头部样式

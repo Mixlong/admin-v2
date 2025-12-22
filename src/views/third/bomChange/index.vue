@@ -290,6 +290,12 @@
             <i class="el-icon-tickets"></i> 工单变更
           </el-button>
 
+          <!-- 上传附件按钮 - 审核流程完成后显示 -->
+          <el-button
+            size="mini" type="success" @click="handleUploadAttachment(row)" style="margin-left: 5px;">
+            <i class="el-icon-upload2"></i> 附件
+          </el-button>
+
         </template>
       </el-table-column>
     </el-table>
@@ -440,6 +446,7 @@
         <el-button type="primary" @click="submitAuthForm">确 定</el-button>
       </div>
     </el-dialog>
+
     <!-- 人员管理弹窗 -->
     <el-dialog title="BOM变更审核人员管理" :visible.sync="isPeopleManageVisible" width="800px" append-to-body top="0vh"
       v-if="isPeopleManageVisible">
@@ -2514,6 +2521,41 @@ export default {
       this.clearValidateItem("authForm", state === 1 ? "remark" : "result");
     },
 
+    /** 判断审核流程是否完成 */
+    isFlowCompleted(row) {
+      if (!row) return false;
+
+      // 检查会审是否全部通过
+      if (!this.isAllReviewsPassed(row)) return false;
+
+      // 检查初审是否通过
+      if (row.firstState !== 1) return false;
+
+      // 检查终审是否通过
+      if (row.secondState !== 1) return false;
+
+      // 如果有系统变更人员，检查系统变更是否完成（已变更或不涉及）
+      if (row.systemPerson && row.systemState !== 1 && row.systemState !== 2) return false;
+
+      // 如果有订单变更人员，检查订单变更是否完成（已变更或不涉及）
+      if (row.orderChangePerson && row.orderChangeState !== 1 && row.orderChangeState !== 2) return false;
+
+      // 如果有工单变更人员，检查工单变更是否完成（已变更或不涉及）
+      if (row.workOrderChangePerson && row.workOrderChangeState !== 1 && row.workOrderChangeState !== 2) return false;
+
+      return true;
+    },
+
+    /** 打开上传附件弹窗 */
+    async handleUploadAttachment(row) {
+      // 获取完整详情后打开编辑弹窗，仅显示附件部分
+      const res = await getBomOrderChangeDetail(row.id);
+      if (res && res.code === 200 && res.data) {
+        this.$refs.bomChangeForm.openDialog(res.data, false, true);
+      } else {
+        this.$modal.msgError('获取详情失败');
+      }
+    },
 
   }
 };

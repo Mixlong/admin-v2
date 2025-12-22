@@ -502,22 +502,7 @@
             附件
           </h3>
           <div class="attachment-list">
-            <div
-              v-for="(item, index) in detailData.file.split(',')"
-              :key="index"
-              class="attachment-item"
-              @click="zipFile(item)"
-            >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
-              {{ item }}
-            </div>
+            <FileDisplay :file-url="detailData.file" />
           </div>
         </section>
 
@@ -745,9 +730,13 @@
 import { getBomOrderChangeDetail } from '@/api/third/bomChange'
 import { listDept } from '@/api/system/dept'
 import { listUser } from '@/api/system/user'
+import FileDisplay from '@/components/FileDisplay'
 
 export default {
   name: 'DetailView',
+  components: {
+    FileDisplay
+  },
   data() {
     return {
       dialogVisible: false,

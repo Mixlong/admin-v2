@@ -7,7 +7,7 @@
       size="mini"
       class="search-form"
     >
-      <el-form-item label="ECN编号" prop="ecn">
+      <el-form-item label="试产编号" prop="ecn">
         <el-input
           v-model.trim="queryParams.ecn"
           placeholder="请输入试编号"
@@ -85,14 +85,14 @@
     </el-form>
 
     <el-table v-loading="loading" :data="list" :height="tableHeight(0)" border>
-      <el-table-column label="序号" type="index" width="50" align="center">
+      <el-table-column label="序号" type="index" width="55" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="ECN编号" prop="ecn" align="center" />
-      <el-table-column label="产品品类" prop="categoryName" align="center" />
-      <el-table-column label="产品型号" prop="computerName" align="center" />
+      <el-table-column label="试产编号" prop="ecn" align="center"/>
+      <el-table-column label="产品品类" prop="categoryName" align="center"/>
+      <el-table-column label="产品型号" prop="computerName" align="center" width="167" />
       <el-table-column
         label="申请部门"
         prop="reqUnit"
@@ -117,14 +117,14 @@
       </el-table-column>
 
       <!-- 会审状态 -->
-      <el-table-column label="会审状态" prop="secondState" align="center">
+      <el-table-column label="会审状态"  align="center" width="668">
         <template slot-scope="{ row }">
           <div style="display: flex; row-gap: 5px; flex-wrap: wrap">
             <div
               v-for="item in row.list"
               :key="item.id"
               class="align-center check-box"
-              style="flex-basis: 50%; display: flex; padding: 0 5px"
+              style="flex-basis: 160px; display: flex; padding: 0 5px"
             >
               <div class="flex-sub text-left">
                 {{ TriageList[item.field] }}
@@ -159,7 +159,7 @@
         label="终审状态"
         prop="fourthState"
         align="center"
-        width="120"
+        width="110"
       >
         <template slot-scope="{ row }">
           <el-tag type="warning" v-if="getFinalState(row) === 0">待审核</el-tag>
@@ -180,11 +180,15 @@
         prop="createTime"
         align="center"
         sortable
-        width="100"
-      />
-      <el-table-column label="操作" align="center" fixed="right" width="120">
+        width="110"
+      >
+      <template slot-scope="{ row }">
+        {{ parseTime(row.createTime, '{y}-{m}-{d}') }}
+      </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" fixed="right" width="88">
         <template slot-scope="{ row }">
-          <div class="flex flex-direction table-options-col">
+          <div class="table-options-col" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
             <Tooltip
               icon="el-icon-view"
               content="查看详情"
@@ -217,8 +221,9 @@
             />
 
             <!-- 会审：需初审完成 -->
-            <span v-for="item in row.list" :key="item.id">
+            <template v-for="item in row.list">
               <Tooltip
+                :key="item.id + '-review'"
                 style="margin-left: 5px"
                 v-if="
                   item.fieldName === nickName &&
@@ -234,6 +239,7 @@
               />
 
               <Tooltip
+                :key="item.id + '-cancel-2'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -247,6 +253,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-3'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -260,6 +267,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-4'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -273,6 +281,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-5'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -286,6 +295,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-6'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -299,6 +309,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-7'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -312,6 +323,7 @@
                 @click="handleResetCheck(item, 2)"
               />
               <Tooltip
+                :key="item.id + '-cancel-8'"
                 style="margin-left: 5px"
                 v-show="
                   item.fieldName === nickName &&
@@ -324,7 +336,7 @@
                 :content="`撤销（市场）-（${item.fieldName}） 会审`"
                 @click="handleResetCheck(item, 2)"
               />
-            </span>
+            </template>
 
             <!-- PMC审：需初审、会审完成 -->
             <Tooltip
@@ -662,7 +674,7 @@ export default {
   components: { FormDialog, AuditDialog, DetailDialog, Tooltip, Pagination },
   data() {
     return {
-      // nickName:'杨贵来',
+      nickName:'杨贵来',
       loading: false,
       list: [],
       total: 0,
@@ -982,14 +994,7 @@ export default {
       return list.every(item => item.state === 1);
     },
     getFinalState(row) {
-      // 根据终审相关字段推断状态
-      if (row.finalResult) {
-        return 2; // 有拒绝原因说明被驳回
-      }
-      if (row.finalRemark) {
-        return 1; // 有备注说明已审核
-      }
-      return 0; // 默认待审核
+      return row.secondState; // 默认待审核
     },
     cellClick(row, column, cell, event) {
       // 排除操作列，避免点击操作按钮时触发编辑
@@ -1063,6 +1068,19 @@ export default {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
     }
+  }
+}
+
+.table-options-col {
+  display: flex;
+  flex-wrap: wrap;
+    justify-content: center!important;
+  gap: 0px;
+  > * {
+    flex: 0 0 calc(30% - 5px);
+    display: flex;
+    justify-content: center;
+    padding:0
   }
 }
 </style>

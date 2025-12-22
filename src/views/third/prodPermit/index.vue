@@ -21,7 +21,7 @@
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
           重 置
         </el-button>
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddProblem">
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddProblem" v-hasPermi="['third:prodPermit:addIssue']">
           新增历史问题
         </el-button>
       </el-form-item>
@@ -40,10 +40,10 @@
           <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click" :style="{backgroundColor:row.isLicense === 0 ? '#ff4949':'#5cb85c',borderRadius:'12px'}">
             {{ row.isLicense === 0 ? "未许可" : "已许可" }}
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-if="row.isLicense === 1" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
+              <el-dropdown-item v-if="row.isLicense === 1" v-hasPermi="['third:prodPermit:cancelLicense']" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
               <template v-if="row.isLicense === 0">
-                <el-dropdown-item @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
-                <el-dropdown-item @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
+                <el-dropdown-item v-hasPermi="['third:prodPermit:license']" @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
+                <el-dropdown-item v-hasPermi="['third:prodPermit:forceLicense']" @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
               </template>
             </el-dropdown-menu>
           </el-dropdown>
@@ -92,8 +92,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="100">
         <template slot-scope="{row}">
-          <Tooltip icon="el-icon-tickets" content="操作记录" @click="handleLog(row.id)" />
-          <Tooltip icon="el-icon-time" v-if="row.issuesList.length > 0" content="处理历史问题" @click="handleViewHistoricalIssues(row)" />
+          <Tooltip icon="el-icon-tickets" content="操作记录" @click="handleLog(row.id)" v-hasPermi="['third:prodPermit:log']" />
+          <Tooltip icon="el-icon-time" v-if="row.issuesList.length > 0" content="处理历史问题" @click="handleViewHistoricalIssues(row)" v-hasPermi="['third:prodPermit:handleIssue']" />
         </template>
       </el-table-column>
     </el-table>
@@ -165,6 +165,7 @@
           <template slot-scope="{ row }">
             <el-button
               v-if="row.status === 0" 
+              v-hasPermi="['third:prodPermit:confirmIssue']"
               type="text"
               size="mini"
               @click="submitHandleProblem(row)" 

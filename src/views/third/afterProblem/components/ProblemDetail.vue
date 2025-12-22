@@ -92,10 +92,10 @@
         <el-descriptions-item label="影响面" :span="2">
           <div class="text-content" v-html="detailData.impactScope || '-'"></div>
         </el-descriptions-item>
-        <el-descriptions-item label="内部对策" :span="2">
+        <el-descriptions-item label="短期对策" :span="2">
           <div class="text-content" v-html="detailData.internalMeasures || '-'"></div>
         </el-descriptions-item>
-        <el-descriptions-item label="外部对策" :span="2">
+        <el-descriptions-item label="长期对策" :span="2">
           <div class="text-content" v-html="detailData.externalMeasures || '-'"></div>
         </el-descriptions-item>
       </el-descriptions>
