@@ -1,13 +1,6 @@
 <template>
-  <el-dialog
-    :title="isEdit ? '修改固件' : '新增固件'"
-    :visible.sync="dialogVisible"
-    width="900px"
-    :before-close="handleClose"
-    :close-on-click-modal="false"
-    append-to-body
-    class="dialog-scroll"
-  >
+  <el-dialog :title="isEdit ? '修改固件' : '新增固件'" :visible.sync="dialogVisible" width="900px" :before-close="handleClose"
+    :close-on-click-modal="false" append-to-body class="dialog-scroll">
     <el-form ref="form" :model="form" :rules="rules" label-width="100px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -25,7 +18,7 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="客户" prop="customer">
-               <el-input   v-model="form.customer"  placeholder="请输客户" clearable />
+            <el-input v-model="form.customer" placeholder="请输客户" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -34,15 +27,10 @@
           </el-form-item>
         </el-col>
 
- 
+
       </el-row>
-            <el-form-item label="版本描述" prop="versionDescription">
-        <el-input
-          v-model="form.versionDescription"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入版本描述"
-        />
+      <el-form-item label="版本描述" prop="versionDescription">
+        <el-input v-model="form.versionDescription" type="textarea" :rows="4" placeholder="请输入版本描述" />
       </el-form-item>
       <el-row :gutter="20">
         <el-col :span="12">
@@ -56,14 +44,13 @@
       </el-row>
 
       <el-form-item label="固件文件" prop="fileUrl">
-        <MyUpload
-          v-model="form.fileUrl"
-          :limit="1"
-          btnTitle="点击上传固件文件"
-          :file-size="100"
-        />
+        <DrUpload v-model="form.fileUrl" :limit="1" :isOnePic="1">
+          <div class="text-left">
+            <el-button size="mini" type="primary">点击上传固件文件</el-button>
+          </div>
+        </DrUpload>
       </el-form-item>
- 
+
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="handleClose">取 消</el-button>
@@ -75,13 +62,11 @@
 <script>
 import { addFirmware, updateFirmware } from "@/api/third/bluetoothFirmware";
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
-import MyUpload from "@/components/MyUpload";
 
 export default {
   name: "AddFirmwareDialog",
   components: {
     TypedSelectLoadMore,
-    MyUpload,
   },
   props: {
     visible: {
