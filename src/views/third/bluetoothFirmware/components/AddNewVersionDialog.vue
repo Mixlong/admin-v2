@@ -27,12 +27,11 @@
         />
       </el-form-item>
       <el-form-item label="固件文件" prop="fileUrl">
-        <MyUpload
-          v-model="form.fileUrl"
-          :limit="1"
-          btnTitle="点击上传固件文件"
-          :file-size="100"
-        />
+         <DrUpload v-model="form.fileUrl" :limit="1" :isOnePic="1">
+          <div class="text-left">
+            <el-button size="mini" type="primary">点击上传固件文件</el-button>
+          </div>
+        </DrUpload>
       </el-form-item>
       <el-form-item label="版本描述" prop="versionDescription">
         <el-input
