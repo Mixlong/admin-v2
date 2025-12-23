@@ -140,7 +140,7 @@ export default {
         treatment: '',
         treatmentLabel: '',
         person: d.finalPerson || '-',
-        state: this.getFinalState(),
+        state: d.secondState,
         remark: d.finalRemark || '',
         result: d.finalResult || '',
         rowType: 'final'
