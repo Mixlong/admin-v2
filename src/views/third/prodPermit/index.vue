@@ -40,11 +40,9 @@
           <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click" :style="{backgroundColor:row.isLicense === 0 ? '#ff4949':'#5cb85c',borderRadius:'12px'}">
             {{ row.isLicense === 0 ? "未许可" : "已许可" }}
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-if="row.isLicense === 1" v-hasPermi="['third:prodPermit:cancelLicense']" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
-              <template v-if="row.isLicense === 0">
-                <el-dropdown-item v-hasPermi="['third:prodPermit:license']" @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
-                <el-dropdown-item v-hasPermi="['third:prodPermit:forceLicense']" @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
-              </template>
+              <el-dropdown-item v-if="row.isLicense === 1 && checkPermi(['third:prodPermit:cancelLicense'])" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
+              <el-dropdown-item v-if="row.isLicense === 0 && checkPermi(['third:prodPermit:license'])" @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
+              <el-dropdown-item v-if="row.isLicense === 0 && checkPermi(['third:prodPermit:forceLicense'])" @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -279,6 +277,7 @@ import {
   computerLogList,
 } from "@/api/third/testApi";
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
+import { checkPermi } from "@/utils/permission";
 
 export default {
   name: "ProdPermit",
@@ -363,6 +362,7 @@ export default {
     },
   },
   methods: {
+    checkPermi,
     getCategoryData() {
       return new Promise((resolve, reject) => {
         try {
