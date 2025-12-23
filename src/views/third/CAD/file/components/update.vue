@@ -592,6 +592,7 @@ export default {
         testInfo: [],
         packSnLen: "",
         bleVersionList: [{ bleName: "" }],
+        bluetoothFirmwareId: "",
       },
       title: "",
       // 表单校验
@@ -816,6 +817,7 @@ export default {
         testInfo: [],
         packSnLen: "",
         bleVersionList: [{ bleName: "" }],
+        bluetoothFirmwareId: "",
       };
       this.stsData.data = [];
       this.resetForm("form");

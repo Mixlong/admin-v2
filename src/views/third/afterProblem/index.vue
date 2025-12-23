@@ -498,7 +498,7 @@ import ProductionRecordSelector from "./components/ProductionRecordSelector";
 import QualityRecordSelector from "./components/QualityRecordSelector";
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import OperLogDialog from "@/components/OperLogDialog";
-
+import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 export default {
   name: "AfterProblem",
   components: {
@@ -510,6 +510,7 @@ export default {
     TypedSelectLoadMore,
     OperLogDialog,
   },
+  mixins: [digiSmartJumpMixin],
   data() {
     return {
       // 遮罩层

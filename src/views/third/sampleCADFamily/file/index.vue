@@ -158,6 +158,10 @@
           <!-- 批量同步 -->
           <Tooltip v-hasPermi="['third:cad:batch']" icon="el-icon-s-claim" content="批量同步"
             @click="handleUpdate(scope.row, (isBatchSync = true))" />
+
+          <!-- 蓝牙固件关联 -->
+          <Tooltip v-if="scope.row.type === 'ble_ota_fw'" icon="el-icon-link" class="text-primary" content="蓝牙关联"
+            v-hasPermi="['third:cad:bleAssociation']" @click="handleBluetoothAssociation(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
@@ -200,6 +204,14 @@
 
     <!-- 批量同步文件 -->
     <BatchSyncConfig ref="batchSyncConfigRef"> </BatchSyncConfig>
+
+    <!-- 蓝牙固件关联对话框 -->
+    <BluetoothAssociationDialog
+      v-if="bluetoothAssociationVisible"
+      :visible.sync="bluetoothAssociationVisible"
+      :file-config-data="currentFileConfig"
+      @confirm="handleBluetoothAssociationConfirm"
+    />
   </div>
 </template>
 
@@ -213,11 +225,14 @@ import {
   fileSampleCancel,
   computerNameList,
   fileSampleConfigSn,
+  editSampleFileConfig,
 } from "@/api/third/sampleFileConfig";
 import { commonStatusList } from "@/utils/commonData";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 import BatchSyncConfig from "./components/batchSyncConfig.vue";
+import BluetoothAssociationDialog from "@/views/third/CAD/file/components/BluetoothAssociationDialog.vue";
+import Tooltip from "@/components/Tooltip";
 import { sampleNumberList } from "@/api/third/sample";
 export default {
   name: "sampleCADFamily",
@@ -225,6 +240,8 @@ export default {
     CompUpdate,
     TaskCode: () => import("./components/taskCode"),
     BatchSyncConfig,
+    BluetoothAssociationDialog,
+    Tooltip,
   },
   data() {
     return {
@@ -279,6 +296,8 @@ export default {
         page: 1,
         more: true,
       },
+      bluetoothAssociationVisible: false,
+      currentFileConfig: null,
     };
   },
   computed: {
@@ -702,6 +721,44 @@ export default {
     // 批量同步文件
     handleFileBatchSyncConfig() {
       this.$refs.batchSyncConfigRef.dialogVisible = true;
+    },
+    // 蓝牙固件关联
+    handleBluetoothAssociation(row) {
+      this.currentFileConfig = row;
+      this.bluetoothAssociationVisible = true;
+    },
+    // 蓝牙关联确认回调
+    handleBluetoothAssociationConfirm(data) {
+      const { associationType, firmwareInfo, isDelete } = data;
+      const rowData = this.currentFileConfig;
+
+      // 构建保存数据，带上完整行数据
+      const saveData = {
+        ...rowData,
+        bluetoothFirmwareId: isDelete ? null : (firmwareInfo?.id || null),
+        // 同步蓝牙版本号到属性描述（content字段）
+        content: isDelete ? '' : (firmwareInfo?.versionNumber || ''),
+      };
+
+      // 临时关联且不是删除操作，不保存到数据库
+      if (associationType === 1 && !isDelete) {
+        this.msgSuccess("临时关联成功");
+        this.getList();
+        return;
+      }
+
+      // 永久关联、清除关联、临时关联的清除操作，都需要调用接口
+      editSampleFileConfig(saveData)
+        .then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess(isDelete ? "已清除蓝牙关联" : "蓝牙关联保存成功");
+            this.getList();
+          }
+        })
+        .catch((err) => {
+          console.error("保存蓝牙关联失败:", err);
+          this.msgError("保存失败");
+        });
     },
   },
 };

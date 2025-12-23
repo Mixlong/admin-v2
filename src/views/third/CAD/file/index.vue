@@ -135,7 +135,7 @@
       <el-table-column label="创建时间" align="center" width="150" sortable>
         <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width" fixed="right">
+      <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width" fixed="right">
         <template slot-scope="scope">
           <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:cad:edit']" @click="handleUpdate(scope.row)" />
 
@@ -147,6 +147,10 @@
 
           <Tooltip icon="el-icon-circle-check" class="text-orange" content="重置审核" v-hasPermi="['third:cad:resetCheck']"
             v-if="isSResetCheck(scope.row)" @click="handleResetCheck(scope.row)" />
+
+          <!-- 蓝牙固件关联 -->
+          <Tooltip v-if="scope.row.type === 'ble_ota_fw'" icon="el-icon-link" class="text-primary" content="蓝牙关联"
+            v-hasPermi="['third:cad:bleAssociation']" @click="handleBluetoothAssociation(scope.row)" />
 
           <Tooltip icon="el-icon-download" class="text-orange" content="下载STS脚本" v-hasPermi="['third:cad:downloadSts']"
             v-if="scope.row.jsFile" @click="zipFile(scope.row.jsFile)" />
@@ -214,6 +218,14 @@
 
     <!-- 批量同步文件 -->
     <BatchSyncConfig ref="batchSyncConfigRef"> </BatchSyncConfig>
+
+    <!-- 蓝牙固件关联对话框 -->
+    <BluetoothAssociationDialog
+      v-if="bluetoothAssociationVisible"
+      :visible.sync="bluetoothAssociationVisible"
+      :file-config-data="currentFileConfig"
+      @confirm="handleBluetoothAssociationConfirm"
+    />
   </div>
 </template>
 
@@ -227,12 +239,14 @@ import {
   fileCancel,
   computerNameList,
   fileConfigSn,
+  editFileConfig,
 } from "@/api/third/fileConfig";
 import { commonStatusList } from "@/utils/commonData";
 import { categoryComputerDictMixins } from "@/mixins/common";
 import { mapGetters, mapState } from "vuex";
 import CompUpdate from "./components/update";
 import BatchSyncConfig from "./components/batchSyncConfig.vue";
+import BluetoothAssociationDialog from "./components/BluetoothAssociationDialog.vue";
 
 export default {
   name: "FileConfig",
@@ -241,6 +255,7 @@ export default {
     CompUpdate,
     TaskCode: () => import("./components/taskCode"),
     BatchSyncConfig,
+    BluetoothAssociationDialog,
   },
   data() {
     return {
@@ -293,6 +308,8 @@ export default {
       disabledName: "",
       fileConfigSnData: {},
       showUpdateDialog: false,
+      bluetoothAssociationVisible: false,
+      currentFileConfig: null,
     };
   },
   computed: {
@@ -760,6 +777,63 @@ export default {
     // 批量同步文件
     handleFileBatchSyncConfig() {
       this.$refs.batchSyncConfigRef.dialogVisible = true;
+    },
+    // 蓝牙固件关联 - 打开独立对话框
+    handleBluetoothAssociation(row) {
+      console.log("🚀 ~ row:", row)
+      if (this.handleProPermit(row.isLicense)) return;
+      
+      this.currentFileConfig = row;
+      this.bluetoothAssociationVisible = true;
+    },
+    // 蓝牙固件关联确认
+    handleBluetoothAssociationConfirm(data) {
+      const { associationType, firmwareInfo, isDelete } = data;
+      
+      // 复制当前行的完整数据
+      const updateData = JSON.parse(JSON.stringify(this.currentFileConfig));
+      
+      // 删除不需要的字段
+      delete updateData.createTime;
+      delete updateData.updateTime;
+      delete updateData.updateBy;
+      
+      // 删除关联操作
+      if (isDelete || !firmwareInfo) {
+        updateData.bluetoothFirmwareId = null;
+        // 调用API保存
+        editFileConfig(updateData).then(response => {
+          if (response.code === 200) {
+            this.msgSuccess('已清除蓝牙固件关联');
+            this.getList();
+          }
+        }).catch(error => {
+          console.error('清除关联失败:', error);
+          this.msgError('清除关联失败，请重试');
+        });
+        return;
+      }
+      
+      if (associationType === 1) {
+        // 临时关联：更新 URL
+        updateData.url = firmwareInfo.url || firmwareInfo.fileUrl || '';
+        updateData.bluetoothFirmwareId = null;
+      } else if (associationType === 2) {
+        // 永久关联：设置 bluetoothFirmwareId
+        updateData.bluetoothFirmwareId = firmwareInfo.id;
+        // 永久关联时不清空 url，保留原有值
+      }
+      
+      // 调用API保存
+      editFileConfig(updateData).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess(associationType === 1 ? '临时关联成功' : '永久关联成功');
+          this.getList();
+        }
+      }).catch(error => {
+        console.error('蓝牙固件关联失败:', error);
+        this.msgError('关联失败，请重试');
+      });
     },
   },
 };

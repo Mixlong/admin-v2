@@ -140,3 +140,12 @@ export function getPackingRecords(params) {
     params
   });
 }
+
+// 分页获取箱子列表
+export function getBoxPageList(params) {
+  return request({
+    url: '/box/box/page',
+    method: 'get',
+    params
+  });
+}

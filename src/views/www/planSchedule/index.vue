@@ -336,20 +336,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" prop="createTime" width="120">
-          <template slot-scope="{ row }">
-            <el-button type="text" @click="handleViewPackingRecords(row)">
-               查看
-            </el-button>
-            <el-button 
-              v-if="canDelete(row.createTime)" 
-              class="text-red" 
-              type="text" 
-              @click="handleDeleteBox(row)">
-               删除
-            </el-button>
-          </template>
-        </el-table-column>
+
       </el-table>
 
       <pagination v-show="boxInfoTotal > 0" :total="boxInfoTotal" :page.sync="boxInfoQueryParams.p"
@@ -363,55 +350,6 @@
     <!-- 批量导入对话框 -->
     <BatchImportDialog :visible.sync="importDialogVisible" @success="handleImportSuccess" />
 
-    <!-- 装箱记录查看对话框 -->
-    <el-dialog title="装箱记录详情" :visible.sync="packingRecordsDialogVisible" width="80%" top="0vh" class="dialog-scroll" :close-on-click-modal="false" @close="handlePackingRecordsDialogClose">
-      <div style="margin-bottom: 10px;">
-        <el-button 
-          type="danger" 
-          size="small" 
-          :disabled="selectedPackingRecords.length === 0"
-          @click="handleBatchCancelPacking">
-          批量取消装箱 ({{ selectedPackingRecords.length }})
-        </el-button>
-      </div>
-      <el-table 
-        v-loading="packingRecordsLoading" 
-        :data="packingRecordsList" 
-        height="500" 
-        border
-        @selection-change="handlePackingRecordsSelectionChange">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column label="序号" width="60" type="index" align="center">
-          <template slot-scope="scope">
-            {{ (packingRecordsQueryParams.p - 1) * packingRecordsQueryParams.l + scope.$index + 1 }}
-          </template>
-        </el-table-column>
-        <el-table-column label="箱号" align="center" prop="boxNo" min-width="200" />
-        <el-table-column label="批次号" align="center" prop="batchNo" width="150" />
-        <el-table-column label="品类" align="center" prop="categoryName" width="100" />
-        <el-table-column label="型号" align="center" prop="computerName" min-width="150" />
-        <el-table-column label="整机SN" align="center" prop="sn" min-width="200" />
-        <el-table-column label="PCBA SN" align="center" prop="pcbaSn" min-width="200" />
-        <el-table-column label="蓝牙地址" align="center" prop="mac" min-width="150" />
-        <el-table-column label="客户订单号" align="center" prop="customerOrderNo" min-width="150" />
-        <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" min-width="150" />
-        <el-table-column label="工单号" align="center" prop="orderCode" min-width="150" />
-        <el-table-column label="生产工厂" align="center" prop="factory" width="100" />
-        <el-table-column label="装箱时间" align="center" prop="packingTime" width="150">
-          <template slot-scope="{ row }">
-            <span>{{ parseTime(row.packingTime, "{y}-{m}-{d} {h}:{i}") }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" width="150">
-          <template slot-scope="{ row }">
-            <span>{{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <pagination v-show="packingRecordsTotal > 0" :total="packingRecordsTotal" :page.sync="packingRecordsQueryParams.p"
-        :limit.sync="packingRecordsQueryParams.l" @pagination="getPackingRecordsData" />
-    </el-dialog>
   </div>
 </template>
 
@@ -425,10 +363,7 @@ import {
   boxInfoList,
   schedulingEdit,
   schedulingImport,
-  scheduleVersion,
-  deleteBox,
-  cancelPacking,
-  getPackingRecords
+  scheduleVersion
 } from "@/api/www/planSchedule";
 import { listComputer } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
@@ -563,22 +498,7 @@ export default {
         id: ""
       },
       // 导入对话框显示状态
-      importDialogVisible: false,
-      // 装箱记录对话框
-      packingRecordsDialogVisible: false,
-      packingRecordsLoading: false,
-      packingRecordsList: [],
-      packingRecordsTotal: 0,
-      packingRecordsQueryParams: {
-        p: 1,
-        l: 10,
-        boxNo: ""
-      },
-      currentBoxNo: "",
-      // 选中的装箱记录
-      selectedPackingRecords: [],
-      // 是否有取消装箱操作（用于判断关闭弹窗时是否需要刷新主列表）
-      hasCancelledPacking: false
+      importDialogVisible: false
     };
   },
   computed: {
@@ -1223,126 +1143,6 @@ export default {
     handleImportSuccess() {
       this.$message.success('导入成功！');
       this.getList(); // 刷新列表
-    },
-
-    // ==================== 装箱记录功能相关方法 ====================
-
-    /** 查看装箱记录 */
-    handleViewPackingRecords(row) {
-      this.currentBoxNo = row.boxNo;
-      this.packingRecordsQueryParams.boxNo = row.boxNo;
-      this.packingRecordsQueryParams.p = 1;
-      this.packingRecordsDialogVisible = true;
-      this.getPackingRecordsData();
-    },
-
-    /** 获取装箱记录数据 */
-    getPackingRecordsData() {
-      this.packingRecordsLoading = true;
-      getPackingRecords(this.packingRecordsQueryParams)
-        .then((res) => {
-          if (res.code === 200) {
-            const { list, total, pageNum, pageSize } = res.data;
-            this.packingRecordsList = list || [];
-            this.packingRecordsTotal = total || 0;
-            // 更新分页信息
-            this.packingRecordsQueryParams.p = pageNum || 1;
-            this.packingRecordsQueryParams.l = pageSize || 10;
-          } else {
-            this.$message.error(res.msg || '获取装箱记录失败');
-          }
-        })
-        .catch((error) => {
-          console.error('获取装箱记录失败:', error);
-          this.$message.error('获取装箱记录失败');
-        })
-        .finally(() => {
-          this.packingRecordsLoading = false;
-        });
-    },
-
-    /** 删除箱子 */
-    handleDeleteBox(row) {
-      this.$confirm(`确定要删除箱子 "${row.boxNo}" 吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          return deleteBox(row.id);
-        })
-        .then((res) => {
-          if (res.code === 200) {
-            this.$message.success('删除箱子成功');
-            this.getBoxInfoData(); // 刷新箱子信息列表
-          }   
-        })
-        .catch((error) => {
-          if (error !== 'cancel') {
-            console.error('删除箱子失败:', error);
-          }
-        });
-    },
-
-    /** 装箱记录选择变化 */
-    handlePackingRecordsSelectionChange(selection) {
-      this.selectedPackingRecords = selection;
-    },
-
-    /** 批量取消装箱 */
-    handleBatchCancelPacking() {
-      if (this.selectedPackingRecords.length === 0) {
-        this.$message.warning('请选择要取消装箱的记录');
-        return;
-      }
-
-      const recordIds = this.selectedPackingRecords.map(item => item.id);
-      const count = this.selectedPackingRecords.length;
-
-      this.$confirm(`确定要取消装箱 ${count} 条记录吗？`, '批量取消装箱', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          return cancelPacking(recordIds);
-        })
-        .then((res) => {
-          if (res.code === 200) {
-            this.$message.success(`成功取消装箱 ${count} 条记录`);
-            this.getPackingRecordsData(); // 刷新装箱记录列表
-            this.selectedPackingRecords = []; // 清空选择
-            this.hasCancelledPacking = true; // 标记有取消装箱操作
-          } else {
-            this.$message.error(res.msg || '批量取消装箱失败');
-          }
-        })
-        .catch((error) => {
-          if (error !== 'cancel') {
-            console.error('批量取消装箱失败:', error);
-            this.$message.error('批量取消装箱失败');
-          }
-        });
-    },
-
-    /** 装箱记录对话框关闭处理 */
-    handlePackingRecordsDialogClose() {
-      // 如果有取消装箱操作，需要刷新箱子信息列表
-      if (this.hasCancelledPacking) {
-        this.getBoxInfoData(); // 刷新箱子信息列表
-        this.hasCancelledPacking = false; // 重置标记
-      }
-      
-      // 重置分页参数
-      this.packingRecordsQueryParams.p = 1;
-      this.packingRecordsQueryParams.l = 10;
-      this.packingRecordsQueryParams.boxNo = "";
-      // 清空数据
-      this.packingRecordsList = [];
-      this.packingRecordsTotal = 0;
-      this.currentBoxNo = "";
-      // 清空选中记录
-      this.selectedPackingRecords = [];
     },
 
   },

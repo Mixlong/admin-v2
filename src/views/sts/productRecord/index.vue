@@ -44,6 +44,12 @@
         <el-button type="primary" icon="el-icon-search" @click="handleSurfaceBoard">
           测试详情
         </el-button>
+        <el-button v-hasPermi="['sts:productRecord:viewBox']" type="success" icon="el-icon-box" @click="handleViewBoxList">
+          查看箱子
+        </el-button>
+        <el-button v-hasPermi="['sts:productRecord:packingRecord']" type="danger" icon="el-icon-delete" @click="handleDeletePackingRecords">
+          装箱记录
+        </el-button>
         <el-button type="warning" icon="el-icon-download" @click="handleExport">
           导 出
         </el-button>
@@ -170,6 +176,171 @@
       class="dialog-scroll custom-dialog" :class="{ 'surface-board': stsTestResulTtitle === '通用仪表2' }">
       <StsTestResult :sn="queryDialogParams.sn" :pcbaSn="queryDialogParams.pcbaSn" />
     </el-dialog>
+
+    <!-- 箱子列表对话框 -->
+    <el-dialog title="箱子列表" :visible.sync="boxListDialogVisible" width="1280px" top="0vh" :close-on-click-modal="false">
+      <!-- 搜索表单 -->
+      <el-form :inline="true" :model="boxListQueryParams" size="mini">
+        <el-form-item label="排产单号">
+          <el-input v-model.trim="boxListQueryParams.schedulingNo" clearable placeholder="请输入排产单号" style="width: 140px" />
+        </el-form-item>
+        <el-form-item label="箱号">
+          <el-input v-model.trim="boxListQueryParams.boxNo" clearable placeholder="请输入箱号" style="width: 180px" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleBoxListSearch">搜索</el-button>
+          <el-button icon="el-icon-refresh" @click="handleBoxListReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table border v-loading="boxListLoading" :data="boxListData" height="450">
+        <el-table-column label="序号" width="60" type="index" align="center">
+          <template slot-scope="scope">
+            {{ (boxListQueryParams.p - 1) * boxListQueryParams.l + scope.$index + 1 }}
+          </template>
+        </el-table-column>
+        <el-table-column label="设备名称" align="center" prop="equipName" width="150" />
+        <el-table-column label="箱号" align="center" prop="boxNo" width="250" />
+        <el-table-column label="箱子序号" align="center" prop="no" />
+        <el-table-column label="应装数量" align="center" prop="num" />
+        <el-table-column label="实装数量" align="center" prop="actualNum">
+          <template slot-scope="{row}">
+            <span :class="{'text-red': row.actualNum < row.num}">{{ row.actualNum }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="箱子重量" align="center" prop="weight" width="110" />
+        <el-table-column label="是否尾箱" align="center" prop="isEnd" width="100">
+          <template slot-scope="{ row }">
+            <el-tag v-if="row.isEnd === 1" type="success">是</el-tag>
+            <el-tag v-else type="info">否</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createTime" width="150">
+          <template slot-scope="{ row }">
+            <span>{{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="120" fixed="right">
+          <template slot-scope="{ row }">
+            <el-button type="text" @click="handleViewPackingRecords(row)">
+              查看
+            </el-button>
+            <el-button 
+              class="text-red" 
+              type="text" 
+              @click="handleDeleteBoxItem(row)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination v-show="boxListTotal > 0" :total="boxListTotal" :page.sync="boxListQueryParams.p"
+        :limit.sync="boxListQueryParams.l" @pagination="getBoxListData" />
+    </el-dialog>
+
+    <!-- 装箱记录查看对话框 -->
+    <el-dialog title="装箱记录详情" :visible.sync="packingRecordsDialogVisible" width="80%" top="0vh" class="dialog-scroll" :close-on-click-modal="false" @close="handlePackingRecordsDialogClose">
+      <el-table 
+        ref="packingRecordsTable"
+        v-loading="packingRecordsLoading" 
+        :data="packingRecordsList" 
+        height="500" 
+        border
+        @selection-change="handlePackingRecordsSelectionChange"
+        @row-click="handlePackingRecordRowClick">
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column label="箱号" align="center" prop="boxNo" min-width="200" />
+        <el-table-column label="批次号" align="center" prop="batchNo" width="150" />
+        <el-table-column label="品类" align="center" prop="categoryName" width="100" />
+        <el-table-column label="型号" align="center" prop="computerName" min-width="150" />
+        <el-table-column label="整机SN" align="center" prop="sn" min-width="200" />
+        <el-table-column label="PCBA SN" align="center" prop="pcbaSn" min-width="200" />
+        <el-table-column label="蓝牙地址" align="center" prop="mac" min-width="150" />
+        <el-table-column label="客户订单号" align="center" prop="customerOrderNo" min-width="150" />
+        <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" min-width="150" />
+        <el-table-column label="工单号" align="center" prop="orderCode" min-width="150" />
+        <el-table-column label="生产工厂" align="center" prop="factory" width="100" />
+        <el-table-column label="装箱时间" align="center" prop="packingTime" width="150">
+          <template slot-scope="{ row }">
+            <span>{{ parseTime(row.packingTime, "{y}-{m}-{d} {h}:{i}") }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination v-show="packingRecordsTotal > 0" :total="packingRecordsTotal" :page.sync="packingRecordsQueryParams.p"
+        :limit.sync="packingRecordsQueryParams.l" @pagination="getPackingRecordsData" />
+
+      <div slot="footer" class="dialog-footer">
+        <el-button 
+          type="danger" 
+          :disabled="selectedPackingRecords.length === 0"
+          @click="handleBatchCancelPacking">
+          批量取消装箱 ({{ selectedPackingRecords.length }})
+        </el-button>
+        <el-button @click="packingRecordsDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 删除箱子（全部装箱记录）对话框 -->
+    <el-dialog title="装箱记录" :visible.sync="deletePackingDialogVisible" width="80%" top="0vh" class="dialog-scroll" :close-on-click-modal="false" @close="handleDeletePackingDialogClose">
+      <!-- 搜索表单 -->
+      <el-form :inline="true" :model="deletePackingQueryParams" size="mini">
+        <el-form-item label="箱号">
+          <el-input v-model.trim="deletePackingQueryParams.boxNo" clearable placeholder="请输入箱号" style="width: 180px" />
+        </el-form-item>
+        <el-form-item label="整机SN">
+          <el-input v-model.trim="deletePackingQueryParams.sn" clearable placeholder="请输入整机SN" style="width: 180px" />
+        </el-form-item>
+        <el-form-item label="PCBA SN">
+          <el-input v-model.trim="deletePackingQueryParams.pcbaSn" clearable placeholder="请输入PCBA SN" style="width: 180px" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleDeletePackingSearch">搜索</el-button>
+          <el-button icon="el-icon-refresh" @click="handleDeletePackingReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table 
+        ref="deletePackingTable"
+        v-loading="deletePackingLoading" 
+        :data="deletePackingList" 
+        height="450" 
+        border
+        @selection-change="handleDeletePackingSelectionChange"
+        @row-click="handleDeletePackingRowClick">
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column label="箱号" align="center" prop="boxNo" min-width="200" />
+        <el-table-column label="批次号" align="center" prop="batchNo" width="150" />
+        <el-table-column label="品类" align="center" prop="categoryName" width="100" />
+        <el-table-column label="型号" align="center" prop="computerName" min-width="150" />
+        <el-table-column label="整机SN" align="center" prop="sn" min-width="200" />
+        <el-table-column label="PCBA SN" align="center" prop="pcbaSn" min-width="200" />
+        <el-table-column label="蓝牙地址" align="center" prop="mac" min-width="150" />
+        <el-table-column label="客户订单号" align="center" prop="customerOrderNo" min-width="150" />
+        <el-table-column label="迪太订单号" align="center" prop="salesOrderNo" min-width="150" />
+        <el-table-column label="工单号" align="center" prop="orderCode" min-width="150" />
+        <el-table-column label="生产工厂" align="center" prop="factory" width="100" />
+        <el-table-column label="装箱时间" align="center" prop="packingTime" width="150">
+          <template slot-scope="{ row }">
+            <span>{{ parseTime(row.packingTime, "{y}-{m}-{d} {h}:{i}") }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination v-show="deletePackingTotal > 0" :total="deletePackingTotal" :page.sync="deletePackingQueryParams.p"
+        :limit.sync="deletePackingQueryParams.l" @pagination="getDeletePackingData" />
+
+      <div slot="footer" class="dialog-footer">
+        <el-button 
+          type="danger" 
+          :disabled="selectedDeletePackingRecords.length === 0"
+          @click="handleDeletePackingBatchCancel">
+          批量取消装箱 ({{ selectedDeletePackingRecords.length }})
+        </el-button>
+        <el-button @click="deletePackingDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -180,6 +351,7 @@ import {
   stsProductRecordExport,
 } from "@/api/third/fileConfig";
 import { orderWorkList } from "@/api/third/prodPlant";
+import { getBoxPageList, deleteBox, getPackingRecords, cancelPacking } from "@/api/www/planSchedule";
 import { CategoryMixin } from "@/mixins/common";
 import dynamicTableHeightMixin from "@/mixins/dynamicTableHeight";
 
@@ -244,7 +416,44 @@ export default {
         { key: 'orderCode', label: '工单号', sort: 7, component: 'select-loadMore' },
         { key: 'salesOrderNo', label: '迪太订单号', sort: 8, placeholder: '请输入迪太订单号' },
         { key: 'processName', label: '测试环节', sort: 10, component: 'el-select' },
-      ]
+      ],
+      // 箱子列表对话框
+      boxListDialogVisible: false,
+      boxListLoading: false,
+      boxListData: [],
+      boxListTotal: 0,
+      boxListQueryParams: {
+        p: 1,
+        l: 10,
+        schedulingNo: "",
+        boxNo: ""
+      },
+      // 装箱记录对话框
+      packingRecordsDialogVisible: false,
+      packingRecordsLoading: false,
+      packingRecordsList: [],
+      packingRecordsTotal: 0,
+      packingRecordsQueryParams: {
+        p: 1,
+        l: 10,
+        boxNo: ""
+      },
+      currentBoxNo: "",
+      selectedPackingRecords: [],
+      hasCancelledPacking: false,
+      // 删除箱子（全部装箱记录）对话框
+      deletePackingDialogVisible: false,
+      deletePackingLoading: false,
+      deletePackingList: [],
+      deletePackingTotal: 0,
+      deletePackingQueryParams: {
+        p: 1,
+        l: 10,
+        boxNo: "",
+        sn: "",
+        pcbaSn: ""
+      },
+      selectedDeletePackingRecords: []
     };
   },
   watch: {
@@ -390,6 +599,301 @@ export default {
       this.stsTestResulTtitle = '通用仪表2',
         this.queryDialogParams.sn = '';
       this.queryDialogParams.pcbaSn = '';
+    },
+
+    // ==================== 箱子列表功能相关方法 ====================
+
+    /** 打开箱子列表对话框 */
+    handleViewBoxList() {
+      this.boxListDialogVisible = true;
+      this.boxListQueryParams.p = 1;
+      this.getBoxListData();
+    },
+
+    /** 获取箱子列表数据 */
+    getBoxListData() {
+      this.boxListLoading = true;
+      getBoxPageList(this.boxListQueryParams)
+        .then((res) => {
+          if (res.code === 200) {
+            this.boxListData = res.data.list || [];
+            this.boxListTotal = res.data.total || 0;
+          } else {
+            this.$message.error(res.msg || '获取箱子列表失败');
+          }
+        })
+        .catch((error) => {
+          console.error('获取箱子列表失败:', error);
+          this.$message.error('获取箱子列表失败');
+        })
+        .finally(() => {
+          this.boxListLoading = false;
+        });
+    },
+
+    /** 箱子列表搜索 */
+    handleBoxListSearch() {
+      this.boxListQueryParams.p = 1;
+      this.getBoxListData();
+    },
+
+    /** 箱子列表重置 */
+    handleBoxListReset() {
+      this.boxListQueryParams = {
+        p: 1,
+        l: 10,
+        schedulingNo: "",
+        boxNo: ""
+      };
+      this.getBoxListData();
+    },
+
+    /** 判断是否可以删除箱子（创建时间小于15天） */
+    canDeleteBox(createTime) {
+      if (!createTime) return false;
+      
+      const now = new Date().getTime();
+      let create;
+      
+      if (typeof createTime === 'number') {
+        create = createTime;
+      } else {
+        create = new Date(createTime).getTime();
+      }
+      
+      if (isNaN(create)) return false;
+      
+      const diffDays = (now - create) / (1000 * 60 * 60 * 24);
+      return diffDays >= 0 && diffDays < 15;
+    },
+
+    /** 删除箱子 */
+    handleDeleteBoxItem(row) {
+      this.$confirm(`确定要删除箱子 "${row.boxNo}" 吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          return deleteBox(row.id);
+        })
+        .then((res) => {
+          if (res.code === 200) {
+            this.$message.success('删除箱子成功');
+            this.getBoxListData();
+          }
+        })
+        .catch((error) => {
+          if (error !== 'cancel') {
+            console.error('删除箱子失败:', error);
+          }
+        });
+    },
+
+    // ==================== 装箱记录功能相关方法 ====================
+
+    /** 查看装箱记录 */
+    handleViewPackingRecords(row) {
+      this.currentBoxNo = row.boxNo;
+      this.packingRecordsQueryParams.boxNo = row.boxNo;
+      this.packingRecordsQueryParams.p = 1;
+      this.packingRecordsDialogVisible = true;
+      this.getPackingRecordsData();
+    },
+
+    /** 获取装箱记录数据 */
+    getPackingRecordsData() {
+      this.packingRecordsLoading = true;
+      getPackingRecords(this.packingRecordsQueryParams)
+        .then((res) => {
+          if (res.code === 200) {
+            const { list, total, pageNum, pageSize } = res.data;
+            this.packingRecordsList = list || [];
+            this.packingRecordsTotal = total || 0;
+            this.packingRecordsQueryParams.p = pageNum || 1;
+            this.packingRecordsQueryParams.l = pageSize || 10;
+          } else {
+            this.$message.error(res.msg || '获取装箱记录失败');
+          }
+        })
+        .catch((error) => {
+          console.error('获取装箱记录失败:', error);
+          this.$message.error('获取装箱记录失败');
+        })
+        .finally(() => {
+          this.packingRecordsLoading = false;
+        });
+    },
+
+    /** 装箱记录选择变化 */
+    handlePackingRecordsSelectionChange(selection) {
+      this.selectedPackingRecords = selection;
+    },
+
+    /** 点击行选中/取消选中 */
+    handlePackingRecordRowClick(row) {
+      this.$refs.packingRecordsTable.toggleRowSelection(row);
+    },
+
+    /** 批量取消装箱 */
+    handleBatchCancelPacking() {
+      if (this.selectedPackingRecords.length === 0) {
+        this.$message.warning('请选择要取消装箱的记录');
+        return;
+      }
+
+      const recordIds = this.selectedPackingRecords.map(item => item.id);
+      const count = this.selectedPackingRecords.length;
+
+      this.$confirm(`确定要取消装箱 ${count} 条记录吗？`, '批量取消装箱', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          return cancelPacking(recordIds);
+        })
+        .then((res) => {
+          if (res.code === 200) {
+            this.$message.success(`成功取消装箱 ${count} 条记录`);
+            this.getPackingRecordsData();
+            this.selectedPackingRecords = [];
+            this.hasCancelledPacking = true;
+          } else {
+            this.$message.error(res.msg || '批量取消装箱失败');
+          }
+        })
+        .catch((error) => {
+          if (error !== 'cancel') {
+            console.error('批量取消装箱失败:', error);
+            this.$message.error('批量取消装箱失败');
+          }
+        });
+    },
+
+    /** 装箱记录对话框关闭处理 */
+    handlePackingRecordsDialogClose() {
+      if (this.hasCancelledPacking) {
+        this.getBoxListData();
+        this.hasCancelledPacking = false;
+      }
+      this.packingRecordsQueryParams.p = 1;
+      this.packingRecordsQueryParams.l = 10;
+      this.packingRecordsQueryParams.boxNo = "";
+      this.packingRecordsList = [];
+      this.packingRecordsTotal = 0;
+      this.currentBoxNo = "";
+      this.selectedPackingRecords = [];
+    },
+
+    // ==================== 删除箱子（全部装箱记录）功能相关方法 ====================
+
+    /** 打开删除箱子对话框 */
+    handleDeletePackingRecords() {
+      this.deletePackingDialogVisible = true;
+      this.deletePackingQueryParams.p = 1;
+      this.getDeletePackingData();
+    },
+
+    /** 获取全部装箱记录数据 */
+    getDeletePackingData() {
+      this.deletePackingLoading = true;
+      getPackingRecords(this.deletePackingQueryParams)
+        .then((res) => {
+          if (res.code === 200) {
+            const { list, total, pageNum, pageSize } = res.data;
+            this.deletePackingList = list || [];
+            this.deletePackingTotal = total || 0;
+            this.deletePackingQueryParams.p = pageNum || 1;
+            this.deletePackingQueryParams.l = pageSize || 10;
+          } else {
+            this.$message.error(res.msg || '获取装箱记录失败');
+          }
+        })
+        .catch((error) => {
+          console.error('获取装箱记录失败:', error);
+          this.$message.error('获取装箱记录失败');
+        })
+        .finally(() => {
+          this.deletePackingLoading = false;
+        });
+    },
+
+    /** 删除箱子搜索 */
+    handleDeletePackingSearch() {
+      this.deletePackingQueryParams.p = 1;
+      this.getDeletePackingData();
+    },
+
+    /** 删除箱子重置 */
+    handleDeletePackingReset() {
+      this.deletePackingQueryParams = {
+        p: 1,
+        l: 10,
+        boxNo: "",
+        sn: "",
+        pcbaSn: ""
+      };
+      this.getDeletePackingData();
+    },
+
+    /** 删除箱子选择变化 */
+    handleDeletePackingSelectionChange(selection) {
+      this.selectedDeletePackingRecords = selection;
+    },
+
+    /** 点击行选中/取消选中（删除箱子） */
+    handleDeletePackingRowClick(row) {
+      this.$refs.deletePackingTable.toggleRowSelection(row);
+    },
+
+    /** 批量取消装箱（删除箱子对话框） */
+    handleDeletePackingBatchCancel() {
+      if (this.selectedDeletePackingRecords.length === 0) {
+        this.$message.warning('请选择要取消装箱的记录');
+        return;
+      }
+
+      const recordIds = this.selectedDeletePackingRecords.map(item => item.id);
+      const count = this.selectedDeletePackingRecords.length;
+
+      this.$confirm(`确定要取消装箱 ${count} 条记录吗？`, '批量取消装箱', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          return cancelPacking(recordIds);
+        })
+        .then((res) => {
+          if (res.code === 200) {
+            this.$message.success(`成功取消装箱 ${count} 条记录`);
+            this.getDeletePackingData();
+            this.selectedDeletePackingRecords = [];
+          } else {
+            this.$message.error(res.msg || '批量取消装箱失败');
+          }
+        })
+        .catch((error) => {
+          if (error !== 'cancel') {
+            console.error('批量取消装箱失败:', error);
+            this.$message.error('批量取消装箱失败');
+          }
+        });
+    },
+
+    /** 删除箱子对话框关闭处理 */
+    handleDeletePackingDialogClose() {
+      this.deletePackingQueryParams = {
+        p: 1,
+        l: 10,
+        boxNo: "",
+        sn: "",
+        pcbaSn: ""
+      };
+      this.deletePackingList = [];
+      this.deletePackingTotal = 0;
+      this.selectedDeletePackingRecords = [];
     }
   },
 };
