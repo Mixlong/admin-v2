@@ -78,10 +78,10 @@
                     </el-select>
                   </el-form-item>
 
-                  <el-form-item label="在途物料处理方案：" class="iterm-box margin-left-xs flex flex-sub" prop="buyerTxt" :rules="[
+                  <el-form-item label="新增物料状况：" label-width="155px" class="iterm-box margin-left-xs flex flex-sub" prop="buyerTxt" :rules="[
                     {
                       required: true,
-                      message: '请输入在途物料处理方案',
+                      message: '请输入新增物料状况',
                       trigger: 'blur',
                     },
                   ]">
@@ -103,10 +103,10 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item label="涉及更新的文件：" class="iterm-box margin-left-xs flex flex-sub" prop="QADataTxt" :rules="[
+                  <el-form-item label="涉及品质检验文件：" label-width="155px" class="iterm-box margin-left-xs flex flex-sub" prop="QADataTxt" :rules="[
                     {
                       required: true,
-                      message: '请输入涉及更新的文件名称',
+                      message: '请输入涉及品质检验文件',
                       trigger: 'blur',
                     },
                   ]">
@@ -128,11 +128,11 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item label="在制产品处理方案：" class="iterm-box margin-left-xs flex flex-sub" prop="productDataTxt"
+                  <el-form-item label="试产前期准备：" label-width="155px" class="iterm-box margin-left-xs flex flex-sub" prop="productDataTxt"
                     :rules="[
                       {
                         required: true,
-                        message: '请输入在制产品处理方案',
+                        message: '请输入试产前期准备',
                         trigger: 'blur',
                       },
                     ]">
@@ -155,11 +155,11 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item label="涉及更新的文件：" class="iterm-box margin-left-xs flex flex-sub" prop="engineerDataTxt"
+                  <el-form-item label="试产治具准备：" label-width="155px" class="iterm-box margin-left-xs flex flex-sub" prop="engineerDataTxt"
                     :rules="[
                       {
                         required: true,
-                        message: '请输入涉及更新的文件名称',
+                        message: '请输入试产治具准备',
                         trigger: 'blur',
                       },
                     ]">
@@ -182,11 +182,11 @@
                         :key="item.id"></el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item label="涉及更新的文件：" prop="researchDataTxt" class="iterm-box margin-left-xs flex flex-sub"
+                  <el-form-item label="研发进度与状况：" label-width="155px" prop="researchDataTxt" class="iterm-box margin-left-xs flex flex-sub"
                     :rules="[
                       {
                         required: true,
-                        message: '请输入涉及更新的文件名称',
+                        message: '请输入研发进度与状况',
                         trigger: 'blur',
                       },
                     ]">
@@ -210,22 +210,22 @@
                     </el-select>
                   </el-form-item>
                   <div class="flex flex-direction flex-sub">
-                    <el-form-item label="在库物料处理方案：" prop="warehouseDataTxt"
+                    <el-form-item label="试产后剩余物料处理方案：" label-width="155px" prop="warehouseDataTxt"
                       class="iterm-box margin-left-xs flex flex-sub" :rules="[
                         {
                           required: true,
-                          message: '请输入在库物料处理方案',
+                          message: '请输入试产后剩余物料处理方案',
                           trigger: 'blur',
                         },
                       ]">
                       <el-input v-model="form.warehouseDataTxt" clearable placeholder="请输入"
                         style="min-width: 250px"></el-input>
                     </el-form-item>
-                    <el-form-item label="在库成品处理方案：" prop="finishedHandleTxt"
+                    <el-form-item label="试产成品入库确认：" label-width="155px" prop="finishedHandleTxt"
                       class="iterm-box margin-left-xs flex flex-sub" :rules="[
                         {
                           required: true,
-                          message: '请输入在库成品处理方案',
+                          message: '请输入试产成品入库确认',
                           trigger: 'blur',
                         },
                       ]">
@@ -250,27 +250,15 @@
                     </el-select>
                   </el-form-item>
                   <div class="flex flex-direction flex-sub">
-                    <el-form-item label="未出货产品处理方案：" prop="noMarketerDataTxt"
+                    <el-form-item label="有试送样需求：" label-width="155px" prop="noMarketerDataTxt"
                       class="iterm-box margin-left-xs flex flex-sub" :rules="[
                         {
                           required: true,
-                          message: '请输入未出货产品处理方案',
+                          message: '请输入有试送样需求',
                           trigger: 'blur',
                         },
                       ]">
                       <el-input v-model="form.noMarketerDataTxt" clearable placeholder="请输入"
-                        style="min-width: 250px"></el-input>
-                    </el-form-item>
-
-                    <el-form-item label="已出货产品处理方案：" prop="marketerDataTxt"
-                      class="iterm-box margin-left-xs flex flex-sub" :rules="[
-                        {
-                          required: true,
-                          message: '请输入已出货产品处理方案',
-                          trigger: 'blur',
-                        },
-                      ]">
-                      <el-input v-model="form.marketerDataTxt" clearable placeholder="请输入"
                         style="min-width: 250px"></el-input>
                     </el-form-item>
                   </div>
@@ -326,8 +314,8 @@
       <el-col :xs="0" :span="2"></el-col>
     </el-row>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
-      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="submitForm" :loading="submitLoading">确 定</el-button>
+      <el-button @click="dialogVisible = false" :disabled="submitLoading">取 消</el-button>
     </div>
   </el-dialog>
 </template>
@@ -347,6 +335,7 @@ export default {
     return {
       dialogVisible: false,
       title: '',
+      submitLoading: false,
       deptOptions: [],
       form: {
         ecn: '',
@@ -818,6 +807,7 @@ export default {
     submitForm() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
+          this.submitLoading = true
           let param = cloneDeep(this.form)
 
           if (param.id) {
@@ -841,6 +831,10 @@ export default {
                 this.dialogVisible = false
                 this.$parent.getList()
               }
+            }).catch(() => {
+              this.submitLoading = false
+            }).finally(() => {
+              this.submitLoading = false
             })
           } else {
             trialApplyAdd(param).then((response) => {
@@ -849,6 +843,10 @@ export default {
                 this.dialogVisible = false
                 this.$parent.getList()
               }
+            }).catch(() => {
+              this.submitLoading = false
+            }).finally(() => {
+              this.submitLoading = false
             })
           }
         }
@@ -881,7 +879,7 @@ export default {
     .iterm-box {
       .el-form-item__label {
         white-space: nowrap;
-        min-width: 145px !important;
+        min-width: 155px !important;
       }
 
       .el-form-item__content {

@@ -707,7 +707,7 @@
 import { listUser } from '@/api/system/user'
 import { addSoCustomer, updateSoCustomer } from '@/api/crm/soCustomer'
 import { getDicts } from '@/api/system/dict/data'
-import { dictPmProject, dictMkProject } from '@/api/third/project'
+import { dictByRoles } from '@/api/third/project'
 import { 
   getContactsByCustomerId, 
   addCustomerContact, 
@@ -1211,24 +1211,24 @@ export default {
     },
 
 
-    // 获取销售负责人列表 - 使用市场字典接口
+    // 获取销售负责人列表 - 使用角色字典接口
     async getUserList() {
       try {
-        const response = await dictMkProject()
+        const response = await dictByRoles(['sale_manager'])
         if (response && response.data) {
           let list = []
           // 处理不同的数据结构
           if (Array.isArray(response.data)) {
             list = response.data.map(item => ({
-              userId: item.id || item.dictValue,
-              userName: item.dictValue || item.userName || item.name,
-              nickName: item.dictLabel || item.nickName || item.userName || item.name
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName: item.nickName || item.dictLabel || item.userName || item.name
             }))
           } else if (response.data.list) {
             list = response.data.list.map(item => ({
-              userId: item.id || item.dictValue,
-              userName: item.dictValue || item.userName || item.name,
-              nickName: item.dictLabel || item.nickName || item.userName || item.name
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName: item.nickName || item.dictLabel || item.userName || item.name
             }))
           }
           
@@ -1249,24 +1249,24 @@ export default {
       }
     },
 
-    // 获取项目经理列表 - 使用项目经理字典接口
+    // 获取项目经理列表 - 使用角色字典接口
     async getProjectManagerList() {
       try {
-        const response = await dictPmProject()
+        const response = await dictByRoles(['project_manager', 'project_manage_s'])
         if (response && response.data) {
           let list = []
           // 处理不同的数据结构
           if (Array.isArray(response.data)) {
             list = response.data.map(item => ({
-              userId: item.id || item.dictValue,
-              userName: item.dictValue || item.userName || item.name,
-              nickName: item.dictLabel || item.nickName || item.userName || item.name
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName: item.nickName || item.dictLabel || item.userName || item.name
             }))
           } else if (response.data.list) {
             list = response.data.list.map(item => ({
-              userId: item.id || item.dictValue,
-              userName: item.dictValue || item.userName || item.name,
-              nickName: item.dictLabel || item.nickName || item.userName || item.name
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName: item.nickName || item.dictLabel || item.userName || item.name
             }))
           }
           

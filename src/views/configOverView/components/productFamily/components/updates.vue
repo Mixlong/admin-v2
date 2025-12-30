@@ -1949,7 +1949,7 @@ import {
 } from "@/api/third/computer";
 import { typeCategory } from "@/api/third/category";
 import { getCustomerList } from "@/api/order";
-import { dictPmProject } from "@/api/third/project";
+import { dictByRoles } from "@/api/third/project";
 import mixin from "./export";
 import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -2381,7 +2381,7 @@ export default {
     },
     /** 获取责任人列表（项目经理） */
     getPersonLiableList() {
-      dictPmProject().then((res) => {
+      dictByRoles(['project_manager', 'project_manage_s']).then((res) => {
         if (res.code === 200) {
           this.personLiableList = res.data || [];
         }

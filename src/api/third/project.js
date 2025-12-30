@@ -64,6 +64,15 @@ export function dictNameProject2 (params) {
   });
 }
 
+// 根据角色列表获取用户字典
+export function dictByRoles (data) {
+  return request ({
+    url: '/project/dict/roles',
+    method: 'post',
+    data
+  });
+}
+
 export function authProject (data) {
   return request ({
     url: '/project/auth',

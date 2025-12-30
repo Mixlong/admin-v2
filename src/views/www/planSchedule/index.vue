@@ -376,7 +376,6 @@ import axios from "axios";
 import { commonData } from "./mixins/common";
 import IntelligentSearchForm from '@/components/IntelligentSearchForm';
 import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
-import { cacheSignal } from "react";
 export default {
   name: "PlanSchedule",
   mixins: [commonData, dynamicTableHeightMixin],
@@ -601,13 +600,16 @@ export default {
       }
     },
     $route: {
-      handler(route) {
+    async  handler(route) {
         if (route.name === "PlanSchedule") {
           this.queryParams.salesOrderNo = "";
-          const { salesOrderNo } = route?.params;
-          if (salesOrderNo) {
+ 
+          const { salesOrderNo ,orderId} = route?.params;
+          if (salesOrderNo||orderId) {
+            this.queryParams.p = 1;
+            this.queryParams.orderId = orderId;
             this.queryParams.salesOrderNo = salesOrderNo;
-            this.handleQuery();
+            this.getList();
           }
         }
       },
@@ -617,7 +619,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
       await vm.getCategoryComputerData();
-      vm.getCacheParamsFn(to?.params);
+      // vm.getCacheParamsFn(to?.params);
     });
   },
   mounted() {
@@ -859,6 +861,7 @@ export default {
         })
         .finally(() => {
           this.loading = false;
+          this.queryParams.orderId = "";
         });
     },
     handleAdd() {
@@ -909,7 +912,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.orderId = "";
-      this.queryParams.id = "";
+      this.queryParams.id ="";
       this.queryParams.p = 1;
       this.getList();
     },

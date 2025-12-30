@@ -100,10 +100,15 @@
         :formatter="reqUnitFormatter"
         width="80"
       />
-
+      <el-table-column
+        label="申请人"
+        prop="applicant"
+        align="center"
+        width="85"
+      />
       <!-- 初审状态 -->
       <el-table-column
-        label="初审状态"
+        label="初审"
         prop="firstState"
         align="center"
         width="120"
@@ -117,7 +122,7 @@
       </el-table-column>
 
       <!-- 会审状态 -->
-      <el-table-column label="会审状态"  align="center" width="668">
+      <el-table-column label="会审"  align="center" width="668">
         <template slot-scope="{ row }">
           <div style="display: flex; row-gap: 5px; flex-wrap: wrap">
             <div
@@ -138,10 +143,23 @@
           </div>
         </template>
       </el-table-column>
-
+      <!-- 终审状态 -->
+      <el-table-column
+        label="终审"
+        prop="fourthState"
+        align="center"
+        width="110"
+      >
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="getFinalState(row) === 0">待审核</el-tag>
+          <el-tag type="success" v-if="getFinalState(row) === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="getFinalState(row) === 2">已驳回</el-tag>
+          <div style="margin-top: 5px">审核人：{{ row.finalPerson }}</div>
+        </template>
+      </el-table-column>
       <!-- PMC审核状态 -->
       <el-table-column
-        label="PMC审核状态"
+        label="PMC"
         prop="thirdState"
         align="center"
         width="120"
@@ -154,27 +172,9 @@
         </template>
       </el-table-column>
 
-      <!-- 终审状态 -->
-      <el-table-column
-        label="终审状态"
-        prop="fourthState"
-        align="center"
-        width="110"
-      >
-        <template slot-scope="{ row }">
-          <el-tag type="warning" v-if="getFinalState(row) === 0">待审核</el-tag>
-          <el-tag type="success" v-if="getFinalState(row) === 1">已审核</el-tag>
-          <el-tag type="danger" v-if="getFinalState(row) === 2">已驳回</el-tag>
-          <div style="margin-top: 5px">审核人：{{ row.finalPerson }}</div>
-        </template>
-      </el-table-column>
+ 
 
-      <el-table-column
-        label="申请人"
-        prop="applicant"
-        align="center"
-        width="85"
-      />
+ 
       <el-table-column
         label="申请时间"
         prop="createTime"
@@ -674,7 +674,6 @@ export default {
   components: { FormDialog, AuditDialog, DetailDialog, Tooltip, Pagination },
   data() {
     return {
-      nickName:'杨贵来',
       loading: false,
       list: [],
       total: 0,

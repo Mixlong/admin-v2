@@ -549,10 +549,11 @@ export default {
   },
   mixins: [digiSmartJumpMixin],
   computed: {
-    ...mapGetters(["nickName"])
+    // ...mapGetters(["nickName"])
   },
   data() {
     return {
+      nickName:'杨贵来',
       form: {},
       urls: [],
       // 遮罩层

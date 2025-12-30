@@ -205,11 +205,11 @@
           </el-form-item>
 
           <el-form-item label="PCN文件:">
-            <MyUpload 
-              v-model="form.pcnFile"
-              :multiple="true"
-              :limit="10"
-            />
+                  <DrUpload v-model="form.pcnFile" :drag="true" :multiple="true" :limit="10" accept="*"
+                :css="{ width: '100%' }" class="modern-upload">
+
+              </DrUpload>
+ 
           </el-form-item>
         </template>
       </el-form>
@@ -256,13 +256,12 @@ import {
 import { categoryComputerDict } from "@/api/third/fileConfig";
 import { dictPmProject, dictMkProject } from "@/api/third/project";
 import { getCustomerList } from "@/api/order";
-import MyUpload from '@/components/MyUpload';
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
-
+import DrUpload from "@/components/MyUpload"
 export default {
   name: "PcnNotice",
   components: {
-    MyUpload,
+    DrUpload,
     TypedSelectLoadMore
   },
   data() {

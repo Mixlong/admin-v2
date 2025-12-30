@@ -99,13 +99,7 @@
           </el-row>
 
           <el-form-item label="附件:" v-show="form.file">
-            <el-button
-              icon="el-icon-download"
-              type="primary"
-              @click="zipFile(form.file)"
-            >
-              下载
-            </el-button>
+            <FileDisplay :file-url="form.file" />
           </el-form-item>
 
           <el-row :gutter="15" class="margin-bottom">
@@ -407,8 +401,10 @@
 
 <script>
 import tinymce from "@/views/components/Editor";
+import FileDisplay from "@/components/FileDisplay";
+
 export default {
-  components: { tinymce },
+  components: { tinymce, FileDisplay },
   props: ["classifyList", "involveUnitList", "deptOptions"],
   data() {
     return {

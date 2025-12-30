@@ -295,6 +295,18 @@
         <el-form-item label="PCBA SN">
           <el-input v-model.trim="deletePackingQueryParams.pcbaSn" clearable placeholder="请输入PCBA SN" style="width: 180px" />
         </el-form-item>
+        <el-form-item label="装箱时间">
+          <el-date-picker
+            v-model="deletePackingDateRange"
+            type="daterange"
+            value-format="yyyy-MM-dd"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            style="width: 240px"
+            @change="handleDeletePackingDateChange"
+          />
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleDeletePackingSearch">搜索</el-button>
           <el-button icon="el-icon-refresh" @click="handleDeletePackingReset">重置</el-button>
@@ -451,9 +463,12 @@ export default {
         l: 10,
         boxNo: "",
         sn: "",
-        pcbaSn: ""
+        pcbaSn: "",
+        startTime: "",
+        endTime: ""
       },
-      selectedDeletePackingRecords: []
+      selectedDeletePackingRecords: [],
+      deletePackingDateRange: []
     };
   },
   watch: {
@@ -462,7 +477,7 @@ export default {
         if (route.name !== "ProductRecord") return;
         const { params, query } = route;
 
-        const { type, categoryId, status, model, recordId, sn } = query;
+        const { type, categoryId, status, model, recordId, sn,salesOrderNo,categoryName,computerName } = query;
 
         this.queryParams.type = type ?? "";
         this.queryParams.categoryId = categoryId ?? "";
@@ -470,7 +485,9 @@ export default {
         this.queryParams.computerId = model ?? "";
         this.queryParams.recordId = recordId ?? "";
         this.queryParams.sn = sn ?? "";
-
+        this.queryParams.salesOrderNo = salesOrderNo ?? "";
+        this.queryParams.categoryName = categoryName;
+        this.queryParams.computerName = computerName;
         const { boxNo } = params;
         this.queryParams.boxNo = boxNo;
 
@@ -792,7 +809,25 @@ export default {
     handleDeletePackingRecords() {
       this.deletePackingDialogVisible = true;
       this.deletePackingQueryParams.p = 1;
+      // 设置默认半年内的时间范围
+      this.initDeletePackingDateRange();
       this.getDeletePackingData();
+    },
+
+    /** 初始化默认半年内的时间范围 */
+    initDeletePackingDateRange() {
+      const end = new Date();
+      const start = new Date();
+      start.setMonth(start.getMonth() - 6);
+      const formatDate = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+      this.deletePackingDateRange = [formatDate(start), formatDate(end)];
+      this.deletePackingQueryParams.startTime = formatDate(start);
+      this.deletePackingQueryParams.endTime = formatDate(end);
     },
 
     /** 获取全部装箱记录数据 */
@@ -832,9 +867,23 @@ export default {
         l: 10,
         boxNo: "",
         sn: "",
-        pcbaSn: ""
+        pcbaSn: "",
+        startTime: "",
+        endTime: ""
       };
+      this.deletePackingDateRange = [];
       this.getDeletePackingData();
+    },
+
+    /** 装箱时间范围变化 */
+    handleDeletePackingDateChange(val) {
+      if (val && val.length === 2) {
+        this.deletePackingQueryParams.startTime = val[0];
+        this.deletePackingQueryParams.endTime = val[1];
+      } else {
+        this.deletePackingQueryParams.startTime = "";
+        this.deletePackingQueryParams.endTime = "";
+      }
     },
 
     /** 删除箱子选择变化 */
@@ -889,8 +938,11 @@ export default {
         l: 10,
         boxNo: "",
         sn: "",
-        pcbaSn: ""
+        pcbaSn: "",
+        startTime: "",
+        endTime: ""
       };
+      this.deletePackingDateRange = [];
       this.deletePackingList = [];
       this.deletePackingTotal = 0;
       this.selectedDeletePackingRecords = [];

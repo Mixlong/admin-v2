@@ -115,14 +115,15 @@
         <template slot-scope="{ row }">
           <div class="flex flex-start">
             <el-button class="text-green" type="text" v-hasPermi="['third:order:prodSchedule:detail']"
-              @click="$router.push(`/www/planSchedule?orderId=${row.id}`)">
+              @click="$router.push({ name: 'PlanSchedule', params: { orderId: row.id } })">
               排产详情
             </el-button>
 
             <el-button v-hasPermi="['third:order:prod:record']" type="text" @click="
-              $router.push(
-                `/www/PartInfoView/production?orderId=${row.customerOrderNo}`
-              )
+              $router.push({
+                name: 'ProductRecord',
+                query: { salesOrderNo: row.salesOrderNo ,categoryName:row.categoryName,computerName:row.computerName}
+              })
               ">
               生产记录
             </el-button>

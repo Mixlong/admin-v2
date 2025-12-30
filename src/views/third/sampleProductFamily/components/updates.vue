@@ -970,6 +970,7 @@ import {
 } from "@/api/third/sampleProductFamily";
 import { typeCategory } from "@/api/third/category";
 import { getCustomerList } from "@/api/order";
+import { dictByRoles } from "@/api/third/project";
 import mixin from "./export";
 import commonSampleData from "@/mixins/commonSampleData";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -1144,6 +1145,8 @@ export default {
       handlebarSizeData: [],
       // 通讯协议
       sysProtocolList: [],
+      // 项目经理列表
+      personLiableList: [],
     };
   },
   components: {
@@ -1177,6 +1180,7 @@ export default {
   created() {
     this.echoWheelDiameter();
     this.getOptions();
+    this.getPersonLiableList();
   },
   methods: {
     getList() {
@@ -1204,6 +1208,20 @@ export default {
           this.customerNameData.page = pageNum;
           resolve();
         });
+      });
+    },
+    /** 获取项目经理列表 */
+    getPersonLiableList() {
+      dictByRoles(['project_manager', 'project_manage_s']).then((res) => {
+        if (res.code === 200 && res.data) {
+          this.personLiableList = (res.data || []).map(item => ({
+            dictValue: item.userName || item.nickName,
+            dictLabel: item.nickName || item.userName
+          }));
+        }
+      }).catch((error) => {
+        console.error("获取项目经理列表失败:", error);
+        this.personLiableList = [];
       });
     },
     clearRateOrType(type) {
