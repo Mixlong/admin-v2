@@ -553,7 +553,7 @@ export default {
   },
   data() {
     return {
-      nickName:'杨贵来',
+      // nickName:'杨贵来',
       form: {},
       urls: [],
       // 遮罩层

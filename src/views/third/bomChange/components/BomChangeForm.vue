@@ -506,7 +506,7 @@ export default {
   },
   data() {
     return {
-      nickName: "杨贵来",
+      // nickName: "杨贵来",
       // 型号
       computerOptions: [],
       // 对话框标题

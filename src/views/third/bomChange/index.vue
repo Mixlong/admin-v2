@@ -631,7 +631,7 @@ export default {
   mixins: [digiSmartJumpMixin],
   data() {
     return {
-      nickName:'杨贵来',
+      // nickName:'杨贵来',
       // 型号
       computerOptions: [],
       customerData: {
