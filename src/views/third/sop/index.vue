@@ -549,7 +549,7 @@ export default {
   },
   mixins: [digiSmartJumpMixin],
   computed: {
-    // ...mapGetters(["nickName"])
+    ...mapGetters(["nickName"])
   },
   data() {
     return {
