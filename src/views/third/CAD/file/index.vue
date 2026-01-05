@@ -523,41 +523,45 @@ export default {
     },
     handleAuthChange(row, status) {
       if (this.handleProPermit(row.isLicense)) return;
-      this.auth = {};
-
-      this.auth.why = "";
-      this.authDialogVisible = true;
+      
+      // 重置 auth 对象的属性，而不是替换整个对象
       this.auth.id = row.id;
-      this.auth.why = row.why;
+      this.auth.why = row.why || "";
       this.auth.idList = [];
       this.auth.status = row.status;
       this.checkStatus = status;
-      this.$refs.compUpdate
-        .changeCategory2(row.categoryId)
-        .then((computerFormOptions) => {
-          computerDictList({
-            categoryId: row.categoryId,
-            type: row.type,
-            status,
-          }).then((res) => {
-            this.disabledName = "";
-            for (let key of computerFormOptions) {
-              if (key.model == row.computerId) {
-                this.disabledName = key.name;
-              }
+      this.authDialogVisible = true;
+      
+      // 使用 categoryComputerDict 获取品类数据，而不是依赖 compUpdate 组件
+      categoryComputerDict().then((response) => {
+        const categoryData = response.data.find(item => item.id === row.categoryId);
+        const computerFormOptions = categoryData ? categoryData.computerList : [];
+        
+        computerDictList({
+          categoryId: row.categoryId,
+          type: row.type,
+          status,
+        }).then((res) => {
+          this.disabledName = "";
+          for (let key of computerFormOptions) {
+            if (key.model == row.computerId) {
+              this.disabledName = key.name;
             }
-            this.similarList = res.data;
-          });
+          }
+          this.similarList = res.data;
         });
+      });
     },
     handleAuthBatchChange(type) {
       if (this.ids.length === 0) {
         return this.msgError("请选择批量处理项");
       }
 
+      // 重置 auth 对象的属性
       this.auth.why = "";
-      this.auth.id = "";
-      this.auth.status = "";
+      this.auth.id = undefined;
+      this.auth.status = undefined;
+      this.auth.idList = [];
       this.authDialogVisible = true;
       this.isBatchType = type;
     },
@@ -596,7 +600,7 @@ export default {
       let data = [];
       let { ids, auth } = this;
 
-      if (auth.id === "") {
+      if (!auth.id || auth.id === "") {
         if (this.isBatchType === 1) {
           const flag = ids.some((item) => item.status !== 1);
           if (flag) {

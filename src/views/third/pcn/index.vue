@@ -205,11 +205,11 @@
           </el-form-item>
 
           <el-form-item label="PCN文件:">
-                  <DrUpload v-model="form.pcnFile" :drag="true" :multiple="true" :limit="10" accept="*"
-                :css="{ width: '100%' }" class="modern-upload">
-
-              </DrUpload>
- 
+       <DrUpload v-model="form.pcnFile">
+              <div class="text-left">
+                <el-button size="mini" type="primary">点击上传</el-button>
+              </div>
+            </DrUpload>
           </el-form-item>
         </template>
       </el-form>
