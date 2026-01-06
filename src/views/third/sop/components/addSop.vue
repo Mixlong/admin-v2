@@ -2375,16 +2375,20 @@ export default {
           console.log('提交数据:', JSON.stringify(submitData.tsopChangeNotice, null, 2));
 
           if (this.form.id) {
-            // 旧SOP编辑时，如果不是重新审核，删除tsopChangeNotice字段
+            // 判断是否需要自动审核通过（无需审核模式）
             const isOldSopNoAudit = submitData.isOldSop == 1 && this.form.auditAdjustType === 'none';
+            const isNewSopNoAudit = submitData.isOldSop == 0 && this.form.auditAdjustType === 'none';
+            const needAutoApprove = isOldSopNoAudit || isNewSopNoAudit;
+            
+            // 旧SOP编辑时，如果不是重新审核，删除tsopChangeNotice字段
             if (submitData.id && submitData.isOldSop == 1 && this.form.auditAdjustType !== 'full') {
               delete submitData.tsopChangeNotice;
             }
 
             sopUpdate(submitData)
               .then(() => {
-                // 旧版SOP选择"无需审核"时，调用审核接口自动通过
-                if (isOldSopNoAudit) {
+                // 选择"无需审核"时，调用审核接口自动通过
+                if (needAutoApprove) {
                   return sopState({
                     id: submitData.id,
                     state: 1 // 1=通过

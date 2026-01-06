@@ -9,8 +9,27 @@
     :show-close="false"
     @close="close"
   >
+    <!-- 排拉图展示区域 -->
+    <div v-if="sortImgList.length > 0" class="sort-img-section">
+      <div class="sort-img-header">
+        <i class="el-icon-s-grid"></i>
+        <span>排拉图</span>
+      </div>
+      <div class="sort-img-content">
+        <el-image
+          v-for="(img, idx) in sortImgList"
+          :key="idx"
+          :src="img"
+          :preview-src-list="sortImgList"
+          fit="contain"
+          class="sort-img"
+        />
+      </div>
+    </div>
+
+    <!-- 工位轮播 -->
     <el-carousel
-      v-if="visible"
+      v-if="visible && detailInfo.length > 0"
       ref="carousel"
       arrow="always"
       trigger="click"
@@ -70,6 +89,7 @@ export default {
     return {
       flag: true,
       detailInfo: [],
+      sortImgList: [], // 排拉图列表
     };
   },
   watch: {
@@ -90,11 +110,18 @@ export default {
   methods: {
     close() {
       this.$emit("update:visible", false);
+      this.sortImgList = [];
     },
-    async getSopInfo(detailId) {
+    async getSopInfo(detailId, rowData) {
       try {
         const { data } = await sopInfo(detailId);
         this.detailInfo = data;
+        // 如果传入了rowData，从中获取排拉图（逗号分隔的多图）
+        if (rowData && rowData.sortImg) {
+          this.sortImgList = rowData.sortImg.split(',').filter(url => url.trim());
+        } else {
+          this.sortImgList = [];
+        }
       } catch (error) {
         console.error(error);
       }
@@ -121,6 +148,58 @@ export default {
   .el-dialog__header {
     display: none;
   }
+
+  // 排拉图区域样式
+  .sort-img-section {
+    margin-bottom: 20px;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .sort-img-header {
+      background: #f5f7fa;
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      border-bottom: 1px solid #e4e7ed;
+
+      i {
+        margin-right: 8px;
+        color: #409eff;
+      }
+    }
+
+    .sort-img-content {
+      padding: 15px;
+      background: #fff;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #c0c4cc;
+        border-radius: 3px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #f5f7fa;
+      }
+
+      .sort-img {
+        flex-shrink: 0;
+        width: 150px;
+        height: 150px;
+        cursor: pointer;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+    }
+  }
+
   .el-carousel {
     display: flex;
     flex-direction: column;

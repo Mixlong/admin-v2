@@ -726,7 +726,7 @@ export default {
     // 详情
     handleDetail(row) {
       this.isSopDetailDia = true;
-      this.$refs.isSopDetailRef.getSopInfo(row.id);
+      this.$refs.isSopDetailRef.getSopInfo(row.id, row);
     },
     /** 删除按钮操作 */
     handleDelete(row) {

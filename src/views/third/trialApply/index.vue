@@ -143,21 +143,7 @@
           </div>
         </template>
       </el-table-column>
-      <!-- 终审状态 -->
-      <el-table-column
-        label="终审"
-        prop="fourthState"
-        align="center"
-        width="110"
-      >
-        <template slot-scope="{ row }">
-          <el-tag type="warning" v-if="getFinalState(row) === 0">待审核</el-tag>
-          <el-tag type="success" v-if="getFinalState(row) === 1">已审核</el-tag>
-          <el-tag type="danger" v-if="getFinalState(row) === 2">已驳回</el-tag>
-          <div style="margin-top: 5px">审核人：{{ row.finalPerson }}</div>
-        </template>
-      </el-table-column>
-      <!-- PMC审核状态 -->
+            <!-- PMC审核状态 -->
       <el-table-column
         label="PMC"
         prop="thirdState"
@@ -172,6 +158,21 @@
         </template>
       </el-table-column>
 
+      <!-- 终审状态 -->
+      <el-table-column
+        label="终审"
+        prop="fourthState"
+        align="center"
+        width="110"
+      >
+        <template slot-scope="{ row }">
+          <el-tag type="warning" v-if="getFinalState(row) === 0">待审核</el-tag>
+          <el-tag type="success" v-if="getFinalState(row) === 1">已审核</el-tag>
+          <el-tag type="danger" v-if="getFinalState(row) === 2">已驳回</el-tag>
+          <div style="margin-top: 5px">审核人：{{ row.finalPerson }}</div>
+        </template>
+      </el-table-column>
+ 
  
 
  
