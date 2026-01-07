@@ -412,8 +412,8 @@
       <el-col :xs="0" :span="2"></el-col>
     </el-row>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
-      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="submitForm" :loading="submitLoading">确 定</el-button>
+      <el-button @click="dialogVisible = false" :disabled="submitLoading">取 消</el-button>
     </div>
   </el-dialog>
 </template>
@@ -443,6 +443,7 @@ export default {
     return {
       dialogVisible: false,
       title: "",
+      submitLoading: false,
       // 部门列表
       deptOptions: [],
       // 表单参数
@@ -886,8 +887,12 @@ export default {
     },
     /** 提交按钮 */
     submitForm: function () {
+      // 防止重复提交
+      if (this.submitLoading) return
+      
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          this.submitLoading = true
           let param = cloneDeep(this.form);
 
           if (param.id) {
@@ -918,6 +923,10 @@ export default {
                 this.dialogVisible = false;
                 this.$parent.getList();
               }
+            }).catch(() => {
+              this.submitLoading = false;
+            }).finally(() => {
+              this.submitLoading = false;
             });
           } else {
             bomAdd(param).then((response) => {
@@ -926,6 +935,10 @@ export default {
                 this.dialogVisible = false;
                 this.$parent.getList();
               }
+            }).catch(() => {
+              this.submitLoading = false;
+            }).finally(() => {
+              this.submitLoading = false;
             });
           }
         }

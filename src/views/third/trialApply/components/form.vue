@@ -287,7 +287,7 @@
                   multiple
                   collapse-tags
                     
-                >
+                > 
                   <el-option v-for="item in finalJudgmentData" :label="item.personnel" :value="item.personnel"
                     :key="item.id"></el-option>
                 </el-select>
@@ -805,6 +805,9 @@ export default {
       return newList
     },
     submitForm() {
+      // 防止重复提交
+      if (this.submitLoading) return
+      
       this.$refs['form'].validate((valid) => {
         if (valid) {
           this.submitLoading = true

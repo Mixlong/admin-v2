@@ -845,12 +845,24 @@
               v-NoData="serialLevelData[row.serialLevel]"
             />
           </el-table-column>
+          
           <el-table-column
             label="实际轮径"
             prop="showWheelDiameter"
             align="center"
             width="95"
           />
+                    <el-table-column
+            label="周长"
+            prop="perimeter"
+            align="center"
+            width="95"
+            column-key="perimeter"
+            :filters="getFiltersData('perimeter')"
+            :filter-method="filterHandler"
+          >
+            <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
+          </el-table-column>
           <el-table-column
             label="实际协议"
             prop="showAgreement"
@@ -888,17 +900,7 @@
           >
             <span slot-scope="scope" v-NoData="scope.row.undervoltage"></span>
           </el-table-column>
-          <el-table-column
-            label="周长"
-            prop="perimeter"
-            align="center"
-            width="95"
-            column-key="perimeter"
-            :filters="getFiltersData('perimeter')"
-            :filter-method="filterHandler"
-          >
-            <span slot-scope="scope" v-NoData="scope.row.perimeter"></span>
-          </el-table-column>
+ 
           <el-table-column
             label="助力档位数"
             prop="powerGear"
