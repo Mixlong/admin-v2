@@ -17,7 +17,7 @@
       </el-table-column>
       <el-table-column label="版本号" prop="versionNumber" width="150" align="center"/>
       <el-table-column label="芯片平台" prop="chipPlatform" width="150" align="center" show-overflow-tooltip />
-      <el-table-column label="客户" prop="customer" width="130" align="center" show-overflow-tooltip />
+      <el-table-column label="供应商" prop="customer" width="130" align="center" show-overflow-tooltip />
       <el-table-column label="项目" prop="project" width="150" align="center" show-overflow-tooltip />
       <el-table-column label="版本描述" prop="versionDescription" min-width="180" align="center" show-overflow-tooltip />
       <el-table-column label="状态" prop="statusName" width="80" align="center">
@@ -123,9 +123,9 @@ export default {
         },
         {
           key: "customer",
-          label: "客户",
+          label: "供应商",
           type: "input",
-          placeholder: "请输入客户",
+          placeholder: "请输入供应商",
         },
         {
           key: "project",

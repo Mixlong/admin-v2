@@ -17,8 +17,8 @@
 
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="客户" prop="customer">
-            <el-input v-model="form.customer" placeholder="请输客户" clearable />
+          <el-form-item label="供应商" prop="customer">
+            <el-input v-model="form.customer" placeholder="请输供应商" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -101,7 +101,7 @@ export default {
           { required: true, message: "请输入芯片平台", trigger: "blur" },
         ],
         customer: [
-          { required: true, message: "请输入客户名称", trigger: "blur" },
+          { required: true, message: "请输入供应商名称", trigger: "blur" },
         ],
         project: [
           { required: true, message: "请输入项目名称", trigger: "blur" },
