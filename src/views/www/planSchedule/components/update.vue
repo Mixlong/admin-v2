@@ -1162,6 +1162,15 @@ export default {
         return;
       }
 
+      // ✅ 编辑修改时：将生产日期范围的起始时间同步到主表单 date 字段
+      // dateRange 的 value-format 是 "yyyy-MM-dd HH:mm:ss"，这里取开始日期并只保留 yyyy-MM-dd
+      if (this.form && this.form.id && rowData.dateRange[0]) {
+        const startDateOnly = String(rowData.dateRange[0]).split(' ')[0];
+        if (startDateOnly) {
+          this.form.date = startDateOnly;
+        }
+      }
+
       console.log('🎯 日期范围有效，开始处理...');
 
       // 清除该行的旧排产数据
