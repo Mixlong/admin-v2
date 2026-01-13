@@ -870,6 +870,7 @@ export default {
         listComputer({
           p: page,
           key: this.form.categoryId,
+          l:1000,
         }).then((res) => {
           const { list, total, pageNum, pageSize } = res.data;
           if (more) {
