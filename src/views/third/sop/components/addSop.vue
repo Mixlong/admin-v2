@@ -2371,8 +2371,11 @@ export default {
           // 添加isModified字段，告诉后端是否修改了SOP
           submitData.isModified = this.checkDataModified() ? 1 : 0;
 
-          // 仅工程审核：提交参数最外层 state 固定为 0
-          if (this.form.auditAdjustType === "engineer") {
+          // 仅工程审核/重新审核：提交参数最外层 state 固定为 0
+          if (
+            this.form.auditAdjustType === "engineer" ||
+            this.form.auditAdjustType === "full"
+          ) {
             submitData.state = 0;
           }
 
