@@ -35,15 +35,85 @@
           </div>
         </el-tooltip>
 
-        <!-- Windows版迪太云管理下载 -->
-        <div @click="handleDownload" class="download-btn-container">
-          <img
-            src="@/assets/logo/desktop_on.png"
-            class="download-icon"
-            alt="下载"
-          />
-          <span class="download-text">迪大圣Windows版</span>
-        </div>
+        <!-- 迪大圣下载 -->
+        <el-dropdown 
+          class="download-dropdown-container"
+          trigger="hover"
+          placement="bottom"
+        >
+          <div class="download-btn-container">
+            <img
+              src="@/assets/logo/desktop_on.png"
+              class="download-icon"
+              alt="下载"
+            />
+            <span class="download-text">D-Space</span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </div>
+          <el-dropdown-menu slot="dropdown" class="download-dropdown-menu">
+            <div class="download-menu-header">
+              <i class="el-icon-download"></i>
+              <span>扫码下载D-Space</span>
+            </div>
+            <el-dropdown-item>
+              <div class="download-menu-item qr-item">
+                <div class="qr-section pc-section" @click="handleDownload('pc')">
+                  <div class="qr-code pc-placeholder">
+                    <i class="el-icon-monitor"></i>
+                  </div>
+                  <span class="qr-label">
+                    <i class="el-icon-monitor"></i>
+                    PC版
+                  </span>
+                  <span class="qr-tip">点击下载</span>
+                </div>
+                <div class="qr-section">
+                  <div class="qr-code">
+                    <vue-qr 
+                      :text="androidDownloadUrl" 
+                      :size="116"
+                      :margin="0"
+                      :logoSrc="logoSrc"
+                      :logoScale="0.22"
+                      :logoMargin="2"
+                      :logoCornerRadius="4"
+                      :correctLevel="3"
+                      :dotScale="1"
+                    />
+                  </div>
+                  <span class="qr-label">
+                    <i class="el-icon-mobile-phone"></i>
+                    Android
+                  </span>
+                  <span class="qr-tip">扫码下载</span>
+                </div>
+                <div class="qr-section">
+                  <div class="qr-code">
+                    <vue-qr 
+                      :text="iosDownloadUrl" 
+                      :size="116"
+                      :margin="0"
+                      :logoSrc="logoSrc"
+                      :logoScale="0.22"
+                      :logoMargin="2"
+                      :logoCornerRadius="4"
+                      :correctLevel="3"
+                      :dotScale="1"
+                    />
+                  </div>
+                  <span class="qr-label">
+                    <svg class="ios-icon" viewBox="0 0 1024 1024" width="14" height="14">
+                      <path d="M747.52 170.666667c-48.64 56.32-128 99.84-207.36 94.72-9.813333-76.8 28.16-158.72 71.68-209.92 48.64-56.32 133.12-97.28 202.24-99.84 4.906667 81.92-18.773333 158.72-66.56 215.04zM1024 750.933333c-23.04 53.76-33.28 76.8-61.44 123.733334-40.96 66.56-97.28 148.48-168.96 148.48-61.44 0-76.8-40.96-158.72-40.96s-102.4 40.96-158.72 40.96c-71.68 0-123.733333-76.8-168.96-148.48C230.4 742.4 189.44 563.2 266.24 435.2c53.76-89.6 138.24-143.36 220.16-143.36 81.92 0 133.12 40.96 199.68 40.96 61.44 0 107.52-40.96 204.8-40.96 71.68 0 148.48 40.96 199.68 107.52-176.64 97.28-148.48 353.28 33.28 435.2z" fill="#333333"></path>
+                    </svg>
+                    iOS
+                  </span>
+                  <span class="qr-tip">扫码下载</span>
+                </div>
+              </div>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+          </el-dropdown-menu>
+        </el-dropdown>
       </template>
 
       <el-dropdown
@@ -97,6 +167,7 @@ import Search from "@/components/HeaderSearch";
 import RuoYiGit from "@/components/RuoYi/Git";
 import RuoYiDoc from "@/components/RuoYi/Doc";
 import VersionHistoryDialog from "@/components/VersionHistoryDialog.vue";
+import VueQr from "vue-qr";
 
 export default {
   components: {
@@ -108,10 +179,15 @@ export default {
     RuoYiGit,
     RuoYiDoc,
     VersionHistoryDialog,
+    VueQr,
   },
   data() {
     return {
       hasNewVersion: false, // 是否有新版本（显示红点）
+      androidDownloadUrl: 'https://bikewise.oss-cn-shenzhen.aliyuncs.com/d-space/app-version/apk/d-space.apk', // Android整包下载地址
+      iosDownloadUrl: 'https://www.pgyer.com/nEKySHu2', // iOS下载链接
+      pcDownloadUrl: '', // PC下载链接（动态获取）
+      logoSrc: require('@/assets/logo/desktop_on.png'), // Logo路径
     };
   },
   computed: {
@@ -144,9 +220,11 @@ export default {
     },
   },
 
-  mounted() {
+  async mounted() {
     // 检查是否有新版本（用于显示红点提示）
     this.checkNewVersionStatus();
+    // 获取PC下载链接
+    await this.getPCDownloadUrl();
   },
   methods: {
     /**
@@ -225,7 +303,44 @@ export default {
       return "windows"; // 默认返回 Windows
     },
 
-    async handleDownload() {
+    /**
+     * 获取PC下载链接
+     */
+    async getPCDownloadUrl() {
+      try {
+        const os = this.detectOS();
+        const timestamp = new Date().getTime();
+        let ymlUrl = "";
+        
+        if (os === "mac") {
+          ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest-mac.yml?t=${timestamp}`;
+        } else {
+          ymlUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/latest.yml?t=${timestamp}`;
+        }
+
+        const response = await fetch(ymlUrl);
+        if (response.ok) {
+          const ymlText = await response.text();
+          const urlMatch = ymlText.match(/url:\s*(\S+)/);
+          const defaultFileName = os === "mac" ? "DigiSmart-1.0.3.dmg" : "DigiSmart-Setup-1.0.3.exe";
+          let fileName = urlMatch ? urlMatch[1] : defaultFileName;
+          
+          if (os === "mac" && fileName.endsWith(".zip")) {
+            fileName = fileName.replace(/\.zip$/, ".dmg");
+          }
+          
+          this.pcDownloadUrl = `https://digiwise-web.oss-eu-central-1.aliyuncs.com/file/updates/${fileName}`;
+        }
+      } catch (error) {
+        console.error("获取PC下载链接失败:", error);
+      }
+    },
+
+    async handleDownload(platform = 'pc') {
+      if (platform !== 'pc') {
+        return;
+      }
+
       try {
         // 检测操作系统
         const os = this.detectOS();
@@ -458,14 +573,19 @@ export default {
       }
     }
 
+    .download-dropdown-container {
+      margin: 5px 8px;
+      margin-top: 10px;
+      height: 35px;
+      line-height: 35px;
+    }
+
     .download-btn-container {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 0px 12px;
-      margin: 5px 8px;
-      margin-top: 10px;
-      height: auto;
+      height: 35px;
       background: rgb(56, 128, 246);
       border-radius: 16px;
       text-decoration: none;
@@ -475,8 +595,6 @@ export default {
       transition: all 0.3s ease;
       cursor: pointer;
       border: 1px solid rgb(56, 128, 246);
-      height: 35px;
-      line-height: 35px;
       position: relative;
       overflow: hidden;
 
@@ -520,6 +638,13 @@ export default {
         color: #fff;
         white-space: nowrap;
         line-height: 1;
+        position: relative;
+        z-index: 1;
+      }
+
+      .el-icon--right {
+        margin-left: 2px;
+        font-size: 12px;
         position: relative;
         z-index: 1;
       }
@@ -581,5 +706,143 @@ export default {
 
 .logo-image {
   transition: filter 0.3s ease;
+}
+
+// 下载菜单样式
+.download-dropdown-menu {
+  padding: 0;
+  min-width: 480px;
+
+  .download-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #303133;
+    font-weight: 500;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+
+    i {
+      font-size: 16px;
+      color: #409eff;
+    }
+  }
+
+  .download-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #606266;
+
+    i {
+      font-size: 18px;
+      color: #409eff;
+    }
+
+    &.qr-item {
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 24px 20px;
+      gap: 30px;
+    }
+  }
+
+  .qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    transition: all 0.3s;
+
+    &.pc-section {
+      cursor: pointer;
+
+      &:hover {
+        transform: translateY(-2px);
+
+        .qr-code {
+          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+          border-color: #409eff;
+        }
+
+        .qr-tip {
+          color: #409eff;
+        }
+      }
+    }
+
+    .qr-code {
+      width: 120px;
+      height: 120px;
+      border: 2px solid #e4e7ed;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      padding: 2px;
+
+      ::v-deep canvas,
+      ::v-deep img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+
+      &.pc-placeholder {
+        background: linear-gradient(135deg, #409eff 0%, #3880f6 100%);
+        border-color: #409eff;
+
+        i {
+          font-size: 48px;
+          color: #fff;
+        }
+      }
+    }
+
+    .qr-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 13px;
+      color: #606266;
+      font-weight: 500;
+      text-align: center;
+      min-height: 20px;
+
+      i,
+      svg {
+        font-size: 14px;
+        color: #909399;
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        margin-right: 6px;
+      }
+
+      .ios-icon {
+        fill: #909399;
+      }
+    }
+
+    .qr-tip {
+      font-size: 12px;
+      color: #909399;
+      transition: color 0.3s;
+      text-align: center;
+    }
+  }
 }
 </style>
