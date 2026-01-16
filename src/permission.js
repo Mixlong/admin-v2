@@ -7,25 +7,34 @@ import { start, done } from "@/utils/nprogress";
 const whiteList = ["/login", "/auth-redirect", "/bind", "/register", "/survey", "/digiSmart/redirect"];
 
 // 获取第一个可访问的菜单路径
-function getFirstAccessibleRoute(routes) {
+function getFirstAccessibleRoute(routes, parentPath = '') {
   for (let route of routes) {
     // 跳过隐藏的路由
     if (route.hidden) {
       continue;
     }
     
-    // 如果有子路由，递归查找
+    // 构建当前路由的完整路径
+    let fullPath = route.path;
+    if (fullPath && !fullPath.startsWith('/') && parentPath) {
+      // 相对路径，需要拼接父路径
+      fullPath = parentPath.endsWith('/') 
+        ? parentPath + fullPath 
+        : parentPath + '/' + fullPath;
+    }
+    
+    // 如果有子路由，递归查找（传递当前完整路径作为父路径）
     if (route.children && route.children.length > 0) {
-      const firstChild = getFirstAccessibleRoute(route.children);
+      const firstChild = getFirstAccessibleRoute(route.children, fullPath);
       if (firstChild) {
         return firstChild;
       }
     }
     
-    // 如果当前路由有 path 且不是重定向路由
-    if (route.path && route.path !== '*') {
-      // 构建完整路径
-      return route.path;
+    // 如果当前路由有 path 且不是重定向路由，且不是纯目录（没有 component 或 redirect 为 noRedirect 的目录）
+    // 只有叶子节点或有实际组件的路由才返回
+    if (fullPath && fullPath !== '*' && route.component && route.redirect !== 'noRedirect') {
+      return fullPath;
     }
   }
   return null;

@@ -9,7 +9,7 @@
               ? require('@/assets/logo/logo.png')
               : require('@/assets/logo/logo1.png')
             " alt="" class="logo-image" />
-          <div class="system-name">迪太云管理系统</div>
+          <div class="system-name">运营管理平台</div>
         </template>
         <!-- 折叠状态显示字母D -->
         <div v-else class="logo-text">D</div>
