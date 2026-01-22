@@ -236,6 +236,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { stsTestList, stsTestExport } from "@/api/third/testApi";
 import { CategoryMixin } from "@/mixins/common";
 import IntelligentSearchForm from "@/components/IntelligentSearchForm";
@@ -264,6 +265,9 @@ export default {
       waterproofingTestStandard: "",
       // 备注
       gasCopnfigRemark: "",
+      // 请求取消相关
+      cancelTokenSource: null,
+      requestCounter: 0,
       form: {},
       // 遮罩层
       loading: true,
@@ -426,7 +430,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 40,
+        l: 20,
         categoryName: "",
         computerName: "",
         pcbaSn: "",
@@ -538,21 +542,52 @@ export default {
   },
   created() {
     // 处理路由参数
+    let hasParams = false;
     if (this.$route.name === "StsTestResult") {
       const { params } = this.$route;
       const { sn, recordId } = params;
       
       // 只设置 queryParams 中已定义的字段
-      if (sn) this.queryParams.sn = sn;
-      if (recordId) this.queryParams.recordId = recordId;
+      if (sn) {
+        this.queryParams.sn = sn;
+        hasParams = true;
+      }
+      if (recordId) {
+        this.queryParams.recordId = recordId;
+        hasParams = true;
+      }
     } else {
       // 从 props 中获取参数
-      if (this.sn) this.queryParams.sn = this.sn;
-      if (this.pcbaSn) this.queryParams.pcbaSn = this.pcbaSn;
+      if (this.sn) {
+        this.queryParams.sn = this.sn;
+        hasParams = true;
+      }
+      if (this.pcbaSn) {
+        this.queryParams.pcbaSn = this.pcbaSn;
+        hasParams = true;
+      }
     }
     
-    this.getCategoryData();
-    this.getList();
+    // 获取品类数据,如果没有参数则默认选择第一个品类和型号
+    this.getCategoryData().then(() => {
+      if (!hasParams && this.dictList.length > 0) {
+        // 默认选择第一个品类
+        const firstCategory = this.dictList[0];
+        this.queryParams.categoryName = firstCategory.name;
+        
+        // 设置该品类下的型号列表
+        this.computerOptions = firstCategory.computerList || [];
+        
+        // 默认选择第一个型号
+        if (this.computerOptions.length > 0) {
+          this.queryParams.computerName = this.computerOptions[0].name;
+        }
+      }
+      
+      // 查询列表
+      this.getList();
+    });
+    
     this.getDicts("sys_test_session").then((res) => {
       this.testList = res.data;
     });
@@ -560,12 +595,38 @@ export default {
   methods: {
     /** 查询品牌列表 */
     getList() {
+      // 取消之前的请求
+      if (this.cancelTokenSource) {
+        this.cancelTokenSource.cancel('新的请求已发起，取消旧请求');
+      }
+      
+      // 创建新的取消令牌
+      this.cancelTokenSource = axios.CancelToken.source();
+      
+      // 递增请求计数器
+      const currentRequest = ++this.requestCounter;
+      
       this.loading = true;
-      stsTestList(this.queryParams).then((response) => {
-        this.brandList = response.data.list;
-        this.total = response.data.total;
+      
+      stsTestList({
+        ...this.queryParams,
+        cancelToken: this.cancelTokenSource.token
+      }).then((response) => {
+        // 只有当这是最新的请求时才更新数据
+        if (currentRequest === this.requestCounter) {
+          this.brandList = response.data.list;
+          this.total = response.data.total;
+        }
+      }).catch((error) => {
+        // 如果是取消请求，不显示错误
+        if (!axios.isCancel(error)) {
+          console.error('查询失败:', error);
+        }
       }).finally(() => {
-        this.loading = false;
+        // 只有当这是最新的请求时才关闭loading
+        if (currentRequest === this.requestCounter) {
+          this.loading = false;
+        }
       });
     },
     // 测试详情
