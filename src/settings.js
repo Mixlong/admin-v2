@@ -1,5 +1,5 @@
 module.exports = {
-  title: "迪太云",
+  title: "Digiwise-运营管理平台",
   /**
    * 是否系统布局配置
    */
@@ -23,7 +23,7 @@ module.exports = {
   /**
    * 是否显示动态标题
    */
-  dynamicTitle: true,
+  dynamicTitle: false,
 
   /**
    * @type {string | array} 'production' | ['production', 'development']
