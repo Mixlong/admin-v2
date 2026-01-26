@@ -1,21 +1,23 @@
 <template>
   <div class="app-container shipment-order-grid">
-    <vxe-grid
-      ref="gridRef"
-      v-bind="gridOptions"
-      v-on="gridEvents"
-    >
+    <vxe-grid ref="gridRef" v-bind="gridOptions" v-on="gridEvents">
       <!-- 工具栏按钮 -->
       <template #toolbar_buttons>
         <vxe-button status="primary" icon="vxe-icon-add" @click="handleAdd">新增订单</vxe-button>
         <vxe-button status="success" icon="vxe-icon-save" @click="handleSave">保存修改</vxe-button>
-        <vxe-button status="warning" icon="vxe-icon-download" @click="handleExport">导出Excel</vxe-button>
+        <vxe-button status="warning" icon="vxe-icon-download" @click="handleExport"
+          >导出Excel</vxe-button
+        >
       </template>
-      
+
       <!-- 操作列 -->
       <template #action="{ row }">
-        <vxe-button mode="text" status="primary" icon="vxe-icon-edit" @click="handleEdit(row)">编辑</vxe-button>
-        <vxe-button mode="text" status="error" icon="vxe-icon-delete" @click="handleDelete(row)">删除</vxe-button>
+        <vxe-button mode="text" status="primary" icon="vxe-icon-edit" @click="handleEdit(row)"
+          >编辑</vxe-button
+        >
+        <vxe-button mode="text" status="error" icon="vxe-icon-delete" @click="handleDelete(row)"
+          >删除</vxe-button
+        >
       </template>
     </vxe-grid>
   </div>
@@ -64,36 +66,36 @@ const gridOptions = reactive({
   },
   columns: [
     { type: 'seq', title: '序号', width: 60, fixed: 'left' },
-    { 
-      field: 'customerName', 
-      title: '客户名称', 
-      width: 140, 
+    {
+      field: 'customerName',
+      title: '客户名称',
+      width: 140,
       fixed: 'left',
       editRender: { name: 'input' }
     },
-    { 
-      field: 'u8OrderNo', 
-      title: 'U8单号', 
+    {
+      field: 'u8OrderNo',
+      title: 'U8单号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'u8Available', 
-      title: 'U8是否可用', 
+    {
+      field: 'u8Available',
+      title: 'U8是否可用',
       width: 120,
       cellRender: {
         name: 'VxeSwitch'
       }
     },
-    { 
-      field: 'bomCode', 
-      title: 'BOM编码', 
+    {
+      field: 'bomCode',
+      title: 'BOM编码',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeBomAudited', 
-      title: 'E树BOM审核', 
+    {
+      field: 'etreeBomAudited',
+      title: 'E树BOM审核',
       width: 120,
       editRender: {
         name: 'select',
@@ -104,35 +106,35 @@ const gridOptions = reactive({
         ]
       }
     },
-    { 
-      field: 'configModel', 
-      title: '配置型号', 
+    {
+      field: 'configModel',
+      title: '配置型号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'keyModel', 
-      title: '按键型号', 
+    {
+      field: 'keyModel',
+      title: '按键型号',
       width: 140,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'customerOrderNo', 
-      title: '客户订单号', 
+    {
+      field: 'customerOrderNo',
+      title: '客户订单号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeOrderNo', 
-      title: 'E树订单号', 
+    {
+      field: 'etreeOrderNo',
+      title: 'E树订单号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'orderDate', 
-      title: '上单时间', 
+    {
+      field: 'orderDate',
+      title: '上单时间',
       width: 120,
-      editRender: { 
+      editRender: {
         name: 'input',
         attrs: { type: 'date' }
       }
@@ -140,29 +142,29 @@ const gridOptions = reactive({
     {
       title: '数量信息',
       children: [
-        { 
-          field: 'orderQuantity', 
-          title: '订单数量', 
+        {
+          field: 'orderQuantity',
+          title: '订单数量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           }
         },
-        { 
-          field: 'shippedQuantity', 
-          title: '已发货量', 
+        {
+          field: 'shippedQuantity',
+          title: '已发货量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           }
         },
-        { 
-          field: 'unshippedQuantity', 
-          title: '未发货量', 
+        {
+          field: 'unshippedQuantity',
+          title: '未发货量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           }
@@ -172,52 +174,52 @@ const gridOptions = reactive({
     {
       title: '交期信息',
       children: [
-        { 
-          field: 'deliveryPlan', 
-          title: '交货计划', 
+        {
+          field: 'deliveryPlan',
+          title: '交货计划',
           width: 120,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'date' }
           }
         },
-        { 
-          field: 'pmcDeliveryDate', 
-          title: 'PMC可达成交期', 
+        {
+          field: 'pmcDeliveryDate',
+          title: 'PMC可达成交期',
           width: 140,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'date' }
           }
         }
       ]
     },
-    { 
-      field: 'deliveryChangeLog', 
-      title: '交期变更履历', 
+    {
+      field: 'deliveryChangeLog',
+      title: '交期变更履历',
       minWidth: 200,
-      editRender: { 
+      editRender: {
         name: 'textarea',
         attrs: { autosize: { minRows: 2, maxRows: 4 } }
       }
     },
-    { 
-      field: 'specialRemark', 
-      title: '特殊备注', 
+    {
+      field: 'specialRemark',
+      title: '特殊备注',
       minWidth: 200,
-      editRender: { 
+      editRender: {
         name: 'textarea',
         attrs: { autosize: { minRows: 2, maxRows: 4 } }
       }
     },
-    { 
-      field: 'orderDays', 
-      title: '订单已耗时(天)', 
+    {
+      field: 'orderDays',
+      title: '订单已耗时(天)',
       width: 130
     },
-    { 
-      title: '操作', 
-      width: 150, 
+    {
+      title: '操作',
+      width: 150,
       fixed: 'right',
       slots: { default: 'action' }
     }
@@ -239,7 +241,7 @@ const gridOptions = reactive({
             pageNum: page.currentPage,
             pageSize: page.pageSize
           })
-          
+
           if (res && res.code === 200) {
             return {
               result: res.data?.list || [],
@@ -302,25 +304,25 @@ const handleSave = async () => {
   const $grid = gridRef.value
   if ($grid) {
     const { insertRecords, updateRecords, removeRecords } = $grid.getRecordset()
-    
+
     console.log('待保存数据:', {
       新增: insertRecords,
       修改: updateRecords,
       删除: removeRecords
     })
-    
+
     VxeUI.modal.message({
       content: `新增 ${insertRecords.length} 条，修改 ${updateRecords.length} 条，删除 ${removeRecords.length} 条`,
       status: 'success'
     })
-    
+
     // 这里可以调用 API 保存数据
     // await updateShipmentOrder(...)
   }
 }
 
 // 编辑订单
-const handleEdit = (row) => {
+const handleEdit = row => {
   const $grid = gridRef.value
   if ($grid) {
     $grid.setEditRow(row)
@@ -328,7 +330,7 @@ const handleEdit = (row) => {
 }
 
 // 删除订单
-const handleDelete = async (row) => {
+const handleDelete = async row => {
   const type = await VxeUI.modal.confirm('确定要删除这条记录吗？')
   if (type === 'confirm') {
     const $grid = gridRef.value

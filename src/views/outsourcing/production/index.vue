@@ -277,7 +277,12 @@
           <div class="section-title">
             <i class="el-icon-upload"></i> BOM 文件
           </div>
-          <MyUpload v-model="bomUploadData.smtBomFile" :multiple="true" :limit="10" />
+
+          <DrUpload v-model="bomUploadData.smtBomFile" :limit="10">
+          <div class="text-left">
+            <el-button size="mini" type="primary">点击上传固件文件</el-button>
+          </div>
+        </DrUpload>
         </div>
       </div>
 

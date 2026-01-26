@@ -80,7 +80,7 @@
 
         <!-- 数据表格 -->
         <div class="table-section">
-            <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%" height="100%"
+            <el-table ref="table" :data="tableData" v-loading="loading" border style="width: 100%"     :height="tableHeight(-30)"
                 :row-class-name="getRowClassName" row-key="id" @sort-change="handleSortChange">
 
                 <el-table-column prop="workOrderNo" label="工单号" align="center">

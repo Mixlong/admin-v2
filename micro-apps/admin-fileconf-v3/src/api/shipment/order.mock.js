@@ -99,7 +99,8 @@ let mockData = [
     unshippedQuantity: 3200,
     deliveryPlan: '2025-05-06',
     pmcDeliveryDate: '2025-05-06',
-    deliveryChangeLog: '<p>4/21调整【延后】：原交期4/23 修改为5/6</p><p>3/31调整【延后】：原交期4/14，延期至4/23</p>',
+    deliveryChangeLog:
+      '<p>4/21调整【延后】：原交期4/23 修改为5/6</p><p>3/31调整【延后】：原交期4/14，延期至4/23</p>',
     customerMaterial: '/',
     customerMaterialArrival: '',
     specialRemark: '<p style="color: red;">重要客户，优先处理</p>',
@@ -218,54 +219,60 @@ const delay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
  */
 export async function getShipmentOrderList(params) {
   await delay()
-  
-  const { 
-    pageNum = 1, 
-    pageSize = 10, 
-    customerName, 
-    configModel, 
+
+  const {
+    pageNum = 1,
+    pageSize = 10,
+    customerName,
+    configModel,
     customerOrderNo,
     u8OrderNo,
     bomCode,
-    startDate, 
-    endDate 
+    startDate,
+    endDate
   } = params || {}
-  
+
   // 过滤数据
   let filteredData = [...mockData]
-  
+
   if (customerName) {
-    filteredData = filteredData.filter(item => item.customerName && item.customerName.includes(customerName))
+    filteredData = filteredData.filter(
+      item => item.customerName && item.customerName.includes(customerName)
+    )
   }
-  
+
   if (configModel) {
-    filteredData = filteredData.filter(item => item.configModel && item.configModel.includes(configModel))
+    filteredData = filteredData.filter(
+      item => item.configModel && item.configModel.includes(configModel)
+    )
   }
-  
+
   if (customerOrderNo) {
-    filteredData = filteredData.filter(item => item.customerOrderNo && item.customerOrderNo.includes(customerOrderNo))
+    filteredData = filteredData.filter(
+      item => item.customerOrderNo && item.customerOrderNo.includes(customerOrderNo)
+    )
   }
-  
+
   if (u8OrderNo) {
     filteredData = filteredData.filter(item => item.u8OrderNo && item.u8OrderNo.includes(u8OrderNo))
   }
-  
+
   if (bomCode) {
     filteredData = filteredData.filter(item => item.bomCode && item.bomCode.includes(bomCode))
   }
-  
+
   if (startDate && endDate) {
     filteredData = filteredData.filter(item => {
       return item.orderDate >= startDate && item.orderDate <= endDate
     })
   }
-  
+
   // 分页
   const total = filteredData.length
   const start = (pageNum - 1) * pageSize
   const end = start + pageSize
   const list = filteredData.slice(start, end)
-  
+
   return {
     code: 200,
     msg: '操作成功',
@@ -283,9 +290,9 @@ export async function getShipmentOrderList(params) {
  */
 export async function getShipmentOrderById(id) {
   await delay()
-  
+
   const item = mockData.find(item => item.id === id)
-  
+
   if (item) {
     return {
       code: 200,
@@ -293,7 +300,7 @@ export async function getShipmentOrderById(id) {
       data: item
     }
   }
-  
+
   return {
     code: 404,
     msg: '订单不存在'
@@ -305,19 +312,19 @@ export async function getShipmentOrderById(id) {
  */
 export async function addShipmentOrder(data) {
   await delay()
-  
+
   const now = new Date()
   const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
-  
+
   const newItem = {
     ...data,
     id: nextId++,
     createTime: timeStr,
     updateTime: timeStr
   }
-  
+
   mockData.unshift(newItem)
-  
+
   return {
     code: 200,
     msg: '新增成功',
@@ -330,25 +337,25 @@ export async function addShipmentOrder(data) {
  */
 export async function updateShipmentOrder(data) {
   await delay()
-  
+
   const index = mockData.findIndex(item => item.id === data.id)
-  
+
   if (index === -1) {
     return {
       code: 404,
       msg: '订单不存在'
     }
   }
-  
+
   const now = new Date()
   const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
-  
+
   mockData[index] = {
     ...mockData[index],
     ...data,
     updateTime: timeStr
   }
-  
+
   return {
     code: 200,
     msg: '编辑成功',
@@ -361,11 +368,11 @@ export async function updateShipmentOrder(data) {
  */
 export async function deleteShipmentOrder(ids) {
   await delay()
-  
+
   const idArray = Array.isArray(ids) ? ids : [ids]
-  
+
   mockData = mockData.filter(item => !idArray.includes(item.id))
-  
+
   return {
     code: 200,
     msg: '删除成功'
@@ -384,7 +391,7 @@ export async function batchDeleteShipmentOrder(ids) {
  */
 export async function getCustomerDict() {
   await delay(100)
-  
+
   return {
     code: 200,
     msg: '操作成功',
@@ -407,7 +414,7 @@ export async function getCustomerDict() {
  */
 export async function getOrderStatusDict() {
   await delay(100)
-  
+
   return {
     code: 200,
     msg: '操作成功',
@@ -425,8 +432,8 @@ export async function getOrderStatusDict() {
  */
 export async function exportShipmentOrder(params) {
   await delay()
-  
+
   console.log('导出参数：', params)
-  
+
   return new Blob(['Mock Excel Data'], { type: 'application/vnd.ms-excel' })
 }

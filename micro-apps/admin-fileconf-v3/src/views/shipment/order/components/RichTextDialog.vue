@@ -20,19 +20,13 @@
         <div class="rich-text-display" v-html="content || '暂无内容'"></div>
       </div>
     </div>
-    
+
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="$emit('update:visible', false)">
           {{ readonly ? '关闭' : '取消' }}
         </el-button>
-        <el-button 
-          v-if="!readonly" 
-          type="primary" 
-          @click="$emit('save')"
-        >
-          确定
-        </el-button>
+        <el-button v-if="!readonly" type="primary" @click="$emit('save')"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -80,13 +74,13 @@ const placeholder = computed(() => {
   .dialog-content {
     min-height: 300px;
   }
-  
+
   .readonly-content {
     padding: 16px;
     background: #f5f7fa;
     border-radius: 4px;
     min-height: 300px;
-    
+
     .rich-text-display {
       :deep(img) {
         max-width: 100%;
@@ -94,7 +88,7 @@ const placeholder = computed(() => {
       }
     }
   }
-  
+
   .dialog-footer {
     display: flex;
     justify-content: flex-end;

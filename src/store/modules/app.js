@@ -40,7 +40,7 @@ const state = {
     withoutAnimation: false,
   },
   device: 'desktop',
-  size: Cookies.get('size') || 'mini',
+  size: 'mini',
   isFromExternal: readExternalFlag(),
 }
 

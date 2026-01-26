@@ -644,7 +644,7 @@ export default {
     // 从响应数据中提取特定类型的数据
     extractDataFromResponse(data) {
       // 根据API返回的数据格式进行解析
-      // 数据格式：{ defectReasons: [], defectCounts: [], defectPercentages: [] }
+      // 数据格式：{ defectReasons: [], defectCounts: [], defectPercentages: [], cumulativePercentages: [] }
       const result = []
 
       if (data.defectReasons && data.defectCounts && Array.isArray(data.defectReasons) && Array.isArray(data.defectCounts)) {
@@ -657,7 +657,9 @@ export default {
             result.push({
               name: String(name),
               value: Number(value),
-              percentage: data.defectPercentages && data.defectPercentages[i] ? data.defectPercentages[i] : ''
+              percentage: data.defectPercentages && data.defectPercentages[i] ? data.defectPercentages[i] : '',
+              cumulativePercentage: data.cumulativePercentages && data.cumulativePercentages[i] ?
+                parseFloat(data.cumulativePercentages[i]) : 0
             })
           }
         }
@@ -710,20 +712,20 @@ export default {
     
     // 更新测试数据图表
     updateChartsWithTestData() {
-      // 产品类型测试数据
+      // 产品类型测试数据（帕累托图格式）
       const productTypeData = [
-        { name: '主板', value: 18, percentage: '40.00%' },
-        { name: '屏幕', value: 15, percentage: '33.33%' },
-        { name: '电池', value: 7, percentage: '15.56%' },
-        { name: '外壳', value: 5, percentage: '11.11%' }
+        { name: '主板', value: 18, percentage: '40.00%', cumulativePercentage: 40.00 },
+        { name: '屏幕', value: 15, percentage: '33.33%', cumulativePercentage: 73.33 },
+        { name: '电池', value: 7, percentage: '15.56%', cumulativePercentage: 88.89 },
+        { name: '外壳', value: 5, percentage: '11.11%', cumulativePercentage: 100.00 }
       ]
 
-      // 线号测试数据
+      // 线号测试数据（帕累托图格式）
       const productionLineData = [
-        { name: '线号001', value: 16, percentage: '35.56%' },
-        { name: '线号002', value: 14, percentage: '31.11%' },
-        { name: '线号003', value: 10, percentage: '22.22%' },
-        { name: '线号004', value: 5, percentage: '11.11%' }
+        { name: '线号001', value: 16, percentage: '35.56%', cumulativePercentage: 35.56 },
+        { name: '线号002', value: 14, percentage: '31.11%', cumulativePercentage: 66.67 },
+        { name: '线号003', value: 10, percentage: '22.22%', cumulativePercentage: 88.89 },
+        { name: '线号004', value: 5, percentage: '11.11%', cumulativePercentage: 100.00 }
       ]
 
       this.renderProductTypeChart(productTypeData)
@@ -732,46 +734,77 @@ export default {
     
     
     
-    // 渲染产品类型图表（折线图）
+    // 渲染产品类型图表（帕累托图）
     renderProductTypeChart(data) {
       const names = data.map(item => item.name)
       const values = data.map(item => item.value)
-      const percentages = data.map(item => parseFloat(item.percentage) || 0)
+      const cumulativePercentages = data.map(item => item.cumulativePercentage || 0)
+
+      // 计算合适的显示区间（根据数据量动态调整）
+      const dataLength = names.length
+      const defaultEndPercent = dataLength > 20 ? Math.min(100, (20 / dataLength) * 100) : 100
 
       const option = {
         title: {
           text: '产品类型维修统计',
           left: 'center',
-          top: '10%'
+          top: '0',
+          textStyle: {
+            fontSize: 14,
+            fontWeight: 'bold',
+            color: '#333'
+          }
         },
         tooltip: {
           trigger: 'axis',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderColor: '#eee',
+          borderWidth: 1,
+          textStyle: {
+            color: '#333'
+          },
           axisPointer: {
-            type: 'cross'
+            type: 'cross',
+            crossStyle: {
+              color: '#999'
+            }
           },
           formatter: function(params) {
-            let result = params[0].axisValueLabel + '<br/>'
+            let result = `<div style="font-weight:bold;margin-bottom:5px;">${params[0].axisValueLabel}</div>`
             params.forEach(param => {
-              result += param.marker + param.seriesName + ': ' + param.value
+              const color = param.color
               if (param.seriesName === '不良数量') {
-                result += ' 次'
-              } else {
-                result += '%'
+                result += `<div style="display:flex;align-items:center;margin-bottom:3px;">
+                  <span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${color};"></span>
+                  <span style="flex:1;">${param.seriesName}</span>
+                  <span style="font-weight:bold;margin-left:15px;">${param.value} 次</span>
+                </div>`
+              } else if (param.seriesName === '累计百分比') {
+                result += `<div style="display:flex;align-items:center;">
+                  <span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${color};"></span>
+                  <span style="flex:1;">${param.seriesName}</span>
+                  <span style="font-weight:bold;margin-left:15px;">${param.value.toFixed(2)}%</span>
+                </div>`
               }
-              result += '<br/>'
             })
             return result
           }
         },
         legend: {
           data: ['不良数量', '累计百分比'],
-          top: '15%'
+          top: '25px',
+          itemGap: 20,
+          itemWidth: 15,
+          itemHeight: 10,
+          textStyle: {
+             fontSize: 11
+          }
         },
         grid: {
-          left: '3%',
+          left: '4%',
           right: '4%',
-          bottom: '15%',
-          top: '30%',
+          bottom: '40px',
+          top: '60px',
           containLabel: true
         },
         dataZoom: [
@@ -780,24 +813,33 @@ export default {
             show: true,
             xAxisIndex: [0],
             start: 0,
-            end: 100,
-            bottom: '5%',
-            height: 20,
-            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23.1h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            end: defaultEndPercent,
+            bottom: '5px',
+            height: 18,
+            borderColor: 'transparent',
+            backgroundColor: '#f5f7fa',
+            fillerColor: 'rgba(64, 158, 255, 0.2)',
             handleSize: '100%',
             handleStyle: {
-              color: '#5470c6'
+              color: '#409eff',
+              shadowBlur: 3,
+              shadowColor: 'rgba(0, 0, 0, 0.6)',
+              shadowOffsetX: 2,
+              shadowOffsetY: 2
             },
             textStyle: {
-              color: '#333'
+              color: '#909399'
             },
-            borderColor: '#ddd'
+            brushSelect: false
           },
           {
             type: 'inside',
             xAxisIndex: [0],
             start: 0,
-            end: 100
+            end: defaultEndPercent,
+            zoomOnMouseWheel: false,
+            moveOnMouseMove: true,
+            moveOnMouseWheel: true
           }
         ],
         xAxis: {
@@ -806,58 +848,72 @@ export default {
           axisLine: {
             show: true,
             lineStyle: {
-              color: '#e0e0e0'
+              color: '#333'
             }
           },
           axisTick: {
-            show: false
+            show: true,
+            alignWithLabel: true
           },
           axisLabel: {
-            rotate: 0,
-            color: '#333'
+            rotate: 45,
+            interval: 0,
+            color: '#333',
+            fontSize: 10,
+            margin: 10,
+            formatter: function(value) {
+              // 如果标签超过15个字符，进行截断并添加省略号
+              if (value.length > 15) {
+                return value.substring(0, 15) + '...'
+              }
+              return value
+            }
           }
         },
         yAxis: [
           {
             type: 'value',
-            name: '不良数量',
+            name: '不良数量（次）',
             position: 'left',
             axisLine: {
               show: true,
               lineStyle: {
-                color: '#e0e0e0'
+                color: '#333'
               }
             },
             axisTick: {
-              show: true,
-              lineStyle: {
-                color: '#e0e0e0'
-              }
+              show: true
             },
             splitLine: {
               show: true,
               lineStyle: {
                 color: '#e8e8e8',
-                type: 'solid'
+                type: 'dashed'
               }
             },
             axisLabel: {
-              formatter: '{value} 次',
+              formatter: '{value}',
               color: '#333'
             },
             nameTextStyle: {
-              color: '#333'
+              color: '#333',
+              fontSize: 12
             }
           },
           {
             type: 'value',
-            name: '累计比例(%)',
+            name: '累计百分比（%）',
             position: 'right',
+            min: 0,
+            max: 100,
             axisLine: {
-              show: false
+              show: true,
+              lineStyle: {
+                color: '#333'
+              }
             },
             axisTick: {
-              show: false
+              show: true
             },
             splitLine: {
               show: false
@@ -867,7 +923,8 @@ export default {
               color: '#333'
             },
             nameTextStyle: {
-              color: '#333'
+              color: '#333',
+              fontSize: 12
             }
           }
         ],
@@ -878,24 +935,36 @@ export default {
             yAxisIndex: 0,
             data: values,
             itemStyle: {
-              color: '#91cc75'
+              color: '#4472C4',
+              borderRadius: [4, 4, 0, 0]
+            },
+            barMaxWidth: 60,
+            label: {
+              show: false
             }
           },
           {
             name: '累计百分比',
             type: 'line',
             yAxisIndex: 1,
-            data: percentages,
+            data: cumulativePercentages,
             itemStyle: {
-              color: '#5470c6'
+              color: '#27AE60'
             },
             lineStyle: {
-              color: '#5470c6',
-              width: 2
+              color: '#27AE60',
+              width: 3
             },
             symbol: 'circle',
-            symbolSize: 6,
-            smooth: true
+            symbolSize: 8,
+            smooth: false,
+            label: {
+              show: true,
+              position: 'top',
+              formatter: '{c}%',
+              fontSize: 9,
+              color: '#27AE60'
+            }
           }
         ]
       }
@@ -903,46 +972,77 @@ export default {
       this.productTypeChart.setOption(option)
     },
     
-    // 渲染线号图表（折线图）
+    // 渲染线号图表（帕累托图）
     renderProductionLineChart(data) {
       const names = data.map(item => item.name)
       const values = data.map(item => item.value)
-      const percentages = data.map(item => parseFloat(item.percentage) || 0)
+      const cumulativePercentages = data.map(item => item.cumulativePercentage || 0)
+
+      // 计算合适的显示区间（根据数据量动态调整）
+      const dataLength = names.length
+      const defaultEndPercent = dataLength > 20 ? Math.min(100, (20 / dataLength) * 100) : 100
 
       const option = {
         title: {
           text: '线号维修统计',
           left: 'center',
-          top: '10%'
+          top: '0',
+          textStyle: {
+            fontSize: 14,
+            fontWeight: 'bold',
+            color: '#333'
+          }
         },
         tooltip: {
           trigger: 'axis',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderColor: '#eee',
+          borderWidth: 1,
+          textStyle: {
+            color: '#333'
+          },
           axisPointer: {
-            type: 'cross'
+            type: 'cross',
+            crossStyle: {
+              color: '#999'
+            }
           },
           formatter: function(params) {
-            let result = params[0].axisValueLabel + '<br/>'
+            let result = `<div style="font-weight:bold;margin-bottom:5px;">${params[0].axisValueLabel}</div>`
             params.forEach(param => {
-              result += param.marker + param.seriesName + ': ' + param.value
+              const color = param.color
               if (param.seriesName === '不良数量') {
-                result += ' 次'
-              } else {
-                result += '%'
+                result += `<div style="display:flex;align-items:center;margin-bottom:3px;">
+                  <span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${color};"></span>
+                  <span style="flex:1;">${param.seriesName}</span>
+                  <span style="font-weight:bold;margin-left:15px;">${param.value} 次</span>
+                </div>`
+              } else if (param.seriesName === '累计百分比') {
+                result += `<div style="display:flex;align-items:center;">
+                  <span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${color};"></span>
+                  <span style="flex:1;">${param.seriesName}</span>
+                  <span style="font-weight:bold;margin-left:15px;">${param.value.toFixed(2)}%</span>
+                </div>`
               }
-              result += '<br/>'
             })
             return result
           }
         },
         legend: {
-          data: ['不良数量', '累计比例'],
-          top: '15%'
+          data: ['不良数量', '累计百分比'],
+          top: '25px',
+          itemGap: 20,
+          itemWidth: 15,
+          itemHeight: 10,
+          textStyle: {
+             fontSize: 11
+          }
         },
         grid: {
-          left: '3%',
+          left: '4%',
           right: '4%',
-          bottom: '15%',
-          top: '30%',
+          bottom: '40px',
+          top: '60px',
           containLabel: true
         },
         dataZoom: [
@@ -951,24 +1051,33 @@ export default {
             show: true,
             xAxisIndex: [0],
             start: 0,
-            end: 100,
-            bottom: '5%',
-            height: 20,
-            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23.1h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            end: defaultEndPercent,
+            bottom: '5px',
+            height: 18,
+            borderColor: 'transparent',
+            backgroundColor: '#f5f7fa',
+            fillerColor: 'rgba(64, 158, 255, 0.2)',
             handleSize: '100%',
             handleStyle: {
-              color: '#5470c6'
+              color: '#409eff',
+              shadowBlur: 3,
+              shadowColor: 'rgba(0, 0, 0, 0.6)',
+              shadowOffsetX: 2,
+              shadowOffsetY: 2
             },
             textStyle: {
-              color: '#333'
+              color: '#909399'
             },
-            borderColor: '#ddd'
+            brushSelect: false
           },
           {
             type: 'inside',
             xAxisIndex: [0],
             start: 0,
-            end: 100
+            end: defaultEndPercent,
+            zoomOnMouseWheel: false,
+            moveOnMouseMove: true,
+            moveOnMouseWheel: true
           }
         ],
         xAxis: {
@@ -977,58 +1086,72 @@ export default {
           axisLine: {
             show: true,
             lineStyle: {
-              color: '#e0e0e0'
+              color: '#333'
             }
           },
           axisTick: {
-            show: false
+            show: true,
+            alignWithLabel: true
           },
           axisLabel: {
-            rotate: 0,
-            color: '#333'
+            rotate: 45,
+            interval: 0,
+            color: '#333',
+            fontSize: 10,
+            margin: 10,
+            formatter: function(value) {
+              // 如果标签超过15个字符，进行截断并添加省略号
+              if (value.length > 15) {
+                return value.substring(0, 15) + '...'
+              }
+              return value
+            }
           }
         },
         yAxis: [
           {
             type: 'value',
-            name: '不良数量',
+            name: '不良数量（次）',
             position: 'left',
             axisLine: {
               show: true,
               lineStyle: {
-                color: '#e0e0e0'
+                color: '#333'
               }
             },
             axisTick: {
-              show: true,
-              lineStyle: {
-                color: '#e0e0e0'
-              }
+              show: true
             },
             splitLine: {
               show: true,
               lineStyle: {
                 color: '#e8e8e8',
-                type: 'solid'
+                type: 'dashed'
               }
             },
             axisLabel: {
-              formatter: '{value} 次',
+              formatter: '{value}',
               color: '#333'
             },
             nameTextStyle: {
-              color: '#333'
+              color: '#333',
+              fontSize: 12
             }
           },
           {
             type: 'value',
-            name: '累计比例(%)',
+            name: '累计百分比（%）',
             position: 'right',
+            min: 0,
+            max: 100,
             axisLine: {
-              show: false
+              show: true,
+              lineStyle: {
+                color: '#333'
+              }
             },
             axisTick: {
-              show: false
+              show: true
             },
             splitLine: {
               show: false
@@ -1038,7 +1161,8 @@ export default {
               color: '#333'
             },
             nameTextStyle: {
-              color: '#333'
+              color: '#333',
+              fontSize: 12
             }
           }
         ],
@@ -1049,24 +1173,36 @@ export default {
             yAxisIndex: 0,
             data: values,
             itemStyle: {
-              color: '#fac858'
+              color: '#4472C4',
+              borderRadius: [4, 4, 0, 0]
+            },
+            barMaxWidth: 60,
+            label: {
+              show: false
             }
           },
           {
             name: '累计百分比',
             type: 'line',
-        yAxisIndex: 1,
-            data: percentages,
+            yAxisIndex: 1,
+            data: cumulativePercentages,
             itemStyle: {
-              color: '#ee6666'
+              color: '#27AE60'
             },
             lineStyle: {
-              color: '#ee6666',
-              width: 2
+              color: '#27AE60',
+              width: 3
             },
             symbol: 'circle',
-            symbolSize: 6,
-            smooth: true
+            symbolSize: 8,
+            smooth: false,
+            label: {
+              show: true,
+              position: 'top',
+              formatter: '{c}%',
+              fontSize: 9,
+              color: '#27AE60'
+            }
           }
         ]
       }
@@ -1081,22 +1217,29 @@ export default {
 <style scoped>
 .maintenance-statistics-container {
   padding: 20px;
+  box-sizing: border-box;
+  box-sizing: border-box;
+  /* 使用 100vh 可能会导致双滚动条，通常 app-container 已经有 padding 或 height 管理 */
+  height: 100%; 
+  min-height: 100vh; /* 确保至少有一屏高度 */
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  overflow-y: auto; /* 允许垂直滚动，如果不限高 */
+  overflow-x: hidden;
 }
 
 /* 头部区域样式 */
 .header-section {
-  flex-shrink: 0;
   margin-bottom: 15px;
-  overflow: visible;
+  flex-shrink: 0;
 }
 
 /* 主体区域样式 */
 .main-section {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .maintenance-statistics-container .search-section {
@@ -1109,25 +1252,51 @@ export default {
 
 .maintenance-statistics-container .charts-section {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .maintenance-statistics-container .chart-row {
   display: flex;
-  min-height: 400px;
+  flex: 1;
+  /* 确保行有最小高度 */
+  min-height: 480px; 
+  margin-bottom: 20px;
 }
 
 .maintenance-statistics-container .chart-row:last-child {
   margin-bottom: 0;
 }
 
+/* Override Element UI default styles */
+.maintenance-statistics-container .el-row {
+  display: flex !important;
+  flex: 1;
+  /* 移除 min-height: 0，避免过度收缩 */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 关键修复：隐藏 ElRow 的伪元素，防止 Flex 布局错乱 */
+.maintenance-statistics-container .el-row::before,
+.maintenance-statistics-container .el-row::after {
+  display: none !important;
+}
+
+.maintenance-statistics-container .el-col {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1;
+  /* 确保列能撑开 */
+  height: 100%; 
+}
+
 .maintenance-statistics-container .chart-card {
   background: #fff;
-  border: 1px solid #e4e7ed;
   border-radius: 8px;
   padding: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
@@ -1140,30 +1309,23 @@ export default {
   padding-bottom: 8px;
 }
 
-/* Element UI 列样式优化 */
-.maintenance-statistics-container .el-col {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
 .maintenance-statistics-container .chart-container-medium {
   width: 100%;
-  flex: 1;
+  height: 300px;
 }
 
 .maintenance-statistics-container .chart-card-medium {
-  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 400px;
 }
 
+
 .maintenance-statistics-container .chart-card-large {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 500px;
+  height: 100%;
+  min-height: 480px; /* 强制最小高度，防止压扁 */
 }
 
 /* 图表头部样式 */
@@ -1205,14 +1367,14 @@ export default {
 
 .maintenance-statistics-container .chart-container-medium {
   flex: 1;
-  min-height: 300px;
   padding: 80px 10px 10px 10px; /* 顶部留出更多空间给头部控件 */
 }
 
 .maintenance-statistics-container .chart-container-large {
   flex: 1;
-  min-height: 400px;
-  padding: 60px 10px 10px 10px; /* 顶部留出空间给头部控件 */
+  /* min-height: 200px; - flex shrinking might be too aggressive */
+  height: 480px; /* Explicit height to force display */
+  padding: 65px 0px 5px 0px;
 }
 
 /* 统一查询表单样式 */

@@ -12,7 +12,8 @@ export default defineConfig(({ mode, command }) => {
     // 部署生产环境和开发环境下的URL。
     // 默认情况下，vite 会假设你的应用是被部署在一个域名的根路径上
     // 例如 https://www.ruoyi.vip/。如果应用被部署在一个子路径上，你就需要用这个选项指定这个子路径。例如，如果你的应用被部署在 https://www.ruoyi.vip/admin/，则设置 baseUrl 为 /admin/。
-    base: VITE_APP_ENV === 'production' ? './' : './',
+    // V3 作为主应用部署在根路径，使用绝对路径
+    base: '/',
     plugins: createVitePlugins(env, command === 'build'),
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias
@@ -20,7 +21,9 @@ export default defineConfig(({ mode, command }) => {
         // 设置路径
         '~': path.resolve(__dirname, './'),
         // 设置别名
-        '@': path.resolve(__dirname, './src')
+        '@': path.resolve(__dirname, './src'),
+        // 解决 @form-create/element-ui 的 Vue 导入问题
+        'vue': 'vue/dist/vue.esm-bundler.js'
       },
       // https://cn.vitejs.dev/config/#resolve-extensions
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
@@ -31,20 +34,46 @@ export default defineConfig(({ mode, command }) => {
     build: {
       // https://vite.dev/config/build-options.html
       sourcemap: command === 'build' ? false : 'inline',
-      outDir: 'admin-v3',
-      assetsDir: 'assets',
+      outDir: 'dist',
+      assetsDir: 'static',
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
           chunkFileNames: 'static/js/[name]-[hash].js',
           entryFileNames: 'static/js/[name]-[hash].js',
-          assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
-          manualChunks: {
-            'vxe-table': ['vxe-table', 'xe-utils'],
-            'element-plus': ['element-plus', '@element-plus/icons-vue'],
-            'quill': ['quill', '@vueup/vue-quill'],
-            'exceljs': ['exceljs'],
-            'vue-vendor': ['vue', 'vue-router', 'pinia']
+          assetFileNames: (assetInfo) => {
+            // 图片资源
+            if (/\.(png|jpe?g|gif|svg|ico|webp)$/i.test(assetInfo.name)) {
+              return 'static/img/[name]-[hash][extname]'
+            }
+            // CSS 资源
+            if (/\.css$/i.test(assetInfo.name)) {
+              return 'static/css/[name]-[hash][extname]'
+            }
+            // 字体资源
+            if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name)) {
+              return 'static/fonts/[name]-[hash][extname]'
+            }
+            // 其他资源
+            return 'static/[name]-[hash][extname]'
+          },
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // 所有 UI 相关库放一起，避免循环依赖
+              if (id.includes('vxe-table') || id.includes('xe-utils') || 
+                  id.includes('/vue/') || id.includes('/vue@') || 
+                  id.includes('pinia') || id.includes('vue-router') ||
+                  id.includes('@vue/') || id.includes('element-plus') || 
+                  id.includes('@element-plus')) {
+                return 'vendor'
+              }
+              if (id.includes('quill') || id.includes('@vueup/vue-quill')) {
+                return 'quill'
+              }
+              if (id.includes('exceljs')) {
+                return 'exceljs'
+              }
+            }
           }
         }
       }
@@ -91,6 +120,15 @@ export default defineConfig(({ mode, command }) => {
           }
         ]
       }
+    },
+    // 优化依赖预构建
+    optimizeDeps: {
+      include: [
+        'vue', 
+        'element-plus',
+        '@form-create/element-ui',
+        '@form-create/core'
+      ]
     }
   }
 })

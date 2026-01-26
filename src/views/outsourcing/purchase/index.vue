@@ -39,7 +39,7 @@
       v-loading="loading" 
       border 
       style="width: 100%"
-      :height="tableHeight(30)"
+      :height="tableHeight(-30)"
       row-key="id"
     >
       <el-table-column type="index" label="序号" width="60" align="center" />

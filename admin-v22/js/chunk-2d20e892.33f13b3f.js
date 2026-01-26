@@ -1,0 +1,1 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d20e892"],{b07e:function(t,n,e){"use strict";e.r(n),e.d(n,"dictList",(function(){return u}));var c=e("b775");function u(t){return Object(c["default"])({url:"/computer/dict/list",method:"get",params:t})}}}]);

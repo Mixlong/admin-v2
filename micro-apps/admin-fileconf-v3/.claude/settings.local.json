@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(dos2unix:*)",
+      "mcp__serena__list_dir",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__write_memory",
+      "mcp__Figma_Dev_Mode_MCP__get_image",
+      "mcp__Figma_Dev_Mode_MCP__get_code"
+    ],
+    "deny": []
+  }
+}

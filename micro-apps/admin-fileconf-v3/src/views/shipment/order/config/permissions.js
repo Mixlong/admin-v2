@@ -11,33 +11,56 @@
 export const roleEditableColumns = {
   // 市场专员：可编辑基础订单信息和出货信息
   ms: [
-    'customerName', 'u8OrderNo', 'bomCode', 'etreeOrderNo',
-    'etreeBomBefore', 'etreeBomAfter', 'etreeBomAudited',
-    'customerOrderNo', 'configModel', 'keyModel', 'orderDate',
-    'orderQty', 'shippedQty', 'unshippedQty',
-    'deliveryDate', 'customerMaterial', 'customerMaterialArrival', 'specialRemark',
-    'deliveryChangeLog', 'orderSigned'
+    'customerName',
+    'u8OrderNo',
+    'bomCode',
+    'etreeOrderNo',
+    'etreeBomBefore',
+    'etreeBomAfter',
+    'etreeBomAudited',
+    'customerOrderNo',
+    'configModel',
+    'keyModel',
+    'orderDate',
+    'orderQty',
+    'shippedQty',
+    'unshippedQty',
+    'deliveryDate',
+    'customerMaterial',
+    'customerMaterialArrival',
+    'specialRemark',
+    'deliveryChangeLog',
+    'orderSigned'
   ],
-  
+
   // BOM专员：可编辑BOM相关字段
-  BOM_Manage: [
-    'etreeBomBefore', 'etreeBomAfter', 'etreeBomAudited',
-    'configModel', 'keyModel'
-  ],
-  
+  BOM_Manage: ['etreeBomBefore', 'etreeBomAfter', 'etreeBomAudited', 'configModel', 'keyModel'],
+
   // PMC专员：只能编辑可达成交期
-  pmc: [
-    'pmcDate'
-  ],
-  
+  pmc: ['pmcDate'],
+
   // 超级管理员：可编辑所有字段
   admin: [
-    'customerName', 'u8OrderNo', 'bomCode', 'etreeOrderNo',
-    'etreeBomBefore', 'etreeBomAfter', 'etreeBomAudited',
-    'configModel', 'keyModel', 'customerOrderNo', 'orderDate',
-    'orderQty', 'shippedQty', 'unshippedQty',
-    'deliveryDate', 'pmcDate', 'deliveryChangeLog',
-    'customerMaterial', 'customerMaterialArrival', 'specialRemark'
+    'customerName',
+    'u8OrderNo',
+    'bomCode',
+    'etreeOrderNo',
+    'etreeBomBefore',
+    'etreeBomAfter',
+    'etreeBomAudited',
+    'configModel',
+    'keyModel',
+    'customerOrderNo',
+    'orderDate',
+    'orderQty',
+    'shippedQty',
+    'unshippedQty',
+    'deliveryDate',
+    'pmcDate',
+    'deliveryChangeLog',
+    'customerMaterial',
+    'customerMaterialArrival',
+    'specialRemark'
   ]
 }
 

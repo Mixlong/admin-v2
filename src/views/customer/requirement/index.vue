@@ -438,6 +438,7 @@
       <!-- 分页组件 -->
       <div class="pagination-section">
         <el-pagination
+        style ="margin-top: 0px;"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="pagination.current"
@@ -1116,7 +1117,6 @@ export default {
   font-size: 12px;
 }
 .pagination-section {
-  margin-top: 20px;
   text-align: right;
 }
 .rich-text-content ul, .rich-text-content ol {

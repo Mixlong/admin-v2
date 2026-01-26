@@ -581,6 +581,74 @@
                 <!-- 如果有图片，显示第一张预览 + 管理按钮 -->
                 <div v-if="row.specification" class="spec-preview-wrapper">
                   <div
+                    v-if="getImageCount(row.specification) > 1"
+                    class="mini-carousel"
+                    style="width: 100px; height: 60px; position: relative"
+                  >
+                    <!-- 数量徽章移到轮播外部，固定位置 -->
+                    <span
+                      class="spec-count-badge"
+                      style="
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        min-width: 20px;
+                        height: 20px;
+                        line-height: 18px;
+                        padding: 0 6px;
+                        background: #f56c6c;
+                        color: #fff;
+                        font-size: 12px;
+                        font-weight: bold;
+                        border-radius: 10px;
+                        text-align: center;
+                        border: 2px solid #fff;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                        z-index: 10;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      {{ (row.activeIndex || 0) + 1 }}/{{
+                        getImageCount(row.specification)
+                      }}
+                    </span>
+
+                    <el-carousel
+                      indicator-position="none"
+                      arrow="always"
+                      :autoplay="false"
+                      height="60px"
+                      :loop="true"
+                      @change="(index) => handleCarouselChange(index, row)"
+                    >
+                      <el-carousel-item
+                        v-for="(img, index) in getAllImageUrls(row.specification)"
+                        :key="index"
+                      >
+                        <div
+                          class="spec-image-container"
+                          style="width: 100%; height: 100%"
+                          @click.stop="
+                            handlePreviewSpecification(row.specification, index)
+                          "
+                        >
+                          <el-image
+                            style="width: 100%; height: 100%"
+                            :src="img"
+                            fit="contain"
+                          >
+                            <div slot="error" class="image-slot">
+                              <i class="el-icon-picture-outline"></i>
+                            </div>
+                          </el-image>
+                        </div>
+                      </el-carousel-item>
+                    </el-carousel>
+                  </div>
+                  <div
+                    v-else
                     class="spec-image-container"
                     @click.stop="handlePreviewSpecification(row.specification)"
                   >
@@ -3105,7 +3173,7 @@ export default {
     },
 
     // 预览产品图纸（支持多图左右切换）
-    handlePreviewSpecification(url) {
+    handlePreviewSpecification(url, index = 0) {
       const imageUrls = this.getAllImageUrls(url);
       if (imageUrls.length === 0) {
         this.$message.warning("暂无图片可预览");
@@ -3114,7 +3182,7 @@ export default {
 
       // 使用 el-image-viewer 显示图片
       this.previewImageList = imageUrls;
-      this.currentImageIndex = 0; // 从第一张开始
+      this.currentImageIndex = index; // 从指定图片开始
       this.showImageViewer = true;
     },
 
@@ -3128,6 +3196,11 @@ export default {
       this.currentSpecificationRow = row;
       this.specificationViewMode = true; // 查看模式
       this.specificationManageVisible = true;
+    },
+
+    // 处理轮播图切换
+    handleCarouselChange(current, row) {
+      this.$set(row, "activeIndex", current);
     },
 
     // 更新产品图纸
@@ -3669,6 +3742,30 @@ export default {
 
 .el-table th.group-header-package:hover {
   background-color: #ffe599 !important;
+}
+
+/* mini-carousel styles */
+.mini-carousel {
+  overflow: visible !important;
+}
+
+.mini-carousel ::v-deep .el-carousel__arrow {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  background-color: rgba(31, 45, 61, 0.2) !important;
+}
+
+.mini-carousel ::v-deep .el-carousel__arrow:hover {
+  background-color: rgba(31, 45, 61, 0.5) !important;
+}
+
+.mini-carousel ::v-deep .el-carousel__arrow--left {
+  left: 0;
+}
+
+.mini-carousel ::v-deep .el-carousel__arrow--right {
+  right: 0;
 }
 </style>
 

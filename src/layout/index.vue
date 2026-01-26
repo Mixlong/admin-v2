@@ -1,22 +1,22 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
     <div
-      v-if="device === 'mobile' && sidebar.opened"
+      v-if="device === 'mobile' && sidebar.opened && !isMicroApp"
       class="drawer-bg"
       @click="handleClickOutside"
     />
 
-    <!-- 侧边栏占满高度 -->
-    <sidebar class="sidebar-container" />
-    
+    <!-- 侧边栏占满高度 - 微前端环境下隐藏 -->
+    <sidebar v-if="!isMicroApp" class="sidebar-container" />
+
     <!-- 右侧主要内容区域 -->
-    <div :class="{ hasTagsView: needTagsView }" class="main-container">
-      <div :class="{ 'fixed-header': fixedHeader }">
+    <div :class="{ hasTagsView: needTagsView && !isMicroApp, 'micro-app-container': isMicroApp }" class="main-container">
+      <div v-if="!isMicroApp" :class="{ 'fixed-header': fixedHeader }">
         <navbar/>
         <tags-view v-if="needTagsView" />
       </div>
       <app-main />
-      <right-panel v-if="showSettings">
+      <right-panel v-if="showSettings && !isMicroApp">
         <settings />
       </right-panel>
     </div>
@@ -50,12 +50,17 @@ export default {
       fixedHeader: (state) => state.settings.fixedHeader,
       isFromExternal: (state) => state.app.isFromExternal,
     }),
+    // 判断是否在微前端环境下运行
+    isMicroApp() {
+      return window.__POWERED_BY_WUJIE__ || false
+    },
     classObj() {
       return {
-        hideSidebar: !this.sidebar.opened,
-        openSidebar: this.sidebar.opened,
+        hideSidebar: !this.sidebar.opened && !this.isMicroApp,
+        openSidebar: this.sidebar.opened && !this.isMicroApp,
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === "mobile",
+        'micro-app-mode': this.isMicroApp
       };
     },
   },
@@ -86,6 +91,12 @@ export default {
     position: fixed;
     top: 0;
   }
+
+  // 微前端模式：占满容器高度
+  &.micro-app-mode {
+    height: 100%;
+    min-height: 100%;
+  }
 }
 
 .sidebar-container {
@@ -105,6 +116,17 @@ export default {
   transition: margin-left 0.28s, max-width 0.28s, width 0.28s;
   position: relative;
   overflow-x: hidden;
+
+  // 微前端模式：移除margin，占满全屏
+  &.micro-app-container {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .hideSidebar .main-container {

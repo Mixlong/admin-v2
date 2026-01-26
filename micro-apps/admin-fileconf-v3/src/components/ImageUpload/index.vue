@@ -1,245 +1,261 @@
 <template>
-  <div class="component-upload-image">
-    <el-upload multiple :disabled="disabled" :action="uploadImgUrl" list-type="picture-card"
-      :on-success="handleUploadSuccess" :before-upload="handleBeforeUpload" :data="data" :limit="limit"
-      :on-error="handleUploadError" :on-exceed="handleExceed" ref="imageUpload" :before-remove="handleDelete"
-      :show-file-list="true" :headers="headers" :file-list="fileList" :on-preview="handlePictureCardPreview"
-      :class="{ hide: fileList.length >= limit }">
-      <el-icon class="avatar-uploader-icon">
-        <plus />
-      </el-icon>
-    </el-upload>
-    <!-- 上传提示 -->
-    <div class="el-upload__tip" v-if="showTip && !disabled">
-      请上传
-      <template v-if="fileSize">
-        大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b>
-      </template>
-      <template v-if="fileType">
-        格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b>
-      </template>
-      的文件
+  <div class="image-upload">
+    <!-- 图片列表 -->
+    <div class="image-list" v-if="fileList.length > 0">
+      <div
+        v-for="(file, index) in fileList"
+        :key="file.uid || index"
+        class="image-item"
+      >
+        <el-image
+          :src="getFileUrl(file)"
+          :preview-src-list="previewList"
+          :initial-index="index"
+          fit="cover"
+          class="image-thumbnail"
+        />
+        <div class="image-actions" v-if="!disabled">
+          <el-icon class="action-icon" @click="handlePreview(index)"><ZoomIn /></el-icon>
+          <el-icon class="action-icon delete" @click="handleDelete(index)"><Delete /></el-icon>
+        </div>
+        <div class="file-name" v-if="showFileName">{{ getFileName(file) }}</div>
+      </div>
     </div>
-
-    <el-dialog v-model="dialogVisible" title="预览" width="800px" append-to-body>
-      <img :src="dialogImageUrl" style="display: block; max-width: 100%; margin: 0 auto" />
-    </el-dialog>
+    
+    <!-- 空状态 -->
+    <div v-else class="empty-state">
+      <el-icon class="empty-icon"><Picture /></el-icon>
+      <span class="empty-text">暂无文件</span>
+    </div>
+    
+    <!-- 上传按钮（隐藏，通过外部触发） -->
+    <el-upload
+      ref="uploadRef"
+      :action="uploadUrl"
+      :headers="headers"
+      :data="uploadData"
+      :accept="accept"
+      :limit="limit"
+      :multiple="multiple"
+      :show-file-list="false"
+      :before-upload="handleBeforeUpload"
+      :on-success="handleUploadSuccess"
+      :on-error="handleUploadError"
+      :on-exceed="handleExceed"
+      :disabled="disabled"
+      class="hidden-upload"
+    >
+      <template #trigger>
+        <span ref="triggerRef"></span>
+      </template>
+    </el-upload>
   </div>
 </template>
 
 <script setup>
-import { getToken } from "@/utils/auth"
-import { isExternal } from "@/utils/validate"
-import Sortable from 'sortablejs'
+import { ref, computed, watch } from 'vue'
+import { ZoomIn, Delete, Picture } from '@element-plus/icons-vue'
+import { getToken } from '@/utils/auth'
 
 const props = defineProps({
-  modelValue: [String, Object, Array],
-  // 上传接口地址
-  action: {
-    type: String,
-    default: "/oss/batch-upload"
-  },
-  // 上传携带的参数
-  data: {
-    type: Object
-  },
-  // 图片数量限制
-  limit: {
-    type: Number,
-    default: 5
-  },
-  // 大小限制(MB)
-  fileSize: {
-    type: Number,
-    default: 5
-  },
-  // 文件类型, 例如['png', 'jpg', 'jpeg']
-  fileType: {
-    type: Array,
-    default: () => ["png", "jpg", "jpeg"]
-  },
-  // 是否显示提示
-  isShowTip: {
-    type: Boolean,
-    default: true
-  },
-  // 禁用组件（仅查看图片）
-  disabled: {
-    type: Boolean,
-    default: false
-  },
-  // 拖动排序
-  drag: {
-    type: Boolean,
-    default: true
-  }
+  modelValue: { type: [String, Array], default: '' },
+  action: { type: String, default: '/oss/batch-upload' },
+  data: { type: Object, default: () => ({}) },
+  limit: { type: Number, default: 10 },
+  fileSize: { type: Number, default: 50 },
+  accept: { type: String, default: 'image/*,.pdf,.doc,.docx,.xls,.xlsx' },
+  multiple: { type: Boolean, default: true },
+  disabled: { type: Boolean, default: false },
+  showFileName: { type: Boolean, default: false }
 })
 
+const emit = defineEmits(['update:modelValue', 'change'])
 const { proxy } = getCurrentInstance()
-const emit = defineEmits()
-const number = ref(0)
-const uploadList = ref([])
-const dialogImageUrl = ref("")
-const dialogVisible = ref(false)
-const baseUrl = import.meta.env.VITE_APP_BASE_API
-const uploadImgUrl = ref(import.meta.env.VITE_APP_BASE_API + props.action) // 上传的图片服务器地址
-const headers = ref({})
-const fileList = ref([])
-const showTip = computed(
-  () => props.isShowTip && (props.fileType || props.fileSize)
-)
 
-watch(() => props.modelValue, val => {
+const uploadRef = ref(null)
+const triggerRef = ref(null)
+const fileList = ref([])
+const baseUrl = import.meta.env.VITE_APP_BASE_API
+const uploadUrl = computed(() => baseUrl + props.action)
+const headers = computed(() => ({ Authorization: 'Bearer ' + getToken() }))
+const uploadData = computed(() => props.data)
+
+const previewList = computed(() => fileList.value.map(f => getFileUrl(f)))
+
+watch(() => props.modelValue, (val) => {
   if (val) {
-    // 首先将值转为数组
-    const list = Array.isArray(val) ? val : props.modelValue.split(",")
-    // 然后将数组转为对象数组
-    fileList.value = list.map(item => {
-      if (typeof item === "string") {
-        if (item.indexOf(baseUrl) === -1 && !isExternal(item)) {
-          item = { name: baseUrl + item, url: baseUrl + item }
-        } else {
-          item = { name: item, url: item }
-        }
+    const list = Array.isArray(val) ? val : val.split(',').filter(Boolean)
+    fileList.value = list.map((item, index) => {
+      if (typeof item === 'string') {
+        return { url: item, name: item, uid: Date.now() + index }
       }
-      return item
+      return { ...item, uid: item.uid || Date.now() + index }
     })
   } else {
     fileList.value = []
-    return []
   }
-}, { deep: true, immediate: true })
+}, { immediate: true, deep: true })
 
-// 上传前loading加载
+function getFileUrl(file) {
+  const url = typeof file === 'string' ? file : file.url
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return baseUrl + url
+}
+
+function getFileName(file) {
+  const url = typeof file === 'string' ? file : (file.name || file.url)
+  if (!url) return ''
+  return url.split('/').pop()
+}
+
 function handleBeforeUpload(file) {
-  let isImg = false
-  if (props.fileType.length) {
-    let fileExtension = ""
-    if (file.name.lastIndexOf(".") > -1) {
-      fileExtension = file.name.slice(file.name.lastIndexOf(".") + 1)
-    }
-    isImg = props.fileType.some(type => {
-      if (file.type.indexOf(type) > -1) return true
-      if (fileExtension && fileExtension.indexOf(type) > -1) return true
-      return false
-    })
-  } else {
-    isImg = file.type.indexOf("image") > -1
-  }
-  if (!isImg) {
-    proxy.$modal.msgError(`文件格式不正确，请上传${props.fileType.join("/")}图片格式文件!`)
-    return false
-  }
-  if (file.name.includes(',')) {
-    proxy.$modal.msgError('文件名不正确，不能包含英文逗号!')
-    return false
-  }
   if (props.fileSize) {
     const isLt = file.size / 1024 / 1024 < props.fileSize
     if (!isLt) {
-      proxy.$modal.msgError(`上传头像图片大小不能超过 ${props.fileSize} MB!`)
+      proxy.$modal.msgError(`文件大小不能超过 ${props.fileSize}MB!`)
       return false
     }
   }
-  proxy.$modal.loading("正在上传图片，请稍候...")
-  number.value++
+  proxy.$modal.loading('正在上传...')
+  return true
 }
 
-// 文件个数超出
-function handleExceed() {
-  proxy.$modal.msgError(`上传文件数量不能超过 ${props.limit} 个!`)
-}
-
-// 上传成功回调
 function handleUploadSuccess(res, file) {
-  if (res.code === 200) {
-    // 处理新的响应格式：data数组包含上传的文件信息
-    if (res.data && res.data.length > 0) {
-      const uploadedFile = res.data[0]
-      uploadList.value.push({ name: uploadedFile.url, url: uploadedFile.url })
-    } else {
-      // 兼容旧格式
-      uploadList.value.push({ name: res.fileName, url: res.fileName })
-    }
-    uploadedSuccessfully()
-  } else {
-    number.value--
-    proxy.$modal.closeLoading()
-    proxy.$modal.msgError(res.msg)
-    proxy.$refs.imageUpload.handleRemove(file)
-    uploadedSuccessfully()
-  }
-}
-
-// 删除图片
-function handleDelete(file) {
-  const findex = fileList.value.map(f => f.name).indexOf(file.name)
-  if (findex > -1 && uploadList.value.length === number.value) {
-    fileList.value.splice(findex, 1)
-    emit("update:modelValue", listToString(fileList.value))
-    return false
-  }
-}
-
-// 上传结束处理
-function uploadedSuccessfully() {
-  if (number.value > 0 && uploadList.value.length === number.value) {
-    fileList.value = fileList.value.filter(f => f.url !== undefined).concat(uploadList.value)
-    uploadList.value = []
-    number.value = 0
-    emit("update:modelValue", listToString(fileList.value))
-    proxy.$modal.closeLoading()
-  }
-}
-
-// 上传失败
-function handleUploadError() {
-  proxy.$modal.msgError("上传图片失败")
   proxy.$modal.closeLoading()
-}
-
-// 预览
-function handlePictureCardPreview(file) {
-  dialogImageUrl.value = file.url
-  dialogVisible.value = true
-}
-
-// 对象转成指定字符串分隔
-function listToString(list, separator) {
-  let strs = ""
-  separator = separator || ","
-  for (let i in list) {
-    if (undefined !== list[i].url && list[i].url.indexOf("blob:") !== 0) {
-      strs += list[i].url.replace(baseUrl, "") + separator
+  if (res.code === 200) {
+    const url = res.data?.[0]?.url || res.url || res.fileName
+    if (url) {
+      fileList.value.push({ url, name: file.name, uid: Date.now() })
+      emitValue()
     }
+  } else {
+    proxy.$modal.msgError(res.msg || '上传失败')
   }
-  return strs != "" ? strs.substr(0, strs.length - 1) : ""
 }
 
-// 初始化拖拽排序
-onMounted(() => {
-  if (props.drag && !props.disabled) {
-    nextTick(() => {
-      const element = proxy.$refs.imageUpload?.$el?.querySelector('.el-upload-list')
-      Sortable.create(element, {
-        onEnd: (evt) => {
-          const movedItem = fileList.value.splice(evt.oldIndex, 1)[0]
-          fileList.value.splice(evt.newIndex, 0, movedItem)
-          emit('update:modelValue', listToString(fileList.value))
-        }
-      })
-    })
-  }
-})
+function handleUploadError() {
+  proxy.$modal.closeLoading()
+  proxy.$modal.msgError('上传失败')
+}
+
+function handleExceed() {
+  proxy.$modal.msgError(`最多只能上传 ${props.limit} 个文件!`)
+}
+
+function handlePreview() {
+  // el-image 组件自带预览功能
+}
+
+function handleDelete(index) {
+  fileList.value.splice(index, 1)
+  emitValue()
+}
+
+function triggerUpload() {
+  triggerRef.value?.click()
+}
+
+function emitValue() {
+  const value = fileList.value.map(f => f.url).join(',')
+  emit('update:modelValue', value)
+  emit('change', value)
+}
+
+defineExpose({ triggerUpload, getFiles: () => fileList.value })
 </script>
 
 <style scoped lang="scss">
-// .el-upload--picture-card 控制加号部分
-:deep(.hide .el-upload--picture-card) {
-  display: none;
+.image-upload {
+  width: 100%;
 }
 
-:deep(.el-upload.el-upload--picture-card.is-disabled) {
-  display: none !important;
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-item {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+  
+  .image-thumbnail {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .image-actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    
+    .action-icon {
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      
+      &:hover {
+        color: #409eff;
+      }
+      
+      &.delete:hover {
+        color: #f56c6c;
+      }
+    }
+  }
+  
+  &:hover .image-actions {
+    opacity: 1;
+  }
+  
+  .file-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2px 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: #c0c4cc;
+  
+  .empty-icon {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+  
+  .empty-text {
+    font-size: 12px;
+  }
+}
+
+.hidden-upload {
+  display: none;
 }
 </style>

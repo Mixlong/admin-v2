@@ -64,6 +64,9 @@ function filterAsyncRouter(asyncRouterMap) {
   });
 }
 
+// 导出 filterAsyncRouter 供微前端环境使用
+export { filterAsyncRouter };
+
 export const loadView = (view) => {
   // 防止微应用路径误入loadView
   if (typeof view === 'string' && view.indexOf('micro:') !== -1) {

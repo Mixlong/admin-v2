@@ -37,14 +37,14 @@
       <el-table-column label="描述" prop="desc" align="center" />
       <el-table-column label="许可状态" align="center" width="120">
         <template slot-scope="{ row }">
-          <el-dropdown :type="row.isLicense === 0 ? 'danger' : 'success'" split-button trigger="click" :style="{backgroundColor:row.isLicense === 0 ? '#ff4949':'#5cb85c',borderRadius:'12px'}">
-            {{ row.isLicense === 0 ? "未许可" : "已许可" }}
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-if="row.isLicense === 1 && checkPermi(['third:prodPermit:cancelLicense'])" @click.native="showLicenseDialog(0, row)">取消许可</el-dropdown-item>
-              <el-dropdown-item v-if="row.isLicense === 0 && checkPermi(['third:prodPermit:license'])" @click.native="showLicenseDialog(1, row)">许可</el-dropdown-item>
-              <el-dropdown-item v-if="row.isLicense === 0 && checkPermi(['third:prodPermit:forceLicense'])" @click.native="showLicenseDialog(2, row)">强制许可</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+          <div 
+            class="custom-license-btn" 
+            :class="row.isLicense === 0 ? 'bg-danger' : 'bg-success'" 
+            @click.stop="handleLicenseDropdown($event, row)"
+          >
+            <span>{{ row.isLicense === 0 ? "未许可" : "已许可" }}</span>
+            <i class="el-icon-arrow-down" style="font-size: 12px; margin-left: 5px;"></i>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="许可有效期" align="center" width="120">
@@ -266,6 +266,36 @@
         <el-button type="primary" @click="confirmLicenseOperation">确定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 自定义下拉菜单 -->
+    <div 
+      v-show="customDropdown.visible" 
+      class="custom-dropdown-menu" 
+      :style="{ top: customDropdown.top + 'px', left: customDropdown.left + 'px' }"
+      @click.stop
+    >
+      <div 
+        v-if="customDropdown.row && customDropdown.row.isLicense === 1 && checkPermi(['third:prodPermit:cancelLicense'])" 
+        class="custom-menu-item" 
+        @click="handleMenuClick(0)"
+      >
+        取消许可
+      </div>
+      <div 
+        v-if="customDropdown.row && customDropdown.row.isLicense === 0 && checkPermi(['third:prodPermit:license'])" 
+        class="custom-menu-item" 
+        @click="handleMenuClick(1)"
+      >
+        许可
+      </div>
+      <div 
+        v-if="customDropdown.row && customDropdown.row.isLicense === 0 && checkPermi(['third:prodPermit:forceLicense'])" 
+        class="custom-menu-item" 
+        @click="handleMenuClick(2)"
+      >
+        强制许可
+      </div>
+    </div>
   </div>
 </template>
 
@@ -331,7 +361,25 @@ export default {
       datePickerOptions: {
         // 移除日期禁用，允许选择任意日期
       },
+      
+      // 自定义下拉菜单状态
+      customDropdown: {
+        visible: false,
+        top: 0,
+        left: 0,
+        row: null
+      },
     };
+  },
+  mounted() {
+    document.addEventListener('click', this.closeCustomDropdown);
+    window.addEventListener('scroll', this.closeCustomDropdown, true);
+    window.addEventListener('resize', this.closeCustomDropdown);
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.closeCustomDropdown);
+    window.removeEventListener('scroll', this.closeCustomDropdown, true);
+    window.removeEventListener('resize', this.closeCustomDropdown);
   },
   watch: {
     $route: {
@@ -666,6 +714,26 @@ export default {
       }).catch(() => {
       });
     },
+    
+    // 处理自定义下拉菜单点击
+    handleLicenseDropdown(event, row) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      this.customDropdown.row = row;
+      this.customDropdown.top = rect.bottom + 5;
+      this.customDropdown.left = rect.left;
+      this.customDropdown.visible = true;
+    },
+
+    closeCustomDropdown() {
+      this.customDropdown.visible = false;
+    },
+
+    handleMenuClick(type) {
+      if (this.customDropdown.row) {
+        this.showLicenseDialog(type, this.customDropdown.row);
+        this.closeCustomDropdown();
+      }
+    },
   },
 };
 </script>
@@ -765,4 +833,54 @@ export default {
   color: #909399;
 }
 
+/* 自定义许可按钮样式 */
+.custom-license-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bg-success {
+  background: linear-gradient(135deg, #67c23a 0%, #529b2e 100%);
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, #f56c6c 0%, #d93d3d 100%);
+}
+
+/* 自定义下拉菜单样式 */
+.custom-dropdown-menu {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+  padding: 5px 0;
+  min-width: 100px;
+}
+
+.custom-menu-item {
+  list-style: none;
+  line-height: 36px;
+  padding: 0 20px;
+  margin: 0;
+  font-size: 14px;
+  color: #606266;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.custom-menu-item:hover {
+  background-color: #ecf5ff;
+  color: #409eff;
+}
 </style>

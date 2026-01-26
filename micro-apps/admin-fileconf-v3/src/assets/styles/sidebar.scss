@@ -61,7 +61,7 @@
     }
 
     .svg-icon {
-      margin-right: 16px;
+      margin-right: 10px !important;
     }
 
     .el-menu {
@@ -235,4 +235,40 @@
       border-radius: 20px;
     }
   }
+}
+
+
+/* ===== 一级菜单样式 - 15px 加粗 ===== */
+/* 无子菜单的一级菜单 */
+.sidebar-container .first-level-menu,
+.sidebar-container .first-level-menu span,
+.sidebar-container .first-level-menu .menu-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* 有子菜单的一级菜单 - Element Plus使用el-sub-menu */
+.sidebar-container .first-level-submenu > .el-sub-menu__title,
+.sidebar-container .first-level-submenu > .el-sub-menu__title span,
+.sidebar-container .first-level-submenu > .el-sub-menu__title .menu-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* 直接选择el-menu下的一级菜单 */
+.sidebar-container .el-menu > .el-sub-menu > .el-sub-menu__title,
+.sidebar-container .el-menu > .el-sub-menu > .el-sub-menu__title span,
+.sidebar-container .el-menu > .el-menu-item,
+.sidebar-container .el-menu > .el-menu-item span {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* 二级及以下菜单保持14px正常字重 */
+.sidebar-container .nest-menu .el-sub-menu__title,
+.sidebar-container .nest-menu .el-sub-menu__title span,
+.sidebar-container .nest-menu .el-menu-item,
+.sidebar-container .nest-menu .el-menu-item span {
+  font-size: 14px !important;
+  font-weight: 400 !important;
 }

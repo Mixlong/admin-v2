@@ -307,13 +307,33 @@ export function handleTree(data, id, parentId, children, rootId) {
 // TABLE 通用高度
 export function tableHeight(num) {
   num = num ? num : 0;
-  return document.documentElement.clientHeight - 290 + num;
+  // 兼容无界微前端环境
+  // 无界子应用运行在 iframe 中，需要获取父窗口的高度
+  let clientHeight = document.documentElement.clientHeight;
+  if (window.__POWERED_BY_WUJIE__) {
+    try {
+      // 尝试获取父窗口高度
+      clientHeight = window.parent.document.documentElement.clientHeight;
+    } catch (e) {
+      // 跨域情况下无法访问父窗口，使用当前窗口高度
+      console.warn('[tableHeight] 无法获取父窗口高度，使用当前窗口高度');
+    }
+  }
+  return clientHeight - 290 + num;
 }
 
 // dialog 通用宽度
 export function dialogTop() {
-  const w = document.documentElement.clientWidth;
-  if (w < 1350) {
+  // 兼容无界微前端环境
+  let clientWidth = document.documentElement.clientWidth;
+  if (window.__POWERED_BY_WUJIE__) {
+    try {
+      clientWidth = window.parent.document.documentElement.clientWidth;
+    } catch (e) {
+      // 跨域情况下无法访问父窗口
+    }
+  }
+  if (clientWidth < 1350) {
     return "50vh";
   }
   return "10vh";

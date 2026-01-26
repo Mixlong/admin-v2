@@ -1,10 +1,14 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{ '--current-color': theme }">
-    <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
+    <div
+      v-if="device === 'mobile' && sidebar.opened"
+      class="drawer-bg"
+      @click="handleClickOutside"
+    />
     <sidebar v-if="!sidebar.hide" class="sidebar-container" />
     <div :class="{ hasTagsView: needTagsView, sidebarHide: sidebar.hide }" class="main-container">
       <div :class="{ 'fixed-header': fixedHeader }">
-        <navbar @setLayout="setLayout" />
+        <navbar @set-layout="setLayout" />
         <tags-view v-if="needTagsView" />
       </div>
       <app-main />
@@ -38,11 +42,14 @@ const classObj = computed(() => ({
 const { width, height } = useWindowSize()
 const WIDTH = 992 // refer to Bootstrap's responsive design
 
-watch(() => device.value, () => {
-  if (device.value === 'mobile' && sidebar.value.opened) {
-    useAppStore().closeSideBar({ withoutAnimation: false })
+watch(
+  () => device.value,
+  () => {
+    if (device.value === 'mobile' && sidebar.value.opened) {
+      useAppStore().closeSideBar({ withoutAnimation: false })
+    }
   }
-})
+)
 
 watchEffect(() => {
   if (width.value - 1 < WIDTH) {
@@ -64,8 +71,8 @@ function setLayout() {
 </script>
 
 <style lang="scss" scoped>
-@use "@/assets/styles/mixin.scss" as mix;
-@use "@/assets/styles/variables.module.scss" as vars;
+@use '@/assets/styles/mixin.scss' as mix;
+@use '@/assets/styles/variables.module.scss' as vars;
 
 .app-wrapper {
   @include mix.clearfix;
@@ -77,6 +84,11 @@ function setLayout() {
     position: fixed;
     top: 0;
   }
+}
+
+.main-container:has(.fixed-header) {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .drawer-bg {

@@ -4,23 +4,43 @@
     <div class="search-wrapper">
       <el-form :model="searchForm" inline size="small">
         <el-form-item label="客户名称">
-          <el-input v-model="searchForm.customerName" placeholder="请输入客户名称" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.customerName"
+            placeholder="请输入客户名称"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="配置型号">
-          <el-input v-model="searchForm.configModel" placeholder="请输入配置型号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.configModel"
+            placeholder="请输入配置型号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="客户订单号">
-          <el-input v-model="searchForm.customerOrderNo" placeholder="请输入客户订单号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.customerOrderNo"
+            placeholder="请输入客户订单号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="U8单号">
-          <el-input v-model="searchForm.u8OrderNo" placeholder="请输入U8单号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.u8OrderNo"
+            placeholder="请输入U8单号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="Search" @click="handleSearch">搜索</el-button>
           <el-button icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
-      
+
       <!-- 操作按钮 -->
       <div class="action-buttons">
         <el-button type="primary" size="small" @click="handleAdd">
@@ -29,49 +49,8 @@
         <el-button type="warning" size="small" @click="handleExport">
           <el-icon><Download /></el-icon> 导出Excel
         </el-button>
-        
-        <!-- 列设置 -->
-        <el-dropdown trigger="click" placement="bottom">
-          <el-button size="small">
-            <el-icon><Setting /></el-icon> 列设置
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu class="column-setting-dropdown-menu">
-              <div class="column-control-panel" @click.stop>
-                <div class="panel-header">
-                  <span>列显示设置</span>
-                  <el-button type="primary" link size="small" @click="resetColumns">重置</el-button>
-                </div>
-                
-                <div class="mode-selection">
-                  <div class="mode-title">预设模式</div>
-                  <el-radio-group v-model="columnDisplayMode" @change="handleModeChange" size="small">
-                    <el-radio label="mode1">主模式</el-radio>
-                    <el-radio label="custom">自定义</el-radio>
-                  </el-radio-group>
-                </div>
-                
-                <el-checkbox-group 
-                  v-model="visibleColumns" 
-                  @change="handleColumnChange"
-                  :disabled="columnDisplayMode !== 'custom'"
-                >
-                  <el-checkbox 
-                    v-for="col in allColumns" 
-                    :key="col.field" 
-                    :label="col.field"
-                    :disabled="col.fixed || columnDisplayMode !== 'custom'"
-                  >
-                    {{ col.title }}
-                  </el-checkbox>
-                </el-checkbox-group>
-              </div>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
       </div>
     </div>
-
 
     <!-- VXE Table 数据表格 -->
     <div class="table-wrapper">
@@ -89,333 +68,376 @@
           :edit-config="{ trigger: 'dblclick', mode: 'cell' }"
           @edit-closed="handleEditClosed"
         >
-        <vxe-column type="seq" title="序号" width="60" align="center" fixed="left"></vxe-column>
-        
-        <!-- 客户名称 - 必显列 -->
-        <vxe-column 
-          field="customerName" 
-          title="客户名称" 
-          width="140" 
-          fixed="left"
-          align="center"
-          
-        ></vxe-column>
-        
-        <!-- U8单号 -->
-        <vxe-column 
-          v-if="isColumnVisible('u8OrderNo')"
-          field="u8OrderNo" 
-          title="U8单号" 
-          width="160"
-          align="center"
-          
-        >
-          <template #default="{ row }">
-            <span class="order-no-link">{{ row.u8OrderNo || '-' }}</span>
-          </template>
-        </vxe-column>
-        
-        <!-- U8是否可用 -->
-        <vxe-column 
-          v-if="isColumnVisible('u8Available')"
-          field="u8Available" 
-          title="U8是否可用" 
-          width="130"
-          align="center"
-          
-        >
-          <template #default="{ row }">
-            <el-tag v-if="row.u8Available" type="success" size="small">可用</el-tag>
-            <el-tag v-else type="info" size="small">不可用</el-tag>
-          </template>
-        </vxe-column>
-        
-        <!-- BOM编码 -->
-        <vxe-column 
-          v-if="isColumnVisible('bomCode')"
-          field="bomCode" 
-          title="BOM编码" 
-          width="160"
-          align="center"
-          
-        ></vxe-column>
-        
-        <!-- BOM信息 -->
-        <vxe-column 
-          v-if="isColumnVisible('etreeBomBefore')"
-          field="etreeBomBefore" 
-          title="E树BOM刷新前" 
-          width="140"
-          align="center"
-        ></vxe-column>
-        
-        <vxe-column 
-          v-if="isColumnVisible('etreeBomAfter')"
-          field="etreeBomAfter" 
-          title="E树BOM刷新后" 
-          width="140"
-          align="center"
-        ></vxe-column>
-        
-        <vxe-column 
-          v-if="isColumnVisible('etreeBomAudited')"
-          field="etreeBomAudited" 
-          title="E树BOM审核" 
-          width="120"
-          align="center"
-          
-        >
-          <template #default="{ row }">
-            <el-tag v-if="row.etreeBomAudited === '已审核'" type="success" size="small">已审核</el-tag>
-            <el-tag v-else-if="row.etreeBomAudited === '有遗留'" type="warning" size="small">有遗留</el-tag>
-            <el-tag v-else-if="row.etreeBomAudited === '未审核'" type="info" size="small">未审核</el-tag>
-            <span v-else>-</span>
-          </template>
-        </vxe-column>
-        
-        <!-- 配置型号 - 可编辑 -->
-        <vxe-column 
-          v-if="isColumnVisible('configModel')"
-          field="configModel" 
-          title="配置型号" 
-          width="160"
-          align="center"
-          :edit-render="{ name: 'input' }"
-        >
-          <template #default="{ row }">
-            <span class="model-text">{{ row.configModel || '-' }}</span>
-          </template>
-        </vxe-column>
-        
-        <!-- 按键型号 - 可编辑 -->
-        <vxe-column 
-          v-if="isColumnVisible('keyModel')"
-          field="keyModel" 
-          title="按键型号" 
-          width="140"
-          align="center"
-          :edit-render="{ name: 'input' }"
-        ></vxe-column>
-        
-        <!-- 客户订单号 -->
-        <vxe-column 
-          v-if="isColumnVisible('customerOrderNo')"
-          field="customerOrderNo" 
-          title="客户订单号" 
-          width="160"
-          align="center"
-          
-        ></vxe-column>
-        
-        <!-- E树订单号 -->
-        <vxe-column 
-          v-if="isColumnVisible('etreeOrderNo')"
-          field="etreeOrderNo" 
-          title="E树订单号" 
-          width="160"
-          align="center"
-          
-        ></vxe-column>
-        
-        <!-- 上单时间 -->
-        <vxe-column 
-          v-if="isColumnVisible('orderDate')"
-          field="orderDate" 
-          title="上单时间" 
-          width="110"
-          align="center"
-        ></vxe-column>
-        
-        <!-- 数量信息分组 -->
-        <vxe-colgroup 
-          v-if="isColumnVisible('orderQuantity') || isColumnVisible('shippedQuantity') || isColumnVisible('unshippedQuantity')"
-          title="数量信息"
-          align="center"
-        >
-          <vxe-column 
-            v-if="isColumnVisible('orderQuantity')"
-            field="orderQuantity" 
-            title="订单数量" 
-            width="100"
-            align="center"
-            :edit-render="{ name: 'input', attrs: { type: 'number' } }"
-          >
-            <template #default="{ row }">
-              <span class="quantity-text text-green">{{ row.orderQuantity || 0 }}</span>
-            </template>
-          </vxe-column>
-          
-          <vxe-column 
-            v-if="isColumnVisible('shippedQuantity')"
-            field="shippedQuantity" 
-            title="已发货量" 
-            width="100"
-            align="center"
-          >
-            <template #default="{ row }">
-              <span class="shipped-text">{{ row.shippedQuantity || 0 }}</span>
-            </template>
-          </vxe-column>
-          
-          <vxe-column 
-            v-if="isColumnVisible('unshippedQuantity')"
-            field="unshippedQuantity" 
-            title="未发货量" 
-            width="100"
-            align="center"
-          >
-            <template #default="{ row }">
-              <span class="unshipped-text text-red" :class="{ 'has-unshipped': row.unshippedQuantity > 0 }">
-                {{ row.unshippedQuantity || 0 }}
-              </span>
-            </template>
-          </vxe-column>
-        </vxe-colgroup>
-        
-        <!-- 交期信息分组 -->
-        <vxe-colgroup 
-          v-if="isColumnVisible('deliveryPlan') || isColumnVisible('pmcDeliveryDate')"
-          title="交期信息"
-          align="center"
-        >
-          <vxe-column 
-            v-if="isColumnVisible('deliveryPlan')"
-            field="deliveryPlan" 
-            title="交货计划" 
-            width="110"
+          <vxe-column type="seq" title="序号" width="60" align="center" fixed="left"></vxe-column>
+
+          <!-- 客户名称 - 必显列 -->
+          <vxe-column
+            field="customerName"
+            title="客户名称"
+            width="140"
+            fixed="left"
             align="center"
           ></vxe-column>
-          
-          <vxe-column 
-            v-if="isColumnVisible('pmcDeliveryDate')"
-            field="pmcDeliveryDate" 
-            title="PMC可达成交期" 
+
+          <!-- U8单号 -->
+          <vxe-column
+            v-if="isColumnVisible('u8OrderNo')"
+            field="u8OrderNo"
+            title="U8单号"
+            width="160"
+            align="center"
+          >
+            <template #default="{ row }">
+              <span class="order-no-link">{{ row.u8OrderNo || '-' }}</span>
+            </template>
+          </vxe-column>
+
+          <!-- U8是否可用 -->
+          <vxe-column
+            v-if="isColumnVisible('u8Available')"
+            field="u8Available"
+            title="U8是否可用"
             width="130"
             align="center"
-          ></vxe-column>
-        </vxe-colgroup>
-        
-        <!-- 交期变更履历 -->
-        <vxe-column 
-          v-if="isColumnVisible('deliveryChangeLog')"
-          field="deliveryChangeLog" 
-          title="交期变更履历" 
-          min-width="200"
-          align="left"
-        >
-          <template #default="{ row }">
-            <div class="rich-text-cell" v-if="row.deliveryChangeLog" v-html="row.deliveryChangeLog"></div>
-            <span v-else>-</span>
-          </template>
-        </vxe-column>
-        
-        <!-- 客供物料情况分组 -->
-        <vxe-colgroup 
-          v-if="isColumnVisible('customerMaterial') || isColumnVisible('customerMaterialArrival')"
-          title="客供物料情况"
-          align="center"
-        >
-          <vxe-column 
-            v-if="isColumnVisible('customerMaterial')"
-            field="customerMaterial" 
-            title="客供料" 
-            width="120"
+          >
+            <template #default="{ row }">
+              <el-tag v-if="row.u8Available" type="success" size="small">可用</el-tag>
+              <el-tag v-else type="info" size="small">不可用</el-tag>
+            </template>
+          </vxe-column>
+
+          <!-- BOM编码 -->
+          <vxe-column
+            v-if="isColumnVisible('bomCode')"
+            field="bomCode"
+            title="BOM编码"
+            width="160"
             align="center"
           ></vxe-column>
-          
-          <vxe-column 
-            v-if="isColumnVisible('customerMaterialArrival')"
-            field="customerMaterialArrival" 
-            title="到料时间" 
-            width="110"
+
+          <!-- BOM信息 -->
+          <vxe-column
+            v-if="isColumnVisible('etreeBomBefore')"
+            field="etreeBomBefore"
+            title="E树BOM刷新前"
+            width="140"
+            align="center"
+          ></vxe-column>
+
+          <vxe-column
+            v-if="isColumnVisible('etreeBomAfter')"
+            field="etreeBomAfter"
+            title="E树BOM刷新后"
+            width="140"
+            align="center"
+          ></vxe-column>
+
+          <vxe-column
+            v-if="isColumnVisible('etreeBomAudited')"
+            field="etreeBomAudited"
+            title="E树BOM审核"
+            width="120"
             align="center"
           >
             <template #default="{ row }">
-              <span v-if="Array.isArray(row.customerMaterialArrival) && row.customerMaterialArrival.length > 0">
-                {{ row.customerMaterialArrival.join('、') }}
-              </span>
-              <span v-else>{{ row.customerMaterialArrival || '-' }}</span>
+              <el-tag v-if="row.etreeBomAudited === '已审核'" type="success" size="small"
+                >已审核</el-tag
+              >
+              <el-tag v-else-if="row.etreeBomAudited === '有遗留'" type="warning" size="small"
+                >有遗留</el-tag
+              >
+              <el-tag v-else-if="row.etreeBomAudited === '未审核'" type="info" size="small"
+                >未审核</el-tag
+              >
+              <span v-else>-</span>
             </template>
           </vxe-column>
-        </vxe-colgroup>
-        
-        <!-- 特殊备注 -->
-        <vxe-column 
-          v-if="isColumnVisible('specialRemark')"
-          field="specialRemark" 
-          title="特殊备注" 
-          min-width="200"
-          align="left"
-        >
-          <template #default="{ row }">
-            <div class="rich-text-cell" v-if="row.specialRemark" v-html="row.specialRemark"></div>
-            <span v-else>-</span>
-          </template>
-        </vxe-column>
-        
-        <!-- 订单已耗时 -->
-        <vxe-column 
-          v-if="isColumnVisible('orderDays')"
-          field="orderDays" 
-          title="订单已耗时(天)" 
-          width="120"
-          align="center"
-        >
-          <template #default="{ row }">
-            <span class="days-text" :class="{ 'warning-days': row.orderDays > 60 }">
-              {{ row.orderDays || 0 }}
-            </span>
-          </template>
-        </vxe-column>
 
-        <!-- 操作列 -->
-        <vxe-column title="操作" width="160" align="center" fixed="right">
-          <template #default="{ row }">
-            <el-tooltip content="编辑" placement="top" :enterable="false">
-              <el-button size="small" type="text" @click="handleEdit(row)" icon="el-icon-edit"
-                v-hasPermi="['shipment:order:edit']" class="icon-btn" circle></el-button>
-            </el-tooltip>
-            <el-tooltip content="复制" placement="top" :enterable="false" v-if="checkRole(['ms', 'sale_manager', 'admin'])">
-              <el-button size="small" type="text" @click="handleCopy(row)" icon="el-icon-document-copy"
-                class="icon-btn" circle style="color: #409EFF;"></el-button>
-            </el-tooltip>
-            <el-tooltip content="删除" placement="top" :enterable="false">
-              <el-button size="small" type="text" class="text-red icon-btn" @click="handleDelete(row)" icon="el-icon-delete"
-                v-hasPermi="['shipment:order:remove']" circle></el-button>
-            </el-tooltip>
-          </template>
-        </vxe-column>
-      </vxe-table>
+          <!-- 配置型号 - 可编辑 -->
+          <vxe-column
+            v-if="isColumnVisible('configModel')"
+            field="configModel"
+            title="配置型号"
+            width="160"
+            align="center"
+            :edit-render="{ name: 'input' }"
+          >
+            <template #default="{ row }">
+              <span class="model-text">{{ row.configModel || '-' }}</span>
+            </template>
+          </vxe-column>
+
+          <!-- 按键型号 - 可编辑 -->
+          <vxe-column
+            v-if="isColumnVisible('keyModel')"
+            field="keyModel"
+            title="按键型号"
+            width="140"
+            align="center"
+            :edit-render="{ name: 'input' }"
+          ></vxe-column>
+
+          <!-- 客户订单号 -->
+          <vxe-column
+            v-if="isColumnVisible('customerOrderNo')"
+            field="customerOrderNo"
+            title="客户订单号"
+            width="160"
+            align="center"
+          ></vxe-column>
+
+          <!-- E树订单号 -->
+          <vxe-column
+            v-if="isColumnVisible('etreeOrderNo')"
+            field="etreeOrderNo"
+            title="E树订单号"
+            width="160"
+            align="center"
+          ></vxe-column>
+
+          <!-- 上单时间 -->
+          <vxe-column
+            v-if="isColumnVisible('orderDate')"
+            field="orderDate"
+            title="上单时间"
+            width="110"
+            align="center"
+          ></vxe-column>
+
+          <!-- 数量信息分组 -->
+          <vxe-colgroup
+            v-if="
+              isColumnVisible('orderQuantity') ||
+              isColumnVisible('shippedQuantity') ||
+              isColumnVisible('unshippedQuantity')
+            "
+            title="数量信息"
+            align="center"
+          >
+            <vxe-column
+              v-if="isColumnVisible('orderQuantity')"
+              field="orderQuantity"
+              title="订单数量"
+              width="100"
+              align="center"
+              :edit-render="{ name: 'input', attrs: { type: 'number' } }"
+            >
+              <template #default="{ row }">
+                <span class="quantity-text text-green">{{ row.orderQuantity || 0 }}</span>
+              </template>
+            </vxe-column>
+
+            <vxe-column
+              v-if="isColumnVisible('shippedQuantity')"
+              field="shippedQuantity"
+              title="已发货量"
+              width="100"
+              align="center"
+            >
+              <template #default="{ row }">
+                <span class="shipped-text">{{ row.shippedQuantity || 0 }}</span>
+              </template>
+            </vxe-column>
+
+            <vxe-column
+              v-if="isColumnVisible('unshippedQuantity')"
+              field="unshippedQuantity"
+              title="未发货量"
+              width="100"
+              align="center"
+            >
+              <template #default="{ row }">
+                <span
+                  class="unshipped-text text-red"
+                  :class="{ 'has-unshipped': row.unshippedQuantity > 0 }"
+                >
+                  {{ row.unshippedQuantity || 0 }}
+                </span>
+              </template>
+            </vxe-column>
+          </vxe-colgroup>
+
+          <!-- 交期信息分组 -->
+          <vxe-colgroup
+            v-if="isColumnVisible('deliveryPlan') || isColumnVisible('pmcDeliveryDate')"
+            title="交期信息"
+            align="center"
+          >
+            <vxe-column
+              v-if="isColumnVisible('deliveryPlan')"
+              field="deliveryPlan"
+              title="交货计划"
+              width="110"
+              align="center"
+            ></vxe-column>
+
+            <vxe-column
+              v-if="isColumnVisible('pmcDeliveryDate')"
+              field="pmcDeliveryDate"
+              title="PMC可达成交期"
+              width="130"
+              align="center"
+            ></vxe-column>
+          </vxe-colgroup>
+
+          <!-- 交期变更履历 -->
+          <vxe-column
+            v-if="isColumnVisible('deliveryChangeLog')"
+            field="deliveryChangeLog"
+            title="交期变更履历"
+            min-width="200"
+            align="left"
+          >
+            <template #default="{ row }">
+              <div
+                v-if="row.deliveryChangeLog"
+                class="rich-text-cell"
+                v-html="row.deliveryChangeLog"
+              ></div>
+              <span v-else>-</span>
+            </template>
+          </vxe-column>
+
+          <!-- 客供物料情况分组 -->
+          <vxe-colgroup
+            v-if="isColumnVisible('customerMaterial') || isColumnVisible('customerMaterialArrival')"
+            title="客供物料情况"
+            align="center"
+          >
+            <vxe-column
+              v-if="isColumnVisible('customerMaterial')"
+              field="customerMaterial"
+              title="客供料"
+              width="120"
+              align="center"
+            ></vxe-column>
+
+            <vxe-column
+              v-if="isColumnVisible('customerMaterialArrival')"
+              field="customerMaterialArrival"
+              title="到料时间"
+              width="110"
+              align="center"
+            >
+              <template #default="{ row }">
+                <span
+                  v-if="
+                    Array.isArray(row.customerMaterialArrival) &&
+                    row.customerMaterialArrival.length > 0
+                  "
+                >
+                  {{ row.customerMaterialArrival.join('、') }}
+                </span>
+                <span v-else>{{ row.customerMaterialArrival || '-' }}</span>
+              </template>
+            </vxe-column>
+          </vxe-colgroup>
+
+          <!-- 特殊备注 -->
+          <vxe-column
+            v-if="isColumnVisible('specialRemark')"
+            field="specialRemark"
+            title="特殊备注"
+            min-width="200"
+            align="left"
+          >
+            <template #default="{ row }">
+              <div v-if="row.specialRemark" class="rich-text-cell" v-html="row.specialRemark"></div>
+              <span v-else>-</span>
+            </template>
+          </vxe-column>
+
+          <!-- 订单已耗时 -->
+          <vxe-column
+            v-if="isColumnVisible('orderDays')"
+            field="orderDays"
+            title="订单已耗时(天)"
+            width="120"
+            align="center"
+          >
+            <template #default="{ row }">
+              <span class="days-text" :class="{ 'warning-days': row.orderDays > 60 }">
+                {{ row.orderDays || 0 }}
+              </span>
+            </template>
+          </vxe-column>
+
+          <!-- 操作列 -->
+          <vxe-column title="操作" width="160" align="center" fixed="right">
+            <template #default="{ row }">
+              <el-tooltip content="编辑" placement="top" :enterable="false">
+                <el-button
+                  v-hasPermi="['shipment:order:edit']"
+                  size="small"
+                  type="text"
+                  icon="el-icon-edit"
+                  class="icon-btn"
+                  circle
+                  @click="handleEdit(row)"
+                ></el-button>
+              </el-tooltip>
+              <el-tooltip
+                v-if="checkRole(['ms', 'sale_manager', 'admin'])"
+                content="复制"
+                placement="top"
+                :enterable="false"
+              >
+                <el-button
+                  size="small"
+                  type="text"
+                  icon="el-icon-document-copy"
+                  class="icon-btn"
+                  circle
+                  style="color: #409eff"
+                  @click="handleCopy(row)"
+                ></el-button>
+              </el-tooltip>
+              <el-tooltip content="删除" placement="top" :enterable="false">
+                <el-button
+                  v-hasPermi="['shipment:order:remove']"
+                  size="small"
+                  type="text"
+                  class="text-red icon-btn"
+                  icon="el-icon-delete"
+                  circle
+                  @click="handleDelete(row)"
+                ></el-button>
+              </el-tooltip>
+            </template>
+          </vxe-column>
+        </vxe-table>
       </div>
     </div>
 
-
     <!-- 分页组件 -->
-    <div class="pagination-wrapper flex" style='margin-top:10px;justify-content: flex-end;'>
-      <el-pagination 
-        @size-change="handleSizeChange" 
-        @current-change="handleCurrentChange"
-        :current-page="pagination.current" 
-        :page-sizes="[10, 20, 30, 40, 50, 100]" 
+    <div class="pagination-wrapper flex" style="margin-top: 10px; justify-content: flex-end">
+      <el-pagination
+        :current-page="pagination.current"
+        :page-sizes="[10, 20, 30, 40, 50, 100]"
         :page-size="pagination.size"
-        layout="total, sizes, prev, pager, next, jumper" 
-        :total="pagination.total">
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="pagination.total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      >
       </el-pagination>
     </div>
 
     <!-- 保存方案对话框 -->
     <el-dialog
-      title="保存列显示方案"
       v-model="saveSchemeDialogVisible"
+      title="保存列显示方案"
       width="400px"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false"
+    >
       <el-form :model="{ schemeName }" label-width="100px">
         <el-form-item label="方案名称" required>
-          <el-input 
-            v-model="schemeName" 
+          <el-input
+            v-model="schemeName"
             placeholder="请输入方案名称"
             maxlength="20"
-            show-word-limit>
+            show-word-limit
+          >
           </el-input>
         </el-form-item>
       </el-form>
@@ -428,7 +450,6 @@
     </el-dialog>
   </div>
 </template>
-
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
@@ -455,11 +476,26 @@ const mockRoles = ref(['ms'])
 // 列显示控制
 const columnDisplayMode = ref('mode1')
 const visibleColumns = ref([
-  'customerName', 'u8OrderNo', 'u8Available', 'bomCode', 'etreeBomAudited',
-  'configModel', 'keyModel', 'customerOrderNo', 'etreeOrderNo', 'orderDate', 'orderQuantity', 
-  'shippedQuantity', 'unshippedQuantity', 'deliveryPlan', 'pmcDeliveryDate',
-  'deliveryChangeLog', 'customerMaterial', 'customerMaterialArrival', 
-  'specialRemark', 'orderDays'
+  'customerName',
+  'u8OrderNo',
+  'u8Available',
+  'bomCode',
+  'etreeBomAudited',
+  'configModel',
+  'keyModel',
+  'customerOrderNo',
+  'etreeOrderNo',
+  'orderDate',
+  'orderQuantity',
+  'shippedQuantity',
+  'unshippedQuantity',
+  'deliveryPlan',
+  'pmcDeliveryDate',
+  'deliveryChangeLog',
+  'customerMaterial',
+  'customerMaterialArrival',
+  'specialRemark',
+  'orderDays'
 ])
 
 // 保存方案相关
@@ -472,15 +508,29 @@ const columnModes = {
   mode1: {
     name: '主模式',
     columns: [
-      'customerName', 'u8OrderNo', 'u8Available', 'bomCode', 'etreeBomAudited',
-      'configModel', 'keyModel', 'customerOrderNo', 'etreeOrderNo', 'orderDate', 'orderQuantity', 
-      'shippedQuantity', 'unshippedQuantity', 'deliveryPlan', 'pmcDeliveryDate',
-      'deliveryChangeLog', 'customerMaterial', 'customerMaterialArrival', 
-      'specialRemark', 'orderDays'
+      'customerName',
+      'u8OrderNo',
+      'u8Available',
+      'bomCode',
+      'etreeBomAudited',
+      'configModel',
+      'keyModel',
+      'customerOrderNo',
+      'etreeOrderNo',
+      'orderDate',
+      'orderQuantity',
+      'shippedQuantity',
+      'unshippedQuantity',
+      'deliveryPlan',
+      'pmcDeliveryDate',
+      'deliveryChangeLog',
+      'customerMaterial',
+      'customerMaterialArrival',
+      'specialRemark',
+      'orderDays'
     ]
   }
 }
-
 
 const allColumns = [
   { field: 'customerName', title: '客户名称', fixed: true },
@@ -588,7 +638,6 @@ const dialogVisible = ref(false)
 const editData = ref(null)
 const copyMode = ref(false)
 
-
 // ========== 方法 ==========
 // 计算表格高度
 const tableHeight = ref(500)
@@ -604,25 +653,25 @@ if (typeof window !== 'undefined') {
 }
 
 // 获取列筛选选项
-const getColumnFilters = (columnField) => {
+const getColumnFilters = columnField => {
   if (!tableData.value || tableData.value.length === 0) {
     return []
   }
-  
+
   const values = tableData.value.map(row => row[columnField])
   const uniqueValues = [...new Set(values)]
   const emptyValues = uniqueValues.filter(v => v === null || v === undefined || v === '')
   const nonEmptyValues = uniqueValues.filter(v => v !== null && v !== undefined && v !== '')
-  
+
   const filters = []
   nonEmptyValues.sort().forEach(value => {
     filters.push({ label: value, value: value })
   })
-  
+
   if (emptyValues.length > 0) {
     filters.push({ label: '/', value: null })
   }
-  
+
   return filters
 }
 
@@ -642,7 +691,7 @@ const loadColumnConfig = () => {
       if (config.mode) {
         columnDisplayMode.value = config.mode
       }
-      
+
       if (config.mode === 'custom' && Array.isArray(config.columns) && config.columns.length > 0) {
         visibleColumns.value = config.columns
       } else if (config.mode && columnModes[config.mode]) {
@@ -650,7 +699,7 @@ const loadColumnConfig = () => {
       } else if (config.mode && customSchemes.value[config.mode]) {
         visibleColumns.value = [...customSchemes.value[config.mode].columns]
       }
-      
+
       nextTick(() => {
         tableKey.value++
       })
@@ -675,7 +724,7 @@ const saveColumnConfig = () => {
 }
 
 // 处理模式切换
-const handleModeChange = (mode) => {
+const handleModeChange = mode => {
   if (mode === 'mode1') {
     visibleColumns.value = [...columnModes[mode].columns]
   } else if (mode === 'custom') {
@@ -690,13 +739,12 @@ const handleModeChange = (mode) => {
 }
 
 // 获取模式名称
-const getModeName = (mode) => {
+const getModeName = mode => {
   if (mode === 'mode1') return '主模式'
   if (mode === 'custom') return '自定义模式'
   if (customSchemes.value[mode]) return customSchemes.value[mode].name
   return mode
 }
-
 
 // 打开保存方案对话框
 const openSaveSchemeDialog = () => {
@@ -714,20 +762,20 @@ const saveCustomScheme = () => {
     ElMessage.error('请输入方案名称')
     return
   }
-  
+
   const schemeKey = `custom_${Date.now()}`
   const scheme = {
     name: schemeName.value.trim(),
     columns: [...visibleColumns.value],
     createTime: new Date().toLocaleString()
   }
-  
+
   customSchemes.value[schemeKey] = scheme
   saveCustomSchemesToStorage()
   saveSchemeDialogVisible.value = false
   columnDisplayMode.value = schemeKey
   saveColumnConfig()
-  
+
   ElMessage.success(`方案 "${scheme.name}" 保存成功并已切换`)
 }
 
@@ -754,25 +802,27 @@ const loadCustomSchemesFromStorage = () => {
 }
 
 // 删除自定义方案
-const deleteCustomScheme = (schemeKey) => {
+const deleteCustomScheme = schemeKey => {
   ElMessageBox.confirm(`确定要删除方案 "${customSchemes.value[schemeKey].name}" 吗？`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    delete customSchemes.value[schemeKey]
-    saveCustomSchemesToStorage()
-    
-    if (columnDisplayMode.value === schemeKey) {
-      handleModeChange('mode1')
-    }
-    
-    ElMessage.success('删除成功')
-  }).catch(() => {})
+  })
+    .then(() => {
+      delete customSchemes.value[schemeKey]
+      saveCustomSchemesToStorage()
+
+      if (columnDisplayMode.value === schemeKey) {
+        handleModeChange('mode1')
+      }
+
+      ElMessage.success('删除成功')
+    })
+    .catch(() => {})
 }
 
 // 列显示变化处理
-const handleColumnChange = (value) => {
+const handleColumnChange = value => {
   columnDisplayMode.value = 'custom'
   saveColumnConfig()
   tableKey.value++
@@ -788,17 +838,17 @@ const resetColumns = () => {
 }
 
 // dropdown 命令处理
-const handleDropdownCommand = (command) => {
+const handleDropdownCommand = command => {
   // 空方法，防止点击菜单项关闭
 }
 
 // 判断列是否可见
-const isColumnVisible = (field) => {
+const isColumnVisible = field => {
   return visibleColumns.value.includes(field)
 }
 
 // 检查角色
-const checkRole = (roles) => {
+const checkRole = roles => {
   if (mockRoles.value && mockRoles.value.length > 0) {
     return roles.some(role => mockRoles.value.includes(role))
   }
@@ -806,22 +856,21 @@ const checkRole = (roles) => {
 }
 
 // 切换角色
-const handleRoleChange = (role) => {
+const handleRoleChange = role => {
   mockRoles.value = [role]
   ElMessage.success(`已切换到角色: ${getRoleName(role)}`)
 }
 
 // 获取角色名称
-const getRoleName = (roleKey) => {
+const getRoleName = roleKey => {
   const roleMap = {
-    'ms': '市场专员',
-    'BOM_Manage': 'BOM专员',
-    'pmc': 'PMC专员',
-    'admin': '超级管理员',
+    ms: '市场专员',
+    BOM_Manage: 'BOM专员',
+    pmc: 'PMC专员',
+    admin: '超级管理员'
   }
   return roleMap[roleKey] || roleKey
 }
-
 
 // 加载下拉选项
 const loadOptions = () => {
@@ -840,13 +889,15 @@ const loadCustomerOptions = () => {
 
 // 加载状态选项
 const loadStatusOptions = () => {
-  getOrderStatusDict().then(res => {
-    if (res.code === 200) {
-      statusOptions.value = res.data || []
-    }
-  }).catch(() => {
-    ElMessage.error('获取状态数据失败')
-  })
+  getOrderStatusDict()
+    .then(res => {
+      if (res.code === 200) {
+        statusOptions.value = res.data || []
+      }
+    })
+    .catch(() => {
+      ElMessage.error('获取状态数据失败')
+    })
 }
 
 // 获取列表数据
@@ -868,27 +919,30 @@ const fetchData = () => {
   }
 
   console.log('📡 开始获取数据，参数:', params)
-  
-  getShipmentOrderList(params).then((res) => {
-    console.log('📦 API 返回结果:', res)
-    if (res && res.code === 200) {
-      tableData.value = res.data?.list || res.data?.rows || []
-      pagination.total = res.data?.total || 0
-      console.log('✅ 数据加载成功:', tableData.value.length, '条')
-      console.log('📋 表格数据:', tableData.value)
-    } else {
-      ElMessage.error(res?.msg || '获取数据失败')
+
+  getShipmentOrderList(params)
+    .then(res => {
+      console.log('📦 API 返回结果:', res)
+      if (res && res.code === 200) {
+        tableData.value = res.data?.list || res.data?.rows || []
+        pagination.total = res.data?.total || 0
+        console.log('✅ 数据加载成功:', tableData.value.length, '条')
+        console.log('📋 表格数据:', tableData.value)
+      } else {
+        ElMessage.error(res?.msg || '获取数据失败')
+        tableData.value = []
+        pagination.total = 0
+      }
+    })
+    .catch(error => {
+      console.error('❌ 获取未出货订单列表失败:', error)
+      ElMessage.error('获取数据失败')
       tableData.value = []
       pagination.total = 0
-    }
-  }).catch((error) => {
-    console.error('❌ 获取未出货订单列表失败:', error)
-    ElMessage.error('获取数据失败')
-    tableData.value = []
-    pagination.total = 0
-  }).finally(() => {
-    loading.value = false
-  })
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 // 搜索功能
@@ -919,14 +973,14 @@ const handleAdd = () => {
 }
 
 // 编辑订单
-const handleEdit = (row) => {
+const handleEdit = row => {
   editData.value = { ...row }
   copyMode.value = false
   dialogVisible.value = true
 }
 
 // 复制订单
-const handleCopy = (row) => {
+const handleCopy = row => {
   const copyData = { ...row }
   delete copyData.id
   editData.value = copyData
@@ -935,28 +989,31 @@ const handleCopy = (row) => {
 }
 
 // 删除订单
-const handleDelete = (row) => {
+const handleDelete = row => {
   ElMessageBox.confirm('确定要删除这条未出货订单记录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    deleteShipmentOrder([row.id]).then((res) => {
-      if (res.code === 200) {
-        ElMessage.success('删除成功')
-        fetchData()
-      } else {
-        ElMessage.error(res.msg || '删除失败')
-      }
-    }).catch((error) => {
-      console.error('删除订单失败:', error)
-      ElMessage.error('删除失败')
-    })
-  }).catch(() => {
-    ElMessage.info('已取消删除')
   })
+    .then(() => {
+      deleteShipmentOrder([row.id])
+        .then(res => {
+          if (res.code === 200) {
+            ElMessage.success('删除成功')
+            fetchData()
+          } else {
+            ElMessage.error(res.msg || '删除失败')
+          }
+        })
+        .catch(error => {
+          console.error('删除订单失败:', error)
+          ElMessage.error('删除失败')
+        })
+    })
+    .catch(() => {
+      ElMessage.info('已取消删除')
+    })
 }
-
 
 // 导出Excel
 const handleExport = () => {
@@ -964,25 +1021,27 @@ const handleExport = () => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'info'
-  }).then(() => {
-    // 使用 VXE Table 的导出功能
-    const $table = xTable.value
-    if ($table) {
-      $table.exportData({
-        filename: `未出货订单_${formatDate(new Date())}`,
-        type: 'xlsx',
-        isHeader: true,
-        isFooter: false
-      })
-      ElMessage.success('导出成功')
-    }
-  }).catch(() => {
-    ElMessage.info('已取消导出')
   })
+    .then(() => {
+      // 使用 VXE Table 的导出功能
+      const $table = xTable.value
+      if ($table) {
+        $table.exportData({
+          filename: `未出货订单_${formatDate(new Date())}`,
+          type: 'xlsx',
+          isHeader: true,
+          isFooter: false
+        })
+        ElMessage.success('导出成功')
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消导出')
+    })
 }
 
 // 格式化日期
-const formatDate = (date) => {
+const formatDate = date => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -992,13 +1051,13 @@ const formatDate = (date) => {
 }
 
 // 分页大小改变
-const handleSizeChange = (val) => {
+const handleSizeChange = val => {
   pagination.size = val
   fetchData()
 }
 
 // 当前页改变
-const handleCurrentChange = (val) => {
+const handleCurrentChange = val => {
   pagination.current = val
   fetchData()
 }
@@ -1021,17 +1080,16 @@ const handleEditClosed = ({ row, column }) => {
 onMounted(() => {
   // 初始化表格高度
   updateTableHeight()
-  
+
   loadCustomSchemesFromStorage()
   loadColumnConfig()
   fetchData()
   loadCustomerOptions()
   loadStatusOptions()
-  
+
   console.log('📊 VXE Table 页面已加载')
 })
 </script>
-
 
 <style lang="scss" scoped>
 .shipment-order-container {
@@ -1039,18 +1097,18 @@ onMounted(() => {
     background: #fff;
     border-radius: 4px;
     margin-bottom: 10px;
-    
+
     .el-form {
       margin-bottom: 10px;
     }
-    
+
     .action-buttons {
       display: flex;
       gap: 10px;
       align-items: center;
     }
   }
-  
+
   .table-wrapper {
     background: #fff;
     border-radius: 4px;
@@ -1068,7 +1126,7 @@ onMounted(() => {
 
   // 订单编号链接样式
   .order-no-link {
-    color: #409EFF;
+    color: #409eff;
     cursor: pointer;
     font-weight: 500;
 
@@ -1093,16 +1151,16 @@ onMounted(() => {
   }
 
   .shipped-text {
-    color: #67C23A !important;
+    color: #67c23a !important;
     font-weight: 500;
   }
 
   .unshipped-text {
-    color: #F56C6C !important;
+    color: #f56c6c !important;
     font-weight: 500;
-    
+
     &.has-unshipped {
-      color: #F56C6C !important;
+      color: #f56c6c !important;
       font-weight: 600;
     }
   }
@@ -1110,9 +1168,9 @@ onMounted(() => {
   // 天数文本样式
   .days-text {
     color: #606266;
-    
+
     &.warning-days {
-      color: #F56C6C;
+      color: #f56c6c;
       font-weight: 600;
     }
   }
@@ -1126,37 +1184,37 @@ onMounted(() => {
     text-align: left;
     line-height: 1.4;
     padding: 6px !important;
-    border: 1px solid #EBEEF5;
+    border: 1px solid #ebeef5;
     border-radius: 4px;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     word-wrap: break-word;
     word-break: break-all;
     display: block !important;
-    
+
     &::-webkit-scrollbar {
       width: 6px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 3px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: #c1c1c1;
       border-radius: 3px;
-      
+
       &:hover {
         background: #a8a8a8;
       }
     }
-    
+
     ::v-deep {
       p {
         margin: 5px 0;
         line-height: 1.6;
       }
-      
+
       img {
         max-width: 100%;
         height: auto;
@@ -1164,16 +1222,17 @@ onMounted(() => {
         margin: 5px 0;
         border-radius: 4px;
       }
-      
-      ul, ol {
+
+      ul,
+      ol {
         padding-left: 20px;
         margin: 5px 0;
       }
-      
+
       strong {
         font-weight: 600;
       }
-      
+
       em {
         font-style: italic;
       }
@@ -1182,7 +1241,7 @@ onMounted(() => {
 
   // 删除按钮样式
   .text-red {
-    color: #F56C6C;
+    color: #f56c6c;
 
     &:hover {
       color: #f78989;
@@ -1193,11 +1252,11 @@ onMounted(() => {
   .icon-btn {
     font-size: 14px;
     padding: 8px;
-    
+
     i {
       font-size: 14px;
     }
-    
+
     &:hover {
       transform: scale(1.1);
       transition: all 0.2s;
@@ -1206,7 +1265,6 @@ onMounted(() => {
 }
 </style>
 
-
 <style lang="scss">
 // 全局样式（列设置下拉菜单挂载到 body，需要全局样式）
 .column-setting-dropdown-menu {
@@ -1214,34 +1272,34 @@ onMounted(() => {
   min-width: 320px;
   max-width: 500px;
   max-height: 620px;
-  
+
   .el-dropdown-menu__item {
     padding: 0 !important;
     line-height: normal !important;
-    
+
     &:hover {
       background-color: transparent !important;
     }
   }
-  
+
   .column-control-panel {
     padding: 12px 15px;
-    
+
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-bottom: 12px;
       margin-bottom: 12px;
-      border-bottom: 1px solid #EBEEF5;
-      
+      border-bottom: 1px solid #ebeef5;
+
       span {
         font-size: 14px;
         font-weight: 600;
         color: #303133;
       }
     }
-    
+
     .mode-title {
       font-size: 13px;
       font-weight: 600;
@@ -1249,28 +1307,28 @@ onMounted(() => {
       margin-bottom: 8px;
       padding-left: 2px;
     }
-    
+
     .mode-selection {
       margin-bottom: 15px;
-      
+
       .el-radio-group {
         display: flex;
         gap: 15px;
-        
+
         .el-radio {
           margin-right: 0;
         }
       }
     }
-    
+
     .saved-schemes {
       margin-bottom: 15px;
-      
+
       .scheme-list {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        
+
         .scheme-item {
           display: inline-flex;
           align-items: center;
@@ -1279,52 +1337,52 @@ onMounted(() => {
           border: 1px solid #dcdfe6;
           background-color: #fff;
           transition: all 0.2s;
-          
+
           &:hover {
             background-color: #f5f7fa;
             border-color: #c0c4cc;
           }
-          
+
           &.active {
             background-color: #ecf5ff;
             border-color: #409eff;
           }
-          
+
           .el-radio {
             margin-right: 4px;
-            
+
             .el-radio__label {
               font-size: 13px;
               padding-left: 6px;
             }
           }
-          
+
           .delete-scheme-btn {
             opacity: 0;
             transition: opacity 0.2s;
             color: #f56c6c;
             padding: 2px 4px;
             margin-left: 4px;
-            
+
             &:hover {
               color: #f56c6c;
               background-color: #fef0f0;
             }
           }
-          
+
           &:hover .delete-scheme-btn {
             opacity: 1;
           }
         }
       }
     }
-    
+
     .save-scheme-section {
       margin-bottom: 15px;
       padding-top: 10px;
       border-top: 1px solid #ebeef5;
     }
-    
+
     .el-checkbox-group {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -1332,23 +1390,23 @@ onMounted(() => {
       max-height: 550px;
       overflow-y: auto;
       padding: 5px;
-      
+
       .el-checkbox {
         margin: 0 !important;
         white-space: nowrap;
-        
+
         &.is-disabled {
           .el-checkbox__label {
             color: #909399;
             font-weight: 500;
           }
-          
+
           .el-checkbox__input.is-disabled .el-checkbox__inner {
-            background-color: #F5F7FA;
-            border-color: #DCDFE6;
+            background-color: #f5f7fa;
+            border-color: #dcdfe6;
           }
         }
-        
+
         .el-checkbox__label {
           font-size: 13px;
           padding-left: 8px;

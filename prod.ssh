@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SSH脚本：本地构建并打包dist目录，传输到远程服务器部署（生产环境）
+# SSH脚本：本地构建并打包admin-v2目录，传输到远程服务器部署（生产环境）
 # 项目名：FILECONF-UI
 # 作者：Cascade
 # 日期：$(date +%Y-%m-%d)
@@ -18,8 +18,8 @@ PROJECT_NAME=$(node -p "require('./package.json').name")
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 MONTH=$(date +%m)
 DAY=$(date +%d)
-BACKUP_NAME="dist_${MONTH}_${DAY}"
-ZIP_FILE="dist_${TIMESTAMP}.zip"
+BACKUP_NAME="admin-v2_${MONTH}_${DAY}"
+ZIP_FILE="admin-v2_${TIMESTAMP}.zip"
 
 echo "========================================="
 echo "开始执行项目构建和部署脚本（生产环境）"
@@ -37,13 +37,13 @@ npm run build
 if [ $? -eq 0 ]; then
     echo "✅ 本地构建完成"
     
-    # 检查dist目录是否存在
-    if [ -d "dist" ]; then
+    # 检查admin-v2目录是否存在
+    if [ -d "admin-v2" ]; then
         echo "📁 构建产物目录："
-        ls -la dist/ | head -5
+        ls -la admin-v2/ | head -5
         echo "..."
     else
-        echo "❌ 未找到dist目录，构建可能失败"
+        echo "❌ 未找到admin-v2t目录，构建可能失败"
         exit 1
     fi
 else
@@ -51,19 +51,19 @@ else
     exit 1
 fi
 
-# 创建dist的ZIP压缩包
-echo "📦 正在打包dist目录..."
-cd dist
+# 创建admin-v2的ZIP压缩包
+echo "📦 正在打包admin-v2目录..."
+cd admin-v2
 zip -r "../$ZIP_FILE" .
 cd ..
 
-echo "✓ dist目录打包完成: $ZIP_FILE"
+echo "✓ admin-v2目录打包完成: $ZIP_FILE"
 
 # 检查ZIP文件大小
 FILE_SIZE=$(du -h "$ZIP_FILE" | cut -f1)
 echo "📁 压缩包大小: $FILE_SIZE"
 
-# 1. 先删除远程服务器上的旧dist.zip
+# 1. 先删除远程服务器上的旧admin-v2.zip
 echo "🗑️ 正在删除远程服务器上的旧 $ZIP_FILE ..."
 if command -v sshpass >/dev/null 2>&1; then
     sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no root@"$SERVER" "rm -f $REMOTE_PATH/$ZIP_FILE"
@@ -93,22 +93,22 @@ sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no root@"$SERVER" << EOF
     cd "$REMOTE_PATH"
     echo "当前目录: \\$(pwd)"
 
-    # 备份现有的dist目录
-    if [ -d "dist" ]; then
-        echo "📋 正在备份现有dist目录为 $BACKUP_NAME ..."
-        mv dist "$BACKUP_NAME"
+    # 备份现有的admin-v2目录
+    if [ -d "admin-v2" ]; then
+        echo "📋 正在备份现有admin-v2目录为 $BACKUP_NAME ..."
+        mv admin-v2 "$BACKUP_NAME"
         echo "✓ 备份完成: $BACKUP_NAME"
     else
-        echo "ℹ️ 未找到现有dist目录，跳过备份"
+        echo "ℹ️ 未找到现有admin-v2目录，跳过备份"
     fi
 
-    # 解压新的dist文件
+    # 解压新的admin-v2文件
     if [ -f "$ZIP_FILE" ]; then
-        echo "📦 开始解压 $ZIP_FILE 到 dist 目录..."
-        mkdir -p dist
-        unzip -o "$ZIP_FILE" -d "dist/"
-        echo "✓ 解压完成到目录: dist/"
-        ls -la "dist/" | head -10
+        echo "📦 开始解压 $ZIP_FILE 到 admin-v2 目录..."
+        mkdir -p admin-v2
+        unzip -o "$ZIP_FILE" -d "admin-v2/"
+        echo "✓ 解压完成到目录: admin-v2/"
+        ls -la "admin-v2/" | head -10
         rm "$ZIP_FILE"
         echo "🗑️ 已删除压缩包"
     else
@@ -121,7 +121,7 @@ echo "✅ 所有操作完成！"
 echo "========================================="
 echo "项目已成功部署到生产服务器："
 echo "服务器: $SERVER"
-echo "部署路径: $REMOTE_PATH/dist/"
+echo "部署路径: $REMOTE_PATH/admin-v2/"
 echo "备份目录: $REMOTE_PATH/$BACKUP_NAME/"
 echo "构建方式: 本地构建 (npm run build:prod)"
 echo "部署时间: $(date)"
@@ -132,4 +132,4 @@ echo
 rm "$ZIP_FILE"
 echo "✓ 已删除本地压缩包"
 
-echo "🎉 生产环境部署完成！dist目录已更新到最新版本！"
+echo "🎉 生产环境部署完成！admin-v2目录已更新到最新版本！"

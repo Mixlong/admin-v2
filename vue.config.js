@@ -1,140 +1,94 @@
-"use strict";
-const path = require("path");
-const webpack = require("webpack");
-const defaultSettings = require("./src/settings");
-const CompressionPlugin = require("compression-webpack-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const path = require('path')
 
 function resolve(dir) {
-  return path.join(__dirname, dir);
+  return path.join(__dirname, dir)
 }
 
-const name = defaultSettings.title || "迪太云"; // 标题
-
-const port = process.env.port || process.env.npm_config_port || 2025; // 端口
-
-// vue.config.js 配置说明
-//官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
-// 这里只列一部分，具体配置参考文档
 module.exports = {
-  // 部署生产环境和开发环境下的URL。
-  // 默认情况下，Vue CLI 会假设你的应用是被部署在一个域名的根路径上
-  // 例如 https://www.ruoyi.vip/。如果应用被部署在一个子路径上，你就需要用这个选项指定这个子路径。例如，如果你的应用被部署在 https://www.ruoyi.vip/admin/，则设置 baseUrl 为 /admin/。
-  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
-  // 在npm run build 或 yarn build 时 ，生成文件的目录名称（要和baseUrl的生产环境路径一致）（默认dist）
-  outputDir: "dist",
-  // 用于放置生成的静态资源 (js、css、img、fonts) 的；（项目打包之后，静态资源会放在这个文件夹下）
-  assetsDir: "static",
-  // 是否开启eslint保存检测，有效值：ture | false | 'error'
-  lintOnSave: process.env.NODE_ENV === "development",
-  // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
+  // 输出目录配置
+  outputDir: process.env.NODE_ENV === 'development' ? 'dist' : 'admin-v2',
+  
+  // 公共路径配置 - 部署到服务器的访问路径
+  publicPath:'./',
+  
+  // 关闭生产环境的source map以减少内存使用
   productionSourceMap: false,
+  
+  // 关闭eslint检查以加快构建速度
+  lintOnSave: false,
+  
+  // 开发服务器配置
   devServer: {
-    host: "0.0.0.0", // 允许外部访问
-    port,
-    hot: true,
-    open: false,
-    // 允许跨域访问
+    port: 2025,
+    open: true,
+    overlay: {
+      warnings: false,
+      errors: true
+    },
+    // 添加CORS支持
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
     },
+    // 代理配置，如果需要访问其他端口的服务
     proxy: {
-      [process.env.VUE_APP_BASE_API]: {
-        target: process.env.VUE_APP_BASE_URL,
+      '/api': {
+        target: 'http://192.168.2.2:2031',
         changeOrigin: true,
-        pathRewrite: {
-          ["^" + process.env.VUE_APP_BASE_API]: "",
-        },
+        secure: false
       }
-    },
-    disableHostCheck: true,
+    }
   },
+  
   configureWebpack: {
-    name,
-    resolve: {
-      alias: {
-        "@": resolve("src"),
-      },
-    },
-    externals: {
-      "./cptable": "var cptable",
-      // 'vue': 'Vue',
-      // 'element-ui': 'ELEMENT',
-      // 'axios': 'axios'
-    },
-    // plugins: [new BundleAnalyzerPlugin()]
-  },
-  chainWebpack(config) {
-    config.plugin("provide").use(webpack.ProvidePlugin, [
-      {
-        $: "jquery",
-        jquery: "jquery",
-        jQuery: "jquery",
-        "window.jQuery": "jquery",
-      },
-    ]);
-    config.plugins.delete("preload"); // TODO: need test
-    config.plugins.delete("prefetch"); // TODO: need test
-
-    // set svg-sprite-loader
-    config.module.rule("svg").exclude.add(resolve("src/assets/icons")).end();
-    config.module
-      .rule("icons")
-      .test(/\.svg$/)
-      .include.add(resolve("src/assets/icons"))
-      .end()
-      .use("svg-sprite-loader")
-      .loader("svg-sprite-loader")
-      .options({
-        symbolId: "icon-[name]",
-      })
-      .end();
-
-    config.when(process.env.NODE_ENV !== "staging", (config) => {
-      config
-        .plugin("ScriptExtHtmlWebpackPlugin")
-        .after("html")
-        .use("script-ext-html-webpack-plugin", [
-          {
-            // `runtime` must same as runtimeChunk name. default is `runtime`
-            inline: /runtime\..*\.js$/,
-          },
-        ])
-        .end();
-      config.optimization.splitChunks({
-        chunks: "all",
+    // 减少内存使用的优化
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
         cacheGroups: {
-          libs: {
-            name: "chunk-libs",
+          vendor: {
+            name: 'chunk-vendors',
             test: /[\\/]node_modules[\\/]/,
             priority: 10,
-            chunks: "initial", // only package third parties that are initially dependent
+            chunks: 'initial'
           },
           elementUI: {
-            name: "chunk-elementUI", // split elementUI into a single package
-            priority: 20, // the weight needs to be larger than libs and app or it will be packaged into libs or app
-            test: /[\\/]node_modules[\\/]_?element-ui(.*)/, // in order to adapt to cnpm
-          },
-          commons: {
-            name: "chunk-commons",
-            test: resolve("src/components"), // can customize your rules
-            minChunks: 3, //  minimum common number
-            priority: 5,
-            reuseExistingChunk: true,
-          },
-        },
-      });
-      config.optimization.runtimeChunk("single"),
-        {
-          from: path.resolve(__dirname, "./public/robots.txt"), //防爬虫文件
-          to: "./", //到根目录下
-        };
-      config.optimization.minimizer("terser").tap((args) => {
-        args[0].terserOptions.compress.drop_console = true;
-        return args;
-      });
-    });
+            name: 'chunk-elementUI',
+            priority: 20,
+            test: /[\\/]node_modules[\\/]_?element-ui(.*)/
+          }
+        }
+      }
+    },
+    resolve: {
+      alias: {
+        '@': resolve('src'),
+        './cptable': 'xlsx-style/dist/cpexcel.js'
+      }
+    }
   },
-};
+  
+  chainWebpack(config) {
+    // 禁用预加载
+    config.plugins.delete('preload')
+    config.plugins.delete('prefetch')
+    
+    // svg处理
+    config.module
+      .rule('svg')
+      .exclude.add(resolve('src/assets/icons'))
+      .end()
+    config.module
+      .rule('icons')
+      .test(/\.svg$/)
+      .include.add(resolve('src/assets/icons'))
+      .end()
+      .use('svg-sprite-loader')
+      .loader('svg-sprite-loader')
+      .options({
+        symbolId: 'icon-[name]'
+      })
+      .end()
+  }
+}

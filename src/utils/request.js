@@ -50,6 +50,16 @@ service.interceptors.response.use(
           title: msg,
         });
       } else {
+        // 如果在微前端环境下，通知主应用(V3)跳转到登录页
+        if (window.__POWERED_BY_WUJIE__ && window.$wujie?.bus) {
+          console.log('🔐 V2 登录过期，通知 V3 跳转登录页')
+          window.$wujie.bus.$emit('session-expired', {
+            code,
+            msg: '登录状态已过期，请重新登录'
+          })
+          return Promise.reject('登录状态已过期')
+        }
+        // 独立运行时的处理
         MessageBox.confirm(
           "登录状态已过期，您可以继续留在该页面，或者重新登录",
           "系统提示",

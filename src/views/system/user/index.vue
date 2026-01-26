@@ -32,7 +32,7 @@
           ref="queryForm"
           :inline="true"
           v-show="showSearch"
-          label-width="68px"
+          label-width="88px"
         >
           <el-form-item label="用户名称" prop="userName">
             <el-input
@@ -635,9 +635,37 @@ export default {
 };
 </script>
 <style lang="scss">
+.app-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 16px 8px;
+  box-sizing: border-box;
+}
+
+.app-container .head-container {
+  padding: 8px 8px 0;
+}
+
+.app-container .el-form {
+  margin-bottom: 10px;
+}
+
+.app-container .mb8 {
+  margin-bottom: 12px;
+}
+
+.app-container .el-button + .el-button {
+  margin-left: 8px;
+}
+
 .userList-box {
   max-height: calc(100vh - 350px);
   overflow-y: auto;
   overflow-x: hidden;
+  padding: 8px 4px 12px;
+}
+
+.userList-box .el-col {
+  padding: 8px 6px;
 }
 </style>

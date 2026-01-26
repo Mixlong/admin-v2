@@ -6,6 +6,43 @@
  * @Description: In User Settings Edit
  * @FilePath: /fileConf-ui/README.md
 -->
+
+# 迪太云管理系统
+
+## 🎯 项目架构
+
+本项目采用**微前端架构**，包含：
+
+- **V3 主应用** (Vue 3 + Vite + Element Plus) - 位于 `micro-apps/admin-fileconf-v3/`
+- **V2 子应用** (Vue 2 + Webpack + Element UI) - 当前目录
+
+### 微前端快速启动
+
+```bash
+# 方式一：使用启动脚本（推荐）
+./start-micro-apps.sh
+
+# 方式二：手动启动
+# 终端 1 - 启动 V2 子应用
+npm run dev
+
+# 终端 2 - 启动 V3 主应用
+cd micro-apps/admin-fileconf-v3
+npm run dev
+```
+
+**访问地址:**
+- V3 主应用: http://localhost:5173
+- V2 子应用: http://localhost:8080
+- V2 在 V3 中: http://localhost:5173/v2/xxx
+
+**详细文档:**
+- [微前端集成文档](./MICRO_FRONTEND_INTEGRATION.md)
+- [快速启动指南](./MICRO_FRONTEND_QUICK_START.md)
+- [完成总结](./MICRO_FRONTEND_SUMMARY.md)
+
+---
+
 ## 开发
 
 ```bash

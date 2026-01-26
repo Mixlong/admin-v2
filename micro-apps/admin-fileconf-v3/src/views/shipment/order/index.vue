@@ -1,37 +1,47 @@
 <template>
   <div class="app-container shipment-order-container">
     <!-- 智能搜索区域 -->
-    <IntelligentSearchForm 
-      :searchForm="searchForm" 
-      :fields="searchFields" 
+    <IntelligentSearchForm
+      :search-form="searchForm"
+      :fields="searchFields"
+      :default-visible-count="4"
       @search="handleSearch"
-      :defaultVisibleCount="4" 
-      @reset="handleReset">
-
+      @reset="handleReset"
+    >
       <!-- 自定义客户选择器字段 -->
       <template #field-customerName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <TypedSelectLoadMore 
-            v-model="searchForm[field.key]" 
+          <TypedSelectLoadMore
+            v-model="searchForm[field.key]"
             type="customer"
-            size="mini" 
-            placeholder="请选择客户" 
+            size="mini"
+            placeholder="请选择客户"
             clearable
-            returnLabel
-            customStyle="width: 100%;"
+            return-label
+            custom-style="width: 100%;"
           />
         </el-form-item>
       </template>
-      
+
       <!-- 页面操作按钮 -->
       <template #page-actions>
         <!-- 角色切换（仅用于测试） -->
-        <div style="display: inline-flex; align-items: center; margin-right: 10px; padding: 5px 10px; background: #f0f9ff; border: 1px solid #409EFF; border-radius: 4px;">
-          <i class="el-icon-user" style="color: #409EFF; margin-right: 5px;"></i>
-          <el-select 
-            v-model="mockRole" 
-            placeholder="切换角色测试" 
-            size="mini" 
+        <div
+          style="
+            display: inline-flex;
+            align-items: center;
+            margin-right: 10px;
+            padding: 5px 10px;
+            background: #f0f9ff;
+            border: 1px solid #409eff;
+            border-radius: 4px;
+          "
+        >
+          <i class="el-icon-user" style="color: #409eff; margin-right: 5px"></i>
+          <el-select
+            v-model="mockRole"
+            placeholder="切换角色测试"
+            size="mini"
             style="width: 130px"
             @change="handleRoleChange"
           >
@@ -41,110 +51,107 @@
             <el-option label="👑 超级管理员" value="admin"></el-option>
           </el-select>
         </div>
-        
+
         <!-- 市场专员可新增订单 -->
         <el-button
+          v-if="checkRole(['ms', 'sale_manager', 'admin'])"
           type="primary"
           size="mini"
           icon="el-icon-plus"
           class="mr10"
           @click="handleAdd"
-          v-if="checkRole(['ms', 'sale_manager', 'admin'])"
         >
           新增订单
         </el-button>
-        
- 
-        
-        <el-button
-          type="warning"
-          size="mini"
-          icon="el-icon-download"
-          @click="handleExport"
-        >
+
+        <el-button type="warning" size="mini" icon="el-icon-download" @click="handleExport">
           导出Excel
         </el-button>
-                <!-- 列显示设置 -->
+        <!-- 列显示设置 -->
         <el-dropdown trigger="click" placement="bottom" @command="handleDropdownCommand">
           <el-button icon="el-icon-setting" size="mini">
             列设置<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu class="column-setting-dropdown-menu">
-            <div class="column-control-panel" @click.stop>
-              <div class="panel-header">
-                <span>列显示设置</span>
-                <el-button type="text" size="mini" @click="resetColumns">重置</el-button>
-              </div>
-              
-              <!-- 模式选择 -->
-              <div class="mode-selection">
-                <div class="mode-title">预设模式</div>
-                <el-radio-group v-model="columnDisplayMode" @change="handleModeChange" size="small">
-                  <el-radio label="mode1">主模式</el-radio>
-                  <el-radio label="custom">自定义</el-radio>
-                </el-radio-group>
-              </div>
-              
-              <!-- 已保存的方案 -->
-              <div class="saved-schemes" v-if="Object.keys(customSchemes).length > 0">
-                <div class="mode-title">已保存方案</div>
-                <div class="scheme-list">
-                  <div 
-                    v-for="(scheme, key) in customSchemes" 
-                    :key="key"
-                    class="scheme-item"
-                    :class="{ active: columnDisplayMode === key }"
+              <div class="column-control-panel" @click.stop>
+                <div class="panel-header">
+                  <span>列显示设置</span>
+                  <el-button type="text" size="mini" @click="resetColumns">重置</el-button>
+                </div>
+
+                <!-- 模式选择 -->
+                <div class="mode-selection">
+                  <div class="mode-title">预设模式</div>
+                  <el-radio-group
+                    v-model="columnDisplayMode"
+                    size="small"
+                    @change="handleModeChange"
                   >
-                    <el-radio 
-                      :label="key" 
-                      v-model="columnDisplayMode" 
-                      @change="handleModeChange"
-                      size="small"
+                    <el-radio label="mode1">主模式</el-radio>
+                    <el-radio label="custom">自定义</el-radio>
+                  </el-radio-group>
+                </div>
+
+                <!-- 已保存的方案 -->
+                <div v-if="Object.keys(customSchemes).length > 0" class="saved-schemes">
+                  <div class="mode-title">已保存方案</div>
+                  <div class="scheme-list">
+                    <div
+                      v-for="(scheme, key) in customSchemes"
+                      :key="key"
+                      class="scheme-item"
+                      :class="{ active: columnDisplayMode === key }"
                     >
-                      {{ scheme.name }}
-                    </el-radio>
-                    <el-button 
-                      type="text" 
-                      size="mini" 
-                      icon="el-icon-delete"
-                      class="delete-scheme-btn"
-                      @click.stop="deleteCustomScheme(key)"
-                      title="删除方案"
-                    ></el-button>
+                      <el-radio
+                        v-model="columnDisplayMode"
+                        :label="key"
+                        size="small"
+                        @change="handleModeChange"
+                      >
+                        {{ scheme.name }}
+                      </el-radio>
+                      <el-button
+                        type="text"
+                        size="mini"
+                        icon="el-icon-delete"
+                        class="delete-scheme-btn"
+                        title="删除方案"
+                        @click.stop="deleteCustomScheme(key)"
+                      ></el-button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <!-- 保存方案按钮 -->
-              <div class="save-scheme-section" v-if="columnDisplayMode === 'custom'">
-                <el-button 
-                  type="primary" 
-                  size="mini" 
-                  icon="el-icon-folder-add"
-                  @click="openSaveSchemeDialog"
-                  style="width: 100%"
+
+                <!-- 保存方案按钮 -->
+                <div v-if="columnDisplayMode === 'custom'" class="save-scheme-section">
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    icon="el-icon-folder-add"
+                    style="width: 100%"
+                    @click="openSaveSchemeDialog"
+                  >
+                    保存当前方案
+                  </el-button>
+                </div>
+
+                <!-- 自定义列选择 -->
+                <el-checkbox-group
+                  v-model="visibleColumns"
+                  :disabled="columnDisplayMode !== 'custom'"
+                  @change="handleColumnChange"
                 >
-                  保存当前方案
-                </el-button>
+                  <el-checkbox
+                    v-for="col in allColumns"
+                    :key="col.prop"
+                    :label="col.prop"
+                    :disabled="col.fixed || columnDisplayMode !== 'custom'"
+                  >
+                    {{ col.label }}
+                  </el-checkbox>
+                </el-checkbox-group>
               </div>
-              
-              <!-- 自定义列选择 -->
-              <el-checkbox-group 
-                v-model="visibleColumns" 
-                @change="handleColumnChange"
-                :disabled="columnDisplayMode !== 'custom'"
-              >
-                <el-checkbox 
-                  v-for="col in allColumns" 
-                  :key="col.prop" 
-                  :label="col.prop"
-                  :disabled="col.fixed || columnDisplayMode !== 'custom'"
-                >
-                  {{ col.label }}
-                </el-checkbox>
-              </el-checkbox-group>
-            </div>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -153,24 +160,30 @@
 
     <!-- 数据表格 -->
     <div class="table-wrapper">
-      <el-table 
+      <el-table
         ref="mainTable"
         :key="tableKey"
-        :data="tableData" 
-        v-loading="loading" 
-        border 
-        style="width: 100%" 
+        v-loading="loading"
+        :data="tableData"
+        border
+        style="width: 100%"
         :height="tableHeight(30)"
         size="small"
       >
-        <el-table-column type="index" label="序号" width="60" align="center" fixed="left"></el-table-column>
-        
+        <el-table-column
+          type="index"
+          label="序号"
+          width="60"
+          align="center"
+          fixed="left"
+        ></el-table-column>
+
         <!-- 基础信息 - 必显列 (level >= 0) -->
-        <el-table-column 
-          prop="customerName" 
-          label="客户名称" 
-          align="center" 
-          width="140" 
+        <el-table-column
+          prop="customerName"
+          label="客户名称"
+          align="center"
+          width="140"
           fixed="left"
           :filters="getColumnFilters('customerName')"
           :filter-method="filterHandler"
@@ -180,13 +193,13 @@
             {{ scope.row.customerName || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="u8OrderNo" 
-          label="U8单号" 
-          align="center" 
-          width="160" 
+
+        <el-table-column
           v-if="isColumnVisible('u8OrderNo')"
+          prop="u8OrderNo"
+          label="U8单号"
+          align="center"
+          width="160"
           :filters="getColumnFilters('u8OrderNo')"
           :filter-method="filterHandler"
           column-key="u8OrderNo"
@@ -195,14 +208,17 @@
             <span class="order-no-link">{{ scope.row.u8OrderNo || '-' }}</span>
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="u8Available" 
-          label="U8是否可用" 
-          align="center" 
-          width="130" 
+
+        <el-table-column
           v-if="isColumnVisible('u8Available')"
-          :filters="[{text: '可用', value: true}, {text: '不可用', value: false}]"
+          prop="u8Available"
+          label="U8是否可用"
+          align="center"
+          width="130"
+          :filters="[
+            { text: '可用', value: true },
+            { text: '不可用', value: false }
+          ]"
           :filter-method="filterHandler"
           column-key="u8Available"
         >
@@ -211,13 +227,13 @@
             <el-tag v-else type="info" size="small">不可用</el-tag>
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="bomCode" 
-          label="BOM编码" 
-          align="center" 
-          width="160" 
+
+        <el-table-column
           v-if="isColumnVisible('bomCode')"
+          prop="bomCode"
+          label="BOM编码"
+          align="center"
+          width="160"
           :filters="getColumnFilters('bomCode')"
           :filter-method="filterHandler"
           column-key="bomCode"
@@ -226,44 +242,65 @@
             {{ scope.row.bomCode || '-' }}
           </template>
         </el-table-column>
-        
+
         <!-- BOM信息 - 平铺的3个列 -->
-        <el-table-column prop="etreeBomBefore" label="E树BOM刷新前" align="center"  v-if="isColumnVisible('etreeBomBefore')">
+        <el-table-column
+          v-if="isColumnVisible('etreeBomBefore')"
+          prop="etreeBomBefore"
+          label="E树BOM刷新前"
+          align="center"
+        >
           <template #default="scope">
             {{ scope.row.etreeBomBefore || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column prop="etreeBomAfter" label="E树BOM刷新后" align="center" width="140" v-if="isColumnVisible('etreeBomAfter')">
+
+        <el-table-column
+          v-if="isColumnVisible('etreeBomAfter')"
+          prop="etreeBomAfter"
+          label="E树BOM刷新后"
+          align="center"
+          width="140"
+        >
           <template #default="scope">
             {{ scope.row.etreeBomAfter || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="etreeBomAudited" 
-          label="E树BOM审核" 
-          align="center" 
-          width="120" 
+
+        <el-table-column
           v-if="isColumnVisible('etreeBomAudited')"
-          :filters="[{text: '已审核', value: '已审核'}, {text: '未审核', value: '未审核'}, {text: '有遗留', value: '有遗留'}]"
+          prop="etreeBomAudited"
+          label="E树BOM审核"
+          align="center"
+          width="120"
+          :filters="[
+            { text: '已审核', value: '已审核' },
+            { text: '未审核', value: '未审核' },
+            { text: '有遗留', value: '有遗留' }
+          ]"
           :filter-method="filterHandler"
           column-key="etreeBomAudited"
         >
           <template #default="scope">
-            <el-tag v-if="scope.row.etreeBomAudited === '已审核'" type="success" size="small">已审核</el-tag>
-            <el-tag v-else-if="scope.row.etreeBomAudited === '有遗留'" type="warning" size="small">有遗留</el-tag>
-            <el-tag v-else-if="scope.row.etreeBomAudited === '未审核'" type="info" size="small">未审核</el-tag>
+            <el-tag v-if="scope.row.etreeBomAudited === '已审核'" type="success" size="small"
+              >已审核</el-tag
+            >
+            <el-tag v-else-if="scope.row.etreeBomAudited === '有遗留'" type="warning" size="small"
+              >有遗留</el-tag
+            >
+            <el-tag v-else-if="scope.row.etreeBomAudited === '未审核'" type="info" size="small"
+              >未审核</el-tag
+            >
             <span v-else>-</span>
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="configModel" 
-          label="配置型号" 
-          align="center" 
-          width="160" 
+
+        <el-table-column
           v-if="isColumnVisible('configModel')"
+          prop="configModel"
+          label="配置型号"
+          align="center"
+          width="160"
           :filters="getColumnFilters('configModel')"
           :filter-method="filterHandler"
           column-key="configModel"
@@ -272,13 +309,13 @@
             <span class="model-text">{{ scope.row.configModel || '-' }}</span>
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="keyModel" 
-          label="按键型号" 
-          align="center" 
-          width="140" 
+
+        <el-table-column
           v-if="isColumnVisible('keyModel')"
+          prop="keyModel"
+          label="按键型号"
+          align="center"
+          width="140"
           :filters="getColumnFilters('keyModel')"
           :filter-method="filterHandler"
           column-key="keyModel"
@@ -287,13 +324,13 @@
             {{ scope.row.keyModel || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="customerOrderNo" 
-          label="客户订单号" 
-          align="center" 
-          width="160" 
+
+        <el-table-column
           v-if="isColumnVisible('customerOrderNo')"
+          prop="customerOrderNo"
+          label="客户订单号"
+          align="center"
+          width="160"
           :filters="getColumnFilters('customerOrderNo')"
           :filter-method="filterHandler"
           column-key="customerOrderNo"
@@ -302,13 +339,13 @@
             {{ scope.row.customerOrderNo || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column 
-          prop="etreeOrderNo" 
-          label="E树订单号" 
-          align="center" 
-          width="160" 
+
+        <el-table-column
           v-if="isColumnVisible('etreeOrderNo')"
+          prop="etreeOrderNo"
+          label="E树订单号"
+          align="center"
+          width="160"
           :filters="getColumnFilters('etreeOrderNo')"
           :filter-method="filterHandler"
           column-key="etreeOrderNo"
@@ -317,77 +354,161 @@
             {{ scope.row.etreeOrderNo || '-' }}
           </template>
         </el-table-column>
-        
-        <el-table-column prop="orderDate" label="上单时间" align="center" width="110" v-if="isColumnVisible('orderDate')">
+
+        <el-table-column
+          v-if="isColumnVisible('orderDate')"
+          prop="orderDate"
+          label="上单时间"
+          align="center"
+          width="110"
+        >
           <template #default="scope">
             {{ scope.row.orderDate || '-' }}
           </template>
         </el-table-column>
-        
+
         <!-- 数量信息 -->
-        <el-table-column label="数量信息" align="center" header-align="center" v-if="isColumnVisible('orderQuantity') || isColumnVisible('shippedQuantity') || isColumnVisible('unshippedQuantity')">
-          <el-table-column prop="orderQuantity" label="订单数量" align="center" width="100" v-if="isColumnVisible('orderQuantity')">
+        <el-table-column
+          v-if="
+            isColumnVisible('orderQuantity') ||
+            isColumnVisible('shippedQuantity') ||
+            isColumnVisible('unshippedQuantity')
+          "
+          label="数量信息"
+          align="center"
+          header-align="center"
+        >
+          <el-table-column
+            v-if="isColumnVisible('orderQuantity')"
+            prop="orderQuantity"
+            label="订单数量"
+            align="center"
+            width="100"
+          >
             <template #default="scope">
               <span class="quantity-text text-green">{{ scope.row.orderQuantity || 0 }}</span>
             </template>
           </el-table-column>
-          
-          <el-table-column prop="shippedQuantity" label="已发货量" align="center" width="100" v-if="isColumnVisible('shippedQuantity')">
+
+          <el-table-column
+            v-if="isColumnVisible('shippedQuantity')"
+            prop="shippedQuantity"
+            label="已发货量"
+            align="center"
+            width="100"
+          >
             <template #default="scope">
               <span class="shipped-text">{{ scope.row.shippedQuantity || 0 }}</span>
             </template>
           </el-table-column>
-          
-          <el-table-column prop="unshippedQuantity" label="未发货量" align="center" width="100" v-if="isColumnVisible('unshippedQuantity')">
+
+          <el-table-column
+            v-if="isColumnVisible('unshippedQuantity')"
+            prop="unshippedQuantity"
+            label="未发货量"
+            align="center"
+            width="100"
+          >
             <template #default="scope">
-              <span class="unshipped-text text-red" :class="{ 'has-unshipped': scope.row.unshippedQuantity > 0 }">
+              <span
+                class="unshipped-text text-red"
+                :class="{ 'has-unshipped': scope.row.unshippedQuantity > 0 }"
+              >
                 {{ scope.row.unshippedQuantity || 0 }}
               </span>
             </template>
           </el-table-column>
         </el-table-column>
-        
+
         <!-- 交期信息 -->
-        <el-table-column label="交期信息" align="center" header-align="center" v-if="isColumnVisible('deliveryPlan') || isColumnVisible('pmcDeliveryDate')">
-          <el-table-column prop="deliveryPlan" label="交货计划" align="center" width="110" v-if="isColumnVisible('deliveryPlan')">
+        <el-table-column
+          v-if="isColumnVisible('deliveryPlan') || isColumnVisible('pmcDeliveryDate')"
+          label="交期信息"
+          align="center"
+          header-align="center"
+        >
+          <el-table-column
+            v-if="isColumnVisible('deliveryPlan')"
+            prop="deliveryPlan"
+            label="交货计划"
+            align="center"
+            width="110"
+          >
             <template #default="scope">
               {{ scope.row.deliveryPlan || '-' }}
             </template>
           </el-table-column>
-          
-          <el-table-column prop="pmcDeliveryDate" label="PMC可达成交期" align="center" width="130" v-if="isColumnVisible('pmcDeliveryDate')">
+
+          <el-table-column
+            v-if="isColumnVisible('pmcDeliveryDate')"
+            prop="pmcDeliveryDate"
+            label="PMC可达成交期"
+            align="center"
+            width="130"
+          >
             <template #default="scope">
               {{ scope.row.pmcDeliveryDate || '-' }}
             </template>
           </el-table-column>
         </el-table-column>
-        
- 
-        <el-table-column prop="deliveryChangeLog" label="交期变更履历" align="left" min-width="200" v-if="isColumnVisible('deliveryChangeLog')">
+
+        <el-table-column
+          v-if="isColumnVisible('deliveryChangeLog')"
+          prop="deliveryChangeLog"
+          label="交期变更履历"
+          align="left"
+          min-width="200"
+        >
           <template #default="scope">
-            <div class="rich-text-cell" v-if="scope.row.deliveryChangeLog" v-html="scope.row.deliveryChangeLog"></div>
+            <div
+              v-if="scope.row.deliveryChangeLog"
+              class="rich-text-cell"
+              v-html="scope.row.deliveryChangeLog"
+            ></div>
             <span v-else>-</span>
           </template>
         </el-table-column>
-        
+
         <!-- 物料信息 -->
-        <el-table-column label="客供物料情况" align="center" header-align="center" v-if="isColumnVisible('customerMaterial') || isColumnVisible('customerMaterialArrival')">
-          <el-table-column prop="customerMaterial" label="客供料" align="center" width="120" v-if="isColumnVisible('customerMaterial')">
+        <el-table-column
+          v-if="isColumnVisible('customerMaterial') || isColumnVisible('customerMaterialArrival')"
+          label="客供物料情况"
+          align="center"
+          header-align="center"
+        >
+          <el-table-column
+            v-if="isColumnVisible('customerMaterial')"
+            prop="customerMaterial"
+            label="客供料"
+            align="center"
+            width="120"
+          >
             <template #default="scope">
               {{ scope.row.customerMaterial || '-' }}
             </template>
           </el-table-column>
-          
-          <el-table-column prop="customerMaterialArrival" label="到料时间" align="center" width="110" v-if="isColumnVisible('customerMaterialArrival')">
+
+          <el-table-column
+            v-if="isColumnVisible('customerMaterialArrival')"
+            prop="customerMaterialArrival"
+            label="到料时间"
+            align="center"
+            width="110"
+          >
             <template #default="scope">
-              <span v-if="Array.isArray(scope.row.customerMaterialArrival) && scope.row.customerMaterialArrival.length > 0">
+              <span
+                v-if="
+                  Array.isArray(scope.row.customerMaterialArrival) &&
+                  scope.row.customerMaterialArrival.length > 0
+                "
+              >
                 {{ scope.row.customerMaterialArrival.join('、') }}
               </span>
               <span v-else>{{ scope.row.customerMaterialArrival || '-' }}</span>
             </template>
           </el-table-column>
         </el-table-column>
-        
+
         <!-- <el-table-column prop="productionStatus" label="生产情况" align="center" width="120" v-if="isColumnVisible('productionStatus')">
           <template #default="scope">
             <el-tag 
@@ -400,15 +521,31 @@
             <span v-else>-</span>
           </template>
         </el-table-column> -->
-        
-        <el-table-column prop="specialRemark" label="特殊备注" align="left" min-width="200" v-if="isColumnVisible('specialRemark')">
+
+        <el-table-column
+          v-if="isColumnVisible('specialRemark')"
+          prop="specialRemark"
+          label="特殊备注"
+          align="left"
+          min-width="200"
+        >
           <template #default="scope">
-            <div class="rich-text-cell" v-if="scope.row.specialRemark" v-html="scope.row.specialRemark"></div>
+            <div
+              v-if="scope.row.specialRemark"
+              class="rich-text-cell"
+              v-html="scope.row.specialRemark"
+            ></div>
             <span v-else>-</span>
           </template>
         </el-table-column>
-        
-        <el-table-column prop="orderDays" label="订单已耗时(天)" align="center" width="120" v-if="isColumnVisible('orderDays')">
+
+        <el-table-column
+          v-if="isColumnVisible('orderDays')"
+          prop="orderDays"
+          label="订单已耗时(天)"
+          align="center"
+          width="120"
+        >
           <template #default="scope">
             <span class="days-text" :class="{ 'warning-days': scope.row.orderDays > 60 }">
               {{ scope.row.orderDays || 0 }}
@@ -419,16 +556,42 @@
         <el-table-column label="操作" width="160" align="center" fixed="right">
           <template #default="scope">
             <el-tooltip content="编辑" placement="top" :enterable="false">
-              <el-button size="small" type="text" @click="handleEdit(scope.row)" icon="el-icon-edit"
-                v-hasPermi="['shipment:order:edit']" class="icon-btn" circle></el-button>
+              <el-button
+                v-hasPermi="['shipment:order:edit']"
+                size="small"
+                type="text"
+                icon="el-icon-edit"
+                class="icon-btn"
+                circle
+                @click="handleEdit(scope.row)"
+              ></el-button>
             </el-tooltip>
-            <el-tooltip content="复制" placement="top" :enterable="false" v-if="checkRole(['ms', 'sale_manager', 'admin'])">
-              <el-button size="small" type="text" @click="handleCopy(scope.row)" icon="el-icon-document-copy"
-                class="icon-btn" circle style="color: #409EFF;"></el-button>
+            <el-tooltip
+              v-if="checkRole(['ms', 'sale_manager', 'admin'])"
+              content="复制"
+              placement="top"
+              :enterable="false"
+            >
+              <el-button
+                size="small"
+                type="text"
+                icon="el-icon-document-copy"
+                class="icon-btn"
+                circle
+                style="color: #409eff"
+                @click="handleCopy(scope.row)"
+              ></el-button>
             </el-tooltip>
             <el-tooltip content="删除" placement="top" :enterable="false">
-              <el-button size="small" type="text" class="text-red icon-btn" @click="handleDelete(scope.row)" icon="el-icon-delete"
-                v-hasPermi="['shipment:order:remove']" circle></el-button>
+              <el-button
+                v-hasPermi="['shipment:order:remove']"
+                size="small"
+                type="text"
+                class="text-red icon-btn"
+                icon="el-icon-delete"
+                circle
+                @click="handleDelete(scope.row)"
+              ></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -436,15 +599,16 @@
     </div>
 
     <!-- 分页组件 -->
-    <div class="pagination-wrapper flex" style='margin-top:10px;justify-content: flex-end;'>
-      <el-pagination 
-        @size-change="handleSizeChange" 
-        @current-change="handleCurrentChange"
-        :current-page="pagination.current" 
-        :page-sizes="[10, 20, 30, 40, 50, 100]" 
+    <div class="pagination-wrapper flex" style="margin-top: 10px; justify-content: flex-end">
+      <el-pagination
+        :current-page="pagination.current"
+        :page-sizes="[10, 20, 30, 40, 50, 100]"
         :page-size="pagination.size"
-        layout="total, sizes, prev, pager, next, jumper" 
-        :total="pagination.total">
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="pagination.total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      >
       </el-pagination>
     </div>
 
@@ -462,17 +626,19 @@
 
     <!-- 保存方案对话框 -->
     <el-dialog
-      title="保存列显示方案"
       v-model="saveSchemeDialogVisible"
+      title="保存列显示方案"
       width="400px"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false"
+    >
       <el-form :model="{ schemeName }" label-width="100px">
         <el-form-item label="方案名称" required>
-          <el-input 
-            v-model="schemeName" 
+          <el-input
+            v-model="schemeName"
             placeholder="请输入方案名称"
             maxlength="20"
-            show-word-limit>
+            show-word-limit
+          >
           </el-input>
         </el-form-item>
       </el-form>
@@ -513,11 +679,27 @@ const mockRoles = ref(['ms']) // 模拟的角色数组
 // 列显示控制
 const columnDisplayMode = ref('mode1') // 当前模式：mode1, mode2, custom
 const visibleColumns = ref([
-  'customerName', 'u8OrderNo', 'u8Available', 'bomCode', 'etreeBomAudited',
-  'configModel', 'keyModel', 'customerOrderNo', 'etreeOrderNo', 'orderDate', 'orderQuantity', 
-  'shippedQuantity', 'unshippedQuantity', 'deliveryPlan', 'pmcDeliveryDate',
-  'deliveryChangeLog', 'customerMaterial', 'customerMaterialArrival', 'productionStatus', 
-  'specialRemark', 'orderDays'
+  'customerName',
+  'u8OrderNo',
+  'u8Available',
+  'bomCode',
+  'etreeBomAudited',
+  'configModel',
+  'keyModel',
+  'customerOrderNo',
+  'etreeOrderNo',
+  'orderDate',
+  'orderQuantity',
+  'shippedQuantity',
+  'unshippedQuantity',
+  'deliveryPlan',
+  'pmcDeliveryDate',
+  'deliveryChangeLog',
+  'customerMaterial',
+  'customerMaterialArrival',
+  'productionStatus',
+  'specialRemark',
+  'orderDays'
 ])
 
 // 保存方案相关
@@ -530,21 +712,54 @@ const columnModes = {
   mode1: {
     name: '主模式',
     columns: [
-      'customerName', 'u8OrderNo', 'u8Available', 'bomCode', 'etreeBomAudited',
-      'configModel', 'keyModel', 'customerOrderNo', 'etreeOrderNo', 'orderDate', 'orderQuantity', 
-      'shippedQuantity', 'unshippedQuantity', 'deliveryPlan', 'pmcDeliveryDate',
-      'deliveryChangeLog', 'customerMaterial', 'customerMaterialArrival', 'productionStatus', 
-      'specialRemark', 'orderDays'
+      'customerName',
+      'u8OrderNo',
+      'u8Available',
+      'bomCode',
+      'etreeBomAudited',
+      'configModel',
+      'keyModel',
+      'customerOrderNo',
+      'etreeOrderNo',
+      'orderDate',
+      'orderQuantity',
+      'shippedQuantity',
+      'unshippedQuantity',
+      'deliveryPlan',
+      'pmcDeliveryDate',
+      'deliveryChangeLog',
+      'customerMaterial',
+      'customerMaterialArrival',
+      'productionStatus',
+      'specialRemark',
+      'orderDays'
     ]
   },
   mode2: {
     name: 'BOM模式',
     columns: [
-      'customerName', 'u8OrderNo', 'bomCode', 'etreeBomBefore', 'etreeBomAfter', 'etreeBomAudited',
-      'configModel', 'keyModel', 'customerOrderNo', 'etreeOrderNo', 'orderDate', 'orderQuantity', 
-      'shippedQuantity', 'unshippedQuantity', 'deliveryPlan', 'pmcDeliveryDate', 
-      'deliveryChangeLog', 'customerMaterial', 'customerMaterialArrival', 'productionStatus', 
-      'specialRemark', 'orderDays'
+      'customerName',
+      'u8OrderNo',
+      'bomCode',
+      'etreeBomBefore',
+      'etreeBomAfter',
+      'etreeBomAudited',
+      'configModel',
+      'keyModel',
+      'customerOrderNo',
+      'etreeOrderNo',
+      'orderDate',
+      'orderQuantity',
+      'shippedQuantity',
+      'unshippedQuantity',
+      'deliveryPlan',
+      'pmcDeliveryDate',
+      'deliveryChangeLog',
+      'customerMaterial',
+      'customerMaterialArrival',
+      'productionStatus',
+      'specialRemark',
+      'orderDays'
     ]
   }
 }
@@ -590,7 +805,7 @@ const searchFields = [
   {
     key: 'customerName',
     label: '客户',
-    component: 'custom',  // 使用自定义插槽
+    component: 'custom', // 使用自定义插槽
     sort: 1
   },
   {
@@ -668,23 +883,23 @@ const tableHeight = (offset = 0) => {
   return window.innerHeight - 200 - offset
 }
 // 获取列筛选选项
-const getColumnFilters = (columnProp) => {
+const getColumnFilters = columnProp => {
   if (!tableData.value || tableData.value.length === 0) {
     return []
   }
-  
+
   const values = tableData.value.map(row => row[columnProp])
-  
+
   // 去重
   const uniqueValues = [...new Set(values)]
-  
+
   // 分离空值和非空值
   const emptyValues = uniqueValues.filter(v => v === null || v === undefined || v === '')
   const nonEmptyValues = uniqueValues.filter(v => v !== null && v !== undefined && v !== '')
-  
+
   // 构建筛选选项列表
   const filters = []
-  
+
   // 添加非空值选项（排序）
   nonEmptyValues.sort().forEach(value => {
     filters.push({
@@ -692,27 +907,27 @@ const getColumnFilters = (columnProp) => {
       value: value
     })
   })
-  
+
   // 如果有空值，添加到最后
   if (emptyValues.length > 0) {
     filters.push({
-      text: '/',  // 显示为"/"
-      value: null  // 使用 null 作为空值的标识
+      text: '/', // 显示为"/"
+      value: null // 使用 null 作为空值的标识
     })
   }
-  
+
   return filters
 }
 // Element UI 表格筛选方法
 const filterHandler = (value, row, column) => {
   const property = column.property
   const cellValue = row[property]
-  
+
   // 如果筛选值是 null，表示筛选空值
   if (value === null) {
     return cellValue === null || cellValue === undefined || cellValue === ''
   }
-  
+
   // 普通值匹配
   return cellValue === value
 }
@@ -724,11 +939,11 @@ const loadColumnConfig = () => {
     try {
       const config = JSON.parse(savedConfig)
       console.log('加载的列配置:', config)
-      
+
       if (config.mode) {
         columnDisplayMode.value = config.mode
       }
-      
+
       if (config.mode === 'custom' && Array.isArray(config.columns) && config.columns.length > 0) {
         // 自定义模式：恢复保存的列
         visibleColumns.value = config.columns
@@ -742,7 +957,7 @@ const loadColumnConfig = () => {
         visibleColumns.value = [...customSchemes.value[config.mode].columns]
         console.log(`恢复自定义方案: ${customSchemes.value[config.mode].name}`)
       }
-      
+
       // 强制更新表格
       nextTick(() => {
         tableKey.value++
@@ -769,7 +984,7 @@ const saveColumnConfig = () => {
 }
 
 // 处理模式切换
-const handleModeChange = (mode) => {
+const handleModeChange = mode => {
   if (mode === 'mode1' || mode === 'mode2') {
     visibleColumns.value = [...columnModes[mode].columns]
   } else if (mode === 'custom') {
@@ -786,7 +1001,7 @@ const handleModeChange = (mode) => {
 }
 
 // 获取模式名称
-const getModeName = (mode) => {
+const getModeName = mode => {
   if (mode === 'mode1') return '主模式'
   if (mode === 'mode2') return 'BOM模式'
   if (mode === 'custom') return '自定义模式'
@@ -809,27 +1024,27 @@ const saveCustomScheme = () => {
     ElMessage.error('请输入方案名称')
     return
   }
-  
+
   const schemeKey = `custom_${Date.now()}`
   const scheme = {
     name: schemeName.value.trim(),
     columns: [...visibleColumns.value],
     createTime: new Date().toLocaleString()
   }
-  
+
   // Vue 3 响应式更新
   customSchemes.value[schemeKey] = scheme
   saveCustomSchemesToStorage()
-  
+
   // 关闭对话框
   saveSchemeDialogVisible.value = false
-  
+
   // 自动切换到新保存的方案
   columnDisplayMode.value = schemeKey
   saveColumnConfig()
-  
+
   ElMessage.success(`方案 "${scheme.name}" 保存成功并已切换`)
-  
+
   // 调试信息
   console.log('保存方案后的customSchemes:', customSchemes.value)
   console.log('当前使用方案:', columnDisplayMode.value)
@@ -858,26 +1073,28 @@ const loadCustomSchemesFromStorage = () => {
 }
 
 // 删除自定义方案
-const deleteCustomScheme = (schemeKey) => {
+const deleteCustomScheme = schemeKey => {
   ElMessageBox.confirm(`确定要删除方案 "${customSchemes.value[schemeKey].name}" 吗？`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    delete customSchemes.value[schemeKey]
-    saveCustomSchemesToStorage()
-    
-    // 如果当前使用的是被删除的方案，切换到主模式
-    if (columnDisplayMode.value === schemeKey) {
-      handleModeChange('mode1')
-    }
-    
-    ElMessage.success('删除成功')
-  }).catch(() => {})
+  })
+    .then(() => {
+      delete customSchemes.value[schemeKey]
+      saveCustomSchemesToStorage()
+
+      // 如果当前使用的是被删除的方案，切换到主模式
+      if (columnDisplayMode.value === schemeKey) {
+        handleModeChange('mode1')
+      }
+
+      ElMessage.success('删除成功')
+    })
+    .catch(() => {})
 }
 
 // 列显示变化处理
-const handleColumnChange = (value) => {
+const handleColumnChange = value => {
   columnDisplayMode.value = 'custom' // 切换到自定义模式
   saveColumnConfig()
   tableKey.value++
@@ -894,22 +1111,22 @@ const resetColumns = () => {
 }
 
 // dropdown 命令处理（空方法，防止点击菜单项关闭）
-const handleDropdownCommand = (command) => {
+const handleDropdownCommand = command => {
   // 不需要处理，只是为了防止默认行为
 }
 
 // 判断列是否可见
-const isColumnVisible = (prop) => {
+const isColumnVisible = prop => {
   return visibleColumns.value.includes(prop)
 }
 
 // 检查角色（支持模拟角色）
-const checkRole = (roles) => {
+const checkRole = roles => {
   // 优先使用模拟角色（用于测试）
   if (mockRoles.value && mockRoles.value.length > 0) {
     return roles.some(role => mockRoles.value.includes(role))
   }
-  
+
   // 生产环境使用真实角色
   // const userRoles = store.getters && store.getters.roles
   // if (!userRoles || userRoles.length === 0) {
@@ -920,18 +1137,18 @@ const checkRole = (roles) => {
 }
 
 // 切换角色（仅用于测试）
-const handleRoleChange = (role) => {
+const handleRoleChange = role => {
   mockRoles.value = [role]
   ElMessage.success(`已切换到角色: ${getRoleName(role)}`)
 }
 
 // 获取角色名称
-const getRoleName = (roleKey) => {
+const getRoleName = roleKey => {
   const roleMap = {
-    'ms': '市场专员',
-    'BOM_Manage': 'BOM专员',
-    'pmc': 'PMC专员',
-    'admin': '超级管理员',
+    ms: '市场专员',
+    BOM_Manage: 'BOM专员',
+    pmc: 'PMC专员',
+    admin: '超级管理员'
   }
   return roleMap[roleKey] || roleKey
 }
@@ -952,25 +1169,27 @@ const loadCustomerOptions = () => {
 
 // 加载状态选项
 const loadStatusOptions = () => {
-  getOrderStatusDict().then(res => {
-    if (res.code === 200) {
-      statusOptions.value = res.data || []
-    }
-  }).catch(() => {
-    ElMessage.error('获取状态数据失败')
-  })
+  getOrderStatusDict()
+    .then(res => {
+      if (res.code === 200) {
+        statusOptions.value = res.data || []
+      }
+    })
+    .catch(() => {
+      ElMessage.error('获取状态数据失败')
+    })
 }
 
 // 获取生产状态类型
-const getProductionStatusType = (status) => {
+const getProductionStatusType = status => {
   const typeMap = {
-    '生产中': 'warning',
-    '已入库': 'success',
-    '已出货': 'info',
-    '待生产': 'info'
+    生产中: 'warning',
+    已入库: 'success',
+    已出货: 'info',
+    待生产: 'info'
   }
   return typeMap[status] || 'info'
-}// 获取列表数据
+} // 获取列表数据
 const fetchData = () => {
   loading.value = true
   const params = {
@@ -989,23 +1208,26 @@ const fetchData = () => {
     params.endDate = searchForm.orderDate[1]
   }
 
-  getShipmentOrderList(params).then((res) => {
-    if (res && res.code === 200) {
-      tableData.value = res.data?.list || res.data?.rows || []
-      pagination.total = res.data?.total || 0
-    } else {
-      ElMessage.error(res?.msg || '获取数据失败')
+  getShipmentOrderList(params)
+    .then(res => {
+      if (res && res.code === 200) {
+        tableData.value = res.data?.list || res.data?.rows || []
+        pagination.total = res.data?.total || 0
+      } else {
+        ElMessage.error(res?.msg || '获取数据失败')
+        tableData.value = []
+        pagination.total = 0
+      }
+    })
+    .catch(error => {
+      console.error('获取未出货订单列表失败:', error)
+      ElMessage.error('获取数据失败')
       tableData.value = []
       pagination.total = 0
-    }
-  }).catch((error) => {
-    console.error('获取未出货订单列表失败:', error)
-    ElMessage.error('获取数据失败')
-    tableData.value = []
-    pagination.total = 0
-  }).finally(() => {
-    loading.value = false
-  })
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 // 搜索功能
@@ -1036,14 +1258,14 @@ const handleAdd = () => {
 }
 
 // 编辑订单
-const handleEdit = (row) => {
+const handleEdit = row => {
   editData.value = { ...row }
   copyMode.value = false
   dialogVisible.value = true
 }
 
 // 复制订单
-const handleCopy = (row) => {
+const handleCopy = row => {
   // 复制数据，但不带 id
   const copyData = { ...row }
   delete copyData.id
@@ -1053,26 +1275,30 @@ const handleCopy = (row) => {
 }
 
 // 删除订单
-const handleDelete = (row) => {
+const handleDelete = row => {
   ElMessageBox.confirm('确定要删除这条未出货订单记录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    deleteShipmentOrder([row.id]).then((res) => {
-      if (res.code === 200) {
-        ElMessage.success('删除成功')
-        fetchData()
-      } else {
-        ElMessage.error(res.msg || '删除失败')
-      }
-    }).catch((error) => {
-      console.error('删除订单失败:', error)
-      ElMessage.error('删除失败')
-    })
-  }).catch(() => {
-    ElMessage.info('已取消删除')
   })
+    .then(() => {
+      deleteShipmentOrder([row.id])
+        .then(res => {
+          if (res.code === 200) {
+            ElMessage.success('删除成功')
+            fetchData()
+          } else {
+            ElMessage.error(res.msg || '删除失败')
+          }
+        })
+        .catch(error => {
+          console.error('删除订单失败:', error)
+          ElMessage.error('删除失败')
+        })
+    })
+    .catch(() => {
+      ElMessage.info('已取消删除')
+    })
 }
 // 导出Excel（动态表头）
 const handleExport = () => {
@@ -1080,11 +1306,13 @@ const handleExport = () => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'info'
-  }).then(() => {
-    exportToExcel()
-  }).catch(() => {
-    ElMessage.info('已取消导出')
   })
+    .then(() => {
+      exportToExcel()
+    })
+    .catch(() => {
+      ElMessage.info('已取消导出')
+    })
 }
 
 // 执行导出Excel
@@ -1093,13 +1321,15 @@ const exportToExcel = () => {
   exportWithExcelJS().catch(error => {
     console.warn('ExcelJS 导出失败，降级到普通导出:', error)
     // 降级到普通 xlsx 库导出（无样式）
-    import('xlsx').then(module => {
-      const XLSX = module.default || module
-      doExport(XLSX)
-    }).catch(error2 => {
-      console.error('导出失败:', error2)
-      ElMessage.error('导出失败，请重试')
-    })
+    import('xlsx')
+      .then(module => {
+        const XLSX = module.default || module
+        doExport(XLSX)
+      })
+      .catch(error2 => {
+        console.error('导出失败:', error2)
+        ElMessage.error('导出失败，请重试')
+      })
   })
 }
 // 使用 ExcelJS 导出（支持样式）
@@ -1107,22 +1337,22 @@ const exportWithExcelJS = async () => {
   try {
     const ExcelJSModule = await import('exceljs')
     const FileSaverModule = await import('file-saver')
-    
+
     const ExcelJS = ExcelJSModule.default || ExcelJSModule
     const FileSaver = FileSaverModule.default || FileSaverModule
-    
+
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet('未出货订单')
-    
+
     // 获取列配置
     const exportColumns = getExportColumnsWithGroups()
-    
+
     // 构建表头数据
     const header1Row = []
     const header2Row = []
     const merges = []
     let colIndex = 1
-    
+
     exportColumns.forEach(col => {
       if (col.children && col.children.length > 0) {
         // 分组列
@@ -1149,160 +1379,162 @@ const exportWithExcelJS = async () => {
         colIndex++
       }
     })
-    
+
     // 添加表头行
     const headerRow1 = worksheet.addRow(header1Row)
     const headerRow2 = worksheet.addRow(header2Row)
-        
-        // 应用表头样式
-        const headerStyle = {
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE7E6E6' } },
-          font: { bold: true, size: 11 },
-          alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
-          border: {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          }
-        }
-        
-        const groupHeaderStyle = {
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D2E9' } },
-          font: { bold: true, size: 11 },
-          alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
-          border: {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          }
-        }
-        
-        // 应用表头样式（区分分组表头和普通表头）
-        let currentCol = 1
-        exportColumns.forEach(col => {
-          if (col.children && col.children.length > 0) {
-            // 分组表头 - 紫色背景
-            for (let i = 0; i < col.children.length; i++) {
-              const cell1 = headerRow1.getCell(currentCol)
-              const cell2 = headerRow2.getCell(currentCol)
-              if (cell1) cell1.style = groupHeaderStyle
-              if (cell2) cell2.style = headerStyle
-              currentCol++
-            }
-          } else {
-            // 单列 - 灰色背景
-            const cell1 = headerRow1.getCell(currentCol)
-            const cell2 = headerRow2.getCell(currentCol)
-            if (cell1) cell1.style = headerStyle
-            if (cell2) cell2.style = headerStyle
-            currentCol++
-          }
-        })
-        
-        // 合并单元格
-        merges.forEach(merge => {
-          worksheet.mergeCells(merge.start.row, merge.start.col, merge.end.row, merge.end.col)
-        })
-        
-        // 添加数据行
-        const colPropMap = []
-        exportColumns.forEach(col => {
-          if (col.children) {
-            col.children.forEach(child => colPropMap.push(child.prop))
-          } else {
-            colPropMap.push(col.prop)
-          }
-        })
-        
-        // 颜色配置
-        const columnColors = {
-          'etreeBomAudited': { bg: 'FFD9534F', font: 'FFFFFFFF' },
-          'customerMaterial': { bg: 'FF92D050', font: 'FF000000' },
-          'customerMaterialArrival': { bg: 'FFFF0000', font: 'FFFFFFFF' },
-          'specialRemark': { bg: 'FFFFFF00', font: 'FF000000' },
-          'deliveryChangeLog': { bg: 'FFFFC7CE', font: 'FF9C0006' },
-          'pmcDeliveryDate': { bg: 'FFD9D2E9', font: 'FF000000' },
-          'orderSigned': { bg: 'FFE2EFDA', font: 'FF000000' }
-        }
-        
-        tableData.value.forEach(row => {
-          const rowData = colPropMap.map(prop => formatCellValue(prop, row[prop], row))
-          const dataRow = worksheet.addRow(rowData)
-          
-          dataRow.eachCell((cell, colNumber) => {
-            const prop = colPropMap[colNumber - 1]
-            const colorConfig = columnColors[prop]
-            
-            if (colorConfig) {
-              cell.style = {
-                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: colorConfig.bg } },
-                font: { size: 10, color: { argb: colorConfig.font } },
-                alignment: { vertical: 'middle', horizontal: 'center' },
-                border: {
-                  top: { style: 'thin' },
-                  left: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  right: { style: 'thin' }
-                }
-              }
-            } else {
-              cell.style = {
-                font: { size: 10 },
-                alignment: { vertical: 'middle', horizontal: 'center' },
-                border: {
-                  top: { style: 'thin' },
-                  left: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  right: { style: 'thin' }
-                }
-              }
-            }
-          })
-        })
-        
-        // 设置列宽
-        worksheet.columns = colPropMap.map(() => ({ width: 15 }))
-        
-        // 生成文件
-        const buffer = await workbook.xlsx.writeBuffer()
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-        const fileName = `未出货订单_${formatDate(new Date())}.xlsx`
-        
-        // FileSaver 可能是 { saveAs } 或者 { default: saveAs }
-        if (FileSaver.saveAs) {
-          FileSaver.saveAs(blob, fileName)
-        } else if (typeof FileSaver === 'function') {
-          FileSaver(blob, fileName)
-        } else {
-          // 手动下载
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = fileName
-          link.click()
-          URL.revokeObjectURL(url)
-        }
-        
-        ElMessage.success('导出成功')
-      } catch (error) {
-        console.error('ExcelJS 导出失败:', error)
-        ElMessage.error('导出失败: ' + error.message)
+
+    // 应用表头样式
+    const headerStyle = {
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE7E6E6' } },
+      font: { bold: true, size: 11 },
+      alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
       }
+    }
+
+    const groupHeaderStyle = {
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D2E9' } },
+      font: { bold: true, size: 11 },
+      alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    }
+
+    // 应用表头样式（区分分组表头和普通表头）
+    let currentCol = 1
+    exportColumns.forEach(col => {
+      if (col.children && col.children.length > 0) {
+        // 分组表头 - 紫色背景
+        for (let i = 0; i < col.children.length; i++) {
+          const cell1 = headerRow1.getCell(currentCol)
+          const cell2 = headerRow2.getCell(currentCol)
+          if (cell1) cell1.style = groupHeaderStyle
+          if (cell2) cell2.style = headerStyle
+          currentCol++
+        }
+      } else {
+        // 单列 - 灰色背景
+        const cell1 = headerRow1.getCell(currentCol)
+        const cell2 = headerRow2.getCell(currentCol)
+        if (cell1) cell1.style = headerStyle
+        if (cell2) cell2.style = headerStyle
+        currentCol++
+      }
+    })
+
+    // 合并单元格
+    merges.forEach(merge => {
+      worksheet.mergeCells(merge.start.row, merge.start.col, merge.end.row, merge.end.col)
+    })
+
+    // 添加数据行
+    const colPropMap = []
+    exportColumns.forEach(col => {
+      if (col.children) {
+        col.children.forEach(child => colPropMap.push(child.prop))
+      } else {
+        colPropMap.push(col.prop)
+      }
+    })
+
+    // 颜色配置
+    const columnColors = {
+      etreeBomAudited: { bg: 'FFD9534F', font: 'FFFFFFFF' },
+      customerMaterial: { bg: 'FF92D050', font: 'FF000000' },
+      customerMaterialArrival: { bg: 'FFFF0000', font: 'FFFFFFFF' },
+      specialRemark: { bg: 'FFFFFF00', font: 'FF000000' },
+      deliveryChangeLog: { bg: 'FFFFC7CE', font: 'FF9C0006' },
+      pmcDeliveryDate: { bg: 'FFD9D2E9', font: 'FF000000' },
+      orderSigned: { bg: 'FFE2EFDA', font: 'FF000000' }
+    }
+
+    tableData.value.forEach(row => {
+      const rowData = colPropMap.map(prop => formatCellValue(prop, row[prop], row))
+      const dataRow = worksheet.addRow(rowData)
+
+      dataRow.eachCell((cell, colNumber) => {
+        const prop = colPropMap[colNumber - 1]
+        const colorConfig = columnColors[prop]
+
+        if (colorConfig) {
+          cell.style = {
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: colorConfig.bg } },
+            font: { size: 10, color: { argb: colorConfig.font } },
+            alignment: { vertical: 'middle', horizontal: 'center' },
+            border: {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            }
+          }
+        } else {
+          cell.style = {
+            font: { size: 10 },
+            alignment: { vertical: 'middle', horizontal: 'center' },
+            border: {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            }
+          }
+        }
+      })
+    })
+
+    // 设置列宽
+    worksheet.columns = colPropMap.map(() => ({ width: 15 }))
+
+    // 生成文件
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const fileName = `未出货订单_${formatDate(new Date())}.xlsx`
+
+    // FileSaver 可能是 { saveAs } 或者 { default: saveAs }
+    if (FileSaver.saveAs) {
+      FileSaver.saveAs(blob, fileName)
+    } else if (typeof FileSaver === 'function') {
+      FileSaver(blob, fileName)
+    } else {
+      // 手动下载
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      link.click()
+      URL.revokeObjectURL(url)
+    }
+
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('ExcelJS 导出失败:', error)
+    ElMessage.error('导出失败: ' + error.message)
+  }
 }
 // 执行导出逻辑
-const doExport = (XLSX) => {
+const doExport = XLSX => {
   try {
     // 获取当前显示的列配置（支持多级表头）
     const exportColumns = getExportColumnsWithGroups()
-    
+
     // 构建二级表头
     const header1 = [] // 一级表头
     const header2 = [] // 二级表头
     const merges = [] // 合并单元格配置
     let colIndex = 0
-    
+
     exportColumns.forEach(col => {
       if (col.children && col.children.length > 0) {
         // 有子列的分组列
@@ -1335,7 +1567,7 @@ const doExport = (XLSX) => {
       }
       colIndex++
     })
-    
+
     // 构建数据行
     const data = tableData.value.map(row => {
       const rowData = []
@@ -1354,32 +1586,32 @@ const doExport = (XLSX) => {
       })
       return rowData
     })
-    
+
     // 合并表头和数据
     const sheetData = [header1, header2, ...data]
-    
+
     // 创建工作表
     const ws = XLSX.utils.aoa_to_sheet(sheetData)
-    
+
     // 应用合并单元格
     ws['!merges'] = merges
-    
+
     // 应用样式
     applyExcelStyles(ws, exportColumns, header2.length, sheetData.length, XLSX)
-    
+
     // 设置列宽
     const totalCols = header2.length
     const colWidths = Array(totalCols).fill({ wch: 15 })
     ws['!cols'] = colWidths
-    
+
     // 创建工作簿
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, '未出货订单')
-    
+
     // 导出文件
     const fileName = `未出货订单_${formatDate(new Date())}.xlsx`
     XLSX.writeFile(wb, fileName)
-    
+
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
@@ -1388,214 +1620,214 @@ const doExport = (XLSX) => {
 }
 // 应用Excel样式
 const applyExcelStyles = (ws, exportColumns, totalCols, totalRows, XLSX) => {
-      // 定义列的颜色配置
-      const columnColors = {
-        'etreeBomAudited': { bg: 'FFD9534F', font: 'FFFFFFFF' }, // 红底白字
-        'customerMaterial': { bg: 'FF92D050', font: 'FF000000' }, // 绿底黑字
-        'customerMaterialArrival': { bg: 'FFFF0000', font: 'FFFFFFFF' }, // 红底白字
-        'specialRemark': { bg: 'FFFFFF00', font: 'FF000000' }, // 黄底黑字
-        'deliveryChangeLog': { bg: 'FFFFC7CE', font: 'FF9C0006' }, // 粉底红字
-        'pmcDeliveryDate': { bg: 'FFD9D2E9', font: 'FF000000' }, // 紫底黑字
-        'orderSigned': { bg: 'FFE2EFDA', font: 'FF000000' } // 浅绿底黑字
-      }
-      
-      // 基础样式
-      const baseStyle = {
-        alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
-        border: {
-          top: { style: 'thin', color: { rgb: 'FF000000' } },
-          bottom: { style: 'thin', color: { rgb: 'FF000000' } },
-          left: { style: 'thin', color: { rgb: 'FF000000' } },
-          right: { style: 'thin', color: { rgb: 'FF000000' } }
-        }
-      }
-      
-      // 表头样式（浅灰底）
-      const headerStyle = {
-        ...baseStyle,
-        fill: { fgColor: { rgb: 'FFE7E6E6' } },
-        font: { bold: true, sz: 11, color: { rgb: 'FF000000' } }
-      }
-      
-      // 分组表头样式（紫色背景）
-      const groupHeaderStyle = {
-        ...baseStyle,
-        fill: { fgColor: { rgb: 'FFD9D2E9' } },
-        font: { bold: true, sz: 11, color: { rgb: 'FF000000' } }
-      }
-      
-      // 应用表头样式
-      for (let c = 0; c < totalCols; c++) {
-        const cellAddr1 = XLSX.utils.encode_cell({ r: 0, c: c })
-        const cellAddr2 = XLSX.utils.encode_cell({ r: 1, c: c })
-        
-        if (ws[cellAddr1]) {
-          // 判断是否为分组表头
-          let isGroupHeader = false
-          let colIdx = 0
-          for (const col of exportColumns) {
-            if (col.children && col.children.length > 0) {
-              if (c >= colIdx && c < colIdx + col.children.length) {
-                isGroupHeader = true
-                break
-              }
-              colIdx += col.children.length
-            } else {
-              colIdx++
-            }
-          }
-          ws[cellAddr1].s = isGroupHeader ? groupHeaderStyle : headerStyle
-        }
-        
-        if (ws[cellAddr2]) {
-          ws[cellAddr2].s = headerStyle
-        }
-      }
-      
-      // 获取列prop映射
-      const colPropMap = []
-      exportColumns.forEach(col => {
+  // 定义列的颜色配置
+  const columnColors = {
+    etreeBomAudited: { bg: 'FFD9534F', font: 'FFFFFFFF' }, // 红底白字
+    customerMaterial: { bg: 'FF92D050', font: 'FF000000' }, // 绿底黑字
+    customerMaterialArrival: { bg: 'FFFF0000', font: 'FFFFFFFF' }, // 红底白字
+    specialRemark: { bg: 'FFFFFF00', font: 'FF000000' }, // 黄底黑字
+    deliveryChangeLog: { bg: 'FFFFC7CE', font: 'FF9C0006' }, // 粉底红字
+    pmcDeliveryDate: { bg: 'FFD9D2E9', font: 'FF000000' }, // 紫底黑字
+    orderSigned: { bg: 'FFE2EFDA', font: 'FF000000' } // 浅绿底黑字
+  }
+
+  // 基础样式
+  const baseStyle = {
+    alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+    border: {
+      top: { style: 'thin', color: { rgb: 'FF000000' } },
+      bottom: { style: 'thin', color: { rgb: 'FF000000' } },
+      left: { style: 'thin', color: { rgb: 'FF000000' } },
+      right: { style: 'thin', color: { rgb: 'FF000000' } }
+    }
+  }
+
+  // 表头样式（浅灰底）
+  const headerStyle = {
+    ...baseStyle,
+    fill: { fgColor: { rgb: 'FFE7E6E6' } },
+    font: { bold: true, sz: 11, color: { rgb: 'FF000000' } }
+  }
+
+  // 分组表头样式（紫色背景）
+  const groupHeaderStyle = {
+    ...baseStyle,
+    fill: { fgColor: { rgb: 'FFD9D2E9' } },
+    font: { bold: true, sz: 11, color: { rgb: 'FF000000' } }
+  }
+
+  // 应用表头样式
+  for (let c = 0; c < totalCols; c++) {
+    const cellAddr1 = XLSX.utils.encode_cell({ r: 0, c: c })
+    const cellAddr2 = XLSX.utils.encode_cell({ r: 1, c: c })
+
+    if (ws[cellAddr1]) {
+      // 判断是否为分组表头
+      let isGroupHeader = false
+      let colIdx = 0
+      for (const col of exportColumns) {
         if (col.children && col.children.length > 0) {
-          col.children.forEach(child => {
-            colPropMap.push(child.prop)
-          })
+          if (c >= colIdx && c < colIdx + col.children.length) {
+            isGroupHeader = true
+            break
+          }
+          colIdx += col.children.length
         } else {
-          colPropMap.push(col.prop)
+          colIdx++
         }
+      }
+      ws[cellAddr1].s = isGroupHeader ? groupHeaderStyle : headerStyle
+    }
+
+    if (ws[cellAddr2]) {
+      ws[cellAddr2].s = headerStyle
+    }
+  }
+
+  // 获取列prop映射
+  const colPropMap = []
+  exportColumns.forEach(col => {
+    if (col.children && col.children.length > 0) {
+      col.children.forEach(child => {
+        colPropMap.push(child.prop)
       })
-      
-      // 应用数据行样式
-      for (let r = 2; r < totalRows; r++) {
-        for (let c = 0; c < totalCols; c++) {
-          const cellAddr = XLSX.utils.encode_cell({ r: r, c: c })
-          if (ws[cellAddr]) {
-            const prop = colPropMap[c]
-            const colorConfig = columnColors[prop]
-            
-            if (colorConfig) {
-              // 有特殊颜色配置的列
-              ws[cellAddr].s = {
-                ...baseStyle,
-                fill: { fgColor: { rgb: colorConfig.bg } },
-                font: { sz: 10, color: { rgb: colorConfig.font } }
-              }
-            } else {
-              // 默认样式
-              ws[cellAddr].s = {
-                ...baseStyle,
-                font: { sz: 10, color: { rgb: 'FF000000' } }
-              }
-            }
+    } else {
+      colPropMap.push(col.prop)
+    }
+  })
+
+  // 应用数据行样式
+  for (let r = 2; r < totalRows; r++) {
+    for (let c = 0; c < totalCols; c++) {
+      const cellAddr = XLSX.utils.encode_cell({ r: r, c: c })
+      if (ws[cellAddr]) {
+        const prop = colPropMap[c]
+        const colorConfig = columnColors[prop]
+
+        if (colorConfig) {
+          // 有特殊颜色配置的列
+          ws[cellAddr].s = {
+            ...baseStyle,
+            fill: { fgColor: { rgb: colorConfig.bg } },
+            font: { sz: 10, color: { rgb: colorConfig.font } }
+          }
+        } else {
+          // 默认样式
+          ws[cellAddr].s = {
+            ...baseStyle,
+            font: { sz: 10, color: { rgb: 'FF000000' } }
           }
         }
       }
+    }
+  }
 }
 
 // 获取要导出的列配置（支持多级表头，按照页面el-table实际顺序）
 const getExportColumnsWithGroups = () => {
-      const columns = []
-      
-      // 定义表格列结构（完全按照页面el-table中的列定义顺序）
-      const tableStructure = [
-        { prop: 'customerName', label: '客户名称' },
-        { prop: 'u8OrderNo', label: 'U8单号' },
-        { prop: 'u8Available', label: 'U8是否可用' },
-        { prop: 'bomCode', label: 'BOM编码' },
-        { prop: 'etreeBomBefore', label: 'E树BOM刷新前' },
-        { prop: 'etreeBomAfter', label: 'E树BOM刷新后' },
-        { prop: 'etreeBomAudited', label: 'E树BOM审核' },
-        { prop: 'configModel', label: '配置型号' },
-        { prop: 'keyModel', label: '按键型号' },
-        { prop: 'customerOrderNo', label: '客户订单号' },
-        { prop: 'etreeOrderNo', label: 'E树订单号' },
-        { prop: 'orderDate', label: '上单时间' },
-        // 数量信息分组
-        {
-          label: '数量信息',
-          children: [
-            { prop: 'orderQuantity', label: '订单数量' },
-            { prop: 'shippedQuantity', label: '已发货量' },
-            { prop: 'unshippedQuantity', label: '未发货量' }
-          ]
-        },
-        // 交期信息分组
-        {
-          label: '交期信息',
-          children: [
-            { prop: 'deliveryPlan', label: '交货计划' },
-            { prop: 'pmcDeliveryDate', label: 'PMC交付日' }
-          ]
-        },
-        { prop: 'deliveryChangeLog', label: '交期变更履历' },
-        // 客供物料情况分组
-        {
-          label: '客供物料情况',
-          children: [
-            { prop: 'customerMaterial', label: '客供料' },
-            { prop: 'customerMaterialArrival', label: '到料时间' }
-          ]
-        },
-        { prop: 'specialRemark', label: '特殊备注' },
-        { prop: 'orderDays', label: '订单已耗时(天)' }
+  const columns = []
+
+  // 定义表格列结构（完全按照页面el-table中的列定义顺序）
+  const tableStructure = [
+    { prop: 'customerName', label: '客户名称' },
+    { prop: 'u8OrderNo', label: 'U8单号' },
+    { prop: 'u8Available', label: 'U8是否可用' },
+    { prop: 'bomCode', label: 'BOM编码' },
+    { prop: 'etreeBomBefore', label: 'E树BOM刷新前' },
+    { prop: 'etreeBomAfter', label: 'E树BOM刷新后' },
+    { prop: 'etreeBomAudited', label: 'E树BOM审核' },
+    { prop: 'configModel', label: '配置型号' },
+    { prop: 'keyModel', label: '按键型号' },
+    { prop: 'customerOrderNo', label: '客户订单号' },
+    { prop: 'etreeOrderNo', label: 'E树订单号' },
+    { prop: 'orderDate', label: '上单时间' },
+    // 数量信息分组
+    {
+      label: '数量信息',
+      children: [
+        { prop: 'orderQuantity', label: '订单数量' },
+        { prop: 'shippedQuantity', label: '已发货量' },
+        { prop: 'unshippedQuantity', label: '未发货量' }
       ]
-      
-      // 按照表格顺序，只添加当前显示的列
-      tableStructure.forEach(item => {
-        if (item.children) {
-          // 检查分组中是否有可见的子列
-          const visibleChildren = item.children.filter(child => isColumnVisible(child.prop))
-          if (visibleChildren.length > 0) {
-            columns.push({
-              label: item.label,
-              children: visibleChildren
-            })
-          }
-        } else {
-          // 单列
-          if (item.prop === 'customerName' || isColumnVisible(item.prop)) {
-            columns.push(item)
-          }
-        }
-      })
-      
-      return columns
+    },
+    // 交期信息分组
+    {
+      label: '交期信息',
+      children: [
+        { prop: 'deliveryPlan', label: '交货计划' },
+        { prop: 'pmcDeliveryDate', label: 'PMC交付日' }
+      ]
+    },
+    { prop: 'deliveryChangeLog', label: '交期变更履历' },
+    // 客供物料情况分组
+    {
+      label: '客供物料情况',
+      children: [
+        { prop: 'customerMaterial', label: '客供料' },
+        { prop: 'customerMaterialArrival', label: '到料时间' }
+      ]
+    },
+    { prop: 'specialRemark', label: '特殊备注' },
+    { prop: 'orderDays', label: '订单已耗时(天)' }
+  ]
+
+  // 按照表格顺序，只添加当前显示的列
+  tableStructure.forEach(item => {
+    if (item.children) {
+      // 检查分组中是否有可见的子列
+      const visibleChildren = item.children.filter(child => isColumnVisible(child.prop))
+      if (visibleChildren.length > 0) {
+        columns.push({
+          label: item.label,
+          children: visibleChildren
+        })
+      }
+    } else {
+      // 单列
+      if (item.prop === 'customerName' || isColumnVisible(item.prop)) {
+        columns.push(item)
+      }
+    }
+  })
+
+  return columns
 }
 
 // 格式化单元格值
 const formatCellValue = (prop, value, row) => {
-      // 处理空值
-      if (value === null || value === undefined || value === '') {
-        return '-'
-      }
-      
-      // 处理布尔值
-      if (prop === 'u8Available') {
-        return value ? '可用' : '不可用'
-      }
-      
-      if (prop === 'orderSigned') {
-        return value ? '已回签' : '未回签'
-      }
-      
-      // 处理E树BOM审核状态
-      if (prop === 'etreeBomAudited') {
-        if (value === '已审核') return '已审核'
-        if (value === '有遗留') return '有遗留'
-        if (value === '未审核') return '未审核'
-        return value ? '已审核' : '未审核'
-      }
-      
-      // 处理富文本字段（去除HTML标签）
-      if (prop === 'deliveryChangeLog' || prop === 'specialRemark') {
-        return stripHtml(value)
-      }
-      
-      // 返回原始值
-      return value
+  // 处理空值
+  if (value === null || value === undefined || value === '') {
+    return '-'
+  }
+
+  // 处理布尔值
+  if (prop === 'u8Available') {
+    return value ? '可用' : '不可用'
+  }
+
+  if (prop === 'orderSigned') {
+    return value ? '已回签' : '未回签'
+  }
+
+  // 处理E树BOM审核状态
+  if (prop === 'etreeBomAudited') {
+    if (value === '已审核') return '已审核'
+    if (value === '有遗留') return '有遗留'
+    if (value === '未审核') return '未审核'
+    return value ? '已审核' : '未审核'
+  }
+
+  // 处理富文本字段（去除HTML标签）
+  if (prop === 'deliveryChangeLog' || prop === 'specialRemark') {
+    return stripHtml(value)
+  }
+
+  // 返回原始值
+  return value
 }
 
 // 去除HTML标签
-const stripHtml = (html) => {
+const stripHtml = html => {
   if (!html) return ''
   const tmp = document.createElement('DIV')
   tmp.innerHTML = html
@@ -1603,7 +1835,7 @@ const stripHtml = (html) => {
 }
 
 // 格式化日期
-const formatDate = (date) => {
+const formatDate = date => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -1613,13 +1845,13 @@ const formatDate = (date) => {
 }
 
 // 分页大小改变
-const handleSizeChange = (val) => {
+const handleSizeChange = val => {
   pagination.size = val
   fetchData()
 }
 
 // 当前页改变
-const handleCurrentChange = (val) => {
+const handleCurrentChange = val => {
   pagination.current = val
   fetchData()
 }
@@ -1644,24 +1876,24 @@ onMounted(() => {
 <style lang="scss" scoped>
 .shipment-order-page {
   padding: 20px;
-  
+
   // 操作列表头
   .action-header {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    
+
     span {
       font-size: 14px;
       color: #303133;
     }
   }
-  
+
   .table-wrapper {
     background: #fff;
     border-radius: 4px;
-    
+
     ::v-deep .el-table {
       .el-table__header-wrapper {
         .el-table__header {
@@ -1670,7 +1902,7 @@ onMounted(() => {
             color: #303133;
             font-weight: 600;
             font-size: 14px;
-            
+
             // 多层级表头
             &.is-group {
               background-color: #e8f4f8;
@@ -1688,7 +1920,7 @@ onMounted(() => {
           background-color: transparent;
         }
       }
-      
+
       // 统一单元格样式
       .el-table__body-wrapper,
       .el-table__fixed-body-wrapper,
@@ -1698,10 +1930,10 @@ onMounted(() => {
             td {
               font-size: 13px;
               box-sizing: border-box;
-              border-right: 1px solid #EBEEF5;
-              
+              border-right: 1px solid #ebeef5;
+
               position: relative;
-              
+
               &::after {
                 content: '';
                 position: absolute;
@@ -1709,18 +1941,18 @@ onMounted(() => {
                 left: 0;
                 right: 0;
                 height: 1px;
-                background-color: #EBEEF5;
+                background-color: #ebeef5;
               }
             }
           }
         }
       }
-      
+
       // 确保固定列和主表格行高一致
       .el-table__body {
         tr {
           height: auto;
-          
+
           td {
             padding: 12px 0;
             line-height: 23px;
@@ -1741,7 +1973,7 @@ onMounted(() => {
 
   // 订单编号链接样式
   .order-no-link {
-    color: #409EFF;
+    color: #409eff;
     cursor: pointer;
     font-weight: 500;
 
@@ -1766,16 +1998,16 @@ onMounted(() => {
   }
 
   .shipped-text {
-    color: #67C23A !important;
+    color: #67c23a !important;
     font-weight: 500;
   }
 
   .unshipped-text {
-    color: #F56C6C !important;  // 红色
+    color: #f56c6c !important; // 红色
     font-weight: 500;
-    
+
     &.has-unshipped {
-      color: #F56C6C !important;  // 红色
+      color: #f56c6c !important; // 红色
       font-weight: 600;
     }
   }
@@ -1783,9 +2015,9 @@ onMounted(() => {
   // 天数文本样式
   .days-text {
     color: #606266;
-    
+
     &.warning-days {
-      color: #F56C6C;
+      color: #f56c6c;
       font-weight: 600;
     }
   }
@@ -1799,38 +2031,38 @@ onMounted(() => {
     text-align: left;
     line-height: 1.4;
     padding: 6px !important;
-    border: 1px solid #EBEEF5;
+    border: 1px solid #ebeef5;
     border-radius: 4px;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     word-wrap: break-word;
     word-break: break-all;
     display: block !important;
-    
+
     // 自定义滚动条样式
     &::-webkit-scrollbar {
       width: 6px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 3px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: #c1c1c1;
       border-radius: 3px;
-      
+
       &:hover {
         background: #a8a8a8;
       }
     }
-    
+
     ::v-deep {
       p {
         margin: 5px 0;
         line-height: 1.6;
       }
-      
+
       img {
         max-width: 100%;
         height: auto;
@@ -1838,16 +2070,17 @@ onMounted(() => {
         margin: 5px 0;
         border-radius: 4px;
       }
-      
-      ul, ol {
+
+      ul,
+      ol {
         padding-left: 20px;
         margin: 5px 0;
       }
-      
+
       strong {
         font-weight: 600;
       }
-      
+
       em {
         font-style: italic;
       }
@@ -1856,7 +2089,7 @@ onMounted(() => {
 
   // 删除按钮样式
   .text-red {
-    color: #F56C6C;
+    color: #f56c6c;
 
     &:hover {
       color: #f78989;
@@ -1867,11 +2100,11 @@ onMounted(() => {
   .icon-btn {
     font-size: 14px;
     padding: 8px;
-    
+
     i {
       font-size: 14px;
     }
-    
+
     &:hover {
       transform: scale(1.1);
       transition: all 0.2s;
@@ -1914,34 +2147,34 @@ onMounted(() => {
   min-width: 320px;
   max-width: 500px;
   max-height: 620px;
-  
+
   .el-dropdown-menu__item {
     padding: 0 !important;
     line-height: normal !important;
-    
+
     &:hover {
       background-color: transparent !important;
     }
   }
-  
+
   .column-control-panel {
     padding: 12px 15px;
-    
+
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-bottom: 12px;
       margin-bottom: 12px;
-      border-bottom: 1px solid #EBEEF5;
-      
+      border-bottom: 1px solid #ebeef5;
+
       span {
         font-size: 14px;
         font-weight: 600;
         color: #303133;
       }
     }
-    
+
     .mode-title {
       font-size: 13px;
       font-weight: 600;
@@ -1949,28 +2182,28 @@ onMounted(() => {
       margin-bottom: 8px;
       padding-left: 2px;
     }
-    
+
     .mode-selection {
       margin-bottom: 15px;
-      
+
       .el-radio-group {
         display: flex;
         gap: 15px;
-        
+
         .el-radio {
           margin-right: 0;
         }
       }
     }
-    
+
     .saved-schemes {
       margin-bottom: 15px;
-      
+
       .scheme-list {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        
+
         .scheme-item {
           display: inline-flex;
           align-items: center;
@@ -1979,52 +2212,52 @@ onMounted(() => {
           border: 1px solid #dcdfe6;
           background-color: #fff;
           transition: all 0.2s;
-          
+
           &:hover {
             background-color: #f5f7fa;
             border-color: #c0c4cc;
           }
-          
+
           &.active {
             background-color: #ecf5ff;
             border-color: #409eff;
           }
-          
+
           .el-radio {
             margin-right: 4px;
-            
+
             .el-radio__label {
               font-size: 13px;
               padding-left: 6px;
             }
           }
-          
+
           .delete-scheme-btn {
             opacity: 0;
             transition: opacity 0.2s;
             color: #f56c6c;
             padding: 2px 4px;
             margin-left: 4px;
-            
+
             &:hover {
               color: #f56c6c;
               background-color: #fef0f0;
             }
           }
-          
+
           &:hover .delete-scheme-btn {
             opacity: 1;
           }
         }
       }
     }
-    
+
     .save-scheme-section {
       margin-bottom: 15px;
       padding-top: 10px;
       border-top: 1px solid #ebeef5;
     }
-    
+
     .el-checkbox-group {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -2032,23 +2265,23 @@ onMounted(() => {
       max-height: 550px;
       overflow-y: auto;
       padding: 5px;
-      
+
       .el-checkbox {
         margin: 0 !important;
         white-space: nowrap;
-        
+
         &.is-disabled {
           .el-checkbox__label {
             color: #909399;
             font-weight: 500;
           }
-          
+
           .el-checkbox__input.is-disabled .el-checkbox__inner {
-            background-color: #F5F7FA;
-            border-color: #DCDFE6;
+            background-color: #f5f7fa;
+            border-color: #dcdfe6;
           }
         }
-        
+
         .el-checkbox__label {
           font-size: 13px;
           padding-left: 8px;

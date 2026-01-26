@@ -24,54 +24,87 @@
  */
 export const getColumnConfigData = ({ customerNameOptions, customerMaterialOptions }) => [
   // 基础信息
-  { 
-    field: 'customerName', 
-    title: '客户名称', 
-    width: 140, 
-    type: 'select', 
-    options: () => customerNameOptions.value, 
-    selectProps: { clearable: true, filterable: true, placeholder: '请选择客户' } 
+  {
+    field: 'customerName',
+    title: '客户名称',
+    width: 140,
+    type: 'select',
+    options: () => customerNameOptions.value,
+    selectProps: { clearable: true, filterable: true, placeholder: '请选择客户' }
   },
   { field: 'u8OrderNo', title: 'U8单号', width: 150, type: 'input', cellClass: 'order-no-link' },
   { field: 'bomCode', title: 'BOM编码', width: 150, type: 'input' },
   { field: 'etreeBomBefore', title: 'E树BOM刷新前', width: 145, type: 'input' },
   { field: 'etreeBomAfter', title: 'E树BOM刷新后', width: 145, type: 'input' },
-  { 
-    field: 'etreeBomAudited', 
-    title: 'E树BOM审核', 
-    width: 130, 
-    type: 'tag-select', 
+  {
+    field: 'etreeBomAudited',
+    title: 'E树BOM审核',
+    width: 130,
+    type: 'tag-select',
     options: () => [
-      { label: '已审核', value: '已审核' }, 
-      { label: '未审核', value: '未审核' }, 
+      { label: '已审核', value: '已审核' },
+      { label: '未审核', value: '未审核' },
       { label: '有遗留', value: '有遗留' }
-    ] 
+    ]
   },
   { field: 'configModel', title: '配置型号', width: 160, type: 'input' },
   { field: 'keyModel', title: '按键型号', width: 140, type: 'input' },
   { field: 'customerOrderNo', title: '客户订单号', width: 150, type: 'input' },
   { field: 'etreeOrderNo', title: 'E树订单号', width: 150, type: 'input' },
   { field: 'orderDate', title: '上单时间', width: 120, type: 'date' },
-  
+
   // 数量信息（分组）
   { field: 'orderQty', title: '订单数量', width: 130, type: 'number', group: '数量信息' },
-  { field: 'shippedQty', title: '已发货量', width: 130, type: 'number', group: '数量信息', cellClass: 'text-green' },
-  { field: 'unshippedQty', title: '未发货量', width: 130, type: 'number', group: '数量信息', cellClass: 'text-red' },
-  
+  {
+    field: 'shippedQty',
+    title: '已发货量',
+    width: 130,
+    type: 'number',
+    group: '数量信息',
+    cellClass: 'text-green'
+  },
+  {
+    field: 'unshippedQty',
+    title: '未发货量',
+    width: 130,
+    type: 'number',
+    group: '数量信息',
+    cellClass: 'text-red'
+  },
+
   // 交期信息（分组）
   { field: 'deliveryDate', title: '交货计划', width: 120, type: 'date', group: '交期信息' },
   { field: 'pmcDate', title: '可达成交期', width: 150, type: 'richtext', group: '交期信息' },
-  
+
   // 独立列
   { field: 'deliveryChangeLog', title: '交期变更履历', width: 200, type: 'richtext' },
-  
+
   // 客供物料情况（分组）
-  { field: 'customerMaterial', title: '客供料', width: 140, type: 'multi-select', group: '客供物料情况', options: () => customerMaterialOptions },
-  { field: 'customerMaterialArrival', title: '到料时间', width: 120, type: 'input', group: '客供物料情况' },
-  
+  {
+    field: 'customerMaterial',
+    title: '客供料',
+    width: 140,
+    type: 'multi-select',
+    group: '客供物料情况',
+    options: () => customerMaterialOptions
+  },
+  {
+    field: 'customerMaterialArrival',
+    title: '到料时间',
+    width: 120,
+    type: 'input',
+    group: '客供物料情况'
+  },
+
   // 独立列
   { field: 'specialRemark', title: '特殊备注', width: 200, type: 'richtext' },
-  { field: 'orderDays', title: '订单已耗时(天)', width: 120, type: 'readonly', warnCondition: (row) => row.orderDays > 60 }
+  {
+    field: 'orderDays',
+    title: '订单已耗时(天)',
+    width: 120,
+    type: 'readonly',
+    warnCondition: row => row.orderDays > 60
+  }
 ]
 
 /**

@@ -230,7 +230,8 @@ export const constantRoutes = [
 // ]
 
 export default new Router({
-  mode: "history", // 去掉url中的#
+  // 微前端模式下使用 hash 模式，独立运行时可改为 history
+  mode: window.__POWERED_BY_WUJIE__ ? "hash" : "history",
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;

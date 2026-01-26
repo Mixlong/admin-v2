@@ -113,6 +113,11 @@
                     placeholder="请选择硬件版本号"
                   />
                 </template>
+                <template v-else-if="form.type === 'VR_Version' && visible">
+                  <el-input v-model="form.content" readonly placeholder="请选择视觉版本" @click.native="openVisionSelector">
+                     <el-button slot="append" icon="el-icon-search" @click="openVisionSelector">选择</el-button>
+                  </el-input>
+                </template>
 
                 <template v-else>
                   <template v-if="form.type === 'ble_version'">
@@ -536,6 +541,8 @@
       </el-button>
       <el-button @click="cancel">取 消</el-button>
     </div>
+    
+    <VisionVersionSelector ref="visionSelector" @success="handleVisionSelected" />
   </el-dialog>
 </template>
 
@@ -549,9 +556,11 @@ import {
 import { listComputer } from "@/api/third/version";
 import { stsWebList } from "@/api/third/testApi";
 import { scriptList } from "@/api/third/simulateScript";
+import VisionVersionSelector from "./VisionVersionSelector.vue";
 
 export default {
   inheritAttrs: false,
+  components: { VisionVersionSelector },
   props: ["dictList", "isStsType", "value"],
   data() {
     const validateContent = (rule, value, callback) => {
@@ -957,6 +966,27 @@ export default {
       this.form.url = id;
       this.form.content = `${agreementName } - ${agreementVersion}`
       this.form.file = file;
+    },
+    // 视觉版本选择
+    openVisionSelector() {
+      if (!this.form.categoryId) {
+        this.msgError("请先选择品类");
+        return;
+      }
+      // 获取当前选中的型号名称
+      let modelName = '';
+      if (this.form.computerId && this.computerFormOptions) {
+        const selectedModel = this.computerFormOptions.find(item => item.model === this.form.computerId);
+        if (selectedModel) {
+          modelName = selectedModel.name; 
+        }
+      }
+      this.$refs.visionSelector.init(this.form.categoryId, modelName);
+    },
+    handleVisionSelected(row) {
+      if (row) {
+        this.form.content = row.name;
+      }
     },
     cancel() {
       this.$emit('input', false);

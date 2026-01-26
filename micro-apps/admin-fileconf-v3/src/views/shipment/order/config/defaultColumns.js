@@ -1,7 +1,7 @@
 /**
  * 默认列配置
  * 用于列配置面板的初始化和重置
- * 
+ *
  * 注意：此文件从 columns.js 自动生成默认配置，不要手动维护列数据！
  * 如需新增/修改列，请编辑 columns.js
  */
@@ -25,11 +25,11 @@ export const COLUMN_CONFIG_VERSION = '1.0.4'
  */
 export const defaultColumns = (() => {
   // 获取原始列配置（传入空的 options，因为这里只需要结构）
-  const sourceColumns = getColumnConfigData({ 
-    customerNameOptions: { value: [] }, 
-    customerMaterialOptions: [] 
+  const sourceColumns = getColumnConfigData({
+    customerNameOptions: { value: [] },
+    customerMaterialOptions: []
   })
-  
+
   // 转换为默认列配置格式
   return sourceColumns.map((col, index) => ({
     field: col.field,
@@ -54,13 +54,13 @@ export function buildVxeColumns(columns, columnConfigData) {
   columnConfigData.forEach(config => {
     configMap.set(config.field, config)
   })
-  
+
   return columns
     .filter(col => col.visible !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0))
     .map(col => {
       const config = configMap.get(col.field) || {}
-      
+
       return {
         field: col.field,
         title: col.title,

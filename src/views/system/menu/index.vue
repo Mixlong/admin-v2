@@ -102,6 +102,19 @@
         :show-overflow-tooltip="true"
       ></el-table-column>
       <el-table-column
+        prop="appType"
+        label="应用类型"
+        align="center"
+        width="100"
+      >
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.menuType === 'C'" :type="scope.row.appType === 2 ? 'success' : 'primary'" size="small">
+            {{ scope.row.appType === 2 ? 'V3主应用' : 'V2微前端' }}
+          </el-tag>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="status"
         label="状态"
         align="center"
@@ -152,10 +165,10 @@
       :close-on-click-modal="false"
       :title="title"
       :visible.sync="open"
-      width="600px"
+      width="700px"
       append-to-body
     >
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
             <el-form-item label="上级菜单">
@@ -298,6 +311,14 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
+          <el-col :span="12" v-if="form.menuType == 'C'">
+            <el-form-item label="应用类型">
+              <el-radio-group v-model="form.appType">
+                <el-radio :label="1">V2微前端</el-radio>
+                <el-radio :label="2">V3主应用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -436,6 +457,7 @@ export default {
         isCache: "0",
         visible: "0",
         status: "0",
+        appType: 1,
       };
       this.resetForm("form");
     },

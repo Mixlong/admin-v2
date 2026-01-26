@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import { parseStrEmpty } from "@/utils/ruoyi";
+import { parseStrEmpty } from '@/utils/ruoyi'
 
 // 查询用户列表
 export function listUser(query) {
@@ -96,7 +96,7 @@ export function updateUserPwd(oldPassword, newPassword) {
   return request({
     url: '/system/user/profile/updatePwd',
     method: 'put',
-    data: data
+    params: data
   })
 }
 
@@ -105,7 +105,6 @@ export function uploadAvatar(data) {
   return request({
     url: '/system/user/profile/avatar',
     method: 'post',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     data: data
   })
 }
@@ -135,11 +134,20 @@ export function deptTreeSelect() {
   })
 }
 
-
-// 查询所有用户（字典）
-export function dictUserList() {
+// 用户字典列表（用于下拉选择）
+export function dictUserList(query) {
   return request({
     url: '/system/user/list/dict',
-    method: 'get'
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据角色列表获取用户字典
+export function dictUserByRoles(roleKeys) {
+  return request({
+    url: '/project/dict/roles',
+    method: 'post',
+    data: roleKeys
   })
 }

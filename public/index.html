@@ -23,142 +23,107 @@
       padding: 0px;
     }
 
-    .chromeframe {
-      margin: 0.2em 0;
-      background: #ccc;
-      color: #000;
-      padding: 0.2em 0;
+    #loader-wrapper {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .app-loading {
+    .loader-stage {
       display: flex;
-      width: 100%;
-      height: 100%;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
-      background-color: #f4f7f9;
-    }
-
-    .app-loading .app-loading-wrap {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      display: flex;
-      transform: translate3d(-50%, -50%, 0);
-      justify-content: center;
       align-items: center;
-      flex-direction: column;
+      gap: 28px;
+      animation: stageFade 0.8s ease-out both;
     }
 
-    .app-loading .dots {
+    .loader-brand {
+      font-size: clamp(56px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #0f172a;
+    }
+
+    .loader-pulse {
       display: flex;
-      padding: 98px;
-      justify-content: center;
-      align-items: center;
+      gap: 14px;
     }
 
-    .app-loading .app-loading-title {
-      display: flex;
-      margin-top: 30px;
-      font-size: 30px;
-      color: rgb(0 0 0 / 85%);
-      justify-content: center;
-      align-items: center;
+    .loader-pulse span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3b82f6;
+      opacity: 0.35;
+      animation: pulse 1.6s infinite ease-in-out;
     }
 
-    .app-loading .app-loading-logo {
-      display: block;
-      width: 90px;
-      margin: 0 auto;
-      margin-bottom: 20px;
+    .loader-pulse span:nth-child(2) {
+      animation-delay: 0.2s;
     }
 
-    .dot {
-      position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 48px;
-      margin-top: 30px;
-      font-size: 32px;
-      transform: rotate(45deg);
-      box-sizing: border-box;
-      animation: antRotate 1.2s infinite linear;
-    }
-
-    .dot i {
-      position: absolute;
-      display: block;
-      width: 20px;
-      height: 20px;
-      background-color: #0065cc;
-      border-radius: 100%;
-      opacity: 30%;
-      transform: scale(0.75);
-      animation: antSpinMove 1s infinite linear alternate;
-      transform-origin: 50% 50%;
-    }
-
-    .dot i:nth-child(1) {
-      top: 0;
-      left: 0;
-    }
-
-    .dot i:nth-child(2) {
-      top: 0;
-      right: 0;
+    .loader-pulse span:nth-child(3) {
       animation-delay: 0.4s;
     }
 
-    .dot i:nth-child(3) {
-      right: 0;
-      bottom: 0;
-      animation-delay: 0.8s;
-    }
-
-    .dot i:nth-child(4) {
-      bottom: 0;
-      left: 0;
-      animation-delay: 1.2s;
-    }
-
-    @keyframes antRotate {
-      to {
-        transform: rotate(405deg);
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.25;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.9;
+        transform: scale(1.4);
       }
     }
 
-    @keyframes antRotate {
+    @keyframes stageFade {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
       to {
-        transform: rotate(405deg);
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
-    @keyframes antSpinMove {
-      to {
-        opacity: 100%;
+    body.loaded #loader-wrapper {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .loader-brand {
+        color: #f8fafc;
       }
     }
 
-    @keyframes antSpinMove {
-      to {
-        opacity: 100%;
+    @media (prefers-reduced-motion: reduce) {
+      .loader-pulse span {
+        animation: none;
+        opacity: 0.6;
       }
     }
   </style>
 </head>
 
 <body>
-  <div id="app">
-    <div class="app-loading">
-      <div class="app-loading-wrap">
-        <img src="/resource/imgs/logo.png" class="app-loading-logo" alt="Logo" />
-        <div class="app-loading-dots">
-          <span class="dot dot-spin"><i></i><i></i><i></i><i></i></span>
-        </div>
-        <div class="app-loading-title">DIGITECH</div>
+  <div id="loader-wrapper">
+    <div class="loader-stage">
+      <div class="loader-brand">Digiwise</div>
+      <div class="loader-pulse">
+        <span></span><span></span><span></span>
       </div>
     </div>
+  </div>
+  <div id="app"></div>
 </body>
 
 </html>

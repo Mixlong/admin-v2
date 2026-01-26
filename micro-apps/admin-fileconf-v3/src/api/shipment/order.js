@@ -5,7 +5,7 @@ export function getShipmentOrderList(params) {
   return request({
     url: '/shipment/order/list',
     method: 'get',
-    params,
+    params
   })
 }
 
@@ -13,7 +13,7 @@ export function getShipmentOrderList(params) {
 export function getShipmentOrderById(id) {
   return request({
     url: `/shipment/order/info/${id}`,
-    method: 'get',
+    method: 'get'
   })
 }
 
@@ -22,7 +22,7 @@ export function addShipmentOrder(data) {
   return request({
     url: '/shipment/order/add',
     method: 'post',
-    data,
+    data
   })
 }
 
@@ -31,7 +31,7 @@ export function updateShipmentOrder(data) {
   return request({
     url: '/shipment/order/edit',
     method: 'put',
-    data,
+    data
   })
 }
 
@@ -40,7 +40,7 @@ export function deleteShipmentOrder(ids) {
   return request({
     url: '/shipment/order/delete',
     method: 'delete',
-    data: ids,
+    data: ids
   })
 }
 
@@ -49,7 +49,7 @@ export function batchDeleteShipmentOrder(ids) {
   return request({
     url: '/shipment/order/batch/delete',
     method: 'delete',
-    data: ids,
+    data: ids
   })
 }
 
@@ -57,7 +57,7 @@ export function batchDeleteShipmentOrder(ids) {
 export function getCustomerDict() {
   return request({
     url: '/system/dict/data/type/customer_name',
-    method: 'get',
+    method: 'get'
   })
 }
 
@@ -66,7 +66,7 @@ export function getCustomerList(params) {
   return request({
     url: '/so/customer/list',
     method: 'get',
-    params,
+    params
   })
 }
 
@@ -74,7 +74,7 @@ export function getCustomerList(params) {
 export function getOrderStatusDict() {
   return request({
     url: '/system/dict/data/type/order_status',
-    method: 'get',
+    method: 'get'
   })
 }
 
@@ -84,6 +84,6 @@ export function exportShipmentOrder(params) {
     url: '/shipment/order/export',
     method: 'get',
     params,
-    responseType: 'blob',
+    responseType: 'blob'
   })
 }

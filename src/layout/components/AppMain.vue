@@ -37,6 +37,12 @@ export default {
   background-color: #d4d9e1; /* 浅灰背景，与深色侧边栏形成对比 */
 }
 
+// 微前端模式下，使用100%高度
+.micro-app-mode .app-main {
+  min-height: 100%;
+  height: 100%;
+}
+
 .fixed-header + .app-main {
   padding-top: 50px;
 }

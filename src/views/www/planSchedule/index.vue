@@ -74,7 +74,7 @@
       </template>
     </IntelligentSearchForm>
 
-    <el-table border v-loading="loading" height="100%" :data="list" :cell-class-name="cellClassName"
+    <el-table border v-loading="loading" :height="tableHeight(-50)" :data="list" :cell-class-name="cellClassName"
       class="table-section" @cell-click="cellClick">
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
@@ -376,6 +376,7 @@ import axios from "axios";
 import { commonData } from "./mixins/common";
 import IntelligentSearchForm from '@/components/IntelligentSearchForm';
 import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
+import { tableHeight } from "../../../utils/ruoyi";
 export default {
   name: "PlanSchedule",
   mixins: [commonData, dynamicTableHeightMixin],

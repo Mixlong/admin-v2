@@ -4,31 +4,47 @@
     <div class="search-wrapper">
       <el-form :model="searchForm" inline size="small">
         <el-form-item label="客户名称">
-          <el-input v-model="searchForm.customerName" placeholder="请输入客户名称" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.customerName"
+            placeholder="请输入客户名称"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="配置型号">
-          <el-input v-model="searchForm.configModel" placeholder="请输入配置型号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.configModel"
+            placeholder="请输入配置型号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="客户订单号">
-          <el-input v-model="searchForm.customerOrderNo" placeholder="请输入客户订单号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.customerOrderNo"
+            placeholder="请输入客户订单号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="U8单号">
-          <el-input v-model="searchForm.u8OrderNo" placeholder="请输入U8单号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.u8OrderNo"
+            placeholder="请输入U8单号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
-      
+
       <!-- 操作按钮 -->
       <div class="action-buttons">
-        <el-button type="primary" size="small" @click="handleAdd">
-          新增订单
-        </el-button>
-        <el-button type="success" size="small" @click="handleSave">
-          保存修改
-        </el-button>
+        <el-button type="primary" size="small" @click="handleAdd"> 新增订单 </el-button>
+        <el-button type="success" size="small" @click="handleSave"> 保存修改 </el-button>
         <el-button type="primary" size="small" plain @click="handleCopySelection">
           复制选区
         </el-button>
@@ -41,18 +57,10 @@
         <el-button type="primary" plain size="small" @click="handleSelectionInfo">
           查看选区
         </el-button>
-        <el-button type="danger" size="small" @click="handleDeleteSelected">
-          删除选中
-        </el-button>
-        <el-button type="warning" size="small" @click="handleExport">
-          高级导出
-        </el-button>
-        <el-button type="info" size="small" @click="handleQuickExport">
-          快速导出
-        </el-button>
-        <el-button type="primary" size="small" @click="testExport">
-          测试导出
-        </el-button>
+        <el-button type="danger" size="small" @click="handleDeleteSelected"> 删除选中 </el-button>
+        <el-button type="warning" size="small" @click="handleExport"> 高级导出 </el-button>
+        <el-button type="info" size="small" @click="handleQuickExport"> 快速导出 </el-button>
+        <el-button type="primary" size="small" @click="testExport"> 测试导出 </el-button>
       </div>
     </div>
 
@@ -61,8 +69,8 @@
       <vxe-grid
         ref="gridRef"
         v-bind="gridOptions"
-        v-on="gridEvents"
         :cell-class-name="cellClassName"
+        v-on="gridEvents"
       >
         <!-- 底部统计信息 -->
         <template #bottom>
@@ -74,7 +82,10 @@
     <!-- 富文本编辑/查看对话框 -->
     <el-dialog
       v-model="richTextDialog.visible"
-      :title="(richTextDialog.readonly ? '查看' : '编辑') + (richTextDialog.field === 'specialRemark' ? '特殊备注' : '交期变更历史')"
+      :title="
+        (richTextDialog.readonly ? '查看' : '编辑') +
+        (richTextDialog.field === 'specialRemark' ? '特殊备注' : '交期变更历史')
+      "
       width="600px"
       :close-on-click-modal="false"
       append-to-body
@@ -85,15 +96,19 @@
         <FormattedTextEditor
           v-if="!richTextDialog.readonly"
           v-model="richTextDialog.content"
-          :placeholder="richTextDialog.field === 'specialRemark' ? '请输入特殊备注，支持富文本格式' : '请输入交期变更记录，支持富文本格式'"
+          :placeholder="
+            richTextDialog.field === 'specialRemark'
+              ? '请输入特殊备注，支持富文本格式'
+              : '请输入交期变更记录，支持富文本格式'
+          "
         />
-        
+
         <!-- 只读模式 -->
         <div v-else class="readonly-content">
           <div class="rich-text-display" v-html="richTextDialog.content || '暂无内容'"></div>
         </div>
       </div>
-      
+
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="richTextDialog.visible = false">
@@ -137,10 +152,10 @@ const richTextDialog = reactive({
 const hasEditPermission = ref(true) // 示例：默认有编辑权限
 
 // 兜底 Message/Confirm（防止 modal getter/未注册导致的异常）
-const uiMessage = (opts) => {
+const uiMessage = opts => {
   if (!opts) opts = {}
   const { content = '', status = 'info', duration = 1500 } = opts
-  
+
   // 优先使用 VxeUI 的 modal.message
   try {
     if (VxeUI && VxeUI.modal && typeof VxeUI.modal.message === 'function') {
@@ -149,21 +164,21 @@ const uiMessage = (opts) => {
   } catch (e) {
     console.warn('VxeUI.modal.message 调用失败:', e)
   }
-  
+
   // 降级使用 Element Plus 的 ElMessage
   try {
     const typeMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' }
     if (ElMessage && typeof ElMessage === 'function') {
-      return ElMessage({ 
-        message: content || '操作完成', 
-        type: typeMap[status] || 'info', 
-        duration 
+      return ElMessage({
+        message: content || '操作完成',
+        type: typeMap[status] || 'info',
+        duration
       })
     }
   } catch (e) {
     console.warn('ElMessage 调用失败:', e)
   }
-  
+
   // 最后降级到 console
   console.log(`[${status}] ${content}`)
 }
@@ -244,9 +259,9 @@ const gridOptions = reactive({
   editConfig: {
     mode: 'cell',
     trigger: 'dblclick',
-    showStatus: true,  // 显示编辑状态（修改/新增标记）
-    showIcon: true,    // 显示编辑图标
-    autoClear: false   // 不自动清除编辑状态
+    showStatus: true, // 显示编辑状态（修改/新增标记）
+    showIcon: true, // 显示编辑图标
+    autoClear: false // 不自动清除编辑状态
   },
   // 右键菜单配置
   menuConfig: {
@@ -254,7 +269,12 @@ const gridOptions = reactive({
       options: [
         [
           { code: 'COPY_TITLE', name: '复制列标题' },
-          { code: 'EXPORT_ALL', name: '导出 Excel', prefixIcon: 'vxe-icon-download', params: { filename: '出货订单', type: 'xlsx' } }
+          {
+            code: 'EXPORT_ALL',
+            name: '导出 Excel',
+            prefixIcon: 'vxe-icon-download',
+            params: { filename: '出货订单', type: 'xlsx' }
+          }
         ]
       ]
     },
@@ -265,7 +285,12 @@ const gridOptions = reactive({
           { code: 'DELETE_ROW', name: '删除行' }
         ],
         [
-          { code: 'EXPORT_ALL', name: '导出 Excel', prefixIcon: 'vxe-icon-download', params: { filename: '出货订单', type: 'xlsx' } }
+          {
+            code: 'EXPORT_ALL',
+            name: '导出 Excel',
+            prefixIcon: 'vxe-icon-download',
+            params: { filename: '出货订单', type: 'xlsx' }
+          }
         ]
       ]
     }
@@ -299,124 +324,124 @@ const gridOptions = reactive({
   columns: [
     { type: 'checkbox', width: 50, fixed: 'left' },
     { field: 'seq', type: 'seq', title: '序号', width: 60, fixed: 'left', rowResize: true },
-    { 
-      field: 'customerName', 
-      title: '客户名称', 
-      width: 140, 
+    {
+      field: 'customerName',
+      title: '客户名称',
+      width: 140,
       fixed: 'left',
       editRender: { name: 'input' }
     },
-    { 
-      field: 'u8OrderNo', 
-      title: 'U8单号', 
+    {
+      field: 'u8OrderNo',
+      title: 'U8单号',
       width: 160,
       editRender: { name: 'input' },
       slots: {
         default: ({ row }) => {
-          return [
-            h('span', { class: 'order-no-link' }, row.u8OrderNo || '-')
-          ]
+          return [h('span', { class: 'order-no-link' }, row.u8OrderNo || '-')]
         }
       }
     },
-    { 
-      field: 'u8Available', 
-      title: 'U8是否可用', 
+    {
+      field: 'u8Available',
+      title: 'U8是否可用',
       width: 130,
       cellRender: { name: 'VxeSwitch' }
     },
-    { 
-      field: 'bomCode', 
-      title: 'BOM编码', 
+    {
+      field: 'bomCode',
+      title: 'BOM编码',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeBomBefore', 
-      title: 'E树BOM刷新前', 
+    {
+      field: 'etreeBomBefore',
+      title: 'E树BOM刷新前',
       width: 140,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeBomAfter', 
-      title: 'E树BOM刷新后', 
+    {
+      field: 'etreeBomAfter',
+      title: 'E树BOM刷新后',
       width: 140,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeBomAudited', 
-      title: 'E树BOM是否审核', 
+    {
+      field: 'etreeBomAudited',
+      title: 'E树BOM是否审核',
       width: 130,
       editRender: {
         name: 'select',
         options: [
           { label: '已审核', value: '已审核' },
-          { label: '未审核', value: '未审核' },
+          { label: '未审核', value: '未审核' }
         ]
       },
       slots: {
         default: ({ row }) => {
           const statusMap = {
-            '已审核': { type: 'success', text: '已审核' },
-            '有遗留': { type: 'warning', text: '有遗留' },
-            '未审核': { type: 'info', text: '未审核' }
+            已审核: { type: 'success', text: '已审核' },
+            有遗留: { type: 'warning', text: '有遗留' },
+            未审核: { type: 'info', text: '未审核' }
           }
           const status = statusMap[row.etreeBomAudited] || { type: 'info', text: '-' }
           const colorMap = {
-            'success': '#67C23A',
-            'warning': '#E6A23C',
-            'info': '#909399'
+            success: '#67C23A',
+            warning: '#E6A23C',
+            info: '#909399'
           }
           return [
-            h('span', { 
-              style: { 
-                color: colorMap[status.type], 
-                padding: '2px 8px',
-                borderRadius: '3px',
-                fontSize: '12px',
-                fontWeight: '500'
-              }
-            }, status.text)
+            h(
+              'span',
+              {
+                style: {
+                  color: colorMap[status.type],
+                  padding: '2px 8px',
+                  borderRadius: '3px',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }
+              },
+              status.text
+            )
           ]
         }
       }
     },
-    { 
-      field: 'configModel', 
-      title: '配置型号', 
+    {
+      field: 'configModel',
+      title: '配置型号',
       width: 160,
       editRender: { name: 'input' },
       slots: {
         default: ({ row }) => {
-          return [
-            h('span', { class: 'model-text' }, row.configModel || '-')
-          ]
+          return [h('span', { class: 'model-text' }, row.configModel || '-')]
         }
       }
     },
-    { 
-      field: 'keyModel', 
-      title: '按键型号', 
+    {
+      field: 'keyModel',
+      title: '按键型号',
       width: 140,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'customerOrderNo', 
-      title: '客户订单号', 
+    {
+      field: 'customerOrderNo',
+      title: '客户订单号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'etreeOrderNo', 
-      title: 'E树订单号', 
+    {
+      field: 'etreeOrderNo',
+      title: 'E树订单号',
       width: 160,
       editRender: { name: 'input' }
     },
-    { 
-      field: 'orderDate', 
-      title: '上单时间', 
+    {
+      field: 'orderDate',
+      title: '上单时间',
       width: 110,
-      editRender: { 
+      editRender: {
         name: 'input',
         attrs: { type: 'date' }
       }
@@ -425,43 +450,39 @@ const gridOptions = reactive({
     {
       title: '数量信息',
       children: [
-        { 
-          field: 'orderQuantity', 
-          title: '订单数量', 
+        {
+          field: 'orderQuantity',
+          title: '订单数量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           },
           slots: {
             default: ({ row }) => {
-              return [
-                h('span', { class: 'quantity-text text-green' }, row.orderQuantity || 0)
-              ]
+              return [h('span', { class: 'quantity-text text-green' }, row.orderQuantity || 0)]
             }
           }
         },
-        { 
-          field: 'shippedQuantity', 
-          title: '已发货量', 
+        {
+          field: 'shippedQuantity',
+          title: '已发货量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           },
           slots: {
             default: ({ row }) => {
-              return [
-                h('span', { class: 'shipped-text' }, row.shippedQuantity || 0)
-              ]
+              return [h('span', { class: 'shipped-text' }, row.shippedQuantity || 0)]
             }
           }
         },
-        { 
-          field: 'unshippedQuantity', 
-          title: '未发货量', 
+        {
+          field: 'unshippedQuantity',
+          title: '未发货量',
           width: 100,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'number' }
           },
@@ -470,9 +491,7 @@ const gridOptions = reactive({
               const hasUnshipped = row.unshippedQuantity > 0
               const classes = ['unshipped-text', 'text-red']
               if (hasUnshipped) classes.push('has-unshipped')
-              return [
-                h('span', { class: classes.join(' ') }, row.unshippedQuantity || 0)
-              ]
+              return [h('span', { class: classes.join(' ') }, row.unshippedQuantity || 0)]
             }
           }
         }
@@ -482,31 +501,31 @@ const gridOptions = reactive({
     {
       title: '交期信息',
       children: [
-        { 
-          field: 'deliveryPlan', 
-          title: '交货计划', 
+        {
+          field: 'deliveryPlan',
+          title: '交货计划',
           width: 110,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'date' }
           }
         },
-        { 
-          field: 'pmcDeliveryDate', 
-          title: 'PMC可达成交期', 
+        {
+          field: 'pmcDeliveryDate',
+          title: 'PMC可达成交期',
           width: 130,
-          editRender: { 
+          editRender: {
             name: 'input',
             attrs: { type: 'date' }
           }
         }
       ]
     },
-    { 
-      field: 'deliveryChangeLog', 
-      title: '交期变更履历', 
+    {
+      field: 'deliveryChangeLog',
+      title: '交期变更履历',
       width: 200,
-      editRender: { 
+      editRender: {
         name: '$modal',
         props: {
           type: 'modal'
@@ -515,11 +534,11 @@ const gridOptions = reactive({
       slots: {
         default: ({ row }) => {
           const html = row.deliveryChangeLog || '-'
-          
+
           return [
-            h('div', { 
+            h('div', {
               class: 'rich-text-cell clickable-cell',
-              style: { 
+              style: {
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
                 lineHeight: '1.6',
@@ -543,32 +562,32 @@ const gridOptions = reactive({
     {
       title: '客供物料情况',
       children: [
-        { 
-          field: 'customerMaterial', 
-          title: '客供料', 
+        {
+          field: 'customerMaterial',
+          title: '客供料',
           width: 120,
           editRender: { name: 'input' }
         },
-        { 
-          field: 'customerMaterialArrival', 
-          title: '到料时间', 
+        {
+          field: 'customerMaterialArrival',
+          title: '到料时间',
           width: 110,
           editRender: { name: 'input' }
         }
       ]
     },
-    { 
-      field: 'specialRemark', 
-      title: '特殊备注', 
+    {
+      field: 'specialRemark',
+      title: '特殊备注',
       width: 200,
       slots: {
         default: ({ row }) => {
           const html = row.specialRemark || '-'
-          
+
           return [
-            h('div', { 
+            h('div', {
               class: 'rich-text-cell clickable-cell',
-              style: { 
+              style: {
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
                 lineHeight: '1.6',
@@ -588,18 +607,16 @@ const gridOptions = reactive({
         }
       }
     },
-    { 
-      field: 'orderDays', 
-      title: '订单已耗时(天)', 
+    {
+      field: 'orderDays',
+      title: '订单已耗时(天)',
       width: 120,
       slots: {
         default: ({ row }) => {
           const isWarning = row.orderDays > 60
           const classes = ['days-text']
           if (isWarning) classes.push('warning-days')
-          return [
-            h('span', { class: classes.join(' ') }, row.orderDays || 0)
-          ]
+          return [h('span', { class: classes.join(' ') }, row.orderDays || 0)]
         }
       }
     }
@@ -611,10 +628,10 @@ const gridOptions = reactive({
 function getLeafColumns() {
   const $grid = gridRef.value
   if (!$grid || !$grid.getTableColumn) return []
-  
+
   // 使用 VXE Table 的 API 获取可见列配置
   const { visibleColumn = [] } = $grid.getTableColumn()
-  
+
   // 递归提取所有叶子列（没有 children 的列）
   function extractLeafColumns(columns) {
     const leaves = []
@@ -629,7 +646,7 @@ function getLeafColumns() {
     }
     return leaves
   }
-  
+
   return extractLeafColumns(visibleColumn)
 }
 
@@ -658,34 +675,39 @@ function getCellPosition(target) {
   if (!rows.length) {
     return { rowIndex: -1, cellIndex: -1 }
   }
-  
+
   let cell = target
   while (cell && cell.tagName !== 'TD') {
     cell = cell.parentElement
   }
   if (!cell) return { rowIndex: -1, cellIndex: -1 }
-  
+
   const colId = cell.getAttribute('colid')
   const rowId = cell.getAttribute('rowid') || cell.parentElement?.getAttribute('rowid')
   const cleanRowId = rowId ? rowId.replace(/^row_/, '') : ''
-  
+
   const rowIndex = rows.findIndex(row => {
     const candidates = getRowIdCandidates(row)
     return candidates.includes(rowId) || (cleanRowId && candidates.includes(cleanRowId))
   })
-  
+
   // 直接从 DOM 中获取该行的所有单元格，找到当前单元格的实际位置索引
   const row = cell.parentElement
   if (!row) return { rowIndex, cellIndex: -1, colId: '' }
-  
+
   const allCells = Array.from(row.querySelectorAll('td[colid]'))
   const cellIndex = allCells.findIndex(c => c.getAttribute('colid') === colId)
-  
+
   return { rowIndex, cellIndex, colId }
 }
 
 function hasValidSelection() {
-  return selectionStart.rowIndex >= 0 && selectionEnd.rowIndex >= 0 && selectionStart.cellIndex >= 0 && selectionEnd.cellIndex >= 0
+  return (
+    selectionStart.rowIndex >= 0 &&
+    selectionEnd.rowIndex >= 0 &&
+    selectionStart.cellIndex >= 0 &&
+    selectionEnd.cellIndex >= 0
+  )
 }
 
 function resetSelectionState() {
@@ -707,7 +729,7 @@ function isEditableTarget(target) {
 
 function bindKeydown() {
   unbindKeydown()
-  keydownHandler = (event) => {
+  keydownHandler = event => {
     if (isEditableTarget(event.target)) return
     const key = event.key?.toLowerCase?.()
     if (event.ctrlKey && key === 'c') {
@@ -740,14 +762,14 @@ function updateSelectedCells() {
     selectedCells.value.clear()
     return
   }
-  
+
   const rowStartIndex = Math.min(selectionStart.rowIndex, selectionEnd.rowIndex)
   const rowEndIndex = Math.max(selectionStart.rowIndex, selectionEnd.rowIndex)
   const colStartIndex = Math.min(selectionStart.cellIndex, selectionEnd.cellIndex)
   const colEndIndex = Math.max(selectionStart.cellIndex, selectionEnd.cellIndex)
-  
+
   selectedCells.value.clear()
-  
+
   for (let r = rowStartIndex; r <= rowEndIndex; r++) {
     for (let c = colStartIndex; c <= colEndIndex; c++) {
       selectedCells.value.add(`${r}-${c}`)
@@ -852,7 +874,8 @@ function getSelectionResult() {
   const colStartIndex = Math.min(selectionStart.cellIndex, selectionEnd.cellIndex)
   const colEndIndex = Math.max(selectionStart.cellIndex, selectionEnd.cellIndex)
   if (rowStartIndex < 0 || colStartIndex < 0) return { rows: [], columns: [], range: null }
-  if (rowStartIndex >= rows.length || colStartIndex >= columns.length) return { rows: [], columns: [], range: null }
+  if (rowStartIndex >= rows.length || colStartIndex >= columns.length)
+    return { rows: [], columns: [], range: null }
   const selectedRows = rows.slice(rowStartIndex, rowEndIndex + 1)
   const selectedColumns = columns.slice(colStartIndex, colEndIndex + 1)
   return {
@@ -900,11 +923,14 @@ function handleCopySelection() {
     lines.push(values.join('\t'))
   }
   const text = lines.join('\n')
-  navigator.clipboard?.writeText(text).then(() => {
-    uiMessage({ content: '已复制选区', status: 'success', duration: 1000 })
-  }).catch(() => {
-    uiMessage({ content: '复制失败，请检查浏览器权限', status: 'error' })
-  })
+  navigator.clipboard
+    ?.writeText(text)
+    .then(() => {
+      uiMessage({ content: '已复制选区', status: 'success', duration: 1000 })
+    })
+    .catch(() => {
+      uiMessage({ content: '复制失败，请检查浏览器权限', status: 'error' })
+    })
 }
 
 async function handlePasteSelection() {
@@ -1012,10 +1038,10 @@ function handleSelectionInfo() {
     }
     console.log('鼠标选中行:', result.rows)
     console.log('鼠标选中列:', result.columns)
-    
+
     const rowCount = result.rows?.length || 0
     const colCount = result.columns?.length || 0
-    
+
     uiMessage({
       content: `选中 ${rowCount} 行 / ${colCount} 列`,
       status: 'success',
@@ -1039,9 +1065,9 @@ const gridEvents = {
   async menuClick({ menu, row, column, $event }) {
     const $grid = gridRef.value
     console.log('菜单点击:', menu.code, { row, column })
-    
+
     if (!$grid) return
-    
+
     // 手动处理菜单事件（如果内置代码不工作）
     switch (menu.code) {
       case 'INSERT_AT_ROW':
@@ -1049,7 +1075,7 @@ const gridEvents = {
         await $grid.insertAt({}, row)
         uiMessage({ content: '已插入行', status: 'success' })
         break
-        
+
       case 'DELETE_ROW':
         // 删除行
         const type = await uiConfirm('确定要删除这行吗？')
@@ -1058,23 +1084,23 @@ const gridEvents = {
           uiMessage({ content: '已删除', status: 'success' })
         }
         break
-        
+
       case 'EXPORT_ALL':
         // 使用自定义导出（带样式）
         console.log('🚀 触发自定义导出')
         await handleExport()
         break
-        
+
       case 'OPEN_FIND':
         // 打开查找
         await $grid.openFind()
         break
-        
+
       case 'OPEN_REPLACE':
         // 打开替换
         await $grid.openReplace()
         break
-        
+
       default:
         // 其他内置代码让 vxe-table 自动处理
         console.log('使用内置处理:', menu.code)
@@ -1134,7 +1160,7 @@ const handleReset = () => {
 }
 
 // HTML 转纯文本的辅助函数
-const htmlToText = (html) => {
+const htmlToText = html => {
   if (!html) return ''
   // 创建临时 div 元素
   const temp = document.createElement('div')
@@ -1150,19 +1176,21 @@ const htmlToText = (html) => {
 const handleExport = async () => {
   const $grid = gridRef.value
   if (!$grid) return
-  
+
   try {
     // 动态导入 ExcelJS
     const ExcelJS = await import('exceljs')
     const { saveAs } = await import('file-saver')
-    
+
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet('订单列表')
-    
+
     // 获取列配置和数据
-    const columns = gridOptions.columns.filter(col => col.field && col.type !== 'checkbox' && col.type !== 'seq')
+    const columns = gridOptions.columns.filter(
+      col => col.field && col.type !== 'checkbox' && col.type !== 'seq'
+    )
     const data = gridOptions.data
-    
+
     // 添加表头
     const headerRow = worksheet.addRow(columns.map(col => col.title))
     headerRow.font = { bold: true }
@@ -1172,17 +1200,17 @@ const handleExport = async () => {
       pattern: 'solid',
       fgColor: { argb: 'FFE6F7FF' }
     }
-    
+
     // 添加数据并应用样式
     data.forEach(row => {
       const rowData = columns.map(col => {
         let value = row[col.field]
-        
+
         // 处理布尔值
         if (value === true) return '是'
         if (value === false) return '否'
         if (value === null || value === undefined) return ''
-        
+
         // 如果是富文本字段，转换为纯文本
         if (col.field === 'deliveryChangeLog' || col.field === 'specialRemark') {
           // 检查是否包含 HTML 标签
@@ -1190,24 +1218,24 @@ const handleExport = async () => {
             value = htmlToText(value)
           }
         }
-        
+
         return value
       })
-      
+
       const excelRow = worksheet.addRow(rowData)
-      
+
       // 应用单元格样式
       columns.forEach((col, colIndex) => {
         const cell = excelRow.getCell(colIndex + 1)
         const text = String(row[col.field] || '')
-        
+
         // 设置换行
-        cell.alignment = { 
-          horizontal: 'center', 
+        cell.alignment = {
+          horizontal: 'center',
           vertical: 'middle',
-          wrapText: true 
+          wrapText: true
         }
-        
+
         // 根据字段和内容设置颜色
         if (col.field === 'deliveryChangeLog' || col.field === 'specialRemark') {
           if (text.includes('重要') || text.includes('紧急') || text.includes('优先')) {
@@ -1226,7 +1254,7 @@ const handleExport = async () => {
         } else if (col.field === 'orderDays' && row.orderDays > 60) {
           cell.font = { color: { argb: 'FFF56C6C' }, bold: true }
         }
-        
+
         // 添加边框
         cell.border = {
           top: { style: 'thin' },
@@ -1236,21 +1264,21 @@ const handleExport = async () => {
         }
       })
     })
-    
+
     // 设置列宽
     columns.forEach((col, index) => {
       worksheet.getColumn(index + 1).width = (col.width || 120) / 8
     })
-    
+
     // 导出文件
     const buffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
-    
+
     const timestamp = new Date().toISOString().split('T')[0]
     saveAs(blob, `出货订单_${timestamp}.xlsx`)
-    
+
     uiMessage({ content: '导出成功', status: 'success' })
   } catch (error) {
     console.error('❌ 导出失败:', error)
@@ -1307,13 +1335,13 @@ const handleSave = async () => {
   const $grid = gridRef.value
   if ($grid) {
     const { insertRecords, updateRecords, removeRecords } = $grid.getRecordset()
-    
+
     console.log('待保存数据:', {
       新增: insertRecords,
       修改: updateRecords,
       删除: removeRecords
     })
-    
+
     uiMessage({
       content: `新增 ${insertRecords.length} 条，修改 ${updateRecords.length} 条，删除 ${removeRecords.length} 条`,
       status: 'success'
@@ -1326,7 +1354,7 @@ const handleRichTextSave = () => {
   if (richTextDialog.row && richTextDialog.field) {
     richTextDialog.row[richTextDialog.field] = richTextDialog.content
     richTextDialog.visible = false
-    
+
     // 标记行为已修改
     const $grid = gridRef.value
     if ($grid) {
@@ -1391,11 +1419,11 @@ watch(
 .search-wrapper {
   background: #fff;
   border-radius: 4px;
-  
+
   .el-form {
     margin-bottom: 10px;
   }
-  
+
   .action-buttons {
     display: flex;
     gap: 10px;
@@ -1421,7 +1449,7 @@ watch(
 
 // 订单编号链接样式
 :deep(.order-no-link) {
-  color: #409EFF;
+  color: #409eff;
   cursor: pointer;
   font-weight: 500;
 
@@ -1442,28 +1470,28 @@ watch(
 :deep(.quantity-text) {
   font-weight: 600;
   color: #303133;
-  
+
   &.text-green {
-    color: #67C23A;
+    color: #67c23a;
   }
 }
 
 :deep(.shipped-text) {
-  color: #67C23A !important;
+  color: #67c23a !important;
   font-weight: 500;
 }
 
 :deep(.unshipped-text) {
-  color: #F56C6C !important;
+  color: #f56c6c !important;
   font-weight: 500;
-  
+
   &.has-unshipped {
-    color: #F56C6C !important;
+    color: #f56c6c !important;
     font-weight: 600;
   }
-  
+
   &.text-red {
-    color: #F56C6C !important;
+    color: #f56c6c !important;
   }
 }
 
@@ -1473,35 +1501,36 @@ watch(
     margin: 0;
     padding: 2px 0;
   }
-  
+
   strong {
     font-weight: 600;
   }
-  
+
   em {
     font-style: italic;
   }
-  
+
   u {
     text-decoration: underline;
   }
-  
+
   s {
     text-decoration: line-through;
   }
-  
-  ul, ol {
+
+  ul,
+  ol {
     margin: 4px 0;
     padding-left: 20px;
   }
-  
+
   li {
     margin: 2px 0;
   }
-  
+
   &.clickable-cell {
     transition: background-color 0.2s;
-    
+
     &:hover {
       background-color: rgba(64, 158, 255, 0.1);
     }
@@ -1514,25 +1543,25 @@ watch(
     padding: 16px 20px;
     border-bottom: 1px solid #e4e7ed;
     background: #f5f7fa;
-    
+
     .el-dialog__title {
       font-size: 16px;
       font-weight: 600;
       color: #303133;
     }
   }
-  
+
   :deep(.el-dialog__body) {
     padding: 0;
   }
-  
+
   .dialog-content {
     padding: 20px;
     min-height: 300px;
     max-height: 500px;
     overflow-y: auto;
   }
-  
+
   .readonly-content {
     .rich-text-display {
       padding: 15px;
@@ -1542,45 +1571,46 @@ watch(
       min-height: 260px;
       line-height: 1.8;
       color: #606266;
-      
+
       :deep(p) {
         margin: 0;
         padding: 4px 0;
       }
-      
+
       :deep(strong) {
         font-weight: 600;
       }
-      
+
       :deep(em) {
         font-style: italic;
       }
-      
+
       :deep(u) {
         text-decoration: underline;
       }
-      
+
       :deep(s) {
         text-decoration: line-through;
       }
-      
-      :deep(ul), :deep(ol) {
+
+      :deep(ul),
+      :deep(ol) {
         margin: 8px 0;
         padding-left: 24px;
       }
-      
+
       :deep(li) {
         margin: 4px 0;
       }
     }
   }
-  
+
   :deep(.el-dialog__footer) {
     padding: 12px 20px;
     border-top: 1px solid #e4e7ed;
     background: #fafafa;
   }
-  
+
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
@@ -1591,9 +1621,9 @@ watch(
 // 天数文本样式
 :deep(.days-text) {
   color: #606266;
-  
+
   &.warning-days {
-    color: #F56C6C;
+    color: #f56c6c;
     font-weight: 600;
   }
 }
@@ -1610,20 +1640,20 @@ watch(
   word-break: break-word;
   white-space: pre-wrap; // 保留换行符
   display: block;
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
-    
+
     &:hover {
       background: #a8a8a8;
     }
@@ -1638,7 +1668,7 @@ watch(
 :deep(.cell-selected) {
   background: rgba(64, 158, 255, 0.15) !important;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;

@@ -16,17 +16,17 @@
         <div class="scheme-manager">
           <el-form :inline="true" size="small">
             <el-form-item label="配置方案">
-              <el-select 
-                v-model="currentScheme" 
-                @change="loadScheme" 
-                placeholder="请选择" 
+              <el-select
+                v-model="currentScheme"
+                placeholder="请选择"
                 style="width: 200px"
                 clearable
                 size="small"
                 :teleported="false"
                 :popper-class="'column-config-select-dropdown'"
+                @change="loadScheme"
               >
-                <el-option label="默认配置" value="" :key="'default'"></el-option>
+                <el-option :key="'default'" label="默认配置" value=""></el-option>
                 <el-option
                   v-for="(scheme, key) in savedSchemes"
                   :key="key"
@@ -36,21 +36,21 @@
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button 
-                size="small" 
-                :icon="FolderAdd" 
-                @click="showSaveDialog = true"
+              <el-button
+                size="small"
+                :icon="FolderAdd"
                 title="保存当前配置为新方案"
+                @click="showSaveDialog = true"
               >
                 另存为
               </el-button>
-              <el-button 
-                v-if="currentScheme" 
-                size="small" 
-                type="danger" 
+              <el-button
+                v-if="currentScheme"
+                size="small"
+                type="danger"
                 :icon="DeleteIcon"
-                @click="deleteScheme"
                 title="删除当前方案"
+                @click="deleteScheme"
               >
                 删除
               </el-button>
@@ -59,7 +59,7 @@
         </div>
 
         <!-- 列列表（分层显示，支持分组拖拽） -->
-        <div class="column-list" ref="listRef">
+        <div ref="listRef" class="column-list">
           <!-- 序号列提示（固定不可配置） -->
           <div class="column-row seq-row">
             <span class="drag-handle disabled" title="序号列固定在第一位">☰</span>
@@ -70,12 +70,12 @@
             </select>
             <input type="number" value="60" disabled class="width-input" />
           </div>
-          
+
           <!-- 分组和列（分层显示） -->
           <template v-for="item in groupedItems" :key="item.key">
             <!-- 分组标题（可拖拽） -->
-            <div 
-              v-if="item.isGroup" 
+            <div
+              v-if="item.isGroup"
               class="group-header draggable-group"
               :data-group="item.groupName"
             >
@@ -87,15 +87,12 @@
                 {{ item.collapsed ? '▶' : '▼' }}
               </span>
             </div>
-            
+
             <!-- 分组内的列 -->
-            <div 
-              v-if="item.isGroup && !item.collapsed"
-              class="group-children"
-            >
-              <div 
-                v-for="col in item.columns" 
-                :key="col.field" 
+            <div v-if="item.isGroup && !item.collapsed" class="group-children">
+              <div
+                v-for="col in item.columns"
+                :key="col.field"
                 class="column-row group-child"
                 :class="{
                   'is-fixed-left': col.fixed === 'left',
@@ -103,11 +100,7 @@
                 }"
               >
                 <span class="drag-handle disabled" title="分组内不可单独拖拽">☰</span>
-                <input 
-                  type="checkbox" 
-                  v-model="col.visible" 
-                  class="column-checkbox"
-                />
+                <input v-model="col.visible" type="checkbox" class="column-checkbox" />
                 <span class="column-label indent">{{ col.title }}</span>
                 <select v-model="col.fixed" class="fixed-select">
                   <option :value="null">不固定</option>
@@ -123,9 +116,9 @@
                 />
               </div>
             </div>
-            
+
             <!-- 独立列（非分组） -->
-            <div 
+            <div
               v-else-if="!item.isGroup"
               class="column-row draggable-column"
               :class="{
@@ -135,11 +128,7 @@
               :data-field="item.column.field"
             >
               <span class="drag-handle" title="拖拽排序">☰</span>
-              <input 
-                type="checkbox" 
-                v-model="item.column.visible" 
-                class="column-checkbox"
-              />
+              <input v-model="item.column.visible" type="checkbox" class="column-checkbox" />
               <span class="column-label">{{ item.column.title }}</span>
               <select v-model="item.column.fixed" class="fixed-select">
                 <option :value="null">不固定</option>
@@ -173,10 +162,10 @@
         </div>
         <div class="dialog-body">
           <label>方案名称：</label>
-          <input 
-            v-model="newSchemeName" 
-            type="text" 
-            placeholder="请输入方案名称" 
+          <input
+            v-model="newSchemeName"
+            type="text"
+            placeholder="请输入方案名称"
             class="scheme-name-input"
             @keyup.enter="saveScheme"
           />
@@ -238,7 +227,7 @@ function loadSavedSchemes() {
       savedSchemes.value = {}
     }
   }
-  
+
   // 加载上次选择的方案
   const lastSchemeKey = `${props.storageKey}-current-scheme`
   const lastScheme = localStorage.getItem(lastSchemeKey)
@@ -260,24 +249,24 @@ function saveScheme() {
     alert('请输入方案名称')
     return
   }
-  
+
   const schemeKey = `scheme_${Date.now()}`
   savedSchemes.value[schemeKey] = {
     name: newSchemeName.value.trim(),
     columns: JSON.parse(JSON.stringify(localCols.value)),
     createdAt: new Date().toISOString()
   }
-  
+
   saveSchemesToStorage()
   currentScheme.value = schemeKey
-  
+
   // 保存当前选择的方案
   const lastSchemeKey = `${props.storageKey}-current-scheme`
   localStorage.setItem(lastSchemeKey, schemeKey)
-  
+
   showSaveDialog.value = false
   newSchemeName.value = ''
-  
+
   console.log('✅ 配置方案已保存:', savedSchemes.value[schemeKey].name)
 }
 
@@ -290,14 +279,16 @@ function loadScheme() {
   } else {
     localStorage.removeItem(lastSchemeKey)
   }
-  
+
   if (!currentScheme.value) {
     // 加载默认配置
-    localCols.value = JSON.parse(JSON.stringify(props.columns)).sort((a, b) => (a.order || 0) - (b.order || 0))
+    localCols.value = JSON.parse(JSON.stringify(props.columns)).sort(
+      (a, b) => (a.order || 0) - (b.order || 0)
+    )
     console.log('📋 已加载默认配置')
     return
   }
-  
+
   const scheme = savedSchemes.value[currentScheme.value]
   if (scheme) {
     localCols.value = JSON.parse(JSON.stringify(scheme.columns))
@@ -308,16 +299,16 @@ function loadScheme() {
 // 删除当前方案
 function deleteScheme() {
   if (!currentScheme.value) return
-  
+
   const scheme = savedSchemes.value[currentScheme.value]
   if (confirm(`确定要删除方案"${scheme.name}"吗？`)) {
     delete savedSchemes.value[currentScheme.value]
     saveSchemesToStorage()
-    
+
     // 清除当前选择的方案记录
     const lastSchemeKey = `${props.storageKey}-current-scheme`
     localStorage.removeItem(lastSchemeKey)
-    
+
     currentScheme.value = ''
     loadScheme() // 加载默认配置
     console.log('🗑️ 方案已删除')
@@ -328,10 +319,10 @@ function deleteScheme() {
 const groupedItems = computed(() => {
   const result = []
   const groupMap = new Map()
-  
+
   // 按 order 排序
   const sortedCols = [...localCols.value].sort((a, b) => (a.order || 0) - (b.order || 0))
-  
+
   sortedCols.forEach(col => {
     if (col.group) {
       // 分组列
@@ -356,7 +347,7 @@ const groupedItems = computed(() => {
       })
     }
   })
-  
+
   return result
 })
 
@@ -374,13 +365,15 @@ function toggleGroup(groupName) {
 // 打开弹层时，复制一份 columns 作为本地编辑数据
 watch(
   () => props.open,
-  async (v) => {
+  async v => {
     if (v) {
       // 加载已保存的方案
       loadSavedSchemes()
-      
+
       // 使用 JSON 深拷贝，避免 structuredClone 无法克隆响应式对象
-      localCols.value = JSON.parse(JSON.stringify(props.columns)).sort((a, b) => (a.order || 0) - (b.order || 0))
+      localCols.value = JSON.parse(JSON.stringify(props.columns)).sort(
+        (a, b) => (a.order || 0) - (b.order || 0)
+      )
       await nextTick()
       initDrag()
     }
@@ -397,7 +390,7 @@ let sortable = null
 function initDrag() {
   if (!listRef.value) return
   sortable?.destroy()
-  
+
   sortable = Sortable.create(listRef.value, {
     handle: '.drag-handle:not(.disabled)',
     filter: '.seq-row, .group-children', // 排除序号行和分组子列容器
@@ -405,9 +398,9 @@ function initDrag() {
     onEnd(evt) {
       const movedElement = evt.item
       const isGroup = movedElement.classList.contains('draggable-group')
-      
+
       console.log('🎯 拖拽:', isGroup ? '分组' : '独立列')
-      
+
       if (isGroup) {
         // 拖拽的是分组
         const groupName = movedElement.dataset.group
@@ -417,25 +410,26 @@ function initDrag() {
         const field = movedElement.dataset.field
         handleColumnDrag(field, evt.oldIndex, evt.newIndex)
       }
-    },
+    }
   })
 }
 
 // 处理分组拖拽
 function handleGroupDrag(groupName, oldDomIndex, newDomIndex) {
   console.log(`📦 拖拽分组: ${groupName}`)
-  
+
   // 找出该分组的所有列
   const groupCols = localCols.value.filter(c => c.group === groupName)
   const otherCols = localCols.value.filter(c => c.group !== groupName)
-  
+
   // 计算新的插入位置（基于 DOM 顺序）
   const items = groupedItems.value
   let insertOrder = 0
-  
+
   // 找到新位置对应的 order 值
   for (let i = 0; i < items.length; i++) {
-    if (i === newDomIndex - 1) { // -1 因为序号行
+    if (i === newDomIndex - 1) {
+      // -1 因为序号行
       break
     }
     if (items[i].isGroup) {
@@ -444,11 +438,11 @@ function handleGroupDrag(groupName, oldDomIndex, newDomIndex) {
       insertOrder += 1
     }
   }
-  
+
   // 重新组合列数组
   const newCols = []
   let currentOrder = 1
-  
+
   otherCols.forEach(col => {
     if (currentOrder === insertOrder + 1) {
       // 在这里插入分组列
@@ -460,7 +454,7 @@ function handleGroupDrag(groupName, oldDomIndex, newDomIndex) {
     col.order = currentOrder++
     newCols.push(col)
   })
-  
+
   // 如果插入位置在最后
   if (newCols.length < localCols.value.length) {
     groupCols.forEach(gc => {
@@ -468,7 +462,7 @@ function handleGroupDrag(groupName, oldDomIndex, newDomIndex) {
       newCols.push(gc)
     })
   }
-  
+
   localCols.value = newCols
   console.log('✅ 分组拖拽完成')
 }
@@ -476,15 +470,15 @@ function handleGroupDrag(groupName, oldDomIndex, newDomIndex) {
 // 处理独立列拖拽
 function handleColumnDrag(field, oldDomIndex, newDomIndex) {
   console.log(`📄 拖拽列: ${field}`)
-  
+
   // 计算实际的列索引
   const col = localCols.value.find(c => c.field === field)
   if (!col) return
-  
+
   // 简化处理：直接根据 DOM 顺序重新排列
   const items = groupedItems.value
   const newOrder = []
-  
+
   items.forEach(item => {
     if (item.isGroup) {
       item.columns.forEach(c => newOrder.push(c.field))
@@ -492,16 +486,16 @@ function handleColumnDrag(field, oldDomIndex, newDomIndex) {
       newOrder.push(item.column.field)
     }
   })
-  
+
   // 根据新顺序重新排列
   const colMap = new Map(localCols.value.map(c => [c.field, c]))
   localCols.value = newOrder.map(field => colMap.get(field)).filter(Boolean)
-  
+
   // 更新 order
   localCols.value.forEach((c, idx) => {
     c.order = idx + 1
   })
-  
+
   console.log('✅ 列拖拽完成')
 }
 
@@ -515,13 +509,15 @@ function selectAll(v) {
 
 function apply() {
   // 使用 JSON 深拷贝，避免 structuredClone 无法克隆响应式对象
-  const cols = JSON.parse(JSON.stringify(localCols.value)).sort((a, b) => (a.order || 0) - (b.order || 0))
-  
+  const cols = JSON.parse(JSON.stringify(localCols.value)).sort(
+    (a, b) => (a.order || 0) - (b.order || 0)
+  )
+
   console.log('✅ 应用列配置:')
   cols.forEach((c, idx) => {
     console.log(`  ${idx + 1}. ${c.title} (order: ${c.order}, visible: ${c.visible})`)
   })
-  
+
   // 如果当前选择了某个方案，自动更新该方案
   if (currentScheme.value && savedSchemes.value[currentScheme.value]) {
     savedSchemes.value[currentScheme.value].columns = JSON.parse(JSON.stringify(localCols.value))
@@ -529,15 +525,17 @@ function apply() {
     saveSchemesToStorage()
     console.log('💾 已自动更新方案:', savedSchemes.value[currentScheme.value].name)
   }
-  
+
   emit('update:columns', cols)
-  
+
   // 保存时包含版本信息
-  const data = props.version ? {
-    _version: props.version,
-    _timestamp: Date.now(),
-    columns: cols
-  } : cols
+  const data = props.version
+    ? {
+        _version: props.version,
+        _timestamp: Date.now(),
+        columns: cols
+      }
+    : cols
   localStorage.setItem(props.storageKey, JSON.stringify(data))
   close()
 }
@@ -551,7 +549,7 @@ onMounted(() => {
 .column-config-mask {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .35);
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,7 +561,7 @@ onMounted(() => {
   max-height: 80vh;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden; // 保持圆角不被内部内容盖住
@@ -575,13 +573,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   .header-title {
     font-weight: 600;
     font-size: 16px;
     color: #303133;
   }
-  
+
   .header-actions {
     display: flex;
     gap: 8px;
@@ -597,33 +595,33 @@ onMounted(() => {
   font-size: 13px;
   color: #606266;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f5f7fa;
     border-color: #c0c4cc;
   }
-  
+
   &.primary {
     background: #409eff;
     color: #fff;
     border-color: #409eff;
-    
+
     &:hover {
       background: #66b1ff;
       border-color: #66b1ff;
     }
   }
-  
+
   &.small {
     padding: 4px 10px;
     font-size: 12px;
   }
-  
+
   &.danger {
     background: #f56c6c;
     color: #fff;
     border-color: #f56c6c;
-    
+
     &:hover {
       background: #f78989;
       border-color: #f78989;
@@ -666,37 +664,37 @@ onMounted(() => {
   font-weight: 600;
   font-size: 14px;
   cursor: move;
-  
+
   .group-icon {
     font-size: 16px;
     color: #606266;
   }
-  
+
   .group-label {
     flex: 1;
   }
-  
+
   .group-count {
     font-size: 12px;
     opacity: 0.75;
   }
-  
+
   .toggle-icon {
     cursor: pointer;
     padding: 0 4px;
     user-select: none;
     color: #606266;
-    
+
     &:hover {
       opacity: 0.9;
     }
   }
-  
+
   .drag-handle.group-drag {
     cursor: move;
     color: #606266;
     opacity: 0.75;
-    
+
     &:hover {
       opacity: 1;
     }
@@ -718,40 +716,40 @@ onMounted(() => {
   padding: 8px 6px;
   border-bottom: 1px dashed #f0f0f0;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #f5f7fa;
   }
-  
+
   &.group-child {
     background-color: #fafafa;
-    
+
     &:hover {
       background-color: #f0f0f0;
     }
   }
-  
+
   &.is-fixed-left {
     background-color: #f0f7ff;
     border-left: 3px solid #c8ddff;
   }
-  
+
   &.is-fixed-right {
     background-color: #fff9f0;
     border-right: 3px solid #f3d9a6;
   }
-  
+
   // 序号列样式（禁用状态）
   &.seq-row {
     background-color: #f5f7fa;
     border-left: 3px solid #67c23a;
     opacity: 0.8;
-    
+
     .drag-handle.disabled {
       cursor: not-allowed;
       opacity: 0.4;
     }
-    
+
     input:disabled,
     select:disabled {
       cursor: not-allowed;
@@ -764,16 +762,16 @@ onMounted(() => {
 .drag-handle {
   cursor: grab;
   user-select: none;
-  opacity: .6;
+  opacity: 0.6;
   font-size: 16px;
   color: #909399;
   transition: all 0.2s;
-  
+
   &:hover {
     opacity: 1;
     color: #409eff;
   }
-  
+
   &:active {
     cursor: grabbing;
   }
@@ -790,11 +788,11 @@ onMounted(() => {
   font-size: 14px;
   color: #303133;
   user-select: none;
-  
+
   &.indent {
     padding-left: 8px;
     position: relative;
-    
+
     &::before {
       content: '└';
       position: absolute;
@@ -814,11 +812,11 @@ onMounted(() => {
   background: #fff;
   cursor: pointer;
   transition: border-color 0.2s;
-  
+
   &:hover {
     border-color: #c0c4cc;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #409eff;
@@ -833,24 +831,24 @@ onMounted(() => {
   font-size: 13px;
   color: #606266;
   transition: border-color 0.2s;
-  
+
   &:hover {
     border-color: #c0c4cc;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #409eff;
   }
-  
+
   /* 隐藏数字输入框的上下箭头 */
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-  
-  &[type=number] {
+
+  &[type='number'] {
     -moz-appearance: textfield;
   }
 }
@@ -860,7 +858,7 @@ onMounted(() => {
   border-top: 1px solid #f0f0f0;
   background: #fafafa;
   text-align: center;
-  
+
   small {
     color: #909399;
     font-size: 12px;
@@ -886,20 +884,20 @@ onMounted(() => {
   border-radius: 8px;
   width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  
+
   .dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
     border-bottom: 1px solid #e0e0e0;
-    
+
     h3 {
       margin: 0;
       font-size: 16px;
       color: #303133;
     }
-    
+
     .close-btn {
       background: none;
       border: none;
@@ -910,16 +908,16 @@ onMounted(() => {
       width: 24px;
       height: 24px;
       line-height: 1;
-      
+
       &:hover {
         color: #606266;
       }
     }
   }
-  
+
   .dialog-body {
     padding: 20px;
-    
+
     label {
       display: block;
       margin-bottom: 8px;
@@ -927,21 +925,21 @@ onMounted(() => {
       color: #606266;
       font-weight: 500;
     }
-    
+
     .scheme-name-input {
       width: 100%;
       padding: 8px 12px;
       border: 1px solid #dcdfe6;
       border-radius: 4px;
       font-size: 14px;
-      
+
       &:focus {
         outline: none;
         border-color: #409eff;
       }
     }
   }
-  
+
   .dialog-footer {
     padding: 12px 20px;
     border-top: 1px solid #e0e0e0;

@@ -100,7 +100,7 @@
         v-loading="loading"
         border
         style="width: 100%"
-        :height="tableHeight(-150)"
+        :height="tableHeight(-120)"
         row-key="id"
       >
         <el-table-column

@@ -176,7 +176,8 @@ export default {
           const fileButton = document.createElement('button');
           fileButton.type = 'button';
           fileButton.className = 'ql-file';
-          fileButton.innerHTML = `<img src="${uploadIcon}" style="width: 14px; height: 14px; display: block;" alt="上传" />`;
+          const iconUrl = this.resolveAssetUrl(uploadIcon);
+          fileButton.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; display: block;" alt="上传" />`;
           fileButton.title = '上传文件（图片、PDF、Word、Excel等）';
           
           // 绑定点击事件
@@ -350,6 +351,22 @@ export default {
     handleUploadFileError(err) {
       this.$message.error("文件上传失败");
       console.error('文件上传失败:', err);
+    },
+    resolveAssetUrl(url) {
+      if (!url) return "";
+      if (/^(https?:)?\/\//.test(url) || url.startsWith("data:")) {
+        return url;
+      }
+      const base =
+        (typeof window !== "undefined" && window.__WUJIE_PUBLIC_PATH__) ||
+        process.env.BASE_URL ||
+        "/";
+      if (base && url.startsWith(base)) {
+        return url;
+      }
+      const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+      const normalizedUrl = url.startsWith("/") ? url.slice(1) : url;
+      return `${normalizedBase}${normalizedUrl}`;
     },
   },
 };

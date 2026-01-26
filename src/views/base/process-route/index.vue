@@ -69,7 +69,7 @@
         @selection-change="handleSelectionChange" 
         border 
         style="width: 100%" 
-        :height="tableHeight(180)"
+        :height="tableHeight(160)"
         row-key="id"
         :row-class-name="getRowClassName"
         @sort-change="handleSortChange">

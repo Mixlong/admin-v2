@@ -1,30 +1,44 @@
 // cover some element-ui styles
+// 限定作用域，不影响微前端子应用
 
-.el-breadcrumb__inner,
-.el-breadcrumb__inner a {
-  font-weight: 400 !important;
-}
+// Small 尺寸组件高度统一为 28px
+// .el-select--small {
+//   .el-select__wrapper {
+//     min-height: 28px;
+//   }
+// }
 
-.el-upload {
-  input[type="file"] {
-    display: none !important;
+// .el-button--small {
+//   height: 28px;
+// }
+
+#app:not(.micro-app-container) {
+  .el-breadcrumb__inner,
+  .el-breadcrumb__inner a {
+    font-weight: 400 !important;
   }
-}
 
-.el-upload__input {
-  display: none;
-}
-
-.cell {
-  .el-tag {
-    margin-right: 0px;
+  .el-upload {
+    input[type="file"] {
+      display: none !important;
+    }
   }
-}
 
-.small-padding {
+  .el-upload__input {
+    display: none;
+  }
+
   .cell {
-    padding-left: 5px;
-    padding-right: 5px;
+    .el-tag {
+      margin-right: 0px;
+    }
+  }
+
+  .small-padding {
+    .cell {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
   }
 }
 
@@ -93,4 +107,45 @@
 
 .el-dropdown .el-dropdown-link{
   color: var(--el-color-primary) !important;
+}
+
+
+// Dialog 滚动样式（适配 Element Plus）
+// 所有 Dialog 默认垂直水平居中，内容区域超出滚动
+.el-dialog {
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: calc(100% - 30px);
+  max-width: calc(100% - 30px);
+
+  .el-dialog__body {
+    overflow-y: auto;  // 只允许垂直滚动
+    overflow-x: hidden; // 禁止横向滚动
+    box-sizing: border-box; // 确保 padding 不会导致宽度溢出
+
+    // FormCreate 表单自适应
+    .form-create {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+
+      // 富文本编辑器容器自适应
+      .el-form-item__content {
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      // 输入框容器自适应
+      .el-input,
+      .el-select,
+      .el-input-number {
+        width: 100%;
+      }
+    }
+  }
 }

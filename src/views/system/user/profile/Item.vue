@@ -1,83 +1,63 @@
 <template>
   <div
-    class="navbar-wrap-gg"
+    class="user-card"
     @mouseleave="mouseLeave"
     :class="[cellStyle(content)]"
   >
-    <div>
-      <div class="navbar">
-        <div class="bg"></div>
-        <div
-          class="cover"
-          @click="changUpdate"
-          style="position: relative; z-index: 101"
+    <div class="user-card__inner">
+      <div class="user-card__header">
+        <button class="user-card__avatar" type="button" @click="changUpdate">
+          <img :src="avatarUrl" alt="" />
+        </button>
+        <div class="user-card__meta">
+          <div class="user-card__name" :title="content.nickName">
+            {{ content.nickName }}
+            <span v-if="content.status == 1" class="user-card__status">停用</span>
+          </div>
+          <div class="user-card__dept" :title="content.dept && content.dept.deptName">
+            {{ content.dept && content.dept.deptName }}
+          </div>
+        </div>
+        <div class="user-card__header-actions">
+          <el-tooltip content="编辑" placement="top">
+            <el-button size="mini" type="primary" plain icon="el-icon-edit" @click="changUpdate" />
+          </el-tooltip>
+          <el-tooltip content="重置密码" placement="top">
+            <el-button size="mini" type="warning" plain icon="el-icon-unlock" @click="reset" />
+          </el-tooltip>
+          <el-tooltip content="删除" placement="top">
+            <el-button size="mini" type="danger" plain icon="el-icon-delete" @click="handleDelete" />
+          </el-tooltip>
+          <el-tooltip
+            v-if="checkRole(['admin']) && content.nickName === 'admin'"
+            content="清除令牌"
+            placement="top"
+          >
+            <el-button size="mini" type="danger" plain icon="el-icon-delete" @click="onClearSecurity" />
+          </el-tooltip>
+        </div>
+      </div>
+
+      <div class="user-card__roles" v-if="roles.length">
+        <span
+          v-for="(tag, i) in rolesPreview"
+          :key="i"
+          class="user-card__role-chip"
+          :title="tag.roleName"
         >
-          <img
-            style="border-radius: 100%"
-            :src="
-              content.avatar
-                ? 'http://config-api.riding-evolved.com' + content.avatar
-                : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-            "
-            alt=""
-          />
-        </div>
-        <div class="title-style">
-          {{ content.nickName
-          }}<span class="text-gray">{{
-            content.status == 1 ? "(停用)" : ""
-          }}</span>
-          <br />
-          <span> {{ content.dept && content.dept.deptName }}</span>
-          <div></div>
-        </div>
-        <ul class="menu">
-          <li v-for="(tag, i) in cRoles(content.roles)" :key="i">
-            <a v-if="i == 6" @mouseover="mouseOver">
-              <div
-                class="flex align-center justify-center"
-                style="
-                  min-width: 40px;
-                  max-width: 40px;
-                  min-height: 40px;
-                  max-height: 40px;
-                  border-radius: 100%;
-                  border: 1px solid #ccc;
-                  vertical-align: middle;
-                "
-              >
-                ...
-              </div>
-            </a>
-            <div v-else class="item" effect="dark" :content="tag.name">
-              <a>
-                <el-image
-                  style="
-                    min-width: 40px;
-                    max-width: 40px;
-                    min-height: 40px;
-                    max-height: 40px;
-                    border-radius: 100%;
-                    border: 1px solid #ccc;
-                    vertical-align: middle;
-                  "
-                  :src="tag.cover"
-                  fit="cover"
-                >
-                  <div slot="error" style="line-height: 47px">
-                    <i
-                      class="el-icon-key"
-                      style="font-size: 24px; color: #ddd"
-                    ></i>
-                  </div>
-                </el-image>
-                <span style="white-space: nowrap">
-                  {{ tag.roleName }}
-                </span>
-              </a>
+          {{ tag.roleName }}
+        </span>
+        <el-popover v-if="roles.length > rolesPreview.length" placement="top" trigger="hover" width="320">
+          <div class="user-card__roles-popover">
+            <div class="user-card__roles-title">全部角色</div>
+            <div class="user-card__roles-list">
+              <span v-for="(tag, i) in roles" :key="i" class="user-card__role-chip">
+                {{ tag.roleName }}
+              </span>
             </div>
-          </li>
-        </ul>
+          </div>
+          <el-button slot="reference" type="text" class="user-card__roles-more">更多</el-button>
+        </el-popover>
       </div>
 
       <el-card class="all-content" :class="{ 'all-content-active': openFlag }">
@@ -85,28 +65,13 @@
           {{ pg.name }}
         </div>
       </el-card>
-      <div class="footer-content">
-        <el-button
-          @click="handleDelete"
-          type="text"
-          class="text-red"
-          icon="el-icon-close"
-        >
-        </el-button>
-        <el-button type="text" @click="reset" icon="el-icon-unlock"></el-button>
-        <el-button
-          v-if="checkRole(['admin']) && content.nickName === 'admin'"
-          type="text"
-          @click="onClearSecurity"
-          icon="el-icon-delete"
-        ></el-button>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { clearSecurity } from "@/api/system/user";
+import baseApi from "@/utils/requestUrl";
 export default {
   props: ["content"],
   data() {
@@ -119,6 +84,18 @@ export default {
       return (list) => {
         return list.filter((item, index) => index < 7);
       };
+    },
+    roles() {
+      return Array.isArray(this.content?.roles) ? this.content.roles : [];
+    },
+    rolesPreview() {
+      return this.roles.slice(0, 6);
+    },
+    avatarUrl() {
+      if (this.content && this.content.avatar) {
+        return `${baseApi}${this.content.avatar}`;
+      }
+      return "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
     },
   },
   methods: {
@@ -176,301 +153,157 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 8px 6px #42e573;
-  }
-
-  50% {
-    box-shadow: 0 0 8px 6px #42e573;
-  }
-
-  100% {
-    box-shadow: 0 0 8px 6px #42e573;
-  }
-}
-
-.navbar-wrap-gg {
-  padding: 70px 50px 50px 80px;
-  transform: translate3d(0, 0, 0);
-  display: block;
+.user-card {
+  width: 100%;
+  min-height: 200px;
+  height: auto;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #eef1f6;
+  box-shadow: 0 10px 24px rgba(31, 35, 41, 0.08);
+  padding: 14px 14px 12px;
+  box-sizing: border-box;
   position: relative;
-
-  &.work-end {
-    .bg {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      animation: pulse 0.8s infinite;
-    }
-  }
-
-  .footer-content {
-    position: absolute;
-    visibility: hidden;
-    opacity: 0;
-    bottom: 15px;
-    left: 50%;
-    width: 80%;
-    display: flex;
-    transform: translate(-50%, 0);
-    transition: all 0.5s 0.1s;
-
-    > .el-button {
-      flex: 1;
-      height: 30px;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 13px;
-      cursor: pointer;
-
-      &:nth-child(2) {
-        border-radius: 5px;
-        background: rgb(24, 144, 255);
-        color: #fff;
-        border-color: rgb(24, 144, 255);
-      }
-    }
-  }
-
-  .style-posi {
-    position: absolute;
-    top: -40px;
-    right: -100px;
-  }
-
-  .all-content {
-    position: absolute;
-    top: 0px;
-    left: 300px;
-    visibility: hidden;
-    overflow-y: scroll;
-    transition: all 0.4s;
-    height: 0;
-    cursor: pointer;
-
-    .all-li {
-      min-width: 80px;
-      border-bottom: 1px solid #e6ebf5;
-      padding: 10px 0;
-      line-height: normal;
-      font-size: 13px;
-      white-space: nowrap;
-
-      &:hover {
-        background-color: #1890ff;
-        color: #fff;
-      }
-    }
-
-    &.all-content-active {
-      visibility: visible;
-      height: 300px;
-    }
-  }
-
-  .navbar {
-    display: inline-block;
-    border-radius: 50%;
-
-    position: relative;
-    cursor: pointer;
-    text-align: center;
-    font-weight: bold;
-    color: #383838;
-    transition: 0.24s 0.2s;
-    background: transparent;
-
-    .cover {
-      position: relative;
-      z-index: 102;
-      cursor: pointer;
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      background: transparent;
-      box-sizing: border-box;
-      overflow: hidden;
-      padding: 20px;
-      vertical-align: middle;
-
-      img {
-        width: 100%;
-        border-radius: 100%;
-        border: 1px solid #ccc;
-      }
-    }
-
-    .title-style {
-      padding-top: 20px;
-      color: #666;
-      height: 80px;
-      font-size: 14px;
-      line-height: 20px;
-      max-width: 190px;
-      overflow: hidden;
-      // text-overflow: ellipsis;
-      // display: -webkit-box;
-      // -webkit-box-orient: vertical;
-      // -webkit-line-clamp: 2;
-    }
-  }
+  overflow: visible;
 }
 
-.navbar-wrap-gg:hover {
-  background: rgba(255, 255, 255, 0.75);
-
-  .footer-content {
-    visibility: visible;
-    opacity: 1;
-  }
+.user-card__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: auto;
 }
 
-.navbar-wrap-gg .menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  position: absolute;
-  top: -75px;
-  left: -75px;
-  border: 150px solid transparent;
-  cursor: default;
-  border-radius: 50%;
-  transform: scale(0);
-  transition: transform 1.4s 0.07s;
-  z-index: -1;
-}
-
-.navbar-wrap-gg:hover .menu {
-  transition: transform 0.4s 0.08s, z-index 0s 0.5s;
-  transform: scale(1);
-  z-index: 100;
-}
-
-.navbar-wrap-gg .menu li {
-  position: absolute;
-  top: 100px;
-  left: -100px;
-  transform-origin: 100px -100px;
-  transition: all 0.3s 0.1s;
-}
-
-.navbar-wrap-gg:hover .menu li {
-  transition: all 0.5s;
-}
-
-.navbar-wrap-gg .menu li a {
-  transition: all 0.1s ease 0s;
-  width: 45px;
-  height: 60px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: 60%;
-  transition: 0.6s;
-  text-decoration: none;
+.user-card__header {
   display: flex;
   align-items: center;
-  flex-direction: column;
-  justify-content: flex-start;
-
-  .box-card-style {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translate(0, -50%);
-  }
-
-  span {
-    overflow: hidden; //超出的文本隐藏
-    text-overflow: ellipsis; //溢出用省略号显示
-    white-space: nowrap; //溢出不换行
-    width: 80px;
-  }
+  gap: 12px;
 }
 
-.navbar-wrap-gg {
-  &:hover {
-    .menu {
-      li {
-        &:nth-child(1) {
-          transition-delay: 0.02s;
-          transform: rotate(29deg);
-        }
-
-        &:nth-child(1) a {
-          transition-delay: 0.04s;
-          transform: rotate(-29deg);
-        }
-
-        &:nth-child(2) {
-          transition-delay: 0.04s;
-          transform: rotate(64deg);
-        }
-
-        &:nth-child(2) a {
-          transition-delay: 0.08s;
-          transform: rotate(-64deg);
-        }
-
-        &:nth-child(3) {
-          transition-delay: 0.06s;
-          transform: rotate(99deg);
-        }
-
-        &:nth-child(3) a {
-          transition-delay: 0.12s;
-          transform: rotate(-99deg);
-        }
-
-        &:nth-child(4) {
-          transition-delay: 0.08s;
-          transform: rotate(134deg);
-        }
-
-        &:nth-child(4) a {
-          transition-delay: 0.16s;
-          transform: rotate(-134deg);
-        }
-
-        &:nth-child(5) {
-          transition-delay: 0.1s;
-          transform: rotate(169deg);
-        }
-
-        &:nth-child(5) a {
-          transition-delay: 0.2s;
-          transform: rotate(-169deg);
-        }
-
-        &:nth-child(6) {
-          transition-delay: 0.12s;
-          transform: rotate(204deg);
-        }
-
-        &:nth-child(6) a {
-          transition-delay: 0.24s;
-          transform: rotate(-204deg);
-        }
-
-        &:nth-child(7) {
-          transition-delay: 0.14s;
-          transform: rotate(239deg);
-        }
-
-        &:nth-child(7) a {
-          transition-delay: 0.28s;
-          transform: rotate(-239deg);
-        }
-      }
-    }
-  }
+.user-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid #f0f2f5;
+  padding: 0;
+  background: #fff;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(23, 27, 35, 0.12);
+  flex: none;
 }
+
+.user-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-card__meta {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.user-card__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2d3d;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card__status {
+  font-size: 12px;
+  color: #f56c6c;
+  font-weight: 500;
+  border: 1px solid rgba(245, 108, 108, 0.35);
+  background: rgba(245, 108, 108, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.user-card__dept {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #9aa3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card__header-actions {
+  display: inline-flex;
+  gap: 8px;
+  flex: none;
+  margin-left: auto;
+}
+
+.user-card__header-actions :deep(.el-button) {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.user-card__roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 26px;
+  max-height: none;
+  overflow: visible;
+}
+
+.user-card__role-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f7f8fb;
+  border: 1px solid #eef1f6;
+  font-size: 12px;
+  color: #4a5568;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card__roles-more {
+  padding: 0;
+  font-size: 12px;
+  color: #409eff;
+}
+
+.user-card__roles-popover {
+  max-height: 260px;
+  overflow: auto;
+}
+
+.user-card__roles-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2d3d;
+  margin-bottom: 8px;
+}
+
+.user-card__roles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.all-content {
+  display: none;
+}
+
 </style>

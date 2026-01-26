@@ -41,7 +41,7 @@
             dictValue="value" 
             :request="getCountryData"
             size="mini" 
-            placeholder="请选择国家" 
+            placeholder="请选择32国家" 
             clearable
             @getChange="handleSearch"
             style="width: 100%;"

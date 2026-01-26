@@ -5,7 +5,7 @@
     width="1200px"
     :close-on-click-modal="false"
     center
-    class="customer-form-dialog"
+    class="  dialog-scroll"
     @close="handleClose"
   >
     <el-form

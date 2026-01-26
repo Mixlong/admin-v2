@@ -1576,6 +1576,51 @@ td.el-table__cell {
   background-color: #fff;
 }
 
+/* ===== 微前端模式高度修复 ===== */
+/* Wujie 微前端模式下的样式 - 只处理布局容器，不影响内部组件 */
+html.wujie-micro-app,
+body.wujie-micro-app {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+.wujie-micro-app #app {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+.wujie-micro-app .app-wrapper {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+.wujie-micro-app .main-container {
+  height: 100% !important;
+  min-height: 100% !important;
+  margin-left: 0 !important;
+}
+
+.wujie-micro-app .app-main {
+  min-height: calc(100vh - 84px) !important;
+  overflow: auto !important;
+}
+
+.wujie-micro-app .sidebar-container {
+  display: none !important;
+}
+
+.wujie-micro-app .fixed-header {
+  display: none !important;
+}
+
+.wujie-micro-app .navbar {
+  display: none !important;
+}
+
+.wujie-micro-app .tags-view-container {
+  display: none !important;
+}
+
 /* ===== 强制设置菜单字体大小 - 全局最高优先级 ===== */
 /* 一级菜单 15px 加粗 */
 #app .sidebar-container .el-menu > li > .el-submenu__title,
@@ -1592,4 +1637,223 @@ td.el-table__cell {
 #app .sidebar-container .el-menu > .el-menu-item > span {
   font-size: 15px !important;
   font-weight: 700 !important;
+}
+
+
+/* ===== 用户管理页面卡片样式 ===== */
+@keyframes user-card-pulse {
+  0%, 50%, 100% {
+    box-shadow: 0 0 8px 6px #42e573;
+  }
+}
+
+.userList-box {
+  max-height: calc(100vh - 350px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.navbar-wrap-gg {
+  padding: 40px 20px 30px 20px;
+  will-change: transform;
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+  text-align: center;
+
+  &.work-end {
+    .bg {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: user-card-pulse 0.8s infinite;
+    }
+  }
+
+  .footer-content {
+    position: absolute;
+    visibility: hidden;
+    opacity: 0;
+    bottom: 15px;
+    left: 50%;
+    width: 80%;
+    display: flex;
+    transform: translate(-50%, 0);
+    transition: all 0.5s 0.1s;
+
+    > .el-button {
+      flex: 1;
+      height: 30px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:nth-child(2) {
+        border-radius: 5px;
+        background: rgb(24, 144, 255);
+        color: #fff;
+        border-color: rgb(24, 144, 255);
+      }
+    }
+  }
+
+  .all-content {
+    position: absolute;
+    top: 0px;
+    left: 300px;
+    visibility: hidden;
+    overflow-y: scroll;
+    transition: all 0.4s;
+    height: 0;
+    cursor: pointer;
+
+    .all-li {
+      min-width: 80px;
+      border-bottom: 1px solid #e6ebf5;
+      padding: 10px 0;
+      line-height: normal;
+      font-size: 13px;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: #1890ff;
+        color: #fff;
+      }
+    }
+
+    &.all-content-active {
+      visibility: visible;
+      height: 300px;
+    }
+  }
+
+  .navbar {
+    display: inline-block;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+    color: #383838;
+    transition: 0.24s 0.2s;
+    background: transparent;
+
+    .cover {
+      position: relative;
+      z-index: 102;
+      cursor: pointer;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: transparent;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: 20px;
+      vertical-align: middle;
+
+      img {
+        width: 100%;
+        border-radius: 100%;
+        border: 1px solid #ccc;
+      }
+    }
+
+    .title-style {
+      padding-top: 20px;
+      color: #666;
+      height: 80px;
+      font-size: 14px;
+      line-height: 20px;
+      max-width: 190px;
+      overflow: hidden;
+    }
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.75);
+
+    .footer-content {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  .menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: -75px;
+    left: -75px;
+    border: 150px solid transparent;
+    cursor: default;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 1.4s 0.07s;
+    z-index: -1;
+
+    li {
+      position: absolute;
+      top: 100px;
+      left: -100px;
+      transform-origin: 100px -100px;
+      transition: all 0.3s 0.1s;
+
+      a {
+        transition: 0.6s;
+        width: 45px;
+        height: 60px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        font-size: 60%;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          width: 80px;
+        }
+      }
+    }
+  }
+
+  &:hover .menu {
+    transition: transform 0.4s 0.08s, z-index 0s 0.5s;
+    transform: scale(1);
+    z-index: 100;
+
+    li {
+      transition: all 0.5s;
+    }
+  }
+
+  &:hover .menu li:nth-child(1) { transition-delay: 0.02s; transform: rotate(29deg); }
+  &:hover .menu li:nth-child(1) a { transition-delay: 0.04s; transform: rotate(-29deg); }
+  &:hover .menu li:nth-child(2) { transition-delay: 0.04s; transform: rotate(64deg); }
+  &:hover .menu li:nth-child(2) a { transition-delay: 0.08s; transform: rotate(-64deg); }
+  &:hover .menu li:nth-child(3) { transition-delay: 0.06s; transform: rotate(99deg); }
+  &:hover .menu li:nth-child(3) a { transition-delay: 0.12s; transform: rotate(-99deg); }
+  &:hover .menu li:nth-child(4) { transition-delay: 0.08s; transform: rotate(134deg); }
+  &:hover .menu li:nth-child(4) a { transition-delay: 0.16s; transform: rotate(-134deg); }
+  &:hover .menu li:nth-child(5) { transition-delay: 0.1s; transform: rotate(169deg); }
+  &:hover .menu li:nth-child(5) a { transition-delay: 0.2s; transform: rotate(-169deg); }
+  &:hover .menu li:nth-child(6) { transition-delay: 0.12s; transform: rotate(204deg); }
+  &:hover .menu li:nth-child(6) a { transition-delay: 0.24s; transform: rotate(-204deg); }
+  &:hover .menu li:nth-child(7) { transition-delay: 0.14s; transform: rotate(239deg); }
+  &:hover .menu li:nth-child(7) a { transition-delay: 0.28s; transform: rotate(-239deg); }
 }

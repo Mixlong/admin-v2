@@ -18,11 +18,11 @@ export const customerMaterialOptions = [
  * 客供料标签颜色映射
  */
 export const customerMaterialTagTypeMap = {
-  '中控线': 'primary',
-  '按键线': 'success',
-  '丝印保护膜': 'warning',
-  '蓝牙模块': 'danger',
-  '安全芯片': 'info'
+  中控线: 'primary',
+  按键线: 'success',
+  丝印保护膜: 'warning',
+  蓝牙模块: 'danger',
+  安全芯片: 'info'
 }
 
 /**
@@ -38,8 +38,8 @@ export const etreeBomAuditedOptions = [
  * E树BOM审核状态标签颜色映射
  */
 export const etreeBomAuditedTagMap = {
-  '已审核': 'success',
-  '未审核': 'info'
+  已审核: 'success',
+  未审核: 'info'
 }
 
 /**

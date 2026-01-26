@@ -58,3 +58,38 @@ export function getCodeImg() {
     timeout: 20000
   })
 }
+
+// 发送短信验证码
+export function getSmsSend(data) {
+  return request({
+    url: '/sms/send',
+    headers: {
+      isToken: false
+    },
+    method: 'post',
+    data: data
+  })
+}
+
+// 校验短信验证码
+export function getSmsVerify(data) {
+  return request({
+    url: '/sms/verify',
+    headers: {
+      isToken: false
+    },
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取短信验证码接收用户列表
+export function getSmsUser() {
+  return request({
+    url: '/sms/user',
+    headers: {
+      isToken: false
+    },
+    method: 'get'
+  })
+}

@@ -53,8 +53,8 @@
     <el-table
       v-loading="loading"
       :data="list"
-      max-height="600px"
       border
+            :height="tableHeight(-30)"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />

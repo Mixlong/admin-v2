@@ -32,7 +32,7 @@
 
     <!-- 数据表格 -->
     <div class="table-section">
-      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%"  height="100%"
+      <el-table :data="displayTableData" v-loading="loading" border style="width: 100%"  :height="tableHeight(-30)"
         @selection-change="handleSelectionChange" @row-click="handleRowClick" row-key="id"
         :row-class-name="getRowClassName">
         <el-table-column type="selection" width="55" align="center" :selectable="row => row.isParent">
