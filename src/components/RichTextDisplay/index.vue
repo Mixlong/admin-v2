@@ -76,14 +76,14 @@ export default {
       const style = {
         maxWidth: this.maxWidth,
       };
-      
+
       if (this.maxHeight !== "none") {
         style.maxHeight = this.maxHeight;
         if (this.scrollable) {
           style.overflowY = "auto";
         }
       }
-      
+
       return style;
     },
   },
@@ -93,10 +93,10 @@ export default {
         // 获取所有图片的 src
         const images = this.$refs.richTextContent.querySelectorAll("img");
         this.imageList = Array.from(images).map((img) => img.src);
-        
+
         // 找到点击的是第几张图片
         this.currentImageIndex = Array.from(images).indexOf(e.target);
-        
+
         // 显示图片预览
         this.showViewer = true;
       }
@@ -110,61 +110,59 @@ export default {
 
 <style lang="scss" scoped>
 .rich-text-display {
-    .rich-text-content {
-        line-height: 1;
-        text-align: left;
-        color: #303133;
-        word-break: break-word;
+  .rich-text-content {
+    display: block;
+    line-height: 1.6;
+    min-height: 1em;
+    text-align: left;
+    color: #303133;
+    word-break: break-word;
 
-        ::v-deep {
-            img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 4px;
-                margin: 4px 0;
-                cursor: pointer;
-                transition: all 0.3s ease;
+    ::v-deep {
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        margin: 4px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
 
-                &:hover {
-                    opacity: 0.85;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                }
-            }
+        &:hover {
+          opacity: 0.85;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
-
-        // 滚动条样式
-        &::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background-color: #dcdfe6;
-            border-radius: 3px;
-
-            &:hover {
-                background-color: #c0c4cc;
-            }
-        }
-
-        &::-webkit-scrollbar-track {
-            background-color: #f5f7fa;
-        }
+      }
     }
+
+    // 滚动条样式
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #dcdfe6;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: #c0c4cc;
+      }
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: #f5f7fa;
+    }
+  }
 }
 
 .no-content {
-    color: #c0c4cc;
-    font-style: italic;
+  color: #c0c4cc;
+  font-style: italic;
 }
 </style>
 
 <style lang="scss">
 // 全局样式：确保图片预览器在最顶层（不使用 scoped）
 .el-image-viewer__wrapper {
-    z-index: 9999 !important;
+  z-index: 9999 !important;
 }
 </style>
-
-
-
-

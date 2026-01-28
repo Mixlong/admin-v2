@@ -224,7 +224,12 @@
         </el-col>
 
         <el-col v-if="form.type === 1">
-          <el-table :data="form.sampleInfoList" border max-height="250"  v-if="!showName || showName == 'sampleInfoList'">
+          <el-table
+            :data="form.sampleInfoList"
+            border
+            max-height="250"
+            v-if="!showName || showName == 'sampleInfoList'"
+          >
             <el-table-column prop="categoryName" label="品类">
               <el-form-item
                 slot-scope="scope"
@@ -714,7 +719,7 @@ export default {
           return "1200px";
       }
     },
-    /* 
+    /*
       版本输入是否展示
     */
     isShowVersion() {
@@ -901,8 +906,8 @@ export default {
                 return {
                   categoryName: item.categoryName,
                   computerName: item.computerName,
-                }; 
-              })
+                };
+              });
 
               params.sampleInfoList = sampleInfoListArr;
             }

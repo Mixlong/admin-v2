@@ -40,6 +40,13 @@ import "quill/dist/quill.bubble.css";
 import reqUrl from "@/utils/requestUrl";
 import uploadIcon from "@/assets/image/358.gif";
 
+// 注册 hr 标签 (水平分割线)
+const BlockEmbed = Quill.import('blots/block/embed');
+class Divider extends BlockEmbed {}
+Divider.blotName = 'divider';
+Divider.tagName = 'hr';
+Quill.register(Divider);
+
 export default {
   name: "Editor",
   props: {
@@ -176,7 +183,8 @@ export default {
           const fileButton = document.createElement('button');
           fileButton.type = 'button';
           fileButton.className = 'ql-file';
-          const iconUrl = this.resolveAssetUrl(uploadIcon);
+          // 使用 url-loader 强制转为 base64，避免二级目录部署路径问题
+          const iconUrl = require('!url-loader?limit=100000!@/assets/image/358.gif');
           fileButton.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; display: block;" alt="上传" />`;
           fileButton.title = '上传文件（图片、PDF、Word、Excel等）';
           
@@ -196,6 +204,24 @@ export default {
           
           // 将按钮添加到工具栏
           toolbarContainer.appendChild(fileButton);
+
+          // 创建分割线按钮
+          const hrButton = document.createElement('button');
+          hrButton.type = 'button';
+          hrButton.className = 'ql-hr';
+          hrButton.innerHTML = '<div style="width: 100%; height: 2px; background-color: #444; margin-top: 6px;"></div>'; // 简单的分割线图标样式
+          hrButton.title = '插入分割线';
+          hrButton.style.padding = '0 5px';
+
+          // 绑定点击事件: 插入分割线
+          hrButton.addEventListener('click', () => {
+             const range = this.Quill.getSelection(true);
+             if (range) {
+               this.Quill.insertEmbed(range.index, 'divider', true, 'user');
+               this.Quill.setSelection(range.index + 1, Quill.sources.SILENT);
+             }
+          });
+          toolbarContainer.appendChild(hrButton);
         }
       });
       
@@ -353,6 +379,7 @@ export default {
       console.error('文件上传失败:', err);
     },
     resolveAssetUrl(url) {
+      return url;
       if (!url) return "";
       if (/^(https?:)?\/\//.test(url) || url.startsWith("data:")) {
         return url;
@@ -482,4 +509,29 @@ export default {
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before {
   content: "等宽字体";
 }
+
+/* 恢复 Quill 编辑器内部标签的默认浏览器样式 */
+.ql-editor p,
+.ql-editor ol,
+.ql-editor ul,
+.ql-editor pre,
+.ql-editor blockquote,
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4,
+.ql-editor h5,
+.ql-editor h6 {
+  margin: 1em 0 !important; /* 恢复默认外边距 */
+  padding: 0 !important;
+  counter-reset: none !important;
+}
+.ql-editor h1 { font-size: 2em; margin: 0.67em 0 !important; font-weight: bold; }
+.ql-editor h2 { font-size: 1.5em; margin: 0.83em 0 !important; font-weight: bold; }
+.ql-editor h3 { font-size: 1.17em; margin: 1em 0 !important; font-weight: bold; }
+.ql-editor h4 { font-size: 1em; margin: 1.33em 0 !important; font-weight: bold; }
+.ql-editor h5 { font-size: 0.83em; margin: 1.67em 0 !important; font-weight: bold; }
+.ql-editor h6 { font-size: 0.67em; margin: 2.33em 0 !important; font-weight: bold; }
+.ql-editor ol, .ql-editor ul { padding-left: 40px !important; } /* 列表恢复左内边距 */
+.ql-editor blockquote { margin: 1em 40px !important; }
 </style>

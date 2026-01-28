@@ -23,596 +23,608 @@
           v-form-scroll-error
         >
           <!-- 基本信息 -->
-      <fieldset class="form-fieldset">
-        <legend class="fieldset-legend">基本信息</legend>
-        <div class="fieldset-content">
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="品类" prop="categoryId">
-            
+          <fieldset class="form-fieldset">
+            <legend class="fieldset-legend">基本信息</legend>
+            <div class="fieldset-content">
+              <el-row :gutter="20">
+                <el-col :span="12">
+                  <el-form-item label="品类" prop="categoryId">
                     <CategorySelect
-          v-model="form.categoryId"
-          :return-id="true"
-          placeholder="请选择产品品类"
-          clearable
-          style="width:100%"
-        />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="版本号" prop="versionCode">
+                      v-model="form.categoryId"
+                      :return-id="true"
+                      placeholder="请选择产品品类"
+                      clearable
+                      style="width: 100%"
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="版本号" prop="versionCode">
+                    <el-input
+                      v-model="form.versionCode"
+                      clearable
+                      placeholder="请输入版本号"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row :gutter="20">
+                <el-col :span="12" v-if="!form.id">
+                  <el-form-item label="ECN编号" prop="ecn">
+                    <el-input
+                      :value="displayEcn"
+                      readonly
+                      placeholder="系统自动生成"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-form-item label="版本描述" prop="desc">
                 <el-input
-                  v-model="form.versionCode"
+                  v-model="form.desc"
+                  type="textarea"
                   clearable
-                  placeholder="请输入版本号"
+                  :rows="3"
+                  placeholder="请输入版本描述"
                 />
               </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="20">
-            <el-col :span="12" v-if="!form.id">
-              <el-form-item label="ECN编号" prop="ecn">
-                <el-input
-                  :value="displayEcn"
-                  readonly
-                  placeholder="系统自动生成"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item label="版本描述" prop="desc">
-            <el-input
-              v-model="form.desc"
-              type="textarea"
-              clearable
-              :rows="3"
-              placeholder="请输入版本描述"
-            />
-          </el-form-item>
-        </div>
-      </fieldset>
+            </div>
+          </fieldset>
 
-      <!-- 审核人员配置 -->
-      <fieldset class="form-fieldset" v-if="form.state != 0">
-        <legend class="fieldset-legend">
-          <i class="el-icon-user-solid" style="margin-right: 5px"></i>
-          审核人员配置
-        </legend>
-        <div class="fieldset-content">
-          <!-- 编辑时的审核调整类型选择（只有在有审核记录时才显示） -->
-          <div v-if="canSwitchAuditType" class="audit-type-selector">
-            <!-- 如果 sopChangeNotice 为 null，必须走重新审核 -->
-            <div v-if="mustFullAudit" class="audit-notice warning mb10">
-              <i class="el-icon-warning"></i>
-              <span
-                >该SOP尚未配置审核记录，必须走完整的审核流程（会审 → 工程审 →
-                终审）</span
+          <!-- 审核人员配置 -->
+          <fieldset class="form-fieldset" v-if="form.state != 0">
+            <legend class="fieldset-legend">
+              <i class="el-icon-user-solid" style="margin-right: 5px"></i>
+              审核人员配置
+            </legend>
+            <div class="fieldset-content">
+              <!-- 编辑时的审核调整类型选择（只有在有审核记录时才显示） -->
+              <div v-if="canSwitchAuditType" class="audit-type-selector">
+                <!-- 如果 sopChangeNotice 为 null，必须走重新审核 -->
+                <div v-if="mustFullAudit" class="audit-notice warning mb10">
+                  <i class="el-icon-warning"></i>
+                  <span
+                    >该SOP尚未配置审核记录，必须走完整的审核流程（会审 → 工程审
+                    → 终审）</span
+                  >
+                </div>
+
+                <div class="audit-type-label">审核调整方式</div>
+                <el-row :gutter="10">
+                  <el-col :span="8">
+                    <div
+                      class="audit-type-card"
+                      :class="{
+                        active: form.auditAdjustType === 'none',
+                        disabled: mustFullAudit,
+                      }"
+                      @click="!mustFullAudit && handleAuditTypeChange('none')"
+                    >
+                      <div class="card-icon">
+                        <i class="el-icon-check"></i>
+                      </div>
+                      <div class="card-title">无需审核</div>
+                      <div class="card-desc">保持当前状态</div>
+                      <div v-if="mustFullAudit" class="card-disabled-mask">
+                        不可用
+                      </div>
+                    </div>
+                  </el-col>
+                  <el-col :span="8">
+                    <div
+                      class="audit-type-card"
+                      :class="{
+                        active: form.auditAdjustType === 'engineer',
+                        disabled: mustFullAudit,
+                      }"
+                      @click="
+                        !mustFullAudit && handleAuditTypeChange('engineer')
+                      "
+                    >
+                      <div class="card-icon">
+                        <i class="el-icon-setting"></i>
+                      </div>
+                      <div class="card-title">仅工程审核</div>
+                      <div class="card-desc">只需工程审</div>
+                      <div v-if="mustFullAudit" class="card-disabled-mask">
+                        不可用
+                      </div>
+                    </div>
+                  </el-col>
+                  <el-col :span="8">
+                    <div
+                      class="audit-type-card"
+                      :class="{ active: form.auditAdjustType === 'full' }"
+                      @click="handleAuditTypeChange('full')"
+                    >
+                      <div class="card-icon">
+                        <i class="el-icon-refresh"></i>
+                      </div>
+                      <div class="card-title">重新审核</div>
+                      <div class="card-desc">全流程审核</div>
+                      <div v-if="mustFullAudit" class="card-required-badge">
+                        必选
+                      </div>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+
+              <!-- 首次配置审核流程的提示 -->
+              <div
+                v-if="form.id && !canSwitchAuditType"
+                class="audit-notice warning"
               >
-            </div>
-
-            <div class="audit-type-label">审核调整方式</div>
-            <el-row :gutter="10">
-              <el-col :span="8">
-                <div
-                  class="audit-type-card"
-                  :class="{
-                    active: form.auditAdjustType === 'none',
-                    disabled: mustFullAudit,
-                  }"
-                  @click="!mustFullAudit && handleAuditTypeChange('none')"
+                <i class="el-icon-warning"></i>
+                <span
+                  >首次配置审核流程，需要填写完整的审核人员信息（会审、工程审、终审）</span
                 >
-                  <div class="card-icon">
-                    <i class="el-icon-check"></i>
-                  </div>
-                  <div class="card-title">无需审核</div>
-                  <div class="card-desc">保持当前状态</div>
-                  <div v-if="mustFullAudit" class="card-disabled-mask">
-                    不可用
-                  </div>
-                </div>
-              </el-col>
-              <el-col :span="8">
-                <div
-                  class="audit-type-card"
-                  :class="{
-                    active: form.auditAdjustType === 'engineer',
-                    disabled: mustFullAudit,
-                  }"
-                  @click="!mustFullAudit && handleAuditTypeChange('engineer')"
-                >
-                  <div class="card-icon">
-                    <i class="el-icon-setting"></i>
-                  </div>
-                  <div class="card-title">仅工程审核</div>
-                  <div class="card-desc">只需工程审</div>
-                  <div v-if="mustFullAudit" class="card-disabled-mask">
-                    不可用
-                  </div>
-                </div>
-              </el-col>
-              <el-col :span="8">
-                <div
-                  class="audit-type-card"
-                  :class="{ active: form.auditAdjustType === 'full' }"
-                  @click="handleAuditTypeChange('full')"
-                >
-                  <div class="card-icon">
-                    <i class="el-icon-refresh"></i>
-                  </div>
-                  <div class="card-title">重新审核</div>
-                  <div class="card-desc">全流程审核</div>
-                  <div v-if="mustFullAudit" class="card-required-badge">
-                    必选
-                  </div>
-                </div>
-              </el-col>
-            </el-row>
-          </div>
+              </div>
 
-          <!-- 首次配置审核流程的提示 -->
-          <div
-            v-if="form.id && !canSwitchAuditType"
-            class="audit-notice warning"
-          >
-            <i class="el-icon-warning"></i>
-            <span
-              >首次配置审核流程，需要填写完整的审核人员信息（会审、工程审、终审）</span
-            >
-          </div>
-
-          <!-- 会审人员配置 -->
-          <div
-            v-if="!form.id || form.auditAdjustType === 'full'"
-            class="auditor-section"
-          >
-            <div class="section-header">
-              <i class="el-icon-user"></i>
-              <span>会审人员</span>
-              <span class="section-badge">三部门联审</span>
-            </div>
-            <el-row :gutter="12">
-              <!-- 会审 - 研发 -->
-              <el-col :span="8">
-                <div class="auditor-card">
-                  <el-form-item
-                    label="研发部门"
-                    prop="rdAuditors"
-                    label-width="75px"
-                  >
-                    <el-select
-                      v-model="form.rdAuditors"
-                      multiple
-                      filterable
-                      placeholder="选择研发人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in rdAuditorOptions"
-                        :key="`rd-${item}`"
-                        :label="item"
-                        :value="item"
+              <!-- 会审人员配置 -->
+              <div
+                v-if="!form.id || form.auditAdjustType === 'full'"
+                class="auditor-section"
+              >
+                <div class="section-header">
+                  <i class="el-icon-user"></i>
+                  <span>会审人员</span>
+                  <span class="section-badge">三部门联审</span>
+                </div>
+                <el-row :gutter="12">
+                  <!-- 会审 - 研发 -->
+                  <el-col :span="8">
+                    <div class="auditor-card">
+                      <el-form-item
+                        label="研发部门"
+                        prop="rdAuditors"
+                        label-width="75px"
                       >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
+                        <el-select
+                          v-model="form.rdAuditors"
+                          multiple
+                          filterable
+                          placeholder="选择研发人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in rdAuditorOptions"
+                            :key="`rd-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
 
-              <!-- 会审 - 品质 -->
-              <el-col :span="8">
-                <div class="auditor-card">
-                  <el-form-item
-                    label="品质部门"
-                    prop="qualityAuditors"
-                    label-width="75px"
-                  >
-                    <el-select
-                      v-model="form.qualityAuditors"
-                      multiple
-                      filterable
-                      placeholder="选择品质人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in qualityAuditorOptions"
-                        :key="`quality-${item}`"
-                        :label="item"
-                        :value="item"
+                  <!-- 会审 - 品质 -->
+                  <el-col :span="8">
+                    <div class="auditor-card">
+                      <el-form-item
+                        label="品质部门"
+                        prop="qualityAuditors"
+                        label-width="75px"
                       >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
+                        <el-select
+                          v-model="form.qualityAuditors"
+                          multiple
+                          filterable
+                          placeholder="选择品质人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in qualityAuditorOptions"
+                            :key="`quality-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
 
-              <!-- 会审 - 生产 -->
-              <el-col :span="8">
-                <div class="auditor-card">
-                  <el-form-item
-                    label="生产部门"
-                    prop="productionAuditors"
-                    label-width="75px"
-                  >
-                    <el-select
-                      v-model="form.productionAuditors"
-                      multiple
-                      filterable
-                      placeholder="选择生产人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in productionAuditorOptions"
-                        :key="`production-${item}`"
-                        :label="item"
-                        :value="item"
+                  <!-- 会审 - 生产 -->
+                  <el-col :span="8">
+                    <div class="auditor-card">
+                      <el-form-item
+                        label="生产部门"
+                        prop="productionAuditors"
+                        label-width="75px"
                       >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
-            </el-row>
-          </div>
+                        <el-select
+                          v-model="form.productionAuditors"
+                          multiple
+                          filterable
+                          placeholder="选择生产人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in productionAuditorOptions"
+                            :key="`production-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
 
-          <!-- 工程审、终审和项目人员配置 -->
-          <div
-            v-if="
-              !form.id ||
-              form.auditAdjustType === 'full' ||
-              form.auditAdjustType === 'engineer'
-            "
-            class="auditor-section"
-          >
-            <div class="section-header">
-              <i class="el-icon-s-tools"></i>
-              <span>{{
-                form.auditAdjustType === "engineer"
-                  ? "工程审人员"
-                  : "工程审 & 项目人员 & 终审人员"
-              }}</span>
-            </div>
-            <el-row :gutter="12">
-              <!-- 工程审人员 -->
-              <el-col
+              <!-- 工程审、终审和项目人员配置 -->
+              <div
                 v-if="
-                  !(isOldEngineerMode && form.auditAdjustType === 'engineer')
+                  !form.id ||
+                  form.auditAdjustType === 'full' ||
+                  form.auditAdjustType === 'engineer'
                 "
-                :span="form.id && form.auditAdjustType === 'engineer' ? 24 : 8"
+                class="auditor-section"
               >
-                <div class="auditor-card highlight">
-                  <el-form-item
-                    label="工程审人员"
-                    prop="engineerAuditors"
-                    label-width="85px"
-                  >
-                    <el-select
-                      v-model="form.engineerAuditors"
-                      filterable
-                      placeholder="选择工程审人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in engineerAuditorOptions"
-                        :key="`engineer-${item}`"
-                        :label="item"
-                        :value="item"
-                      >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
+                <div class="section-header">
+                  <i class="el-icon-s-tools"></i>
+                  <span>{{
+                    form.auditAdjustType === "engineer"
+                      ? "工程审人员"
+                      : "工程审 & 项目人员 & 终审人员"
+                  }}</span>
                 </div>
-              </el-col>
+                <el-row :gutter="12">
+                  <!-- 工程审人员 -->
+                  <el-col
+                    v-if="
+                      !(
+                        isOldEngineerMode && form.auditAdjustType === 'engineer'
+                      )
+                    "
+                    :span="
+                      form.id && form.auditAdjustType === 'engineer' ? 24 : 8
+                    "
+                  >
+                    <div class="auditor-card highlight">
+                      <el-form-item
+                        label="工程审人员"
+                        prop="engineerAuditors"
+                        label-width="85px"
+                      >
+                        <el-select
+                          v-model="form.engineerAuditors"
+                          filterable
+                          placeholder="选择工程审人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in engineerAuditorOptions"
+                            :key="`engineer-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
 
-              <!-- 抄送人员 - 仅在工程审核模式显示 -->
-              <el-col
-                :span="12"
-                v-if="isOldEngineerMode && form.auditAdjustType === 'engineer'"
+                  <!-- 抄送人员 - 仅在工程审核模式显示 -->
+                  <el-col
+                    :span="12"
+                    v-if="
+                      isOldEngineerMode && form.auditAdjustType === 'engineer'
+                    "
+                  >
+                    <div class="auditor-card highlight">
+                      <el-form-item
+                        label="抄送人员"
+                        prop="ccPersons"
+                        label-width="85px"
+                      >
+                        <el-select
+                          multiple
+                          v-model="form.ccPersons"
+                          filterable
+                          placeholder="请输入抄送人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in userListOptions"
+                            :key="item.userId || item.userName || item"
+                            :label="item.userName"
+                            :value="item.userName"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
+
+                  <!-- 旧工程审人员 - 仅在工程审核模式显示 -->
+                  <el-col
+                    :span="12"
+                    v-if="
+                      isOldEngineerMode && form.auditAdjustType === 'engineer'
+                    "
+                  >
+                    <div class="auditor-card highlight">
+                      <el-form-item
+                        label="工程审人员"
+                        prop="engineeringPerson"
+                        label-width="110px"
+                      >
+                        <el-select
+                          v-model="form.engineeringPerson"
+                          filterable
+                          placeholder="选择工程审人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in engineerAuditorOptions"
+                            :key="`legacy-engineer-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
+
+                  <!-- 项目人员 - 仅在新增或重新审核时显示 -->
+                  <el-col
+                    :span="8"
+                    v-if="!form.id || form.auditAdjustType === 'full'"
+                  >
+                    <div class="auditor-card highlight">
+                      <el-form-item
+                        label="项目人员"
+                        prop="projectPerson"
+                        label-width="75px"
+                      >
+                        <el-select
+                          v-model="form.projectPerson"
+                          filterable
+                          placeholder="选择项目人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in projectAuditorOptions"
+                            :key="`project-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
+
+                  <!-- 终审人员 - 仅在新增或重新审核时显示 -->
+                  <el-col
+                    :span="8"
+                    v-if="!form.id || form.auditAdjustType === 'full'"
+                  >
+                    <div class="auditor-card highlight">
+                      <el-form-item
+                        label="终审人员"
+                        prop="finalAuditors"
+                        label-width="75px"
+                      >
+                        <el-select
+                          v-model="form.finalAuditors"
+                          filterable
+                          placeholder="选择终审人员"
+                          style="width: 100%"
+                        >
+                          <el-option
+                            v-for="item in finalAuditorOptions"
+                            :key="`final-${item}`"
+                            :label="item"
+                            :value="item"
+                          >
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+
+              <!-- 无需审核时的提示 -->
+              <div
+                v-if="form.id && form.auditAdjustType === 'none'"
+                class="audit-notice"
               >
-                <div class="auditor-card highlight">
-                  <el-form-item
-                    label="抄送人员"
-                    prop="ccPersons"
-                    label-width="85px"
-                  >
-                    <el-select
-                      multiple
-                      v-model="form.ccPersons"
-                      filterable
-                      placeholder="请输入抄送人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in userListOptions"
-                        :key="item.userId || item.userName || item"
-                        :label="item.userName"
-                        :value="item.userName"
-                      >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
+                <i class="el-icon-info"></i>
+                <span>本次修改不会触发审核流程，保持当前审核状态</span>
+              </div>
 
-              <!-- 旧工程审人员 - 仅在工程审核模式显示 -->
-              <el-col
-                :span="12"
-                v-if="isOldEngineerMode && form.auditAdjustType === 'engineer'"
+              <!-- 仅工程审核时的提示 -->
+              <div
+                v-if="form.auditAdjustType === 'engineer'"
+                class="audit-notice"
               >
-                <div class="auditor-card highlight">
-                  <el-form-item
-                    label="工程审人员"
-                    prop="engineeringPerson"
-                    label-width="110px"
-                  >
-                    <el-select
-                      v-model="form.engineeringPerson"
-                      filterable
-                      placeholder="选择工程审人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in engineerAuditorOptions"
-                        :key="`legacy-engineer-${item}`"
-                        :label="item"
-                        :value="item"
-                      >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
+                <i class="el-icon-info"></i>
+                <span>请完善工程审核信息（工程审人员、抄送人员）</span>
+              </div>
+            </div>
+          </fieldset>
 
-              <!-- 项目人员 - 仅在新增或重新审核时显示 -->
-              <el-col
-                :span="8"
-                v-if="!form.id || form.auditAdjustType === 'full'"
+          <!-- 历史文件 -->
+          <fieldset class="form-fieldset">
+            <legend class="fieldset-legend">
+              历史文件
+              <DrUpload
+                v-model="form.historyFile"
+                :useObjectFormat="true"
+                :showFileList="false"
+                class="legend-upload"
               >
-                <div class="auditor-card highlight">
-                  <el-form-item
-                    label="项目人员"
-                    prop="projectPerson"
-                    label-width="75px"
-                  >
-                    <el-select
-                      v-model="form.projectPerson"
-                      filterable
-                      placeholder="选择项目人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in projectAuditorOptions"
-                        :key="`project-${item}`"
-                        :label="item"
-                        :value="item"
-                      >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
-
-              <!-- 终审人员 - 仅在新增或重新审核时显示 -->
-              <el-col
-                :span="8"
-                v-if="!form.id || form.auditAdjustType === 'full'"
+                <el-button size="small" type="text"> 点击上传 </el-button>
+              </DrUpload>
+            </legend>
+            <div class="fieldset-content">
+              <!-- 用表格展示已上传的文件 -->
+              <el-table
+                :data="historyFileList"
+                border
+                empty-text="暂无历史文件"
+                min-height="300px"
               >
-                <div class="auditor-card highlight">
-                  <el-form-item
-                    label="终审人员"
-                    prop="finalAuditors"
-                    label-width="75px"
-                  >
-                    <el-select
-                      v-model="form.finalAuditors"
-                      filterable
-                      placeholder="选择终审人员"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="item in finalAuditorOptions"
-                        :key="`final-${item}`"
-                        :label="item"
-                        :value="item"
-                      >
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-col>
-            </el-row>
-          </div>
-
-          <!-- 无需审核时的提示 -->
-          <div
-            v-if="form.id && form.auditAdjustType === 'none'"
-            class="audit-notice"
-          >
-            <i class="el-icon-info"></i>
-            <span>本次修改不会触发审核流程，保持当前审核状态</span>
-          </div>
-
-          <!-- 仅工程审核时的提示 -->
-          <div v-if="form.auditAdjustType === 'engineer'" class="audit-notice">
-            <i class="el-icon-info"></i>
-            <span>请完善工程审核信息（工程审人员、抄送人员）</span>
-          </div>
-        </div>
-      </fieldset>
-
-      <!-- 历史文件 -->
-      <fieldset class="form-fieldset">
-        <legend class="fieldset-legend">
-          历史文件
-          <DrUpload
-            v-model="form.historyFile"
-            :useObjectFormat="true"
-            :showFileList="false"
-            class="legend-upload"
-          >
-            <el-button size="small" type="text"> 点击上传 </el-button>
-          </DrUpload>
-        </legend>
-        <div class="fieldset-content">
-          <!-- 用表格展示已上传的文件 -->
-          <el-table
-            :data="historyFileList"
-            border
-            style="width: 100%"
-            empty-text="暂无历史文件"
-            max-height="300px"
-          >
-            <el-table-column
-              type="index"
-              label="序号"
-              width="60"
-              align="center"
-            ></el-table-column>
-            <el-table-column
-              prop="name"
-              label="文件名"
-              min-width="200"
-              align="center"
-            >
-              <template slot-scope="{ row }">
-                <el-link
-                  :href="row.url"
-                  target="_blank"
-                  type="primary"
-                  :underline="false"
+                <el-table-column
+                  type="index"
+                  label="序号"
+                  width="60"
+                  align="center"
+                ></el-table-column>
+                <el-table-column
+                  prop="name"
+                  label="文件名"
+                  align="center"
+                  width="600"
                 >
-                  <i class="el-icon-document"></i>
-                  {{ row.name }}
-                </el-link>
-              </template>
-            </el-table-column>
-            <el-table-column label="上传时间" width="160" align="center">
-              <template slot-scope="{ row }">
-                {{ formatUploadTime(row.uploadTime) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="120" align="center">
-              <template slot-scope="{ row, $index }">
-                <el-button size="mini" type="text" @click="previewFile(row)"
-                  >预览</el-button
-                >
-                <el-button
-                  size="mini"
-                  type="text"
-                  style="color: #f56c6c"
-                  @click="removeHistoryFile($index)"
-                  >删除</el-button
-                >
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </fieldset>
+                  <template slot-scope="{ row }">
+                    <el-link
+                      :href="row.url"
+                      target="_blank"
+                      type="primary"
+                      :underline="false"
+                    >
+                      <i class="el-icon-document"></i>
+                      {{ row.name }}
+                    </el-link>
+                  </template>
+                </el-table-column>
+                <el-table-column label="上传时间" width="160" align="center">
+                  <template slot-scope="{ row }">
+                    {{ formatUploadTime(row.uploadTime) }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="120" align="center">
+                  <template slot-scope="{ row, $index }">
+                    <el-button size="mini" type="text" @click="previewFile(row)"
+                      >预览</el-button
+                    >
+                    <el-button
+                      size="mini"
+                      type="text"
+                      style="color: #f56c6c"
+                      @click="removeHistoryFile($index)"
+                      >删除</el-button
+                    >
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </fieldset>
 
           <!-- 工位管理 -->
-      <div
-        ref="stationBoxRef"
-        v-loading="isSubLoading"
-        element-loading-text="处理中..."
-      >
-        <!-- 工序类型tabs -->
-        <div class="tabs-container">
-          <div class="tabs-header">
-            <el-tabs
-              v-model="activeProcessType"
-              type="border-card"
-              class="process-tabs"
-            >
-              <el-tab-pane
-                v-for="processType in processTypeOptions"
-                :key="processType.dictValue"
-                :label="processType.dictLabel"
-                :name="processType.dictValue"
-              >
-                <!-- 每个tab的工位列表 -->
-                <div class="workstation-list">
-                  <transition-group
-                    name="workstation-list"
-                    tag="div"
-                    class="workstation-transition-group"
-                  >
-                    <WorkstationItem
-                      v-for="(workstation, index) in form.workstations[
-                        processType.dictValue
-                      ] || []"
-                      :key="`${processType.dictValue}_${
-                        workstation.id || index
-                      }_${workstation._renderKey || ''}`"
-                      :workstation="workstation"
-                      :item-index="index"
-                      :process-type="processType.dictValue"
-                      :equipment-options="equipmentOptions"
-                      :process-type-options="processTypeOptions"
-                      :total-items-in-process="
-                        (form.workstations[processType.dictValue] || []).length
-                      "
-                      :is-focused="focusedWorkstationId === workstation.id"
-                      :rules="rules"
-                      :action-url="actionUrl"
-                      :accept="accept"
-                      @drag-start="onDragStart"
-                      @drag-end="onDragEnd"
-                      @file-change="onFileChange"
-                      @move-up="onMoveUp"
-                      @move-down="onMoveDown"
-                      @move-to-process="onMoveToProcess"
-                      @copy-item="onCopyItem"
-                      @remove-item="onRemoveItem"
-                      @save-item="onSaveItem"
-                      @index-num-input="handleIndexNumInput"
-                      @spend-time-change="handleSpendTimeChange"
-                      @validate-field="validateField"
-                    />
-                  </transition-group>
-
-                  <!-- 添加工位按钮 -->
-                  <div class="add-workstation-btn">
-                    <el-button
-                      type="dashed"
-                      size="large"
-                      @click="addWorkstation(processType.dictValue)"
-                      icon="el-icon-plus"
-                    >
-                      添加{{ processType.dictLabel }}工位
-                    </el-button>
-                  </div>
-                </div>
-              </el-tab-pane>
-            </el-tabs>
-
-            <!-- PDF上传按钮 (Element UI 2.3兼容版本) -->
-            <div class="pdf-upload-container">
-              <el-tooltip
-                :content="`上传PDF到${getProcessTypeLabel(
-                  activeProcessType
-                )}工序`"
-                placement="bottom"
-              >
-                <el-button
-                  type="primary"
-                  size="small"
-                  :disabled="isSubLoading"
-                  @click="handlePdfUpload"
-                  icon="el-icon-upload2"
+          <div
+            ref="stationBoxRef"
+            v-loading="isSubLoading"
+            element-loading-text="处理中..."
+          >
+            <!-- 工序类型tabs -->
+            <div class="tabs-container">
+              <div class="tabs-header">
+                <el-tabs
+                  v-model="activeProcessType"
+                  type="border-card"
+                  class="process-tabs"
                 >
-                  {{ isSubLoading ? "上传中..." : "上传PDF" }}
-                </el-button>
-              </el-tooltip>
-              <input
-                ref="pdfFileInput"
-                type="file"
-                accept="application/pdf"
-                style="display: none"
-                @change="onPdfFileSelected"
-              />
+                  <el-tab-pane
+                    v-for="processType in processTypeOptions"
+                    :key="processType.dictValue"
+                    :label="processType.dictLabel"
+                    :name="processType.dictValue"
+                  >
+                    <!-- 每个tab的工位列表 -->
+                    <div class="workstation-list">
+                      <transition-group
+                        name="workstation-list"
+                        tag="div"
+                        class="workstation-transition-group"
+                      >
+                        <WorkstationItem
+                          v-for="(workstation, index) in form.workstations[
+                            processType.dictValue
+                          ] || []"
+                          :key="`${processType.dictValue}_${
+                            workstation.id || index
+                          }_${workstation._renderKey || ''}`"
+                          :workstation="workstation"
+                          :item-index="index"
+                          :process-type="processType.dictValue"
+                          :equipment-options="equipmentOptions"
+                          :process-type-options="processTypeOptions"
+                          :total-items-in-process="
+                            (form.workstations[processType.dictValue] || [])
+                              .length
+                          "
+                          :is-focused="focusedWorkstationId === workstation.id"
+                          :rules="rules"
+                          :action-url="actionUrl"
+                          :accept="accept"
+                          @drag-start="onDragStart"
+                          @drag-end="onDragEnd"
+                          @file-change="onFileChange"
+                          @move-up="onMoveUp"
+                          @move-down="onMoveDown"
+                          @move-to-process="onMoveToProcess"
+                          @copy-item="onCopyItem"
+                          @remove-item="onRemoveItem"
+                          @save-item="onSaveItem"
+                          @index-num-input="handleIndexNumInput"
+                          @spend-time-change="handleSpendTimeChange"
+                          @validate-field="validateField"
+                        />
+                      </transition-group>
+
+                      <!-- 添加工位按钮 -->
+                      <div class="add-workstation-btn">
+                        <el-button
+                          type="dashed"
+                          size="large"
+                          @click="addWorkstation(processType.dictValue)"
+                          icon="el-icon-plus"
+                        >
+                          添加{{ processType.dictLabel }}工位
+                        </el-button>
+                      </div>
+                    </div>
+                  </el-tab-pane>
+                </el-tabs>
+
+                <!-- PDF上传按钮 (Element UI 2.3兼容版本) -->
+                <div class="pdf-upload-container">
+                  <el-tooltip
+                    :content="`上传PDF到${getProcessTypeLabel(
+                      activeProcessType
+                    )}工序`"
+                    placement="bottom"
+                  >
+                    <el-button
+                      type="primary"
+                      size="small"
+                      :disabled="isSubLoading"
+                      @click="handlePdfUpload"
+                      icon="el-icon-upload2"
+                    >
+                      {{ isSubLoading ? "上传中..." : "上传PDF" }}
+                    </el-button>
+                  </el-tooltip>
+                  <input
+                    ref="pdfFileInput"
+                    type="file"
+                    accept="application/pdf"
+                    style="display: none"
+                    @change="onPdfFileSelected"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
         </el-form>
       </div>
 
@@ -649,7 +661,7 @@
                   </ImageUpload>
                 </el-form-item>
               </div>
-              
+
               <div class="image-upload-section">
                 <div class="section-label">排拉表</div>
                 <el-form-item prop="sortImg">
@@ -660,7 +672,7 @@
                     :sortable="true"
                     listType="picture-card"
                     css="width: 100%; height: 160px;"
-                    class="sidebar-img-upload"  
+                    class="sidebar-img-upload"
                   >
                     <div class="upload-placeholder">
                       <i class="el-icon-plus"></i>
@@ -694,7 +706,12 @@
 </template>
 
 <script>
-import { sopSave, sopUpdate, sopPersonList, sopState } from "@/api/third/testApi";
+import {
+  sopSave,
+  sopUpdate,
+  sopPersonList,
+  sopState,
+} from "@/api/third/testApi";
 import { getDicts } from "@/api/system/dict/data";
 import axios from "axios";
 import ElUploadSortable from "@/components/el-upload-sortable";
@@ -712,7 +729,7 @@ export default {
     DrUpload,
     ImageUpload,
     WorkstationItem,
-    CategorySelect
+    CategorySelect,
   },
   props: {
     dictList: Array,
@@ -1224,7 +1241,7 @@ export default {
     close() {
       this.$emit("update:visible", false);
       this.auditPanelVisible = false; // 关闭弹窗时也关闭审核面板
-      
+
       // 重置表单
       this.$nextTick(() => {
         if (this.$refs.form) {
@@ -2065,7 +2082,7 @@ export default {
           } else {
             resolve(true);
           }
-        })
+        }),
       ]).then(([mainFormValid, sidebarFormValid]) => {
         const valid = mainFormValid && sidebarFormValid;
         if (valid) {
@@ -2223,8 +2240,10 @@ export default {
 
             // 更新ECN编号（优先从 tsopChangeNotice 获取，兜底使用 form.ecn）
             if (
-              !(submitData.tsopChangeNotice && submitData.tsopChangeNotice.ecn)
-              && !submitData.id
+              !(
+                submitData.tsopChangeNotice && submitData.tsopChangeNotice.ecn
+              ) &&
+              !submitData.id
             ) {
               submitData.tsopChangeNotice.ecn = submitData.ecn || "";
             }
@@ -2232,7 +2251,7 @@ export default {
             if (submitData.auditAdjustType === "none") {
               // 无需审核
               submitData.tsopChangeNotice.auditNode = 3;
-              
+
               if (this.isOldEngineerMode) {
                 delete submitData.tsopChangeNotice;
               }
@@ -2329,7 +2348,6 @@ export default {
               }
             }
 
-        
             // 删除临时字段
             delete submitData.ecn;
             delete submitData.rdAuditors;
@@ -2380,16 +2398,25 @@ export default {
           }
 
           // 调试：打印提交数据
-          console.log('提交数据:', JSON.stringify(submitData.tsopChangeNotice, null, 2));
+          console.log(
+            "提交数据:",
+            JSON.stringify(submitData.tsopChangeNotice, null, 2)
+          );
 
           if (this.form.id) {
             // 判断是否需要自动审核通过（无需审核模式）
-            const isOldSopNoAudit = submitData.isOldSop == 1 && this.form.auditAdjustType === 'none';
-            const isNewSopNoAudit = submitData.isOldSop == 0 && this.form.auditAdjustType === 'none';
+            const isOldSopNoAudit =
+              submitData.isOldSop == 1 && this.form.auditAdjustType === "none";
+            const isNewSopNoAudit =
+              submitData.isOldSop == 0 && this.form.auditAdjustType === "none";
             const needAutoApprove = isOldSopNoAudit || isNewSopNoAudit;
-            
+
             // 旧SOP编辑时，如果不是重新审核，删除tsopChangeNotice字段
-            if (submitData.id && submitData.isOldSop == 1 && this.form.auditAdjustType !== 'full') {
+            if (
+              submitData.id &&
+              submitData.isOldSop == 1 &&
+              this.form.auditAdjustType !== "full"
+            ) {
               delete submitData.tsopChangeNotice;
             }
 
@@ -2399,15 +2426,17 @@ export default {
                 if (needAutoApprove) {
                   return sopState({
                     id: submitData.id,
-                    state: 1 // 1=通过
-                  }).then(() => {
-                    this.msgSuccess("修改成功，已自动审核通过");
-                    this.$parent.getList();
-                  }).catch((err) => {
-                    console.error("自动审核失败:", err);
-                    this.msgWarning("修改成功，但自动审核失败，请手动审核");
-                    this.$parent.getList();
-                  });
+                    state: 1, // 1=通过
+                  })
+                    .then(() => {
+                      this.msgSuccess("修改成功，已自动审核通过");
+                      this.$parent.getList();
+                    })
+                    .catch((err) => {
+                      console.error("自动审核失败:", err);
+                      this.msgWarning("修改成功，但自动审核失败，请手动审核");
+                      this.$parent.getList();
+                    });
                 } else {
                   this.msgSuccess("修改成功");
                   this.$parent.getList();
@@ -2820,9 +2849,7 @@ export default {
       try {
         // 加载表单数据
         this.form = _.cloneDeep(draft.formData);
-        this.form.ccPersons = this.normalizeCcPersonsArray(
-          this.form.ccPersons
-        );
+        this.form.ccPersons = this.normalizeCcPersonsArray(this.form.ccPersons);
         this.currentDraftId = draftId;
 
         // 确保工位数据格式正确
@@ -2997,16 +3024,16 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    
-    >span {
+
+    > span {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom:10px;
+      margin-bottom: 10px;
     }
-      .sortable-enabled{
-    width:300px;
-  }
+    .sortable-enabled {
+      width: 300px;
+    }
   }
 
   .sidebar-sticky {
@@ -3879,7 +3906,5 @@ export default {
       margin-right: 8px;
     }
   }
- 
 }
- 
 </style>

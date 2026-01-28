@@ -15,15 +15,29 @@
           <el-descriptions-item label="跟进内容" :span="2">
             {{ activity.followContent || activity.title }}
           </el-descriptions-item>
-          <el-descriptions-item label="客户">{{ activity.customerName }}</el-descriptions-item>
-          <el-descriptions-item label="联系人">{{ activity.contactName }}</el-descriptions-item>
-          <el-descriptions-item label="跟进方式">{{ activity.followMethod || activity.type }}</el-descriptions-item>
-          <el-descriptions-item label="跟进人">{{ activity.follower || activity.assigneeName }}</el-descriptions-item>
+          <el-descriptions-item label="客户">{{
+            activity.customerName
+          }}</el-descriptions-item>
+          <el-descriptions-item label="客户联系人">{{
+            activity.contactName
+          }}</el-descriptions-item>
+          <el-descriptions-item label="跟进方式">{{
+            activity.followMethod || activity.type
+          }}</el-descriptions-item>
+          <el-descriptions-item label="市场经理 ">{{
+            activity.follower || activity.assigneeName
+          }}</el-descriptions-item>
         </el-descriptions>
       </div>
 
       <!-- 完成表单 -->
-      <el-form ref="completeForm" :model="form" :rules="rules" label-width="100px" size="small">
+      <el-form
+        ref="completeForm"
+        :model="form"
+        :rules="rules"
+        label-width="100px"
+        size="small"
+      >
         <el-form-item label="完成时间" prop="completeTime">
           <el-date-picker
             v-model="form.completeTime"
@@ -34,7 +48,7 @@
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </el-form-item>
-        
+
         <el-form-item label="完成结果" prop="result">
           <el-input
             v-model="form.result"
@@ -45,14 +59,14 @@
             show-word-limit
           />
         </el-form-item>
-        
+
         <el-form-item label="是否成功" prop="isSuccessful">
           <el-radio-group v-model="form.isSuccessful">
             <el-radio :label="true">成功</el-radio>
             <el-radio :label="false">未达预期</el-radio>
           </el-radio-group>
         </el-form-item>
-        
+
         <el-form-item label="下次跟进" prop="nextFollowTime">
           <el-date-picker
             v-model="form.nextFollowTime"
@@ -70,7 +84,12 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button size="small" @click="handleClose">取消</el-button>
-        <el-button type="primary" size="small" :loading="loading" @click="handleSubmit">
+        <el-button
+          type="primary"
+          size="small"
+          :loading="loading"
+          @click="handleSubmit"
+        >
           完成跟进
         </el-button>
       </div>
@@ -79,109 +98,112 @@
 </template>
 
 <script>
-import { updateFollowRecord } from '@/api/crm/followRecord'
+import { updateFollowRecord } from "@/api/crm/followRecord";
 
 export default {
-  name: 'CompleteActivityModal',
+  name: "CompleteActivityModal",
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     activity: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   data() {
     return {
       loading: false,
       form: {
-        completeTime: '',
-        result: '',
+        completeTime: "",
+        result: "",
         isSuccessful: true,
-        nextFollowTime: ''
+        nextFollowTime: "",
       },
       rules: {
         completeTime: [
-          { required: true, message: '请选择完成时间', trigger: 'change' }
+          { required: true, message: "请选择完成时间", trigger: "change" },
         ],
         result: [
-          { required: true, message: '请输入完成结果', trigger: 'blur' }
+          { required: true, message: "请输入完成结果", trigger: "blur" },
         ],
         isSuccessful: [
-          { required: true, message: '请选择是否成功', trigger: 'change' }
-        ]
-      }
-    }
+          { required: true, message: "请选择是否成功", trigger: "change" },
+        ],
+      },
+    };
   },
   computed: {
     dialogVisible: {
       get() {
-        return this.visible
+        return this.visible;
       },
       set(value) {
-        this.$emit('update:visible', value)
-      }
-    }
+        this.$emit("update:visible", value);
+      },
+    },
   },
   watch: {
     visible(val) {
       if (val && this.activity) {
-        this.resetForm()
+        this.resetForm();
         // 默认设置为当前时间
-        this.form.completeTime = new Date().toISOString().slice(0, 19).replace('T', ' ')
+        this.form.completeTime = new Date()
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
       }
-    }
+    },
   },
   methods: {
     resetForm() {
       this.form = {
-        completeTime: '',
-        result: '',
+        completeTime: "",
+        result: "",
         isSuccessful: true,
-        nextFollowTime: ''
-      }
-      this.$refs.completeForm && this.$refs.completeForm.resetFields()
+        nextFollowTime: "",
+      };
+      this.$refs.completeForm && this.$refs.completeForm.resetFields();
     },
 
     handleClose() {
-      this.resetForm()
-      this.$emit('update:visible', false)
+      this.resetForm();
+      this.$emit("update:visible", false);
     },
 
     async handleSubmit() {
       try {
-        await this.$refs.completeForm.validate()
-        this.loading = true
+        await this.$refs.completeForm.validate();
+        this.loading = true;
 
         const payload = {
           id: this.activity.id,
-          status: 'completed', // 标记为已完成
+          status: "completed", // 标记为已完成
           completeTime: this.form.completeTime,
           result: this.form.result,
           isSuccessful: this.form.isSuccessful,
-          nextFollowTime: this.form.nextFollowTime || null
-        }
+          nextFollowTime: this.form.nextFollowTime || null,
+        };
 
-        const response = await updateFollowRecord(payload)
-        
+        const response = await updateFollowRecord(payload);
+
         if (response.code === 200) {
-          this.$message.success('跟进记录已完成')
-          this.$emit('refresh')
-          this.handleClose()
+          this.$message.success("跟进记录已完成");
+          this.$emit("refresh");
+          this.handleClose();
         } else {
-          this.$message.error(response.msg || '操作失败')
+          this.$message.error(response.msg || "操作失败");
         }
       } catch (error) {
-        console.error('完成跟进记录失败:', error)
-        this.$message.error('操作失败')
+        console.error("完成跟进记录失败:", error);
+        this.$message.error("操作失败");
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

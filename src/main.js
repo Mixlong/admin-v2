@@ -163,7 +163,6 @@ if (window.__POWERED_BY_WUJIE__) {
         margin: 0 auto !important;
         border-radius: 10px !important;
         box-shadow: 0 1px 3px rgba(0,0,0,.3) !important;
-        overflow: hidden !important;
       }
       .el-dialog__wrapper {
         overflow: auto !important;

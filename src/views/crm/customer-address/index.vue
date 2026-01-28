@@ -1,31 +1,31 @@
 <template>
   <div class="app-container">
     <!-- 智能搜索区域 -->
-    <IntelligentSearchForm 
+    <IntelligentSearchForm
       ref="intelligentSearchForm"
-      :searchForm="searchForm" 
-      :fields="searchFields" 
+      :searchForm="searchForm"
+      :fields="searchFields"
       @search="handleSearch"
-      :defaultVisibleCount="4" 
-      @reset="handleReset" 
+      :defaultVisibleCount="4"
+      @reset="handleReset"
       @field-change="handleFieldChange"
     >
       <!-- 自定义客户选择器字段 -->
       <template #field-customerId="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <SelectLoadMore 
-            v-model="searchForm[field.key]" 
-            :data="customerData.data" 
+          <SelectLoadMore
+            v-model="searchForm[field.key]"
+            :data="customerData.data"
             :page="customerData.page"
-            :hasMore="customerData.more" 
-            dictLabel="name" 
-            dictValue="id" 
+            :hasMore="customerData.more"
+            dictLabel="name"
+            dictValue="id"
             :request="getCustomerData"
-            size="mini" 
-            placeholder="请选择客户" 
+            size="mini"
+            placeholder="请选择客户"
             clearable
             @getChange="handleSearch"
-            style="width: 150px;"
+            style="width: 150px"
           />
         </el-form-item>
       </template>
@@ -68,22 +68,25 @@
         align="left"
         min-width="400"
         show-overflow-tooltip
+        header-align="center"
       >
         <template slot-scope="{ row }">
           <div class="address-info">
             <span v-if="row.contactName || row.contactPhone">
               <span v-if="row.contactName">{{ row.contactName }}</span>
               <span v-if="row.contactName && row.contactPhone"> / </span>
-              <span 
-                v-if="row.contactPhone" 
-                class="cursor-pointer text-blue-600" 
+              <span
+                v-if="row.contactPhone"
+                class="cursor-pointer text-blue-600"
                 @click="handleCall(row.contactPhone)"
               >
                 {{ row.contactPhone }}
               </span>
-              <span v-if="(row.contactName || row.contactPhone) && row.address"> - </span>
+              <span v-if="(row.contactName || row.contactPhone) && row.address">
+                -
+              </span>
             </span>
-            <span>{{ row.address || '--' }}</span>
+            <span>{{ row.address || "--" }}</span>
           </div>
         </template>
       </el-table-column>
@@ -120,20 +123,22 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['crm:customer:address:edit']"
-          >修改</el-button>
+            >修改</el-button
+          >
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['crm:customer:address:delete']"
-          >删除</el-button>
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 分页 -->
-    <div class="mt-5 flex justify-end" style="margin-top: 10px;">
+    <div class="mt-5 flex justify-end" style="margin-top: 10px">
       <el-pagination
         :current-page="searchForm.p"
         :page-size="searchForm.l"
@@ -159,20 +164,20 @@
 <script>
 import {
   listCustomerAddress,
-  deleteCustomerAddress
-} from '@/api/crm/customerAddress'
-import { getCustomerList } from '@/api/order'
-import IntelligentSearchForm from '@/components/IntelligentSearchForm'
-import SelectLoadMore from '@/components/selectLoadMore'
-import CustomerAddressFormDialog from './components/CustomerAddressFormDialog.vue'
-import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
+  deleteCustomerAddress,
+} from "@/api/crm/customerAddress";
+import { getCustomerList } from "@/api/order";
+import IntelligentSearchForm from "@/components/IntelligentSearchForm";
+import SelectLoadMore from "@/components/selectLoadMore";
+import CustomerAddressFormDialog from "./components/CustomerAddressFormDialog.vue";
+import dynamicTableHeightMixin from "@/mixins/dynamicTableHeight";
 
 export default {
-  name: 'CustomerAddress',
+  name: "CustomerAddress",
   components: {
     IntelligentSearchForm,
     SelectLoadMore,
-    CustomerAddressFormDialog
+    CustomerAddressFormDialog,
   },
   mixins: [dynamicTableHeightMixin],
   data() {
@@ -187,63 +192,65 @@ export default {
       addressList: [],
       // 弹框控制
       formDialogVisible: false,
-      dialogMode: 'add', // 'add' | 'edit'
+      dialogMode: "add", // 'add' | 'edit'
       currentCustomerAddress: null,
-      
+
       // 智能搜索表单
       searchForm: {
         p: 1,
         l: 30,
         customerId: null,
         contactName: null,
-        contactPhone: null
+        contactPhone: null,
       },
-      
+
       // 搜索字段配置
       searchFields: [
         {
-          key: 'customerId',
-          label: '客户',
-          type: 'custom', // 自定义客户选择器
-          placeholder: '请选择客户'
+          key: "customerId",
+          label: "客户",
+          type: "custom", // 自定义客户选择器
+          placeholder: "请选择客户",
         },
         {
-          key: 'contactName',
-          label: '联系人',
-          type: 'text',
-          placeholder: '请输入联系人'
+          key: "contactName",
+          label: "联系人",
+          type: "text",
+          placeholder: "请输入联系人",
         },
         {
-          key: 'contactPhone',
-          label: '联系方式',
-          type: 'text',
-          placeholder: '请输入联系方式'
-        }
+          key: "contactPhone",
+          label: "联系方式",
+          type: "text",
+          placeholder: "请输入联系方式",
+        },
       ],
-      
+
       // 客户数据（用于SelectLoadMore）
       customerData: {
         data: [],
         page: 1,
-        more: true
-      }
-    }
+        more: true,
+      },
+    };
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     /** 查询收货地址列表 */
     getList() {
-      this.loading = true
-      const params = { ...this.searchForm }
-      listCustomerAddress(params).then(response => {
-        this.addressList = response.data.list || []
-        this.total = response.data.total || 0
-        this.loading = false
-      }).catch(() => {
-        this.loading = false
-      })
+      this.loading = true;
+      const params = { ...this.searchForm };
+      listCustomerAddress(params)
+        .then((response) => {
+          this.addressList = response.data.list || [];
+          this.total = response.data.total || 0;
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
     },
 
     /** 获取客户数据（SelectLoadMore，用于搜索表单）*/
@@ -253,50 +260,58 @@ export default {
           p: page,
           l: 20,
           name: keyword,
-        }).then((res) => {
-          const { list, total } = res.data;
-          const filteredList = list.filter((item) => item.status === 0);
+        })
+          .then((res) => {
+            const { list, total } = res.data;
+            const filteredList = list.filter((item) => item.status === 0);
 
-          if (more) {
-            this.customerData.data = [...this.customerData.data, ...filteredList];
-          } else {
-            this.customerData.data = filteredList;
-          }
+            if (more) {
+              this.customerData.data = [
+                ...this.customerData.data,
+                ...filteredList,
+              ];
+            } else {
+              this.customerData.data = filteredList;
+            }
 
-          this.customerData.page = page;
-          this.customerData.more = this.customerData.data.length < total;
-          
-          resolve({
-            data: this.customerData.data.map(item => ({ id: item.id, name: item.customerName })),
-            hasMore: this.customerData.more
+            this.customerData.page = page;
+            this.customerData.more = this.customerData.data.length < total;
+
+            resolve({
+              data: this.customerData.data.map((item) => ({
+                id: item.id,
+                name: item.customerName,
+              })),
+              hasMore: this.customerData.more,
+            });
+          })
+          .catch(() => {
+            resolve({
+              data: [],
+              hasMore: false,
+            });
           });
-        }).catch(() => {
-          resolve({
-            data: [],
-            hasMore: false
-          });
-        });
       });
     },
 
     /** 新增按钮操作 */
     handleAdd() {
-      this.dialogMode = 'add'
-      this.currentCustomerAddress = null
-      this.formDialogVisible = true
+      this.dialogMode = "add";
+      this.currentCustomerAddress = null;
+      this.formDialogVisible = true;
     },
 
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.dialogMode = 'edit'
-      this.currentCustomerAddress = { ...row }
-      this.formDialogVisible = true
+      this.dialogMode = "edit";
+      this.currentCustomerAddress = { ...row };
+      this.formDialogVisible = true;
     },
 
     /** 智能搜索 */
     handleSearch() {
-      this.searchForm.p = 1
-      this.getList()
+      this.searchForm.p = 1;
+      this.getList();
     },
 
     /** 重置搜索 */
@@ -306,86 +321,88 @@ export default {
         l: 30,
         customerId: null,
         contactName: null,
-        contactPhone: null
-      }
-      this.getList()
+        contactPhone: null,
+      };
+      this.getList();
     },
 
     /** 字段变化 */
     handleFieldChange(field, value) {
-      this.searchForm[field.key] = value
+      this.searchForm[field.key] = value;
     },
 
     /** 多选框选中数据 */
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id)
+      this.ids = selection.map((item) => item.id);
     },
 
     /** 新增按钮操作 */
     handleAdd() {
-      this.dialogMode = 'add'
-      this.currentCustomerAddress = null
-      this.formDialogVisible = true
+      this.dialogMode = "add";
+      this.currentCustomerAddress = null;
+      this.formDialogVisible = true;
     },
 
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.dialogMode = 'edit'
-      this.currentCustomerAddress = { ...row }
-      this.formDialogVisible = true
+      this.dialogMode = "edit";
+      this.currentCustomerAddress = { ...row };
+      this.formDialogVisible = true;
     },
 
     /** 删除按钮操作 */
     handleDelete(row) {
-      const ids = row.id
-      this.$confirm('是否确认删除该客户收货地址？', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        return deleteCustomerAddress(ids)
-      }).then(() => {
-        this.getList()
-        this.msgSuccess('删除成功')
-      }).catch(() => {})
+      const ids = row.id;
+      this.$confirm("是否确认删除该客户收货地址？", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          return deleteCustomerAddress(ids);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
+        })
+        .catch(() => {});
     },
 
     /** 拨打电话 */
     handleCall(phone) {
-      window.location.href = `tel:${phone}`
+      window.location.href = `tel:${phone}`;
     },
 
     /** 分页大小改变 */
     handleSizeChange(val) {
-      this.searchForm.l = val
-      this.searchForm.p = 1
-      this.getList()
+      this.searchForm.l = val;
+      this.searchForm.p = 1;
+      this.getList();
     },
 
     /** 当前页改变 */
     handleCurrentChange(val) {
-      this.searchForm.p = val
-      this.getList()
-    }
-  }
-}
+      this.searchForm.p = val;
+      this.getList();
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
 .crm-address-table {
   margin-top: 16px;
-  
+
   .cursor-pointer {
     cursor: pointer;
   }
-  
+
   .text-blue-600 {
     color: #409eff;
-    
+
     &:hover {
       text-decoration: underline;
     }
   }
 }
 </style>
-

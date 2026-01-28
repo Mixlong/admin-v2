@@ -19,40 +19,53 @@
         <div class="info-grid">
           <div class="info-item info-item--span2">
             <div class="info-label">跟进内容</div>
-            <div class="info-value content-text">{{ activity.followContent || activity.title || '-' }}</div>
+            <div class="info-value content-text">
+              {{ activity.followContent || activity.title || "-" }}
+            </div>
           </div>
           <div class="info-item">
-            <div class="info-label">跟进方式</div>
+            <div class="info-label">沟通方式</div>
             <div class="info-value">
-              <el-tag :type="getMethodColor(activity.followMethod || activity.type)" size="small">
+              <el-tag
+                :type="getMethodColor(activity.followMethod || activity.type)"
+                size="small"
+              >
                 {{ activity.followMethod || activity.type }}
               </el-tag>
             </div>
           </div>
           <div class="info-item">
             <div class="info-label">客户名称</div>
-            <div class="info-value">{{ activity.customerName || '-' }}</div>
+            <div class="info-value">{{ activity.customerName || "-" }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">联系人</div>
-            <div class="info-value">{{ activity.contactName || '-' }}</div>
+            <div class="info-label">客户联系人</div>
+            <div class="info-value">{{ activity.contactName || "-" }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">跟进人</div>
+            <div class="info-label">市场经理</div>
             <div class="info-value user-info">
               <el-avatar :size="20" class="bg-blue-600">
-                {{ (activity.follower || activity.assigneeName || '').charAt(0) }}
+                {{
+                  (activity.follower || activity.assigneeName || "").charAt(0)
+                }}
               </el-avatar>
-              <span>{{ activity.follower || activity.assigneeName || '-' }}</span>
+              <span>{{
+                activity.follower || activity.assigneeName || "-"
+              }}</span>
             </div>
           </div>
           <div class="info-item">
             <div class="info-label">跟进时间</div>
-            <div class="info-value">{{ formatDateTime(activity.followTime || activity.plannedTime) }}</div>
+            <div class="info-value">
+              {{ formatDateTime(activity.followTime || activity.plannedTime) }}
+            </div>
           </div>
           <div class="info-item">
             <div class="info-label">创建时间</div>
-            <div class="info-value">{{ formatDateTime(activity.createTime || activity.actualTime) }}</div>
+            <div class="info-value">
+              {{ formatDateTime(activity.createTime || activity.actualTime) }}
+            </div>
           </div>
         </div>
       </div>
@@ -70,109 +83,109 @@
 </template>
 
 <script>
-import { getFollowMethodColor } from '@/views/crm/constants'
+import { getFollowMethodColor } from "@/views/crm/constants";
 
 export default {
-  name: 'ActivityDetailModal',
+  name: "ActivityDetailModal",
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     activity: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   computed: {
     dialogVisible: {
       get() {
-        return this.visible
+        return this.visible;
       },
       set(value) {
-        this.$emit('update:visible', value)
-      }
-    }
+        this.$emit("update:visible", value);
+      },
+    },
   },
   methods: {
     handleClose() {
-      this.$emit('update:visible', false)
+      this.$emit("update:visible", false);
     },
 
     handleEdit() {
       if (this.activity) {
-        this.$router.push(`/crm/activity/edit/${this.activity.id}`)
-        this.handleClose()
+        this.$router.push(`/crm/activity/edit/${this.activity.id}`);
+        this.handleClose();
       }
     },
 
     handleComplete() {
-      this.$message.success('活动已标记为完成')
-      this.$emit('refresh')
-      this.handleClose()
+      this.$message.success("活动已标记为完成");
+      this.$emit("refresh");
+      this.handleClose();
     },
 
     // 辅助函数
     getMethodColor(method) {
-      return getFollowMethodColor(method)
+      return getFollowMethodColor(method);
     },
 
     // type 就是 followMethod，使用同一个函数
     getTypeColor(type) {
-      return getFollowMethodColor(type)
+      return getFollowMethodColor(type);
     },
 
     getStatusType(status) {
       const typeMap = {
-        pending: 'warning',
-        ongoing: 'info',
-        completed: 'success',
-        cancelled: 'danger'
-      }
-      return typeMap[status] || ''
+        pending: "warning",
+        ongoing: "info",
+        completed: "success",
+        cancelled: "danger",
+      };
+      return typeMap[status] || "";
     },
 
     getStatusText(status) {
       const textMap = {
-        pending: '待执行',
-        ongoing: '进行中',
-        completed: '已完成',
-        cancelled: '已取消'
-      }
-      return textMap[status] || status
+        pending: "待执行",
+        ongoing: "进行中",
+        completed: "已完成",
+        cancelled: "已取消",
+      };
+      return textMap[status] || status;
     },
 
     getPriorityColor(priority) {
       const colorMap = {
-        high: '#f56565',
-        medium: '#ed8936',
-        low: '#48bb78'
-      }
-      return colorMap[priority] || '#718096'
+        high: "#f56565",
+        medium: "#ed8936",
+        low: "#48bb78",
+      };
+      return colorMap[priority] || "#718096";
     },
 
     getPriorityText(priority) {
       const textMap = {
-        high: '高',
-        medium: '中',
-        low: '低'
-      }
-      return textMap[priority] || priority
+        high: "高",
+        medium: "中",
+        low: "低",
+      };
+      return textMap[priority] || priority;
     },
 
     // 格式化日期时间
     formatDateTime(dateTime) {
-      if (!dateTime) return '-'
-      return new Date(dateTime).toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
-  }
-}
+      if (!dateTime) return "-";
+      return new Date(dateTime).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+  },
+};
 </script>
 
 <style scoped>

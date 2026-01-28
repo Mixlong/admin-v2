@@ -15,31 +15,33 @@
         <legend>基本信息</legend>
         <div class="detail-item">
           <label>项目名称：</label>
-          <span>{{ projectFollow.projectName || '-' }}</span>
+          <span>{{ projectFollow.projectName || "-" }}</span>
         </div>
-        
+
         <div class="detail-item">
           <label>客户名称：</label>
-          <span>{{ projectFollow.customerName || '-' }}</span>
+          <span>{{ projectFollow.customerName || "-" }}</span>
         </div>
-        
-        <div class="detail-item">
+
+        <!-- <div class="detail-item">
           <label>产品类型：</label>
-          <span>{{ projectFollow.productType || '-' }}</span>
-        </div>
-        
+          <span>{{ projectFollow.productType || "-" }}</span>
+        </div> -->
+
         <div class="detail-item">
           <label>项目阶段：</label>
           <span>{{ getProjectNodeText(projectFollow.projectNode) }}</span>
         </div>
-        
+
         <div class="detail-item">
           <label>需求总表链接：</label>
           <div class="detail-content">
-            <a v-if="projectFollow.requirementLink" 
-               :href="projectFollow.requirementLink" 
-               target="_blank" 
-               class="link">
+            <a
+              v-if="projectFollow.requirementLink"
+              :href="projectFollow.requirementLink"
+              target="_blank"
+              class="link"
+            >
               {{ projectFollow.requirementLink }}
             </a>
             <span v-else>-</span>
@@ -50,39 +52,18 @@
       <!-- 项目详情 -->
       <fieldset class="detail-fieldset">
         <legend>项目详情</legend>
-        
- 
-        
+
         <div class="detail-item">
           <label>项目背景</label>
           <div class="detail-content">
-            {{ projectFollow.projectBackground || '-' }}
+            {{ projectFollow.projectBackground || "-" }}
           </div>
         </div>
-        
-        <div class="detail-item">
-          <label>产品关键特性：</label>
-          <div class="detail-content">
-            {{ projectFollow.productKeyFeatures || '-' }}
-          </div>
-        </div>
-        
-        <div class="detail-item">
-          <label>项目里程碑：</label>
-          <div class="detail-content">
-            {{ projectFollow.projectMilestones || '-' }}
-          </div>
-        </div>
+
         <div class="detail-item">
           <label>项目进度：</label>
           <div class="detail-content">
-            {{ projectFollow.progress || '-' }}
-          </div>
-        </div>
-        <div class="detail-item">
-          <label>项目测试：</label>
-          <div class="detail-content">
-            {{ projectFollow.projectTest || '-' }}
+            {{ projectFollow.progress || "-" }}
           </div>
         </div>
       </fieldset>
@@ -93,8 +74,14 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <div class="detail-item">
-              <label>创建者：</label>
-              <span>{{ projectFollow.createBy || '-' }}</span>
+              <label>市场经理：</label>
+              <span>{{ projectFollow.createBy || "-" }}</span>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <div class="detail-item">
+              <label>交付经理：</label>
+              <span>{{ projectFollow.createBy || "-" }}</span>
             </div>
           </el-col>
           <el-col :span="12">
@@ -104,12 +91,12 @@
             </div>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <div class="detail-item">
               <label>更新者：</label>
-              <span>{{ projectFollow.updateBy || '-' }}</span>
+              <span>{{ projectFollow.updateBy || "-" }}</span>
             </div>
           </el-col>
           <el-col :span="12">
@@ -130,78 +117,78 @@
 
 <script>
 export default {
-  name: 'ProjectFollowDetailModal',
+  name: "ProjectFollowDetailModal",
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     projectFollow: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   computed: {
     dialogVisible: {
       get() {
-        return this.visible
+        return this.visible;
       },
       set(val) {
-        this.$emit('update:visible', val)
-      }
-    }
+        this.$emit("update:visible", val);
+      },
+    },
   },
   methods: {
     handleClose() {
-      this.dialogVisible = false
+      this.dialogVisible = false;
     },
 
     handleEdit() {
-      this.$emit('edit', this.projectFollow)
-      this.handleClose()
+      this.$emit("edit", this.projectFollow);
+      this.handleClose();
     },
 
     // 项目阶段类型
     getProjectNodeType(projectNode) {
       const typeMap = {
-        'requirement': 'primary',    // 需求分析 - 蓝色
-        'design': 'success',         // 方案设计 - 绿色
-        'development': 'warning',    // 开发阶段 - 橙色
-        'testing': 'danger',         // 测试阶段 - 红色
-        'deployment': 'info',        // 部署上线 - 灰色
-        'acceptance': 'success',     // 验收完成 - 绿色
-        'finished': ''               // 项目结束 - 默认
-      }
-      return typeMap[projectNode] || 'primary'
+        requirement: "primary", // 需求分析 - 蓝色
+        design: "success", // 方案设计 - 绿色
+        development: "warning", // 开发阶段 - 橙色
+        testing: "danger", // 测试阶段 - 红色
+        deployment: "info", // 部署上线 - 灰色
+        acceptance: "success", // 验收完成 - 绿色
+        finished: "", // 项目结束 - 默认
+      };
+      return typeMap[projectNode] || "primary";
     },
 
     // 项目阶段文本
     getProjectNodeText(projectNode) {
       const textMap = {
-        'requirement': '需求分析',
-        'design': '方案设计',
-        'development': '开发阶段',
-        'testing': '测试阶段',
-        'deployment': '部署上线',
-        'acceptance': '验收完成',
-        'finished': '项目结束'
-      }
-      return textMap[projectNode] || projectNode
+        requirement: "需求分析",
+        design: "方案设计",
+        development: "开发阶段",
+        testing: "测试阶段",
+        deployment: "部署上线",
+        acceptance: "验收完成",
+        finished: "项目结束",
+      };
+      return textMap[projectNode] || projectNode;
     },
 
     // 格式化日期时间
     formatDateTime(dateTime) {
-      if (!dateTime) return '-'
-      return new Date(dateTime).toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
-  }
-}
+      if (!dateTime) return "-";
+      return new Date(dateTime).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -308,15 +295,16 @@ export default {
     width: 95% !important;
     margin: 0 auto;
   }
-  
+
   .detail-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .detail-item label {
     min-width: auto;
     margin-bottom: 4px;
     line-height: 1.4;
   }
-}</style>
+}
+</style>

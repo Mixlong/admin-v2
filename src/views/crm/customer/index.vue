@@ -1,50 +1,50 @@
 <template>
   <div class="app-container">
     <!-- 智能搜索区域 -->
-    <IntelligentSearchForm 
-      :searchForm="searchForm" 
-      :fields="searchFields" 
+    <IntelligentSearchForm
+      :searchForm="searchForm"
+      :fields="searchFields"
       @search="handleSearch"
-      :defaultVisibleCount="3" 
-      @reset="handleReset" 
-      @field-change="handleFieldChange">
-
+      :defaultVisibleCount="3"
+      @reset="handleReset"
+      @field-change="handleFieldChange"
+    >
       <!-- 自定义客户名称选择器字段 -->
       <template #field-name="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <SelectLoadMore 
-            v-model="searchForm[field.key]" 
-            :data="customerData.data" 
+          <SelectLoadMore
+            v-model="searchForm[field.key]"
+            :data="customerData.data"
             :page="customerData.page"
-            :hasMore="customerData.more" 
-            dictLabel="name" 
-            dictValue="name" 
+            :hasMore="customerData.more"
+            dictLabel="name"
+            dictValue="name"
             :request="getCustomerData"
-            size="mini" 
-            placeholder="请选择" 
+            size="mini"
+            placeholder="请选择"
             clearable
             @getChange="handleSearch"
-            style="width: 100%;"
+            style="width: 100%"
           />
         </el-form-item>
       </template>
-      
+
       <!-- 自定义国家选择器字段 -->
       <template #field-country="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <SelectLoadMore 
-            v-model="searchForm[field.key]" 
-            :data="countryData.data" 
+          <SelectLoadMore
+            v-model="searchForm[field.key]"
+            :data="countryData.data"
             :page="countryData.page"
-            :hasMore="countryData.more" 
-            dictLabel="name" 
-            dictValue="value" 
+            :hasMore="countryData.more"
+            dictLabel="name"
+            dictValue="value"
             :request="getCountryData"
-            size="mini" 
-            placeholder="请选择32国家" 
+            size="mini"
+            placeholder="请选择32国家"
             clearable
             @getChange="handleSearch"
-            style="width: 100%;"
+            style="width: 100%"
           />
         </el-form-item>
       </template>
@@ -62,223 +62,327 @@
       </template>
     </IntelligentSearchForm>
     <!-- 客户表格 -->
-      <el-table
-        v-loading="loading"
-        :data="filteredCustomers"
-        style="width: 100%"
-        @sort-change="handleSortChange"
-        row-key="id"
-        class="crm-customer-table"
-        :scroll="{ x: 4000, y: 600 }"
-        border
-        :height="tableHeight(30)"
-        size="small"
+    <el-table
+      v-loading="loading"
+      :data="filteredCustomers"
+      style="width: 100%"
+      @sort-change="handleSortChange"
+      row-key="id"
+      class="crm-customer-table"
+      :scroll="{ x: 4000, y: 600 }"
+      border
+      :height="tableHeight(30)"
+      size="small"
+    >
+      <el-table-column prop="name" label="客户名称" align="center" fixed="left">
+      </el-table-column>
+
+      <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
+
+      <el-table-column
+        prop="customerBrand"
+        label="客户品牌"
+        width="120"
+        align="center"
+      />
+      <el-table-column
+        prop="customerAttribute"
+        label="客户属性"
+        width="120"
+        align="center"
+        :filters="customerAttributeFilters"
+        :filter-method="filterCustomerAttribute"
+        column-key="customerAttribute"
       >
+        <template slot-scope="{ row }">
+          {{
+            getDictLabel("customer_attribute_enum", row.customerAttribute) ||
+            row.customerAttribute ||
+            "--"
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="country"
+        label="所属国家"
+        width="100"
+        align="center"
+        :filters="countryFilters"
+        :filter-method="filterCountry"
+        column-key="country"
+      >
+        <template slot-scope="{ row }">
+          {{
+            getDictLabel("country_origin", row.country) || row.country || "--"
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="electricalSupplier"
+        label="现有电控供应商"
+        width="120"
+        align="center"
+      />
 
-        <el-table-column
-          prop="name"
-          label="客户名称"
-          align="center"
-          fixed="left"
-        >
-        </el-table-column>
+      <el-table-column
+        prop="instrumentSupplier"
+        label="现有仪表供应商"
+        width="120"
+        align="center"
+      />
 
-        <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
+      <el-table-column
+        prop="assemblyFactory"
+        label="组装工厂"
+        width="120"
+        align="center"
+      />
 
-        <el-table-column prop="customerBrand" label="客户品牌" width="120" align="center" />
-        <el-table-column 
-          prop="customerAttribute" 
-          label="客户属性" 
-          width="120" 
-          align="center"
-          :filters="customerAttributeFilters"
-          :filter-method="filterCustomerAttribute"
-          column-key="customerAttribute"
-        >
-          <template slot-scope="{ row }">
-            {{ getDictLabel('customer_attribute_enum', row.customerAttribute) || row.customerAttribute || '--' }}
-          </template>
-        </el-table-column>
-        <el-table-column 
-          prop="country" 
-          label="所属国家" 
-          width="100" 
-          align="center"
-          :filters="countryFilters"
-          :filter-method="filterCountry"
-          column-key="country"
-        >
-          <template slot-scope="{ row }">
-            {{ getDictLabel('country_origin', row.country) || row.country || '--' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="electricalSupplier" label="现有电控供应商" width="120" align="center" />
+      <el-table-column
+        prop="annualShipments"
+        label="年出货量"
+        width="120"
+        align="center"
+      />
+      <el-table-column
+        prop="backgroundCheck"
+        label="背景调查"
+        width="200"
+        show-overflow-tooltip
+        align="center"
+      />
+      <el-table-column
+        prop="customerLevel"
+        label="客户级别"
+        width="100"
+        align="center"
+        :filters="customerLevelFilters"
+        :filter-method="filterCustomerLevel"
+        column-key="customerLevel"
+      >
+        <template slot-scope="{ row }">
+          <el-tag
+            :type="getLevelType(row.customerLevel)"
+            size="small"
+            v-if="row.customerLevel"
+          >
+            {{
+              getDictLabel("customer_type_enum", row.customerLevel) ||
+              row.customerLevel
+            }}
+          </el-tag>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="customerStatus"
+        label="客户状态"
+        width="100"
+        align="center"
+        :filters="customerStatusFilters"
+        :filter-method="filterCustomerStatus"
+        column-key="customerStatus"
+      >
+        <template slot-scope="scope">
+          <el-tag
+            v-if="scope.row.customerStatus"
+            size="mini"
+            :type="getCustomerStatusType(scope.row.customerStatus)"
+          >
+            {{ scope.row.customerStatus }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="customerSource"
+        label="客户来源"
+        width="100"
+        align="center"
+        :filters="customerSourceFilters"
+        :filter-method="filterCustomerSource"
+        column-key="customerSource"
+      />
 
-        <el-table-column prop="instrumentSupplier" label="现有仪表供应商" width="120" align="center" />
+      <el-table-column
+        prop="productIntent"
+        label="产品意向"
+        width="200"
+        show-overflow-tooltip
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          {{
+            getDictLabel("product_intention", row.productIntent) ||
+            row.productIntent
+          }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="assemblyFactory" label="组装工厂" width="120" align="center" />
+      <el-table-column
+        prop="address"
+        label="客户网址"
+        min-width="200"
+        show-overflow-tooltip
+        align="center"
+      />
 
-        <el-table-column prop="annualShipments" label="年出货量" width="120" align="center" />
-        <el-table-column prop="backgroundCheck" label="背景调查" width="200" show-overflow-tooltip align="center" />
-        <el-table-column 
-          prop="customerLevel" 
-          label="客户级别" 
-          width="100" 
-          align="center"
-          :filters="customerLevelFilters"
-          :filter-method="filterCustomerLevel"
-          column-key="customerLevel"
-        >
-          <template slot-scope="{ row }">
-            <el-tag :type="getLevelType(row.customerLevel)" size="small" v-if="row.customerLevel">
-              {{ getDictLabel('customer_type_enum', row.customerLevel) || row.customerLevel }}
-            </el-tag>
-            <div v-else>
-              --
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column 
-          prop="customerStatus" 
-          label="客户状态" 
-          width="100" 
-          align="center"
-          :filters="customerStatusFilters"
-          :filter-method="filterCustomerStatus"
-          column-key="customerStatus"
-        >
-          <template slot-scope="scope">
-            <el-tag v-if="scope.row.customerStatus" size="mini" :type="getCustomerStatusType(scope.row.customerStatus)">
-              {{ scope.row.customerStatus }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column 
-          prop="customerSource" 
-          label="客户来源" 
-          width="100" 
-          align="center"
-          :filters="customerSourceFilters"
-          :filter-method="filterCustomerSource"
-          column-key="customerSource"
-        />
+      <el-table-column
+        prop="paymentTerm"
+        label="结算期限"
+        width="120"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          <el-tag :type="getPaymentTermType(row.paymentTerm)" size="small">
+            {{ row.paymentTerm || "--" }}
+          </el-tag>
+        </template>
+      </el-table-column>
 
+      <el-table-column
+        prop="invoiceTitle"
+        label="发票抬头"
+        width="150"
+        show-overflow-tooltip
+        align="center"
+      />
 
-        <el-table-column prop="productIntent" label="产品意向" width="200" show-overflow-tooltip align="center">
-          <template slot-scope="{ row }">
-            {{ getDictLabel('product_intention', row.productIntent) || row.productIntent }}
-          </template>
-        </el-table-column>
+      <el-table-column
+        prop="invoiceTaxNo"
+        label="税号"
+        width="180"
+        show-overflow-tooltip
+        align="center"
+      />
 
- 
-        <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip align="center" />
+      <el-table-column
+        prop="taxType"
+        label="发票类型"
+        width="100"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          <el-tag :type="getTaxTypeColor(row.taxType)">
+            {{ getDictLabel("tax_type", row.taxType) || row.taxType }}
+          </el-tag>
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="paymentTerm" label="结算期限" width="120" align="center">
-          <template slot-scope="{ row }">
-            <el-tag :type="getPaymentTermType(row.paymentTerm)" size="small">
-              {{ row.paymentTerm || '--' }}
-            </el-tag>
-          </template>
-        </el-table-column>
+      <el-table-column prop="vatRate" label="税率" width="80" align="center" />
 
-        <el-table-column prop="invoiceTitle" label="发票抬头" width="150" show-overflow-tooltip align="center" />
+      <el-table-column
+        prop="bankName"
+        label="开户银行"
+        width="100"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          <el-tag :type="getBankColor(row.bankName)">
+            {{ getDictLabel("bank_account", row.bankName) || row.bankName }}
+          </el-tag>
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="invoiceTaxNo" label="税号" width="180" show-overflow-tooltip align="center" />
+      <el-table-column
+        prop="bankAccount"
+        label="银行账号"
+        width="180"
+        show-overflow-tooltip
+        align="center"
+      />
 
-        <el-table-column prop="taxType" label="发票类型" width="100" align="center">
-          <template slot-scope="{ row }">
-            <el-tag :type="getTaxTypeColor(row.taxType)">
-              {{ getDictLabel('tax_type', row.taxType) || row.taxType }}
-            </el-tag>
-          </template>
-        </el-table-column>
+      <el-table-column
+        prop="bankPhone"
+        label="开户电话"
+        width="130"
+        align="center"
+      />
 
-        <el-table-column prop="vatRate" label="税率" width="80" align="center" />
+      <el-table-column
+        prop="salesLeader"
+        label="销售负责人"
+        width="120"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          <div class="flex items-center justify-center space-x-1">
+            <span>{{ row.salesLeader }}</span>
+          </div>
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="bankName" label="开户银行" width="100" align="center">
-          <template slot-scope="{ row }">
-            <el-tag :type="getBankColor(row.bankName)">
-              {{ getDictLabel('bank_account', row.bankName) || row.bankName }}
-            </el-tag>
-          </template>
-        </el-table-column>
+      <el-table-column
+        prop="createBy"
+        label="创建人"
+        width="120"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          <div class="flex items-center justify-center space-x-1">
+            <span>{{ row.createBy }}</span>
+          </div>
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="bankAccount" label="银行账号" width="180" show-overflow-tooltip align="center" />
+      <el-table-column
+        prop="createTime"
+        label="创建时间"
+        width="100"
+        align="center"
+      >
+        <template slot-scope="{ row }">
+          {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="bankPhone" label="开户电话" width="130" align="center" />
+      <el-table-column label="操作" width="200" fixed="right" align="center">
+        <template slot-scope="{ row }">
+          <el-button
+            type="text"
+            size="small"
+            icon="el-icon-view"
+            @click="handleView(row)"
+            v-hasPermi="['crm:customer:query']"
+          >
+            查看
+          </el-button>
+          <el-button
+            type="text"
+            size="small"
+            icon="el-icon-edit"
+            @click="handleEdit(row)"
+            v-hasPermi="['crm:customer:edit']"
+          >
+            编辑
+          </el-button>
 
-        <el-table-column prop="salesLeader" label="销售负责人" width="120" align="center">
-          <template slot-scope="{ row }">
-            <div class="flex items-center justify-center space-x-1">
-              <span>{{ row.salesLeader }}</span>
-            </div>
-          </template>
-        </el-table-column>
+          <el-button
+            type="text"
+            size="small"
+            icon="el-icon-delete"
+            style="color: #f56c6c"
+            @click="handleDelete(row)"
+            v-hasPermi="['crm:customer:remove']"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
-
-        <el-table-column prop="createBy" label="创建人" width="120" align="center">
-          <template slot-scope="{ row }">
-            <div class="flex items-center justify-center space-x-1">
-              <span>{{ row.createBy }}</span>
-            </div>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="createTime" label="创建时间" width="100" align="center" >
-          <template slot-scope="{ row }">
-            {{ parseTime(row.createTime,"{y}-{m}-{d}") }}
-          </template>
-        </el-table-column>
-
-
-        <el-table-column label="操作" width="200" fixed="right" align="center">
-          <template slot-scope="{ row }">
-            <el-button
-              type="text"
-              size="small"
-              icon="el-icon-view"
-              @click="handleView(row)"
-              v-hasPermi="['crm:customer:query']"
-            >
-              查看
-            </el-button>
-            <el-button
-              type="text"
-              size="small"
-              icon="el-icon-edit"
-              @click="handleEdit(row)"
-              v-hasPermi="['crm:customer:edit']"
-            >
-              编辑
-            </el-button>
-   
-            <el-button
-              type="text"
-              size="small"
-              icon="el-icon-delete"
-              style="color: #f56c6c"
-              @click="handleDelete(row)"
-              v-hasPermi="['crm:customer:remove']"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页 -->
-      <div class="mt10 flex justify-end">
-        <el-pagination
-          :current-page="currentPage"
-          :page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          size="small"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+    <!-- 分页 -->
+    <div class="mt10 flex justify-end">
+      <el-pagination
+        :current-page="currentPage"
+        :page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        size="small"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 客户详情弹框 -->
     <CustomerDetailModal
@@ -304,22 +408,32 @@
 </template>
 
 <script>
-import CustomerDetailModal from './components/CustomerDetailModal.vue'
-import CustomerFormModal from './components/CustomerFormModal.vue'
-import FollowUpModal from './components/FollowUpModal.vue'
-import IntelligentSearchForm from '@/components/IntelligentSearchForm'
-import SelectLoadMore from '@/components/selectLoadMore'
-import { getSoCustomerList, deleteSoCustomer } from '@/api/crm/soCustomer'
+import CustomerDetailModal from "./components/CustomerDetailModal.vue";
+import CustomerFormModal from "./components/CustomerFormModal.vue";
+import FollowUpModal from "./components/FollowUpModal.vue";
+import IntelligentSearchForm from "@/components/IntelligentSearchForm";
+import SelectLoadMore from "@/components/selectLoadMore";
+import { getSoCustomerList, deleteSoCustomer } from "@/api/crm/soCustomer";
 
 export default {
-  name: 'CrmCustomer',
-  dicts: ['customer_type_enum', 'customer_attribute_enum', 'customer_source', 'control_type', 'product_intention', 'settlement_period', 'tax_type', 'bank_account', 'country_origin'],
+  name: "CrmCustomer",
+  dicts: [
+    "customer_type_enum",
+    "customer_attribute_enum",
+    "customer_source",
+    "control_type",
+    "product_intention",
+    "settlement_period",
+    "tax_type",
+    "bank_account",
+    "country_origin",
+  ],
   components: {
     CustomerDetailModal,
     CustomerFormModal,
     FollowUpModal,
     IntelligentSearchForm,
-    SelectLoadMore
+    SelectLoadMore,
   },
   data() {
     return {
@@ -332,45 +446,45 @@ export default {
       customerData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
 
       // 国家数据（用于搜索选择器）
       countryData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
 
       // 搜索表单
       searchForm: {
-        name: '',
-        no: '',
-        country: '',
+        name: "",
+        no: "",
+        country: "",
       },
 
       // 搜索字段配置
       searchFields: [
-        { 
-          key: 'name', 
-          label: '客户名称', 
-          component: 'el-select', 
-          width: '200px', 
-          sort: 1, 
+        {
+          key: "name",
+          label: "客户名称",
+          component: "el-select",
+          width: "200px",
+          sort: 1,
           autoSearch: false,
           props: {
-            placeholder: '请选择客户名称',
+            placeholder: "请选择客户名称",
             clearable: true,
             filterable: true,
-            options: []
-          }
+            options: [],
+          },
         },
-        { 
-          key: 'country', 
-          label: '所属国家', 
-          component: 'custom', 
-          width: '150px', 
-          sort: 2, 
+        {
+          key: "country",
+          label: "所属国家",
+          component: "custom",
+          width: "150px",
+          sort: 2,
           autoSearch: false,
         },
       ],
@@ -385,86 +499,90 @@ export default {
       // 分页
       currentPage: 1,
       pageSize: 20,
-      total: 0
-    }
+      total: 0,
+    };
   },
   computed: {
     // 直接使用从API获取的customers数据
     filteredCustomers() {
-      return this.customers
+      return this.customers;
     },
 
     // 客户属性筛选选项（使用中文标签作为筛选值）
     customerAttributeFilters() {
-      if (!this.dict || !this.dict.type || !this.dict.type.customer_attribute_enum) {
-        return []
+      if (
+        !this.dict ||
+        !this.dict.type ||
+        !this.dict.type.customer_attribute_enum
+      ) {
+        return [];
       }
-      return this.dict.type.customer_attribute_enum.map(item => ({
+      return this.dict.type.customer_attribute_enum.map((item) => ({
         text: item.label,
-        value: item.label  // 使用 label（中文）作为筛选值
-      }))
+        value: item.label, // 使用 label（中文）作为筛选值
+      }));
     },
 
     // 客户级别筛选选项（使用字典value作为筛选值，因为数据库存储的是value）
     customerLevelFilters() {
       if (!this.dict || !this.dict.type || !this.dict.type.customer_type_enum) {
-        return []
+        return [];
       }
-      return this.dict.type.customer_type_enum.map(item => ({
-        text: item.label,      // 显示中文标签
-        value: item.value      // 使用 value（如 "2"）作为筛选值，匹配数据库存储
-      }))
+      return this.dict.type.customer_type_enum.map((item) => ({
+        text: item.label, // 显示中文标签
+        value: item.value, // 使用 value（如 "2"）作为筛选值，匹配数据库存储
+      }));
     },
 
     // 客户状态筛选选项（固定的几个选项）
     customerStatusFilters() {
       return [
-        { text: '潜在客户', value: '潜在客户' },
-        { text: '意向客户', value: '意向客户' },
-        { text: '送样客户', value: '送样客户' },
-        { text: '成交客户', value: '成交客户' },
-        { text: '流失客户', value: '流失客户' }
-      ]
+        { text: "潜在客户", value: "潜在客户" },
+        { text: "意向客户", value: "意向客户" },
+        { text: "送样客户", value: "送样客户" },
+        { text: "成交客户", value: "成交客户" },
+        { text: "流失客户", value: "流失客户" },
+      ];
     },
 
     // 所属国家筛选选项（使用中文标签作为筛选值）
     countryFilters() {
       if (!this.dict || !this.dict.type || !this.dict.type.country_origin) {
-        return []
+        return [];
       }
-      return this.dict.type.country_origin.map(item => ({
+      return this.dict.type.country_origin.map((item) => ({
         text: item.label,
-        value: item.label  // 使用 label（中文）作为筛选值
-      }))
+        value: item.label, // 使用 label（中文）作为筛选值
+      }));
     },
 
     // 客户来源筛选选项（使用中文标签作为筛选值）
     customerSourceFilters() {
       if (!this.dict || !this.dict.type || !this.dict.type.customer_source) {
-        return []
+        return [];
       }
-      return this.dict.type.customer_source.map(item => ({
+      return this.dict.type.customer_source.map((item) => ({
         text: item.label,
-        value: item.label  // 使用 label（中文）作为筛选值
-      }))
-    }
+        value: item.label, // 使用 label（中文）作为筛选值
+      }));
+    },
   },
 
   methods: {
     async getCustomerList() {
-      this.loading = true
+      this.loading = true;
       try {
         // 调用真实的客户API
-        const response = await this.fetchCustomersFromAPI()
-        this.customers = response.list || []
-        this.total = response.total || 0
+        const response = await this.fetchCustomersFromAPI();
+        this.customers = response.list || [];
+        this.total = response.total || 0;
       } catch (error) {
-        console.error('获取客户列表失败:', error)
+        console.error("获取客户列表失败:", error);
         // 全局 API 拦截器已处理错误消息，无需重复提示
-        this.customers = []
-        this.total = 0
+        this.customers = [];
+        this.total = 0;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -473,121 +591,116 @@ export default {
         // 构建API参数
         const params = {
           p: this.currentPage,
-          l: this.pageSize
-        }
+          l: this.pageSize,
+        };
 
         // 添加搜索参数
         if (this.searchForm.name) {
-          params.name = this.searchForm.name
+          params.name = this.searchForm.name;
         }
         if (this.searchForm.no) {
-          params.no = this.searchForm.no
+          params.no = this.searchForm.no;
         }
         if (this.searchForm.country) {
-          params.country = this.searchForm.country
+          params.country = this.searchForm.country;
         }
 
-        console.log('客户搜索参数:', params)
+        console.log("客户搜索参数:", params);
 
-        const response = await getSoCustomerList(params)
-        
-        console.log('客户API响应数据:', response)
-        
+        const response = await getSoCustomerList(params);
+
+        console.log("客户API响应数据:", response);
+
         if (response.code === 200 && response.data) {
-          const customers = response.data.list || []
-          console.log('客户列表数据:', customers)
+          const customers = response.data.list || [];
+          console.log("客户列表数据:", customers);
           if (customers.length > 0) {
-            console.log('第一个客户数据结构:', customers[0])
+            console.log("第一个客户数据结构:", customers[0]);
           }
-          
+
           return {
             list: customers,
             total: response.data.total || 0,
             pageNum: response.data.pageNum || 1,
-            pageSize: response.data.pageSize || this.pageSize
-          }
+            pageSize: response.data.pageSize || this.pageSize,
+          };
         }
-        
-        return { list: [], total: 0 }
+
+        return { list: [], total: 0 };
       } catch (error) {
-        console.error('API调用失败:', error)
-        return { list: [], total: 0 }
+        console.error("API调用失败:", error);
+        return { list: [], total: 0 };
       }
     },
 
     handleAdd() {
-      this.currentCustomer = null
-      this.formVisible = true
+      this.currentCustomer = null;
+      this.formVisible = true;
     },
 
     handleEdit(row) {
-      console.log('编辑客户数据:', row)
-      this.currentCustomer = row
-      this.formVisible = true
+      console.log("编辑客户数据:", row);
+      this.currentCustomer = row;
+      this.formVisible = true;
     },
 
     handleView(row) {
-      this.currentCustomer = row
-      this.detailVisible = true
+      this.currentCustomer = row;
+      this.detailVisible = true;
     },
-
 
     async handleDelete(row) {
       try {
-        await this.$confirm(
-          `确定要删除客户"${row.name}"吗？`,
-          '确认删除',
-          {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-        )
+        await this.$confirm(`确定要删除客户"${row.name}"吗？`, "确认删除", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
 
         // 调用删除API
-        const response = await deleteSoCustomer(row.id)
+        const response = await deleteSoCustomer(row.id);
         if (response.code === 200) {
-          this.$message.success('删除成功')
-          this.getCustomerList()
+          this.$message.success("删除成功");
+          this.getCustomerList();
         } else {
-          this.$message.error(response.msg || '删除失败')
+          this.$message.error(response.msg || "删除失败");
         }
       } catch (error) {
-        if (error !== 'cancel') {
-          console.error('删除客户失败:', error)
-          this.$message.error('删除失败，请稍后重试')
+        if (error !== "cancel") {
+          console.error("删除客户失败:", error);
+          this.$message.error("删除失败，请稍后重试");
         }
       }
     },
 
     handleSelectionChange(selection) {
-      this.selectedRows = selection
+      this.selectedRows = selection;
     },
 
     // IntelligentSearchForm 事件处理
     handleSearch(searchForm) {
-      console.log('执行搜索:', searchForm)
-      this.currentPage = 1
+      console.log("执行搜索:", searchForm);
+      this.currentPage = 1;
       // 调用服务端搜索
-      this.getCustomerList()
+      this.getCustomerList();
     },
 
     handleReset() {
-      console.log('重置搜索表单')
-      this.currentPage = 1
+      console.log("重置搜索表单");
+      this.currentPage = 1;
       // 搜索表单会自动重置为初始值，重新加载数据
-      this.getCustomerList()
+      this.getCustomerList();
     },
 
     handleFieldChange(fieldKey, value) {
-      console.log(`字段 ${fieldKey} 变化为:`, value)
-      
+      console.log(`字段 ${fieldKey} 变化为:`, value);
+
       // 对于有autoSearch设置的字段，自动触发搜索
-      const field = this.searchFields.find(f => f.key === fieldKey)
+      const field = this.searchFields.find((f) => f.key === fieldKey);
       if (field && field.autoSearch) {
-        console.log('自动搜索字段变化，触发搜索:', fieldKey, value)
-        this.currentPage = 1
-        this.getCustomerList()
+        console.log("自动搜索字段变化，触发搜索:", fieldKey, value);
+        this.currentPage = 1;
+        this.getCustomerList();
       }
     },
 
@@ -596,124 +709,140 @@ export default {
     },
 
     handleExport() {
-      this.$message.info('导出功能开发中')
+      this.$message.info("导出功能开发中");
     },
 
     handleSizeChange(size) {
-      this.pageSize = size
-      this.getCustomerList()
+      this.pageSize = size;
+      this.getCustomerList();
     },
 
     handleCurrentChange(page) {
-      this.currentPage = page
-      this.getCustomerList()
+      this.currentPage = page;
+      this.getCustomerList();
     },
 
     // 辅助函数
     // 获取字典标签
     getDictLabel(dictType, value) {
-      if (!value || !this.dict || !this.dict.type || !this.dict.type[dictType]) {
-        return value
+      if (
+        !value ||
+        !this.dict ||
+        !this.dict.type ||
+        !this.dict.type[dictType]
+      ) {
+        return value;
       }
-      const dict = this.dict.type[dictType].find(item => item.value === value)
-      return dict ? dict.label : value
+      const dict = this.dict.type[dictType].find(
+        (item) => item.value === value
+      );
+      return dict ? dict.label : value;
     },
 
     getStatusType(customerStatus) {
       const statusMap = {
-        '潜在客户': '',
-        '意向客户': 'warning',
-        '成交客户': 'success',
-        '流失客户': 'danger'
-      }
-      return statusMap[customerStatus] || ''
+        潜在客户: "",
+        意向客户: "warning",
+        成交客户: "success",
+        流失客户: "danger",
+      };
+      return statusMap[customerStatus] || "";
     },
 
     // 获取客户状态颜色类型
     getCustomerStatusType(customerStatus) {
       const statusMap = {
-        '潜在客户': 'info',      // 灰色 - 表示未开发
-        '意向客户': 'warning',   // 橙色 - 表示有意向
-        '送样客户': 'primary',   // 蓝色 - 表示已送样
-        '成交客户': 'success',   // 绿色 - 表示成功
-        '流失客户': 'danger'     // 红色 - 表示失败
-      }
+        潜在客户: "info", // 灰色 - 表示未开发
+        意向客户: "warning", // 橙色 - 表示有意向
+        送样客户: "primary", // 蓝色 - 表示已送样
+        成交客户: "success", // 绿色 - 表示成功
+        流失客户: "danger", // 红色 - 表示失败
+      };
       // 如果找不到匹配的状态，返回默认颜色 'info'（灰色）
       // 这样即使新增了状态但忘记配置颜色，也会有默认显示
-      return statusMap[customerStatus] || 'info'
+      return statusMap[customerStatus] || "info";
     },
 
     getStatusText(customerStatus) {
       const statusMap = {
-        '潜在客户': '潜在客户',
-        '意向客户': '意向客户',
-        '成交客户': '成交客户',
-        '流失客户': '流失客户'
-      }
-      return statusMap[customerStatus] || ''
+        潜在客户: "潜在客户",
+        意向客户: "意向客户",
+        成交客户: "成交客户",
+        流失客户: "流失客户",
+      };
+      return statusMap[customerStatus] || "";
     },
 
     getLevelType(level) {
       const typeMap = {
-        '重要客户': 'danger',
-        'VIP客户': 'warning',
-        '普通客户': 'success',
-        '潜在客户': 'info'
-      }
-      return typeMap[level] || ''
+        重要客户: "danger",
+        VIP客户: "warning",
+        普通客户: "success",
+        潜在客户: "info",
+      };
+      return typeMap[level] || "";
     },
 
     getPaymentTermType(value) {
-      const item = this.settlementPeriodItem(value)
-      const label = item ? item.label : value
+      const item = this.settlementPeriodItem(value);
+      const label = item ? item.label : value;
       const typeMap = {
-        '月结': 'warning',
-        '现金': 'success',
-        '季结': 'info',
-        '半年结': 'primary',
-        '年结': 'success'
-      }
-      return typeMap[label] || ''
+        月结: "warning",
+        现金: "success",
+        季结: "info",
+        半年结: "primary",
+        年结: "success",
+      };
+      return typeMap[label] || "";
     },
 
     settlementPeriodItem(value) {
-      const list = (this.dict && this.dict.type && this.dict.type.settlement_period) || []
-      return list.find(item => String(item.raw?.dictCode) === String(value) || String(item.value) === String(value)) || null
+      const list =
+        (this.dict && this.dict.type && this.dict.type.settlement_period) || [];
+      return (
+        list.find(
+          (item) =>
+            String(item.raw?.dictCode) === String(value) ||
+            String(item.value) === String(value)
+        ) || null
+      );
     },
 
     // 获取结算期限显示文本（与 CustomerDetailModal 保持一致）
     getSettlementPeriodLabel(value) {
-      const item = this.settlementPeriodItem(value)
-      return item ? (item.label || item.dictLabel) : value
+      const item = this.settlementPeriodItem(value);
+      return item ? item.label || item.dictLabel : value;
     },
 
     getTaxTypeColor(type) {
       const typeMap = {
-        '纸质专票': 'danger',
-        '电子专票': 'info',
-        '普通发票': 'success'
-      }
-      return typeMap[type] || ''
+        纸质专票: "danger",
+        电子专票: "info",
+        普通发票: "success",
+      };
+      return typeMap[type] || "";
     },
 
     getBankColor(bankName) {
       const typeMap = {
-        '建设银行': 'success',
-        '工商银行': 'danger',
-        '农业银行': 'info',
-        '中国银行': 'warning'
-      }
-      return typeMap[bankName] || ''
+        建设银行: "success",
+        工商银行: "danger",
+        农业银行: "info",
+        中国银行: "warning",
+      };
+      return typeMap[bankName] || "";
     },
 
     getFollowUpClass(date) {
-      const today = new Date()
-      const followUpDate = new Date(date)
-      const diffDays = Math.ceil((followUpDate.getTime() - today.getTime()) / (1000 * 3600 * 24))
+      const today = new Date();
+      const followUpDate = new Date(date);
+      const diffDays = Math.ceil(
+        (followUpDate.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      );
 
-      if (diffDays < 0) return 'text-red-500' // 已过期
-      if (diffDays <= 3) return 'text-orange-500' // 即将到期
-      return 'text-green-500' // 正常
+      if (diffDays < 0) return "text-red-500"; // 已过期
+      if (diffDays <= 3) return "text-orange-500"; // 即将到期
+      return "text-green-500"; // 正常
     },
 
     // 获取客户数据（用于搜索选择器）
@@ -722,24 +851,29 @@ export default {
         getSoCustomerList({
           p: page,
           name: keyword,
-        }).then((res) => {
-          if (res.code === 200 && res.data) {
-            const { list, total, pageNum, pageSize } = res.data;
-            const filteredList = list || [];
+        })
+          .then((res) => {
+            if (res.code === 200 && res.data) {
+              const { list, total, pageNum, pageSize } = res.data;
+              const filteredList = list || [];
 
-            if (more) {
-              this.customerData.data = [...this.customerData.data, ...filteredList];
-            } else {
-              this.customerData.data = filteredList;
+              if (more) {
+                this.customerData.data = [
+                  ...this.customerData.data,
+                  ...filteredList,
+                ];
+              } else {
+                this.customerData.data = filteredList;
+              }
+
+              this.customerData.page = pageNum;
+              this.customerData.more = this.customerData.data.length < total;
             }
-
-            this.customerData.page = pageNum;
-            this.customerData.more = this.customerData.data.length < total;
-          }
-          resolve();
-        }).catch(() => {
-          resolve();
-        });
+            resolve();
+          })
+          .catch(() => {
+            resolve();
+          });
       });
     },
 
@@ -753,13 +887,13 @@ export default {
         }
 
         let countryList = this.dict.type.country_origin || [];
-        
+
         // 如果有搜索关键词，进行筛选
         if (keyword && keyword.trim()) {
           const keywordLower = keyword.toLowerCase();
-          countryList = countryList.filter(item => {
-            const label = (item.label || item.dictLabel || '').toLowerCase();
-            const value = (item.value || item.dictValue || '').toLowerCase();
+          countryList = countryList.filter((item) => {
+            const label = (item.label || item.dictLabel || "").toLowerCase();
+            const value = (item.value || item.dictValue || "").toLowerCase();
             return label.includes(keywordLower) || value.includes(keywordLower);
           });
         }
@@ -769,12 +903,12 @@ export default {
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const paginatedList = countryList.slice(startIndex, endIndex);
-        
+
         // 转换为 SelectLoadMore 需要的格式
-        const formattedList = paginatedList.map(item => ({
+        const formattedList = paginatedList.map((item) => ({
           id: item.value || item.dictValue,
           value: item.value || item.dictValue,
-          name: item.label || item.dictLabel
+          name: item.label || item.dictLabel,
         }));
 
         if (more) {
@@ -785,7 +919,7 @@ export default {
 
         this.countryData.page = page;
         this.countryData.more = endIndex < countryList.length;
-        
+
         resolve();
       });
     },
@@ -793,49 +927,57 @@ export default {
     // 初始化字典选项
     initDictOptions() {
       // 客户等级选项
-      const customerLevelField = this.searchFields.find(field => field.key === 'customerLevel')
-      if (customerLevelField && this.dict && this.dict.type && this.dict.type.customer_type_enum) {
-        customerLevelField.props.options = this.dict.type.customer_type_enum.map(dict => ({
-          label: dict.label,
-          value: dict.value
-        }))
+      const customerLevelField = this.searchFields.find(
+        (field) => field.key === "customerLevel"
+      );
+      if (
+        customerLevelField &&
+        this.dict &&
+        this.dict.type &&
+        this.dict.type.customer_type_enum
+      ) {
+        customerLevelField.props.options =
+          this.dict.type.customer_type_enum.map((dict) => ({
+            label: dict.label,
+            value: dict.value,
+          }));
       }
     },
 
     // 表格筛选方法
     filterCustomerAttribute(value, row) {
       // 直接比较中文值
-      return row.customerAttribute === value
+      return row.customerAttribute === value;
     },
 
     filterCustomerLevel(value, row) {
       // 直接比较中文值
-      return row.customerLevel === value
+      return row.customerLevel === value;
     },
 
     filterCustomerStatus(value, row) {
-      return row.customerStatus === value
+      return row.customerStatus === value;
     },
 
     filterCountry(value, row) {
       // 直接比较中文值
-      return row.country === value
+      return row.country === value;
     },
 
     filterCustomerSource(value, row) {
       // 直接比较中文值
-      return row.customerSource === value
-    }
+      return row.customerSource === value;
+    },
   },
 
   mounted() {
-    this.getCustomerList()
+    this.getCustomerList();
     // 初始化字典选项
     this.$nextTick(() => {
-      this.initDictOptions()
-    })
-  }
-}
+      this.initDictOptions();
+    });
+  },
+};
 </script>
 
 <style scoped>

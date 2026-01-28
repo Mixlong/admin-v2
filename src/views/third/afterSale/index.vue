@@ -321,9 +321,9 @@
         width="110"
       >
         <template slot-scope="{ row }">
-           <span>
+          <span>
             {{ row.processingTime }}
-           </span>
+          </span>
         </template>
       </el-table-column>
 
@@ -489,7 +489,7 @@
         filter-placement="bottom"
       >
         <template slot-scope="{ row }">
-          {{  row.parentResponsibilityPerson }}
+          {{ row.parentResponsibilityPerson }}
         </template>
       </el-table-column>
       <!-- 17. 责任判定 -->
@@ -504,7 +504,7 @@
         filter-placement="bottom"
       >
         <template slot-scope="{ row }">
-          {{ row.responsibilityPerson}}
+          {{ row.responsibilityPerson }}
         </template>
       </el-table-column>
 
@@ -579,7 +579,9 @@
               class="margin-left-xs"
               trigger="click"
               placement="bottom"
-              @visible-change="(visible) => visible && (currentDropdownRow = row)"
+              @visible-change="
+                (visible) => visible && (currentDropdownRow = row)
+              "
               @command="handleDropdownCommand"
             >
               <span class="el-dropdown-link pointer">
@@ -587,22 +589,45 @@
                 ><i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-hasPermi="['third:afterSale:query']" command="detail"  class="text-center">
+                <el-dropdown-item
+                  v-hasPermi="['third:afterSale:query']"
+                  command="detail"
+                  class="text-center"
+                >
                   详情
                 </el-dropdown-item>
-                <el-dropdown-item v-hasPermi="['third:afterProblem:add']" command="createProblem"  class="text-center">
+                <el-dropdown-item
+                  v-hasPermi="['third:afterProblem:add']"
+                  command="createProblem"
+                  class="text-center"
+                >
                   转进展看板
                 </el-dropdown-item>
-                <el-dropdown-item v-hasPermi="['third:afterSale:log']" command="viewLog"  class="text-center">
+                <el-dropdown-item
+                  v-hasPermi="['third:afterSale:log']"
+                  command="viewLog"
+                  class="text-center"
+                >
                   日志
                 </el-dropdown-item>
-                <el-dropdown-item v-hasPermi="['third:afterSale:remove']" command="delete" class="text-red text-center">
+                <el-dropdown-item
+                  v-hasPermi="['third:afterSale:remove']"
+                  command="delete"
+                  class="text-red text-center"
+                >
                   删除
                 </el-dropdown-item>
-                <el-dropdown-item v-if="row.video" command="downloadVideo" class="text-center">
+                <el-dropdown-item
+                  v-if="row.video"
+                  command="downloadVideo"
+                  class="text-center"
+                >
                   视频下载
                 </el-dropdown-item>
-                <el-dropdown-item v-if="!Is_Empty(row.rootMatter)" command="toggleStatus">
+                <el-dropdown-item
+                  v-if="!Is_Empty(row.rootMatter)"
+                  command="toggleStatus"
+                >
                   {{ isStatusTxt(row.status) }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -695,7 +720,7 @@ import commonData from "@/mixins/commonData";
 import { dragTableFn } from "@/mixins/common";
 import globalData from "./mixins/global";
 import { getCustomerList } from "@/api/order";
-
+import RichTextDisplay from "@/components/RichTextDisplay";
 export default {
   name: "AfterSale",
   mixins: [commonData, dragTableFn, globalData],
@@ -707,8 +732,10 @@ export default {
     DealProgress: () => import("./components/dealProgress"),
     SaleInfo: () => import("./components/saleInfo"),
     AfterAnalysis: () => import("./components/AfterAnalysis"),
-    ProblemForm: () => import("@/views/third/afterProblem/components/ProblemForm"),
+    ProblemForm: () =>
+      import("@/views/third/afterProblem/components/ProblemForm"),
     OperLogDialog: () => import("@/components/OperLogDialog"),
+    RichTextDisplay,
   },
   data() {
     return {
@@ -876,7 +903,7 @@ export default {
           component: "custom",
           sort: 5,
         },
-   
+
         {
           key: "parentResponsibilityPerson",
           label: "一级责任",
@@ -942,7 +969,9 @@ export default {
         return [];
       }
 
-      const selectedMajorNormalized = normalize(this.queryParams.confirmMajorClass);
+      const selectedMajorNormalized = normalize(
+        this.queryParams.confirmMajorClass
+      );
       const selectedMajor =
         majorDict.find(
           (item) =>
@@ -976,7 +1005,8 @@ export default {
     // 过滤后的二级责任选项（根据一级责任）
     filteredResponsibilityOptions() {
       const groupDict = this.dict.type.responsibility_group || [];
-      const determinationDict = this.dict.type.responsibility_determination || [];
+      const determinationDict =
+        this.dict.type.responsibility_determination || [];
       const normalize = (val) =>
         val === undefined || val === null
           ? ""
@@ -986,7 +1016,9 @@ export default {
         return [];
       }
 
-      const selectedGroupNormalized = normalize(this.queryParams.parentResponsibilityPerson);
+      const selectedGroupNormalized = normalize(
+        this.queryParams.parentResponsibilityPerson
+      );
       const selectedGroup =
         groupDict.find(
           (item) =>
@@ -1149,16 +1181,16 @@ export default {
   },
   watch: {
     // 监听queryParams中的日期字段，同步到dateRange（用于回显）
-    'queryParams.returnDate': {
+    "queryParams.returnDate": {
       handler(newVal) {
-        if (this.queryParams.type === '3') {
+        if (this.queryParams.type === "3") {
           this.syncDateRange();
         }
       },
     },
-    'queryParams.returnEndDate': {
+    "queryParams.returnEndDate": {
       handler(newVal) {
-        if (this.queryParams.type === '3') {
+        if (this.queryParams.type === "3") {
           this.syncDateRange();
         }
       },
@@ -1181,27 +1213,27 @@ export default {
   methods: {
     // 格式化责任判定显示（一级 / 二级）
     formatResponsibility(group, determination) {
-      if (!group && !determination) return '-';
+      if (!group && !determination) return "-";
       if (group && determination) {
         return `${group} / ${determination}`;
       }
       return group || determination;
     },
-    
+
     // 一级问题变化处理
     handleMajorClassChange() {
       // 清空二级问题
       this.queryParams.confirmMinorClass = undefined;
       this.handleQuery();
     },
-    
+
     // 一级责任变化处理
     handleParentResponsibilityChange() {
       // 清空二级责任
       this.queryParams.responsibilityPerson = undefined;
       this.handleQuery();
     },
-    
+
     // 日期类型变化处理
     handleDateTypeChange(type) {
       // 清空日期
@@ -1412,7 +1444,7 @@ export default {
         locationHandleTime: row.locationHandleTime,
         locationResult: row.locationResult,
         sn: row.sn,
-        afterType: row.afterType  // 大货类型：1-大货，2-样品
+        afterType: row.afterType, // 大货类型：1-大货，2-样品
       };
       this.problemFormVisible = true;
       this.$nextTick(() => {
@@ -1426,41 +1458,48 @@ export default {
           // 当前id -> 关联业务
           // 问题来源默认客户反馈(1)
           this.$refs.problemFormRef.form.problemSource = 1; // 客户反馈
-          this.$refs.problemFormRef.form.problemTime = rowData.locationHandleTime || ''; // 完成时间 -> 时间点
-          this.$refs.problemFormRef.form.problemDescription = rowData.locationResult || ''; // 定位结果 -> 问题描述
-          this.$refs.problemFormRef.form.businessIdList = rowData.id ? [rowData.id] : []; // 当前id -> 关联业务
+          this.$refs.problemFormRef.form.problemTime =
+            rowData.locationHandleTime || ""; // 完成时间 -> 时间点
+          this.$refs.problemFormRef.form.problemDescription =
+            rowData.locationResult || ""; // 定位结果 -> 问题描述
+          this.$refs.problemFormRef.form.businessIdList = rowData.id
+            ? [rowData.id]
+            : []; // 当前id -> 关联业务
           // 保存来源SN用于显示
-          this.$refs.problemFormRef.form.problemSourceSn = rowData.sn || '';
+          this.$refs.problemFormRef.form.problemSourceSn = rowData.sn || "";
           // 根据大货类型设置问题管理员：大货->余美君，样品->袁祥
-          this.$refs.problemFormRef.form.problemManager = rowData.afterType === 1 ? '余美君' : '袁祥';
-          console.log('设置后的 businessIdList:', this.$refs.problemFormRef.form.businessIdList);
+          this.$refs.problemFormRef.form.problemManager =
+            rowData.afterType === 1 ? "余美君" : "袁祥";
+          console.log(
+            "设置后的 businessIdList:",
+            this.$refs.problemFormRef.form.businessIdList
+          );
         });
       });
     },
     // 问题处理表单提交成功
-    handleProblemFormSuccess() {
-    },
+    handleProblemFormSuccess() {},
     // 处理下拉菜单命令
     handleDropdownCommand(command) {
       const row = this.currentDropdownRow;
       if (!row) return;
       switch (command) {
-        case 'detail':
+        case "detail":
           this.handleDetail(row);
           break;
-        case 'createProblem':
+        case "createProblem":
           this.handleCreateProblem(row);
           break;
-        case 'viewLog':
+        case "viewLog":
           this.handleViewLog(row);
           break;
-        case 'delete':
+        case "delete":
           this.handleDelete(row);
           break;
-        case 'downloadVideo':
+        case "downloadVideo":
           this.urlDownload(row.video);
           break;
-        case 'toggleStatus':
+        case "toggleStatus":
           this.handleClose(row);
           break;
       }
@@ -1473,7 +1512,7 @@ export default {
     // 详情
     handleDetail(row) {
       this.isAfterDetailDia = true;
-      this.$refs.isAfterDetailRef.getAfterInfo(row.id,row);
+      this.$refs.isAfterDetailRef.getAfterInfo(row.id, row);
     },
     /** 删除按钮操作 */
     handleDelete(row) {
@@ -1563,14 +1602,14 @@ export default {
     // 点击行打开详情
     handleRowClick(row, column, event) {
       // 排除特殊列的点击（这些列有自己的点击逻辑）
-      const excludeColumns = ['操作', '产品SN', '处理进展'];
+      const excludeColumns = ["操作", "产品SN", "处理进展"];
       if (column && excludeColumns.includes(column.label)) {
         return;
       }
       // 打开详情弹窗
       this.handleDetail(row);
     },
-    
+
     cellClick(row, column, cell, event) {
       const { label } = column;
       switch (label) {
@@ -1586,7 +1625,7 @@ export default {
         return `cursor: pointer;`;
       }
       // 其他列显示默认光标（行点击）
-      if (label && label !== '操作') {
+      if (label && label !== "操作") {
         return `cursor: pointer;`;
       }
     },
@@ -1668,14 +1707,14 @@ export default {
     z-index: 15 !important;
     box-shadow: -1px 0 8px rgba(0, 0, 0, 0.12) !important;
   }
-  
+
   // 固定列左侧不遮挡滚动条
   /deep/ .el-table__fixed-left {
     height: calc(100% - 13px) !important;
     z-index: 15 !important;
     box-shadow: 1px 0 8px rgba(0, 0, 0, 0.12) !important;
   }
-  
+
   // 确保固定列背景色正确
   /deep/ .el-table__fixed-left .el-table__cell,
   /deep/ .el-table__fixed-right .el-table__cell {
@@ -1683,23 +1722,23 @@ export default {
     z-index: 1;
     position: relative;
   }
-  
+
   // 确保滚动条可见且可以交互
   /deep/ .el-table__body-wrapper {
     &::-webkit-scrollbar {
       height: 12px;
       width: 12px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 6px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: #c1c1c1;
       border-radius: 6px;
-      
+
       &:hover {
         background: #a8a8a8;
       }
@@ -1712,18 +1751,18 @@ export default {
   /deep/ .el-dialog {
     margin: 0 auto;
     border-radius: 8px;
-    
+
     .el-dialog__header {
       padding: 16px 20px;
       border-bottom: 1px solid #ebeef5;
-      
+
       .el-dialog__title {
         font-size: 18px;
         font-weight: 600;
         color: #303133;
       }
     }
-    
+
     .el-dialog__body {
       padding: 0;
       max-height: calc(100vh - 120px);

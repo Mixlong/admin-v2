@@ -20,42 +20,45 @@
       <!-- 基本信息 -->
       <fieldset class="form-fieldset">
         <legend>基本信息</legend>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="客户" prop="customerId">
-              <SelectLoadMore 
-                v-model="form.customerId" 
-                :data="customerData.data" 
+            <el-form-item label="客户名称" prop="customerId">
+              <SelectLoadMore
+                v-model="form.customerId"
+                :data="customerData.data"
                 :page="customerData.page"
-                :hasMore="customerData.more" 
-                dictLabel="name" 
-                dictValue="id" 
+                :hasMore="customerData.more"
+                dictLabel="name"
+                dictValue="id"
                 :request="getCustomerData"
-                size="small" 
-                :placeholder="defaultCustomerId ? '客户已锁定（来自跟进计划）' : '请选择客户'"
+                size="small"
+                :placeholder="
+                  defaultCustomerId
+                    ? '客户已锁定（来自跟进计划）'
+                    : '请选择客户名称'
+                "
                 clearable
                 :disabled="!!defaultCustomerId"
-                style="width: 100%;"
+                style="width: 100%"
                 @change="handleCustomerChange"
               />
-          
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="联系人" prop="contactId">
-              <SelectLoadMore 
-                v-model="form.contactId" 
-                :data="contactData.data" 
+            <el-form-item label="客户联系人" prop="contactId">
+              <SelectLoadMore
+                v-model="form.contactId"
+                :data="contactData.data"
                 :page="contactData.page"
-                :hasMore="contactData.more" 
-                dictLabel="contactName" 
-                dictValue="id" 
+                :hasMore="contactData.more"
+                dictLabel="contactName"
+                dictValue="id"
                 :request="getContactData"
-                size="small" 
-                placeholder="请选择联系人" 
+                size="small"
+                placeholder="请选择客户联系人"
                 clearable
-                style="width: 100%;"
+                style="width: 100%"
                 :disabled="!form.customerId"
               />
             </el-form-item>
@@ -64,18 +67,18 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="跟进方式" prop="followMethod">
+            <el-form-item label="沟通方式" prop="followMethod">
               <el-select
                 v-model="form.followMethod"
-                placeholder="请选择跟进方式"
+                placeholder="请选择沟通方式"
                 style="width: 100%"
               >
-              <el-option 
-                v-for="option in followMethodOptions" 
-                :key="option.value" 
-                :label="option.label" 
-                :value="option.value" 
-              />
+                <el-option
+                  v-for="option in followMethodOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -108,110 +111,115 @@
 
     <div slot="footer" class="dialog-footer">
       <el-button size="small" @click="handleClose">取消</el-button>
-      <el-button type="primary" size="small" @click="handleSubmit" :loading="loading">
-        {{ isEdit ? '更新' : '创建' }}
+      <el-button
+        type="primary"
+        size="small"
+        @click="handleSubmit"
+        :loading="loading"
+      >
+        {{ isEdit ? "更新" : "创建" }}
       </el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
-import { addFollowRecord, updateFollowRecord } from '@/api/crm/followRecord'
-import { getSoCustomerList } from '@/api/crm/soCustomer'
-import { getCustomerContactList } from '@/api/third/customerContact'
-import SelectLoadMore from '@/components/selectLoadMore'
-import TypedSelectLoadMore from '@/components/TypedSelectLoadMore'
-import { FOLLOW_METHOD_OPTIONS } from '@/views/crm/constants'
+import { addFollowRecord, updateFollowRecord } from "@/api/crm/followRecord";
+import { getSoCustomerList } from "@/api/crm/soCustomer";
+import { getCustomerContactList } from "@/api/third/customerContact";
+import SelectLoadMore from "@/components/selectLoadMore";
+import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
+import { FOLLOW_METHOD_OPTIONS } from "@/views/crm/constants";
 
 export default {
-  name: 'AddFollowRecordDialog',
+  name: "AddFollowRecordDialog",
   components: {
     SelectLoadMore,
-    TypedSelectLoadMore
+    TypedSelectLoadMore,
   },
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     defaultCustomerId: {
       type: String,
-      default: ''
+      default: "",
     },
     defaultCustomerName: {
       type: String,
-      default: ''
+      default: "",
     },
     defaultPlanId: {
       type: String,
-      default: ''
+      default: "",
     },
     followRecord: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   data() {
     return {
       followMethodOptions: FOLLOW_METHOD_OPTIONS,
       loading: false,
       form: {
-        customerId: '',
-        contactId: '',
-        followMethod: '',
-        follower: '',
-        followTime: '',
-        departmentId: '',
-        followContent: '',
-        planId: '', // 跟进计划ID
-        id: '' // 编辑时的记录ID
+        customerId: "",
+        contactId: "",
+        followMethod: "",
+        follower: "",
+        followTime: "",
+        departmentId: "",
+        followContent: "",
+        planId: "", // 跟进计划ID
+        id: "", // 编辑时的记录ID
       },
       // 客户数据
       customerData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
       // 联系人数据
       contactData: {
         data: [],
         page: 1,
-        more: true
+        more: true,
       },
       rules: {
         customerId: [
-          { required: true, message: '请选择客户', trigger: 'change' }
+          { required: true, message: "请选择客户名称", trigger: "change" },
         ],
         contactId: [
-          { required: false, message: '请选择联系人', trigger: 'change' }
+          { required: false, message: "请选择联系人", trigger: "change" },
         ],
         followMethod: [
-          { required: false, message: '请选择跟进方式', trigger: 'change' }
+          { required: false, message: "请选择沟通方式", trigger: "change" },
         ],
         followTime: [
-          { required: true, message: '请选择跟进时间', trigger: 'change' }
+          { required: true, message: "请选择跟进时间", trigger: "change" },
         ],
         followContent: [
-          { required: true, message: '请输入跟进内容', trigger: 'blur' }
-        ]
-      }
-    }
+          { required: true, message: "请输入跟进内容", trigger: "blur" },
+        ],
+      },
+    };
   },
   computed: {
     dialogVisible: {
       get() {
-        return this.visible
+        return this.visible;
       },
       set(val) {
-        this.$emit('update:visible', val)
-      }
+        this.$emit("update:visible", val);
+      },
     },
     isEdit() {
-      return !!(this.followRecord && this.followRecord.id)
-    }
+      return !!(this.followRecord && this.followRecord.id);
+    },
   },
   mounted() {
-    this.getCustomerData()
+    this.getCustomerData();
   },
   watch: {
     visible(val) {
@@ -220,20 +228,20 @@ export default {
         if (this.customerData.data.length === 0) {
           this.getCustomerData().then(() => {
             if (this.isEdit) {
-              this.loadFollowRecord()
+              this.loadFollowRecord();
             } else {
-              this.resetForm()
-              this.handleDefaultCustomer()
-              this.handleDefaultPlan()
+              this.resetForm();
+              this.handleDefaultCustomer();
+              this.handleDefaultPlan();
             }
-          })
+          });
         } else {
           if (this.isEdit) {
-            this.loadFollowRecord()
+            this.loadFollowRecord();
           } else {
-            this.resetForm()
-            this.handleDefaultCustomer()
-            this.handleDefaultPlan()
+            this.resetForm();
+            this.handleDefaultCustomer();
+            this.handleDefaultPlan();
           }
         }
       }
@@ -241,35 +249,35 @@ export default {
     followRecord: {
       handler(newVal) {
         if (newVal && this.visible) {
-          this.loadFollowRecord()
+          this.loadFollowRecord();
         }
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   methods: {
     resetForm() {
       this.form = {
-        customerId: '',
-        contactId: '',
-        followMethod: '',
-        follower: '',
-        followTime: '',
-        departmentId: '',
-        followContent: '',
-        planId: '' // 跟进计划ID
-      }
+        customerId: "",
+        contactId: "",
+        followMethod: "",
+        follower: "",
+        followTime: "",
+        departmentId: "",
+        followContent: "",
+        planId: "", // 跟进计划ID
+      };
       // 只在没有默认客户时重置客户数据
       if (!this.defaultCustomerId) {
-        this.customerData = { data: [], page: 1, more: true }
+        this.customerData = { data: [], page: 1, more: true };
       }
-      this.contactData = { data: [], page: 1, more: true }
-      
+      this.contactData = { data: [], page: 1, more: true };
+
       this.$nextTick(() => {
         if (this.$refs.followRecordForm) {
-          this.$refs.followRecordForm.clearValidate()
+          this.$refs.followRecordForm.clearValidate();
         }
-      })
+      });
     },
 
     // 获取客户数据
@@ -279,24 +287,29 @@ export default {
           p: page,
           l: 20,
           name: keyword,
-        }).then((res) => {
-          console.log('客户API响应:', res);
-          const { list, total, pageNum, pageSize } = res.data;
-          const filteredList = list.filter((item) => item.status === 0);
+        })
+          .then((res) => {
+            console.log("客户API响应:", res);
+            const { list, total, pageNum, pageSize } = res.data;
+            const filteredList = list.filter((item) => item.status === 0);
 
-          if (more) {
-            this.customerData.data = [...this.customerData.data, ...filteredList];
-          } else {
-            this.customerData.data = filteredList;
-          }
+            if (more) {
+              this.customerData.data = [
+                ...this.customerData.data,
+                ...filteredList,
+              ];
+            } else {
+              this.customerData.data = filteredList;
+            }
 
-          this.customerData.page = pageNum;
-          this.customerData.more = this.customerData.data.length < total;
-          resolve();
-        }).catch((error) => {
-          console.error('获取客户列表失败:', error);
-          resolve();
-        });
+            this.customerData.page = pageNum;
+            this.customerData.more = this.customerData.data.length < total;
+            resolve();
+          })
+          .catch((error) => {
+            console.error("获取客户列表失败:", error);
+            resolve();
+          });
       });
     },
 
@@ -304,78 +317,87 @@ export default {
     async handleDefaultCustomer() {
       if (this.defaultCustomerId) {
         // 确保客户选项存在
-        await this.ensureCustomerOptionPresent(this.defaultCustomerId)
+        await this.ensureCustomerOptionPresent(this.defaultCustomerId);
         // 设置客户ID并加载联系人
-        this.form.customerId = this.defaultCustomerId
-        this.handleCustomerChange(this.defaultCustomerId)
+        this.form.customerId = this.defaultCustomerId;
+        this.handleCustomerChange(this.defaultCustomerId);
       }
     },
 
     // 处理默认计划ID
     handleDefaultPlan() {
       if (this.defaultPlanId) {
-        console.log('设置默认跟进计划ID:', this.defaultPlanId)
-        this.form.planId = this.defaultPlanId
+        console.log("设置默认跟进计划ID:", this.defaultPlanId);
+        this.form.planId = this.defaultPlanId;
       }
     },
 
     // 加载跟进记录数据（编辑模式）
     async loadFollowRecord() {
       if (this.followRecord) {
-        console.log('编辑模式 - 加载跟进记录数据:', this.followRecord)
-        console.log('当前表单数据（加载前）:', this.form)
+        console.log("编辑模式 - 加载跟进记录数据:", this.followRecord);
+        console.log("当前表单数据（加载前）:", this.form);
         this.form = {
-          id: this.followRecord.id || '',
-          customerId: this.followRecord.customerId || '',
-          contactId: this.followRecord.contactId || '',
-          followMethod: this.followRecord.followMethod || '',
-          follower: this.followRecord.follower || '',
-          followTime: this.followRecord.followTime || '',
-          departmentId: this.followRecord.departmentId || '',
-          followContent: this.followRecord.followContent || '',
-          planId: this.followRecord.planId || ''
-        }
-        
+          id: this.followRecord.id || "",
+          customerId: this.followRecord.customerId || "",
+          contactId: this.followRecord.contactId || "",
+          followMethod: this.followRecord.followMethod || "",
+          follower: this.followRecord.follower || "",
+          followTime: this.followRecord.followTime || "",
+          departmentId: this.followRecord.departmentId || "",
+          followContent: this.followRecord.followContent || "",
+          planId: this.followRecord.planId || "",
+        };
+
         // 加载客户数据并确保当前选中的客户在列表中
         if (this.form.customerId) {
-          await this.ensureCustomerOptionPresent(this.form.customerId)
+          await this.ensureCustomerOptionPresent(this.form.customerId);
           // 加载对应的联系人数据
-          await this.getContactData()
+          await this.getContactData();
           // 确保当前选中的联系人在列表中
           if (this.form.contactId) {
-            this.ensureContactOptionPresent(this.form.contactId, this.followRecord.contactName)
+            this.ensureContactOptionPresent(
+              this.form.contactId,
+              this.followRecord.contactName
+            );
           }
         }
-        
-   
       }
     },
 
     // 确保联系人选项存在（用于编辑时回显）
     ensureContactOptionPresent(id, contactName) {
-      if (!id) return
-      const exists = this.contactData.data.some(opt => String(opt.id) === String(id))
+      if (!id) return;
+      const exists = this.contactData.data.some(
+        (opt) => String(opt.id) === String(id)
+      );
       if (!exists) {
-        this.contactData.data.unshift({ id, contactName })
+        this.contactData.data.unshift({ id, contactName });
       }
     },
 
     // 确保客户选项存在（用于回显）
     async ensureCustomerOptionPresent(customerId) {
-      if (!customerId) return
-      const exists = this.customerData.data.some(opt => String(opt.id) === String(customerId))
+      if (!customerId) return;
+      const exists = this.customerData.data.some(
+        (opt) => String(opt.id) === String(customerId)
+      );
       if (!exists) {
         // 如果客户不存在，尝试重新加载客户数据
-        await this.getCustomerData()
+        await this.getCustomerData();
         // 检查重新加载后是否存在
-        const stillNotExists = !this.customerData.data.some(opt => String(opt.id) === String(customerId))
+        const stillNotExists = !this.customerData.data.some(
+          (opt) => String(opt.id) === String(customerId)
+        );
         if (stillNotExists) {
-          console.log(`客户ID ${customerId} 在客户列表中不存在，手动添加用于回显`)
+          console.log(
+            `客户ID ${customerId} 在客户列表中不存在，手动添加用于回显`
+          );
           // 手动添加客户选项用于回显
-          this.customerData.data.unshift({ 
-            id: customerId, 
-            name: this.defaultCustomerName || `客户-${customerId}`
-          })
+          this.customerData.data.unshift({
+            id: customerId,
+            name: this.defaultCustomerName || `客户-${customerId}`,
+          });
         }
       }
     },
@@ -383,90 +405,102 @@ export default {
     // 获取联系人数据
     getContactData({ page = 1, more = false, keyword = "" } = {}) {
       if (!this.form.customerId) {
-        this.contactData = { data: [], page: 1, more: false }
-        return Promise.resolve()
+        this.contactData = { data: [], page: 1, more: false };
+        return Promise.resolve();
       }
-      
+
       return new Promise((resolve) => {
         getCustomerContactList({
           pageNum: page,
           pageSize: 20,
           customerId: this.form.customerId,
-          contactName: keyword
-        }).then((res) => {
-          if (res.code === 200) {
-            const list = res.data.list || [];
-            
-            if (more) {
-              this.contactData.data = [...this.contactData.data, ...list];
-            } else {
-              this.contactData.data = list;
+          contactName: keyword,
+        })
+          .then((res) => {
+            if (res.code === 200) {
+              const list = res.data.list || [];
+
+              if (more) {
+                this.contactData.data = [...this.contactData.data, ...list];
+              } else {
+                this.contactData.data = list;
+              }
+
+              this.contactData.page = page;
+              this.contactData.more =
+                this.contactData.data.length < (res.data.total || 0);
             }
-            
-            this.contactData.page = page;
-            this.contactData.more = this.contactData.data.length < (res.data.total || 0);
-          }
-          resolve();
-        }).catch(() => {
-          resolve();
-        });
+            resolve();
+          })
+          .catch(() => {
+            resolve();
+          });
       });
     },
-
 
     // 客户选择变化
     handleCustomerChange(customerId) {
       // 清空联系人选择
-      this.form.contactId = ''
-      this.contactData = { data: [], page: 1, more: true }
-      
+      this.form.contactId = "";
+      this.contactData = { data: [], page: 1, more: true };
+
       // 如果选择了客户，加载对应的联系人
       if (customerId) {
-        this.getContactData()
+        this.getContactData();
       }
     },
 
     handleClose() {
-      this.dialogVisible = false
-      this.resetForm()
+      this.dialogVisible = false;
+      this.resetForm();
     },
     async handleSubmit() {
       try {
-        await this.$refs.followRecordForm.validate()
-        
-        this.loading = true
-        
-        // 获取当前登录用户昵称并设置为跟进人
-        const currentUser = this.$store.state.user || {}
-        const currentUserName = currentUser.nickName || currentUser.userName || ''
-        console.log('提交时设置跟进人为当前用户:', currentUserName)
-        
+        await this.$refs.followRecordForm.validate();
+
+        this.loading = true;
+
+        // 获取当前登录用户昵称并设置为市场经理
+        const currentUser = this.$store.state.user || {};
+        const currentUserName =
+          currentUser.nickName || currentUser.userName || "";
+        console.log("提交时设置市场经理 为当前用户:", currentUserName);
+
         const submitData = {
           ...this.form,
-          follower: currentUserName // 无论新增还是编辑，都使用当前登录用户
-        }
-        
-        const requestFn = this.isEdit ? updateFollowRecord : addFollowRecord
-        const response = await requestFn(submitData)
-        
+          follower: currentUserName, // 无论新增还是编辑，都使用当前登录用户
+        };
+
+        const requestFn = this.isEdit ? updateFollowRecord : addFollowRecord;
+        const response = await requestFn(submitData);
+
         if (response.code === 200) {
-          this.$message.success(this.isEdit ? '更新跟进记录成功' : '新增跟进记录成功')
-          this.dialogVisible = false
-          this.$emit('refresh')
+          this.$message.success(
+            this.isEdit ? "更新跟进记录成功" : "新增跟进记录成功"
+          );
+          this.dialogVisible = false;
+          this.$emit("refresh");
         } else {
-          this.$message.error(response.msg || (this.isEdit ? '更新跟进记录失败' : '新增跟进记录失败'))
+          this.$message.error(
+            response.msg ||
+              (this.isEdit ? "更新跟进记录失败" : "新增跟进记录失败")
+          );
         }
       } catch (error) {
-        if (error !== false) { // 表单验证失败时error为false
-          console.error((this.isEdit ? '更新' : '新增') + '跟进记录失败:', error)
-          this.$message.error((this.isEdit ? '更新' : '新增') + '跟进记录失败')
+        if (error !== false) {
+          // 表单验证失败时error为false
+          console.error(
+            (this.isEdit ? "更新" : "新增") + "跟进记录失败:",
+            error
+          );
+          this.$message.error((this.isEdit ? "更新" : "新增") + "跟进记录失败");
         }
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
