@@ -76,13 +76,11 @@
                 placeholder="请选择项目阶段"
                 style="width: 100%"
               >
-                <el-option label="需求分析" value="需求分析" />
-                <el-option label="方案设计" value="方案设计" />
-                <el-option label="开发阶段" value="开发阶段" />
-                <el-option label="测试阶段" value="测试阶段" />
-                <el-option label="部署上线" value="部署上线" />
-                <el-option label="验收完成" value="验收完成" />
-                <el-option label="项目结束" value="项目结束" />
+                <el-option label="需求澄清" value="需求澄清" />
+                <el-option label="EVT阶段" value="EVT阶段" />
+                <el-option label="DVT阶段" value="DVT阶段" />
+                <el-option label="PVT阶段" value="PVT阶段" />
+                <el-option label="量产阶段" value="量产阶段" />
               </el-select>
             </el-form-item>
           </el-col>

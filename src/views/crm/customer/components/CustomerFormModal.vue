@@ -21,15 +21,16 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="客户全称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入客户全称" />
+            <el-form-item label="客户简称" prop="shortName">
+              <el-input v-model="form.name" placeholder="请输入客户简称" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="客户简称" prop="shortName">
-              <el-input v-model="form.shortName" placeholder="请输入客户简称" />
+            <el-form-item label="客户全称" prop="name">
+              <el-input v-model="form.shortName" placeholder="请输入客户全称" />
             </el-form-item>
           </el-col>
+
           <el-col :span="12">
             <el-form-item label="客户来源" prop="customerSource">
               <el-select

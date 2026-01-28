@@ -151,13 +151,11 @@ export default {
     // 项目阶段类型
     getProjectNodeType(projectNode) {
       const typeMap = {
-        requirement: "primary", // 需求分析 - 蓝色
-        design: "success", // 方案设计 - 绿色
-        development: "warning", // 开发阶段 - 橙色
-        testing: "danger", // 测试阶段 - 红色
-        deployment: "info", // 部署上线 - 灰色
-        acceptance: "success", // 验收完成 - 绿色
-        finished: "", // 项目结束 - 默认
+        需求澄清: "primary",
+        EVT阶段: "success",
+        DVT阶段: "warning",
+        PVT阶段: "danger",
+        量产阶段: "info",
       };
       return typeMap[projectNode] || "primary";
     },
@@ -165,13 +163,11 @@ export default {
     // 项目阶段文本
     getProjectNodeText(projectNode) {
       const textMap = {
-        requirement: "需求分析",
-        design: "方案设计",
-        development: "开发阶段",
-        testing: "测试阶段",
-        deployment: "部署上线",
-        acceptance: "验收完成",
-        finished: "项目结束",
+        需求澄清: "需求澄清",
+        EVT阶段: "EVT阶段",
+        DVT阶段: "DVT阶段",
+        PVT阶段: "PVT阶段",
+        量产阶段: "量产阶段",
       };
       return textMap[projectNode] || projectNode;
     },
