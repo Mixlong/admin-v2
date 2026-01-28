@@ -9,6 +9,24 @@
     :show-close="false"
     @close="close"
   >
+    <!-- 封面展示区域 -->
+    <div v-if="topImgList.length > 0" class="top-img-section">
+      <div class="top-img-header">
+        <i class="el-icon-picture-outline"></i>
+        <span>封面</span>
+      </div>
+      <div class="top-img-content">
+        <el-image
+          v-for="(img, idx) in topImgList"
+          :key="idx"
+          :src="img"
+          :preview-src-list="topImgList"
+          fit="contain"
+          class="top-img"
+        />
+      </div>
+    </div>
+
     <!-- 排拉图展示区域 -->
     <div v-if="sortImgList.length > 0" class="sort-img-section">
       <div class="sort-img-header">
@@ -89,6 +107,7 @@ export default {
     return {
       flag: true,
       detailInfo: [],
+      topImgList: [], // 封面图列表
       sortImgList: [], // 排拉图列表
     };
   },
@@ -99,26 +118,37 @@ export default {
         if (newId && this.visible) {
           this.getSopInfo(newId);
         }
-      }
+      },
     },
     visible(newVal) {
       if (newVal && this.detailId) {
         this.getSopInfo(this.detailId);
       }
-    }
+    },
   },
   methods: {
     close() {
       this.$emit("update:visible", false);
+      this.topImgList = [];
       this.sortImgList = [];
     },
     async getSopInfo(detailId, rowData) {
       try {
         const { data } = await sopInfo(detailId);
         this.detailInfo = data;
-        // 如果传入了rowData，从中获取排拉图（逗号分隔的多图）
+        // 如果传入了rowData，从中获取封面和排拉图（逗号分隔的多图）
+        if (rowData && rowData.topImg) {
+          this.topImgList = rowData.topImg
+            .split(",")
+            .filter((url) => url.trim());
+        } else {
+          this.topImgList = [];
+        }
+
         if (rowData && rowData.sortImg) {
-          this.sortImgList = rowData.sortImg.split(',').filter(url => url.trim());
+          this.sortImgList = rowData.sortImg
+            .split(",")
+            .filter((url) => url.trim());
         } else {
           this.sortImgList = [];
         }
@@ -129,15 +159,24 @@ export default {
     /** 判断是否为视频文件 */
     isVideoFile(url) {
       if (!url) return false;
-      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.m4v'];
-      const extension = url.toLowerCase().substring(url.lastIndexOf('.'));
+      const videoExtensions = [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".mkv",
+        ".m4v",
+      ];
+      const extension = url.toLowerCase().substring(url.lastIndexOf("."));
       return videoExtensions.includes(extension);
     },
     /** 获取图片文件列表（用于预览） */
     getImageUrls() {
       return this.detailInfo
-        .filter(item => item.file && !this.isVideoFile(item.file))
-        .map(item => item.file);
+        .filter((item) => item.file && !this.isVideoFile(item.file))
+        .map((item) => item.file);
     },
   },
 };
@@ -147,6 +186,57 @@ export default {
 .sop-detail-box {
   .el-dialog__header {
     display: none;
+  }
+
+  // 封面区域样式
+  .top-img-section {
+    margin-bottom: 20px;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .top-img-header {
+      background: #f5f7fa;
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      border-bottom: 1px solid #e4e7ed;
+
+      i {
+        margin-right: 8px;
+        color: #409eff;
+      }
+    }
+
+    .top-img-content {
+      padding: 15px;
+      background: #fff;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #c0c4cc;
+        border-radius: 3px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #f5f7fa;
+      }
+
+      .top-img {
+        flex-shrink: 0;
+        width: 200px;
+        height: 150px;
+        cursor: pointer;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+    }
   }
 
   // 排拉图区域样式

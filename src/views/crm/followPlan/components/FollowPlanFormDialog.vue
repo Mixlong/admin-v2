@@ -22,7 +22,7 @@
         <legend>基本信息</legend>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="客户名称" prop="customerId">
+            <el-form-item label="客户简称" prop="customerId">
               <SelectLoadMore
                 v-model="form.customerId"
                 :data="customerData.data"
@@ -34,7 +34,7 @@
                 :placeholder="
                   defaultCustomerId
                     ? '客户已锁定（来自客户详情）'
-                    : '请选择客户名称'
+                    : '请选择客户简称'
                 "
                 clearable
                 :disabled="!!defaultCustomerId"
@@ -157,7 +157,7 @@ export default {
       },
       rules: {
         customerId: [
-          { required: true, message: "请选择客户名称", trigger: "change" },
+          { required: true, message: "请选择客户简称", trigger: "change" },
         ],
         planTime: [
           { required: true, message: "请选择计划时间", trigger: "change" },

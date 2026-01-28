@@ -24,7 +24,7 @@
           <el-descriptions-item label="跟进方式">{{
             activity.followMethod || activity.type
           }}</el-descriptions-item>
-          <el-descriptions-item label="市场经理 ">{{
+          <el-descriptions-item label="销售经理 ">{{
             activity.follower || activity.assigneeName
           }}</el-descriptions-item>
         </el-descriptions>

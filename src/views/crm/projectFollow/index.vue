@@ -58,7 +58,7 @@
     >
       <el-table-column
         prop="customerName"
-        label="客户名称"
+        label="客户简称"
         width="150"
         align="center"
         show-overflow-tooltip
@@ -143,7 +143,7 @@
 
       <el-table-column
         prop="createBy"
-        label="市场经理"
+        label="销售经理"
         width="100"
         align="center"
       />
@@ -321,13 +321,11 @@ export default {
             size: "mini",
             clearable: true,
             options: [
-              { label: "需求分析", value: "需求分析" },
-              { label: "方案设计", value: "方案设计" },
-              { label: "开发阶段", value: "开发阶段" },
-              { label: "测试阶段", value: "测试阶段" },
-              { label: "部署上线", value: "部署上线" },
-              { label: "验收完成", value: "验收完成" },
-              { label: "项目结束", value: "项目结束" },
+              { label: "需求澄清", value: "需求澄清" },
+              { label: "EVT阶段", value: "EVT阶段" },
+              { label: "DVT阶段", value: "DVT阶段" },
+              { label: "PVT阶段", value: "PVT阶段" },
+              { label: "量产阶段", value: "量产阶段" },
             ],
           },
         },

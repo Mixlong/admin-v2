@@ -4,9 +4,8 @@ Vue.use(Router);
 
 /* Layout */
 import Layout from "@/layout";
-import StaticRoutes from "./static-routes"
-import MicroAppContainer from "@/components/MicroAppContainer"
-
+import StaticRoutes from "./static-routes";
+import MicroAppContainer from "@/components/MicroAppContainer";
 
 /**
  * Note: 路由配置项
@@ -184,11 +183,11 @@ export const constantRoutes = [
     component: MicroAppContainer,
     name: "FullscreenScheduling",
     hidden: true,
-    meta: { 
-      title: "调度管理", 
+    meta: {
+      title: "调度管理",
       noCache: true,
-      microApp: ' micro:ruoyi-admin:schedule'
-    }
+      microApp: " micro:ruoyi-admin:schedule",
+    },
   },
   // 中转页面 - 不需要权限验证
   {
@@ -198,10 +197,9 @@ export const constantRoutes = [
     hidden: true,
     meta: {
       title: "页面跳转中...",
-      noCache: true
-    }
+      noCache: true,
+    },
   },
- 
 ];
 
 /**
@@ -239,8 +237,5 @@ export default new Router({
       return { x: 0, y: 0 };
     }
   },
-  routes: [
-    ...constantRoutes,
-    ...StaticRoutes
-  ],
+  routes: [...constantRoutes, ...StaticRoutes],
 });

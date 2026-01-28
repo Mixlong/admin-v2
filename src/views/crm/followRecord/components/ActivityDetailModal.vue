@@ -35,7 +35,7 @@
             </div>
           </div>
           <div class="info-item">
-            <div class="info-label">客户名称</div>
+            <div class="info-label">客户简称</div>
             <div class="info-value">{{ activity.customerName || "-" }}</div>
           </div>
           <div class="info-item">
@@ -43,7 +43,7 @@
             <div class="info-value">{{ activity.contactName || "-" }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">市场经理</div>
+            <div class="info-label">销售经理</div>
             <div class="info-value user-info">
               <el-avatar :size="20" class="bg-blue-600">
                 {{

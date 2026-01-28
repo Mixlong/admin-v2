@@ -57,7 +57,7 @@
     >
       <el-table-column
         prop="customerName"
-        label="客户名称"
+        label="客户简称"
         width="180"
         align="center"
         show-overflow-tooltip
@@ -78,7 +78,6 @@
               <span
                 v-if="row.contactPhone"
                 class="cursor-pointer text-blue-600"
-                @click="handleCall(row.contactPhone)"
               >
                 {{ row.contactPhone }}
               </span>

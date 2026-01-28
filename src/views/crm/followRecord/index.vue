@@ -66,7 +66,7 @@
     >
       <el-table-column
         prop="customerName"
-        label="客户名称"
+        label="客户简称"
         width="150"
         align="center"
       >
@@ -107,7 +107,7 @@
 
       <el-table-column
         prop="follower"
-        label="市场经理"
+        label="销售经理"
         width="100"
         align="center"
       >
@@ -311,7 +311,7 @@ export default {
         },
         {
           key: "follower",
-          label: "市场经理",
+          label: "销售经理",
           component: "el-input",
           placeholder: "请输入",
           width: "120px",

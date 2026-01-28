@@ -34,7 +34,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="客户名称" prop="customerId">
+            <el-form-item label="客户简称" prop="customerId">
               <SelectLoadMore
                 v-model="form.customerId"
                 :data="customerData.data"

@@ -68,17 +68,17 @@
                     <div class="section-title">基本信息</div>
                     <div class="info-grid">
                       <div class="info-item">
-                        <div class="info-label">客户名称</div>
+                        <div class="info-label">客户全称</div>
                         <div class="info-value">
                           {{ customer.name || "--" }}
                         </div>
                       </div>
-                      <div class="info-item">
+                      <!-- <div class="info-item">
                         <div class="info-label">客户编号</div>
                         <div class="info-value">{{ customer.no || "--" }}</div>
-                      </div>
+                      </div> -->
                       <div class="info-item">
-                        <div class="info-label">客户品牌</div>
+                        <div class="info-label">客户简称</div>
                         <div class="info-value">
                           {{ customer.customerBrand || "--" }}
                         </div>
@@ -94,7 +94,7 @@
                         </div>
                       </div>
                       <div class="info-item">
-                        <div class="info-label">客户状态</div>
+                        <div class="info-label">合作状态</div>
                         <div class="info-value">
                           <el-tag
                             :type="getStatusType(customer.customerStatus)"
@@ -147,13 +147,13 @@
                     <div class="section-title">产品信息</div>
                     <div class="info-grid">
                       <div class="info-item">
-                        <div class="info-label">现有电控供应商</div>
+                        <div class="info-label">电控供应商</div>
                         <div class="info-value">
                           {{ customer.electricalSupplier || "--" }}
                         </div>
                       </div>
                       <div class="info-item">
-                        <div class="info-label">现有仪表供应商</div>
+                        <div class="info-label">仪表供应商</div>
                         <div class="info-value">
                           {{ customer.instrumentSupplier || "--" }}
                         </div>
@@ -303,7 +303,7 @@
                         </div>
                       </div>
                       <div class="info-item">
-                        <div class="info-label">项目经理</div>
+                        <div class="info-label">销售经理</div>
                         <div class="info-value">
                           <div class="user-info" v-if="customer.assistant">
                             <el-avatar :size="20" class="bg-green-600">
@@ -320,17 +320,10 @@
                         </div>
                       </div>
                       <div class="info-item">
-                        <div class="info-label">创建人</div>
+                        <div class="info-label">交付经理</div>
                         <div class="info-value">
                           <div class="user-info">
-                            <el-avatar :size="20" class="bg-purple-600">
-                              {{
-                                customer.createBy && customer.createBy.charAt(0)
-                              }}
-                            </el-avatar>
-                            <span class="user-name">{{
-                              customer.createBy || "--"
-                            }}</span>
+                            {{ customer.updateBy || "--" }}
                           </div>
                         </div>
                       </div>
@@ -347,9 +340,16 @@
                         </div>
                       </div>
                       <div class="info-item">
-                        <div class="info-label">更新人</div>
+                        <div class="info-label">创建人</div>
                         <div class="info-value">
-                          {{ customer.updateBy || "--" }}
+                          <el-avatar :size="20" class="bg-purple-600">
+                            {{
+                              customer.createBy && customer.createBy.charAt(0)
+                            }}
+                          </el-avatar>
+                          <span class="user-name">{{
+                            customer.createBy || "--"
+                          }}</span>
                         </div>
                       </div>
                     </div>
@@ -384,7 +384,7 @@
                   >
                     <el-table-column
                       prop="customerName"
-                      label="客户名称"
+                      label="客户简称"
                       width="170"
                       align="center"
                     >
@@ -525,7 +525,7 @@
                     <el-table-column
                       label="操作"
                       align="center"
-                      width="220"
+                      width="190"
                       fixed="right"
                     >
                       <template slot-scope="{ row }">
@@ -589,7 +589,7 @@
                   >
                     <el-table-column
                       prop="customerName"
-                      label="客户名称"
+                      label="客户简称"
                       width="150"
                       align="center"
                     >
@@ -643,7 +643,7 @@
 
                     <el-table-column
                       prop="follower"
-                      label="市场经理"
+                      label="销售经理"
                       width="100"
                       align="center"
                     />
@@ -674,7 +674,7 @@
                       </template>
                     </el-table-column>
 
-                    <el-table-column label="操作" width="180">
+                    <el-table-column label="操作" width="180" align="center">
                       <template slot-scope="{ row }">
                         <el-button
                           v-if="row.status === 'pending'"
@@ -758,7 +758,7 @@
                   >
                     <el-table-column
                       prop="customerName"
-                      label="客户名称"
+                      label="客户简称"
                       width="160"
                       align="center"
                     >
@@ -807,7 +807,7 @@
 
                     <el-table-column
                       prop="createBy"
-                      label="市场经理"
+                      label="销售经理"
                       width="100"
                       align="center"
                     />
@@ -826,11 +826,11 @@
                     <el-table-column
                       label="操作"
                       align="center"
-                      width="320"
+                      width="140"
                       fixed="right"
                     >
                       <template slot-scope="{ row }">
-                        <el-button
+                        <!-- <el-button
                           type="text"
                           size="small"
                           icon="el-icon-plus"
@@ -838,7 +838,7 @@
                           v-hasPermi="['crm:followRecord:add']"
                         >
                           添加跟进记录
-                        </el-button>
+                        </el-button> -->
                         <el-button
                           type="text"
                           size="small"
@@ -848,7 +848,7 @@
                         >
                           编辑
                         </el-button>
-                        <el-button
+                        <!-- <el-button
                           type="text"
                           size="small"
                           icon="el-icon-finished"
@@ -857,7 +857,7 @@
                           v-hasPermi="['crm:followPlan:complete']"
                         >
                           完成
-                        </el-button>
+                        </el-button> -->
                         <el-button
                           type="text"
                           size="small"
@@ -901,7 +901,7 @@
                   >
                     <el-table-column
                       prop="customerName"
-                      label="客户名称"
+                      label="客户简称"
                       width="150"
                       align="center"
                       show-overflow-tooltip
@@ -992,7 +992,7 @@
 
                     <el-table-column
                       prop="createBy"
-                      label="市场经理"
+                      label="销售经理"
                       width="100"
                       align="center"
                     />
@@ -1017,7 +1017,7 @@
                     <el-table-column
                       label="操作"
                       align="center"
-                      width="200"
+                      width="190"
                       fixed="right"
                     >
                       <template slot-scope="{ row }">
@@ -2160,13 +2160,11 @@ export default {
     // 获取项目阶段类型（颜色）
     getProjectNodeType(projectNode) {
       const typeMap = {
-        需求分析: "primary", // 需求分析 - 蓝色
-        方案设计: "success", // 方案设计 - 绿色
-        开发阶段: "warning", // 开发阶段 - 橙色
-        测试阶段: "warning", // 测试阶段 - 橙色
-        部署上线: "danger", // 部署上线 - 红色
-        验收完成: "success", // 验收完成 - 绿色
-        项目结束: "info", // 项目结束 - 灰色
+        需求澄清: "primary",
+        EVT阶段: "success",
+        DVT阶段: "warning",
+        PVT阶段: "danger",
+        量产阶段: "info",
       };
       return typeMap[projectNode] || "primary";
     },

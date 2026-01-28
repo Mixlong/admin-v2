@@ -23,7 +23,7 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="客户名称" prop="customerId">
+            <el-form-item label="客户简称" prop="customerId">
               <SelectLoadMore
                 v-model="form.customerId"
                 :data="customerData.data"
@@ -36,7 +36,7 @@
                 :placeholder="
                   defaultCustomerId
                     ? '客户已锁定（来自跟进计划）'
-                    : '请选择客户名称'
+                    : '请选择客户简称'
                 "
                 clearable
                 :disabled="!!defaultCustomerId"
@@ -188,7 +188,7 @@ export default {
       },
       rules: {
         customerId: [
-          { required: true, message: "请选择客户名称", trigger: "change" },
+          { required: true, message: "请选择客户简称", trigger: "change" },
         ],
         contactId: [
           { required: false, message: "请选择联系人", trigger: "change" },
@@ -460,11 +460,11 @@ export default {
 
         this.loading = true;
 
-        // 获取当前登录用户昵称并设置为市场经理
+        // 获取当前登录用户昵称并设置为销售经理
         const currentUser = this.$store.state.user || {};
         const currentUserName =
           currentUser.nickName || currentUser.userName || "";
-        console.log("提交时设置市场经理 为当前用户:", currentUserName);
+        console.log("提交时设置销售经理 为当前用户:", currentUserName);
 
         const submitData = {
           ...this.form,

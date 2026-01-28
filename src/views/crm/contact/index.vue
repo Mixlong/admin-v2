@@ -78,7 +78,7 @@
     >
       <el-table-column
         prop="customerName"
-        label="客户名称"
+        label="客户简称"
         width="170"
         align="center"
       />
@@ -107,10 +107,7 @@
       <el-table-column prop="email" label="邮箱" align="center">
         <template slot-scope="{ row }">
           <div v-if="row.email">
-            <span
-              class="cursor-pointer text-blue-600"
-              @click="handleEmail(row.email)"
-            >
+            <span class="cursor-pointer text-blue-600">
               {{ row.email }}
             </span>
           </div>
@@ -125,10 +122,7 @@
       >
         <template slot-scope="{ row }">
           <div v-if="row.contactPhone">
-            <span
-              class="cursor-pointer text-blue-600"
-              @click="handleCall(row.contactPhone)"
-            >
+            <span class="cursor-pointer text-blue-600">
               {{ row.contactPhone }}
             </span>
           </div>

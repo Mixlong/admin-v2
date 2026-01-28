@@ -19,7 +19,7 @@
         </div>
 
         <div class="detail-item">
-          <label>客户名称：</label>
+          <label>客户简称：</label>
           <span>{{ projectFollow.customerName || "-" }}</span>
         </div>
 
@@ -74,7 +74,7 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <div class="detail-item">
-              <label>市场经理：</label>
+              <label>销售经理：</label>
               <span>{{ projectFollow.createBy || "-" }}</span>
             </div>
           </el-col>

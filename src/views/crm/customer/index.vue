@@ -9,7 +9,7 @@
       @reset="handleReset"
       @field-change="handleFieldChange"
     >
-      <!-- 自定义客户名称选择器字段 -->
+      <!-- 自定义客户简称选择器字段 -->
       <template #field-name="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <SelectLoadMore
@@ -74,17 +74,11 @@
       :height="tableHeight(30)"
       size="small"
     >
-      <el-table-column prop="name" label="客户名称" align="center" fixed="left">
+      <el-table-column prop="name" label="客户简称" align="center" fixed="left">
       </el-table-column>
 
       <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
 
-      <el-table-column
-        prop="customerBrand"
-        label="客户品牌"
-        width="120"
-        align="center"
-      />
       <el-table-column
         prop="customerAttribute"
         label="客户属性"
@@ -119,14 +113,14 @@
       </el-table-column>
       <el-table-column
         prop="electricalSupplier"
-        label="现有电控供应商"
+        label="电控供应商"
         width="120"
         align="center"
       />
 
       <el-table-column
         prop="instrumentSupplier"
-        label="现有仪表供应商"
+        label="仪表供应商"
         width="120"
         align="center"
       />
@@ -152,6 +146,14 @@
         align="center"
       />
       <el-table-column
+        prop="address"
+        label="客户网址"
+        min-width="200"
+        show-overflow-tooltip
+        align="center"
+      />
+
+      <el-table-column
         prop="customerLevel"
         label="客户级别"
         width="100"
@@ -176,7 +178,7 @@
       </el-table-column>
       <el-table-column
         prop="customerStatus"
-        label="客户状态"
+        label="合作状态"
         width="100"
         align="center"
         :filters="customerStatusFilters"
@@ -218,15 +220,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        prop="address"
-        label="客户网址"
-        min-width="200"
-        show-overflow-tooltip
-        align="center"
-      />
-
-      <el-table-column
+      <!-- <el-table-column
         prop="paymentTerm"
         label="结算期限"
         width="120"
@@ -237,8 +231,8 @@
             {{ row.paymentTerm || "--" }}
           </el-tag>
         </template>
-      </el-table-column>
-
+      </el-table-column> -->
+      <!--
       <el-table-column
         prop="invoiceTitle"
         label="发票抬头"
@@ -296,11 +290,11 @@
         label="开户电话"
         width="130"
         align="center"
-      />
+      /> -->
 
       <el-table-column
         prop="salesLeader"
-        label="销售负责人"
+        label="销售经理"
         width="120"
         align="center"
       >
@@ -311,7 +305,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column
+      <!-- <el-table-column
         prop="createBy"
         label="创建人"
         width="120"
@@ -322,9 +316,9 @@
             <span>{{ row.createBy }}</span>
           </div>
         </template>
-      </el-table-column>
+      </el-table-column> -->
 
-      <el-table-column
+      <!-- <el-table-column
         prop="createTime"
         label="创建时间"
         width="100"
@@ -333,7 +327,7 @@
         <template slot-scope="{ row }">
           {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
 
       <el-table-column label="操作" width="200" fixed="right" align="center">
         <template slot-scope="{ row }">
@@ -467,13 +461,13 @@ export default {
       searchFields: [
         {
           key: "name",
-          label: "客户名称",
+          label: "客户简称",
           component: "el-select",
           width: "200px",
           sort: 1,
           autoSearch: false,
           props: {
-            placeholder: "请选择客户名称",
+            placeholder: "请选择客户简称",
             clearable: true,
             filterable: true,
             options: [],
@@ -534,7 +528,7 @@ export default {
       }));
     },
 
-    // 客户状态筛选选项（固定的几个选项）
+    // 合作状态筛选选项（固定的几个选项）
     customerStatusFilters() {
       return [
         { text: "潜在客户", value: "潜在客户" },
@@ -749,7 +743,7 @@ export default {
       return statusMap[customerStatus] || "";
     },
 
-    // 获取客户状态颜色类型
+    // 获取合作状态颜色类型
     getCustomerStatusType(customerStatus) {
       const statusMap = {
         潜在客户: "info", // 灰色 - 表示未开发
