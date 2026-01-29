@@ -93,9 +93,10 @@
       <el-table-column
         prop="remark"
         label="备注"
-        align="center"
+        align="left"
         min-width="180"
         show-overflow-tooltip
+        header-align="center"
       />
 
       <el-table-column

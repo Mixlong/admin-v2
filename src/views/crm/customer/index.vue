@@ -62,340 +62,66 @@
       </template>
     </IntelligentSearchForm>
     <!-- 客户表格 -->
-    <el-table
-      v-loading="loading"
+    <VirtualCustomerTable
+      ref="customerTable"
       :data="filteredCustomers"
-      style="width: 100%"
+      :loading="loading"
+      :height="tableHeight(60)"
+      :customerAttributeFilters="customerAttributeFilters"
+      :customerLevelFilters="customerLevelFilters"
+      :customerStatusFilters="customerStatusFilters"
+      :countryFilters="countryFilters"
+      :customerSourceFilters="customerSourceFilters"
+      :getDictLabel="getDictLabel"
+      :getLevelType="getLevelType"
+      :getCustomerStatusType="getCustomerStatusType"
       @sort-change="handleSortChange"
-      row-key="id"
-      class="crm-customer-table"
-      :scroll="{ x: 4000, y: 600 }"
-      border
-      :height="tableHeight(30)"
-      size="small"
-    >
-      <el-table-column prop="name" label="客户简称" align="center" fixed="left">
-      </el-table-column>
-
-      <!-- <el-table-column prop="no" label="客户编号" width="120" align="center" /> -->
-
-      <el-table-column
-        prop="customerAttribute"
-        label="客户属性"
-        width="120"
-        align="center"
-        :filters="customerAttributeFilters"
-        :filter-method="filterCustomerAttribute"
-        column-key="customerAttribute"
-      >
-        <template slot-scope="{ row }">
-          {{
-            getDictLabel("customer_attribute_enum", row.customerAttribute) ||
-            row.customerAttribute ||
-            "--"
-          }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="country"
-        label="所属国家"
-        width="100"
-        align="center"
-        :filters="countryFilters"
-        :filter-method="filterCountry"
-        column-key="country"
-      >
-        <template slot-scope="{ row }">
-          {{
-            getDictLabel("country_origin", row.country) || row.country || "--"
-          }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="electricalSupplier"
-        label="电控供应商"
-        width="120"
-        align="center"
-      />
-
-      <el-table-column
-        prop="instrumentSupplier"
-        label="仪表供应商"
-        width="120"
-        align="center"
-      />
-
-      <el-table-column
-        prop="assemblyFactory"
-        label="组装工厂"
-        width="120"
-        align="center"
-      />
-
-      <el-table-column
-        prop="annualShipments"
-        label="年出货量"
-        width="120"
-        align="center"
-      />
-      <el-table-column
-        prop="backgroundCheck"
-        label="背景调查"
-        width="200"
-        show-overflow-tooltip
-        align="center"
-      />
-      <el-table-column
-        prop="address"
-        label="客户网址"
-        min-width="200"
-        show-overflow-tooltip
-        align="center"
-      />
-
-      <el-table-column
-        prop="customerLevel"
-        label="客户级别"
-        width="100"
-        align="center"
-        :filters="customerLevelFilters"
-        :filter-method="filterCustomerLevel"
-        column-key="customerLevel"
-      >
-        <template slot-scope="{ row }">
-          <el-tag
-            :type="getLevelType(row.customerLevel)"
-            size="small"
-            v-if="row.customerLevel"
-          >
-            {{
-              getDictLabel("customer_type_enum", row.customerLevel) ||
-              row.customerLevel
-            }}
-          </el-tag>
-          <div v-else>--</div>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="customerStatus"
-        label="合作状态"
-        width="100"
-        align="center"
-        :filters="customerStatusFilters"
-        :filter-method="filterCustomerStatus"
-        column-key="customerStatus"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            v-if="scope.row.customerStatus"
-            size="mini"
-            :type="getCustomerStatusType(scope.row.customerStatus)"
-          >
-            {{ scope.row.customerStatus }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="customerSource"
-        label="客户来源"
-        width="100"
-        align="center"
-        :filters="customerSourceFilters"
-        :filter-method="filterCustomerSource"
-        column-key="customerSource"
-      />
-
-      <el-table-column
-        prop="productIntent"
-        label="产品意向"
-        width="200"
-        show-overflow-tooltip
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          {{
-            getDictLabel("product_intention", row.productIntent) ||
-            row.productIntent
-          }}
-        </template>
-      </el-table-column>
-
-      <!-- <el-table-column
-        prop="paymentTerm"
-        label="结算期限"
-        width="120"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          <el-tag :type="getPaymentTermType(row.paymentTerm)" size="small">
-            {{ row.paymentTerm || "--" }}
-          </el-tag>
-        </template>
-      </el-table-column> -->
-      <!--
-      <el-table-column
-        prop="invoiceTitle"
-        label="发票抬头"
-        width="150"
-        show-overflow-tooltip
-        align="center"
-      />
-
-      <el-table-column
-        prop="invoiceTaxNo"
-        label="税号"
-        width="180"
-        show-overflow-tooltip
-        align="center"
-      />
-
-      <el-table-column
-        prop="taxType"
-        label="发票类型"
-        width="100"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          <el-tag :type="getTaxTypeColor(row.taxType)">
-            {{ getDictLabel("tax_type", row.taxType) || row.taxType }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="vatRate" label="税率" width="80" align="center" />
-
-      <el-table-column
-        prop="bankName"
-        label="开户银行"
-        width="100"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          <el-tag :type="getBankColor(row.bankName)">
-            {{ getDictLabel("bank_account", row.bankName) || row.bankName }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column
-        prop="bankAccount"
-        label="银行账号"
-        width="180"
-        show-overflow-tooltip
-        align="center"
-      />
-
-      <el-table-column
-        prop="bankPhone"
-        label="开户电话"
-        width="130"
-        align="center"
-      /> -->
-
-      <el-table-column
-        prop="salesLeader"
-        label="销售经理"
-        width="120"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          <div class="flex items-center justify-center space-x-1">
-            <span>{{ row.salesLeader }}</span>
-          </div>
-        </template>
-      </el-table-column>
-
-      <!-- <el-table-column
-        prop="createBy"
-        label="创建人"
-        width="120"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          <div class="flex items-center justify-center space-x-1">
-            <span>{{ row.createBy }}</span>
-          </div>
-        </template>
-      </el-table-column> -->
-
-      <!-- <el-table-column
-        prop="createTime"
-        label="创建时间"
-        width="100"
-        align="center"
-      >
-        <template slot-scope="{ row }">
-          {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
-        </template>
-      </el-table-column> -->
-
-      <el-table-column label="操作" width="200" fixed="right" align="center">
-        <template slot-scope="{ row }">
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-view"
-            @click="handleView(row)"
-            v-hasPermi="['crm:customer:query']"
-          >
-            查看
-          </el-button>
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-edit"
-            @click="handleEdit(row)"
-            v-hasPermi="['crm:customer:edit']"
-          >
-            编辑
-          </el-button>
-
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-delete"
-            style="color: #f56c6c"
-            @click="handleDelete(row)"
-            v-hasPermi="['crm:customer:remove']"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      @view="handleView"
+      @edit="handleEdit"
+      @delete="handleDelete"
+    />
 
     <!-- 分页 -->
-    <div class="mt10 flex justify-end">
-      <el-pagination
-        :current-page="currentPage"
-        :page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        size="small"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+    <div
+      class="mt10 flex items-center justify-end space-x-2 text-sm text-gray-600 customer-table-footer"
+    >
+      <span class="mr-2">共 {{ total }} 条</span>
+      <span class="mr-2">每次加载</span>
+      <el-select
+        v-model="pageSize"
+        size="mini"
+        style="width: 100px"
+        class="mx-1"
+        @change="handleSizeChange"
+      >
+        <el-option
+          v-for="size in pageSizeOptions"
+          :key="size"
+          :label="size"
+          :value="size"
+        />
+      </el-select>
+      <span class="ml-2">条</span>
     </div>
 
     <!-- 客户详情弹框 -->
     <CustomerDetailModal
       :visible.sync="detailVisible"
-      :customer="currentCustomer"
+      :customer="currentCustomer || {}"
       @refresh="getCustomerList"
     />
 
     <!-- 客户新建/编辑弹框 -->
     <CustomerFormModal
       :visible.sync="formVisible"
-      :customer="currentCustomer"
+      :customer="currentCustomer || {}"
       @refresh="getCustomerList"
     />
 
     <!-- 跟进记录弹框 -->
     <FollowUpModal
       :visible.sync="followUpVisible"
-      :customer="currentCustomer"
+      :customer="currentCustomer || {}"
       @refresh="getCustomerList"
     />
   </div>
@@ -405,6 +131,7 @@
 import CustomerDetailModal from "./components/CustomerDetailModal.vue";
 import CustomerFormModal from "./components/CustomerFormModal.vue";
 import FollowUpModal from "./components/FollowUpModal.vue";
+import VirtualCustomerTable from "./components/VirtualCustomerTable.vue";
 import IntelligentSearchForm from "@/components/IntelligentSearchForm";
 import SelectLoadMore from "@/components/selectLoadMore";
 import { getSoCustomerList, deleteSoCustomer } from "@/api/crm/soCustomer";
@@ -426,6 +153,7 @@ export default {
     CustomerDetailModal,
     CustomerFormModal,
     FollowUpModal,
+    VirtualCustomerTable,
     IntelligentSearchForm,
     SelectLoadMore,
   },
@@ -492,7 +220,8 @@ export default {
 
       // 分页
       currentPage: 1,
-      pageSize: 20,
+      pageSize: 10000,
+      pageSizeOptions: [1000, 3000, 5000, 10000],
       total: 0,
     };
   },
@@ -512,7 +241,7 @@ export default {
         return [];
       }
       return this.dict.type.customer_attribute_enum.map((item) => ({
-        text: item.label,
+        label: item.label,
         value: item.label, // 使用 label（中文）作为筛选值
       }));
     },
@@ -523,7 +252,7 @@ export default {
         return [];
       }
       return this.dict.type.customer_type_enum.map((item) => ({
-        text: item.label, // 显示中文标签
+        label: item.label, // 显示中文标签
         value: item.value, // 使用 value（如 "2"）作为筛选值，匹配数据库存储
       }));
     },
@@ -531,11 +260,11 @@ export default {
     // 合作状态筛选选项（固定的几个选项）
     customerStatusFilters() {
       return [
-        { text: "潜在客户", value: "潜在客户" },
-        { text: "意向客户", value: "意向客户" },
-        { text: "送样客户", value: "送样客户" },
-        { text: "成交客户", value: "成交客户" },
-        { text: "流失客户", value: "流失客户" },
+        { label: "潜在客户", value: "潜在客户" },
+        { label: "意向客户", value: "意向客户" },
+        { label: "送样客户", value: "送样客户" },
+        { label: "成交客户", value: "成交客户" },
+        { label: "流失客户", value: "流失客户" },
       ];
     },
 
@@ -545,7 +274,7 @@ export default {
         return [];
       }
       return this.dict.type.country_origin.map((item) => ({
-        text: item.label,
+        label: item.label,
         value: item.label, // 使用 label（中文）作为筛选值
       }));
     },
@@ -556,7 +285,7 @@ export default {
         return [];
       }
       return this.dict.type.customer_source.map((item) => ({
-        text: item.label,
+        label: item.label,
         value: item.label, // 使用 label（中文）作为筛选值
       }));
     },
@@ -682,6 +411,9 @@ export default {
     handleReset() {
       console.log("重置搜索表单");
       this.currentPage = 1;
+      if (this.$refs.customerTable) {
+        this.$refs.customerTable.clearAllFilters();
+      }
       // 搜索表单会自动重置为初始值，重新加载数据
       this.getCustomerList();
     },
@@ -698,7 +430,8 @@ export default {
       }
     },
 
-    handleSortChange({ prop, order }) {
+    handleSortChange(params = {}) {
+      void params;
       // TODO: 处理排序
     },
 
@@ -708,6 +441,7 @@ export default {
 
     handleSizeChange(size) {
       this.pageSize = size;
+      this.currentPage = 1;
       this.getCustomerList();
     },
 
@@ -975,11 +709,25 @@ export default {
 </script>
 
 <style scoped>
-.crm-customer-table :deep(.el-table__row) {
+.crm-customer-table :deep(.vxe-body--row) {
   cursor: pointer;
 }
 
-.crm-customer-table :deep(.el-table__row:hover) {
+.crm-customer-table :deep(.vxe-body--row:hover) {
   background-color: #f5f7fa;
+}
+
+.customer-table-footer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  min-height: 32px;
+  line-height: 1;
+  span {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+  }
 }
 </style>

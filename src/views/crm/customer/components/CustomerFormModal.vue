@@ -20,22 +20,21 @@
         <legend>基本信息</legend>
 
         <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="客户简称" prop="shortName">
+          <el-col :span="8">
+            <el-form-item label="客户简称" prop="name">
               <el-input v-model="form.name" placeholder="请输入客户简称" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="客户全称" prop="name">
-              <el-input v-model="form.shortName" placeholder="请输入客户全称" />
+          <el-col :span="8">
+            <el-form-item label="客户全称">
+              <el-input v-model="form.fullName" placeholder="请输入客户全称" />
             </el-form-item>
           </el-col>
-
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="客户来源" prop="customerSource">
               <el-select
                 v-model="form.customerSource"
-                placeholder="请选择客户来源"
+                placeholder="请选择"
                 style="width: 100%"
                 clearable
                 filterable
@@ -51,32 +50,14 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="项目经理" prop="assistant">
-              <el-select
-                v-model="form.assistant"
-                placeholder="请选择项目经理"
-                style="width: 100%"
-                filterable
-                clearable
-              >
-                <el-option
-                  v-for="user in projectManagerList"
-                  :key="user.userId"
-                  :label="user.nickName"
-                  :value="user.nickName"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="合作状态" prop="customerStatus">
               <el-select
                 v-model="form.customerStatus"
-                placeholder="请选择合作状态"
+                placeholder="请选择"
                 style="width: 100%"
               >
                 <el-option label="潜在客户" value="潜在客户" />
@@ -87,11 +68,11 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="客户类别" prop="customerLevel">
               <el-select
                 v-model="form.customerLevel"
-                placeholder="请选择客户类别"
+                placeholder="请选择"
                 style="width: 100%"
                 clearable
               >
@@ -104,11 +85,11 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="客户属性" prop="customerAttribute">
               <el-select
                 v-model="form.customerAttribute"
-                placeholder="请选择客户属性"
+                placeholder="请选择"
                 style="width: 100%"
                 clearable
               >
@@ -121,8 +102,10 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
 
-          <el-col :span="12">
+        <el-row :gutter="20">
+          <el-col :span="8">
             <el-form-item label="客户品牌" prop="customerBrand">
               <el-input
                 v-model="form.customerBrand"
@@ -130,11 +113,11 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="所属国家" prop="country">
               <el-select
                 v-model="form.country"
-                placeholder="请选择或输入所属国家"
+                placeholder="请选择/输入"
                 style="width: 100%"
                 clearable
                 filterable
@@ -152,12 +135,50 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
 
-          <el-col :span="12">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="交付经理" prop="deliveryManager">
+              <el-select
+                v-model="form.deliveryManager"
+                placeholder="请选择"
+                style="width: 100%"
+                filterable
+                clearable
+              >
+                <el-option
+                  v-for="user in userList"
+                  :key="user.userId"
+                  :label="user.nickName"
+                  :value="user.nickName"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="销售经理" prop="assistant">
+              <el-select
+                v-model="form.assistant"
+                placeholder="请选择"
+                style="width: 100%"
+                filterable
+                clearable
+              >
+                <el-option
+                  v-for="user in projectManagerList"
+                  :key="user.userId"
+                  :label="user.nickName"
+                  :value="user.nickName"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
             <el-form-item label="销售负责人" prop="salesLeader">
               <el-select
                 v-model="form.salesLeader"
-                placeholder="请选择销售负责人"
+                placeholder="请选择"
                 style="width: 100%"
                 filterable
                 clearable
@@ -645,7 +666,7 @@
         <legend>深度调研</legend>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="年出货量" prop="annualShipments">
               <el-input-number
                 v-model="form.annualShipments"
@@ -655,7 +676,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="组装工厂" prop="assemblyFactory">
               <el-input
                 v-model="form.assemblyFactory"
@@ -663,10 +684,7 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="电控供应商" prop="electricalSupplier">
               <el-input
                 v-model="form.electricalSupplier"
@@ -674,7 +692,10 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
             <el-form-item label="仪表供应商" prop="instrumentSupplier">
               <el-input
                 v-model="form.instrumentSupplier"
@@ -682,10 +703,7 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="产品意向" prop="productIntent">
               <el-select
                 v-model="form.productIntent"
@@ -711,7 +729,7 @@
         <legend>财务信息</legend>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="付款条件" prop="paymentTerm">
               <el-input
                 v-model="form.paymentTerm"
@@ -719,7 +737,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="币种" prop="taxType">
               <el-select
                 v-model="form.taxType"
@@ -735,10 +753,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="增值税税率(%)" prop="vatRate">
               <el-input-number
                 v-model="form.vatRate"
@@ -750,7 +765,10 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
             <el-form-item label="发票税号" prop="invoiceTaxNo">
               <el-input-number
                 v-model="form.invoiceTaxNo"
@@ -760,10 +778,7 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="发票抬头" prop="invoiceTitle">
               <el-input
                 v-model="form.invoiceTitle"
@@ -771,7 +786,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="开户银行" prop="bankName">
               <el-select
                 v-model="form.bankName"
@@ -792,7 +807,7 @@
         </el-row>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="银行账户" prop="bankAccount">
               <el-input
                 v-model="form.bankAccount"
@@ -800,7 +815,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item label="开户电话" prop="bankPhone">
               <el-input v-model="form.bankPhone" placeholder="请输入开户电话" />
             </el-form-item>
@@ -991,6 +1006,7 @@ export default {
             // 基本信息字段
             id: newCustomer.id || "",
             name: newCustomer.name || "",
+            fullName: newCustomer.fullName || "", // 回显全称
             no: newCustomer.no || "",
             customerBrand: newCustomer.customerBrand || "",
             country: newCustomer.country || "",
@@ -1002,6 +1018,7 @@ export default {
             // 团队信息字段
             salesLeader: newCustomer.salesLeader || "",
             assistant: newCustomer.assistant || "",
+            deliveryManager: newCustomer.deliveryManager || "", // 回显交付经理
             department: newCustomer.department || "",
 
             // 业务信息字段
@@ -1079,6 +1096,7 @@ export default {
         // 基本信息字段
         id: "",
         name: "",
+        fullName: "",
         no: "",
         customerBrand: "",
         country: "",
@@ -1090,6 +1108,7 @@ export default {
         // 团队信息字段
         salesLeader: "",
         assistant: "",
+        deliveryManager: "",
 
         // 业务信息字段
         paymentTerm: "",
@@ -1149,6 +1168,7 @@ export default {
         // 基本信息字段
         id: this.customer.id || "",
         name: this.customer.name || "",
+        fullName: this.customer.fullName || "",
         no: this.customer.no || "",
         customerBrand: this.customer.customerBrand || "",
         country: this.customer.country || "",
@@ -1160,6 +1180,7 @@ export default {
         // 团队信息字段
         salesLeader: this.customer.salesLeader || "",
         assistant: this.customer.assistant || "",
+        deliveryManager: this.customer.deliveryManager || "",
         department: this.customer.department || "",
 
         // 业务信息字段
@@ -1410,7 +1431,7 @@ export default {
       }
     },
 
-    // 获取项目经理列表 - 使用角色字典接口
+    // 获取销售经理列表 - 使用角色字典接口
     async getProjectManagerList() {
       try {
         const response = await dictByRoles([
@@ -1449,7 +1470,7 @@ export default {
           this.projectManagerList = uniqueUsers;
         }
       } catch (error) {
-        console.error("获取项目经理列表失败:", error);
+        console.error("获取销售经理列表失败:", error);
       }
     },
 

@@ -19,6 +19,7 @@ import VueDraggableResizable from "vue-draggable-resizable";
 import "vue-draggable-resizable/dist/VueDraggableResizable.css";
 import MacInput from "@/components/MacInput";
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
+import CellTooltip from '@/components/CellTooltip';
 
 // 全局组件挂载
 const globalComponents = [
@@ -34,12 +35,13 @@ const globalComponents = [
   ScreenFull,
   VueDraggableResizable,
   MacInput,
-  TypedSelectLoadMore
+  TypedSelectLoadMore,
+  CellTooltip
 ];
 const install = (Vue) => {
-    globalComponents.forEach(item => {
-        Vue.component(item.name, item)
-    })
+  globalComponents.forEach(item => {
+    Vue.component(item.name, item)
+  })
 };
 DictData.install();
 export default install;

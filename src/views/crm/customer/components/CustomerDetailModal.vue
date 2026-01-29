@@ -70,7 +70,7 @@
                       <div class="info-item">
                         <div class="info-label">客户全称</div>
                         <div class="info-value">
-                          {{ customer.name || "--" }}
+                          {{ customer.fullName || "--" }}
                         </div>
                       </div>
                       <!-- <div class="info-item">
@@ -80,7 +80,7 @@
                       <div class="info-item">
                         <div class="info-label">客户简称</div>
                         <div class="info-value">
-                          {{ customer.customerBrand || "--" }}
+                          {{ customer.name || "--" }}
                         </div>
                       </div>
                       <div class="info-item">
@@ -323,7 +323,7 @@
                         <div class="info-label">交付经理</div>
                         <div class="info-value">
                           <div class="user-info">
-                            {{ customer.updateBy || "--" }}
+                            {{ customer.deliveryManager || "--" }}
                           </div>
                         </div>
                       </div>
@@ -1113,7 +1113,8 @@
                     <el-table-column
                       prop="remark"
                       label="备注"
-                      align="center"
+                      align="left"
+                      header-align="center"
                       min-width="180"
                     >
                       <template slot-scope="{ row }">

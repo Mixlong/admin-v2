@@ -26,8 +26,14 @@ export function fixPopperAppendToBody() {
     .el-tooltip__popper {
       position: absolute !important;
     }
+    
+    /* 无界微前端 VXE-Table Tooltip 定位修复 */
+    .vxe-table--tooltip-wrapper,
+    .vxe-tooltip--wrapper {
+      position: absolute !important;
+    }
   `
-  
+
   // 插入到 head 最后，确保优先级
   document.head.appendChild(style)
   console.log('✅ [V2] Popper CSS 修复已应用')
@@ -51,10 +57,10 @@ export function fixPopupManager() {
     }
 
     console.log('🔧 [V2] 修复 PopupManager')
-    
+
     // 这里可以添加更多的 PopupManager 修复逻辑
     // 例如修改 nextZIndex 方法等
-    
+
   } catch (e) {
     console.warn('⚠️ [V2] PopupManager 修复失败:', e)
   }
@@ -176,11 +182,11 @@ export function hijackAppendChild() {
   const originalAppendChild = document.body.appendChild
 
   // 劫持 appendChild
-  document.body.appendChild = function(element) {
+  document.body.appendChild = function (element) {
     // 检查是否是 popper 元素
     if (isPopperElement(element)) {
       console.log('🔧 [V2] 拦截 Popper 元素:', element.className)
-      
+
       // 修改定位方式
       if (element.style) {
         element.style.position = 'absolute'
