@@ -142,14 +142,14 @@
       </el-table-column>
 
       <el-table-column
-        prop="createBy"
+        prop="salesManager"
         label="销售经理"
         width="100"
         align="center"
       />
 
       <el-table-column
-        prop="createBy"
+        prop="deliveryManager"
         label="交付经理"
         width="120"
         align="center"
@@ -162,7 +162,7 @@
         align="center"
       >
         <template slot-scope="{ row }">
-          {{ parseTime(row.createTime) }}
+          {{ parseTime(row.createTime,"{y}-{m}-{d}") }}
         </template>
       </el-table-column>
 

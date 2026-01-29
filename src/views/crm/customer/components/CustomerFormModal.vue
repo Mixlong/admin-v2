@@ -43,7 +43,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.customer_source"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.label"
                 />
@@ -78,7 +78,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.customer_type_enum"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.value"
                 />
@@ -95,7 +95,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.customer_attribute_enum"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.label"
                 />
@@ -148,7 +148,7 @@
                 clearable
               >
                 <el-option
-                  v-for="user in userList"
+                  v-for="user in projectManagerList"
                   :key="user.userId"
                   :label="user.nickName"
                   :value="user.nickName"
@@ -184,7 +184,7 @@
                 clearable
               >
                 <el-option
-                  v-for="user in userList"
+                  v-for="user in projectManagerList"
                   :key="user.userId"
                   :label="user.nickName"
                   :value="user.nickName"
@@ -714,7 +714,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.product_intention"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.value"
                 />
@@ -746,7 +746,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.tax_type"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.value"
                 />
@@ -797,7 +797,7 @@
               >
                 <el-option
                   v-for="dict in dict.type.bank_account"
-                  :key="dict.value"
+                  :key="`${dict.value}-${dict.label}`"
                   :label="dict.label"
                   :value="dict.value"
                 />
@@ -888,21 +888,25 @@ export default {
   data() {
     return {
       loading: false,
+      projectManagerList: [],
       form: {
         // 基本信息字段
         id: "",
         name: "",
+        fullName: "",
         no: "",
         customerBrand: "",
         country: "",
         customerStatus: "",
         customerLevel: "",
         customerSource: "",
+        customerAttribute: "",
         address: "",
 
         // 团队信息字段
         salesLeader: "",
         assistant: "",
+        deliveryManager: "",
 
         // 业务信息字段
         paymentTerm: "",
@@ -1080,7 +1084,6 @@ export default {
   },
   mounted() {
     this.loadSettlementPeriodOptions();
-    this.getUserList();
     this.getProjectManagerList();
   },
   methods: {
@@ -1103,6 +1106,7 @@ export default {
         customerStatus: "",
         customerLevel: "",
         customerSource: "",
+        customerAttribute: "",
         address: "",
 
         // 团队信息字段
@@ -1175,6 +1179,7 @@ export default {
         customerStatus: this.customer.customerStatus,
         customerLevel: this.customer.customerLevel || "",
         customerSource: this.customer.customerSource || "",
+        customerAttribute: this.customer.customerAttribute || "",
         address: this.customer.address || "",
 
         // 团队信息字段
@@ -1292,6 +1297,12 @@ export default {
 
     buildSubmitPayload() {
       const payload = { ...this.form };
+
+      // 移除系统字段
+      delete payload.createBy;
+      delete payload.updateBy;
+      delete payload.createTime;
+      delete payload.updateTime;
       const toNumberOrNull = (value) => {
         if (value === "" || value === null || value === undefined) return null;
         const parsed = Number(value);
@@ -1389,46 +1400,6 @@ export default {
       this.$nextTick(() => {
         this.$emit("update:visible", false);
       });
-    },
-
-    // 获取销售负责人列表 - 使用角色字典接口
-    async getUserList() {
-      try {
-        const response = await dictByRoles(["sale_manager"]);
-        if (response && response.data) {
-          let list = [];
-          // 处理不同的数据结构
-          if (Array.isArray(response.data)) {
-            list = response.data.map((item) => ({
-              userId: item.id || item.userId || item.dictValue,
-              userName: item.userName || item.dictValue || item.name,
-              nickName:
-                item.nickName || item.dictLabel || item.userName || item.name,
-            }));
-          } else if (response.data.list) {
-            list = response.data.list.map((item) => ({
-              userId: item.id || item.userId || item.dictValue,
-              userName: item.userName || item.dictValue || item.name,
-              nickName:
-                item.nickName || item.dictLabel || item.userName || item.name,
-            }));
-          }
-
-          // 去重处理
-          const uniqueUsers = [];
-          const userNameSet = new Set();
-          list.forEach((user) => {
-            if (!userNameSet.has(user.userName)) {
-              userNameSet.add(user.userName);
-              uniqueUsers.push(user);
-            }
-          });
-
-          this.userList = uniqueUsers;
-        }
-      } catch (error) {
-        console.error("获取销售负责人列表失败:", error);
-      }
     },
 
     // 获取销售经理列表 - 使用角色字典接口

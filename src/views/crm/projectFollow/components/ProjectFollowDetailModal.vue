@@ -75,13 +75,13 @@
           <el-col :span="12">
             <div class="detail-item">
               <label>销售经理：</label>
-              <span>{{ projectFollow.createBy || "-" }}</span>
+              <span>{{ projectFollow.salesManager || "-" }}</span>
             </div>
           </el-col>
           <el-col :span="12">
             <div class="detail-item">
               <label>交付经理：</label>
-              <span>{{ projectFollow.createBy || "-" }}</span>
+              <span>{{ projectFollow.deliveryManager || "-" }}</span>
             </div>
           </el-col>
           <el-col :span="12">

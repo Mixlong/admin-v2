@@ -376,7 +376,7 @@
                     v-loading="contactLoading"
                     :data="contactList"
                     style="width: 100%"
-                    height="36vh"
+                    height="53vh"
                     border
                     size="small"
                     element-loading-text="加载联系人数据..."
@@ -582,7 +582,7 @@
                     v-loading="followUpLoading"
                     :data="followUpList"
                     border
-                    height="36vh"
+                    height="53vh"
                     size="small"
                     element-loading-text="加载跟进记录..."
                     class="crm-followup-table"
@@ -751,7 +751,7 @@
                     :data="planList"
                     border
                     size="small"
-                    height="36vh"
+                    height="53vh"
                     element-loading-text="加载跟进计划..."
                     class="crm-plan-table"
                     style="width: 100%"
@@ -895,7 +895,7 @@
                     style="width: 100%"
                     border
                     size="small"
-                    height="36vh"
+                    height="53vh"
                     element-loading-text="加载项目跟进..."
                     class="crm-project-follow-table"
                   >
@@ -991,13 +991,13 @@
                     </el-table-column>
 
                     <el-table-column
-                      prop="createBy"
+                      prop="salesManager"
                       label="销售经理"
                       width="100"
                       align="center"
                     />
                     <el-table-column
-                      prop="createBy"
+                      prop="deliveryManager"
                       label="交付经理"
                       width="120"
                       align="center"
@@ -1010,7 +1010,7 @@
                       align="center"
                     >
                       <template slot-scope="{ row }">
-                        {{ parseTime(row.createTime) }}
+                        {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
                       </template>
                     </el-table-column>
 
@@ -1074,7 +1074,7 @@
                     v-loading="addressLoading"
                     :data="addressList"
                     style="width: 100%"
-                    height="36vh"
+                    height="53vh"
                     border
                     size="small"
                     element-loading-text="加载收货地址数据..."
@@ -1130,7 +1130,7 @@
                       align="center"
                     >
                       <template slot-scope="{ row }">
-                        {{ formatDate(row.createTime) }}
+                        {{ parseTime(row.createTime, "{y}-{m}-{d}") }}
                       </template>
                     </el-table-column>
                     <el-table-column label="操作" width="80" align="center">
@@ -2174,15 +2174,17 @@ export default {
 </script>
 
 <style scoped>
-.customer-detail-dialog .el-dialog {
+.customer-detail-dialog ::v-deep.el-dialog {
   margin: 5vh auto;
   max-width: 95vw;
   width: 1400px;
   height: 85vh;
+
   overflow: hidden;
 }
 
-.customer-detail-dialog .el-dialog__body {
+.customer-detail-dialog ::v-deep.el-dialog__body {
+  max-height: 85vh !important;
   height: calc(100% - 60px);
   overflow: hidden;
   padding: 20px;
@@ -2751,7 +2753,7 @@ export default {
 <style>
 /* 全局样式，针对客户详情弹窗中的tab-pane */
 .customer-detail-dialog .el-tab-pane {
-  height: calc(60vh - 180px);
+  height: calc(75vh - 180px);
   overflow-y: auto;
   box-sizing: border-box;
 }

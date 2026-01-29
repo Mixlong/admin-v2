@@ -84,6 +84,42 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="交付经理" prop="deliveryManager">
+              <el-select
+                v-model="form.deliveryManager"
+                placeholder="请选择交付经理"
+                clearable
+                filterable
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in projectManagerList"
+                  :key="item.userId"
+                  :label="item.nickName"
+                  :value="item.nickName"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="销售经理" prop="salesManager">
+              <el-select
+                v-model="form.salesManager"
+                placeholder="请选择销售经理"
+                clearable
+                filterable
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in projectManagerList"
+                  :key="item.userId"
+                  :label="item.nickName"
+                  :value="item.nickName"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-form-item label="需求总表" prop="requirementLink">
@@ -143,6 +179,7 @@
 <script>
 import { addProjectFollow, updateProjectFollow } from "@/api/crm/projectFollow";
 import { getCustomerList } from "@/api/order";
+import { dictByRoles } from "@/api/third/project";
 import SelectLoadMore from "@/components/selectLoadMore";
 
 export default {
@@ -182,6 +219,8 @@ export default {
         customerId: "",
         productType: "",
         projectNode: "",
+        deliveryManager: "",
+        salesManager: "",
         progress: "",
         productKeyFeatures: "",
         projectBackground: "",
@@ -195,6 +234,7 @@ export default {
         page: 1,
         more: true,
       },
+      projectManagerList: [],
       rules: {
         projectName: [
           { required: true, message: "请输入项目名称", trigger: "blur" },
@@ -265,8 +305,52 @@ export default {
   mounted() {
     // 初始化客户数据
     this.getCustomerData();
+    this.getProjectManagerList();
   },
   methods: {
+    // 获取销售经理列表 - 使用角色字典接口
+    async getProjectManagerList() {
+      try {
+        const response = await dictByRoles([
+          "project_manager",
+          "project_manage_s",
+        ]);
+        if (response && response.data) {
+          let list = [];
+          // 处理不同的数据结构
+          if (Array.isArray(response.data)) {
+            list = response.data.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          } else if (response.data.list) {
+            list = response.data.list.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          }
+
+          // 去重处理
+          const uniqueUsers = [];
+          const userNameSet = new Set();
+          list.forEach((user) => {
+            if (!userNameSet.has(user.userName)) {
+              userNameSet.add(user.userName);
+              uniqueUsers.push(user);
+            }
+          });
+
+          this.projectManagerList = uniqueUsers;
+        }
+      } catch (error) {
+        console.error("获取销售经理列表失败:", error);
+      }
+    },
+
     // 处理默认客户设置
     async handleDefaultCustomer() {
       if (this.defaultCustomerId && this.defaultCustomerName) {
@@ -304,6 +388,8 @@ export default {
         customerId: "",
         productType: "",
         projectNode: "",
+        deliveryManager: "",
+        salesManager: "",
         progress: "",
         productKeyFeatures: "",
         projectBackground: "",
