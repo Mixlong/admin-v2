@@ -72,7 +72,10 @@
           </fieldset>
 
           <!-- 审核人员配置 -->
-          <fieldset class="form-fieldset" v-if="form.state != 0">
+          <fieldset
+            class="form-fieldset"
+            v-if="form.state != 0 || form.auditAdjustType === 'full'"
+          >
             <legend class="fieldset-legend">
               <i class="el-icon-user-solid" style="margin-right: 5px"></i>
               审核人员配置
@@ -1260,6 +1263,11 @@ export default {
     handleAuditTypeChange(type) {
       // 设置审核调整类型
       this.form.auditAdjustType = type;
+
+      // 选择重新审核时，将状态改为0（新SOP和旧SOP都适用）
+      if (type === "full") {
+        this.form.state = 0;
+      }
 
       // 切换类型时，清除对应的校验错误
       this.$nextTick(() => {
