@@ -20,7 +20,7 @@
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd"
             style="width: 240px"
-          />
+          /> 
         </el-form-item>
       </template>
 
@@ -52,314 +52,28 @@
       </template>
     </IntelligentSearchForm>
 
-    <!-- 表格 -->
-    <el-table
-      v-loading="loading"
+    <!-- 虚拟表格 -->
+    <VirtualAfterProblemTable
+      ref="afterProblemTable"
       :data="problemList"
-      :height="tableHeight(15)"
-      border
-    >
-      <!-- 序号列 -->
-      <el-table-column
-        label="序号"
-        type="index"
-        width="60"
-        align="center"
-        fixed
-      >
-        <template slot-scope="scope">
-          {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
-        </template>
-      </el-table-column>
-
-      <!-- 一级表头：问题点 -->
-      <el-table-column
-        label="问题点"
-        align="center"
-        header-align="center"
-        class-name="group-problem"
-      >
-        <el-table-column
-          label="问题来源"
-          prop="problemSource"
-          align="center"
-          width="110"
-          show-overflow-tooltip
-          class-name="col-problem"
-        >
-          <template slot-scope="{ row }">
-            {{ getProblemSourceText(row.problemSource) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="时间点"
-          prop="problemTime"
-          align="center"
-          width="130"
-          class-name="col-problem"
-        >
-          <template slot-scope="{ row }">
-            {{ parseTime(row.problemTime,"{y}-{m}-{d} {h}:{i}") }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="问题描述"
-          prop="problemDescription"
-          align="center"
-          min-width="200"
-          class-name="col-problem"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.problemDescription"></div>
-            <el-link
-              v-if="row.businessIds || row.businessIdList"
-              type="primary"
-              :underline="false"
-              @click="handleViewBusinessRecords(row)"
-              style="margin-top: 5px; font-size: 12px"
-            >
-              {{ getBusinessLinkText(row.problemSource) }}
-            </el-link>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="问题追踪人"
-          prop="problemManager"
-          align="center"
-          width="120"
-          class-name="col-problem"
-        >
-          <template slot-scope="{ row }">
-            <span>{{ row.problemManager || '-' }}</span>
-          </template>
-        </el-table-column>
-      </el-table-column>
-      <!-- 一级表头：迪太研发&品质 -->
-      <el-table-column
-        label="迪太研发&品质"
-        align="center"
-        header-align="center"
-        class-name="group-research"
-      >
-   
-        <el-table-column
-          label="问题分析（过程）"
-          prop="problemAnalysis"
-          align="center"
-          min-width="180"
-          show-overflow-tooltip
-          class-name="col-research"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.problemAnalysis"></div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="分析结果"
-          prop="analysisResult"
-          align="center"
-          min-width="180"
-          show-overflow-tooltip
-          class-name="col-research"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.analysisResult"></div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="责任人"
-          prop="analysisResponsible"
-          align="center"
-          width="120"
-          class-name="col-research"
-        >
-          <template slot-scope="{ row }">
-            <span>{{ row.analysisResponsible || '-' }}</span>
-          </template>
-        </el-table-column>
-      </el-table-column>
-
-      <!-- 一级表头：对策 -->
-      <el-table-column
-        label="对策"
-        align="center"
-        header-align="center"
-        class-name="group-solution"
-      >
-        <el-table-column
-          label="影响面"
-          prop="impactScope"
-          align="center"
-          min-width="150"
-          show-overflow-tooltip
-          class-name="col-solution"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.impactScope"></div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="短期对策"
-          prop="internalMeasures"
-          align="center"
-          min-width="150"
-          show-overflow-tooltip
-          class-name="col-solution"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.internalMeasures"></div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="长期对策"
-          prop="externalMeasures"
-          align="center"
-          min-width="150"
-          show-overflow-tooltip
-          class-name="col-solution"
-        >
-          <template slot-scope="{ row }">
-            <div class="html-content" v-html="row.externalMeasures"></div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="责任人"
-          prop="countermeasureResponsible"
-          align="center"
-          width="120"
-          class-name="col-solution"
-        >
-          <template slot-scope="{ row }">
-            <span>{{ row.countermeasureResponsible || '-' }}</span>
-          </template>
-        </el-table-column>
-      </el-table-column>
-
-      <!-- 一级表头：改善跟踪 -->
-      <el-table-column
-        label="改善跟踪"
-        align="center"
-        header-align="center"
-        class-name="group-tracking"
-      >
-   
-        <el-table-column
-          label="完成时间"rop="completionTime"
-          align="center"
-          width="140"
-          class-name="col-tracking"
-        >
-          <template slot-scope="{ row }">
-            {{ parseTime(row.completionTime,"{y}-{m}-{d} {h}:{i}") }}
-          </template>
-        </el-table-column>
-	        <el-table-column
-	          label="效果确认"
-	          prop="effectivenessConfirmation"
-	          align="center"
-	          min-width="85"
-	          show-overflow-tooltip
-	          class-name="col-tracking"
-	        >
-	          <template slot-scope="{ row }">
-	            <span :class="getEffectivenessConfirmationClass(row.effectivenessConfirmation)">
-	              {{ getEffectivenessConfirmationText(row.effectivenessConfirmation) }}
-	            </span>
-	          </template>
-	        </el-table-column>
-                <el-table-column
-          label="责任人"
-          prop="responsiblePerson"
-          align="center"
-          width="120"
-          class-name="col-tracking"
-        >
-          <template slot-scope="{ row }">
-            <span>{{ row.responsiblePerson || '-' }}</span>
-          </template>
-        </el-table-column>
-	      </el-table-column>
-
-      <!-- 操作列 -->
-      <el-table-column label="操作" align="center" width="120" fixed="right">
-        <template slot-scope="{ row }">
-          <el-button
-            v-hasPermi="['third:afterProblem:query']"
-            class="text-green mr10"
-            type="text"
-            size="small"
-            @click="handleDetail(row)"
-          >
-            详情
-          </el-button>
-          <el-dropdown
-            trigger="click"
-            @command="(cmd) => handleModuleEdit(cmd, row)"
-          >
-            <el-button type="text" size="small">
-              更多<i class="el-icon-arrow-down el-icon--right"></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:editProblem']) || checkPermi(['third:afterProblem:edit'])"
-                command="problem"
-                >修改问题</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:editResearch']) || checkPermi(['third:afterProblem:edit'])"
-                command="research"
-                >添加分析</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:editSolution']) || checkPermi(['third:afterProblem:edit'])"
-                command="solution"
-                >添加对策</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:editTracking']) || checkPermi(['third:afterProblem:edit'])"
-                command="tracking"
-                >添加改善</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="row.problemManager === nickName || nickName === 'admin'"
-                command="changeResponsible"
-                divided
-                >修改责任人</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:edit'])"
-                command="all"
-                divided
-                >全部编辑</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:log'])"
-                command="log"
-                divided
-                class="text-center"
-                >日志</el-dropdown-item
-              >
-              <el-dropdown-item
-                v-if="checkPermi(['third:afterProblem:remove'])"
-                command="delete"
-                divided
-                class="text-red text-center"
-                >删除</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </el-dropdown>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 分页 -->
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
+      :loading="loading"
+      :height="tableHeight(60)"
+      :problem-source-filters="problemSourceFilters"
+      :problem-manager-filters="problemManagerFilters"
+      @detail="handleDetail"
+      @module-edit="handleModuleEdit"
+      @view-business-records="handleViewBusinessRecords"
+      @filter-change="handleFilterChange"
+      @sort-change="handleSortChange"
     />
+
+    <!-- 分页条数显示（右下角） -->
+    <div
+      class="mt10 flex items-center justify-end space-x-2 text-sm text-gray-600"
+      style="position: fixed; bottom: 20px; right: 20px; z-index: 100; min-height: 32px; line-height: 1;   padding: 5px 10px; border-radius: 4px;"
+    >
+      <span class="mr-2">共 {{ total }} 条</span>
+    </div>
 
     <!-- 新增/编辑对话框 -->
     <problem-form
@@ -498,6 +212,7 @@ import ProductionRecordSelector from "./components/ProductionRecordSelector";
 import QualityRecordSelector from "./components/QualityRecordSelector";
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import OperLogDialog from "@/components/OperLogDialog";
+import VirtualAfterProblemTable from "./components/VirtualAfterProblemTable";
 import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 export default {
   name: "AfterProblem",
@@ -509,6 +224,7 @@ export default {
     QualityRecordSelector,
     TypedSelectLoadMore,
     OperLogDialog,
+    VirtualAfterProblemTable,
   },
   mixins: [digiSmartJumpMixin],
   data() {
@@ -543,7 +259,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 10000,
         problemSource: undefined,
         problemDescription: undefined,
         responsiblePerson: undefined,
@@ -620,6 +336,30 @@ export default {
         responsiblePerson: '修改改善跟踪责任人'
       };
       return titleMap[this.editResponsibleType] || '修改责任人';
+    },
+    // 问题来源筛选器
+    problemSourceFilters() {
+      return [
+        { label: "客户反馈", value: 1 },
+        { label: "生产反馈", value: 2 },
+        { label: "品质反馈", value: 3 },
+      ];
+    },
+    // 问题追踪人筛选器（从数据中提取）
+    problemManagerFilters() {
+      if (!this.problemList || this.problemList.length === 0) return [];
+      
+      const managers = new Set();
+      this.problemList.forEach(item => {
+        if (item.problemManager) {
+          managers.add(item.problemManager);
+        }
+      });
+      
+      return Array.from(managers).map(name => ({
+        label: name,
+        value: name
+      }));
     },
   },
   created() {
@@ -879,6 +619,18 @@ export default {
           this.getList();
         }
       });
+    },
+
+    /** 处理表格筛选变化 */
+    handleFilterChange(params) {
+      console.log('筛选变化:', params);
+      // 虚拟表格内部已处理筛选，无需额外操作
+    },
+
+    /** 处理表格排序变化 */
+    handleSortChange(params) {
+      console.log('排序变化:', params);
+      // TODO: 如需服务端排序，可在此处理
     }
   }
 }
@@ -896,162 +648,5 @@ export default {
 
 .text-red {
   color: #f56c6c;
-}
-
-// 富文本内容显示样式
-.html-content {
-  text-align: left;
-  word-break: break-word;
-  line-height: 1.5;
-
-  // 限制显示行数
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  // 清除富文本编辑器的默认样式
-  ::v-deep p {
-    margin: 0;
-    padding: 0;
-  }
-
-  ::v-deep ul,
-  ::v-deep ol {
-    margin: 0;
-    padding-left: 20px;
-  }
-}
-
-// 表格样式优化
-::v-deep .el-table {
-  // 表头加粗
-  th {
-    font-weight: bold !important;
-  }
-
-  // 一级表头样式
-  .el-table__header-wrapper {
-    .el-table__header {
-      thead {
-        tr:first-child {
-          th {
-            font-weight: bold;
-            font-size: 14px;
-            color: #303133;
-
-            // 默认背景色
-            background-color: #f0f2f5;
-
-            // 问题点 - 蓝色系
-            &.group-problem {
-              background-color: #e3f2fd;
-              color: #1976d2;
-            }
-
-            // 迪太研发&品质 - 绿色系
-            &.group-research {
-              background-color: #e8f5e9;
-              color: #388e3c;
-            }
-
-            // 对策 - 橙色系
-            &.group-solution {
-              background-color: #fff3e0;
-              color: #f57c00;
-            }
-
-            // 改善跟踪 - 紫色系
-            &.group-tracking {
-              background-color: #f3e5f5;
-              color: #7b1fa2;
-            }
-          }
-        }
-
-        tr:last-child {
-          th {
-            font-weight: bold;
-            font-size: 13px;
-
-            // 默认背景色
-            background-color: #fafafa;
-
-            // 问题点二级表头 - 浅蓝色
-            &.col-problem {
-              background-color: #f1f8ff;
-            }
-
-            // 迪太研发&品质二级表头 - 浅绿色
-            &.col-research {
-              background-color: #f4faf4;
-            }
-
-            // 对策二级表头 - 浅橙色
-            &.col-solution {
-              background-color: #fff9f0;
-            }
-
-            // 改善跟踪二级表头 - 浅紫色
-            &.col-tracking {
-              background-color: #faf5fb;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 表格内容行样式
-  .el-table__body-wrapper {
-    .el-table__body {
-      tbody {
-        tr {
-          td {
-            // 问题点列 - 浅蓝色背景
-            &.col-problem {
-              background-color: #fafcff;
-            }
-
-            // 迪太研发&品质列 - 浅绿色背景
-            &.col-research {
-              background-color: #fafdfb;
-            }
-
-            // 对策列 - 浅橙色背景
-            &.col-solution {
-              background-color: #fffdfb;
-            }
-
-            // 改善跟踪列 - 浅紫色背景
-            &.col-tracking {
-              background-color: #fdfafd;
-            }
-          }
-
-          // 鼠标悬停时保持颜色区分
-          &:hover {
-            td.col-problem {
-              background-color: #f0f7ff !important;
-            }
-
-            td.col-research {
-              background-color: #f0f9f0 !important;
-            }
-
-            td.col-solution {
-              background-color: #fff8f0 !important;
-            }
-
-            td.col-tracking {
-              background-color: #f8f0f8 !important;
-            }
-          }
-        }
-      }
-    }
-  }
 }
 </style>

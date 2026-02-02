@@ -59,15 +59,15 @@
     <!-- 生产数据表格 -->
     <div class="table-container">
       <el-table :data="tableData" v-loading="loading" border stripe style="width: 100%" :height="tableHeight()">
-        <el-table-column label="生产日期" align="center">
+        <el-table-column label="生产日期" align="center" width="110">
           <template slot-scope="scope">
             {{ formatDate(scope.row.date) }}
           </template>
         </el-table-column>
-        <el-table-column prop="computerName" label="仪表型号" align="center"/>
-        <el-table-column prop="salesOrderNo" label="迪太订单号" align="center" />
-        <el-table-column prop="orderCode" label="工单号" align="center" />
-        <el-table-column prop="num" label="生产数量" align="center">
+        <el-table-column prop="computerName" label="仪表型号" align="center" min-width="150"/>
+        <el-table-column prop="salesOrderNo" label="迪太订单号" align="center" width="140"/>
+        <el-table-column prop="orderCode" label="工单号" align="center" width="140"/>
+        <el-table-column prop="num" label="生产数量" align="center" width="100">
           <template slot-scope="scope">
             <strong 
               style="cursor: pointer; color: #409EFF; text-decoration: underline; font-size: 15px; font-weight: 700;"
@@ -77,37 +77,53 @@
             </strong>
           </template>
         </el-table-column>
-        <el-table-column prop="address" label="生产地点" align="center"/>
+        <el-table-column prop="address" label="生产地点" align="center" width="100"/>
         
         <!-- 测试环节分组列 -->
-        <el-table-column label="测试环节" align="center">
-          <el-table-column label="IQC" align="center"  >
+        <el-table-column label="测试" align="center">
+          <el-table-column label="IQC" align="center" width="80">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.iqcNum }}</strong>
             </template>
           </el-table-column>
           
-          <el-table-column label="FQC" align="center"  >
+          <el-table-column label="FQC" align="center" width="80">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fqcNum }}</strong>
             </template>
           </el-table-column>
           
-          <el-table-column label="防水" align="center"  >
+          <el-table-column label="防水" align="center" width="80">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fsNum }}</strong>
             </template>
           </el-table-column>
-          <el-table-column label="配置工位" align="center"  >
+          
+          <el-table-column label="配置工位" align="center" width="90">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.dcdNum }}</strong>
             </template>
           </el-table-column>
-          <el-table-column label="包装" align="center"  >
-            <template slot-scope="scope">
-              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.bzNum }}</strong>
-            </template>
-          </el-table-column>
+        </el-table-column>
+        
+        <!-- 包装列（独立，显示订单详情） -->
+        <el-table-column label="包装" align="center" min-width="200">
+          <template slot-scope="scope">
+            <div v-if="scope.row.packagingDataList && scope.row.packagingDataList.length > 0" style="padding: 5px 0;">
+              <div 
+                v-for="(item, index) in scope.row.packagingDataList" 
+                :key="index"
+              >
+                <div style="display: flex; justify-content: center; align-items: center;">
+                  <div>
+                    <div>{{ item.packagingNum }}</div>
+                  </div>
+                </div>
+                 <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
+              </div>
+              
+            </div>
+          </template>
         </el-table-column>
       </el-table>
       

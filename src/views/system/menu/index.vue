@@ -42,14 +42,14 @@
         </el-form-item>
       </el-form>
 
-      <el-button-group style="margin-left: auto">
+      <!-- <el-button-group style="margin-left: auto">
         <el-button
           size="small"
           :type="viewMode === 'mind' ? 'primary' : ''"
           icon="el-icon-share"
           @click="viewMode = 'mind'"
         >
-          树形图
+          层级视图
         </el-button>
         <el-button
           size="small"
@@ -59,7 +59,7 @@
         >
           表格
         </el-button>
-      </el-button-group>
+      </el-button-group> -->
     </div>
 
     <!-- 思维导图视图 -->
@@ -73,6 +73,16 @@
         <div v-for="column in columns" :key="column.level" class="column">
           <div class="column-header">
             <span>{{ column.title }}</span>
+            <el-radio-group
+              v-model="columnFilters[column.level]"
+              size="mini"
+              class="column-filter"
+              @change="onColumnFilterChange(column.level)"
+            >
+              <el-radio label="">全部</el-radio>
+              <el-radio label="0">显示</el-radio>
+              <el-radio label="1">隐藏</el-radio>
+            </el-radio-group>
             <el-button
               size="mini"
               type="primary"
@@ -85,7 +95,7 @@
           </div>
           <div class="column-body">
             <div
-              v-for="item in column.items"
+              v-for="item in getColumnItems(column)"
               :key="item.id"
               class="column-item"
               :class="{ active: isActive(item, column.level) }"
@@ -96,6 +106,16 @@
                 {{ getMenuTypeLabel(item.raw) }}
               </span>
               <span class="item-label">{{ item.label }}</span>
+              <span
+                class="visible-tag"
+                :class="getVisibleClass(item.raw)"
+                :title="getVisibleLabel(item.raw)"
+              >
+                <i
+                  class="el-icon-view visibility-icon"
+                  :class="{ hidden: isVisibleHidden(item.raw) }"
+                ></i>
+              </span>
               <i
                 v-if="item.raw && item.raw.menuType === 'M'"
                 class="el-icon-arrow-right item-arrow"
@@ -119,7 +139,7 @@
     </div>
 
     <!-- 表格视图 -->
-    <div v-show="viewMode === 'table'" class="table-container">
+    <!-- <div v-show="viewMode === 'table'" class="table-container">
       <el-table
         v-loading="loading"
         :data="menuList"
@@ -139,11 +159,6 @@
           <template slot-scope="scope">
             <i :class="getMenuIcon(scope.row)" style="margin-right: 5px"></i>
             {{ scope.row.menuName }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="icon" label="图标" align="center" width="100">
-          <template slot-scope="scope">
-            <svg-icon :icon-class="scope.row.icon" />
           </template>
         </el-table-column>
         <el-table-column
@@ -174,7 +189,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="200">
+        <el-table-column label="操作" align="center" width="230">
           <template slot-scope="scope">
             <el-button
               type="text"
@@ -200,7 +215,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </div>
+    </div> -->
 
     <!-- 添加或修改菜单对话框 -->
     <el-dialog
@@ -422,6 +437,7 @@ export default {
       activePaths: [],
       activeLevelSets: [],
       activeMode: "single", // single: 单一路径, multi: 多路径
+      columnFilters: {},
       contextMenu: {
         visible: false,
         x: 0,
@@ -456,6 +472,7 @@ export default {
       const status = this.queryParams.status;
       const hasStatus =
         status !== undefined && status !== null && status !== "";
+      const hasSearch = hasKeyword || hasStatus;
 
       const matchNode = (node) => {
         const nameOk =
@@ -479,7 +496,7 @@ export default {
       };
 
       this.menuList = this.allMenuList;
-      if (!hasKeyword && !hasStatus) {
+      if (!hasSearch) {
         this.activeMode = "single";
         this.activePath = [];
         this.activePaths = [];
@@ -591,6 +608,11 @@ export default {
       }
 
       this.columns = columns;
+      this.columns.forEach((col) => {
+        if (!(col.level in this.columnFilters)) {
+          this.$set(this.columnFilters, col.level, "0");
+        }
+      });
     },
 
     mapNode(menu) {
@@ -634,6 +656,22 @@ export default {
       return this.activePath[level - 1] === item.id;
     },
 
+    onColumnFilterChange(level) {
+      if (!(level in this.columnFilters)) {
+        this.$set(this.columnFilters, level, "");
+      }
+    },
+
+    getColumnItems(column) {
+      const filter = this.columnFilters[column.level];
+      if (filter === undefined || filter === null || filter === "") {
+        return column.items;
+      }
+      return column.items.filter(
+        (item) => String(item.raw && item.raw.visible) === String(filter)
+      );
+    },
+
     getMenuTypeLabel(menu) {
       const typeMap = { M: "目录", C: "菜单", F: "按钮" };
       return typeMap[menu.menuType] || "未知";
@@ -642,6 +680,28 @@ export default {
     getMenuTypeClass(menu) {
       const typeMap = { M: "type-m", C: "type-c", F: "type-f" };
       return typeMap[menu.menuType] || "type-unknown";
+    },
+
+    getVisibleLabel(menu) {
+      const value = menu && menu.visible != null ? String(menu.visible) : "";
+      if (!this.visibleOptions || !this.visibleOptions.length) {
+        return value === "1" ? "隐藏" : "显示";
+      }
+      const match = this.visibleOptions.find(
+        (item) => String(item.dictValue) === value
+      );
+      if (match && match.dictLabel) return match.dictLabel;
+      return value === "1" ? "隐藏" : "显示";
+    },
+
+    getVisibleClass(menu) {
+      const value = menu && menu.visible != null ? String(menu.visible) : "";
+      return value === "1" ? "visible-hidden" : "visible-show";
+    },
+
+    isVisibleHidden(menu) {
+      const value = menu && menu.visible != null ? String(menu.visible) : "";
+      return value === "1";
     },
 
     /** 获取菜单类型图标 */
@@ -873,7 +933,7 @@ export default {
 
 .top-toolbar {
   background: #fff;
-  padding: 16px 20px;
+  padding: 16px 20px 0;
   border-radius: 4px;
   margin-bottom: 16px;
   display: flex;
@@ -882,6 +942,10 @@ export default {
   .el-form {
     margin-bottom: 0;
     flex: 1;
+  }
+
+  .el-button-group .el-button + .el-button {
+    margin-left: 8px;
   }
 }
 
@@ -899,6 +963,8 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  flex: 1 1 0;
+  height: 0;
 }
 
 .column-tree {
@@ -906,6 +972,7 @@ export default {
   gap: 16px;
   flex: 1;
   min-height: 0;
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   align-items: stretch;
@@ -936,6 +1003,78 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.column-filter {
+  margin-left: auto;
+}
+
+.column-filter ::v-deep .el-radio {
+  margin-right: 8px;
+  font-weight: 400;
+}
+
+.column-filter ::v-deep .el-radio__input {
+  display: none;
+}
+
+.column-filter ::v-deep .el-radio__label {
+  padding-left: 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.column-filter ::v-deep .el-radio__label .visibility-icon {
+  font-size: 14px;
+}
+
+.visibility-icon.hidden {
+  position: relative;
+}
+
+.visibility-icon.hidden::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 50%;
+  height: 1.5px;
+  background: currentColor;
+  transform: rotate(-25deg);
+}
+
+.table-container ::v-deep .el-table {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.table-container ::v-deep .el-table th {
+  background: #f8fafc;
+  color: #374151;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-container ::v-deep .el-table td {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-container ::v-deep .el-table__row:hover td {
+  background: #f9fafb;
+}
+
+.table-container ::v-deep .el-table .cell {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.column-filter ::v-deep .el-radio__input.is-checked + .el-radio__label {
+  color: #2563eb;
+  font-weight: 600;
 }
 
 .column-body {
@@ -974,42 +1113,75 @@ export default {
 .type-tag {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
-  font-size: 11px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  color: #374151;
+  padding: 0 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid transparent;
   flex: 0 0 auto;
 }
 
 .type-tag.type-m {
-  background: #fff7ed;
-  color: #9a3412;
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
 
 .type-tag.type-c {
   background: #ecfeff;
   color: #0e7490;
+  border-color: #a5f3fc;
 }
 
 .type-tag.type-f {
   background: #fef2f2;
   color: #b91c1c;
+  border-color: #fecaca;
 }
 
 .type-tag.type-unknown {
-  background: #e5e7eb;
-  color: #374151;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.visible-tag {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: 12px;
+  border-radius: 0;
+  border: none;
+  flex: 0 0 auto;
+  color: #9ca3af;
+  background: transparent;
+  min-width: auto;
+  justify-content: center;
+}
+
+.visible-tag.visible-show {
+  color: #9ca3af;
+  background: transparent;
+  border-color: transparent;
+}
+
+.visible-tag.visible-hidden {
+  color: #9ca3af;
+  background: transparent;
+  border-color: transparent;
 }
 
 .item-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #111827;
-  line-height: 1.3;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
 }
 
 .item-arrow {
-  margin-left: auto;
+  margin-left: 8px;
   color: #9ca3af;
   font-size: 12px;
 }
