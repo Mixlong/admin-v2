@@ -1,164 +1,206 @@
 <template>
-  <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      v-show="showSearch"
-    >
-      <el-form-item label="菜单名称" prop="menuName">
-        <el-input
-          v-model="queryParams.menuName"
-          placeholder="请输入菜单名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select
-          v-model="queryParams.status"
-          placeholder="菜单状态"
-          clearable
-          size="small"
-        >
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
+  <div class="app-container menu-page">
+    <!-- 顶部工具栏 -->
+    <div class="top-toolbar">
+      <el-form :model="queryParams" ref="queryForm" :inline="true" size="small">
+        <el-form-item label="菜单名称" prop="menuName">
+          <el-input
+            v-model="queryParams.menuName"
+            placeholder="请输入菜单名称"
+            clearable
+            @keyup.enter.native="handleQuery"
+            style="width: 200px"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="cyan"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-          重置
-        </el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['system:menu:add']"
-        >
-          新增
-        </el-button>
-      </el-col>
-      <right-toolbar
-        :showSearch.sync="showSearch"
-        @queryTable="getList"
-      ></right-toolbar>
-    </el-row>
-
-    <el-table
-      v-loading="loading"
-      :data="menuList"
-      row-key="menuId"
-      :height="tableHeight()"
-      border
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-    >
-      <el-table-column
-        prop="menuName"
-        label="菜单名称"
-        align="center"
-        :show-overflow-tooltip="true"
-        width="160"
-      ></el-table-column>
-      <el-table-column prop="icon" label="图标" align="center" width="100">
-        <template slot-scope="scope">
-          <svg-icon :icon-class="scope.row.icon" />
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="orderNum"
-        align="center"
-        label="排序"
-        width="60"
-      ></el-table-column>
-      <el-table-column
-        prop="perms"
-        label="权限标识"
-        align="center"
-        :show-overflow-tooltip="true"
-      ></el-table-column>
-      <el-table-column
-        prop="component"
-        label="组件路径"
-        align="center"
-        :show-overflow-tooltip="true"
-      ></el-table-column>
-      <el-table-column
-        prop="appType"
-        label="应用类型"
-        align="center"
-        width="100"
-      >
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.menuType === 'C'" :type="scope.row.appType === 2 ? 'success' : 'primary'" size="small">
-            {{ scope.row.appType === 2 ? 'V3主应用' : 'V2微前端' }}
-          </el-tag>
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="status"
-        label="状态"
-        align="center"
-        :formatter="statusFormat"
-        width="80"
-      ></el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="scope">
-          <el-button
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:menu:edit']"
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select
+            v-model="queryParams.status"
+            placeholder="菜单状态"
+            clearable
+            style="width: 120px"
           >
-            修改
-          </el-button>
+            <el-option
+              v-for="dict in statusOptions"
+              :key="dict.dictValue"
+              :label="dict.dictLabel"
+              :value="dict.dictValue"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery"
+            >搜索</el-button
+          >
+          <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
           <el-button
-            type="text"
+            type="primary"
             icon="el-icon-plus"
-            @click="handleAdd(scope.row)"
+            @click="handleAdd(null)"
             v-hasPermi="['system:menu:add']"
+            >新增</el-button
           >
-            新增
-          </el-button>
-          <el-button
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:menu:remove']"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        </el-form-item>
+      </el-form>
+
+      <el-button-group style="margin-left: auto">
+        <el-button
+          size="small"
+          :type="viewMode === 'mind' ? 'primary' : ''"
+          icon="el-icon-share"
+          @click="viewMode = 'mind'"
+        >
+          树形图
+        </el-button>
+        <el-button
+          size="small"
+          :type="viewMode === 'table' ? 'primary' : ''"
+          icon="el-icon-menu"
+          @click="viewMode = 'table'"
+        >
+          表格
+        </el-button>
+      </el-button-group>
+    </div>
+
+    <!-- 思维导图视图 -->
+    <div
+      v-show="viewMode === 'mind'"
+      class="mind-container"
+      @click="hideContextMenu"
+      @contextmenu.prevent="hideContextMenu"
+    >
+      <div class="column-tree">
+        <div v-for="column in columns" :key="column.level" class="column">
+          <div class="column-header">
+            <span>{{ column.title }}</span>
+            <el-button
+              size="mini"
+              type="primary"
+              plain
+              :disabled="!canAddInColumn(column.level)"
+              @click.stop="addInColumn(column.level)"
+            >
+              新增
+            </el-button>
+          </div>
+          <div class="column-body">
+            <div
+              v-for="item in column.items"
+              :key="item.id"
+              class="column-item"
+              :class="{ active: isActive(item, column.level) }"
+              @click.stop="selectNode(item, column.level)"
+              @contextmenu.prevent.stop="openContextMenu($event, item)"
+            >
+              <span class="type-tag" :class="getMenuTypeClass(item.raw)">
+                {{ getMenuTypeLabel(item.raw) }}
+              </span>
+              <span class="item-label">{{ item.label }}</span>
+              <i
+                v-if="item.raw && item.raw.menuType === 'M'"
+                class="el-icon-arrow-right item-arrow"
+              ></i>
+            </div>
+            <div v-if="!column.items.length" class="column-empty">暂无数据</div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-show="contextMenu.visible"
+        class="tree-context-menu"
+        :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+        @click.stop
+      >
+        <div class="menu-item" @click.stop="contextAdd">新增子节点</div>
+        <div class="menu-item" @click.stop="contextEdit">编辑</div>
+        <div class="menu-item danger" @click.stop="contextDelete">删除</div>
+      </div>
+    </div>
+
+    <!-- 表格视图 -->
+    <div v-show="viewMode === 'table'" class="table-container">
+      <el-table
+        v-loading="loading"
+        :data="menuList"
+        row-key="menuId"
+        :height="tableHeight()"
+        border
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+        :default-expand-all="false"
+        :indent="20"
+      >
+        <el-table-column
+          prop="menuName"
+          label="菜单名称"
+          align="left"
+          width="220"
+        >
+          <template slot-scope="scope">
+            <i :class="getMenuIcon(scope.row)" style="margin-right: 5px"></i>
+            {{ scope.row.menuName }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="icon" label="图标" align="center" width="100">
+          <template slot-scope="scope">
+            <svg-icon :icon-class="scope.row.icon" />
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="orderNum"
+          align="center"
+          label="排序"
+          width="60"
+        ></el-table-column>
+        <el-table-column
+          prop="perms"
+          label="权限标识"
+          align="center"
+          :show-overflow-tooltip="true"
+        ></el-table-column>
+        <el-table-column
+          prop="component"
+          label="组件路径"
+          align="center"
+          :show-overflow-tooltip="true"
+        ></el-table-column>
+        <el-table-column prop="status" label="状态" align="center" width="80">
+          <template slot-scope="scope">
+            <el-tag
+              :type="scope.row.status === '0' ? 'success' : 'danger'"
+              size="small"
+            >
+              {{ scope.row.status === "0" ? "正常" : "停用" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="200">
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:menu:edit']"
+              >修改</el-button
+            >
+            <el-button
+              type="text"
+              icon="el-icon-plus"
+              @click="handleAdd(scope.row)"
+              v-hasPermi="['system:menu:add']"
+              >新增</el-button
+            >
+            <el-button
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:menu:remove']"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
 
     <!-- 添加或修改菜单对话框 -->
     <el-dialog
@@ -202,7 +244,11 @@
                 trigger="click"
                 @show="$refs['iconSelect'].reset()"
               >
-                <IconSelect ref="iconSelect" :activeIcon="form.icon" @selected="selected" />
+                <IconSelect
+                  ref="iconSelect"
+                  :activeIcon="form.icon"
+                  @selected="selected"
+                />
                 <el-input
                   slot="reference"
                   v-model="form.icon"
@@ -295,13 +341,13 @@
                   v-for="dict in statusOptions"
                   :key="dict.dictValue"
                   :label="dict.dictValue"
-                  >{{ dict.dictLabel }}</el-radio
                 >
+                  {{ dict.dictLabel }}
+                </el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
-
         <el-row :gutter="20">
           <el-col :span="12" v-if="form.menuType == 'C'">
             <el-form-item label="是否缓存">
@@ -346,30 +392,20 @@ export default {
   components: { Treeselect, IconSelect },
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 菜单表格树数据
+      viewMode: "mind", // mind: 树形图, table: 表格
       menuList: [],
-      // 菜单树选项
+      allMenuList: [],
       menuOptions: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
-      // 显示状态数据字典
       visibleOptions: [],
-      // 菜单状态数据字典
       statusOptions: [],
-      // 查询参数
       queryParams: {
         menuName: undefined,
-        visible: undefined,
+        status: undefined,
       },
-      // 表单参数
+      title: "",
+      open: false,
       form: {},
-      // 表单校验
       rules: {
         menuName: [
           { required: true, message: "菜单名称不能为空", trigger: "blur" },
@@ -380,6 +416,17 @@ export default {
         path: [
           { required: true, message: "路由地址不能为空", trigger: "blur" },
         ],
+      },
+      columns: [],
+      activePath: [],
+      activePaths: [],
+      activeLevelSets: [],
+      activeMode: "single", // single: 单一路径, multi: 多路径
+      contextMenu: {
+        visible: false,
+        x: 0,
+        y: 0,
+        node: null,
       },
     };
   },
@@ -393,19 +440,220 @@ export default {
     });
   },
   methods: {
-    // 选择图标
-    selected(name) {
-      this.form.icon = name;
-    },
     /** 查询菜单列表 */
     getList() {
       this.loading = true;
-      listMenu(this.queryParams).then((response) => {
-        this.menuList = this.handleTree(response.data, "menuId");
+      listMenu().then((response) => {
+        this.allMenuList = this.handleTree(response.data, "menuId");
+        this.applyLocalFilter();
         this.loading = false;
       });
     },
-    /** 转换菜单数据结构 */
+
+    applyLocalFilter() {
+      const keyword = (this.queryParams.menuName || "").trim().toLowerCase();
+      const hasKeyword = keyword.length > 0;
+      const status = this.queryParams.status;
+      const hasStatus =
+        status !== undefined && status !== null && status !== "";
+
+      const matchNode = (node) => {
+        const nameOk =
+          !hasKeyword ||
+          String(node.menuName || "")
+            .toLowerCase()
+            .includes(keyword);
+        const statusOk = !hasStatus || String(node.status) === String(status);
+        return nameOk && statusOk;
+      };
+
+      const findAllMatchPaths = (nodes, path, out) => {
+        if (!nodes || !nodes.length) return;
+        for (const node of nodes) {
+          const nextPath = [...path, node.menuId];
+          if (matchNode(node)) out.push(nextPath);
+          if (node.children && node.children.length) {
+            findAllMatchPaths(node.children, nextPath, out);
+          }
+        }
+      };
+
+      this.menuList = this.allMenuList;
+      if (!hasKeyword && !hasStatus) {
+        this.activeMode = "single";
+        this.activePath = [];
+        this.activePaths = [];
+        this.activeLevelSets = [];
+      } else {
+        const paths = [];
+        findAllMatchPaths(this.menuList, [], paths);
+        if (paths.length) {
+          this.activeMode = "multi";
+          this.activePaths = paths;
+        } else {
+          this.activeMode = "single";
+          this.activePaths = [];
+          this.activePath = [];
+          this.activeLevelSets = [];
+        }
+      }
+      if (this.viewMode === "mind") {
+        this.$nextTick(() => {
+          this.buildColumns();
+        });
+      }
+    },
+
+    buildColumns() {
+      const columns = [];
+      const level1 = this.menuList.map((menu) => this.mapNode(menu));
+      columns.push({
+        level: 1,
+        title: "一级",
+        items: level1,
+      });
+
+      if (this.activeMode === "multi" && this.activePaths.length) {
+        const activeLevelSets = [];
+        this.activePaths.forEach((path) => {
+          path.forEach((id, index) => {
+            if (!activeLevelSets[index]) activeLevelSets[index] = new Set();
+            activeLevelSets[index].add(id);
+          });
+        });
+        this.activeLevelSets = activeLevelSets;
+
+        let level = 2;
+        let parents = activeLevelSets[0]
+          ? Array.from(activeLevelSets[0])
+              .map((id) => this.findNodeById(id))
+              .filter(Boolean)
+          : [];
+        while (parents.length) {
+          const items = [];
+          const seen = new Set();
+          parents.forEach((parent) => {
+            (parent.children || []).forEach((child) => {
+              if (!seen.has(child.menuId)) {
+                seen.add(child.menuId);
+                items.push(this.mapNode(child));
+              }
+            });
+          });
+          if (!items.length) break;
+          columns.push({
+            level,
+            title: `第${level}级`,
+            items,
+          });
+          const nextActiveSet = activeLevelSets[level - 1];
+          parents = nextActiveSet
+            ? items
+                .filter((item) => nextActiveSet.has(item.id))
+                .map((item) => this.findNodeById(item.id))
+                .filter(Boolean)
+            : [];
+          level += 1;
+        }
+      } else {
+        if (level1.length && !this.activePath[0]) {
+          this.activePath = [level1[0].id];
+        }
+
+        if (this.activePath.length) {
+          const nextPath = [];
+          let parent = null;
+          for (let i = 0; i < this.activePath.length; i++) {
+            const id = this.activePath[i];
+            const node = this.findNodeById(id, parent);
+            if (!node) break;
+            nextPath.push(id);
+            parent = node;
+            if (node.children && node.children.length) {
+              const items = node.children.map((menu) => this.mapNode(menu));
+              if (items.length) {
+                const nextId =
+                  this.activePath[i + 1] &&
+                  items.some((it) => it.id === this.activePath[i + 1])
+                    ? this.activePath[i + 1]
+                    : items[0].id;
+                if (!nextPath[i + 1]) nextPath[i + 1] = nextId;
+                columns.push({
+                  level: i + 2,
+                  title: `第${i + 2}级`,
+                  items,
+                });
+              }
+            }
+          }
+          this.activePath = nextPath;
+        }
+      }
+
+      this.columns = columns;
+    },
+
+    mapNode(menu) {
+      return {
+        id: menu.menuId,
+        label: menu.menuName,
+        raw: menu,
+      };
+    },
+
+    findNodeById(id, parent) {
+      if (!id) return null;
+      const list = parent ? parent.children || [] : this.menuList;
+      const stack = [...list];
+      while (stack.length) {
+        const node = stack.shift();
+        if (node.menuId === id) return node;
+        if (node.children && node.children.length) {
+          stack.push(...node.children);
+        }
+      }
+      return null;
+    },
+
+    selectNode(item, level) {
+      if (this.activeMode === "multi") {
+        this.activeMode = "single";
+        this.activePaths = [];
+        this.activeLevelSets = [];
+      }
+      const index = level - 1;
+      this.activePath = [...this.activePath.slice(0, index), item.id];
+      this.buildColumns();
+    },
+
+    isActive(item, level) {
+      if (this.activeMode === "multi") {
+        const set = this.activeLevelSets[level - 1];
+        return !!(set && set.has(item.id));
+      }
+      return this.activePath[level - 1] === item.id;
+    },
+
+    getMenuTypeLabel(menu) {
+      const typeMap = { M: "目录", C: "菜单", F: "按钮" };
+      return typeMap[menu.menuType] || "未知";
+    },
+
+    getMenuTypeClass(menu) {
+      const typeMap = { M: "type-m", C: "type-c", F: "type-f" };
+      return typeMap[menu.menuType] || "type-unknown";
+    },
+
+    /** 获取菜单类型图标 */
+    getMenuIcon(menu) {
+      const iconMap = {
+        M: "el-icon-folder",
+        C: "el-icon-document",
+        F: "el-icon-setting",
+      };
+      return iconMap[menu.menuType] || "el-icon-menu";
+    },
+
     normalizer(node) {
       if (node.children && !node.children.length) {
         delete node.children;
@@ -416,7 +664,7 @@ export default {
         children: node.children,
       };
     },
-    /** 查询菜单下拉树结构 */
+
     getTreeselect() {
       listMenu().then((response) => {
         this.menuOptions = [];
@@ -425,26 +673,16 @@ export default {
         this.menuOptions.push(menu);
       });
     },
-    // 显示状态字典翻译
-    visibleFormat(row, column) {
-      if (row.menuType == "F") {
-        return "";
-      }
-      return this.selectDictLabel(this.visibleOptions, row.visible);
+
+    selected(name) {
+      this.form.icon = name;
     },
-    // 菜单状态字典翻译
-    statusFormat(row, column) {
-      if (row.menuType == "F") {
-        return "";
-      }
-      return this.selectDictLabel(this.statusOptions, row.status);
-    },
-    // 取消按钮
+
     cancel() {
       this.open = false;
       this.reset();
     },
-    // 表单重置
+
     reset() {
       this.form = {
         menuId: undefined,
@@ -461,16 +699,16 @@ export default {
       };
       this.resetForm("form");
     },
-    /** 搜索按钮操作 */
+
     handleQuery() {
-      this.getList();
+      this.applyLocalFilter();
     },
-    /** 重置按钮操作 */
+
     resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    /** 新增按钮操作 */
+
     handleAdd(row) {
       this.reset();
       this.getTreeselect();
@@ -482,7 +720,7 @@ export default {
       this.open = true;
       this.title = "添加菜单";
     },
-    /** 修改按钮操作 */
+
     handleUpdate(row) {
       this.reset();
       this.getTreeselect();
@@ -492,8 +730,8 @@ export default {
         this.title = "修改菜单";
       });
     },
-    /** 提交按钮 */
-    submitForm: function () {
+
+    submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           const { menuType, parentId } = this.form;
@@ -517,7 +755,7 @@ export default {
         }
       });
     },
-    /** 删除按钮操作 */
+
     handleDelete(row) {
       this.$confirm(
         '是否确认删除名称为"' + row.menuName + '"的数据项?',
@@ -536,6 +774,286 @@ export default {
           this.msgSuccess("删除成功");
         });
     },
+
+    hideContextMenu() {
+      if (this.contextMenu.visible) {
+        this.contextMenu.visible = false;
+      }
+    },
+
+    openContextMenu(event, item) {
+      const container = this.$el.querySelector(".mind-container");
+      const rect = container
+        ? container.getBoundingClientRect()
+        : { left: 0, top: 0, width: 0, height: 0 };
+      const menuWidth = 140;
+      const menuHeight = 110;
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+      if (rect.width) {
+        x = Math.min(x, rect.width - menuWidth);
+      }
+      if (rect.height) {
+        y = Math.min(y, rect.height - menuHeight);
+      }
+      this.contextMenu = {
+        visible: true,
+        x: Math.max(0, x),
+        y: Math.max(0, y),
+        node: item,
+      };
+    },
+
+    canAddInColumn(level) {
+      if (level === 1) return true;
+      if (this.activeMode === "multi") {
+        const set = this.activeLevelSets[level - 2];
+        return !!(set && set.size);
+      }
+      return !!this.activePath[level - 2];
+    },
+
+    addInColumn(level) {
+      if (level === 1) {
+        this.handleAdd({ menuId: 0 });
+        return;
+      }
+      const parentId =
+        this.activeMode === "multi"
+          ? this.activeLevelSets[level - 2]
+            ? Array.from(this.activeLevelSets[level - 2])[0]
+            : null
+          : this.activePath[level - 2];
+      if (parentId) {
+        const parent = this.findNodeById(parentId);
+        this.handleAdd(parent || { menuId: 0 });
+      }
+    },
+
+    contextAdd() {
+      const node = this.contextMenu.node;
+      if (!node) return;
+      const row = node.raw || { menuId: 0 };
+      this.hideContextMenu();
+      this.handleAdd(row);
+    },
+
+    contextEdit() {
+      const node = this.contextMenu.node;
+      if (!node || !node.raw) return;
+      this.hideContextMenu();
+      this.handleUpdate(node.raw);
+    },
+
+    contextDelete() {
+      const node = this.contextMenu.node;
+      if (!node || !node.raw) return;
+      this.hideContextMenu();
+      this.handleDelete(node.raw);
+    },
+  },
+  watch: {
+    viewMode(val) {
+      if (val === "mind") {
+        this.$nextTick(() => {
+          this.buildColumns();
+        });
+      }
+    },
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.menu-page {
+  height: calc(100vh - 84px);
+  display: flex;
+  flex-direction: column;
+}
+
+.top-toolbar {
+  background: #fff;
+  padding: 16px 20px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+
+  .el-form {
+    margin-bottom: 0;
+    flex: 1;
+  }
+}
+
+.mind-container,
+.table-container {
+  flex: 1;
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.mind-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.column-tree {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  align-items: stretch;
+}
+
+.column {
+  min-width: 240px;
+  max-width: 320px;
+  flex: 0 0 auto;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.column-header {
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f1f5f9;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.column-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.column-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.column-item:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.column-item.active {
+  border-color: #3b82f6;
+  background: #dbeafe;
+}
+
+.type-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+  flex: 0 0 auto;
+}
+
+.type-tag.type-m {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.type-tag.type-c {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.type-tag.type-f {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.type-tag.type-unknown {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.item-label {
+  font-size: 12px;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.item-arrow {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.column-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.tree-context-menu {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 6px 0;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.tree-context-menu .menu-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #111827;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tree-context-menu .menu-item:hover {
+  background: #f3f4f6;
+}
+
+.tree-context-menu .menu-item.danger {
+  color: #dc2626;
+}
+
+.tree-context-menu .menu-item.disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.tree-context-menu .menu-item.disabled:hover {
+  background: transparent;
+}
+</style>

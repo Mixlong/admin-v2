@@ -1,0 +1,1 @@
+{"projectId": "ca61a711-8aff-4c08-a09f-49037e3c50ab", "createdAt": 1769997928868, "startupCommands": ["rm package-lock.json && bun install --network-concurrency=5 && bun run dev"]}

@@ -40,7 +40,10 @@
       "Bash(git restore:*)",
       "Bash(pnpm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "mcp__acp__Edit",
+      "mcp__acp__Write",
+      "mcp__acp__Bash"
     ],
     "deny": []
   }
