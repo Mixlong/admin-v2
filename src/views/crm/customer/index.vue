@@ -99,7 +99,7 @@
           :key="size"
           :label="size"
           :value="size"
-        />
+      />
       </el-select>
       <span class="ml-2">条</span>
     </div>
@@ -231,63 +231,154 @@ export default {
       return this.customers;
     },
 
-    // 客户属性筛选选项（使用中文标签作为筛选值）
+    // 客户属性筛选选项（使用中文标签作为筛选值 + 现有数据）
     customerAttributeFilters() {
-      if (
-        !this.dict ||
-        !this.dict.type ||
-        !this.dict.type.customer_attribute_enum
-      ) {
-        return [];
-      }
-      return this.dict.type.customer_attribute_enum.map((item) => ({
-        label: item.label,
-        value: item.label, // 使用 label（中文）作为筛选值
-      }));
+      // 1. 字典中的选项
+      const dictOptions =
+        this.dict && this.dict.type && this.dict.type.customer_attribute_enum
+          ? this.dict.type.customer_attribute_enum.map((item) => ({
+              label: item.label,
+              value: item.label,
+            }))
+          : [];
+
+      // 2. 数据中的选项
+      const dataValues = this.customers
+        .map((item) => item.customerAttribute)
+        .filter((val) => val && val.trim() !== "");
+
+      // 3. 合并去重
+      // 创建一个 Map 来去重，优先使用字典定义的 label
+      const optionMap = new Map();
+      
+      // 先放字典的
+      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
+      
+      // 再放数据的（如果不存在才放）
+      dataValues.forEach(val => {
+        if (!optionMap.has(val)) {
+          optionMap.set(val, { label: val, value: val });
+        }
+      });
+
+      return Array.from(optionMap.values());
     },
 
-    // 客户级别筛选选项（使用字典value作为筛选值，因为数据库存储的是value）
+    // 客户级别筛选选项（使用value作为筛选值 + 现有数据）
     customerLevelFilters() {
-      if (!this.dict || !this.dict.type || !this.dict.type.customer_type_enum) {
-        return [];
-      }
-      return this.dict.type.customer_type_enum.map((item) => ({
-        label: item.label, // 显示中文标签
-        value: item.value, // 使用 value（如 "2"）作为筛选值，匹配数据库存储
-      }));
+      // 1. 字典中的选项
+      const dictOptions =
+        this.dict && this.dict.type && this.dict.type.customer_type_enum
+          ? this.dict.type.customer_type_enum.map((item) => ({
+              label: item.label,
+              value: item.value,
+            }))
+          : [];
+
+      // 2. 数据中的选项
+      const dataValues = this.customers
+        .map((item) => item.customerLevel)
+        .filter((val) => val !== null && val !== undefined && val !== "");
+
+      // 3. 合并去重
+      const optionMap = new Map();
+
+      // 先放字典的
+      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
+
+      // 再放数据的
+      dataValues.forEach(val => {
+        // 注意：这里 val 可能是字典的 value，也可能是旧数据的文本
+        // 如果 map 中没有这个值，说明不仅字典没配，而且可能就是个纯文本
+        if (!optionMap.has(val)) {
+           // 尝试查找字典label（也许是类型不一致导致没匹配上？）
+           // 这里简单处理：如果没有匹配到字典项，就直接用值作为label
+           optionMap.set(val, { label: val, value: val });
+        }
+      });
+
+      return Array.from(optionMap.values());
     },
 
-    // 合作状态筛选选项（固定的几个选项）
+    // 合作状态筛选选项（固定的几个选项 + 现有数据中的选项）
     customerStatusFilters() {
-      return [
-        { label: "潜在客户", value: "潜在客户" },
-        { label: "意向客户", value: "意向客户" },
-        { label: "送样客户", value: "送样客户" },
-        { label: "成交客户", value: "成交客户" },
-        { label: "流失客户", value: "流失客户" },
+      // 1. 自定义（固定）选项
+      const customOptions = [
+        "潜在客户",
+        "意向客户",
+        "送样客户",
+        "成交客户",
+        "终止合作",
       ];
+      
+      // 2. 从当前数据中提取已有的状态（旧数据）
+      const dataOptions = this.customers
+        .map((item) => item.customerStatus)
+        .filter((status) => status && status.trim() !== "");
+
+      // 3. 合并并去重
+      const uniqueStatuses = Array.from(new Set([...dataOptions, ...customOptions]));
+      
+      return uniqueStatuses.map((status) => ({
+        label: status,
+        value: status,
+      }));
     },
 
-    // 所属国家筛选选项（使用中文标签作为筛选值）
+    // 所属国家筛选选项（使用中文标签作为筛选值 + 现有数据）
     countryFilters() {
-      if (!this.dict || !this.dict.type || !this.dict.type.country_origin) {
-        return [];
-      }
-      return this.dict.type.country_origin.map((item) => ({
-        label: item.label,
-        value: item.label, // 使用 label（中文）作为筛选值
-      }));
+      // 1. 字典中的选项
+      const dictOptions =
+        this.dict && this.dict.type && this.dict.type.country_origin
+          ? this.dict.type.country_origin.map((item) => ({
+              label: item.label,
+              value: item.label,
+            }))
+          : [];
+
+      // 2. 数据中的选项
+      const dataValues = this.customers
+        .map((item) => item.country)
+        .filter((val) => val && val.trim() !== "");
+
+      // 3. 合并去重
+      const optionMap = new Map();
+      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
+      dataValues.forEach(val => {
+        if (!optionMap.has(val)) {
+          optionMap.set(val, { label: val, value: val });
+        }
+      });
+
+      return Array.from(optionMap.values());
     },
 
-    // 客户来源筛选选项（使用中文标签作为筛选值）
+    // 客户来源筛选选项（使用中文标签作为筛选值 + 现有数据）
     customerSourceFilters() {
-      if (!this.dict || !this.dict.type || !this.dict.type.customer_source) {
-        return [];
-      }
-      return this.dict.type.customer_source.map((item) => ({
-        label: item.label,
-        value: item.label, // 使用 label（中文）作为筛选值
-      }));
+      // 1. 字典中的选项
+      const dictOptions =
+        this.dict && this.dict.type && this.dict.type.customer_source
+          ? this.dict.type.customer_source.map((item) => ({
+              label: item.label,
+              value: item.label,
+            }))
+          : [];
+
+       // 2. 数据中的选项
+      const dataValues = this.customers
+        .map((item) => item.customerSource)
+        .filter((val) => val && val.trim() !== "");
+
+      // 3. 合并去重
+      const optionMap = new Map();
+      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
+      dataValues.forEach(val => {
+        if (!optionMap.has(val)) {
+          optionMap.set(val, { label: val, value: val });
+        }
+      });
+
+      return Array.from(optionMap.values());
     },
   },
 
@@ -472,7 +563,7 @@ export default {
         潜在客户: "",
         意向客户: "warning",
         成交客户: "success",
-        流失客户: "danger",
+        终止合作: "danger",
       };
       return statusMap[customerStatus] || "";
     },
@@ -484,7 +575,7 @@ export default {
         意向客户: "warning", // 橙色 - 表示有意向
         送样客户: "primary", // 蓝色 - 表示已送样
         成交客户: "success", // 绿色 - 表示成功
-        流失客户: "danger", // 红色 - 表示失败
+        终止合作: "danger", // 红色 - 表示失败
       };
       // 如果找不到匹配的状态，返回默认颜色 'info'（灰色）
       // 这样即使新增了状态但忘记配置颜色，也会有默认显示
@@ -496,7 +587,7 @@ export default {
         潜在客户: "潜在客户",
         意向客户: "意向客户",
         成交客户: "成交客户",
-        流失客户: "流失客户",
+        终止合作: "终止合作",
       };
       return statusMap[customerStatus] || "";
     },

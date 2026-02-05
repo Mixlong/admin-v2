@@ -98,7 +98,10 @@
               v-for="item in getColumnItems(column)"
               :key="item.id"
               class="column-item"
-              :class="{ active: isActive(item, column.level) }"
+              :class="{
+                active: isActive(item, column.level),
+                matched: matchIdMap && matchIdMap[normalizeId(item.id)],
+              }"
               @click.stop="selectNode(item, column.level)"
               @contextmenu.prevent.stop="openContextMenu($event, item)"
             >
@@ -436,6 +439,8 @@ export default {
       activePath: [],
       activePaths: [],
       activeLevelSets: [],
+      activeNodeByLevel: {},
+      matchIdMap: {},
       activeMode: "single", // single: 单一路径, multi: 多路径
       columnFilters: {},
       contextMenu: {
@@ -457,16 +462,26 @@ export default {
   },
   methods: {
     /** 查询菜单列表 */
-    getList() {
+    getList(silent = false) {
       this.loading = true;
       listMenu().then((response) => {
         this.allMenuList = this.handleTree(response.data, "menuId");
-        this.applyLocalFilter();
+        this.applyLocalFilter({ preserveActive: silent });
         this.loading = false;
       });
     },
 
-    applyLocalFilter() {
+    collectMenuIds(nodes, set) {
+      if (!nodes || !nodes.length) return;
+      nodes.forEach((node) => {
+        set.add(String(node.menuId));
+        if (node.children && node.children.length) {
+          this.collectMenuIds(node.children, set);
+        }
+      });
+    },
+
+    applyLocalFilter({ preserveActive = false } = {}) {
       const keyword = (this.queryParams.menuName || "").trim().toLowerCase();
       const hasKeyword = keyword.length > 0;
       const status = this.queryParams.status;
@@ -484,35 +499,101 @@ export default {
         return nameOk && statusOk;
       };
 
-      const findAllMatchPaths = (nodes, path, out) => {
+      const collectMatchMap = (nodes, map) => {
         if (!nodes || !nodes.length) return;
+        nodes.forEach((node) => {
+          if (matchNode(node)) {
+            map[this.normalizeId(node.menuId)] = true;
+          }
+          if (node.children && node.children.length) {
+            collectMatchMap(node.children, map);
+          }
+        });
+      };
+      const findFirstMatchPath = (nodes, path = []) => {
+        if (!nodes || !nodes.length) return null;
         for (const node of nodes) {
           const nextPath = [...path, node.menuId];
-          if (matchNode(node)) out.push(nextPath);
+          if (matchNode(node)) return nextPath;
           if (node.children && node.children.length) {
-            findAllMatchPaths(node.children, nextPath, out);
+            const found = findFirstMatchPath(node.children, nextPath);
+            if (found) return found;
           }
         }
+        return null;
       };
 
       this.menuList = this.allMenuList;
+      this.matchIdMap = {};
       if (!hasSearch) {
+        if (!preserveActive) {
+          this.activeMode = "single";
+          this.activePath = [];
+          this.activePaths = [];
+          this.activeLevelSets = [];
+          this.activeNodeByLevel = {};
+        } else {
+          const idSet = new Set();
+          this.collectMenuIds(this.menuList, idSet);
+          if (this.activeMode === "multi") {
+            this.activePaths = (this.activePaths || []).filter((path) =>
+              path.every((id) => idSet.has(String(id)))
+            );
+            this.activePaths = this.activePaths.map((path) =>
+              path.map((id) => this.normalizeId(id))
+            );
+            if (this.activePaths.length) {
+              // 无搜索时强制回到单路径，避免列级激活丢失
+              this.activeMode = "single";
+              this.activePath = [...this.activePaths[0]];
+              this.activePaths = [];
+              this.activeLevelSets = [];
+            } else {
+              this.activeMode = "single";
+              this.activeLevelSets = [];
+            }
+          }
+          if (this.activeMode === "single") {
+            this.activePath = (this.activePath || []).filter((id) =>
+              idSet.has(String(id))
+            );
+            this.activePath = this.activePath.map((id) => this.normalizeId(id));
+            const nextActiveByLevel = {};
+            Object.keys(this.activeNodeByLevel || {}).forEach((level) => {
+              const id = this.normalizeId(this.activeNodeByLevel[level]);
+              if (idSet.has(id)) {
+                nextActiveByLevel[level] = id;
+              }
+            });
+            this.activeNodeByLevel = nextActiveByLevel;
+          }
+        }
+      } else {
+        // 搜索时不过滤数据，只定位并高亮匹配路径
         this.activeMode = "single";
-        this.activePath = [];
         this.activePaths = [];
         this.activeLevelSets = [];
-      } else {
-        const paths = [];
-        findAllMatchPaths(this.menuList, [], paths);
-        if (paths.length) {
-          this.activeMode = "multi";
-          this.activePaths = paths;
-        } else {
-          this.activeMode = "single";
-          this.activePaths = [];
-          this.activePath = [];
-          this.activeLevelSets = [];
+        const nextMatchMap = {};
+        collectMatchMap(this.menuList, nextMatchMap);
+        this.matchIdMap = nextMatchMap;
+        const firstPath = findFirstMatchPath(this.menuList);
+        const idSet = new Set();
+        this.collectMenuIds(this.menuList, idSet);
+        const hasActivePath =
+          this.activePath &&
+          this.activePath.length &&
+          this.activePath.every((id) => idSet.has(String(id)));
+
+        if (!preserveActive || !hasActivePath) {
+          // 搜索时激活第一条匹配路径，但不改数据结构
+          this.activePath = firstPath
+            ? firstPath.map((id) => this.normalizeId(id))
+            : [];
         }
+        this.activeNodeByLevel = {};
+        this.activePath.forEach((id, index) => {
+          this.$set(this.activeNodeByLevel, index + 1, this.normalizeId(id));
+        });
       }
       if (this.viewMode === "mind") {
         this.$nextTick(() => {
@@ -535,7 +616,7 @@ export default {
         this.activePaths.forEach((path) => {
           path.forEach((id, index) => {
             if (!activeLevelSets[index]) activeLevelSets[index] = new Set();
-            activeLevelSets[index].add(id);
+            activeLevelSets[index].add(this.normalizeId(id));
           });
         });
         this.activeLevelSets = activeLevelSets;
@@ -566,48 +647,93 @@ export default {
           const nextActiveSet = activeLevelSets[level - 1];
           parents = nextActiveSet
             ? items
-                .filter((item) => nextActiveSet.has(item.id))
+                .filter((item) => nextActiveSet.has(this.normalizeId(item.id)))
                 .map((item) => this.findNodeById(item.id))
                 .filter(Boolean)
             : [];
           level += 1;
         }
+        // 确保多路径模式也有单路径激活链，便于高亮显示
+        if (!this.activePath.length && this.activePaths.length) {
+          this.activePath = [...this.activePaths[0]];
+        }
       } else {
-        if (level1.length && !this.activePath[0]) {
+        if (!this.activePath[0] && this.activeNodeByLevel[1]) {
+          this.activePath = [this.normalizeId(this.activeNodeByLevel[1])];
+        } else if (level1.length && !this.activePath[0]) {
           this.activePath = [level1[0].id];
         }
 
         if (this.activePath.length) {
           const nextPath = [];
-          let parent = null;
-          for (let i = 0; i < this.activePath.length; i++) {
-            const id = this.activePath[i];
-            const node = this.findNodeById(id, parent);
-            if (!node) break;
-            nextPath.push(id);
-            parent = node;
-            if (node.children && node.children.length) {
-              const items = node.children.map((menu) => this.mapNode(menu));
-              if (items.length) {
-                const nextId =
-                  this.activePath[i + 1] &&
-                  items.some((it) => it.id === this.activePath[i + 1])
-                    ? this.activePath[i + 1]
-                    : items[0].id;
-                if (!nextPath[i + 1]) nextPath[i + 1] = nextId;
-                columns.push({
-                  level: i + 2,
-                  title: `第${i + 2}级`,
-                  items,
-                });
-              }
+          let level = 1;
+          let currentItems = level1;
+          while (currentItems && currentItems.length) {
+            const ids = new Set(
+              currentItems.map((item) => this.normalizeId(item.id))
+            );
+            const preferredId =
+              (this.activeNodeByLevel && this.activeNodeByLevel[level]) ||
+              (level === 1 ? this.activePath[0] : this.activePath[level - 1]);
+            const pickedId =
+              preferredId && ids.has(this.normalizeId(preferredId))
+                ? this.normalizeId(preferredId)
+                : this.normalizeId(currentItems[0].id);
+            nextPath[level - 1] = pickedId;
+            const pickedNode = this.findNodeById(pickedId);
+            if (
+              !pickedNode ||
+              !pickedNode.children ||
+              !pickedNode.children.length
+            ) {
+              break;
             }
+            const nextItems = pickedNode.children.map((menu) =>
+              this.mapNode(menu)
+            );
+            columns.push({
+              level: level + 1,
+              title: `第${level + 1}级`,
+              items: nextItems,
+            });
+            currentItems = nextItems;
+            level += 1;
           }
-          this.activePath = nextPath;
+          this.activePath = nextPath.map((id) => this.normalizeId(id));
         }
       }
 
       this.columns = columns;
+      const prevActiveLen = this.activePath ? this.activePath.length : 0;
+      // 兜底：如果多级列存在但 activePath 比列数短，自动补齐到每级首项
+      if (this.activePath && this.activePath.length) {
+        for (let i = this.activePath.length; i < this.columns.length; i++) {
+          const col = this.columns[i];
+          if (col && col.items && col.items.length) {
+            this.$set(this.activePath, i, this.normalizeId(col.items[0].id));
+          }
+        }
+      }
+      if (this.activePath && this.activePath.length > prevActiveLen) {
+        // 补齐后再构建一次，确保后续级联列也被生成
+        this.$nextTick(() => this.buildColumns());
+        return;
+      }
+      const nextActiveByLevel = {};
+      this.columns.forEach((col) => {
+        const level = col.level;
+        const items = col.items || [];
+        const ids = new Set(items.map((item) => this.normalizeId(item.id)));
+        const fallback = this.normalizeId(this.activePath[level - 1]);
+        if (fallback && ids.has(fallback)) {
+          nextActiveByLevel[level] = fallback;
+          return;
+        }
+        if (items.length) {
+          nextActiveByLevel[level] = this.normalizeId(items[0].id);
+        }
+      });
+      this.activeNodeByLevel = nextActiveByLevel;
       this.columns.forEach((col) => {
         if (!(col.level in this.columnFilters)) {
           this.$set(this.columnFilters, col.level, "0");
@@ -623,18 +749,59 @@ export default {
       };
     },
 
+    normalizeId(id) {
+      return id === undefined || id === null ? "" : String(id);
+    },
+
     findNodeById(id, parent) {
       if (!id) return null;
+      const targetId = this.normalizeId(id);
       const list = parent ? parent.children || [] : this.menuList;
       const stack = [...list];
       while (stack.length) {
         const node = stack.shift();
-        if (node.menuId === id) return node;
+        if (this.normalizeId(node.menuId) === targetId) return node;
         if (node.children && node.children.length) {
           stack.push(...node.children);
         }
       }
       return null;
+    },
+
+    buildParentMap(nodes, parentId = null, map = {}) {
+      if (!nodes || !nodes.length) return map;
+      nodes.forEach((node) => {
+        map[this.normalizeId(node.menuId)] = parentId;
+        if (node.children && node.children.length) {
+          this.buildParentMap(
+            node.children,
+            this.normalizeId(node.menuId),
+            map
+          );
+        }
+      });
+      return map;
+    },
+
+    findPathToRoot(id, parentMap) {
+      const path = [];
+      let current = this.normalizeId(id);
+      while (current) {
+        path.unshift(current);
+        const parentId = parentMap[current];
+        if (!parentId) break;
+        current = this.normalizeId(parentId);
+      }
+      return path;
+    },
+
+    hasSearchActive() {
+      const keyword = (this.queryParams.menuName || "").trim();
+      const status = this.queryParams.status;
+      return (
+        keyword.length > 0 ||
+        (status !== undefined && status !== null && status !== "")
+      );
     },
 
     selectNode(item, level) {
@@ -643,17 +810,57 @@ export default {
         this.activePaths = [];
         this.activeLevelSets = [];
       }
+      if (this.hasSearchActive()) {
+        const parentMap = this.buildParentMap(this.menuList);
+        this.activePath = this.findPathToRoot(item.id, parentMap);
+        this.activeNodeByLevel = {};
+        this.activePath.forEach((id, index) => {
+          this.$set(this.activeNodeByLevel, index + 1, this.normalizeId(id));
+        });
+        this.buildColumns();
+        return;
+      }
       const index = level - 1;
-      this.activePath = [...this.activePath.slice(0, index), item.id];
+      const nextPath = [];
+      for (let l = 1; l < level; l += 1) {
+        const byLevel = this.activeNodeByLevel[l];
+        const byPath = this.activePath[l - 1];
+        let pick = byLevel || byPath;
+        if (!pick) {
+          const col = this.columns.find((c) => c.level === l);
+          if (col && col.items && col.items.length) {
+            pick = col.items[0].id;
+          }
+        }
+        if (pick) nextPath.push(this.normalizeId(pick));
+      }
+      nextPath[index] = this.normalizeId(item.id);
+      this.activePath = nextPath;
+      this.$set(this.activeNodeByLevel, level, this.normalizeId(item.id));
+      Object.keys(this.activeNodeByLevel).forEach((key) => {
+        if (Number(key) > level) {
+          this.$delete(this.activeNodeByLevel, key);
+        }
+      });
       this.buildColumns();
     },
 
     isActive(item, level) {
       if (this.activeMode === "multi") {
         const set = this.activeLevelSets[level - 1];
-        return !!(set && set.has(item.id));
+        return !!(set && set.has(this.normalizeId(item.id)));
       }
-      return this.activePath[level - 1] === item.id;
+      const activeByLevel = this.activeNodeByLevel[level];
+      if (
+        activeByLevel &&
+        this.normalizeId(activeByLevel) === this.normalizeId(item.id)
+      ) {
+        return true;
+      }
+      return (
+        this.normalizeId(this.activePath[level - 1]) ===
+        this.normalizeId(item.id)
+      );
     },
 
     onColumnFilterChange(level) {
@@ -803,13 +1010,13 @@ export default {
             updateMenu(this.form).then((response) => {
               this.msgSuccess("修改成功");
               this.open = false;
-              this.getList();
+              this.getList(true);
             });
           } else {
             addMenu(this.form).then((response) => {
               this.msgSuccess("新增成功");
               this.open = false;
-              this.getList();
+              this.getList(true);
             });
           }
         }
@@ -830,7 +1037,7 @@ export default {
           return delMenu(row.menuId);
         })
         .then(() => {
-          this.getList();
+          this.getList(true);
           this.msgSuccess("删除成功");
         });
     },
@@ -1108,6 +1315,11 @@ export default {
 .column-item.active {
   border-color: #3b82f6;
   background: #dbeafe;
+}
+
+.column-item.matched {
+  border-color: #60a5fa;
+  background: #eff6ff;
 }
 
 .type-tag {

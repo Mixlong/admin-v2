@@ -2100,7 +2100,7 @@ export default {
         potential: "潜在客户",
         interested: "意向客户",
         closed: "成交客户",
-        lost: "流失客户",
+        lost: "终止合作",
       };
       return statusMap[status] || status;
     },

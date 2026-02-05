@@ -729,7 +729,7 @@
 <script>
 import { getBomOrderChangeDetail } from '@/api/third/bomChange'
 import { listDept } from '@/api/system/dept'
-import { listUser } from '@/api/system/user'
+import { dictUserList } from '@/api/system/user'
 import FileDisplay from '@/components/FileDisplay'
 
 export default {
@@ -1106,26 +1106,10 @@ export default {
           console.warn('用户ID无效:', this.detailData.deptPerson)
           return
         }
-        
-        // 如果有部门信息且部门ID有效，优先从部门用户中查找
-        if (!isNaN(deptId) && deptId > 0) {
-          const response = await listUser({ deptId: deptId, p: 1, l: 999 })
-          const userList = response.rows || []
-          
-          const user = userList.find(u => u.userId === deptPersonId)
-          if (user) {
-            this.detailData.deptPersonName = user.nickName || user.userName
-            // 为了向后兼容，也更新deptPerson字段显示名称
-            this.detailData.deptPerson = user.nickName || user.userName
-            return
-          }
-        }
-        
         // 如果部门查找失败，尝试全局查找用户
-        const response = await listUser({ p: 1, l: 999 })
-        const userList = response.rows || []
-        
-        const user = userList.find(u => u.userId === deptPersonId)
+        const response = await dictUserList({ p: 1, l: 999 })
+        const userList = response.data || []
+        const user = userList.find(u => u.userId == deptPersonId)
         if (user) {
           this.detailData.deptPersonName = user.nickName || user.userName
           this.detailData.deptPerson = user.nickName || user.userName

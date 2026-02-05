@@ -96,9 +96,23 @@
             </el-form-item>
           </el-col>
 
+            <el-col :span="12" v-if="isShowDownloadVision">
+            <el-form-item label="下载视觉文件" prop="isDownloadVision">
+              <el-select
+                v-model="form.isDownloadVision"
+                placeholder="是否下载视觉检测文件"
+                clearable
+                class="w100"
+              >
+                <el-option label="是" :value="1"></el-option>
+                <el-option label="否" :value="0"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
           <!-- PC上位机 -->
           <template v-if="form.dataType === 1">
-            <el-col>
+            <el-col :span='12'>
               <el-form-item label="属性描述" prop="content">
                 <template v-if="form.type === 'hard_version' && visible">
                   <select-loadMore
@@ -172,9 +186,8 @@
               </el-form-item>
             </el-col>
 
-            <el-col :span="12">
+            <el-col :span="12" v-if="form.type === 'dt_pack_sn'">
               <el-form-item
-                v-show="form.type === 'dt_pack_sn'"
                 label="整机SN长度"
                 prop="packSnLen"
               >
@@ -188,6 +201,8 @@
                 />
               </el-form-item>
             </el-col>
+ 
+
 
             <el-col>
               <el-form-item v-if="form.up == 1" label="文件" prop="url">
@@ -202,7 +217,6 @@
               </el-form-item>
             </el-col>
           </template>
-
           <!-- STS网页 -->
           <template v-if="form.dataType === 2">
             <el-col :span="12">
@@ -266,6 +280,7 @@
 
           <!-- STS程序脚本 -->
           <template v-if="form.dataType === 3">
+            <el-col>
             <el-form-item label="js文件描述" prop="jsContent">
               <el-input
                 v-model="form.jsContent"
@@ -274,6 +289,8 @@
                 placeholder="请输入文件描述"
               />
             </el-form-item>
+             </el-col>
+             <el-col>
             <el-form-item v-if="form.up == 1" label="文件" prop="jsFile">
               <DrUpload
                 :limit="1"
@@ -284,6 +301,7 @@
               >
               </DrUpload>
             </el-form-item>
+            </el-col>
           </template>
 
           <!-- 模拟脚本 -->
@@ -600,6 +618,7 @@ export default {
         url: "",
         testInfo: [],
         packSnLen: "",
+        isDownloadVision: null,
         bleVersionList: [{ bleName: "" }],
         bluetoothFirmwareId: "",
       },
@@ -748,6 +767,18 @@ export default {
       const { type } = this.form;
       return fileType[type];
     },
+    isShowDownloadVision() {
+      const types = [
+        "fqc_tool_soft",
+        "iqc_tool",
+        "pucs_fct_js",
+        "maintenance_file",
+        "config_tools",
+        "pack_file",
+        "oqc_tool_soft",
+      ];
+      return types.includes(this.form.type);
+    },
   },
   watch: {
     form(val) {
@@ -825,6 +856,7 @@ export default {
         webVersion: "",
         testInfo: [],
         packSnLen: "",
+        isDownloadVision: null,
         bleVersionList: [{ bleName: "" }],
         bluetoothFirmwareId: "",
       };

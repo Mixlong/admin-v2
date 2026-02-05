@@ -225,6 +225,7 @@
 <script>
 import { afterInfo } from "@/api/third/sale";
 import ElUploadSortable from "@/components/el-upload-sortable";
+import RichTextDisplay from "@/components/RichTextDisplay";
 import globalData from "../mixins/global";
 import { formattedTime } from "@/utils/ruoyi";
 
@@ -232,6 +233,7 @@ export default {
   mixins: [globalData],
   components: {
     ElUploadSortable,
+    RichTextDisplay,
   },
   props: {
     visible: {
@@ -285,8 +287,12 @@ export default {
     },
     async getAfterInfo(detailId, item) {
       try {
+        if (item) {
+          this.detailInfo = { ...item };
+        }
         const { data } = await afterInfo(detailId);
-        this.detailInfo = { ...item, ...data };
+        // 详情接口字段不全时，保留列表中的数据
+        this.detailInfo = { ...data, ...this.detailInfo };
       } catch (error) {
         console.error(error);
       }

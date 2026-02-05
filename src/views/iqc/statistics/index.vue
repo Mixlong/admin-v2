@@ -894,10 +894,16 @@ export default {
           return rate || 0
         })
         
+        // 计算合格批数
+        const passCounts = (data.totalCounts || []).map((total, index) => {
+          return Math.max(0, total - (data.defectCounts?.[index] || 0))
+        })
+
         return {
           dates: dates,
           defectCounts: data.defectCounts || [],
           totalCounts: data.totalCounts || [],
+          passCounts: passCounts,
           defectRates: defectRates
         }
       }
@@ -1163,7 +1169,7 @@ export default {
           }
         },
         legend: {
-          data: ['总批数', '不合格数', '批次不合格率'],
+          data: ['合格批数', '不合格数', '批次不合格率'],
           top: '30px'
         },
         grid: {
@@ -1265,27 +1271,26 @@ export default {
         ],
         series: [
           {
-            name: '总批数',
+            name: '合格批数',
             type: 'bar',
-            yAxisIndex: 0,  // 使用左Y轴
-            barWidth: '20%',  // 设置柱子宽度
-            barGap: '20%',     // 设置同组柱子间距
-            data: data.totalCounts || [],
+            stack: 'total',
+            yAxisIndex: 0,
+            barWidth: '20%',
+            data: data.passCounts || [],
             itemStyle: {
-              color: '#5470c6'  // 蓝色
+              color: '#91cc75'  // 绿色
             },
             label: {
               show: true,
-              position: 'top',
-              distance: 5,
-              fontSize: 11,
-              formatter: '{c}'
+              position: 'inside',
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
             name: '不合格数',
             type: 'bar',
-            yAxisIndex: 0,  // 使用左Y轴
+            stack: 'total',
+            yAxisIndex: 0,
             barWidth: '20%',
             data: data.defectCounts || [],
             itemStyle: {
@@ -1296,14 +1301,13 @@ export default {
               position: 'top',
               distance: 5,
               fontSize: 11,
-              formatter: '{c}'
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
             name: '批次不合格率',
-            type: 'bar',
-            yAxisIndex: 1,  // 使用右Y轴（百分比）
-            barWidth: '20%',
+            type: 'line',
+            yAxisIndex: 1,
             data: data.defectRates || [],
             itemStyle: {
               color: '#fac858'  // 黄色
@@ -1311,8 +1315,6 @@ export default {
             label: {
               show: true,
               position: 'top',
-              distance: 5,
-              fontSize: 11,
               formatter: '{c}%'
             }
           }
@@ -1326,7 +1328,7 @@ export default {
     updateMaterialTop10Chart(data) {
       const option = {
         title: {
-          text: '物料TOP10月度统计',
+          text: '月度物料TOP10统计',
           left: 'center'
         },
         tooltip: {
@@ -1347,7 +1349,7 @@ export default {
           }
         },
         legend: {
-          data: ['总批数', '不合格数', '批次不合格率'],
+          data: ['合格批数', '不合格数', '批次不合格率'],
           top: '30px'
         },
         grid: {
@@ -1462,26 +1464,25 @@ export default {
         ],
         series: [
           {
-            name: '总批数',
+            name: '合格批数',
             type: 'bar',
+            stack: 'total',
             yAxisIndex: 0,
             barWidth: '20%',
-            barGap: '20%',
-            data: data.totalCounts || [],
+            data: data.passCounts || [],
             itemStyle: {
-              color: '#5470c6'
+              color: '#91cc75'
             },
             label: {
               show: true,
-              position: 'top',
-              distance: 5,
-              fontSize: 11,
-              formatter: '{c}'
+              position: 'inside',
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
             name: '不合格数',
             type: 'bar',
+            stack: 'total',
             yAxisIndex: 0,
             barWidth: '20%',
             data: data.defectCounts || [],
@@ -1493,14 +1494,13 @@ export default {
               position: 'top',
               distance: 5,
               fontSize: 11,
-              formatter: '{c}'
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
             name: '批次不合格率',
-            type: 'bar',
+            type: 'line',
             yAxisIndex: 1,
-            barWidth: '20%',
             data: data.defectRates || [],
             itemStyle: {
               color: '#fac858'
@@ -1508,8 +1508,6 @@ export default {
             label: {
               show: true,
               position: 'top',
-              distance: 5,
-              fontSize: 11,
               formatter: '{c}%'
             }
           }
@@ -1552,7 +1550,7 @@ export default {
           }
         },
         legend: {
-          data: ['总批数', '合格批数', '不合格数', '检验合格率', '目标'],
+          data: ['合格批数', '不合格数', '检验合格率', '目标'],
           top: '30px'
         },
         grid: {
@@ -1653,39 +1651,24 @@ export default {
         ],
         series: [
           {
-            name: '总批数',
-            type: 'bar',
-            yAxisIndex: 0,
-            data: data.totalCounts || [],
-            itemStyle: {
-              color: '#5470c6'  // 蓝色
-            },
-            barGap: '10%',
-            label: {
-              show: true,
-              position: 'top',
-              distance: 5,
-              formatter: '{c}'
-            }
-          },
-          {
             name: '合格批数',
             type: 'bar',
+            stack: 'total',
             yAxisIndex: 0,
             data: data.passCounts || [],
             itemStyle: {
-              color: '#fac858'  // 黄色
+              color: '#91cc75'  // 绿色
             },
             label: {
               show: true,
-              position: 'top',
-              distance: 5,
-              formatter: '{c}'
+              position: 'inside',
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
             name: '不合格数',
             type: 'bar',
+            stack: 'total',
             yAxisIndex: 0,
             data: data.defectCounts || [],
             itemStyle: {
@@ -1694,8 +1677,7 @@ export default {
             label: {
               show: true,
               position: 'top',
-              distance: 5,
-              formatter: '{c}'
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
@@ -1705,10 +1687,10 @@ export default {
             data: passRates,
             smooth: true,
             itemStyle: {
-              color: '#91cc75'  // 绿色
+              color: '#fac858'  // 黄色
             },
             lineStyle: {
-              color: '#91cc75',
+              color: '#fac858',
               width: 2
             },
             label: {
@@ -1761,7 +1743,7 @@ export default {
           }
         },
         legend: {
-          data: ['不良批次', '总数量', '不良率'],
+          data: ['合格批数', '不良批次', '不良率'],
           top: '30px'
         },
         grid: {
@@ -1864,8 +1846,24 @@ export default {
         ],
         series: [
           {
+            name: '合格批数',
+            type: 'bar',
+            stack: 'total',
+            yAxisIndex: 0,
+            data: data.passCounts || [],
+            itemStyle: {
+              color: '#91cc75'
+            },
+            label: {
+              show: true,
+              position: 'inside',
+              formatter: (params) => params.value > 0 ? params.value : ''
+            }
+          },
+          {
             name: '不良批次',
             type: 'bar',
+            stack: 'total',
             yAxisIndex: 0,
             data: data.defectCounts || [],
             itemStyle: {
@@ -1876,23 +1874,7 @@ export default {
               position: 'top',
               distance: 5,
               fontSize: 11,
-              formatter: '{c}'
-            }
-          },
-          {
-            name: '总数量',
-            type: 'bar',
-            yAxisIndex: 0,
-            data: data.totalCounts || [],
-            itemStyle: {
-              color: '#409EFF'
-            },
-            label: {
-              show: true,
-              position: 'top',
-              distance: 5,
-              fontSize: 11,
-              formatter: '{c}'
+              formatter: (params) => params.value > 0 ? params.value : ''
             }
           },
           {
@@ -1902,10 +1884,10 @@ export default {
             data: data.defectRates || [],
             smooth: true,
             itemStyle: {
-              color: '#67c23a'
+              color: '#fac858'
             },
             lineStyle: {
-              color: '#67c23a',
+              color: '#fac858',
               width: 2
             },
             label: {

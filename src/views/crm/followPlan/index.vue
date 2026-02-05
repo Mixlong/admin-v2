@@ -199,7 +199,6 @@ import {
   updateFollowPlanState,
 } from "@/api/crm/followPlan";
 import { getSoCustomerList } from "@/api/crm/soCustomer";
-import { listUser } from "@/api/system/user";
 import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 
 export default {
@@ -410,20 +409,6 @@ export default {
             value: customer.id,
           })
         );
-      }
-    },
-
-    // 获取用户列表
-    async getUserList() {
-      try {
-        followPlan;
-        const response = await listUser({ p: 1, l: 999 });
-        if (response.code === 200 && response.rows) {
-          this.userList = response.rows;
-          this.updateExecutorSearchOptions();
-        }
-      } catch (error) {
-        console.error("获取用户列表失败:", error);
       }
     },
     async fetchList() {

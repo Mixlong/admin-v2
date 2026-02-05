@@ -882,7 +882,21 @@ export default {
       this.$refs.oldCompUpdate.reset();
       this.$refs.oldCompUpdate.oldDialogVisible = true;
     },
-    handleUpdate(row) {
+    async handleUpdate(row) {
+      if (row.mainSchedulingNo) {
+        this.loading = true;
+        try {
+          const res = await schedulingList({
+            mainSchedulingNo: row.mainSchedulingNo,
+          });
+          if (res.data && res.data.list && res.data.list.length > 0) {
+            row = res.data.list[0];
+          }
+        } finally {
+          this.loading = false;
+        }
+      }
+
       this.title = "编辑计划";
       // ✅ 销毁并重建组件确保全新状态
       this.showUpdateComponent = false;
@@ -893,7 +907,7 @@ export default {
           this.$refs.compUpdate.dialogVisible = true;
 
           // 使用 loadScheduleData 方法正确处理编辑数据
-          console.log('🚀 开始编辑，原始数据:', row);
+          console.log("🚀 开始编辑，原始数据:", row);
           this.$refs.compUpdate.loadScheduleData(row);
         });
       });

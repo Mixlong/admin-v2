@@ -123,7 +123,6 @@
 import { addCustomerContact, updateCustomerContact } from '@/api/third/customerContact'
 import { getCustomerList } from '@/api/order'
 import { listDept } from '@/api/system/dept'
-import { listUser } from '@/api/system/user'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import SelectLoadMore from '@/components/selectLoadMore'
@@ -221,7 +220,6 @@ export default {
   mounted() {
     // 初始化数据
     this.getDeptTreeselect()
-    this.getUserList()
   },
   watch: {
     visible(visible) {
@@ -431,14 +429,7 @@ export default {
       return tree;
     },
 
-    // 获取用户列表
-    getUserList() {
-      listUser({ p: 1, l: 999 }).then(res => {
-        if (res.code === 200 && res && Array.isArray(res.rows)) {
-          this.userList = res.rows;
-        }
-      });
-    },
+ 
 
     async handleSubmit() {
       try {

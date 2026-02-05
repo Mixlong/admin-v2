@@ -95,7 +95,6 @@
 import { addFollowPlan, updateFollowPlan } from "@/api/crm/followPlan";
 import { getSoCustomerList } from "@/api/crm/soCustomer";
 import { listDept } from "@/api/system/dept";
-import { listUser } from "@/api/system/user";
 import SelectLoadMore from "@/components/selectLoadMore";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -477,19 +476,6 @@ export default {
           console.error("获取部门列表失败:", error);
         });
     },
-
-    // 获取用户列表
-    async getUserList() {
-      try {
-        const response = await listUser({ p: 1, l: 999 });
-        if (response.code === 200 && response.rows) {
-          this.userList = response.rows;
-        }
-      } catch (error) {
-        console.error("获取用户列表失败:", error);
-      }
-    },
-
     // 构建树结构
     handleTree(data, id, parentId, children) {
       let config = {

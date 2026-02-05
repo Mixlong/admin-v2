@@ -64,7 +64,7 @@
                 <el-option label="意向客户" value="意向客户" />
                 <el-option label="送样客户" value="送样客户" />
                 <el-option label="成交客户" value="成交客户" />
-                <el-option label="流失客户" value="流失客户" />
+                <el-option label="终止合作" value="终止合作" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -841,7 +841,6 @@
 </template>
 
 <script>
-import { listUser } from "@/api/system/user";
 import { addSoCustomer, updateSoCustomer } from "@/api/crm/soCustomer";
 import { getDicts } from "@/api/system/dict/data";
 import { dictByRoles } from "@/api/third/project";

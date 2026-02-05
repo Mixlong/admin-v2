@@ -108,8 +108,8 @@
                 <div slot="header" class="clearfix">
                   <span>变更前BOOT版本</span>
                 </div>
-                <div style="min-height: 150px">
-                  {{ form.beforeVersion }}
+                <div style="min-height: 150px" class="multiline-text">
+                  {{ formatMultiline(form.beforeVersion) }}
                 </div>
               </el-card>
             </el-col>
@@ -118,8 +118,8 @@
                 <div slot="header" class="clearfix">
                   <span>变更原因</span>
                 </div>
-                <div style="min-height: 150px">
-                  {{ form.changeCauseNote }}
+                <div style="min-height: 150px" class="multiline-text">
+                  {{ formatMultiline(form.changeCauseNote) }}
                 </div>
               </el-card>
             </el-col>
@@ -128,8 +128,8 @@
                 <div slot="header" class="clearfix">
                   <span>变更内容</span>
                 </div>
-                <div style="min-height: 150px">
-                  {{ form.changeContent }}
+                <div style="min-height: 150px" class="multiline-text">
+                  {{ formatMultiline(form.changeContent) }}
                 </div>
               </el-card>
             </el-col>
@@ -138,8 +138,8 @@
                 <div slot="header" class="clearfix">
                   <span>变更结果</span>
                 </div>
-                <div style="min-height: 150px">
-                  {{ form.afterVersion }}
+                <div style="min-height: 150px" class="multiline-text">
+                  {{ formatMultiline(form.afterVersion) }}
                 </div>
               </el-card>
             </el-col>
@@ -149,29 +149,42 @@
             <div slot="header" class="clearfix">
               <span>变更涉及领域:</span>
             </div>
-            <div class="involve_list flex flex-direction" style="row-gap: 16px;">
-              <div v-for="item in form.list" :key="item.field" class="flex align-center" style="column-gap: 60px;">
+            <div class="involve_list flex flex-direction" style="row-gap: 16px">
+              <div
+                v-for="item in form.list"
+                :key="item.field"
+                class="flex align-center"
+                style="column-gap: 60px"
+              >
                 <div>
                   <b class="margin-right-xs">领域:</b>
                   <el-tag>{{ TriageList[item.field] }}</el-tag>
                 </div>
 
                 <div class="flex-sub">
-                  <b class="margin-right-xs">{{ `${TriageListTitle[item.field]}:` }}</b>
-                  {{ item.programme }}
+                  <b class="margin-right-xs">{{
+                    `${TriageListTitle[item.field]}:`
+                  }}</b>
+                  <span class="multiline-text">{{
+                    formatMultiline(item.programme)
+                  }}</span>
                 </div>
 
                 <template v-if="item.field === 7">
                   <div class="flex-sub">
                     <b class="margin-right-xs">在库成品处理方案：</b>
-                    {{ item.treatment }}
+                    <span class="multiline-text">{{
+                      formatMultiline(item.treatment)
+                    }}</span>
                   </div>
                 </template>
 
                 <template v-if="item.field === 8">
                   <div class="flex-sub">
                     <b class="margin-right-xs">未出货产品处理方案：</b>
-                    {{ item.treatment }}
+                    <span class="multiline-text">{{
+                      formatMultiline(item.treatment)
+                    }}</span>
                   </div>
                 </template>
               </div>
@@ -293,22 +306,39 @@
             </div>
             <div style="min-height: 50px">
               <!-- 终审人员列表（使用 secondList，每人一行，显示各自状态） -->
-              <template v-if="form.secondList && Array.isArray(form.secondList) && form.secondList.length > 0">
-                <div 
-                  v-for="(auditRecord, index) in form.secondList" 
-                  :key="`second-${auditRecord.id || auditRecord.auditor || index}`"
+              <template
+                v-if="
+                  form.secondList &&
+                  Array.isArray(form.secondList) &&
+                  form.secondList.length > 0
+                "
+              >
+                <div
+                  v-for="(auditRecord, index) in form.secondList"
+                  :key="`second-${
+                    auditRecord.id || auditRecord.auditor || index
+                  }`"
                   class="margin-bottom-sm"
                 >
                   <el-row class="margin-bottom-sm" type="flex" align="middle">
                     <el-col :span="3">
                       <span>审核状态：</span>
-                      <el-tag type="warning" v-show="auditRecord.auditStatus === 0">
+                      <el-tag
+                        type="warning"
+                        v-show="auditRecord.auditStatus === 0"
+                      >
                         待审核
                       </el-tag>
-                      <el-tag type="success" v-show="auditRecord.auditStatus === 1">
+                      <el-tag
+                        type="success"
+                        v-show="auditRecord.auditStatus === 1"
+                      >
                         已审核
                       </el-tag>
-                      <el-tag type="danger" v-show="auditRecord.auditStatus === 2">
+                      <el-tag
+                        type="danger"
+                        v-show="auditRecord.auditStatus === 2"
+                      >
                         已驳回
                       </el-tag>
                     </el-col>
@@ -317,14 +347,26 @@
                     </el-col>
                   </el-row>
                   <!-- 只有已审核或已驳回状态，且有对应的备注或结果时才显示 -->
-                  <el-card shadow="nerver" v-if="auditRecord.auditStatus === 1 && auditRecord.auditRemark">
+                  <el-card
+                    shadow="nerver"
+                    v-if="
+                      auditRecord.auditStatus === 1 && auditRecord.auditRemark
+                    "
+                  >
                     备注： {{ auditRecord.auditRemark }}
                   </el-card>
-                  <el-card shadow="nerver" v-if="auditRecord.auditStatus === 2 && auditRecord.auditResult">
+                  <el-card
+                    shadow="nerver"
+                    v-if="
+                      auditRecord.auditStatus === 2 && auditRecord.auditResult
+                    "
+                  >
                     <span class="text-red">拒绝原因：</span>
                     {{ auditRecord.auditResult }}
                   </el-card>
-                  <el-divider v-if="index < form.secondList.length - 1"></el-divider>
+                  <el-divider
+                    v-if="index < form.secondList.length - 1"
+                  ></el-divider>
                 </div>
               </template>
               <!-- 兼容：如果没有 secondList，使用 secondPerson 或 secondPersonList -->
@@ -343,7 +385,15 @@
                     </el-tag>
                   </el-col>
                   <el-col :span="6">
-                    <span>审核人: {{ form.secondPerson || (form.secondPersonList ? form.secondPersonList.split(',').join('、') : '--') }}</span>
+                    <span
+                      >审核人:
+                      {{
+                        form.secondPerson ||
+                        (form.secondPersonList
+                          ? form.secondPersonList.split(",").join("、")
+                          : "--")
+                      }}</span
+                    >
                   </el-col>
                 </el-row>
                 <el-card shadow="nerver" v-if="form.secondState !== 0">
@@ -444,5 +494,20 @@ export default {
       };
     },
   },
+  methods: {
+    formatMultiline(value) {
+      if (!value) return value;
+      return String(value)
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/\\n/g, "\n");
+    },
+  },
 };
 </script>
+
+<style lang="scss" scoped>
+.multiline-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+</style>
