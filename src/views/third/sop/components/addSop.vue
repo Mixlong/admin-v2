@@ -2417,7 +2417,8 @@ export default {
               submitData.isOldSop == 1 && this.form.auditAdjustType === "none";
             const isNewSopNoAudit =
               submitData.isOldSop == 0 && this.form.auditAdjustType === "none";
-            const needAutoApprove = isOldSopNoAudit || isNewSopNoAudit;
+            // 增加判断：如果当前状态是0（待审核），即使无需审核也不自动通过
+            const needAutoApprove = (isOldSopNoAudit || isNewSopNoAudit) && Number(this.form.state) !== 0;
 
             // 旧SOP编辑时，如果不是重新审核，删除tsopChangeNotice字段
             if (

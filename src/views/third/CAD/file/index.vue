@@ -31,15 +31,15 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-        <el-button type="warning" v-hasPermi="['third:cad:batchFirstCheck']"
-          @click="handleAuthBatchChange(1)">
-          批量初审
-        </el-button>
+       <el-form-item>
+         <el-button type="primary" icon="el-icon-search" @click="handleQuery">
+           搜索
+         </el-button>
+         <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
+         <el-button type="warning" v-hasPermi="['third:cad:batchFirstCheck']"
+           @click="handleAuthBatchChange(1)">
+           批量初审
+         </el-button>
         <el-button type="warning" v-hasPermi="['third:cad:batchFinalCheck']"
           @click="handleAuthBatchChange(2)">
           批量终审

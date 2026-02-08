@@ -138,6 +138,7 @@ export default {
       }
     },
     renderChart(data) {
+      const deepBlack = "#111111";
       // 数据格式: { name: "xxx", num: 18, ... }
       // 按数量降序排序
       const sortedData = [...data].sort((a, b) => (b.num || b.count || b.value || 0) - (a.num || a.count || a.value || 0));
@@ -165,16 +166,17 @@ export default {
         legend: {
           data: ["问题数量", "累计占比"],
           bottom: 0,
+          textStyle: { color: deepBlack },
         },
         grid: { left: "3%", right: "4%", bottom: "15%", top: "10%", containLabel: true },
         xAxis: {
           type: "category",
           data: names,
-          axisLabel: { color: "#666", rotate: 30, interval: 0 },
+          axisLabel: { color: deepBlack, rotate: 30, interval: 0 },
         },
         yAxis: [
-          { type: "value", name: "数量", axisLabel: { color: "#666" } },
-          { type: "value", name: "累计占比", max: 100, axisLabel: { color: "#666", formatter: "{value}%" } },
+          { type: "value", name: "数量", axisLabel: { color: deepBlack }, nameTextStyle: { color: deepBlack } },
+          { type: "value", name: "累计占比", max: 100, axisLabel: { color: deepBlack, formatter: "{value}%" }, nameTextStyle: { color: deepBlack } },
         ],
         series: [
           {
@@ -183,7 +185,7 @@ export default {
             data: values,
             barWidth: "50%",
             itemStyle: { color: this.barColor, borderRadius: [4, 4, 0, 0] },
-            label: { show: true, position: "top", color: "#333", fontSize: 10 },
+            label: { show: true, position: "top", color: deepBlack, fontSize: 10 },
           },
           {
             name: "累计占比",
@@ -195,7 +197,7 @@ export default {
             symbolSize: 6,
             itemStyle: { color: "#ff9800" },
             lineStyle: { width: 2 },
-            label: { show: true, position: "top", formatter: "{c}%", fontSize: 10 },
+            label: { show: true, position: "top", formatter: "{c}%", fontSize: 10, color: deepBlack },
           },
         ],
       };

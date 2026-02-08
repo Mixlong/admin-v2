@@ -59,6 +59,15 @@
         >
           新建客户
         </el-button>
+        <!-- <div class="inline-flex items-center ml-3 text-sm text-gray-600">
+          <span class="mr-2">保留筛选</span>
+          <el-switch
+            v-model="keepTableFilters"
+            active-color="#13ce66"
+            inactive-color="#dcdfe6"
+            @change="handleKeepFilterChange"
+          />
+        </div> -->
       </template>
     </IntelligentSearchForm>
     <!-- 客户表格 -->
@@ -76,6 +85,7 @@
       :getLevelType="getLevelType"
       :getCustomerStatusType="getCustomerStatusType"
       @sort-change="handleSortChange"
+      @filter-change="handleTableFilterChange"
       @view="handleView"
       @edit="handleEdit"
       @delete="handleDelete"
@@ -99,7 +109,7 @@
           :key="size"
           :label="size"
           :value="size"
-      />
+        />
       </el-select>
       <span class="ml-2">条</span>
     </div>
@@ -223,6 +233,18 @@ export default {
       pageSize: 10000,
       pageSizeOptions: [1000, 3000, 5000, 10000],
       total: 0,
+
+      // 表格筛选状态（用于刷新后恢复）
+      tableFilterValues: {
+        customerAttribute: [],
+        customerLevel: [],
+        customerStatus: [],
+        country: [],
+        customerSource: [],
+      },
+
+      // 是否保留表格筛选
+      keepTableFilters: true,
     };
   },
   computed: {
@@ -250,18 +272,21 @@ export default {
       // 3. 合并去重
       // 创建一个 Map 来去重，优先使用字典定义的 label
       const optionMap = new Map();
-      
+
       // 先放字典的
-      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
-      
+      dictOptions.forEach((opt) => optionMap.set(opt.value, opt));
+
       // 再放数据的（如果不存在才放）
-      dataValues.forEach(val => {
+      dataValues.forEach((val) => {
         if (!optionMap.has(val)) {
           optionMap.set(val, { label: val, value: val });
         }
       });
 
-      return Array.from(optionMap.values());
+      return this.applyCheckedFilters(
+        Array.from(optionMap.values()),
+        "customerAttribute"
+      );
     },
 
     // 客户级别筛选选项（使用value作为筛选值 + 现有数据）
@@ -271,7 +296,7 @@ export default {
         this.dict && this.dict.type && this.dict.type.customer_type_enum
           ? this.dict.type.customer_type_enum.map((item) => ({
               label: item.label,
-              value: item.value,
+              value: item.label,
             }))
           : [];
 
@@ -280,24 +305,23 @@ export default {
         .map((item) => item.customerLevel)
         .filter((val) => val !== null && val !== undefined && val !== "");
 
-      // 3. 合并去重
+      // 3. 合并去重（直接用 label 作为筛选值）
       const optionMap = new Map();
 
       // 先放字典的
-      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
+      dictOptions.forEach((opt) => optionMap.set(opt.value, opt));
 
-      // 再放数据的
-      dataValues.forEach(val => {
-        // 注意：这里 val 可能是字典的 value，也可能是旧数据的文本
-        // 如果 map 中没有这个值，说明不仅字典没配，而且可能就是个纯文本
+      // 再放数据的（如果不存在才放）
+      dataValues.forEach((val) => {
         if (!optionMap.has(val)) {
-           // 尝试查找字典label（也许是类型不一致导致没匹配上？）
-           // 这里简单处理：如果没有匹配到字典项，就直接用值作为label
-           optionMap.set(val, { label: val, value: val });
+          optionMap.set(val, { label: val, value: val });
         }
       });
 
-      return Array.from(optionMap.values());
+      return this.applyCheckedFilters(
+        Array.from(optionMap.values()),
+        "customerLevel"
+      );
     },
 
     // 合作状态筛选选项（固定的几个选项 + 现有数据中的选项）
@@ -310,19 +334,24 @@ export default {
         "成交客户",
         "终止合作",
       ];
-      
+
       // 2. 从当前数据中提取已有的状态（旧数据）
       const dataOptions = this.customers
         .map((item) => item.customerStatus)
         .filter((status) => status && status.trim() !== "");
 
       // 3. 合并并去重
-      const uniqueStatuses = Array.from(new Set([...dataOptions, ...customOptions]));
-      
-      return uniqueStatuses.map((status) => ({
-        label: status,
-        value: status,
-      }));
+      const uniqueStatuses = Array.from(
+        new Set([...dataOptions, ...customOptions])
+      );
+
+      return this.applyCheckedFilters(
+        uniqueStatuses.map((status) => ({
+          label: status,
+          value: status,
+        })),
+        "customerStatus"
+      );
     },
 
     // 所属国家筛选选项（使用中文标签作为筛选值 + 现有数据）
@@ -343,14 +372,17 @@ export default {
 
       // 3. 合并去重
       const optionMap = new Map();
-      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
-      dataValues.forEach(val => {
+      dictOptions.forEach((opt) => optionMap.set(opt.value, opt));
+      dataValues.forEach((val) => {
         if (!optionMap.has(val)) {
           optionMap.set(val, { label: val, value: val });
         }
       });
 
-      return Array.from(optionMap.values());
+      return this.applyCheckedFilters(
+        Array.from(optionMap.values()),
+        "country"
+      );
     },
 
     // 客户来源筛选选项（使用中文标签作为筛选值 + 现有数据）
@@ -364,21 +396,24 @@ export default {
             }))
           : [];
 
-       // 2. 数据中的选项
+      // 2. 数据中的选项
       const dataValues = this.customers
         .map((item) => item.customerSource)
         .filter((val) => val && val.trim() !== "");
 
       // 3. 合并去重
       const optionMap = new Map();
-      dictOptions.forEach(opt => optionMap.set(opt.value, opt));
-      dataValues.forEach(val => {
+      dictOptions.forEach((opt) => optionMap.set(opt.value, opt));
+      dataValues.forEach((val) => {
         if (!optionMap.has(val)) {
           optionMap.set(val, { label: val, value: val });
         }
       });
 
-      return Array.from(optionMap.values());
+      return this.applyCheckedFilters(
+        Array.from(optionMap.values()),
+        "customerSource"
+      );
     },
   },
 
@@ -505,6 +540,7 @@ export default {
       if (this.$refs.customerTable) {
         this.$refs.customerTable.clearAllFilters();
       }
+      this.resetTableFilters();
       // 搜索表单会自动重置为初始值，重新加载数据
       this.getCustomerList();
     },
@@ -526,6 +562,14 @@ export default {
       // TODO: 处理排序
     },
 
+    handleTableFilterChange(params = {}) {
+      if (!this.keepTableFilters) return;
+      const field = params?.column?.field;
+      if (!field) return;
+      const values = Array.isArray(params.values) ? params.values : [];
+      this.$set(this.tableFilterValues, field, values);
+    },
+
     handleExport() {
       this.$message.info("导出功能开发中");
     },
@@ -539,6 +583,55 @@ export default {
     handleCurrentChange(page) {
       this.currentPage = page;
       this.getCustomerList();
+    },
+
+    applyCheckedFilters(options, field) {
+      if (!this.keepTableFilters) {
+        return options || [];
+      }
+      const selected = this.tableFilterValues[field];
+      if (!Array.isArray(options) || !options.length) return options || [];
+      if (!selected || selected.length === 0) {
+        return options.map((opt) => ({ ...opt, checked: false }));
+      }
+
+      const selectedValues = Array.isArray(selected) ? selected : [selected];
+      const optionMap = new Map();
+
+      options.forEach((opt) => {
+        const value = opt.value;
+        optionMap.set(value, {
+          ...opt,
+          checked: selectedValues.some((v) => String(v) === String(value)),
+        });
+      });
+
+      // 如果选中过的值不在当前选项中，补进去以便恢复筛选状态
+      selectedValues.forEach((value) => {
+        if (!optionMap.has(value)) {
+          optionMap.set(value, {
+            label: value,
+            value,
+            checked: true,
+          });
+        }
+      });
+
+      return Array.from(optionMap.values());
+    },
+
+    resetTableFilters() {
+      Object.keys(this.tableFilterValues).forEach((key) => {
+        this.$set(this.tableFilterValues, key, []);
+      });
+    },
+
+    handleKeepFilterChange(enabled) {
+      if (enabled) return;
+      this.resetTableFilters();
+      if (this.$refs.customerTable) {
+        this.$refs.customerTable.clearAllFilters();
+      }
     },
 
     // 辅助函数

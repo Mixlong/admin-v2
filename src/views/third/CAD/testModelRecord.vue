@@ -1,91 +1,78 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="品类" prop="categoryName">
-        <el-select
-          v-model="queryParams.categoryName"
-          clearable
-          filterable
-          style="max-width: 140px"
-          @change="changeCategory"
-        >
-          <el-option
-            v-for="dict in dictList"
-            :key="dict.id"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="型号" prop="computerName">
-        <el-select
-          v-model="queryParams.computerName"
-          clearable
-          filterable
-          @change="getList"
-          style="width: 140px"
-        >
-          <el-option
-            v-for="dict in computerOptions"
-            :key="dict.model"
-            :label="dict.name"
-            :value="dict.name"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="PCBA SN" prop="pcbaSn">
-        <el-input
-          v-model="queryParams.pcbaSn"
-          placeholder="请输入"
-          clearable
-          style="width: 140px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="整机SN" prop="sn">
-        <el-input
-          v-model="queryParams.sn"
-          placeholder="请输入"
-          clearable
-          style="width: 140px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="MAC" prop="mac">
-        <mac-input v-model="queryParams.mac"  style="width: 140px"></mac-input>
-      </el-form-item>
-      <el-form-item label="测试环节" prop="processName">
-        <el-select
-          v-model="queryParams.processName"
-          clearable
-          style="max-width: 140px"
-        >
-          <el-option
-            v-for="dict in testList"
-            :key="dict.dictCode"
-            :label="dict.dictLabel"
-            :value="dict.dictLabel"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="判定结果" prop="result">
-        <el-select
-          v-model="queryParams.result"
-          placeholder="请选择"
-          clearable
-          style="max-width: 140px"
-        >
-          <el-option label="OK" value="OK"></el-option>
-          <el-option label="NG" value="NG"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item class="fr">
-        <el-button type="primary" icon="el-icon-search" @click="handleQuery">
-          搜索
-        </el-button>
-        <el-button icon="el-icon-refresh" @click="resetQuery"> 重置 </el-button>
-      </el-form-item>
-    </el-form>
+    <IntelligentSearchForm
+      :searchForm="queryParams"
+      :fields="searchFields"
+      :defaultVisibleCount="5"
+      @search="handleQuery"
+      @reset="resetQuery"
+    >
+      <template #field-categoryName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            clearable
+            filterable
+            :style="{ width: getSearchFieldWidth(searchForm) }"
+            @change="changeCategory"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <template #field-computerName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            clearable
+            filterable
+            @change="getList"
+            :style="{ width: getSearchFieldWidth(searchForm) }"
+          >
+            <el-option
+              v-for="dict in computerOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.name"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <template #field-mac="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <mac-input v-model="searchForm[field.key]" :style="{ width: getSearchFieldWidth(searchForm) }"></mac-input>
+        </el-form-item>
+      </template>
+
+      <template #field-processName="{ field, searchForm }">
+        <el-form-item :label="field.label" :prop="field.key">
+          <el-select
+            v-model="searchForm[field.key]"
+            clearable
+            :style="{ width: getSearchFieldWidth(searchForm) }"
+          >
+            <el-option
+              v-for="dict in testList"
+              :key="dict.dictCode"
+              :label="dict.dictLabel"
+              :value="dict.dictLabel"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+
+      <template #add-search-buttons>
+        <el-button icon="el-icon-back" size="mini" @click="handleGoBack">返回</el-button>
+      </template>
+
+    </IntelligentSearchForm>
 
     <el-table
       v-loading="loading"
@@ -455,12 +442,16 @@
   </div>
 </template>
   
-  <script>
+<script>
 import { testModelRecordList } from "@/api/third/testApi";
 import { CategoryMixin } from "@/mixins/common";
+import IntelligentSearchForm from "@/components/IntelligentSearchForm";
 
 export default {
   name: "TestModelRecord",
+  components: {
+    IntelligentSearchForm,
+  },
   mixins: [CategoryMixin],
   data() {
     return {
@@ -639,6 +630,26 @@ export default {
         processName: "",
         result: "",
       },
+      searchFields: [
+        { key: "categoryName", label: "品类", component: "custom", sort: 1 },
+        { key: "computerName", label: "型号", component: "custom", sort: 2 },
+        { key: "pcbaSn", label: "PCBA SN", component: "el-input", placeholder: "请输入", sort: 3 },
+        { key: "sn", label: "整机SN", component: "el-input", placeholder: "请输入", sort: 4 },
+        { key: "mac", label: "MAC", component: "custom", sort: 5 },
+        { key: "processName", label: "测试环节", component: "custom", sort: 6 },
+        {
+          key: "result",
+          label: "判定结果",
+          component: "el-select",
+          sort: 7,
+          props: {
+            options: [
+              { label: "OK", value: "OK" },
+              { label: "NG", value: "NG" },
+            ],
+          },
+        },
+      ],
       contentStyle: {
         paddingTop: "20px",
         paddingBottom: "20px",
@@ -720,6 +731,9 @@ export default {
         (item) => item.name === categoryName
       )[0].computerList;
     },
+    getSearchFieldWidth(formModel) {
+      return formModel === this.queryParams ? "140px" : "100%";
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.p = 1;
@@ -727,8 +741,21 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.resetForm("queryForm");
+      this.queryParams = {
+        p: 1,
+        l: 20,
+        categoryName: "",
+        computerName: "",
+        pcbaSn: "",
+        sn: "",
+        mac: "",
+        processName: "",
+        result: "",
+      };
       this.handleQuery();
+    },
+    handleGoBack() {
+      this.$router.go(-1);
     },
   },
 };
@@ -771,4 +798,5 @@ export default {
     margin-left: 5px;
   }
 }
+
 </style>

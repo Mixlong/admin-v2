@@ -16,7 +16,7 @@
         :type="getLevelType(row.customerLevel)"
         size="small"
       >
-        {{ getDictLabel("customer_type_enum", row.customerLevel) || row.customerLevel }}
+        {{ row.customerLevel }}
       </el-tag>
       <div v-else>--</div>
     </template>
@@ -71,11 +71,11 @@ import VirtualTable from "@/components/VirtualTable";
 
 export default {
   name: "VirtualCustomerTable",
-  
+
   components: {
     VirtualTable,
   },
-  
+
   props: {
     data: {
       type: Array,
@@ -126,7 +126,7 @@ export default {
       required: true,
     },
   },
-  
+
   computed: {
     // 表格列配置
     tableColumns() {
@@ -148,9 +148,14 @@ export default {
           filterMultiple: false,
           useTooltip: true,
           formatter: (row) => {
-            return this.getDictLabel("customer_attribute_enum", row.customerAttribute) || 
-                   row.customerAttribute || 
-                   "--";
+            return (
+              this.getDictLabel(
+                "customer_attribute_enum",
+                row.customerAttribute
+              ) ||
+              row.customerAttribute ||
+              "--"
+            );
           },
         },
         {
@@ -162,9 +167,11 @@ export default {
           filterMultiple: false,
           useTooltip: true,
           formatter: (row) => {
-            return this.getDictLabel("country_origin", row.country) || 
-                   row.country || 
-                   "--";
+            return (
+              this.getDictLabel("country_origin", row.country) ||
+              row.country ||
+              "--"
+            );
           },
         },
         {
@@ -199,7 +206,7 @@ export default {
           field: "backgroundCheck",
           title: "背景调查",
           width: 200,
-                    align: "left",
+          align: "left",
           headerAlign: "center",
           useTooltip: true,
         },
@@ -245,9 +252,11 @@ export default {
           align: "center",
           useTooltip: true,
           formatter: (row) => {
-            return this.getDictLabel("product_intention", row.productIntent) || 
-                   row.productIntent || 
-                   "--";
+            return (
+              this.getDictLabel("product_intention", row.productIntent) ||
+              row.productIntent ||
+              "--"
+            );
           },
         },
         {
@@ -267,18 +276,18 @@ export default {
       ];
     },
   },
-  
+
   methods: {
     clearAllFilters() {
       if (this.$refs.virtualTable) {
         this.$refs.virtualTable.clearAllFilters();
       }
     },
-    
+
     handleFilterChange(params) {
       this.$emit("filter-change", params);
     },
-    
+
     handleSortChange(params) {
       this.$emit("sort-change", params);
     },

@@ -288,9 +288,10 @@ export default {
     },
     renderParetoChart(chart, data, title, barColor) {
       if (!chart || !data.length) {
-        chart?.setOption({ title: { text: "暂无数据", left: "center", top: "center" }, series: [] }, true);
+        chart?.setOption({ title: { text: "暂无数据", left: "center", top: "center", textStyle: { color: "#111111" } }, series: [] }, true);
         return;
       }
+      const deepBlack = "#111111";
       const names = data.map((item) => item.name);
       const values = data.map((item) => item.num);
       const percents = data.map((item) => item.percent);
@@ -304,7 +305,7 @@ export default {
             return `${bar?.name}<br/>问题数量: ${bar?.value}<br/>累计占比: ${line?.value}%`;
           },
         },
-        legend: { data: ["问题数量", "累计占比"], bottom: 25 },
+        legend: { data: ["问题数量", "累计占比"], bottom: 25, textStyle: { color: deepBlack } },
         grid: { left: "3%", right: "4%", bottom: "20%", top: "10%", containLabel: true },
         dataZoom: [
           {
@@ -324,13 +325,13 @@ export default {
         xAxis: {
           type: "category",
           data: names,
-          axisLabel: { color: "#666", rotate: 30, interval: 0, fontSize: 10 },
+          axisLabel: { color: deepBlack, rotate: 30, interval: 0, fontSize: 10 },
           axisLine: { show: true },
           splitLine: { show: false },
         },
         yAxis: [
-          { type: "value", name: "问题数量", axisLabel: { color: "#666" }, splitLine: { show: false } },
-          { type: "value", name: "累计占比", max: 100, axisLabel: { color: "#666", formatter: "{value}%" }, splitLine: { show: false } },
+          { type: "value", name: "问题数量", axisLabel: { color: deepBlack }, nameTextStyle: { color: deepBlack }, splitLine: { show: false } },
+          { type: "value", name: "累计占比", max: 100, axisLabel: { color: deepBlack, formatter: "{value}%" }, nameTextStyle: { color: deepBlack }, splitLine: { show: false } },
         ],
         series: [
           {
@@ -346,7 +347,7 @@ export default {
               ]),
               borderRadius: [4, 4, 0, 0],
             },
-            label: { show: true, position: "top", color: "#333", fontSize: 10 },
+            label: { show: true, position: "top", color: deepBlack, fontSize: 10 },
           },
           {
             name: "累计占比",
@@ -358,7 +359,7 @@ export default {
             symbolSize: 6,
             itemStyle: { color: "#ff9800" },
             lineStyle: { width: 2 },
-            label: { show: true, position: "top", formatter: "{c}%", fontSize: 9 },
+            label: { show: true, position: "top", formatter: "{c}%", fontSize: 9, color: deepBlack },
           },
         ],
       };

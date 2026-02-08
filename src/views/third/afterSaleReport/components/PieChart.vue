@@ -180,6 +180,7 @@ export default {
       }
     },
     renderChart(data) {
+      const deepBlack = "#111111";
       const defaultColors = ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc"];
       const colorList = this.colors || defaultColors;
       const pieData = data.map((item, index) => ({
@@ -194,6 +195,7 @@ export default {
           orient: "vertical",
           right: 10,
           top: "center",
+          textStyle: { color: deepBlack },
           formatter: (name) => {
             const item = pieData.find((d) => d.name === name);
             if (item && total > 0) {
@@ -209,8 +211,8 @@ export default {
           center: ["35%", "50%"],
           avoidLabelOverlap: true,
           itemStyle: { borderRadius: 4, borderColor: "#fff", borderWidth: 2 },
-          label: { show: true, formatter: "{c} ({d}%)" },
-          emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } },
+          label: { show: true, formatter: "{c} ({d}%)", color: deepBlack },
+          emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold", color: deepBlack } },
           data: pieData,
         }],
         color: colorList,

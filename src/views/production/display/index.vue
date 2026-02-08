@@ -87,7 +87,7 @@
             </div>
           </template>
         </el-table-column>
-                   <el-table-column label="生产数量" align="center" min-width="100">
+        <el-table-column label="生产数量" align="center" min-width="100">
           <template slot-scope="scope">
             <div v-if="scope.row.packagingDataList && scope.row.packagingDataList.length > 0" style="padding: 5px 0;">
               <div 
@@ -101,8 +101,8 @@
                 </div>
                  <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
               </div>
-              
             </div>
+            <div v-else>0</div>
           </template>
         </el-table-column>
         <!-- 测试环节分组列 -->
@@ -147,8 +147,8 @@
                 </div>
                  <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
               </div>
-              
             </div>
+            <div v-else>0</div>
           </template>
         </el-table-column>
       </el-table>

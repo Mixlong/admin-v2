@@ -67,6 +67,7 @@ export default {
       }
     },
     renderChart(data) {
+      const deepBlack = "#111111";
       // 数据格式: { name: "2025-01", num: 18, ... }
       const months = data.map((item) => {
         // 从 "2025-01" 提取月份显示为 "1月"
@@ -77,8 +78,8 @@ export default {
       const option = {
         tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
         grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
-        xAxis: { type: "category", data: months, axisLabel: { color: "#666" } },
-        yAxis: { type: "value", axisLabel: { color: "#666" }, splitLine: { show: false } },
+        xAxis: { type: "category", data: months, axisLabel: { color: deepBlack } },
+        yAxis: { type: "value", axisLabel: { color: deepBlack }, splitLine: { show: false } },
         series: [{
           name: "客退数量",
           type: "bar",
@@ -92,7 +93,7 @@ export default {
             ]),
             borderRadius: [4, 4, 0, 0],
           },
-          label: { show: true, position: "top", color: "#333" },
+          label: { show: true, position: "top", color: deepBlack },
         }],
       };
       this.chart?.setOption(option, true);
