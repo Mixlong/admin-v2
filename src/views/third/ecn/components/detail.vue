@@ -98,8 +98,40 @@
             </el-col>
           </el-row>
 
-          <el-form-item label="附件:" v-show="form.file">
+          <el-form-item label="附件:" label-width="125px" v-show="form.file">
             <FileDisplay :file-url="form.file" />
+          </el-form-item>
+
+          <el-form-item
+            label="硬件验证报告:"
+            label-width="125px"
+            v-show="form.hardwareVerificationReport"
+          >
+            <FileDisplay :file-url="form.hardwareVerificationReport" />
+          </el-form-item>
+
+          <el-form-item
+            label="工程验证报告:"
+            label-width="125px"
+            v-show="form.engineeringVerificationReport"
+          >
+            <FileDisplay :file-url="form.engineeringVerificationReport" />
+          </el-form-item>
+
+          <el-form-item
+            label="结构组研发报告:"
+            label-width="125px"
+            v-show="form.structureDevelopmentReport"
+          >
+            <FileDisplay :file-url="form.structureDevelopmentReport" />
+          </el-form-item>
+
+          <el-form-item
+            label="工程组研发报告:"
+            label-width="125px"
+            v-show="form.engineeringDevelopmentReport"
+          >
+            <FileDisplay :file-url="form.engineeringDevelopmentReport" />
           </el-form-item>
 
           <el-row :gutter="15" class="margin-bottom">

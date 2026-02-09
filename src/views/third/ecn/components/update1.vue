@@ -671,7 +671,7 @@
           </el-row>
 
           <el-form-item label="附件" prop="file">
-            <DrUpload v-model="form.file" :limit="1" :isOnePic="1">
+            <DrUpload v-model="form.file" :multiple="true" :limit="20">
               <div class="text-left">
                 <el-button size="mini" type="primary">附件上传</el-button>
               </div>
@@ -687,8 +687,8 @@
               >
                 <DrUpload
                   v-model="form.hardwareVerificationReport"
-                  :limit="1"
-                  :isOnePic="1"
+                  :multiple="true"
+                  :limit="20"
                 >
                   <div class="text-left">
                     <el-button size="mini" type="primary"
@@ -706,8 +706,8 @@
               >
                 <DrUpload
                   v-model="form.engineeringVerificationReport"
-                  :limit="1"
-                  :isOnePic="1"
+                  :multiple="true"
+                  :limit="20"
                 >
                   <div class="text-left">
                     <el-button size="mini" type="primary"
@@ -728,8 +728,8 @@
               >
                 <DrUpload
                   v-model="form.structureDevelopmentReport"
-                  :limit="1"
-                  :isOnePic="1"
+                  :multiple="true"
+                  :limit="20"
                 >
                   <div class="text-left">
                     <el-button size="mini" type="primary"
@@ -747,8 +747,8 @@
               >
                 <DrUpload
                   v-model="form.engineeringDevelopmentReport"
-                  :limit="1"
-                  :isOnePic="1"
+                  :multiple="true"
+                  :limit="20"
                 >
                   <div class="text-left">
                     <el-button size="mini" type="primary"
@@ -790,11 +790,13 @@ export default {
     const validateAtLeastOneReport = (rule, value, callback) => {
       const {
         hardwareVerificationReport,
+        engineeringVerificationReport,
         structureDevelopmentReport,
         engineeringDevelopmentReport,
       } = this.form;
       if (
         !hardwareVerificationReport &&
+        !engineeringVerificationReport &&
         !structureDevelopmentReport &&
         !engineeringDevelopmentReport
       ) {
@@ -908,6 +910,9 @@ export default {
         hardwareVerificationReport: [
           { validator: validateAtLeastOneReport, trigger: "change" },
         ],
+        engineeringVerificationReport: [
+          { validator: validateAtLeastOneReport, trigger: "change" },
+        ],
         structureDevelopmentReport: [
           { validator: validateAtLeastOneReport, trigger: "change" },
         ],
@@ -966,6 +971,16 @@ export default {
     "form.hardwareVerificationReport"() {
       this.$nextTick(() => {
         this.$refs.form?.validateField([
+          "engineeringVerificationReport",
+          "structureDevelopmentReport",
+          "engineeringDevelopmentReport",
+        ]);
+      });
+    },
+    "form.engineeringVerificationReport"() {
+      this.$nextTick(() => {
+        this.$refs.form?.validateField([
+          "hardwareVerificationReport",
           "structureDevelopmentReport",
           "engineeringDevelopmentReport",
         ]);
@@ -975,6 +990,7 @@ export default {
       this.$nextTick(() => {
         this.$refs.form?.validateField([
           "hardwareVerificationReport",
+          "engineeringVerificationReport",
           "engineeringDevelopmentReport",
         ]);
       });
@@ -983,6 +999,7 @@ export default {
       this.$nextTick(() => {
         this.$refs.form?.validateField([
           "hardwareVerificationReport",
+          "engineeringVerificationReport",
           "structureDevelopmentReport",
         ]);
       });
