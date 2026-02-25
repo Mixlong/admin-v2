@@ -95,7 +95,7 @@
     <div
       class="mt10 flex items-center justify-end space-x-2 text-sm text-gray-600 customer-table-footer"
     >
-      <span class="mr-2">共 {{ total }} 条</span>
+      <span class="mr-2">共 {{ filteredCount || total }} 条</span>
       <span class="mr-2">每次加载</span>
       <el-select
         v-model="pageSize"
@@ -233,6 +233,7 @@ export default {
       pageSize: 10000,
       pageSizeOptions: [1000, 3000, 5000, 10000],
       total: 0,
+      filteredCount: 0, // 过滤后的数据条数
 
       // 表格筛选状态（用于刷新后恢复）
       tableFilterValues: {
@@ -425,11 +426,21 @@ export default {
         const response = await this.fetchCustomersFromAPI();
         this.customers = response.list || [];
         this.total = response.total || 0;
+        
+        // 初始化过滤后的数据条数
+        this.$nextTick(() => {
+          if (this.$refs.customerTable) {
+            this.filteredCount = this.$refs.customerTable.getFilteredCount();
+          } else {
+            this.filteredCount = this.total;
+          }
+        });
       } catch (error) {
         console.error("获取客户列表失败:", error);
         // 全局 API 拦截器已处理错误消息，无需重复提示
         this.customers = [];
         this.total = 0;
+        this.filteredCount = 0;
       } finally {
         this.loading = false;
       }
@@ -568,6 +579,13 @@ export default {
       if (!field) return;
       const values = Array.isArray(params.values) ? params.values : [];
       this.$set(this.tableFilterValues, field, values);
+      
+      // 更新过滤后的数据条数
+      this.$nextTick(() => {
+        if (this.$refs.customerTable) {
+          this.filteredCount = this.$refs.customerTable.getFilteredCount();
+        }
+      });
     },
 
     handleExport() {

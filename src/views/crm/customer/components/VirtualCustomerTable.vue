@@ -164,7 +164,7 @@ export default {
           width: 100,
           align: "center",
           filters: this.countryFilters,
-          filterMultiple: false,
+          filterMultiple: true,
           useTooltip: true,
           formatter: (row) => {
             return (
@@ -282,6 +282,18 @@ export default {
       if (this.$refs.virtualTable) {
         this.$refs.virtualTable.clearAllFilters();
       }
+    },
+
+    getFilteredCount() {
+      if (this.$refs.virtualTable) {
+        const vxeTable = this.$refs.virtualTable.getVxeTable();
+        if (vxeTable) {
+          // 获取过滤后的数据
+          const afterFilterData = vxeTable.getTableData().visibleData;
+          return afterFilterData ? afterFilterData.length : 0;
+        }
+      }
+      return 0;
     },
 
     handleFilterChange(params) {

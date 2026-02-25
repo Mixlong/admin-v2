@@ -103,40 +103,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="客户品牌" prop="customerBrand">
-              <el-input
-                v-model="form.customerBrand"
-                placeholder="请输入客户品牌"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="所属国家" prop="country">
-              <el-select
-                v-model="form.country"
-                placeholder="请选择/输入"
-                style="width: 100%"
-                clearable
-                filterable
-                allow-create
-                default-first-option
-              >
-                <el-option
-                  v-for="dict in dict.type.country_origin
-                    .slice()
-                    .sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'))"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.label"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="交付经理" prop="deliveryManager">
@@ -193,7 +159,38 @@
             </el-form-item>
           </el-col>
         </el-row>
-
+                <el-row :gutter="20">
+          <!-- <el-col :span="8">
+            <el-form-item label="客户品牌" prop="customerBrand">
+              <el-input
+                v-model="form.customerBrand"
+                placeholder="请输入客户品牌"
+              />
+            </el-form-item>
+          </el-col> -->
+          <el-col :span="8">
+            <el-form-item label="所属国家" prop="country">
+              <el-select
+                v-model="form.country"
+                placeholder="请选择/输入"
+                style="width: 100%"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+              >
+                <el-option
+                  v-for="dict in dict.type.country_origin
+                    .slice()
+                    .sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'))"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.label"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="客户网址" prop="address">
           <el-input
             v-model="form.address"
