@@ -919,7 +919,12 @@
             prop="showWheelDiameter"
             align="center"
             width="95"
-          />
+            column-key="showWheelDiameter"
+            :filters="getFiltersData('showWheelDiameter')"
+            :filter-method="filterHandler"
+          >
+            <span slot-scope="scope" v-NoData="scope.row.showWheelDiameter"></span>
+          </el-table-column>
                     <el-table-column
             label="周长"
             prop="perimeter"
@@ -2130,6 +2135,30 @@ export default {
     // 获取每项的筛选值
     getFiltersData() {
       return (key) => {
+        // 实际轮径使用字典数据
+        if (key === "showWheelDiameter") {
+          const uniqueByValue = new Map();
+          Object.values(this.wheelDiameterData).forEach((dictValue) => {
+            const normalized = String(dictValue);
+            if (!uniqueByValue.has(normalized)) {
+              uniqueByValue.set(normalized, {
+                text: dictValue,
+                value: dictValue,
+              });
+            }
+          });
+          return Array.from(uniqueByValue.values()).sort((a, b) => {
+            // 数字排序
+            const aNum = parseFloat(a.text);
+            const bNum = parseFloat(b.text);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+              return aNum - bNum;
+            }
+            return String(a.text).localeCompare(String(b.text));
+          });
+        }
+        
+        // 其他字段使用当前页数据
         let newList = [];
         let filterList = [];
         this.brandList.forEach((item) => {
@@ -2141,7 +2170,6 @@ export default {
             });
           }
         });
-
         return newList.sort((a, b) => a.text - b.text);
       };
     },
@@ -2439,7 +2467,6 @@ export default {
     },
     changeCategory(val) {
       this.queryParams.computerId = "";
-
       this.computerOptions = this.dictList.filter(
         (item) => item.id === val
       )[0].computerList;
