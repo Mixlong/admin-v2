@@ -230,7 +230,7 @@
             </el-button>
             <!-- 旧版SOP审核按钮 -->
             <el-button
-              v-else-if="row.isOldSop == 1 && row.state === 0"
+              v-else-if="row.isOldSop == 1 && (row.state === 0 || isAdmin)"
               class="text-orange"
               type="text"
               size="small"
@@ -548,9 +548,6 @@ export default {
     AuditDetailDialog,
   },
   mixins: [digiSmartJumpMixin],
-  computed: {
-    ...mapGetters(["nickName"])
-  },
   data() {
     return {
       // nickName:'杨贵来',
@@ -622,7 +619,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId", "name", "nickName"]),
+    ...mapGetters(["userId", "name", "nickName", "roles"]),
+    isAdmin() {
+      return this.nickName === "admin" || (this.roles && this.roles.some((role) => role.includes("admin")));
+    },
     directionDir() {
       return (dataList, direction) => {
         return (
@@ -801,6 +801,11 @@ export default {
     },
     /** 判断是否可以审核（新版SOP） */
     canAudit(row) {
+      // 管理员可以进行审核
+      if (this.isAdmin) {
+        return true;
+      }
+
       // 只对新版SOP进行判断
       if (row.isOldSop !== 0 || !row.sopChangeNotice) {
         return false;
@@ -885,6 +890,42 @@ export default {
     handleNewAudit(row) {
       const currentUser = this.nickName || '';
       const notice = row.sopChangeNotice;
+
+      if (!notice) {
+        this.$message.warning('暂无审核数据');
+        return;
+      }
+
+      // 管理员：按流程自动定位当前可审核节点
+      if (this.isAdmin) {
+        const list = notice && notice.list ? notice.list : [];
+        const pendingJoint = list.find((item) => item.state === 0);
+        if (pendingJoint) {
+          this.$refs.auditDialog.open('field', row, pendingJoint);
+          return;
+        }
+
+        const allJointAuditPassed = list.length > 0 ? list.every((item) => item.state === 1) : false;
+        if (allJointAuditPassed && notice.engineeringState === 0) {
+          this.$refs.auditDialog.open('engineering', row);
+          return;
+        }
+
+        const engineeringPassed = notice.engineeringState === 1;
+        if (allJointAuditPassed && engineeringPassed && notice.projectPerson && notice.projectState === 0) {
+          this.$refs.auditDialog.open('project', row);
+          return;
+        }
+
+        const projectPassed = !notice.projectPerson || notice.projectState === 1;
+        if (allJointAuditPassed && engineeringPassed && projectPassed && notice.secondState === 0) {
+          this.$refs.auditDialog.open('final', row);
+          return;
+        }
+
+        this.$message.warning('当前无可审核节点');
+        return;
+      }
       
       // 判断当前用户的审核类型
       // 1. 检查是否是会审人员（第一阶段）

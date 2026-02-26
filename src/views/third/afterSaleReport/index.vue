@@ -21,6 +21,7 @@
         :extra-filter-summary="selectedAfterTypeLabel"
         :colors="parentResponsibilityColors"
         @reset="handleResetAfterType"
+        @chart-click="handleParentResponsibilityClick"
       />
       <pie-chart
         ref="responsibilityChart"
@@ -136,6 +137,14 @@ export default {
       }
       // 刷新一级责任和二级责任图表
       this.$refs.parentResponsibilityChart?.fetchData();
+      this.$refs.responsibilityChart?.fetchData();
+    },
+    
+    // 一级责任占比图表点击事件
+    handleParentResponsibilityClick(params) {
+      // params.name 是点击的一级责任人名称
+      this.selectedParentResponsibility = params.name;
+      // 刷新二级责任图表
       this.$refs.responsibilityChart?.fetchData();
     },
     
