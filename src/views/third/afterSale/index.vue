@@ -212,6 +212,14 @@
           导出
         </el-button>
         <el-button
+          v-hasPermi="['third:afterSale:export']"
+          type="warning"
+          icon="el-icon-download"
+          @click="handleExportAll"
+        >
+          全部导出
+        </el-button>
+        <el-button
           v-hasPermi="['third:afterSale:add']"
           type="primary"
           icon="el-icon-plus"
@@ -555,9 +563,9 @@
           v-NoData="row.logistics && row.logistics.returnDate"
         ></span>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="200" fixed="right">
+      <el-table-column label="操作" align="center" width="120" fixed="right">
         <template slot-scope="{ row }">
-          <div class="flex justify-center align-center">
+          <div class="op-actions">
             <el-button
               v-hasPermi="['third:afterSale:edit']"
               class="text-blue"
@@ -576,7 +584,6 @@
             </el-button>
             <el-dropdown
               size="mini"
-              class="margin-left-xs"
               trigger="click"
               placement="bottom"
               @visible-change="
@@ -584,9 +591,8 @@
               "
               @command="handleDropdownCommand"
             >
-              <span class="el-dropdown-link pointer">
-                <span class="text-green" style="font-size: 12px">更多操作</span
-                ><i class="el-icon-arrow-down el-icon--right"></i>
+              <span class="op-more pointer">
+                ...
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
@@ -1656,6 +1662,46 @@ export default {
         queryParams: this.uploadIds,
       });
     },
+    /** 全部导出按钮操作 */
+    handleExportAll() {
+      if (this.total === 0) return this.msgError("没有可导出的数据");
+      this.$confirm(`是否确认全部导出共 ${this.total} 条数据项?`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          const dataInfo = {
+            ...this.queryParams,
+            p: 1,
+            l: this.total,
+            my: this.isWaitDispose ? "" : this.nickName,
+          };
+          const loading = this.$loading({
+            lock: true,
+            text: "正在获取全部数据...",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)",
+          });
+          afterList(dataInfo)
+            .then((res) => {
+              loading.close();
+              const list = res.data.list || [];
+              const ids = list.map((item) => item.id);
+              if (!ids.length) {
+                return this.msgError("没有查询到数据");
+              }
+              this.downloadFile({
+                aFn: afterMultipleDownload,
+                queryParams: ids,
+              });
+            })
+            .catch(() => {
+              loading.close();
+            });
+        })
+        .catch(() => {});
+    },
     /** 每项筛选方法 */
     filterHandler(value, row, column) {
       const property = column["property"];
@@ -1697,6 +1743,31 @@ export default {
   flex-wrap: wrap;
   grid-gap: 5px;
   justify-content: center;
+}
+
+.op-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  /deep/ .el-button.el-button--text,
+  /deep/ .el-button.el-button--text.el-button--mini {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    min-height: auto;
+    line-height: 1.2;
+  }
+}
+
+.op-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  font-size: 14px;
+  line-height: 1;
+  color: #67c23a;
 }
 
 // 修复固定列遮挡滚动条的问题

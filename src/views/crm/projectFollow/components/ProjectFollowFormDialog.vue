@@ -112,7 +112,7 @@
                 style="width: 100%"
               >
                 <el-option
-                  v-for="item in projectManagerList"
+                  v-for="item in salesManagerList"
                   :key="item.userId"
                   :label="item.nickName"
                   :value="item.nickName"
@@ -235,6 +235,7 @@ export default {
         more: true,
       },
       projectManagerList: [],
+      salesManagerList: [],
       rules: {
         projectName: [
           { required: true, message: "请输入项目名称", trigger: "blur" },
@@ -306,9 +307,10 @@ export default {
     // 初始化客户数据
     this.getCustomerData();
     this.getProjectManagerList();
+    this.getSalesManagerList();
   },
   methods: {
-    // 获取销售经理列表 - 使用角色字典接口
+    // 获取交付经理列表 - 使用角色字典接口
     async getProjectManagerList() {
       try {
         const response = await dictByRoles([
@@ -345,6 +347,49 @@ export default {
           });
 
           this.projectManagerList = uniqueUsers;
+        }
+      } catch (error) {
+        console.error("获取交付经理列表失败:", error);
+      }
+    },
+
+    // 获取销售经理列表 - 使用角色字典接口
+    async getSalesManagerList() {
+      try {
+        const response = await dictByRoles([
+          "ms",
+          "sale_manager",
+        ]);
+        if (response && response.data) {
+          let list = [];
+          // 处理不同的数据结构
+          if (Array.isArray(response.data)) {
+            list = response.data.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          } else if (response.data.list) {
+            list = response.data.list.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          }
+
+          // 去重处理
+          const uniqueUsers = [];
+          const userNameSet = new Set();
+          list.forEach((user) => {
+            if (!userNameSet.has(user.userName)) {
+              userNameSet.add(user.userName);
+              uniqueUsers.push(user);
+            }
+          });
+
+          this.salesManagerList = uniqueUsers;
         }
       } catch (error) {
         console.error("获取销售经理列表失败:", error);

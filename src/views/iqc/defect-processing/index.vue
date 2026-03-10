@@ -437,6 +437,7 @@ export default {
         processCode: null,    // ECN编号
         inventoryInfoId: null, // 来料记录ID
         invCode: null,        // 物料编码
+        id: null,        // 物料编码
         invName: null,        // 物料名称
         customer: null,       // 客户名称
         customerNo: null,     // 客户单号
@@ -450,7 +451,8 @@ export default {
         ecn: null,              // ECN编号
         inventoryInfoId: null,  // 来料记录ID
         category: null,         // 品类
-        invCode: null,          // 物料编码
+        invCode: null,  
+           id: null,          // 物料编码
         invName: null,          // 物料名称
         customer: null,         // 客户名称
         customerNo: null,       // 客户单号
@@ -901,6 +903,7 @@ export default {
 
         if (keyword) {
           params.invCode = keyword
+          params.id = keyword
         }
 
         getIqcInspectionDataList(params).then((res) => {

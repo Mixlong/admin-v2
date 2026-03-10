@@ -167,12 +167,24 @@ export function selectDictLabels(datas, value, separator) {
 
 // 通用下载方法
 export function download(fileName) {
-  window.location.href =
+  const url =
     baseURL +
     "/common/download?fileName=" +
     encodeURI(fileName) +
-    "&delete=" +
-    true;
+    "&delete=true";
+
+  const iframeId = "global-download-iframe";
+  let iframe = document.getElementById(iframeId);
+
+  if (!iframe) {
+    iframe = document.createElement("iframe");
+    iframe.id = iframeId;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+  }
+
+  iframe.src = url;
+  return Promise.resolve();
 }
 
 // 导出文件
@@ -200,11 +212,13 @@ export function downloadFile({
     .then((response) => {
       const fileName = response.msg;
 
-      this.download(fileName);
-      downloadLoadingInstance.close()
-    }).catch(() => {
-      downloadLoadingInstance.close()
+      return this.download(fileName);
     })
+    .finally(() => {
+      if (downloadLoadingInstance) {
+        downloadLoadingInstance.close();
+      }
+    });
 }
 
 // 删除按钮

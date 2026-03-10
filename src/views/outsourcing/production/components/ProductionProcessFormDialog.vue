@@ -111,6 +111,22 @@
               @input="handleSchedulingNoChange"
             />
           </el-form-item>
+          <el-form-item
+            label="关联外发"
+            prop="relatedSend"
+            v-if="formData.schedulingInfoType === 'schedulingNo'"
+            class="related-send-item"
+            required
+          >
+            <el-radio-group
+              v-model="formData.relatedSend"
+              size="small"
+              class="related-send-radio"
+            >
+              <el-radio :label="0">否</el-radio>
+              <el-radio :label="1">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
 
           <!-- 品类+型号（仅在选择品类+型号时显示） -->
           <template v-if="formData.schedulingInfoType === 'categoryModel'">
@@ -407,6 +423,7 @@ export default {
         partNo: "",
         orderCode: "",
         smtBomFile: "",
+        relatedSend: 0,
         auditStatus: 0,
       },
       formModelOptions: [],
@@ -536,6 +553,22 @@ export default {
             },
           },
         ],
+        relatedSend: [
+          {
+            validator: (rule, value, callback) => {
+              if (
+                this.formData.productionProcess === "SMT" &&
+                this.formData.schedulingInfoType === "schedulingNo" &&
+                (value === "" || value === null || value === undefined)
+              ) {
+                callback(new Error("请选择关联外发"));
+              } else {
+                callback();
+              }
+            },
+            trigger: "change",
+          },
+        ],
       },
     };
   },
@@ -573,6 +606,7 @@ export default {
       this.formData.computerId = "";
       this.formData.partNo = "";
       this.formData.orderCode = "";
+      this.formData.relatedSend = value === "SMT" ? 0 : "";
       this.formModelOptions = [];
 
       // 恢复采购单号（如果 showOrderCodeInSmt 为 true）
@@ -590,6 +624,15 @@ export default {
 
     /** 排产信息类型变化 */
     handleSchedulingInfoTypeChange(value) {
+      if (value !== "schedulingNo") {
+        this.formData.relatedSend = "";
+      } else if (
+        this.formData.relatedSend === "" ||
+        this.formData.relatedSend === null ||
+        this.formData.relatedSend === undefined
+      ) {
+        this.formData.relatedSend = 0;
+      }
       // 不清空数据，只是隐藏不需要的输入框
       // 数据保留，用户可以随时切换回来查看
       // 只清除验证错误提示
@@ -712,7 +755,14 @@ export default {
     handleSubmit() {
       this.$refs.productionForm.validate((valid) => {
         if (valid) {
-          this.$emit("submit", { ...this.formData });
+          const submitData = { ...this.formData };
+          if (
+            submitData.productionProcess !== "SMT" ||
+            submitData.schedulingInfoType !== "schedulingNo"
+          ) {
+            delete submitData.relatedSend;
+          }
+          this.$emit("submit", submitData);
         }
       });
     },
@@ -741,6 +791,7 @@ export default {
         partNo: "",
         orderCode: "",
         smtBomFile: "",
+        relatedSend: 0,
         auditStatus: 0,
       };
       this.formModelOptions = [];
@@ -779,6 +830,12 @@ export default {
         partNo: this.editData.partNo || "",
         orderCode: this.editData.orderCode || "",
         smtBomFile: this.editData.smtBomFile || "",
+        relatedSend:
+          this.editData.relatedSend === 0 || this.editData.relatedSend === 1
+            ? this.editData.relatedSend
+            : schedulingInfoType === "schedulingNo"
+            ? 0
+            : "",
         auditStatus: this.editData.auditStatus || 0,
       };
 
@@ -855,5 +912,20 @@ export default {
 .dialog-footer-new {
   text-align: right;
   padding: 10px 20px 0;
+}
+
+.related-send-item {
+  margin-bottom: 0;
+}
+
+.related-send-radio {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  line-height: 36px;
+}
+
+.related-send-radio ::v-deep .el-radio {
+  margin-right: 28px;
 }
 </style>

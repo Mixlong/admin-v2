@@ -676,7 +676,7 @@ export default {
         }
 
         if (keyword) {
-          params.invCode = keyword
+          params.id = keyword
         }
 
         getIqcInspectionDataList(params).then((res) => {

@@ -132,7 +132,7 @@
                 clearable
               >
                 <el-option
-                  v-for="user in projectManagerList"
+                  v-for="user in userList"
                   :key="user.userId"
                   :label="user.nickName"
                   :value="user.nickName"
@@ -150,7 +150,7 @@
                 clearable
               >
                 <el-option
-                  v-for="user in projectManagerList"
+                  v-for="user in userList"
                   :key="user.userId"
                   :label="user.nickName"
                   :value="user.nickName"
@@ -159,7 +159,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-                <el-row :gutter="20">
+        <el-row :gutter="20">
           <!-- <el-col :span="8">
             <el-form-item label="客户品牌" prop="customerBrand">
               <el-input
@@ -1081,6 +1081,7 @@ export default {
   mounted() {
     this.loadSettlementPeriodOptions();
     this.getProjectManagerList();
+    this.getSalesManagerList();
   },
   methods: {
     // 处理多图显示 - 将逗号分隔的URL字符串转换为数组
@@ -1398,12 +1399,13 @@ export default {
       });
     },
 
-    // 获取销售经理列表 - 使用角色字典接口
+    // 获取交付经理列表 - 使用角色字典接口
     async getProjectManagerList() {
       try {
         const response = await dictByRoles([
           "project_manager",
           "project_manage_s",
+          "product",
         ]);
         if (response && response.data) {
           let list = [];
@@ -1435,6 +1437,46 @@ export default {
           });
 
           this.projectManagerList = uniqueUsers;
+        }
+      } catch (error) {
+        console.error("获取交付经理列表失败:", error);
+      }
+    },
+
+    // 获取销售经理/销售负责人列表 - 使用角色字典接口
+    async getSalesManagerList() {
+      try {
+        const response = await dictByRoles(["ms", "sale_manager"]);
+        if (response && response.data) {
+          let list = [];
+          // 处理不同的数据结构
+          if (Array.isArray(response.data)) {
+            list = response.data.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          } else if (response.data.list) {
+            list = response.data.list.map((item) => ({
+              userId: item.id || item.userId || item.dictValue,
+              userName: item.userName || item.dictValue || item.name,
+              nickName:
+                item.nickName || item.dictLabel || item.userName || item.name,
+            }));
+          }
+
+          // 去重处理
+          const uniqueUsers = [];
+          const userNameSet = new Set();
+          list.forEach((user) => {
+            if (!userNameSet.has(user.userName)) {
+              userNameSet.add(user.userName);
+              uniqueUsers.push(user);
+            }
+          });
+
+          this.userList = uniqueUsers;
         }
       } catch (error) {
         console.error("获取销售经理列表失败:", error);

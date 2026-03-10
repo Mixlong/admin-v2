@@ -936,7 +936,7 @@ export default {
       );
       row.num = totalNum;
 
-      const rowKey = `${schedule.id || row.customerOrderNo}_0`;
+      const rowKey = this.getScheduleRowKey(row, 0);
       this.$set(this.dailyScheduleData, rowKey, fullDailySchedules);
     },
     applyPairedTables() {
@@ -1084,7 +1084,10 @@ export default {
 
         // 如果有详细排产数据，转换为每日排产格式
         if (batchItem.detailList && batchItem.detailList.length > 0) {
-          const rowKey = `${batchItem.orderId || batchItem.orderNo}_${index}`;
+          const rowKey = this.getScheduleRowKey(
+            { id: batchItem.orderId, customerOrderNo: batchItem.orderNo },
+            index
+          );
 
           // 生成完整的日期范围（包括周日）
           let fullDailySchedules = [];
@@ -1326,7 +1329,7 @@ export default {
           const item = table.data?.[0];
           if (!item) return null;
 
-          const rowKey = `${item.id || item.customerOrderNo}_0`;
+          const rowKey = this.getScheduleRowKey(item, 0);
           const dailySchedules = this.dailyScheduleData[rowKey] || [];
 
           let detailList = [];
@@ -1517,7 +1520,7 @@ export default {
 
             data.list = this.selOrderData.map((item, index) => {
               // 获取该行的每日排产数据
-              const rowKey = `${item.id || item.customerOrderNo}_${index}`;
+              const rowKey = this.getScheduleRowKey(item, index);
               const dailySchedules = this.dailyScheduleData[rowKey] || [];
 
               // 转换每日排产数据为 detailList 格式
@@ -1620,7 +1623,7 @@ export default {
       console.log("🎯 日期范围有效，开始处理...");
 
       // 清除该行的旧排产数据
-      const rowKey = `${rowData.id || rowData.customerOrderNo}_${rowIndex}`;
+      const rowKey = this.getScheduleRowKey(rowData, rowIndex);
       if (this.dailyScheduleData[rowKey]) {
         delete this.dailyScheduleData[rowKey];
         console.log(`🗑️ 清除第 ${rowIndex} 行的旧排产数据`);
@@ -1852,9 +1855,10 @@ export default {
       }
 
       // 如果有存储的数据，恢复之前的设置
-      const rowKey = `${rowData.id || rowData.customerOrderNo}_${
+      const rowKey = this.getScheduleRowKey(
+        rowData,
         this.dailySchedulePopover.currentRowIndex
-      }`;
+      );
       if (this.dailyScheduleData[rowKey]) {
         this.dailyScheduleList = [...this.dailyScheduleData[rowKey]];
       } else {
@@ -1933,10 +1937,10 @@ export default {
 
     // 保存每日排产数据
     saveDailyScheduleData() {
-      const rowKey = `${
-        this.dailySchedulePopover.currentRowData.id ||
-        this.dailySchedulePopover.currentRowData.customerOrderNo
-      }_${this.dailySchedulePopover.currentRowIndex}`;
+      const rowKey = this.getScheduleRowKey(
+        this.dailySchedulePopover.currentRowData,
+        this.dailySchedulePopover.currentRowIndex
+      );
 
       // 保存数据
       this.$set(this.dailyScheduleData, rowKey, [...this.dailyScheduleList]);
@@ -2121,6 +2125,22 @@ export default {
         .replace("yyyy", year)
         .replace("MM", month)
         .replace("dd", day);
+    },
+    // 生成稳定的行key，避免 selection 索引和表格行索引不一致导致取不到 detailList
+    getScheduleRowKey(rowData, rowIndex = 0) {
+      const stableId =
+        rowData?.id ||
+        rowData?.orderId ||
+        rowData?.customerOrderNo ||
+        rowData?.orderNo;
+      if (
+        stableId !== undefined &&
+        stableId !== null &&
+        String(stableId).trim() !== ""
+      ) {
+        return String(stableId);
+      }
+      return `row_${rowIndex}`;
     },
   },
 };

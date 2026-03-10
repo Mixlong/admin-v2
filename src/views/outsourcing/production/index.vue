@@ -1,23 +1,50 @@
 <template>
   <div class="outsourcing-production-container app-container">
     <!-- 搜索区域 -->
-    <IntelligentSearchForm ref="searchForm" :searchForm="searchForm" :fields="searchFields" @search="handleSearch"
-      @reset="handleReset" :defaultVisibleCount="4" @filters-cleared="handleReset">
+    <IntelligentSearchForm
+      ref="searchForm"
+      :searchForm="searchForm"
+      :fields="searchFields"
+      @search="handleSearch"
+      @reset="handleReset"
+      :defaultVisibleCount="4"
+      @filters-cleared="handleReset"
+    >
       <!-- 发布时间范围字段 -->
       <template #field-publishTimeRange="{ field }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-date-picker v-model="publishTimeRange" type="daterange" range-separator="至" start-placeholder="开始日期"
-            end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd" style="width: 240px" size="mini"
-            @change="handleDateRangeChange('publish')" />
+          <el-date-picker
+            v-model="publishTimeRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"
+            style="width: 240px"
+            size="mini"
+            @change="handleDateRangeChange('publish')"
+          />
         </el-form-item>
       </template>
 
       <!-- 品类字段 -->
       <template #field-categoryId="{ field }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm.categoryId" @change="handleCategoryChange" filterable clearable
-            placeholder="请选择品类" style="width: 200px">
-            <el-option v-for="dict in categoryList" :key="dict.id" :label="dict.name" :value="dict.id" />
+          <el-select
+            v-model="searchForm.categoryId"
+            @change="handleCategoryChange"
+            filterable
+            clearable
+            placeholder="请选择品类"
+            style="width: 200px"
+          >
+            <el-option
+              v-for="dict in categoryList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
           </el-select>
         </el-form-item>
       </template>
@@ -25,23 +52,41 @@
       <!-- 型号字段 -->
       <template #field-computerId="{ field }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm.computerId" :loading="modelLoading" filterable remote clearable
-            placeholder="请选择型号" style="width: 200px" :remote-method="getComputerNameList" @change="handleSearch">
-            <el-option v-for="dict in modelOptions" :key="dict.model" :label="dict.name" :value="dict.model" />
+          <el-select
+            v-model="searchForm.computerId"
+            :loading="modelLoading"
+            filterable
+            remote
+            clearable
+            placeholder="请选择型号"
+            style="width: 200px"
+            :remote-method="getComputerNameList"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="dict in modelOptions"
+              :key="dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
           </el-select>
         </el-form-item>
       </template>
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
-        <el-button type="primary" size="mini" @click="handleAdd" v-hasPermi="['outsourcing:production:add']">
+        <el-button
+          type="primary"
+          size="mini"
+          @click="handleAdd"
+          v-hasPermi="['outsourcing:production:add']"
+        >
           新增
         </el-button>
         <!-- <el-button type="warning" size="mini" icon="el-icon-upload2" @click="handleBatchImport"
           v-hasPermi="['outsourcing:production:import']">
           导入打板
          </el-button> -->
-
       </template>
     </IntelligentSearchForm>
 
@@ -57,17 +102,22 @@
       @selection-change="handleSelectionChange"
     >
       <!-- 勾选 -->
-      <el-table-column label="排产单号/料号" align="center" width="130">
+      <el-table-column label="排产单号/料号" align="center" width="150">
         <template slot-scope="scope">
           <span v-if="scope.row.productionProcess === 'SMT'">{{
             scope.row.schedulingNo || "--"
-            }}</span>
+          }}</span>
           <span v-else>{{ scope.row.partNo || "--" }}</span>
         </template>
       </el-table-column>
 
       <!-- 请购单号 -->
-      <el-table-column prop="orderCode" label="采购单号" align="center" width="130">
+      <el-table-column
+        prop="orderCode"
+        label="采购单号"
+        align="center"
+        width="130"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.orderCode || "--" }}</span>
         </template>
@@ -85,72 +135,143 @@
         <template slot-scope="scope">
           <span v-if="scope.row.productionProcess === 'SMT'">{{
             scope.row.computerName || "--"
-            }}</span>
+          }}</span>
           <span v-else>{{ scope.row.hwVersion || "--" }}</span>
         </template>
       </el-table-column>
 
       <!-- BOM编码 -->
-      <el-table-column prop="bomCode" label="BOM编码" align="center" width="150">
+      <el-table-column
+        prop="bomCode"
+        label="BOM编码"
+        align="center"
+        width="150"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.bomCode || "--" }}</span>
         </template>
       </el-table-column>
       <!-- 生产流程 -->
-      <el-table-column prop="productionProcess" label="生产流程" align="center" width="90">
+      <el-table-column
+        prop="productionProcess"
+        label="生产流程"
+        align="center"
+        width="90"
+      >
         <template slot-scope="scope">
-          <el-tag size="small" :type="scope.row.productionProcess === 'SMT'
-            ? 'primary'
-            : scope.row.productionProcess === '打板'
-              ? 'warning'
-              : 'info'
-            ">
+          <el-tag
+            size="small"
+            :type="
+              scope.row.productionProcess === 'SMT'
+                ? 'primary'
+                : scope.row.productionProcess === '打板'
+                ? 'warning'
+                : 'info'
+            "
+          >
             {{ scope.row.productionProcess || "--" }}
           </el-tag>
         </template>
       </el-table-column>
 
-
       <!-- BOM文件 -->
-      <el-table-column prop="orderStatus" label="BOM文件" align="center" width="90">
+      <el-table-column
+        prop="orderStatus"
+        label="BOM文件"
+        align="center"
+        width="90"
+      >
         <template slot-scope="scope">
-          <el-tag v-if='scope.row.productionProcess == "SMT"' 
+          <el-tag
+            v-if="scope.row.productionProcess == 'SMT'"
             :type="!!scope.row.smtBomFile ? 'success' : 'danger'"
-            size="small" 
-            :style="scope.row.auditStatus === 2 ? 'cursor: not-allowed; opacity: 0.6;' : 'cursor: pointer;'" 
-            @click="handleUploadBom(scope.row)">
+            size="small"
+            :style="
+              scope.row.auditStatus === 2
+                ? 'cursor: not-allowed; opacity: 0.6;'
+                : 'cursor: pointer;'
+            "
+            @click="handleUploadBom(scope.row)"
+          >
             {{ !!scope.row.smtBomFile ? "已上传" : "未上传" }}
           </el-tag>
           <span v-else>--</span>
         </template>
       </el-table-column>
       <!-- 资料状态 -->
-      <el-table-column prop="materialStatus" label="资料状态" align="center" width="90">
+      <el-table-column
+        prop="materialStatus"
+        label="资料状态"
+        align="center"
+        width="90"
+      >
         <template slot-scope="scope">
-          <el-tag @click="handleSeeMaterialStatus(scope.row)"
-            :type="scope.row.materialStatus === 1 ? 'success' : 'warning'" size="small" style="cursor: pointer">
+          <el-tag
+            @click="handleSeeMaterialStatus(scope.row)"
+            :type="scope.row.materialStatus === 1 ? 'success' : 'warning'"
+            size="small"
+            style="cursor: pointer"
+          >
             {{ scope.row.materialStatus === 1 ? "齐套" : "未齐套" }}
           </el-tag>
         </template>
       </el-table-column>
       <!-- 审核状态 -->
-      <el-table-column prop="auditStatus" label="采购订单状态" align="center" width="110">
+      <el-table-column
+        prop="auditStatus"
+        label="采购订单状态"
+        align="center"
+        width="110"
+      >
         <template slot-scope="scope">
-          <el-tag type="success" size="small" v-if='scope.row.orderCancelStatus===0'>
-              已关联
+          <el-tag
+            type="success"
+            size="small"
+            v-if="scope.row.orderCancelStatus === 0"
+          >
+            已关联
           </el-tag>
-          <el-tag v-else-if="scope.row.orderCancelStatus===1" type="danger" size="small">
+          <el-tag
+            v-else-if="scope.row.orderCancelStatus === 1"
+            type="danger"
+            size="small"
+          >
             已撤销
           </el-tag>
-          <el-tag v-else :type="'info'" size="small">
-            未关联
+          <el-tag v-else :type="'info'" size="small"> 未关联 </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="relatedSend" label="关联外发" align="center" width="90">
+        <template slot-scope="scope">
+          <el-tag :type="getRelatedSendType(scope.row.relatedSend)" size="small">
+            {{ getRelatedSendText(scope.row.relatedSend) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="auditStatus" label="外发状态" align="center" width="90">
+      <el-table-column
+        prop="auditStatus"
+        label="外发状态"
+        align="center"
+        width="90"
+      >
         <template slot-scope="scope">
-          <el-tag :type="getAuditStatusType(scope.row.orderStatus==-1? scope.row.orderStatus : scope.row.auditStatus)" size="small">
-            {{ getAuditStatusText(scope.row.orderStatus==-1? scope.row.orderStatus : scope.row.auditStatus) }}
+          <el-tag
+            :type="
+              getAuditStatusType(
+                scope.row.orderStatus == -1
+                  ? scope.row.orderStatus
+                  : scope.row.auditStatus
+              )
+            "
+            size="small"
+          >
+            {{
+              getAuditStatusText(
+                scope.row.orderStatus == -1
+                  ? scope.row.orderStatus
+                  : scope.row.auditStatus
+              )
+            }}
           </el-tag>
         </template>
       </el-table-column>
@@ -170,14 +291,21 @@
       </el-table-column> -->
 
       <!-- 发布时间 -->
-      <el-table-column prop="publishTime" label="发布时间" align="center">
+      <el-table-column prop="publishTime" label="发布时间" align="center"width="95">
         <template slot-scope="scope">
           <span>{{
             parseTime(scope.row.publishTime, "{y}-{m}-{d}") || "--"
+          }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createTime" label="创建时间" align="center" width="95">
+        <template slot-scope="scope">
+                <span>{{
+            parseTime(scope.row.createTime, "{y}-{m}-{d}") ||
+            "--"
             }}</span>
         </template>
       </el-table-column>
-
       <!-- 创建人 -->
       <el-table-column prop="createBy" label="创建人" align="center" width="90">
         <template slot-scope="scope">
@@ -186,19 +314,30 @@
       </el-table-column>
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="130">
+      <el-table-column label="操作" align="center" width="200" fixed="right">
         <template slot-scope="scope">
           <!-- 查看 -->
           <el-tooltip content="查看" placement="top" :open-delay="300">
-            <el-button size="mini" type="text" icon="el-icon-view" @click="handleView(scope.row)"
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-view"
+              @click="handleView(scope.row)"
               v-hasPermi="['outsourcing:production:view']"
-              class="icon-btn icon-btn-primary" />
+              class="icon-btn icon-btn-primary"
+            />
           </el-tooltip>
 
           <!-- 编辑 -->
           <el-tooltip content="编辑" placement="top" :open-delay="300">
-            <el-button size="mini" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)"
-              v-hasPermi="['outsourcing:production:update']" class="icon-btn icon-btn-warning" />
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleEdit(scope.row)"
+              v-hasPermi="['outsourcing:production:update']"
+              class="icon-btn icon-btn-warning"
+            />
           </el-tooltip>
 
           <!-- 初审 -->
@@ -208,22 +347,49 @@
           </el-tooltip> -->
 
           <!-- 终审 -->
-          <el-tooltip content="外发" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 0">
-            <el-button size="mini" type="text" icon="el-icon-circle-check" @click="handleFinalAudit(scope.row)"
-              v-hasPermi="['outsourcing:production:final-audit']" class="icon-btn icon-btn-success" />
+          <el-tooltip
+            content="外发"
+            placement="top"
+            :open-delay="300"
+            v-if="scope.row.auditStatus === 0"
+          >
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-circle-check"
+              @click="handleFinalAudit(scope.row)"
+              v-hasPermi="['outsourcing:production:final-audit']"
+              class="icon-btn icon-btn-success"
+            />
           </el-tooltip>
 
           <!-- 撤销 -->
-          <el-tooltip content="撤销" placement="top" :open-delay="300"
-            v-if="scope.row.auditStatus === 2 && scope.row.orderStatus !== -1">
-            <el-button size="mini" type="text" icon="el-icon-refresh-left" @click="handleCancel(scope.row)"
-              v-hasPermi="['outsourcing:production:cancel']" class="icon-btn icon-btn-orange" />
+          <el-tooltip
+            content="撤销"
+            placement="top"
+            :open-delay="300"
+            v-if="scope.row.auditStatus === 2 && scope.row.orderStatus !== -1"
+          >
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-refresh-left"
+              @click="handleCancel(scope.row)"
+              v-hasPermi="['outsourcing:production:cancel']"
+              class="icon-btn icon-btn-orange"
+            />
           </el-tooltip>
 
           <!-- 删除 -->
           <el-tooltip content="删除" placement="top" :open-delay="300">
-            <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-              v-hasPermi="['outsourcing:production:delete']" class="icon-btn icon-btn-danger" />
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['outsourcing:production:delete']"
+              class="icon-btn icon-btn-danger"
+            />
           </el-tooltip>
         </template>
       </el-table-column>
@@ -231,9 +397,15 @@
 
     <!-- 分页组件 -->
     <div class="pagination-section">
-      <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-        :current-page="pagination.current" :page-sizes="[10, 20, 50, 100]" :page-size="pagination.size"
-        layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" />
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pagination.current"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pagination.size"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="pagination.total"
+      />
     </div>
 
     <!-- 新增/编辑对话框组件 -->
@@ -247,28 +419,37 @@
     />
 
     <!-- 批量导入对话框 -->
-    <BatchImportDialog :visible.sync="batchImportVisible" @success="handleImportSuccess" />
+    <BatchImportDialog
+      :visible.sync="batchImportVisible"
+      @success="handleImportSuccess"
+    />
 
     <!-- BOM文件上传对话框 -->
-    <el-dialog title="上传 BOM 文件" :visible.sync="bomUploadDialogVisible" width="600px" :close-on-click-modal="false"
-      @close="handleBomUploadDialogClose" top='0'>
+    <el-dialog
+      title="上传 BOM 文件"
+      :visible.sync="bomUploadDialogVisible"
+      width="600px"
+      :close-on-click-modal="false"
+      @close="handleBomUploadDialogClose"
+      top="0"
+    >
       <div v-if="bomUploadData" class="bom-upload-container">
         <!-- 基本信息展示（只读） -->
         <el-descriptions :column="2" border class="mb-20">
           <el-descriptions-item label="排产单号">
-            {{ bomUploadData.schedulingNo || '--' }}
+            {{ bomUploadData.schedulingNo || "--" }}
           </el-descriptions-item>
           <el-descriptions-item label="采购单号">
-            {{ bomUploadData.orderCode || '--' }}
+            {{ bomUploadData.orderCode || "--" }}
           </el-descriptions-item>
           <el-descriptions-item label="品类名称">
-            {{ bomUploadData.categoryName || '--' }}
+            {{ bomUploadData.categoryName || "--" }}
           </el-descriptions-item>
           <el-descriptions-item label="型号">
-            {{ bomUploadData.computerName || '--' }}
+            {{ bomUploadData.computerName || "--" }}
           </el-descriptions-item>
           <el-descriptions-item label="BOM编码">
-            {{ bomUploadData.bomCode || '--' }}
+            {{ bomUploadData.bomCode || "--" }}
           </el-descriptions-item>
         </el-descriptions>
 
@@ -279,10 +460,10 @@
           </div>
 
           <DrUpload v-model="bomUploadData.smtBomFile" :limit="10">
-          <div class="text-left">
-            <el-button size="mini" type="primary">点击上传固件文件</el-button>
-          </div>
-        </DrUpload>
+            <div class="text-left">
+              <el-button size="mini" type="primary">点击上传固件文件</el-button>
+            </div>
+          </DrUpload>
         </div>
       </div>
 
@@ -290,19 +471,32 @@
         <el-button size="mini" @click="bomUploadDialogVisible = false">
           取消
         </el-button>
-        <el-button type="primary" size="mini" @click="handleBomUploadSubmit" :loading="bomUploadLoading">
+        <el-button
+          type="primary"
+          size="mini"
+          @click="handleBomUploadSubmit"
+          :loading="bomUploadLoading"
+        >
           确定
         </el-button>
       </div>
     </el-dialog>
- 
 
     <!-- 查看详情对话框 -->
-    <el-dialog title="详情" :visible.sync="viewDialogVisible" width="1200px" top="0" :close-on-click-modal="false" class="dialog-scroll">
+    <el-dialog
+      title="详情"
+      :visible.sync="viewDialogVisible"
+      width="1200px"
+      top="0"
+      :close-on-click-modal="false"
+      class="dialog-scroll"
+    >
       <div v-if="viewData" class="detail-container">
         <el-descriptions :column="3" border>
           <!-- 排产单号/料号 - 根据生产流程显示 -->
-          <el-descriptions-item :label="viewData.productionProcess === 'SMT' ? '排产单号' : '料号'">
+          <el-descriptions-item
+            :label="viewData.productionProcess === 'SMT' ? '排产单号' : '料号'"
+          >
             {{
               viewData.productionProcess === "SMT"
                 ? viewData.schedulingNo || "--"
@@ -311,13 +505,16 @@
           </el-descriptions-item>
           <el-descriptions-item label="采购单号">{{
             viewData.orderCode || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="品类名称">{{
             viewData.categoryName || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <!-- 型号/硬件版本号 - 根据生产流程显示 -->
-          <el-descriptions-item :label="viewData.productionProcess === 'SMT' ? '硬件版本号' : '型号名称'
-            ">
+          <el-descriptions-item
+            :label="
+              viewData.productionProcess === 'SMT' ? '硬件版本号' : '型号名称'
+            "
+          >
             {{
               viewData.productionProcess === "SMT"
                 ? viewData.hwVersion || "--"
@@ -326,30 +523,54 @@
           </el-descriptions-item>
           <el-descriptions-item label="BOM编码">{{
             viewData.bomCode || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="芯片版本">{{
             viewData.chipVersion || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="生产流程">{{
             viewData.productionProcess || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="生产地点">{{
             viewData.address || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="审核状态">
-            <el-tag :type="getAuditStatusType(viewData.auditStatus)" size="small">
+            <el-tag
+              :type="getAuditStatusType(viewData.auditStatus)"
+              size="small"
+            >
               {{ getAuditStatusText(viewData.auditStatus) }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="订单状态">
-            <el-tag :type="viewData.orderStatus === -1 ? 'danger' : 'success'" size="small">
+            <el-tag
+              :type="viewData.orderStatus === -1 ? 'danger' : 'success'"
+              size="small"
+            >
               {{ viewData.orderStatus === -1 ? "已撤销" : "正常" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="资料状态">
-            <el-tag :type="viewData.materialStatus === 1 ? 'success' : 'warning'" size="small">
+            <el-tag
+              :type="viewData.materialStatus === 1 ? 'success' : 'warning'"
+              size="small"
+            >
               {{ viewData.materialStatus === 1 ? "齐套" : "未齐套" }}
             </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="关联外发">
+            <el-tag :type="getRelatedSendType(viewData.relatedSend)" size="small">
+              {{ getRelatedSendText(viewData.relatedSend) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="创建人">{{
+            viewData.createBy || "--"
+          }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">
+            {{
+              viewData.createTime
+                ? parseTime(viewData.createTime, "{y}-{m}-{d} {h}:{i}:{s}")
+                : "--"
+            }}
           </el-descriptions-item>
           <el-descriptions-item label="发布时间">
             {{
@@ -360,7 +581,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="终审者">{{
             viewData.finalAuditor || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="终审时间">
             {{
               viewData.finalAuditTime
@@ -370,36 +591,60 @@
           </el-descriptions-item>
           <el-descriptions-item label="硬件版本号">{{
             viewData.hwVersion || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
           <el-descriptions-item label="备注" :span="3">{{
             viewData.remark || "--"
-            }}</el-descriptions-item>
+          }}</el-descriptions-item>
         </el-descriptions>
 
         <!-- 采购订单图 -->
-        <div class="purchase-order-img-section" v-if="viewData.purchaseOrderImg">
+        <div
+          class="purchase-order-img-section"
+          v-if="viewData.purchaseOrderImg"
+        >
           <h3 class="section-title">采购订单图</h3>
           <div class="img-gallery">
-            <el-image v-for="(img, index) in (viewData.purchaseOrderImg || '').split(',')" :key="index" :src="img"
-              :preview-src-list="(viewData.purchaseOrderImg || '').split(',')" class="purchase-img-item" fit="cover" />
+            <el-image
+              v-for="(img, index) in (viewData.purchaseOrderImg || '').split(
+                ','
+              )"
+              :key="index"
+              :src="img"
+              :preview-src-list="(viewData.purchaseOrderImg || '').split(',')"
+              class="purchase-img-item"
+              fit="cover"
+            />
           </div>
         </div>
 
         <!-- BOM 文件 -->
-        <div class="bom-file-section" v-if="viewData.productionProcess === 'SMT' && viewData.smtBomFile">
-          <h3 class="section-title">BOM 文件    <el-tag size="small" type="success" style="margin-left: 10px;">已上传</el-tag></h3>
+        <div
+          class="bom-file-section"
+          v-if="viewData.productionProcess === 'SMT' && viewData.smtBomFile"
+        >
+          <h3 class="section-title">
+            BOM 文件
+            <el-tag size="small" type="success" style="margin-left: 10px"
+              >已上传</el-tag
+            >
+          </h3>
           <div class="bom-file-list">
-            <div class="bom-file-item">
+            <div
+              class="bom-file-item"
+              v-for="(file, index) in (viewData.smtBomFile || '').split(',').filter(item => item)"
+              :key="index"
+            >
               <div class="file-info">
                 <i class="el-icon-document file-icon"></i>
-                <span class="file-name">{{ viewData.smtBomFile }}</span>
+                <span class="file-name">{{ file.split('/').pop() }}</span>
               </div>
-              <el-button 
-                size="small" 
-                type="primary" 
-                icon="el-icon-download" 
-                style="margin-left:10px"
-                @click="handleDownloadBom(viewData.smtBomFile)">
+              <el-button
+                size="small"
+                type="primary"
+                icon="el-icon-download"
+                style="margin-left: 10px"
+                @click="handleDownloadBom(file)"
+              >
                 下载
               </el-button>
             </div>
@@ -409,32 +654,66 @@
         <!-- 资料齐套信息 -->
         <div class="material-section">
           <h3 class="section-title">资料齐套信息</h3>
-          <el-table :data="viewData.materialStatusList || []" border size="small" max-height="500px">
-            <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="fileName" label="文件名称" align="center" min-width="180">
+          <el-table
+            :data="viewData.materialStatusList || []"
+            border
+            size="small"
+            max-height="500px"
+          >
+            <el-table-column
+              type="index"
+              label="序号"
+              width="60"
+              align="center"
+            />
+            <el-table-column
+              prop="fileName"
+              label="文件名称"
+              align="center"
+              min-width="180"
+            >
               <template slot-scope="scope">
                 <span>{{ scope.row.fileName || "--" }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="fileType" label="文件类型" align="center" width="120">
+            <el-table-column
+              prop="fileType"
+              label="文件类型"
+              align="center"
+              width="120"
+            >
               <template slot-scope="scope">
                 <el-tag size="small" type="info">{{
                   scope.row.fileType || "--"
-                  }}</el-tag>
+                }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="isMaterial" label="是否齐套" align="center" width="100">
+            <el-table-column
+              prop="isMaterial"
+              label="是否齐套"
+              align="center"
+              width="100"
+            >
               <template slot-scope="scope">
-                <el-tag size="small" :type="scope.row.isMaterial ? 'success' : 'danger'">
+                <el-tag
+                  size="small"
+                  :type="scope.row.isMaterial ? 'success' : 'danger'"
+                >
                   {{ scope.row.isMaterial ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="操作" align="center" width="120">
               <template slot-scope="scope">
-                <el-button v-if="scope.row.fileUrl" size="mini" type="primary" icon="el-icon-download" @click="
-                  handleDownloadFile(scope.row.fileUrl, scope.row.fileName)
-                  ">
+                <el-button
+                  v-if="scope.row.fileUrl"
+                  size="mini"
+                  type="primary"
+                  icon="el-icon-download"
+                  @click="
+                    handleDownloadFile(scope.row.fileUrl, scope.row.fileName)
+                  "
+                >
                   下载
                 </el-button>
                 <span v-else style="color: #909399">--</span>
@@ -445,7 +724,9 @@
       </div>
 
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="viewDialogVisible = false">关 闭</el-button>
+        <el-button size="mini" @click="viewDialogVisible = false"
+          >关 闭</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -493,6 +774,7 @@ export default {
         schedulingNo: "",
         productionProcess: "",
         purchaseOrderCode: "",
+        relatedSend: "",
         auditStatus: "",
         publishTimeStart: "",
         publishTimeEnd: "",
@@ -529,6 +811,19 @@ export default {
             options: [
               { label: "SMT", value: "SMT" },
               { label: "打板", value: "打板" },
+            ],
+          },
+        },
+        {
+          key: "relatedSend",
+          label: "关联外发",
+          component: "el-select",
+          props: {
+            placeholder: "请选择关联外发",
+            clearable: true,
+            options: [
+              { label: "否", value: 0 },
+              { label: "是", value: 1 },
             ],
           },
         },
@@ -609,15 +904,19 @@ export default {
           {
             validator: (rule, value, callback) => {
               // 只在SMT流程下进行二选一验证
-              if (this.formData.productionProcess === 'SMT') {
+              if (this.formData.productionProcess === "SMT") {
                 const hasSchedulingNo = !!value;
-                const hasCategoryAndModel = !!this.formData.categoryId && !!this.formData.computerId;
-                
+                const hasCategoryAndModel =
+                  !!this.formData.categoryId && !!this.formData.computerId;
+
                 if (!hasSchedulingNo && !hasCategoryAndModel) {
-                  callback(new Error('排产单号 或 品类+型号 至少填写一项'));
+                  callback(new Error("排产单号 或 品类+型号 至少填写一项"));
                 } else {
                   // 清除品类和型号的验证错误
-                  this.$refs.productionForm?.clearValidate(['categoryId', 'computerId']);
+                  this.$refs.productionForm?.clearValidate([
+                    "categoryId",
+                    "computerId",
+                  ]);
                   callback();
                 }
               } else {
@@ -631,15 +930,19 @@ export default {
           {
             validator: (rule, value, callback) => {
               // 只在SMT流程下进行二选一验证
-              if (this.formData.productionProcess === 'SMT') {
+              if (this.formData.productionProcess === "SMT") {
                 const hasSchedulingNo = !!this.formData.schedulingNo;
-                const hasCategoryAndModel = !!value && !!this.formData.computerId;
-                
+                const hasCategoryAndModel =
+                  !!value && !!this.formData.computerId;
+
                 if (!hasSchedulingNo && !hasCategoryAndModel) {
-                  callback(new Error('排产单号 或 品类+型号 至少填写一项'));
+                  callback(new Error("排产单号 或 品类+型号 至少填写一项"));
                 } else {
                   // 清除排产单号和型号的验证错误
-                  this.$refs.productionForm?.clearValidate(['schedulingNo', 'computerId']);
+                  this.$refs.productionForm?.clearValidate([
+                    "schedulingNo",
+                    "computerId",
+                  ]);
                   callback();
                 }
               } else {
@@ -653,15 +956,19 @@ export default {
           {
             validator: (rule, value, callback) => {
               // 只在SMT流程下进行二选一验证
-              if (this.formData.productionProcess === 'SMT') {
+              if (this.formData.productionProcess === "SMT") {
                 const hasSchedulingNo = !!this.formData.schedulingNo;
-                const hasCategoryAndModel = !!this.formData.categoryId && !!value;
-                
+                const hasCategoryAndModel =
+                  !!this.formData.categoryId && !!value;
+
                 if (!hasSchedulingNo && !hasCategoryAndModel) {
-                  callback(new Error('排产单号 或 品类+型号 至少填写一项'));
+                  callback(new Error("排产单号 或 品类+型号 至少填写一项"));
                 } else {
                   // 清除排产单号和品类的验证错误
-                  this.$refs.productionForm?.clearValidate(['schedulingNo', 'categoryId']);
+                  this.$refs.productionForm?.clearValidate([
+                    "schedulingNo",
+                    "categoryId",
+                  ]);
                   callback();
                 }
               } else {
@@ -692,16 +999,16 @@ export default {
       syncPurchaseDialogVisible: false,
       syncPurchaseForm: {
         orderCodeList: [], // 请购单号列表
-        purchaseOrderCode: '',
-        purchaseOrderImg: '',
-        address: '',
+        purchaseOrderCode: "",
+        purchaseOrderImg: "",
+        address: "",
       },
       syncPurchaseRules: {
         orderCodeList: [
-          { required: true, message: '请选择请购单号', trigger: 'change' },
+          { required: true, message: "请选择请购单号", trigger: "change" },
         ],
         address: [
-          { required: false, message: '请选择生产地点', trigger: 'change' },
+          { required: false, message: "请选择生产地点", trigger: "change" },
         ],
       },
       syncPurchaseLoading: false,
@@ -710,7 +1017,7 @@ export default {
       selectedRows: [],
       // 撤销对话框
       cancelDialogVisible: false,
-      cancelType: '', // 'order' 或 'material'
+      cancelType: "", // 'order' 或 'material'
       cancelRowData: null,
       cancelLoading: false,
     };
@@ -890,7 +1197,7 @@ export default {
 
       // 触发验证
       this.$nextTick(() => {
-        this.$refs.productionForm?.validateField('categoryId');
+        this.$refs.productionForm?.validateField("categoryId");
       });
     },
 
@@ -898,7 +1205,7 @@ export default {
     handleModelChangeInForm(val) {
       // 触发验证
       this.$nextTick(() => {
-        this.$refs.productionForm?.validateField('computerId');
+        this.$refs.productionForm?.validateField("computerId");
       });
     },
 
@@ -906,7 +1213,7 @@ export default {
     handleSchedulingNoChange(val) {
       // 触发验证
       this.$nextTick(() => {
-        this.$refs.productionForm?.validateField('schedulingNo');
+        this.$refs.productionForm?.validateField("schedulingNo");
       });
     },
 
@@ -1123,6 +1430,7 @@ export default {
         schedulingNo: "",
         productionProcess: "",
         purchaseOrderCode: "",
+        relatedSend: "",
         auditStatus: "",
         publishTimeStart: "",
         publishTimeEnd: "",
@@ -1168,7 +1476,7 @@ export default {
     handleSeeMaterialStatus(row) {
       // 只有未齐套时才跳转
       if (row.materialStatus !== 1) {
-        console.log('跳转资料状态页面，行数据：', row);
+        console.log("跳转资料状态页面，行数据：", row);
 
         // 构建查询参数
         const query = {};
@@ -1177,28 +1485,26 @@ export default {
         const categoryName = row.categoryName || row.category;
         if (categoryName) {
           query.categoryName = categoryName;
-          console.log('传递品类名称：', categoryName);
+          console.log("传递品类名称：", categoryName);
         } else {
-          console.warn('品类名称为空');
+          console.warn("品类名称为空");
         }
 
         // 根据生产流程选择版本号字段
         // 注意：SMT流程在表格中显示的是computerName，打板流程显示的是hwVersion
-        const version = row.productionProcess === 'SMT'
-          ? (row.computerName || row.modelName)
-          : (row.hwVersion || row.hardwareVersion);
+        const version = row.hwVersion || "";
 
         if (version) {
           query.version = version;
-          console.log('传递版本号：', version);
+          console.log("传递版本号：", version);
         } else {
-          console.warn('版本号为空');
+          console.warn("版本号为空");
         }
 
         // 页面内跳转
         this.$router.push({
-          path: '/device/productData/versionManage',
-          query: query
+          path: "/device/productData/versionManage",
+          query: query,
         });
       }
     },
@@ -1286,16 +1592,16 @@ export default {
       })
         .then(() => {
           // 调用修改接口，将 orderStatus 改为 -1
-      const updateData = {
+          const updateData = {
             id: row.id,
             orderStatus: -1,
-      };
+          };
 
           updateOutsourcingProduction(updateData).then((response) => {
-          if (response.code === 200) {
+            if (response.code === 200) {
               this.$message.success("撤销成功");
-            this.fetchData();
-          }
+              this.fetchData();
+            }
           });
         })
         .catch(() => {
@@ -1393,7 +1699,7 @@ export default {
         1: "待外发",
         2: "已外发",
       };
-      return statusMap[status+''] || "--";
+      return statusMap[status + ""] || "--";
     },
 
     /** 获取审核状态类型 */
@@ -1405,6 +1711,24 @@ export default {
         2: "success",
       };
       return typeMap[status] || "info";
+    },
+
+    /** 获取关联外发文本 */
+    getRelatedSendText(status) {
+      const statusMap = {
+        0: "否",
+        1: "是",
+      };
+      return statusMap[status + ""] || "--";
+    },
+
+    /** 获取关联外发状态类型 */
+    getRelatedSendType(status) {
+      const typeMap = {
+        0: "info",
+        1: "success",
+      };
+      return typeMap[status + ""] || "info";
     },
 
     /** 格式化请购单号显示 */
@@ -1475,23 +1799,26 @@ export default {
     /** 点击上传 BOM 文件 */
     handleUploadBom(row) {
       // 只有 SMT 流程才能上传 BOM
-      if (row.productionProcess !== 'SMT') {
+      if (row.productionProcess !== "SMT") {
         return;
       }
 
       // 已审核的订单不允许上传 BOM
       if (row.auditStatus === 2) {
-        this.$message.warning('已审核的订单不允许修改 BOM 文件');
+        this.$message.warning("已审核的订单不允许修改 BOM 文件");
         return;
       }
 
       // 检查权限（管理员直接放行）
       const roles = this.$store.state.user.roles || [];
       const permissions = this.$store.state.user.permissions || [];
-      const isAdmin = roles.includes('admin');
+      const isAdmin = roles.includes("admin");
 
-      if (!isAdmin && !permissions.includes('outsourcing:production:upload-bom')) {
-        this.$message.warning('您没有上传 BOM 文件的权限');
+      if (
+        !isAdmin &&
+        !permissions.includes("outsourcing:production:upload-bom")
+      ) {
+        this.$message.warning("您没有上传 BOM 文件的权限");
         return;
       }
 
@@ -1502,7 +1829,7 @@ export default {
         orderCode: row.orderCode,
         categoryName: row.categoryName,
         computerName: row.computerName,
-        smtBomFile: row.smtBomFile || '',
+        smtBomFile: row.smtBomFile || "",
       };
 
       // 打开上传对话框
@@ -1520,7 +1847,7 @@ export default {
       await this.getPurchaseRequestCodes();
       // 只录入勾选行的请购单号（不再回退其他字段）
       const selectedOrderCodes = (this.selectedRows || [])
-        .map((item) => String(item.orderCode || '').trim())
+        .map((item) => String(item.orderCode || "").trim())
         .filter((code) => !!code);
       this.syncPurchaseForm.orderCodeList = selectedOrderCodes;
 
@@ -1534,7 +1861,8 @@ export default {
       });
 
       this.$nextTick(() => {
-        this.$refs.syncPurchaseFormRef && this.$refs.syncPurchaseFormRef.clearValidate();
+        this.$refs.syncPurchaseFormRef &&
+          this.$refs.syncPurchaseFormRef.clearValidate();
       });
       this.syncPurchaseDialogVisible = true;
     },
@@ -1547,7 +1875,7 @@ export default {
           this.purchaseRequestCodeList = response.data || [];
         }
       } catch (error) {
-        console.error('获取请购单号列表失败:', error);
+        console.error("获取请购单号列表失败:", error);
         this.purchaseRequestCodeList = [];
       }
     },
@@ -1556,11 +1884,12 @@ export default {
     handleSyncPurchaseDialogClose() {
       this.syncPurchaseForm = {
         orderCodeList: [],
-        purchaseOrderCode: '',
-        purchaseOrderImg: '',
-        address: '',
+        purchaseOrderCode: "",
+        purchaseOrderImg: "",
+        address: "",
       };
-      this.$refs.syncPurchaseFormRef && this.$refs.syncPurchaseFormRef.clearValidate();
+      this.$refs.syncPurchaseFormRef &&
+        this.$refs.syncPurchaseFormRef.clearValidate();
     },
 
     /** 提交同步采购信息 */
@@ -1570,11 +1899,12 @@ export default {
           return;
         }
 
-        const { orderCodeList, purchaseOrderCode, purchaseOrderImg, address } = this.syncPurchaseForm;
+        const { orderCodeList, purchaseOrderCode, purchaseOrderImg, address } =
+          this.syncPurchaseForm;
 
         // 验证：采购单号和采购订单图至少填写一个
         if (!purchaseOrderCode && !purchaseOrderImg) {
-          this.$message.warning('采购单号和采购订单图至少填写一个');
+          this.$message.warning("采购单号和采购订单图至少填写一个");
           return;
         }
 
@@ -1588,7 +1918,7 @@ export default {
         })
           .then((response) => {
             if (response.code === 200) {
-              this.$message.success('采购信息同步成功');
+              this.$message.success("采购信息同步成功");
               this.syncPurchaseDialogVisible = false;
               this.fetchData(); // 刷新列表
             }
@@ -1602,12 +1932,12 @@ export default {
     /** 提交 BOM 文件上传 */
     handleBomUploadSubmit() {
       if (!this.bomUploadData || !this.bomUploadData.id) {
-        this.$message.warning('数据异常，请重试');
+        this.$message.warning("数据异常，请重试");
         return;
       }
 
       if (!this.bomUploadData.smtBomFile) {
-        this.$message.warning('请上传 BOM 文件');
+        this.$message.warning("请上传 BOM 文件");
         return;
       }
 
@@ -1622,7 +1952,7 @@ export default {
       updateOutsourcingProduction(submitData)
         .then((response) => {
           if (response.code === 200) {
-            this.$message.success('BOM 文件上传成功');
+            this.$message.success("BOM 文件上传成功");
             this.bomUploadDialogVisible = false;
             this.fetchData();
           }
@@ -1656,8 +1986,8 @@ export default {
 /* 操作列图标按钮样式 */
 .icon-btn {
   font-size: 16px;
-  padding: 8px;
-  margin: 0 2px;
+  padding: 4px;
+  margin: 0;
   transition: all 0.2s ease;
 }
 
@@ -1883,22 +2213,34 @@ export default {
   margin-right: 5px;
 }
 
-::v-deep .process-radio-group .el-radio-button:first-child .el-radio-button__inner {
+::v-deep
+  .process-radio-group
+  .el-radio-button:first-child
+  .el-radio-button__inner {
   border-radius: 4px 0 0 4px;
 }
 
-::v-deep .process-radio-group .el-radio-button:last-child .el-radio-button__inner {
+::v-deep
+  .process-radio-group
+  .el-radio-button:last-child
+  .el-radio-button__inner {
   border-radius: 0 4px 4px 0;
 }
 
-::v-deep .process-radio-group .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+::v-deep
+  .process-radio-group
+  .el-radio-button__orig-radio:checked
+  + .el-radio-button__inner {
   background-color: #409eff;
   border-color: #409eff;
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(64, 158, 255, 0.15);
 }
 
-::v-deep .process-radio-group .el-radio-button__orig-radio:disabled+.el-radio-button__inner {
+::v-deep
+  .process-radio-group
+  .el-radio-button__orig-radio:disabled
+  + .el-radio-button__inner {
   background-color: #f5f7fa;
   color: #c0c4cc;
   cursor: not-allowed;
@@ -2084,7 +2426,6 @@ export default {
   ::v-deep .production-dialog {
     width: 95% !important;
   }
-
 }
 
 /* ========== BOM文件上传对话框样式 ========== */

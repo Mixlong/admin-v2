@@ -1,6 +1,6 @@
 <template>
   <el-dialog :title="title" :visible.sync="open" :width="isAttachmentOnly ? '600px' : '70%'" append-to-body :close-on-click-modal="false" top="0vh"
-    custom-class="  dialog-scroll">
+    class="dialog-scroll bom-change-dialog">
     <div class="form-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="140px" @submit.native.prevent class="modern-form">
         <!-- 基本信息卡片 -->
@@ -11,6 +11,7 @@
               <i class="el-icon-document"></i>
               <span class="section-title">基本信息</span>
             </div>
+            <span class="section-badge">核心信息</span>
           </div>
           <div class="section-content">
 
@@ -259,8 +260,11 @@
         <!-- 变更涉及领域 -->
         <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
-            <i class="el-icon-s-cooperation"></i>
-            <span class="section-title">变更涉及领域</span>
+            <div class="header-left">
+              <i class="el-icon-s-cooperation"></i>
+              <span class="section-title">变更涉及领域</span>
+            </div>
+            <span class="section-badge">影响范围</span>
           </div>
           <div class="section-content">
             <!-- 隐藏的全局部门验证项 -->
@@ -270,7 +274,7 @@
 
             <div class="department-grid-2x2">
               <!-- PMC部门 -->
-              <div class="department-card">
+              <div class="department-card pmc-card">
                 <div class="department-header">
                   <i class="el-icon-s-management department-icon pmc-icon"></i>
                   <span class="department-name">PMC</span>
@@ -293,7 +297,7 @@
               </div>
 
               <!-- 采购部门 -->
-              <div class="department-card">
+              <div class="department-card purchase-card">
                 <div class="department-header">
                   <i class="el-icon-shopping-cart-2 department-icon purchase-icon"></i>
                   <span class="department-name">采购</span>
@@ -316,7 +320,7 @@
               </div>
 
               <!-- 研发部门 -->
-              <div class="department-card">
+              <div class="department-card rd-card">
                 <div class="department-header">
                   <i class="el-icon-cpu department-icon rd-icon"></i>
                   <span class="department-name">研发</span>
@@ -339,7 +343,7 @@
               </div>
 
               <!-- 市场部门 -->
-              <div class="department-card">
+              <div class="department-card market-card">
                 <div class="department-header">
                   <i class="el-icon-s-marketing department-icon market-icon"></i>
                   <span class="department-name">市场</span>
@@ -372,8 +376,11 @@
         <!-- 审核人员 -->
         <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
-            <i class="el-icon-s-check"></i>
-            <span class="section-title">审核人员</span>
+            <div class="header-left">
+              <i class="el-icon-s-check"></i>
+              <span class="section-title">审核人员</span>
+            </div>
+            <span class="section-badge">审批节点</span>
           </div>
           <div class="section-content">
             <el-row>
@@ -417,8 +424,11 @@
         <!-- 开始执行领域 -->
         <div class="form-section" v-if="!isAttachmentOnly">
           <div class="section-header">
-            <i class="el-icon-s-operation"></i>
-            <span class="section-title">开始执行领域</span>
+            <div class="header-left">
+              <i class="el-icon-s-operation"></i>
+              <span class="section-title">开始执行领域</span>
+            </div>
+            <span class="section-badge">执行安排</span>
           </div>
           <div class="section-content">
             <el-row :gutter="24">
@@ -459,12 +469,14 @@
         <!-- 附件上传 -->
         <div class="form-section">
           <div class="section-header">
-            <i class="el-icon-paperclip"></i>
-            <span class="section-title">附件</span>
+            <div class="header-left">
+              <i class="el-icon-paperclip"></i>
+              <span class="section-title">附件</span>
+            </div>
           </div>
           <div class="section-content">
             <el-form-item label="附件上传" prop="file">
-              <DrUpload v-model="form.file" :drag="true" :multiple="true" :limit="10" accept="*"
+              <DrUpload v-model="form.file" :drag="false" :multiple="true" :limit="10" accept="*"
                 :css="{ width: '100%' }" class="modern-upload">
 
               </DrUpload>
@@ -479,7 +491,7 @@
       <el-button @click="cancel" size="small" class="cancel-btn">
         取 消
       </el-button>
-      <el-button type="primary" @click="submitForm" size="small" class="submit-btn">
+      <el-button type="primary" @click="submitForm" :loading="submitLoading" :disabled="submitLoading" size="small" class="submit-btn">
         {{ isApprovalMode ? '提交审批' : '确 定' }}
       </el-button>
     </div>
@@ -514,6 +526,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交中，防止重复点击
+      submitLoading: false,
       // 是否为审批模式
       isApprovalMode: false,
       // 是否为仅附件模式
@@ -1138,9 +1152,10 @@ export default {
 
     /** 打开对话框 */
     async openDialog(row, isApproval = false, attachmentOnly = false) {
-      this.reset();
-      this.isApprovalMode = isApproval;
-      this.isAttachmentOnly = attachmentOnly;
+      this.reset()
+      this.submitLoading = false
+      this.isApprovalMode = isApproval
+      this.isAttachmentOnly = attachmentOnly
 
       // 等待所有人员数据加载完成
       await Promise.all([
@@ -1367,66 +1382,68 @@ export default {
 
     /** 取消按钮 */
     cancel() {
-      this.open = false;
-      this.reset();
+      this.submitLoading = false
+      this.open = false
+      this.reset()
     },
 
     /** 表单提交 */
     submitForm() {
-      // 手动验证部门信息
-      const departmentValid = this.validateDepartmentManually();
-      
-      // 手动验证订单信息表格
-      const infoListValid = this.validateInfoListManually();
+      if (this.submitLoading) {
+        return
+      }
 
-      this.$refs["form"].validate(valid => {
+      this.submitLoading = true
+
+      // 手动验证部门信息
+      const departmentError = this.validateDepartmentManually()
+      const departmentValid = !departmentError
+
+      // 手动验证订单信息表格
+      const infoListError = this.validateInfoListManually()
+      const infoListValid = !infoListError
+
+      this.$refs.form.validate(valid => {
         if (valid && departmentValid && infoListValid) {
           // 新增/修改逻辑
-          this.handleSave();
+          this.handleSave()
         } else {
-          console.log('表单验证失败');
-          if (!departmentValid) {
-            this.$message.error('请至少填写一个部门的信息（人员和处理方案）');
-          }
-          if (!infoListValid) {
-            this.$message.error('订单信息表格中存在必填字段未填写，请检查');
+          this.submitLoading = false
+          console.log('表单验证失败')
+          const errorMessage = infoListError || departmentError
+          if (errorMessage) {
+            this.$message.error(errorMessage)
           }
         }
-      });
+      })
     },
 
     /** 手动验证订单信息表格 */
     validateInfoListManually() {
       if (!this.form.infoList || this.form.infoList.length === 0) {
-        this.$message.error('请至少添加一条订单信息');
-        return false;
+        return '请至少添加一条订单信息'
       }
-      
+
       // 检查每行数据的完整性
       for (let i = 0; i < this.form.infoList.length; i++) {
-        const item = this.form.infoList[i];
+        const item = this.form.infoList[i]
         if (!item.customerNo) {
-          this.$message.error(`第${i + 1}行客户单号不能为空`);
-          return false;
+          return `第${i + 1}行客户单号不能为空`
         }
         if (!item.uuNo) {
-          this.$message.error(`第${i + 1}行U8单号不能为空`);
-          return false;
+          return `第${i + 1}行U8单号不能为空`
         }
         if (!item.treeNo) {
-          this.$message.error(`第${i + 1}行E树单号不能为空`);
-          return false;
+          return `第${i + 1}行E树单号不能为空`
         }
         if (!item.originalOrderTime) {
-          this.$message.error(`第${i + 1}行原下单日期不能为空`);
-          return false;
+          return `第${i + 1}行原下单日期不能为空`
         }
         if (!item.originalPlanTime) {
-          this.$message.error(`第${i + 1}行原计划交期不能为空`);
-          return false;
+          return `第${i + 1}行原计划交期不能为空`
         }
       }
-      return true;
+      return ''
     },
 
     /** 手动验证部门信息 */
@@ -1458,32 +1475,31 @@ export default {
         hasCompleteDepart
       });
 
-      return hasCompleteDepart;
+      if (!hasCompleteDepart) {
+        return '请至少填写一个部门的信息（人员和处理方案）'
+      }
+
+      return ''
     },
 
     /** 保存处理 */
-    handleSave() {
+    async handleSave() {
       // 构建提交数据 - 简化版本
-      const submitData = this.buildSubmitData();
+      const submitData = this.buildSubmitData()
       // 提交数据
-      if (submitData.id != null) {
-        updateBomOrderChange(submitData).then(() => {
-          this.$modal.msgSuccess("修改成功");
-          this.open = false;
-          this.$emit("ok");
-        }).catch(error => {
-          console.error('更新失败:', error);
-          this.$modal.msgError("修改失败");
-        });
-      } else {
-        addBomOrderChange(submitData).then(() => {
-          this.$modal.msgSuccess("新增成功");
-          this.open = false;
-          this.$emit("ok");
-        }).catch(error => {
-          console.error('新增失败:', error);
-          this.$modal.msgError("新增失败");
-        });
+      const isEdit = submitData.id != null
+      const request = isEdit ? updateBomOrderChange(submitData) : addBomOrderChange(submitData)
+
+      try {
+        await request
+        this.$modal.msgSuccess(isEdit ? '修改成功' : '新增成功')
+        this.open = false
+        this.$emit('ok')
+      } catch (error) {
+        console.error(isEdit ? '更新失败:' : '新增失败:', error)
+        this.$modal.msgError(isEdit ? '修改失败' : '新增失败')
+      } finally {
+        this.submitLoading = false
       }
     },
 
@@ -1721,445 +1737,63 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 现代化表单样式
-.modern-form {
-  padding-top: 20px;
-
-  .el-form-item__label {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 14px;
-  }
-}
-
-// 表单区块样式
-.form-section {
-  background: #ffffff;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  border: 1px solid #e8f4fd;
-  overflow: visible;
-  &:last-child{
-    margin-bottom: 0;
-  }
-}
-
-// 区块头部样式
-.section-header {
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  position: absolute;
-  top: -25px;
-  left: 3px;
-  background: #fff;
-
-  .header-left {
-    display: flex;
-    align-items: center;
-
-    i {
-      font-size: 18px;
-      margin-right: 12px;
-      opacity: 0.9;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  .header-right {
-    .el-tag {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
-    }
-  }
-}
-
-// 信息分组样式
-.info-group {
-  position: relative;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.group-title {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #f0f2f5;
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 60px;
-    height: 2px;
-    background: linear-gradient(90deg, #409EFF, #67C23A);
-    border-radius: 1px;
-  }
-
-  i {
-    font-size: 16px;
-    color: #409EFF;
-    margin-right: 8px;
-  }
-
-  span {
-    font-size: 14px;
-    font-weight: 600;
-    color: #303133;
-  }
-}
-
-// 分类选择简化样式
-.category-selection-compact {
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-
-  .change-categories {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-  }
-
-  .category-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .category-checkbox {
-    margin-right: 0;
-
-    .el-checkbox__label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-
-      i {
-        font-size: 14px;
-        color: #606266;
-      }
-    }
-
-    &.is-checked {
-      .el-checkbox__label {
-        color: #409EFF;
-
-        i {
-          color: #409EFF;
-        }
-      }
-    }
-  }
-
-  .sub-categories {
-    margin-left: 24px;
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 6px;
-    border-left: 3px solid #409EFF;
-  }
-
-  .sub-category-title {
-    font-size: 13px;
-    color: #606266;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  .sub-category-options {
-    .el-radio-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-  }
-
-  .sub-category-radio {
-    margin-right: 0;
-
-    .el-radio__label {
-      font-size: 13px;
-      color: #606266;
-    }
-
-    &.is-checked {
-      .el-radio__label {
-        color: #409EFF;
-      }
-    }
-  }
-}
-
-// 变更类型提示样式
-.change-type-hint {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f0f9ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #1e40af;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  i {
-    font-size: 14px;
-    color: #3b82f6;
-  }
-
-  span {
-    line-height: 1.4;
-  }
-}
-
-// 区块内容样式
-.section-content {
-  padding: 24px;
-
-}
-
-// 部门网格布局
-.department-grid-2x2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, auto);
-  gap: 20px;
-  margin-top: 8px;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-}
-
-// 部门卡片样式
-.department-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px dashed #e4e7ed;
-}
-
-// 部门头部样式
-.department-header {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #e9ecef;
-
-  .department-icon {
-    font-size: 16px;
-    margin-right: 8px;
-
-    &.pmc-icon {
-      color: #e74c3c;
-    }
-
-    &.purchase-icon {
-      color: #f39c12;
-    }
-
-    &.rd-icon {
-      color: #3498db;
-    }
-
-    &.market-icon {
-      color: #27ae60;
-    }
-  }
-
-  .department-name {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 14px;
-  }
-}
-
-// 部门内容样式
-.department-content {
-  padding: 16px;
-
-  .el-form-item {
-    margin-bottom: 16px;
-
-    .el-select {
-      width: 100%;
-    }
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-}
-
-// 审批网格布局
-.approval-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 24px;
-}
-
-// 审批卡片样式
-.approval-card {
-  background: #ffffff;
-  border-radius: 10px;
-  border: 2px solid #f0f2f5;
-  overflow: hidden;
-}
-
-// 审批头部样式
-.approval-header {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #d9f7be;
-
-  .approval-icon {
-    font-size: 16px;
-    margin-right: 8px;
-
-    &.first-approval {
-      color: #1890ff;
-    }
-
-    &.final-approval {
-      color: #52c41a;
-    }
-  }
-
-  .approval-title {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 14px;
-  }
-}
-
-// 审批内容样式
-.approval-content {
-  padding: 16px;
-}
-
-// 现代化输入框样式
-:deep(.modern-select) {
-  .el-input__wrapper {
-    border-radius: 8px;
-    border: 2px solid #e8f4fd;
-
-    &:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-    }
-  }
-}
-
-// 现代化文本域样式
-:deep(.modern-textarea) {
-  .el-textarea__inner {
-    border-radius: 8px;
-    border: 2px solid #e8f4fd;
-    resize: vertical;
-
-    &:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-    }
-  }
-}
-
-// 审批单选按钮样式
-.approval-radio {
-  margin-right: 20px;
-  margin-bottom: 8px;
-
-  &.success {
-    .el-radio__label {
-      color: #52c41a;
-      font-weight: 500;
-    }
-
-    &.is-checked {
-      .el-radio__inner {
-        background-color: #52c41a;
-        border-color: #52c41a;
-      }
-    }
-  }
-
-  &.danger {
-    .el-radio__label {
-      color: #ff4d4f;
-      font-weight: 500;
-    }
-
-    &.is-checked {
-      .el-radio__inner {
-        background-color: #ff4d4f;
-        border-color: #ff4d4f;
-      }
-    }
-  }
-
-  .el-radio__label {
-    display: flex;
-    align-items: center;
-
-    i {
-      margin-right: 4px;
-    }
-  }
-}
-
-// 底部按钮样式
-.dialog-footer {
-  text-align: center;
-  padding: 20px 24px;
-  border-top: 1px solid #e8f4fd;
-}
-
-// 对话框自定义样式
 :deep(.bom-change-dialog) {
+  --dialog-bg: #f5f7fb;
+  --card-bg: #ffffff;
+  --card-border: #d9e1ec;
+  --card-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  --primary-strong: #163a63;
+  --primary-main: #2457a6;
+  --primary-soft: #eef4fb;
+  --accent-main: #2457a6;
+  --accent-soft: #eef4fb;
+  --text-strong: #16263d;
+  --text-main: #25364d;
+  --text-muted: #66758a;
+  --border-main: #d9e1ec;
+  --border-strong: #bac8d9;
+  --danger-main: #e05252;
+  --success-main: #18a26e;
+
   max-height: 90vh;
 
   .el-dialog {
-    margin-top: 5vh !important;
-    margin-bottom: 5vh !important;
-    max-height: 90vh;
+    margin-top: 4vh !important;
+    margin-bottom: 4vh !important;
+    max-height: 92vh;
     display: flex;
     flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 22px 56px rgba(15, 23, 42, 0.18);
+    background: #f7f9fc;
   }
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px 24px;
+    padding: 22px 28px 20px;
+    background: linear-gradient(180deg, #163a63 0%, #1d4674 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     flex-shrink: 0;
 
     .el-dialog__title {
-      color: white;
+      color: #ffffff;
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .el-dialog__headerbtn {
+      top: 24px;
+      right: 24px;
+
       .el-dialog__close {
-        color: white;
+        color: rgba(255, 255, 255, 0.92);
         font-size: 20px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #ffffff;
+        }
       }
     }
   }
@@ -2168,88 +1802,457 @@ export default {
     padding: 0;
     flex: 1;
     overflow: hidden;
+    background: #f5f7fb;
   }
 
   .el-dialog__footer {
     padding: 0;
     flex-shrink: 0;
+    background: #ffffff;
   }
 }
 
-// 响应式设计
-@media (max-width: 768px) {
-  .department-grid {
-    grid-template-columns: 1fr;
+.form-container {
+  padding: 24px;
+  max-height: calc(92vh - 146px);
+  overflow-y: auto;
+  background: #f7f9fc;
+}
+
+.modern-form {
+  padding-top: 4px;
+
+  :deep(.el-row) {
+    margin-bottom: 4px;
   }
 
-  .department-grid-2x2 {
-    grid-template-columns: 1fr;
+  :deep(.el-form-item) {
+    margin-bottom: 18px;
   }
 
-  .approval-grid {
-    grid-template-columns: 1fr;
+  .el-form-item__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-strong);
+    letter-spacing: 0;
   }
 
-  .section-content {
-    padding: 16px;
+  :deep(.el-form-item__error) {
+    color: var(--danger-main);
+    font-size: 12px;
+    font-weight: 600;
+    padding-top: 6px;
   }
 }
 
-// 加载状态样式
-.el-loading-mask {
-  border-radius: 8px;
+.form-section {
+  position: relative;
+  margin-bottom: 24px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  animation: fadeInUp 0.45s ease-out;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-/* 订单通知表格样式 - 遵循项目风格 */
-.order-notice-section {
-  padding:0 20px;
-  margin-bottom: 20px;
-  .section-header {
-    margin-bottom: 16px;
-    
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #2c3e50;
-      display: inline-flex;
-      align-items: center;
-      
-      i {
-        margin-right: 6px;
-        color: #409eff;
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 54px;
+  padding: 0 22px;
+  background: #fafbfd;
+  border-bottom: 1px solid rgba(186, 200, 217, 0.58);
+
+  i {
+    font-size: 14px;
+    color: var(--primary-strong);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+}
+
+.section-content {
+  padding: 20px 22px 16px;
+}
+
+.info-group {
+  margin-bottom: 10px;
+  padding: 16px 18px 2px;
+  border: 1px solid rgba(223, 230, 239, 0.85);
+  border-radius: 12px;
+  background: #ffffff;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.category-selection-compact {
+  padding: 14px 16px;
+  border: 1px solid rgba(186, 200, 217, 0.85);
+  border-radius: 12px;
+  background: #fafcff;
+
+  .change-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .category-item {
+    min-width: 164px;
+    padding: 10px 14px;
+    border: 1px solid rgba(186, 200, 217, 0.82);
+    border-radius: 10px;
+    background: #ffffff;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      border-color: rgba(36, 87, 166, 0.5);
+      background: #f9fbfd;
+    }
+  }
+
+  .category-checkbox {
+    margin-right: 0;
+
+    :deep(.el-checkbox__input) {
+      .el-checkbox__inner {
+        border-color: #9fb5cf;
+        background: #ffffff;
       }
     }
-    
-    .section-subtitle {
-      font-size: 12px;
-      color: #909399;
-      margin-left: 8px;
+
+    :deep(.el-checkbox__label) {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-strong);
+
+      i {
+        color: var(--primary-main);
+      }
+    }
+
+    &.is-checked {
+      :deep(.el-checkbox__inner) {
+        background: var(--primary-main);
+        border-color: var(--primary-main);
+      }
+
+      :deep(.el-checkbox__label) {
+        color: var(--primary-strong);
+      }
+    }
+  }
+
+  .sub-categories {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent-main);
+    border-radius: 0 10px 10px 0;
+    background: #f7f9fc;
+  }
+
+  .sub-category-title {
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-strong);
+    letter-spacing: 0.02em;
+  }
+
+  .sub-category-options {
+    :deep(.el-radio-group) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+    }
+  }
+
+  .sub-category-radio {
+    margin-right: 0;
+
+    :deep(.el-radio__input) {
+      .el-radio__inner {
+        border-color: #9db1cb;
+      }
+    }
+
+    :deep(.el-radio__label) {
+      font-size: 13px;
+      color: var(--text-strong);
+      font-weight: 600;
+    }
+
+    &.is-checked {
+      :deep(.el-radio__inner) {
+        border-color: var(--accent-main);
+        background: var(--accent-main);
+      }
+
+      :deep(.el-radio__label) {
+        color: var(--primary-strong);
+      }
     }
   }
 }
 
-/* 表单验证错误样式 */
-.el-form-item.is-error {
+.department-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
 
-  .el-input__inner,
-  .el-textarea__inner {
-    border-color: #ff4d4f;
-    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.1);
+.department-card {
+  border: 1px solid rgba(186, 200, 217, 0.78);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.department-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(186, 200, 217, 0.48);
+  background: #f9fbfd;
+
+  .department-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #f1f4f8;
+    box-shadow: none;
+
+    &.pmc-icon {
+      color: #2457a6;
+      background: #f1f4f8;
+    }
+
+    &.purchase-icon {
+      color: #2457a6;
+      background: #f1f4f8;
+    }
+
+    &.rd-icon {
+      color: #2457a6;
+      background: #f1f4f8;
+    }
+
+    &.market-icon {
+      color: #2457a6;
+      background: #f1f4f8;
+    }
+  }
+
+  .department-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-strong);
   }
 }
 
-// 禁用状态样式
-.el-input.is-disabled .el-input__inner {
-  background-color: #f5f5f5;
-  border-color: #e8e8e8;
-  color: #999999;
+.department-content {
+  padding: 16px;
+
+  .el-form-item {
+    margin-bottom: 0;
+
+    .el-select {
+      width: 100%;
+    }
+  }
 }
 
-// 动画效果
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px 24px 22px;
+  border-top: 1px solid rgba(186, 200, 217, 0.6);
+}
+
+:deep(.cancel-btn) {
+  min-width: 92px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #ced8e4;
+  color: var(--text-main);
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+
+  &:hover,
+  &:focus {
+    color: var(--primary-main);
+    border-color: rgba(36, 87, 166, 0.4);
+    background: #f7fbff;
+  }
+}
+
+:deep(.submit-btn) {
+  min-width: 108px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #2457a6;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+
+  &:hover,
+  &:focus {
+    background: #1f4b90;
+  }
+}
+
+.order-notice-section {
+  margin-bottom: 8px;
+  padding: 10px 12px 2px;
+  border: 1px solid rgba(217, 225, 236, 0.78);
+  border-radius: 14px;
+  background: #ffffff;
+
+  :deep(.el-button--primary) {
+    border: none;
+    border-radius: 8px;
+    background: #2457a6;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  :deep(.el-table) {
+    border: 1px solid rgba(186, 200, 217, 0.8);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: none;
+
+    th {
+      background: #f4f7fb;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(186, 200, 217, 0.72);
+    }
+
+    tr {
+      background: #ffffff;
+    }
+
+    td {
+      border-bottom-color: rgba(216, 228, 240, 0.92);
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+
+  :deep(.el-button--text) {
+    font-weight: 600;
+  }
+}
+
+:deep(.el-form-item.is-error) {
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-input-number,
+  .vue-treeselect__control {
+    border-color: rgba(224, 82, 82, 0.92) !important;
+    box-shadow: 0 0 0 3px rgba(224, 82, 82, 0.12);
+  }
+}
+
+:deep(.el-input.is-disabled .el-input__inner) {
+  color: #6a7d96;
+  background: #eef3f8;
+  border-color: #d8e4f0;
+}
+
+:deep(.el-input__inner),
+:deep(.el-textarea__inner),
+:deep(.el-input-number),
+:deep(.vue-treeselect__control) {
+  font-size: 13px;
+  min-height: 36px;
+  color: var(--text-strong);
+  border-radius: 8px;
+  border-color: #cfd8e3;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+:deep(.el-input__inner::placeholder),
+:deep(.el-textarea__inner::placeholder) {
+  color: #8a98a9;
+}
+
+:deep(.el-select .el-input .el-select__caret),
+:deep(.el-input__icon) {
+  color: #7b8798;
+}
+
+:deep(.el-input__inner:focus),
+:deep(.el-textarea__inner:focus),
+:deep(.vue-treeselect--focused .vue-treeselect__control),
+:deep(.el-input-number.is-controls-right .el-input__inner:focus) {
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+:deep(.modern-textarea .el-textarea__inner) {
+  min-height: 108px !important;
+  background: #ffffff;
+  padding-top: 10px;
+}
+
+:deep(.vue-treeselect__control) {
+  min-height: 36px;
+  background: #ffffff;
+}
+
+:deep(.el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label::before) {
+  margin-right: 6px;
+  color: var(--danger-main);
+}
+
+:deep(.el-table .cell) {
+  line-height: 1.5;
+}
+
+:deep(.el-loading-mask) {
+  border-radius: 12px;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(14px);
   }
 
   to {
@@ -2258,58 +2261,41 @@ export default {
   }
 }
 
-.form-section {
-  animation: fadeInUp 0.6s ease-out;
-  position: relative;
-}
-
-// 滚动条样式
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: rgba(216, 228, 240, 0.45);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: rgba(95, 112, 135, 0.45);
+  border-radius: 999px;
 }
 
-/* 分类选择样式 */
-.category-selection {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 20px;
-}
+@media (max-width: 768px) {
+  .form-container {
+    padding: 14px;
+  }
 
-.category-checkbox {
-  margin-right: 20px;
-}
+  .section-header {
+    min-height: 52px;
+    padding: 0 16px;
+  }
 
-.order-change-section {
-  display: flex;
-  align-items: center;
-  margin-left: 20px;
-}
+  .section-content {
+    padding: 16px 14px 14px;
+  }
 
-.order-change-section .el-select {
-  margin-left: 10px;
-}
+  .department-grid-2x2 {
+    grid-template-columns: 1fr;
+  }
 
-/* 表单项样式优化 */
-.el-form-item__label {
-  font-weight: 500;
-  color: #303133;
-}
-
-.el-input__inner,
-.el-textarea__inner {
-  border-radius: 6px;
-  transition: all 0.3s ease;
+  .category-selection-compact .change-categories {
+    flex-direction: column;
+  }
 }
 
 .el-input__inner:focus,

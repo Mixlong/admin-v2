@@ -219,9 +219,9 @@
           <el-button size="mini" type="primary" icon="el-icon-view" @click="handleView(row)">查看</el-button>
 
           <el-button v-if="row.firstState !== 1" size="mini" type="primary" icon="el-icon-edit"
-            @click="handleUpdate(row)">编辑</el-button>
+            :disabled="isEditDisabled(row)" @click="handleUpdate(row)">编辑</el-button>
 
-          <el-button v-show="row.createBy === nickName" size="mini" type="danger" @click="handleDelete(row)"
+          <el-button v-if="row.status !== 1" size="mini" type="danger" @click="handleDelete(row)"
             icon="el-icon-delete">删除</el-button>
           <!-- 会审按钮 - 优化逻辑 -->
           <template v-for="(item, index) in (row && row.list ? row.list : [])">
@@ -1811,6 +1811,9 @@ export default {
 
     /** 修改按钮操作 */
     async handleUpdate(row) {
+      if (this.isEditDisabled(row)) {
+        return
+      }
       const id = row.id || this.ids
       // 请求详情
       const res = await getBomOrderChangeDetail(id)
@@ -1824,6 +1827,10 @@ export default {
     /** 查看按钮操作 */
     handleView(row) {
       this.$refs.detailView.openDialog(row.id);
+    },
+
+    isEditDisabled(row) {
+      return Number(row.status) === 1;
     },
 
 
@@ -1943,11 +1950,11 @@ export default {
     },
     /** 启用/禁用按钮操作 */
     handleDelete(row) {
-      const action = row.status === 0 ? '删除' : '删除';
-      this.$modal.confirm(`是否确认${action}该订单BOM变更通知？`).then(() => {
+      const action = '删除'
+      this.$modal.confirm(`是否确认${action}该订单BOM变更通知？删除后将禁用编辑。`).then(() => {
         const data = [{
           id: row.id,
-          status: row.status === 0 ? 1 : 0,
+          status: 1,
           why: `${action}操作`
         }];
         return authBomOrderChange(data);
