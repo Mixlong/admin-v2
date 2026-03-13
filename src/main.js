@@ -670,9 +670,7 @@ if (window.__POWERED_BY_WUJIE__) {
         const targetPath = data.replace("/admin-v2", "").replace("/v2", "");
         if (targetPath && router.currentRoute.path !== targetPath) {
           console.log("🔀 V2 跳转到路径:", targetPath);
-          router.push({ path: targetPath }).catch((err) => {
-            console.warn("路由跳转失败:", err);
-          });
+          safeRouterPush({ path: targetPath });
         }
         return;
       }
@@ -689,7 +687,7 @@ if (window.__POWERED_BY_WUJIE__) {
           if (Object.keys(params).length > 0) routeConfig.params = params;
 
           console.log("🔀 V2 使用name跳转:", routeConfig);
-          router.push(routeConfig).catch((err) => {
+          safeRouterPush(routeConfig, (err) => {
             console.warn("name路由跳转失败:", err);
             // 降级到path导航
             fallbackToPathNavigation(data, query, params);
@@ -713,9 +711,32 @@ if (window.__POWERED_BY_WUJIE__) {
       if (Object.keys(params).length > 0) routeConfig.params = params;
 
       console.log("🔀 V2 使用path跳转:", routeConfig);
-      router.push(routeConfig).catch((err) => {
+      safeRouterPush(routeConfig, (err) => {
         console.warn("路由跳转失败:", err);
       });
+    }
+  }
+
+  function safeRouterPush(routeConfig, onError) {
+    try {
+      const result = router.push(routeConfig);
+      if (result && typeof result.catch === "function") {
+        result.catch((err) => {
+          if (typeof onError === "function") {
+            onError(err);
+          } else {
+            console.warn("路由跳转失败:", err);
+          }
+        });
+      }
+      return result;
+    } catch (err) {
+      if (typeof onError === "function") {
+        onError(err);
+      } else {
+        console.warn("路由跳转异常:", err);
+      }
+      return null;
     }
   }
 

@@ -1,8 +1,8 @@
 <template>
-  <el-dialog :title="title" :visible.sync="open" :width="isAttachmentOnly ? '600px' : '70%'" append-to-body :close-on-click-modal="false" top="0vh"
+  <el-dialog :title="title" :visible.sync="open" :width="isAttachmentOnly ? '760px' : '74%'" append-to-body :close-on-click-modal="false" top="2vh"
     class="dialog-scroll bom-change-dialog">
     <div class="form-container">
-      <el-form ref="form" :model="form" :rules="rules" label-width="140px" @submit.native.prevent class="modern-form">
+      <el-form ref="form" :model="form" :rules="rules" label-width="142px" @submit.native.prevent class="modern-form">
         <!-- 基本信息卡片 -->
 
         <div class="form-section" v-if="!isAttachmentOnly">
@@ -275,12 +275,8 @@
             <div class="department-grid-2x2">
               <!-- PMC部门 -->
               <div class="department-card pmc-card">
-                <div class="department-header">
-                  <i class="el-icon-s-management department-icon pmc-icon"></i>
-                  <span class="department-name">PMC</span>
-                </div>
                 <div class="department-content">
-                  <el-form-item prop="selPmcData" label="负责人员">
+                  <el-form-item prop="selPmcData" label="PMC负责人员">
                     <el-select v-model="form.selPmcData" placeholder="请选择PMC人员" filterable clearable
                       :disable="form.firstState == 1" multiple :loading="pmcData.length === 0" size="small"
                       class="modern-select" @change="(val) => handleMultiSelectChange('PMC', val)">
@@ -298,12 +294,8 @@
 
               <!-- 采购部门 -->
               <div class="department-card purchase-card">
-                <div class="department-header">
-                  <i class="el-icon-shopping-cart-2 department-icon purchase-icon"></i>
-                  <span class="department-name">采购</span>
-                </div>
                 <div class="department-content">
-                  <el-form-item prop="selBuyerData" label="负责人员">
+                  <el-form-item prop="selBuyerData" label="采购负责人员">
                     <el-select v-model="form.selBuyerData" placeholder="请选择采购人员" filterable clearable
                       :disable="form.firstState == 1" :loading="buyerData.length === 0" size="small" multiple
                       class="modern-select" @change="(val) => handleMultiSelectChange('采购', val)">
@@ -321,12 +313,8 @@
 
               <!-- 研发部门 -->
               <div class="department-card rd-card">
-                <div class="department-header">
-                  <i class="el-icon-cpu department-icon rd-icon"></i>
-                  <span class="department-name">研发</span>
-                </div>
                 <div class="department-content">
-                  <el-form-item prop="selResearchData" label="负责人员">
+                  <el-form-item prop="selResearchData" label="研发负责人员">
                     <el-select v-model="form.selResearchData" placeholder="请选择研发人员" filterable clearable
                       :disable="form.firstState == 1" :loading="researchData.length === 0" size="small" multiple
                       class="modern-select" @change="(val) => handleMultiSelectChange('研发', val)">
@@ -344,12 +332,8 @@
 
               <!-- 市场部门 -->
               <div class="department-card market-card">
-                <div class="department-header">
-                  <i class="el-icon-s-marketing department-icon market-icon"></i>
-                  <span class="department-name">市场</span>
-                </div>
                 <div class="department-content">
-                  <el-form-item prop="selMarketerData" label="负责人员">
+                  <el-form-item prop="selMarketerData" label="市场负责人员">
                     <el-select v-model="form.selMarketerData" placeholder="请选择市场人员" filterable clearable
                       :disable="form.firstState == 1" :loading="marketerData.length === 0" size="small" multiple
                       class="modern-select" @change="(val) => handleMultiSelectChange('市场', val)">
@@ -504,7 +488,7 @@ import { BomPersonList } from "@/api/third/ecn"
 import DrUpload from "@/components/MyUpload"
 import Treeselect from "@riophae/vue-treeselect";
 import { listDept } from "@/api/system/dept";
-import { listUser } from '@/api/system/user'
+import { listPucsUser } from '@/api/system/user'
 
 import {
   getCustomerList,
@@ -1121,7 +1105,7 @@ export default {
       if (deptId) {
         // 确保部门ID是数字类型
         const numericDeptId = Number(deptId);
-        listUser({ deptId: numericDeptId, p: 1, l: 999 }).then(res => {
+        listPucsUser({ deptId: numericDeptId, p: 1, l: 999 }).then(res => {
           if (res.code === 200 && res && Array.isArray(res.rows)) {
             this.applicantList = res.rows;
             if (applicantId) {
@@ -1738,20 +1722,20 @@ export default {
 
 <style lang="scss" scoped>
 :deep(.bom-change-dialog) {
-  --dialog-bg: #f5f7fb;
+  --dialog-bg: #fafbfd;
   --card-bg: #ffffff;
-  --card-border: #d9e1ec;
-  --card-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  --primary-strong: #163a63;
-  --primary-main: #2457a6;
-  --primary-soft: #eef4fb;
-  --accent-main: #2457a6;
-  --accent-soft: #eef4fb;
-  --text-strong: #16263d;
-  --text-main: #25364d;
-  --text-muted: #66758a;
-  --border-main: #d9e1ec;
-  --border-strong: #bac8d9;
+  --card-border: #dfe5ee;
+  --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --primary-strong: #2f4159;
+  --primary-main: #409eff;
+  --primary-soft: #edf5ff;
+  --accent-main: #409eff;
+  --accent-soft: #edf5ff;
+  --text-strong: #354052;
+  --text-main: #4b5565;
+  --text-muted: #7d8796;
+  --border-main: #dfe5ee;
+  --border-strong: #cfd7e3;
   --danger-main: #e05252;
   --success-main: #18a26e;
 
@@ -1763,36 +1747,36 @@ export default {
     max-height: 92vh;
     display: flex;
     flex-direction: column;
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 22px 56px rgba(15, 23, 42, 0.18);
-    background: #f7f9fc;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.1);
+    background: #ffffff;
   }
 
   .el-dialog__header {
-    padding: 22px 28px 20px;
-    background: linear-gradient(180deg, #163a63 0%, #1d4674 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px 26px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf1f5;
     flex-shrink: 0;
 
     .el-dialog__title {
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      color: var(--text-strong);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0;
     }
 
     .el-dialog__headerbtn {
-      top: 24px;
+      top: 22px;
       right: 24px;
 
       .el-dialog__close {
-        color: rgba(255, 255, 255, 0.92);
-        font-size: 20px;
+        color: #9aa4b2;
+        font-size: 16px;
         transition: color 0.2s ease;
 
         &:hover {
-          color: #ffffff;
+          color: var(--text-strong);
         }
       }
     }
@@ -1802,7 +1786,7 @@ export default {
     padding: 0;
     flex: 1;
     overflow: hidden;
-    background: #f5f7fb;
+    background: var(--dialog-bg);
   }
 
   .el-dialog__footer {
@@ -1813,25 +1797,25 @@ export default {
 }
 
 .form-container {
-  padding: 24px;
+  padding: 18px 22px 20px;
   max-height: calc(92vh - 146px);
   overflow-y: auto;
-  background: #f7f9fc;
+  background: var(--dialog-bg);
 }
 
 .modern-form {
-  padding-top: 4px;
+  padding-top: 2px;
 
   :deep(.el-row) {
-    margin-bottom: 4px;
+    margin-bottom: 0;
   }
 
   :deep(.el-form-item) {
-    margin-bottom: 18px;
+    margin-bottom: 14px;
   }
 
   .el-form-item__label {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text-strong);
     letter-spacing: 0;
@@ -1839,7 +1823,7 @@ export default {
 
   :deep(.el-form-item__error) {
     color: var(--danger-main);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     padding-top: 6px;
   }
@@ -1847,13 +1831,13 @@ export default {
 
 .form-section {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
   border: 1px solid var(--card-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: none;
   overflow: hidden;
-  animation: fadeInUp 0.45s ease-out;
+  animation: fadeInUp 0.36s ease-out;
 
   &:last-child {
     margin-bottom: 0;
@@ -1863,40 +1847,57 @@ export default {
 .section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-height: 54px;
-  padding: 0 22px;
-  background: #fafbfd;
-  border-bottom: 1px solid rgba(186, 200, 217, 0.58);
+  justify-content: flex-start;
+  min-height: 46px;
+  padding: 12px 18px 0;
+  background: #ffffff;
+  border-bottom: 0;
 
   i {
-    font-size: 14px;
-    color: var(--primary-strong);
+    flex: 0 0 auto;
+    font-size: 16px;
+    color: #707b88;
   }
 
   .header-left {
     display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
+
+    &::after {
+      content: "";
+      flex: 1;
+      min-width: 24px;
+      height: 1px;
+      margin-left: 10px;
+      background: #e8edf3;
+    }
   }
 
   .section-title {
-    font-size: 15px;
-    font-weight: 700;
+    flex: 0 0 auto;
+    font-size: 14px;
+    font-weight: 600;
     color: var(--text-strong);
+    line-height: 1;
   }
 }
 
+.section-badge {
+  display: none;
+}
+
 .section-content {
-  padding: 20px 22px 16px;
+  padding: 12px 18px 14px;
 }
 
 .info-group {
-  margin-bottom: 10px;
-  padding: 16px 18px 2px;
-  border: 1px solid rgba(223, 230, 239, 0.85);
-  border-radius: 12px;
-  background: #ffffff;
+  margin-bottom: 8px;
+  padding: 4px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 
   &:last-child {
     margin-bottom: 0;
@@ -1904,28 +1905,28 @@ export default {
 }
 
 .category-selection-compact {
-  padding: 14px 16px;
-  border: 1px solid rgba(186, 200, 217, 0.85);
-  border-radius: 12px;
-  background: #fafcff;
+  padding: 10px 12px;
+  border: 1px solid #e4eaf2;
+  border-radius: 10px;
+  background: #ffffff;
 
   .change-categories {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 10px;
   }
 
   .category-item {
-    min-width: 164px;
-    padding: 10px 14px;
-    border: 1px solid rgba(186, 200, 217, 0.82);
-    border-radius: 10px;
+    min-width: 146px;
+    padding: 8px 10px;
+    border: 1px solid #e5ebf2;
+    border-radius: 8px;
     background: #ffffff;
     transition: border-color 0.2s ease, background-color 0.2s ease;
 
     &:hover {
-      border-color: rgba(36, 87, 166, 0.5);
-      background: #f9fbfd;
+      border-color: rgba(64, 158, 255, 0.38);
+      background: #fbfdff;
     }
   }
 
@@ -1942,9 +1943,9 @@ export default {
     :deep(.el-checkbox__label) {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
       color: var(--text-strong);
 
       i {
@@ -1965,15 +1966,15 @@ export default {
   }
 
   .sub-categories {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-left: 3px solid var(--accent-main);
-    border-radius: 0 10px 10px 0;
-    background: #f7f9fc;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-left: 2px solid var(--accent-main);
+    border-radius: 0 8px 8px 0;
+    background: #f8fbff;
   }
 
   .sub-category-title {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 11px;
     font-weight: 700;
     color: var(--primary-strong);
@@ -1984,7 +1985,7 @@ export default {
     :deep(.el-radio-group) {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px 18px;
+      gap: 8px 12px;
     }
   }
 
@@ -1998,9 +1999,9 @@ export default {
     }
 
     :deep(.el-radio__label) {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-strong);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     &.is-checked {
@@ -2019,65 +2020,67 @@ export default {
 .department-grid-2x2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 12px 20px;
+  align-items: start;
 }
 
 .department-card {
-  border: 1px solid rgba(186, 200, 217, 0.78);
-  border-radius: 12px;
-  overflow: hidden;
-  background: #ffffff;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
 }
 
 .department-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 16px;
-  border-bottom: 1px solid rgba(186, 200, 217, 0.48);
-  background: #f9fbfd;
+  gap: 8px;
+  padding: 2px 0 8px;
+  border-bottom: 0;
+  background: transparent;
 
   .department-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     border-radius: 6px;
-    font-size: 13px;
-    background: #f1f4f8;
+    font-size: 10px;
+    background: #f5f7fa;
     box-shadow: none;
 
     &.pmc-icon {
-      color: #2457a6;
-      background: #f1f4f8;
+      color: #6a7685;
+      background: #f5f7fa;
     }
 
     &.purchase-icon {
-      color: #2457a6;
-      background: #f1f4f8;
+      color: #6a7685;
+      background: #f5f7fa;
     }
 
     &.rd-icon {
-      color: #2457a6;
-      background: #f1f4f8;
+      color: #6a7685;
+      background: #f5f7fa;
     }
 
     &.market-icon {
-      color: #2457a6;
-      background: #f1f4f8;
+      color: #6a7685;
+      background: #f5f7fa;
     }
   }
 
   .department-name {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-strong);
   }
 }
 
 .department-content {
-  padding: 16px;
+  padding: 0;
 
   .el-form-item {
     margin-bottom: 0;
@@ -2088,23 +2091,33 @@ export default {
   }
 }
 
+.department-grid-2x2 :deep(.el-form-item__label) {
+  width: 112px !important;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.department-grid-2x2 :deep(.el-form-item__content) {
+  margin-left: 112px !important;
+}
+
 .dialog-footer {
   display: flex;
   justify-content: center;
-  gap: 14px;
-  padding: 18px 24px 22px;
-  border-top: 1px solid rgba(186, 200, 217, 0.6);
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid #edf1f5;
 }
 
 :deep(.cancel-btn) {
-  min-width: 92px;
-  height: 38px;
-  border-radius: 8px;
-  border: 1px solid #ced8e4;
+  min-width: 88px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #d7dee8;
   color: var(--text-main);
   background: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 
   &:hover,
@@ -2116,48 +2129,48 @@ export default {
 }
 
 :deep(.submit-btn) {
-  min-width: 108px;
-  height: 38px;
+  min-width: 96px;
+  height: 34px;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  background: #2457a6;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #409eff;
   transition: background-color 0.2s ease, opacity 0.2s ease;
 
   &:hover,
   &:focus {
-    background: #1f4b90;
+    background: #2f8ef3;
   }
 }
 
 .order-notice-section {
   margin-bottom: 8px;
-  padding: 10px 12px 2px;
-  border: 1px solid rgba(217, 225, 236, 0.78);
-  border-radius: 14px;
-  background: #ffffff;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 
   :deep(.el-button--primary) {
     border: none;
-    border-radius: 8px;
-    background: #2457a6;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 6px;
+    background: #409eff;
+    font-size: 11px;
+    font-weight: 500;
   }
 
   :deep(.el-table) {
-    border: 1px solid rgba(186, 200, 217, 0.8);
-    border-radius: 12px;
+    border: 1px solid #e3e8ef;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: none;
 
     th {
-      background: #f4f7fb;
+      background: #f8fafc;
       color: var(--text-main);
-      font-size: 13px;
-      font-weight: 700;
-      border-bottom: 1px solid rgba(186, 200, 217, 0.72);
+      font-size: 11px;
+      font-weight: 600;
+      border-bottom: 1px solid #e7edf4;
     }
 
     tr {
@@ -2174,7 +2187,7 @@ export default {
   }
 
   :deep(.el-button--text) {
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 
@@ -2198,11 +2211,11 @@ export default {
 :deep(.el-textarea__inner),
 :deep(.el-input-number),
 :deep(.vue-treeselect__control) {
-  font-size: 13px;
-  min-height: 36px;
+  font-size: 11px;
+  min-height: 32px;
   color: var(--text-strong);
   border-radius: 8px;
-  border-color: #cfd8e3;
+  border-color: #d7dee8;
   background: #ffffff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -2226,13 +2239,13 @@ export default {
 }
 
 :deep(.modern-textarea .el-textarea__inner) {
-  min-height: 108px !important;
+  min-height: 88px !important;
   background: #ffffff;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 :deep(.vue-treeselect__control) {
-  min-height: 36px;
+  min-height: 32px;
   background: #ffffff;
 }
 
@@ -2277,16 +2290,16 @@ export default {
 
 @media (max-width: 768px) {
   .form-container {
-    padding: 14px;
+    padding: 10px;
   }
 
   .section-header {
-    min-height: 52px;
-    padding: 0 16px;
+    min-height: 40px;
+    padding: 10px 12px 0;
   }
 
   .section-content {
-    padding: 16px 14px 14px;
+    padding: 12px 10px 10px;
   }
 
   .department-grid-2x2 {

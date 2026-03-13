@@ -189,6 +189,22 @@
           </el-form-item>
         </el-col>
       </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-form-item label="处理类型" prop="processTypeValues">
+            <el-cascader
+              v-model="form.processTypeValues"
+              :options="processTypeOptions"
+              :props="processTypeCascaderProps"
+              clearable
+              style="width: 100%"
+              placeholder="请选择处理类型"
+              @change="handleProcessTypeChange"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
  
       <div class="flex align-center justify-between">
         <h3>仪表信息</h3>
@@ -485,6 +501,8 @@ import ElUploadSortable from "@/components/el-upload-sortable";
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import reqUrl from "@/utils/requestUrl";
 
+const PROCESS_TYPE_SEPARATOR = " / ";
+
 export default {
   components: {
     tinymce,
@@ -536,6 +554,8 @@ export default {
         result: "",
         logisticsNo: "",
         direction: "",
+        processType: "",
+        processTypeValues: [],
         file: "",
         video: "",
         locationRemark: "",
@@ -584,6 +604,12 @@ export default {
       filteredAddressList: [],
       // 地址选择弹窗
       addressDialogVisible: false,
+      processTypeOptions: [],
+      processTypeCascaderProps: {
+        expandTrigger: 'hover',
+        emitPath: true,
+        checkStrictly: false,
+      },
       selectedAddressId: "",
       currentAddressType: "", // 'return' 或 'logistics'
       returnDatePickerOptions: {
@@ -670,6 +696,8 @@ export default {
     visible(isShow) {
       if (isShow) {
         this.getReturnList();
+        this.loadProcessTypeDicts();
+        this.syncProcessTypeSelectionFromForm();
         // 回显仪表型号
         this.changeCategory(0);
         // 编辑时如果有客退方ID，自动加载地址列表
@@ -706,6 +734,90 @@ export default {
     },
   },
   methods: {
+    async loadProcessTypeDicts() {
+      try {
+        const [methodRes, contentRes] = await Promise.all([
+          this.getDicts("process_method"),
+          this.getDicts("process_content"),
+        ]);
+        const methodOptions = methodRes?.data || [];
+        const contentOptions = (contentRes?.data || []).map((item) => ({
+          ...item,
+          cssClass: item.cssClass || item.css_class || "",
+        }));
+        this.processTypeOptions = methodOptions.map((methodItem) => ({
+          value: methodItem.dictValue,
+          label: methodItem.dictLabel,
+          children: contentOptions
+            .filter(
+              (contentItem) =>
+                String(contentItem.cssClass) === String(methodItem.dictValue)
+            )
+            .map((contentItem) => ({
+              value: contentItem.dictValue,
+              label: contentItem.dictLabel,
+            })),
+        }));
+        this.syncProcessTypeSelectionFromForm();
+      } catch (error) {
+        console.error("加载处理类型字典失败:", error);
+      }
+    },
+    handleProcessTypeChange() {
+      this.form.processType = this.buildProcessTypeValue();
+    },
+    buildProcessTypeValue() {
+      const [methodValue, contentValue] = this.form.processTypeValues || [];
+      const method = this.processTypeOptions.find(
+        (item) => String(item.value) === String(methodValue)
+      );
+      const content = method?.children?.find(
+        (item) => String(item.value) === String(contentValue)
+      );
+      if (!method || !content) {
+        return "";
+      }
+      return `${method.label}${PROCESS_TYPE_SEPARATOR}${content.label}`;
+    },
+    syncProcessTypeSelectionFromForm() {
+      const processType = this.form.processType;
+      if (!processType) {
+        this.form.processTypeValues = [];
+        return;
+      }
+
+      const separators = [PROCESS_TYPE_SEPARATOR, "/", "-", "：", ":"];
+      let methodLabel = "";
+      let contentLabel = "";
+
+      for (const separator of separators) {
+        if (processType.includes(separator)) {
+          const [left, ...rest] = processType.split(separator);
+          methodLabel = String(left || "").trim();
+          contentLabel = String(rest.join(separator) || "").trim();
+          break;
+        }
+      }
+
+      const methodItem = this.processTypeOptions.find((item) => {
+        if (methodLabel) {
+          return item.label === methodLabel;
+        }
+        return processType.startsWith(item.label);
+      });
+
+      if (!methodItem) {
+        this.form.processTypeValues = [];
+        return;
+      }
+
+      const contentItem = methodItem.children?.find(
+        (item) => item.label === contentLabel
+      );
+      this.form.processTypeValues = contentItem
+        ? [methodItem.value, contentItem.value]
+        : [methodItem.value];
+    },
     // 处理客退类型变化
     handleAfterTypeChange() {
       // 清空所有仪表型号
@@ -1080,6 +1192,8 @@ export default {
         result: "",
         logisticsNo: "",
         direction: "",
+        processType: "",
+        processTypeValues: [],
         file: "",
         video: "",
         locationRemark: "",
@@ -1142,6 +1256,7 @@ export default {
         if (valid) {
           this.isSubLoading = true;
           let params = JSON.parse(JSON.stringify(this.form));
+          params.processType = this.buildProcessTypeValue();
           params.inventory = JSON.stringify(params.inventory);
           
           // 处理图片和视频：数组转逗号分隔字符串

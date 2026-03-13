@@ -79,9 +79,21 @@ export const loadView = (view) => {
     return () => import("@/components/MicroAppContainer.vue");
   }
 
-  // 路由懒加载
-  // 路由懒加载
-  return (resolve) => require([`@/views/${view}`], resolve);
+  // 兼容后端返回路径：允许带/或.vue后缀
+  const normalized = String(view || "")
+    .replace(/^\/+/, "")
+    .replace(/\.vue$/i, "");
+
+  // 路由懒加载，组件缺失时降级到 404，避免导航链路中断
+  return (resolve) =>
+    require(
+      [`@/views/${normalized}`],
+      resolve,
+      (err) => {
+        console.error("[permission/loadView] 组件加载失败:", view, err);
+        require(["@/views/error/404.vue"], resolve);
+      }
+    );
 };
 
 // parseMicroAppConfig 已从 @/config/microApps 导入

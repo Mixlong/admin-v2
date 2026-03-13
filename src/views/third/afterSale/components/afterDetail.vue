@@ -70,7 +70,9 @@
         {{ detailInfo.returnAddress }}
       </el-descriptions-item>
 
-      <!-- 仪表信息行 -->
+      <el-descriptions-item label="处理类型">
+        {{ detailInfo.processType || "-" }}
+      </el-descriptions-item>
       <el-descriptions-item label="品类">
         {{ detailInfo.categoryName || "-" }}
       </el-descriptions-item>

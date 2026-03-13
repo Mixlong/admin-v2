@@ -87,15 +87,33 @@ export default {
   },
   
   methods: {
+    isOverflow() {
+      const el = this.$refs.cell;
+      if (!el) return false;
+      return el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight;
+    },
+
+    getTooltipMaxWidth() {
+      if (this.maxWidth) {
+        return this.maxWidth;
+      }
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+      return `${Math.max(320, Math.min(720, viewportWidth - 32))}px`;
+    },
+
     handleMouseEnter() {
       if (!this.hasContent) return;
       
-      // 检查是否有文本溢出
       const el = this.$refs.cell;
       if (!el) return;
-      
-      // 只有文本溢出时才显示 tooltip
-      if (el.scrollWidth <= el.clientWidth) return;
+
+      // 只有文本溢出时才显示 tooltip，同时给浏览器 title 做兜底
+      if (!this.isOverflow()) {
+        el.removeAttribute('title');
+        return;
+      }
+
+      el.setAttribute('title', this.computedTooltipContent);
       
       // 延迟显示
       this.timer = setTimeout(() => {
@@ -104,6 +122,10 @@ export default {
     },
     
     handleMouseLeave() {
+      const el = this.$refs.cell;
+      if (el) {
+        el.removeAttribute('title');
+      }
       if (this.timer) {
         clearTimeout(this.timer);
         this.timer = null;
@@ -121,6 +143,7 @@ export default {
       const tooltip = document.createElement('div');
       tooltip.className = 'cell-tooltip-popup';
       tooltip.textContent = this.computedTooltipContent;
+      tooltip.style.visibility = 'hidden';
       
       // 计算位置
       const rect = el.getBoundingClientRect();
@@ -129,19 +152,46 @@ export default {
         z-index: 99999;
         left: ${rect.left}px;
         top: ${rect.top - 8}px;
-        transform: translateY(-100%);
-        max-width: 400px;
+        max-width: ${this.getTooltipMaxWidth()};
         padding: 8px 12px;
         background: rgba(0, 0, 0, 0.8);
         color: #fff;
         font-size: 12px;
         line-height: 1.5;
         border-radius: 4px;
+        white-space: normal;
         word-break: break-all;
         pointer-events: none;
+        box-sizing: border-box;
+        visibility: hidden;
       `;
       
       document.body.appendChild(tooltip);
+      requestAnimationFrame(() => {
+        const margin = 8;
+        const viewportWidth =
+          window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportHeight =
+          window.innerHeight || document.documentElement.clientHeight || 0;
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        let left = rect.left;
+        let top = rect.top - tooltipRect.height - 8;
+
+        if (left + tooltipRect.width > viewportWidth - margin) {
+          left = viewportWidth - tooltipRect.width - margin;
+        }
+        if (left < margin) {
+          left = margin;
+        }
+        if (top < margin) {
+          top = Math.min(rect.bottom + 8, viewportHeight - tooltipRect.height - margin);
+        }
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.style.visibility = 'visible';
+      });
       this.tooltipEl = tooltip;
     },
     
@@ -157,8 +207,11 @@ export default {
 
 <style scoped>
 .cell-tooltip {
-  display: inline-block;
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   vertical-align: middle;
 }
 

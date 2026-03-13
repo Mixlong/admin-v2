@@ -235,336 +235,554 @@
       type="success"
       show-icon
     ></el-alert>
-    <el-table
+    <VirtualTable
       id="drag_table"
       ref="afterSaleRef"
       class="afterSaleBox"
-      v-loading="loading"
+      :loading="loading"
       :data="brandList"
-      :height="tableHeight(-50)"
+      :height="tableHeight(-10)"
+      :virtual-enabled="false"
+      :row-config="{ keyField: 'id', isHover: true }"
+      :column-config="{ resizable: false }"
+      :checkbox-config="{ reserve: true }"
+      show-overflow="ellipsis"
+      show-header-overflow="tooltip"
       @row-click="handleRowClick"
       @cell-click="cellClick"
       :cell-style="cellStyle"
-      row-key="id"
-      @selection-change="handleSelectionChange"
-      border
+      :row-class-name="tableRowClassName"
+      @checkbox-change="handleSelectionChange"
+      @checkbox-all="handleSelectionChange"
     >
       <!-- 1. 客退日期 -->
-      <el-table-column
-        type="selection"
+      <vxe-column
+        type="checkbox"
         width="55"
-        :reserve-selection="true"
         align="center"
-        fixed
+        fixed="left"
       />
-      <el-table-column
-        label="客退日期"
-        prop="returnDate"
+      <vxe-column
+        title="客退日期"
+        field="returnDate"
         align="center"
-        width="100"
-        column-key="returnDate"
+        width="88"
         :filters="getFiltersData('returnDate')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-        fixed
+        fixed="left"
       />
-
+        <!-- :filters="handleDataFilter({ 1: '大货', 2: '样品' })" -->
       <!-- 2. 客退类型 -->
-      <el-table-column
-        label="客退类型"
-        prop="afterType"
+      <vxe-column
+        title="客退类型"
+        field="afterType"
         align="center"
-        width="90"
-        column-key="afterType"
-        :filters="handleDataFilter({ 1: '大货', 2: '样品' })"
+        width="65"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-        fixed
+        fixed="left"
       >
-        <template slot-scope="{ row }">
+        <template #default="{ row }">
           <el-tag v-if="row.afterType === 1" type="primary">大货</el-tag>
           <el-tag v-else-if="row.afterType === 2" type="warning">样品</el-tag>
           <span v-else v-NoData="row.afterType"></span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 3. 发生阶段 -->
-      <el-table-column
-        label="发生阶段"
-        prop="generatorStage"
+      <vxe-column
+        title="发生阶段"
+        field="generatorStage"
         align="center"
-        width="100"
-        column-key="generatorStage"
+        width="78"
         :filters="happenStageFilters"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-        fixed
+        fixed="left"
       >
-        <span slot-scope="{ row }" v-NoData="row.generatorStage"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <span v-NoData="row.generatorStage"></span>
+        </template>
+      </vxe-column>
 
       <!-- 4. 问题状态 -->
-      <el-table-column
-        label="问题状态"
-        prop="status"
+      <vxe-column
+        title="问题状态"
+        field="status"
         align="center"
-        width="90"
-        column-key="status"
+        width="78"
         :filters="handleDataFilter({ '0': 'OPEN', '1': 'CLOSE' })"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-        fixed
+        fixed="left"
       >
-        <template slot-scope="{ row }">
+        <template #default="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
           <el-tag v-else type="success">CLOSE</el-tag>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 5. 处理时效(h) -->
-      <el-table-column
-        label="处理时效(h)"
-        prop="handleTime"
+      <vxe-column
+        title="处理时效(h)"
+        field="handleTime"
         align="center"
-        width="110"
+        width="80"
       >
-        <template slot-scope="{ row }">
+        <template #default="{ row }">
           <span>
             {{ row.processingTime }}
           </span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 6. 客户名称 -->
-      <el-table-column
-        label="客户名称"
-        prop="customerName"
+      <vxe-column
+        title="客户名称"
+        field="customerName"
         align="center"
-        width="140"
-        column-key="customerName"
+        width="120"
         :filters="getFiltersData('customerName')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-      />
+        :show-overflow="false"
+      >
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.customerName)"
+            :content="getTextValue(row.customerName)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.customerName)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 7. 客退方 -->
-      <el-table-column
-        label="客退方"
-        prop="returnParty"
+      <vxe-column
+        title="客退方"
+        field="returnParty"
         align="center"
         width="120"
-        column-key="returnParty"
         :filters="getFiltersData('returnParty')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-      />
+        :show-overflow="false"
+      >
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.returnParty)"
+            :content="getTextValue(row.returnParty)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.returnParty)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 8. 品类 -->
-      <el-table-column
-        label="品类"
-        prop="categoryName"
+      <vxe-column
+        title="品类"
+        field="categoryName"
         align="center"
-        width="120"
-        column-key="categoryName"
+        width="100"
         :filters="getFiltersData('categoryName')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-      />
+        :show-overflow="false"
+      >
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.categoryName)"
+            :content="getTextValue(row.categoryName)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.categoryName)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 9. 仪表型号 -->
-      <el-table-column
-        label="仪表型号"
-        prop="computerName"
+      <vxe-column
+        title="仪表型号"
+        field="computerName"
         align="center"
         width="140"
-        column-key="computerName"
         :filters="getFiltersData('computerName')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
+        :show-overflow="false"
       >
-        <span slot-scope="{ row }" v-NoData="row.computerName"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.computerName)"
+            :content="getTextValue(row.computerName)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.computerName)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 10. 产品SN -->
-      <el-table-column
-        label="产品SN"
-        prop="sn"
+      <vxe-column
+        title="产品SN"
+        field="sn"
         align="center"
-        width="140"
-        column-key="sn"
+        width="160"
         :filters="getFiltersData('sn')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
+        :show-overflow="false"
       >
-        <template slot-scope="{ row }">
-          <el-link @click.stop="toPage(row.sn)">{{ row.sn }}</el-link>
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.sn)"
+            :content="getTextValue(row.sn)"
+            placement="top"
+            :open-delay="200"
+          >
+            <el-link
+              class="text-clamp-2 text-clamp-center text-link-clamp"
+              @click.stop="toPage(row.sn)"
+            >
+              {{ getTextValue(row.sn) }}
+            </el-link>
+          </el-tooltip>
+          <span v-else>-</span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 11. 客诉现象 -->
-      <el-table-column
-        label="客诉现象"
-        prop="result"
+      <vxe-column
+        title="客诉现象"
+        field="result"
         align="center"
         width="150"
-        column-key="result"
+        class-name="rich-text-column"
         :filters="getFiltersData('result')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
-        show-overflow-tooltip
-      />
+        :show-overflow="false"
+      >
+        <template #default="{ row }">
+          <el-popover
+            v-if="row.result"
+            placement="top-start"
+            trigger="hover"
+            width="420"
+            popper-class="after-sale-rich-popover"
+          >
+            <RichTextDisplay
+              :content="row.result"
+              max-height="320px"
+              placeholder="-"
+            />
+            <div slot="reference" class="rich-preview-trigger">
+              <span class="rich-preview-text">{{
+                getHtmlPreviewText(row.result)
+              }}</span>
+            </div>
+          </el-popover>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 13. 一级问题 -->
-      <el-table-column
-        label="一级问题"
-        prop="confirmMajorClass"
+      <vxe-column
+        title="一级问题"
+        field="confirmMajorClass"
         align="center"
         width="120"
-        column-key="confirmMajorClass"
         :filters="dictFilterOptions('after_problem_major_class')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
       >
-        <span slot-scope="{ row }" v-NoData="row.confirmMajorClass"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <span v-NoData="row.confirmMajorClass"></span>
+        </template>
+      </vxe-column>
 
       <!-- 14. 二级问题 -->
-      <el-table-column
-        label="二级问题"
-        prop="confirmMinorClass"
+      <vxe-column
+        title="二级问题"
+        field="confirmMinorClass"
         align="center"
         width="120"
-        column-key="confirmMinorClass"
         :filters="dictFilterOptions('after_problem_minor_class')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
       >
-        <span slot-scope="{ row }" v-NoData="row.confirmMinorClass"></span>
-      </el-table-column>
-      <el-table-column
-        label="分析负责人"
-        prop="locationAnalyst"
+        <template #default="{ row }">
+          <span v-NoData="row.confirmMinorClass"></span>
+        </template>
+      </vxe-column>
+      <vxe-column
+        title="分析负责人"
+        field="locationAnalyst"
         align="center"
-        width="120"
-        column-key="locationAnalyst"
+        width="90"
         :filters="getFiltersData('locationAnalyst')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
+        :show-overflow="false"
       >
-        <span slot-scope="{ row }" v-NoData="row.locationAnalyst"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.locationAnalyst)"
+            :content="getTextValue(row.locationAnalyst)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.locationAnalyst)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
       <!-- 15. 发生原因 -->
-      <el-table-column
-        label="发生原因"
-        prop="analysisCause"
+      <vxe-column
+        title="发生原因"
+        field="analysisCause"
         align="center"
         width="200"
+        class-name="rich-text-column"
+        :show-overflow="false"
       >
-        <template slot-scope="{ row }">
-          <RichTextDisplay
-            :content="row.analysisCause"
-            max-height="120px"
-            placeholder="-"
-          />
+        <template #default="{ row }">
+          <el-popover
+            v-if="row.analysisCause"
+            placement="top-start"
+            trigger="hover"
+            width="420"
+            popper-class="after-sale-rich-popover"
+          >
+            <RichTextDisplay
+              :content="row.analysisCause"
+              max-height="320px"
+              placeholder="-"
+            />
+            <div slot="reference" class="rich-preview-trigger">
+              <span class="rich-preview-text">{{
+                getHtmlPreviewText(row.analysisCause)
+              }}</span>
+            </div>
+          </el-popover>
+          <span v-else>-</span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 16. 流出原因 -->
-      <el-table-column
-        label="流出原因"
-        prop="analysisOutflowCause"
+      <vxe-column
+        title="流出原因"
+        field="analysisOutflowCause"
         align="center"
         width="200"
+        class-name="rich-text-column"
+        :show-overflow="false"
       >
-        <template slot-scope="{ row }">
-          <RichTextDisplay
-            :content="row.analysisOutflowCause"
-            max-height="120px"
-            placeholder="-"
-          />
+        <template #default="{ row }">
+          <el-popover
+            v-if="row.analysisOutflowCause"
+            placement="top-start"
+            trigger="hover"
+            width="420"
+            popper-class="after-sale-rich-popover"
+          >
+            <RichTextDisplay
+              :content="row.analysisOutflowCause"
+              max-height="320px"
+              placeholder="-"
+            />
+            <div slot="reference" class="rich-preview-trigger">
+              <span class="rich-preview-text">{{
+                getHtmlPreviewText(row.analysisOutflowCause)
+              }}</span>
+            </div>
+          </el-popover>
+          <span v-else>-</span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 17. 责任判定 -->
-      <el-table-column
-        label="一级责任"
-        prop="parentResponsibilityPerson"
+      <vxe-column
+        title="一级责任"
+        field="parentResponsibilityPerson"
         align="center"
-        width="180"
-        column-key="parentResponsibilityPerson"
+        width="90"
         :filters="dictFilterOptions('responsibility_group')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
+        :show-overflow="false"
       >
-        <template slot-scope="{ row }">
-          {{ row.parentResponsibilityPerson }}
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.parentResponsibilityPerson)"
+            :content="getTextValue(row.parentResponsibilityPerson)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.parentResponsibilityPerson)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
         </template>
-      </el-table-column>
+      </vxe-column>
       <!-- 17. 责任判定 -->
-      <el-table-column
-        label="二级责任"
-        prop="responsibilityPerson"
+      <vxe-column
+        title="二级责任"
+        field="responsibilityPerson"
         align="center"
-        width="180"
-        column-key="responsibilityPerson"
+        width="90"
         :filters="dictFilterOptions('responsibility_determination')"
         :filter-method="filterHandler"
-        filter-placement="bottom"
+        :show-overflow="false"
       >
-        <template slot-scope="{ row }">
-          {{ row.responsibilityPerson }}
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.responsibilityPerson)"
+            :content="getTextValue(row.responsibilityPerson)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2 text-clamp-center">{{
+              getTextValue(row.responsibilityPerson)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
         </template>
-      </el-table-column>
+      </vxe-column>
 
       <!-- 18. 内部对策 -->
-      <el-table-column
-        label="短期对策"
-        prop="internalMeasures"
+      <vxe-column
+        title="短期对策"
+        field="internalMeasures"
         align="center"
         width="150"
-        show-overflow-tooltip
+        class-name="rich-text-column"
+        :show-overflow="false"
       >
-        <span slot-scope="{ row }" v-NoData="row.internalMeasures"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <el-popover
+            v-if="row.internalMeasures"
+            placement="top-start"
+            trigger="hover"
+            width="420"
+            popper-class="after-sale-rich-popover"
+          >
+            <RichTextDisplay
+              :content="row.internalMeasures"
+              max-height="320px"
+              placeholder="-"
+            />
+            <div slot="reference" class="rich-preview-trigger">
+              <span class="rich-preview-text">{{
+                getHtmlPreviewText(row.internalMeasures)
+              }}</span>
+            </div>
+          </el-popover>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 19. 外部对策 -->
-      <el-table-column
-        label="长期对策"
-        prop="externalMeasures"
+      <vxe-column
+        title="长期对策"
+        field="externalMeasures"
         align="center"
         width="150"
-        show-overflow-tooltip
+        class-name="rich-text-column"
+        :show-overflow="false"
       >
-        <span slot-scope="{ row }" v-NoData="row.externalMeasures"></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <el-popover
+            v-if="row.externalMeasures"
+            placement="top-start"
+            trigger="hover"
+            width="420"
+            popper-class="after-sale-rich-popover"
+          >
+            <RichTextDisplay
+              :content="row.externalMeasures"
+              max-height="320px"
+              placeholder="-"
+            />
+            <div slot="reference" class="rich-preview-trigger">
+              <span class="rich-preview-text">{{
+                getHtmlPreviewText(row.externalMeasures)
+              }}</span>
+            </div>
+          </el-popover>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 20. 改善责任人 -->
-      <el-table-column
-        label="改善责任人"
-        prop="problemResponsiblePerson"
+      <vxe-column
+        title="改善责任人"
+        field="problemResponsiblePerson"
         align="center"
-        width="120"
+        width="80"
+        :show-overflow="false"
       >
-        <span
-          slot-scope="{ row }"
-          v-NoData="row.problemResponsiblePerson"
-        ></span>
-      </el-table-column>
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="!Is_Empty(row.problemResponsiblePerson)"
+            :content="getTextValue(row.problemResponsiblePerson)"
+            placement="top"
+            :open-delay="200"
+          >
+            <span class="text-clamp-2">{{
+              getTextValue(row.problemResponsiblePerson)
+            }}</span>
+          </el-tooltip>
+          <span v-else>-</span>
+        </template>
+      </vxe-column>
 
       <!-- 21. 返回日期 -->
-      <el-table-column
-        label="返回日期"
-        prop="logistics.returnDate"
+      <vxe-column
+        title="返回日期"
+        field="logistics.returnDate"
         align="center"
         width="100"
       >
-        <span
-          slot-scope="{ row }"
-          v-NoData="row.logistics && row.logistics.returnDate"
-        ></span>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="120" fixed="right">
-        <template slot-scope="{ row }">
+        <template #default="{ row }">
+          <span v-NoData="row.logistics && row.logistics.returnDate"></span>
+        </template>
+      </vxe-column>
+      <vxe-column
+        title="处理类型"
+        field="processType"
+        align="center"
+        width="120"
+        :filters="getFiltersData('processType')"
+        :filter-method="filterHandler"
+        show-overflow="tooltip"
+      >
+        <template #default="{ row }">
+          <span v-NoData="row.processType"></span>
+        </template>
+      </vxe-column>
+      <vxe-column
+        title="跟踪状态"
+        field="afterProblemId"
+        align="center"
+        width="80"
+      >
+        <template #default="{ row }">
+          <el-tag :type="row.afterProblemId ? 'success' : 'info'">
+            {{ row.afterProblemId ? "已跟踪" : "未跟踪" }}
+          </el-tag>
+        </template>
+      </vxe-column>
+      <vxe-column title="操作" align="center" width="120" fixed="right">
+        <template #default="{ row }">
           <div class="op-actions">
             <el-button
               v-hasPermi="['third:afterSale:edit']"
@@ -607,7 +825,7 @@
                   command="createProblem"
                   class="text-center"
                 >
-                  转进展看板
+                  问题跟踪
                 </el-dropdown-item>
                 <el-dropdown-item
                   v-hasPermi="['third:afterSale:log']"
@@ -640,8 +858,8 @@
             </el-dropdown>
           </div>
         </template>
-      </el-table-column>
-    </el-table>
+      </vxe-column>
+    </VirtualTable>
 
     <pagination
       v-show="total > 0"
@@ -649,6 +867,7 @@
       :ls="[50, 100, 200]"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
+      style="margin:0"
       @pagination="getList"
     />
 
@@ -727,6 +946,7 @@ import { dragTableFn } from "@/mixins/common";
 import globalData from "./mixins/global";
 import { getCustomerList } from "@/api/order";
 import RichTextDisplay from "@/components/RichTextDisplay";
+import VirtualTable from "@/components/VirtualTable";
 export default {
   name: "AfterSale",
   mixins: [commonData, dragTableFn, globalData],
@@ -742,6 +962,7 @@ export default {
       import("@/views/third/afterProblem/components/ProblemForm"),
     OperLogDialog: () => import("@/components/OperLogDialog"),
     RichTextDisplay,
+    VirtualTable,
   },
   data() {
     return {
@@ -807,8 +1028,8 @@ export default {
         3: "日",
       },
       happenStageFilters: [
-        { text: "组装厂", value: "组装厂" },
-        { text: "用户", value: "用户" },
+        { label: "组装厂", text: "组装厂", value: "组装厂", data: "组装厂" },
+        { label: "用户", text: "用户", value: "用户", data: "用户" },
       ],
       // 处理进展
       stateList: {
@@ -1060,8 +1281,10 @@ export default {
       return (dictKey) => {
         const dictList = this.dict.type[dictKey] || [];
         return dictList.map((item) => ({
+          label: item.label,
           text: item.label,
           value: item.label,
+          data: item.label,
         }));
       };
     },
@@ -1149,12 +1372,22 @@ export default {
           if (data instanceof Object) {
             if (Array.isArray(data)) {
               return data.map(({ dictLabel, dictValue }) => {
-                return { text: dictLabel, value: +dictValue };
+                return {
+                  label: dictLabel,
+                  text: dictLabel,
+                  value: +dictValue,
+                  data: +dictValue,
+                };
               });
             } else {
               return Object.entries(data)
                 .map(([key, value]) => {
-                  return { text: value, value: +key };
+                  return {
+                    label: value,
+                    text: value,
+                    value: +key,
+                    data: +key,
+                  };
                 })
                 .sort((a, b) => a.text - b.text);
             }
@@ -1175,8 +1408,10 @@ export default {
           if (!this.Is_Empty(item[key]) && !filterList.includes(item[key])) {
             filterList.push(item[key]);
             newList.push({
+              label: item[key],
               text: item[key],
               value: item[key],
+              data: item[key],
             });
           }
         });
@@ -1328,12 +1563,36 @@ export default {
       }
     },
     handleSelectionChange(selection) {
-      this.multipleList = selection;
-      this.saleIdList = selection.map((item) => item.id);
-      this.uploadIds = selection.map((item) => item.id);
+      const records = Array.isArray(selection)
+        ? selection
+        : this.getSelectedRecords();
+      this.multipleList = records;
+      this.saleIdList = records.map((item) => item.id);
+      this.uploadIds = records.map((item) => item.id);
+    },
+    getSelectedRecords() {
+      const table = this.$refs.afterSaleRef?.getVxeTable?.();
+      if (table && typeof table.getCheckboxRecords === "function") {
+        return table.getCheckboxRecords();
+      }
+      return [];
+    },
+    getTextValue(value) {
+      return this.Is_Empty(value) ? '-' : String(value);
+    },
+    getHtmlPreviewText(content) {
+      if (!content) return '-';
+      const div = document.createElement('div');
+      div.innerHTML = content;
+      const text = (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+      return text || '-';
     },
     clearSaleSelection() {
-      this.$refs.afterSaleRef.clearSelection();
+      const table = this.$refs.afterSaleRef?.getVxeTable?.();
+      if (table && typeof table.clearCheckboxRow === "function") {
+        table.clearCheckboxRow();
+      }
+      this.handleSelectionChange([]);
     },
     /** 查询品牌列表 */
     getList() {
@@ -1605,11 +1864,23 @@ export default {
         `/afterSaleSupport/material/PartInfoView/productRecord?sn=${sn}`
       );
     },
+    getColumnLabel(column) {
+      return column?.title || column?.label || column?.own?.title || "";
+    },
     // 点击行打开详情
     handleRowClick(row, column, event) {
+      if (row && row.row) {
+        event = row.$event;
+        column = row.column;
+        row = row.row;
+      }
+      if (column?.type === "checkbox" || column?.own?.type === "checkbox") {
+        return;
+      }
       // 排除特殊列的点击（这些列有自己的点击逻辑）
       const excludeColumns = ["操作", "产品SN", "处理进展"];
-      if (column && excludeColumns.includes(column.label)) {
+      const label = this.getColumnLabel(column);
+      if (label && excludeColumns.includes(label)) {
         return;
       }
       // 打开详情弹窗
@@ -1617,7 +1888,12 @@ export default {
     },
 
     cellClick(row, column, cell, event) {
-      const { label } = column;
+      if (row && row.row) {
+        event = row.$event;
+        column = row.column;
+        row = row.row;
+      }
+      const label = this.getColumnLabel(column);
       switch (label) {
         case "处理进展":
           this.seeDealProgress(row);
@@ -1625,7 +1901,7 @@ export default {
       }
     },
     cellStyle({ row, column, rowIndex, columnIndex }) {
-      const { label } = column;
+      const label = this.getColumnLabel(column);
       // 特殊列显示手型光标
       if (label === "产品SN" || label === "处理进展") {
         return `cursor: pointer;`;
@@ -1634,6 +1910,15 @@ export default {
       if (label && label !== "操作") {
         return `cursor: pointer;`;
       }
+    },
+    tableRowClassName({ row, rowIndex }) {
+      if (row.afterProblemId) {
+        return "tracked-problem-row";
+      }
+      if (row.isProgressBoard === 1) {
+        return "progress-board-row";
+      }
+      return "";
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -1704,13 +1989,26 @@ export default {
     },
     /** 每项筛选方法 */
     filterHandler(value, row, column) {
-      const property = column["property"];
-
+      if (arguments.length === 1 && value && value.option) {
+        const { option, row: currentRow, column: currentColumn } = value;
+        const property = currentColumn.property || currentColumn.field;
+        const filterValue =
+          option.data !== undefined ? option.data : option.value;
+        return currentRow[property] == filterValue;
+      }
+      const property = column["property"] || column["field"];
       return row[property] == value;
     },
     /** 清除所有过滤器  */
     clearFilter() {
-      this.$refs.afterSaleRef.clearFilter();
+      if (this.$refs.afterSaleRef?.clearAllFilters) {
+        this.$refs.afterSaleRef.clearAllFilters();
+        return;
+      }
+      const table = this.$refs.afterSaleRef?.getVxeTable?.();
+      if (table && typeof table.clearFilter === "function") {
+        table.clearFilter();
+      }
     },
     /** 客户名称列表 */
     getCustomerNameList({ page = 1, more = false, keyword = "" } = {}) {
@@ -1770,32 +2068,114 @@ export default {
   color: #67c23a;
 }
 
+.rich-preview-trigger {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.text-clamp-2,
+.rich-preview-text {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 20px;
+  text-align: left;
+  max-height: 40px;
+}
+
+.text-link-clamp {
+  text-align: left;
+
+  /deep/ span {
+    display: inherit;
+    width: 100%;
+    overflow: inherit;
+    -webkit-box-orient: inherit;
+    -webkit-line-clamp: inherit;
+    white-space: inherit;
+    word-break: inherit;
+    line-height: inherit;
+    max-height: inherit;
+  }
+}
+
+.text-clamp-center {
+  text-align: center;
+}
+
+.text-link-clamp.text-clamp-center {
+  text-align: center;
+}
+
 // 修复固定列遮挡滚动条的问题
 .afterSaleBox {
-  // 固定列右侧不遮挡滚动条
-  /deep/ .el-table__fixed-right {
-    height: calc(100% - 13px) !important;
-    z-index: 15 !important;
-    box-shadow: -1px 0 8px rgba(0, 0, 0, 0.12) !important;
+  /deep/ .vxe-table--body .vxe-body--row,
+  /deep/ .vxe-table--fixed-left-body-wrapper .vxe-body--row,
+  /deep/ .vxe-table--fixed-right-body-wrapper .vxe-body--row {
+    height: auto !important;
   }
 
-  // 固定列左侧不遮挡滚动条
-  /deep/ .el-table__fixed-left {
-    height: calc(100% - 13px) !important;
-    z-index: 15 !important;
-    box-shadow: 1px 0 8px rgba(0, 0, 0, 0.12) !important;
+  /deep/ .vxe-body--column {
+    height: auto !important;
+    vertical-align: middle;
   }
 
-  // 确保固定列背景色正确
-  /deep/ .el-table__fixed-left .el-table__cell,
-  /deep/ .el-table__fixed-right .el-table__cell {
-    background-color: #fff !important;
-    z-index: 1;
-    position: relative;
+  /deep/ .vxe-body--row.tracked-problem-row .vxe-body--column,
+  /deep/ .vxe-body--row.progress-board-row .vxe-body--column,
+  /deep/ .vxe-table--fixed-left-wrapper
+    .vxe-body--row.tracked-problem-row
+    .vxe-body--column,
+  /deep/ .vxe-table--fixed-right-wrapper
+    .vxe-body--row.tracked-problem-row
+    .vxe-body--column,
+  /deep/ .vxe-table--fixed-left-wrapper
+    .vxe-body--row.progress-board-row
+    .vxe-body--column,
+  /deep/ .vxe-table--fixed-right-wrapper
+    .vxe-body--row.progress-board-row
+    .vxe-body--column {
+    background-color: #f0f9eb !important;
   }
 
-  // 确保滚动条可见且可以交互
-  /deep/ .el-table__body-wrapper {
+  /deep/ .vxe-cell {
+    line-height: 1.5;
+    max-height: none !important;
+    height: auto !important;
+    white-space: normal;
+    overflow: visible;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /deep/ .vxe-body--column.rich-text-column {
+    vertical-align: top;
+  }
+
+  /deep/ .vxe-body--column.rich-text-column .vxe-cell {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /deep/ .vxe-body--column {
+    .cell,
+    .vxe-cell {
+      overflow: visible;
+    }
+  }
+
+  /deep/ .vxe-body--column .el-button {
+    margin-left: 0 !important;
+  }
+
+  /deep/ .vxe-table--body-wrapper,
+  /deep/ .vxe-table--fixed-left-body-wrapper,
+  /deep/ .vxe-table--fixed-right-body-wrapper {
     &::-webkit-scrollbar {
       height: 12px;
       width: 12px;
@@ -1814,6 +2194,17 @@ export default {
         background: #a8a8a8;
       }
     }
+  }
+}
+
+/deep/ .after-sale-rich-popover {
+  max-width: 460px;
+
+  .rich-text-content {
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 

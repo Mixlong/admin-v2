@@ -61,10 +61,13 @@ export default {
 
       const baseUrl = this.microAppConfig.url
       const subPath = this.microAppConfig.props?.subPath
+      const cacheToken = this.microAppConfig.props?.timestamp || ''
 
       // 通过URL参数传递路由信息
       if (subPath) {
-        const fullUrl = `${baseUrl}?subPath=${subPath}&t=${Date.now()}`
+        const fullUrl = cacheToken
+          ? `${baseUrl}?subPath=${subPath}&t=${cacheToken}`
+          : `${baseUrl}?subPath=${subPath}`
         console.log('微应用URL构建:', { baseUrl, subPath, fullUrl })
         return fullUrl
       }
@@ -76,7 +79,8 @@ export default {
     // 为每个不同的subPath生成唯一的key，确保组件重新渲染
     microAppKey() {
       const subPath = this.microAppConfig.props?.subPath || 'default'
-      return `${this.microAppConfig.name}-${subPath}-${this.microAppConfig.props?.timestamp || Date.now()}`
+      const cacheToken = this.microAppConfig.props?.timestamp || 'stable'
+      return `${this.microAppConfig.name}-${subPath}-${cacheToken}`
     }
   },
   created() {

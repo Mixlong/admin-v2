@@ -198,6 +198,12 @@ export default {
       type: Object,
       default: () => ({}),
     },
+
+    // 是否启用虚拟滚动
+    virtualEnabled: {
+      type: Boolean,
+      default: true,
+    },
     
     // 滚动条配置
     scrollbarConfig: {
@@ -224,6 +230,11 @@ export default {
   computed: {
     // 合并后的虚拟滚动配置
     computedVirtualYConfig() {
+      if (!this.virtualEnabled) {
+        return {
+          enabled: false,
+        };
+      }
       return {
         enabled: true,
         gt: this.virtualThreshold,

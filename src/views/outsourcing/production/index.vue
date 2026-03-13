@@ -91,309 +91,190 @@
     </IntelligentSearchForm>
 
     <!-- 表格区域 -->
-    <el-table
+    <VirtualTable
       ref="table"
       :data="tableData"
-      v-loading="loading"
-      border
-      style="width: 100%"
+      :columns="tableColumns"
+      :loading="loading"
       :height="tableHeight(-50)"
-      row-key="id"
-      @selection-change="handleSelectionChange"
+      :row-config="{ keyField: 'id', isHover: true, height: 36 }"
+      :column-config="{ resizable: true }"
+      show-overflow="tooltip"
+      show-header-overflow="tooltip"
+      class="outsourcing-production-table"
     >
-      <!-- 勾选 -->
-      <el-table-column label="排产单号/料号" align="center" width="150">
-        <template slot-scope="scope">
-          <span v-if="scope.row.productionProcess === 'SMT'">{{
-            scope.row.schedulingNo || "--"
-          }}</span>
-          <span v-else>{{ scope.row.partNo || "--" }}</span>
-        </template>
-      </el-table-column>
+      <template #scheduleNo="{ row }">
+        <span v-if="row.productionProcess === 'SMT'">{{
+          row.schedulingNo || "--"
+        }}</span>
+        <span v-else>{{ row.partNo || "--" }}</span>
+      </template>
 
-      <!-- 请购单号 -->
-      <el-table-column
-        prop="orderCode"
-        label="采购单号"
-        align="center"
-        width="130"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.orderCode || "--" }}</span>
-        </template>
-      </el-table-column>
+      <template #processType="{ row }">
+        <el-tag
+          size="small"
+          :type="
+            row.productionProcess === 'SMT'
+              ? 'primary'
+              : row.productionProcess === '打板'
+              ? 'warning'
+              : 'info'
+          "
+        >
+          {{ row.productionProcess || "--" }}
+        </el-tag>
+      </template>
 
-      <!-- 品类名称 -->
-      <el-table-column prop="categoryName" label="品类" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.categoryName || "--" }}</span>
-        </template>
-      </el-table-column>
+      <template #bomCode="{ row }">
+        <el-tooltip
+          v-if="row.bomCode"
+          :content="row.bomCode"
+          placement="top"
+          :open-delay="200"
+        >
+          <span class="table-ellipsis-text">{{ row.bomCode }}</span>
+        </el-tooltip>
+        <span v-else>--</span>
+      </template>
 
-      <!-- 型号/硬件版本号 -->
-      <el-table-column label="型号/硬件版本号" align="center">
-        <template slot-scope="scope">
-          <span v-if="scope.row.productionProcess === 'SMT'">{{
-            scope.row.computerName || "--"
-          }}</span>
-          <span v-else>{{ scope.row.hwVersion || "--" }}</span>
-        </template>
-      </el-table-column>
+      <template #bomFile="{ row }">
+        <el-tag
+          v-if="row.productionProcess == 'SMT'"
+          :type="!!row.smtBomFile ? 'success' : 'danger'"
+          size="small"
+          :style="
+            row.auditStatus === 2
+              ? 'cursor: not-allowed; opacity: 0.6;'
+              : 'cursor: pointer;'
+          "
+          @click="handleUploadBom(row)"
+        >
+          {{ !!row.smtBomFile ? "已上传" : "未上传" }}
+        </el-tag>
+        <span v-else>--</span>
+      </template>
 
-      <!-- BOM编码 -->
-      <el-table-column
-        prop="bomCode"
-        label="BOM编码"
-        align="center"
-        width="150"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.bomCode || "--" }}</span>
-        </template>
-      </el-table-column>
-      <!-- 生产流程 -->
-      <el-table-column
-        prop="productionProcess"
-        label="生产流程"
-        align="center"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            size="small"
-            :type="
-              scope.row.productionProcess === 'SMT'
-                ? 'primary'
-                : scope.row.productionProcess === '打板'
-                ? 'warning'
-                : 'info'
-            "
-          >
-            {{ scope.row.productionProcess || "--" }}
-          </el-tag>
-        </template>
-      </el-table-column>
+      <template #materialStatus="{ row }">
+        <el-tag
+          @click="handleSeeMaterialStatus(row)"
+          :type="row.materialStatus === 1 ? 'success' : 'warning'"
+          size="small"
+          style="cursor: pointer"
+        >
+          {{ row.materialStatus === 1 ? "齐套" : "未齐套" }}
+        </el-tag>
+      </template>
 
-      <!-- BOM文件 -->
-      <el-table-column
-        prop="orderStatus"
-        label="BOM文件"
-        align="center"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            v-if="scope.row.productionProcess == 'SMT'"
-            :type="!!scope.row.smtBomFile ? 'success' : 'danger'"
-            size="small"
-            :style="
-              scope.row.auditStatus === 2
-                ? 'cursor: not-allowed; opacity: 0.6;'
-                : 'cursor: pointer;'
-            "
-            @click="handleUploadBom(scope.row)"
-          >
-            {{ !!scope.row.smtBomFile ? "已上传" : "未上传" }}
-          </el-tag>
-          <span v-else>--</span>
-        </template>
-      </el-table-column>
-      <!-- 资料状态 -->
-      <el-table-column
-        prop="materialStatus"
-        label="资料状态"
-        align="center"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            @click="handleSeeMaterialStatus(scope.row)"
-            :type="scope.row.materialStatus === 1 ? 'success' : 'warning'"
-            size="small"
-            style="cursor: pointer"
-          >
-            {{ scope.row.materialStatus === 1 ? "齐套" : "未齐套" }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <!-- 审核状态 -->
-      <el-table-column
-        prop="auditStatus"
-        label="采购订单状态"
-        align="center"
-        width="110"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            type="success"
-            size="small"
-            v-if="scope.row.orderCancelStatus === 0"
-          >
-            已关联
-          </el-tag>
-          <el-tag
-            v-else-if="scope.row.orderCancelStatus === 1"
-            type="danger"
-            size="small"
-          >
-            已撤销
-          </el-tag>
-          <el-tag v-else :type="'info'" size="small"> 未关联 </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="relatedSend" label="关联外发" align="center" width="90">
-        <template slot-scope="scope">
-          <el-tag :type="getRelatedSendType(scope.row.relatedSend)" size="small">
-            {{ getRelatedSendText(scope.row.relatedSend) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="auditStatus"
-        label="外发状态"
-        align="center"
-        width="90"
-      >
-        <template slot-scope="scope">
-          <el-tag
-            :type="
-              getAuditStatusType(
-                scope.row.orderStatus == -1
-                  ? scope.row.orderStatus
-                  : scope.row.auditStatus
-              )
-            "
-            size="small"
-          >
-            {{
-              getAuditStatusText(
-                scope.row.orderStatus == -1
-                  ? scope.row.orderStatus
-                  : scope.row.auditStatus
-              )
-            }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <!-- 订单状态（合并显示） -->
-      <!-- <el-table-column prop="orderStatus" label="订单状态" align="center" width="110">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.orderStatus === -1" type="danger" size="small">
-            已撤销
-          </el-tag>
-          <el-tag v-else-if="!scope.row.purchaseOrderImg" type="warning" size="small">
-            未上传
-          </el-tag>
-          <el-tag v-else-if="scope.row.purchaseOrderImg" type="success" size="small">
-            已上传
-          </el-tag>
-        </template>
-      </el-table-column> -->
+      <template #orderStatus="{ row }">
+        <el-tag
+          type="success"
+          size="small"
+          v-if="row.orderCancelStatus === 0"
+        >
+          已关联
+        </el-tag>
+        <el-tag
+          v-else-if="row.orderCancelStatus === 1"
+          type="danger"
+          size="small"
+        >
+          已撤销
+        </el-tag>
+        <el-tag v-else :type="'info'" size="small"> 未关联 </el-tag>
+      </template>
 
-      <!-- 发布时间 -->
-      <el-table-column prop="publishTime" label="发布时间" align="center"width="95">
-        <template slot-scope="scope">
-          <span>{{
-            parseTime(scope.row.publishTime, "{y}-{m}-{d}") || "--"
-          }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" align="center" width="95">
-        <template slot-scope="scope">
-                <span>{{
-            parseTime(scope.row.createTime, "{y}-{m}-{d}") ||
-            "--"
-            }}</span>
-        </template>
-      </el-table-column>
-      <!-- 创建人 -->
-      <el-table-column prop="createBy" label="创建人" align="center" width="90">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createBy || "--" }}</span>
-        </template>
-      </el-table-column>
+      <template #relatedSend="{ row }">
+        <el-tag :type="getRelatedSendType(row.relatedSend)" size="small">
+          {{ getRelatedSendText(row.relatedSend) }}
+        </el-tag>
+      </template>
 
-      <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="200" fixed="right">
-        <template slot-scope="scope">
-          <!-- 查看 -->
+      <template #auditStatus="{ row }">
+        <el-tag
+          :type="
+            getAuditStatusType(
+              row.orderStatus == -1 ? row.orderStatus : row.auditStatus
+            )
+          "
+          size="small"
+        >
+          {{
+            getAuditStatusText(
+              row.orderStatus == -1 ? row.orderStatus : row.auditStatus
+            )
+          }}
+        </el-tag>
+      </template>
+
+      <template #action="{ row }">
+        <div class="operation-actions">
           <el-tooltip content="查看" placement="top" :open-delay="300">
             <el-button
               size="mini"
               type="text"
               icon="el-icon-view"
-              @click="handleView(scope.row)"
+              @click="handleView(row)"
               v-hasPermi="['outsourcing:production:view']"
               class="icon-btn icon-btn-primary"
             />
           </el-tooltip>
 
-          <!-- 编辑 -->
           <el-tooltip content="编辑" placement="top" :open-delay="300">
             <el-button
               size="mini"
               type="text"
               icon="el-icon-edit"
-              @click="handleEdit(scope.row)"
+              @click="handleEdit(row)"
               v-hasPermi="['outsourcing:production:update']"
               class="icon-btn icon-btn-warning"
             />
           </el-tooltip>
 
-          <!-- 初审 -->
-          <!-- <el-tooltip content="初审" placement="top" :open-delay="300" v-if="scope.row.auditStatus === 0">
-            <el-button size="mini" type="text" icon="el-icon-s-check" @click="handleFirstAudit(scope.row)"
-              v-hasPermi="['outsourcing:production:first-audit']" class="icon-btn icon-btn-success" />
-          </el-tooltip> -->
-
-          <!-- 终审 -->
           <el-tooltip
             content="外发"
             placement="top"
             :open-delay="300"
-            v-if="scope.row.auditStatus === 0"
+            v-if="row.auditStatus === 0"
           >
             <el-button
               size="mini"
               type="text"
               icon="el-icon-circle-check"
-              @click="handleFinalAudit(scope.row)"
+              @click="handleFinalAudit(row)"
               v-hasPermi="['outsourcing:production:final-audit']"
               class="icon-btn icon-btn-success"
             />
           </el-tooltip>
 
-          <!-- 撤销 -->
           <el-tooltip
             content="撤销"
             placement="top"
             :open-delay="300"
-            v-if="scope.row.auditStatus === 2 && scope.row.orderStatus !== -1"
+            v-if="row.auditStatus === 2 && row.orderStatus !== -1"
           >
             <el-button
               size="mini"
               type="text"
               icon="el-icon-refresh-left"
-              @click="handleCancel(scope.row)"
+              @click="handleCancel(row)"
               v-hasPermi="['outsourcing:production:cancel']"
               class="icon-btn icon-btn-orange"
             />
           </el-tooltip>
 
-          <!-- 删除 -->
           <el-tooltip content="删除" placement="top" :open-delay="300">
             <el-button
               size="mini"
               type="text"
               icon="el-icon-delete"
-              @click="handleDelete(scope.row)"
+              @click="handleDelete(row)"
               v-hasPermi="['outsourcing:production:delete']"
               class="icon-btn icon-btn-danger"
             />
           </el-tooltip>
-        </template>
-      </el-table-column>
-    </el-table>
+        </div>
+      </template>
+    </VirtualTable>
 
     <!-- 分页组件 -->
     <div class="pagination-section">
@@ -527,6 +408,18 @@
           <el-descriptions-item label="芯片版本">{{
             viewData.chipVersion || "--"
           }}</el-descriptions-item>
+          <el-descriptions-item
+            v-if="viewData.productionProcess === 'SMT'"
+            label="SN"
+          >
+            {{ viewData.sn || "--" }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="viewData.productionProcess === 'SMT'"
+            label="PCBA SN"
+          >
+            {{ viewData.pcbaSn || "--" }}
+          </el-descriptions-item>
           <el-descriptions-item label="生产流程">{{
             viewData.productionProcess || "--"
           }}</el-descriptions-item>
@@ -746,6 +639,7 @@ import {
 } from "@/api/outsourcing/production";
 import { getSchedulingByCode } from "@/api/production/scheduling";
 import IntelligentSearchForm from "@/components/IntelligentSearchForm";
+import VirtualTable from "@/components/VirtualTable";
 import ImageUpload from "@/components/el-upload-sortable/index.vue";
 import BatchImportDialog from "./components/BatchImportDialog.vue";
 import ProductionProcessFormDialog from "./components/ProductionProcessFormDialog.vue";
@@ -755,6 +649,7 @@ export default {
   name: "OutsourcingProduction",
   components: {
     IntelligentSearchForm,
+    VirtualTable,
     ImageUpload,
     BatchImportDialog,
     ProductionProcessFormDialog,
@@ -872,7 +767,7 @@ export default {
       // 分页
       pagination: {
         current: 1,
-        size: 20,
+        size: 50,
         total: 0,
       },
       // 对话框
@@ -1023,6 +918,133 @@ export default {
     };
   },
   computed: {
+    tableColumns() {
+      return [
+        {
+          field: "scheduleNo",
+          title: "排产单号/料号",
+          align: "center",
+          width: 150,
+          slotName: "scheduleNo",
+          useTooltip: false,
+        },
+        {
+          field: "orderCode",
+          title: "采购单号",
+          align: "center",
+          width: 130,
+          formatter: (row) => row.orderCode || "--",
+        },
+        {
+          field: "categoryName",
+          title: "品类",
+          align: "center",
+          width: 85,
+          formatter: (row) => row.categoryName || "--",
+        },
+        {
+          field: "computerDisplay",
+          title: "型号/硬件版本号",
+          align: "center",
+          minWidth: 190,
+          formatter: (row) =>
+            row.productionProcess === "SMT"
+              ? row.computerName || "--"
+              : row.hwVersion || "--",
+        },
+        {
+          field: "bomCode",
+          title: "BOM编码",
+          align: "center",
+          width: 130,
+          slotName: "bomCode",
+          useTooltip: false,
+        },
+        {
+          field: "productionProcess",
+          title: "生产流程",
+          align: "center",
+          width: 70,
+          slotName: "processType",
+          useTooltip: false,
+        },
+        {
+          field: "smtBomFile",
+          title: "BOM文件",
+          align: "center",
+          width: 70,
+          slotName: "bomFile",
+          useTooltip: false,
+        },
+        {
+          field: "materialStatus",
+          title: "资料状态",
+          align: "center",
+          width: 70,
+          slotName: "materialStatus",
+          useTooltip: false,
+        },
+        {
+          field: "orderCancelStatus",
+          title: "采购订单状态",
+          align: "center",
+          width: 85,
+          slotName: "orderStatus",
+          useTooltip: false,
+        },
+        {
+          field: "relatedSend",
+          title: "关联外发",
+          align: "center",
+          width: 60,
+          slotName: "relatedSend",
+          useTooltip: false,
+        },
+        {
+          field: "auditStatus",
+          title: "外发状态",
+          align: "center",
+          width: 70,
+          slotName: "auditStatus",
+          useTooltip: false,
+        },
+        {
+          field: "publishTime",
+          title: "发布时间",
+          align: "center",
+          width: 85,
+          formatter: (row) =>
+            this.parseTime(row.publishTime, "{y}-{m}-{d}") || "--",
+        },
+        {
+          field: "createTime",
+          title: "创建时间",
+          align: "center",
+          width: 85,
+          formatter: (row) =>
+            this.parseTime(row.createTime, "{y}-{m}-{d}") || "--",
+        },
+        {
+          field: "createBy",
+          title: "创建人",
+          align: "center",
+          width: 80,
+          formatter: (row) => row.createBy || "--",
+        },
+        {
+          field: "action",
+          title: "操作",
+          align: "center",
+          width: 100,
+          fixed: "right",
+          slotName: "action",
+          useTooltip: false,
+          showOverflow: false,
+          showHeaderOverflow: false,
+          className: "operation-column",
+        },
+      ];
+    },
     // 过滤生产地点列表，去除"迪太工厂"
     filteredProductAddressList() {
       return this.productAddressList.filter(
@@ -1068,6 +1090,13 @@ export default {
           }
           // 查询完成后清除 DigiSmart 跳转ID
           this.clearDigiSmartId();
+          this.$nextTick(() => {
+            const vxeTable = this.$refs.table?.getVxeTable?.();
+            if (vxeTable?.recalculate) {
+              vxeTable.recalculate();
+            }
+            this.$refs.table?.refreshScroll?.();
+          });
         })
         .finally(() => {
           this.loading = false;
@@ -2064,10 +2093,51 @@ export default {
   color: #f56c6c;
 }
 
+::v-deep .operation-column .vxe-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.operation-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
 /* 操作列居中并紧凑 */
-::v-deep .el-table__body .el-button--text {
-  padding: 0;
+::v-deep .vxe-body--row .el-button--text {
+  padding: 0 1px !important;
   min-width: auto;
+  margin: 0;
+  line-height: 1;
+}
+
+::v-deep .operation-column .vxe-cell--html,
+::v-deep .operation-column .vxe-cell--render-default {
+  overflow: visible;
+}
+
+::v-deep .operation-column .icon-btn {
+  font-size: 15px;
+  padding: 2px !important;
+  margin: 0;
+  min-width: 14px;
+  min-height: 14px;
+  line-height: 1;
+}
+
+.table-ellipsis-text {
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .dialog-footer {

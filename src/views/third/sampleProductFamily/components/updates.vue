@@ -644,7 +644,7 @@
 
               <el-form-item label="实际协议" prop="instrumentModel.showAgreement"
                 :rules="isCheckConfigItem({ message: '实际协议' })">
-                <el-select v-model="form.instrumentModel.showAgreement" placeholder="请选择实际协议" class="w100" clearable>
+                <el-select v-model="form.instrumentModel.showAgreement" placeholder="请选择实际协议" filterable allow-create class="w100" clearable>
                   <el-option v-for="item in dicts_agreement" :key="item.dictValue" :label="item.dictLabel"
                     :value="item.dictLabel">
                   </el-option>

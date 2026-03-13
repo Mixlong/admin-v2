@@ -301,10 +301,13 @@
               </div>
 
               <!-- 产品图纸审核状态与操作 -->
-              <div v-if="row.specification" class="audit-row audit-row-spec">
+              <div class="audit-row audit-row-spec">
                 <div class="audit-status">
                   <el-tooltip
-                    v-if="row.specificationAuditStatus === -1"
+                    v-if="
+                      row.specification &&
+                      row.specificationAuditStatus === -1
+                    "
                     :content="
                       row.specificationReasonRejection || '暂无拒绝原因'
                     "
@@ -317,21 +320,33 @@
                   </el-tooltip>
                   <el-tag
                     size="mini"
-                    v-else-if="row.specificationAuditStatus === 0"
+                    v-else-if="
+                      row.specification &&
+                      row.specificationAuditStatus === 0
+                    "
                     type="warning"
                     ><span class="tag-prefix-spec">图纸:</span>待初审</el-tag
                   >
                   <el-tag
                     size="mini"
-                    v-else-if="row.specificationAuditStatus === 1"
+                    v-else-if="
+                      row.specification &&
+                      row.specificationAuditStatus === 1
+                    "
                     type="warning"
                     ><span class="tag-prefix-spec">图纸:</span>待终审</el-tag
                   >
                   <el-tag
                     size="mini"
-                    v-else-if="row.specificationAuditStatus === 2"
+                    v-else-if="
+                      row.specification &&
+                      row.specificationAuditStatus === 2
+                    "
                     type="success"
                     ><span class="tag-prefix-spec">图纸:</span>已审核</el-tag
+                  >
+                  <el-tag size="mini" v-else type="info"
+                    ><span class="tag-prefix-spec">图纸:</span>--</el-tag
                   >
 
                   <!-- 产品图纸审核人信息 - 移到状态后面 -->
@@ -365,7 +380,10 @@
                 <div class="audit-operations">
                   <!-- 产品图纸初审 -->
                   <Tooltip
-                    v-if="row.specificationAuditStatus === 0"
+                    v-if="
+                      row.specification &&
+                      row.specificationAuditStatus === 0
+                    "
                     class="text-orange"
                     icon="el-icon-circle-check"
                     content="图纸初审"
@@ -375,7 +393,10 @@
 
                   <!-- 产品图纸终审 -->
                   <Tooltip
-                    v-if="row.specificationAuditStatus === 1"
+                    v-if="
+                      row.specification &&
+                      row.specificationAuditStatus === 1
+                    "
                     class="text-orange"
                     icon="el-icon-circle-check"
                     content="图纸终审"
@@ -385,6 +406,7 @@
 
                   <!-- 产品图纸查看 -->
                   <Tooltip
+                    v-if="row.specification"
                     icon="el-icon-view"
                     content="图纸查看"
                     @click="handleViewSpecification(row)"

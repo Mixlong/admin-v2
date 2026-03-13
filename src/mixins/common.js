@@ -112,7 +112,15 @@ const dragTableFn = {
     handleDrag() {
       let isDragging = false; // 标记是否正在拖动
       let isCtrlDown = false; // 标记Ctrl键是否被按下
-      const scrollContainer = document.querySelector("#drag_table > .el-table__body-wrapper");
+      const tableRoot = document.querySelector("#drag_table");
+      const scrollContainer =
+        tableRoot &&
+        (tableRoot.querySelector(".el-table__body-wrapper") ||
+          tableRoot.querySelector(".vxe-table--body-wrapper"));
+
+      if (!scrollContainer) {
+        return;
+      }
 
       // 监听键盘按下事件
       document.addEventListener("keydown", function (event) {

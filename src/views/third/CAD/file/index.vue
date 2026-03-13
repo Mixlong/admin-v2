@@ -122,6 +122,31 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="是否许可" prop="isLicense" align="center" width="90">
+        <template slot-scope="{ row }">
+          <el-tag :type="Number(row.isLicense) === 1 ? 'success' : 'info'">
+            {{ Number(row.isLicense) === 1 ? "许可" : "不许可" }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="历史问题" align="center" width="260">
+        <template slot-scope="{ row }">
+          <div v-if="row.issuesList && row.issuesList.length > 0" class="issues-list">
+            <div v-for="(issue, index) in row.issuesList" :key="issue.id || index" class="issue-item">
+              <div class="issue-head">
+                <span class="issue-time">{{ issue.createTime || "- - -" }}</span>
+                <el-tag :type="Number(issue.status) === 1 ? 'success' : 'info'" size="mini">
+                  {{ Number(issue.status) === 1 ? '已处理' : '未处理' }}
+                </el-tag>
+              </div>
+              <div class="issue-desc" :title="issue.historicalIssues || '- - -'">
+                {{ issue.historicalIssues || "- - -" }}
+              </div>
+            </div>
+          </div>
+          <span v-else class="text-muted">- - -</span>
+        </template>
+      </el-table-column>
       <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
@@ -248,6 +273,8 @@ import CompUpdate from "./components/update";
 import BatchSyncConfig from "./components/batchSyncConfig.vue";
 import BluetoothAssociationDialog from "./components/BluetoothAssociationDialog.vue";
 
+const PAGE_CACHE_KEY = "third-cad-file-page-state";
+
 export default {
   name: "FileConfig",
   mixins: [categoryComputerDictMixins],
@@ -310,6 +337,7 @@ export default {
       showUpdateDialog: false,
       bluetoothAssociationVisible: false,
       currentFileConfig: null,
+      isRestoringSelection: false,
     };
   },
   computed: {
@@ -380,47 +408,19 @@ export default {
     $route: {
       async handler(route) {
         if (route.name === "FileConfig") {
-          const { categoryId, computerId } = route?.params;
+          const { categoryId, computerId } = route?.params || {};
 
-          // 如果已经初始化过，只有在有参数传入时才更新
-          if (this.isInitialized) {
-            if (categoryId && computerId) {
-              // 确保categoryId在dictList中存在
-              const validCategory = this.dictList.find(dict => dict.id === categoryId);
-              this.queryParams.categoryId = validCategory ? categoryId : this.dictList[0]?.id;
-              this.getComputerData();
-              this.queryParams.computerId = computerId;
-              this.handleQuery();
-            }
+          if (this.isInitialized && !categoryId && !computerId) {
             return;
           }
 
-          // 首次初始化
-          this.queryParams.categoryId = "";
-          this.queryParams.computerId = "";
           this.isDictLoading = true; // 开始加载
 
           try {
-            // 先加载品类数据
             this.dictList = await this.getCategoryData();
-
-            if (categoryId && computerId) {
-              // 确保categoryId在dictList中存在
-              const validCategory = this.dictList.find(dict => dict.id === categoryId);
-              this.queryParams.categoryId = validCategory ? categoryId : this.dictList[0]?.id;
-              this.getComputerData();
-              this.queryParams.computerId = computerId;
-
-              this.handleQuery();
-            } else {
-              // 默认选择第一个
-              this.queryParams.categoryId = this.dictList[0]?.id;
-              this.getComputerData();
-
-              this.handleQuery();
-            }
-
-            this.isInitialized = true; // 标记已初始化
+            await this.initializeRouteState(route);
+            this.handleQuery();
+            this.isInitialized = true;
           } finally {
             this.isDictLoading = false; // 加载完成
           }
@@ -435,7 +435,152 @@ export default {
   //     vm.getList();
   //   });
   // },
+  activated() {
+    if (this.isInitialized) {
+      this.getFileConfigSn();
+      this.getList();
+    }
+  },
+  deactivated() {
+    this.savePageState();
+  },
+  beforeDestroy() {
+    this.savePageState();
+  },
   methods: {
+    getDefaultQueryParams() {
+      return {
+        p: 1,
+        l: 100,
+        key: undefined,
+        status: undefined,
+        type: undefined,
+        computerId: undefined,
+        categoryId: undefined,
+        erp: undefined,
+      };
+    },
+    getPageState() {
+      try {
+        return JSON.parse(sessionStorage.getItem(PAGE_CACHE_KEY) || "{}");
+      } catch (error) {
+        console.error("读取 CAD 文件页缓存失败:", error);
+        return {};
+      }
+    },
+    setPageState(state) {
+      sessionStorage.setItem(PAGE_CACHE_KEY, JSON.stringify(state));
+    },
+    getCurrentProjectCacheKey() {
+      const { categoryId, computerId } = this.queryParams;
+      if (!categoryId || !computerId) return "";
+      return `${categoryId}_${computerId}`;
+    },
+    getCachedQueryParams() {
+      const state = this.getPageState();
+      return state.queryParams || null;
+    },
+    savePageState() {
+      const state = this.getPageState();
+      const nextState = {
+        ...state,
+        queryParams: {
+          ...this.getDefaultQueryParams(),
+          ...this.queryParams,
+        },
+      };
+
+      this.setPageState(nextState);
+      this.saveCurrentProjectSelection();
+    },
+    saveCurrentProjectSelection(selection = this.ids) {
+      const projectKey = this.getCurrentProjectCacheKey();
+      if (!projectKey) return;
+
+      const state = this.getPageState();
+      const projectSelections = state.projectSelections || {};
+
+      projectSelections[projectKey] = (selection || []).map((item) => item.id);
+
+      this.setPageState({
+        ...state,
+        projectSelections,
+      });
+    },
+    getCurrentProjectSelectionIds() {
+      const projectKey = this.getCurrentProjectCacheKey();
+      if (!projectKey) return [];
+
+      const state = this.getPageState();
+      const projectSelections = state.projectSelections || {};
+
+      return projectSelections[projectKey] || [];
+    },
+    restoreTableSelection() {
+      this.$nextTick(() => {
+        const tableRef = this.$refs.multipleTableRef;
+        if (!tableRef) return;
+
+        const selectedIds = this.getCurrentProjectSelectionIds();
+        const selectedRows = this.brandList.filter((row) =>
+          selectedIds.includes(row.id)
+        );
+
+        this.isRestoringSelection = true;
+        tableRef.clearSelection();
+        selectedRows.forEach((row) => {
+          tableRef.toggleRowSelection(row, true);
+        });
+
+        this.ids = selectedRows;
+        this.single = selectedRows.length !== 1;
+        this.multiple = !selectedRows.length;
+
+        this.$nextTick(() => {
+          this.isRestoringSelection = false;
+          this.saveCurrentProjectSelection(selectedRows);
+        });
+      });
+    },
+    async initializeRouteState(route) {
+      const { categoryId, computerId } = route?.params || {};
+      const cachedQueryParams = this.getCachedQueryParams();
+      const nextQueryParams = {
+        ...this.getDefaultQueryParams(),
+      };
+
+      if (cachedQueryParams) {
+        Object.assign(nextQueryParams, cachedQueryParams);
+      }
+
+      if (categoryId && computerId) {
+        nextQueryParams.categoryId = categoryId;
+        nextQueryParams.computerId = computerId;
+      } else if (!nextQueryParams.categoryId) {
+        nextQueryParams.categoryId = this.dictList[0]?.id;
+      }
+
+      const validCategory = this.dictList.find(
+        (dict) => dict.id === nextQueryParams.categoryId
+      );
+      nextQueryParams.categoryId = validCategory
+        ? nextQueryParams.categoryId
+        : this.dictList[0]?.id;
+
+      this.queryParams = {
+        ...this.queryParams,
+        ...nextQueryParams,
+      };
+
+      const targetComputerId = this.queryParams.computerId;
+      await this.changeCategory(this.queryParams.categoryId);
+
+      const hasCurrentComputer = this.computerOptions.some(
+        (item) => item.model === targetComputerId
+      );
+
+      this.queryParams.computerId = hasCurrentComputer ? targetComputerId : "";
+    },
     async getFileConfigSn() {
       const { categoryId, computerId } = this.queryParams;
       if (categoryId && computerId) {
@@ -495,6 +640,8 @@ export default {
         this.brandList = response.data.list;
         this.total = response.data.total;
         this.loading = false;
+        this.savePageState();
+        this.restoreTableSelection();
       });
     },
     tableRowClassName({ row }) {
@@ -677,6 +824,8 @@ export default {
       this.ids = selection;
       this.single = selection.length != 1;
       this.multiple = !selection.length;
+      if (this.isRestoringSelection) return;
+      this.saveCurrentProjectSelection(selection);
     },
     //生产许可判断
     handleProPermit(permitStatus) {
@@ -860,6 +1009,42 @@ export default {
   b {
     color: #67c23a;
   }
+}
+
+.issues-list {
+  max-height: 92px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.issue-item {
+  padding: 6px 0;
+  border-bottom: 1px dashed #ebeef5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.issue-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.issue-time {
+  color: #909399;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.issue-desc {
+  color: #303133;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
 }
 
 /* .Cad-option-box {

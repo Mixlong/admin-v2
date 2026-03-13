@@ -128,6 +128,25 @@
             </el-radio-group>
           </el-form-item>
 
+          <el-form-item label="SN" prop="sn">
+            <el-input
+              v-model="formData.sn"
+              placeholder="请输入SN"
+              clearable
+              maxlength="100"
+              prefix-icon="el-icon-postcard"
+            />
+          </el-form-item>
+          <el-form-item label="PCBA SN" prop="pcbaSn">
+            <el-input
+              v-model="formData.pcbaSn"
+              placeholder="请输入PCBA SN"
+              clearable
+              maxlength="100"
+              prefix-icon="el-icon-postcard"
+            />
+          </el-form-item>
+
           <!-- 品类+型号（仅在选择品类+型号时显示） -->
           <template v-if="formData.schedulingInfoType === 'categoryModel'">
             <!-- 采购单号 -->
@@ -420,6 +439,8 @@ export default {
         productionProcess: "SMT",
         categoryId: "",
         computerId: "",
+        sn: "",
+        pcbaSn: "",
         partNo: "",
         orderCode: "",
         smtBomFile: "",
@@ -604,6 +625,8 @@ export default {
       this.formData.schedulingInfoType = "schedulingNo";
       this.formData.categoryId = "";
       this.formData.computerId = "";
+      this.formData.sn = "";
+      this.formData.pcbaSn = "";
       this.formData.partNo = "";
       this.formData.orderCode = "";
       this.formData.relatedSend = value === "SMT" ? 0 : "";
@@ -666,6 +689,8 @@ export default {
             this.formData.schedulingId = detail.id;
             this.formData.categoryId = detail.categoryId;
             this.formData.computerId = detail.computerId;
+            this.formData.sn = detail.sn || this.formData.sn;
+            this.formData.pcbaSn = detail.pcbaSn || this.formData.pcbaSn;
 
             // 加载型号列表
             if (detail.categoryId) {
@@ -788,6 +813,8 @@ export default {
         productionProcess: "SMT",
         categoryId: "",
         computerId: "",
+        sn: "",
+        pcbaSn: "",
         partNo: "",
         orderCode: "",
         smtBomFile: "",
@@ -827,6 +854,8 @@ export default {
         productionProcess: productionProcess,
         categoryId: this.editData.categoryId || "",
         computerId: this.editData.computerId || "",
+        sn: this.editData.sn || "",
+        pcbaSn: this.editData.pcbaSn || "",
         partNo: this.editData.partNo || "",
         orderCode: this.editData.orderCode || "",
         smtBomFile: this.editData.smtBomFile || "",
