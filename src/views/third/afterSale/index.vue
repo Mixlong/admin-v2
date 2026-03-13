@@ -2091,6 +2091,9 @@ export default {
 
 .text-link-clamp {
   text-align: left;
+  font-size: inherit;
+  font-weight: 400;
+  color: inherit;
 
   /deep/ span {
     display: inherit;
@@ -2102,6 +2105,9 @@ export default {
     word-break: inherit;
     line-height: inherit;
     max-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
   }
 }
 
@@ -2113,8 +2119,23 @@ export default {
   text-align: center;
 }
 
+.afterSaleBox {
+  /deep/ .text-link-clamp.el-link,
+  /deep/ .text-link-clamp.el-link--default {
+    font-size: 14px;
+    font-weight: 400;
+    color: #606266;
+  }
+}
+
 // 修复固定列遮挡滚动条的问题
 .afterSaleBox {
+  /deep/ .vxe-header--column {
+    background-color: #cfd8e6 !important;
+    color: #4a5568;
+    font-weight: 600;
+  }
+
   /deep/ .vxe-table--body .vxe-body--row,
   /deep/ .vxe-table--fixed-left-body-wrapper .vxe-body--row,
   /deep/ .vxe-table--fixed-right-body-wrapper .vxe-body--row {

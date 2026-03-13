@@ -28,7 +28,7 @@ const baseApiList = {
   test: "http://test-admin.riding-evolved.com",
   // development: "http://192.168.2.114:8111",
   // development: "http://192.168.2.26:8100",
-  development: "http://config-admin-api.riding-evolved.com",
+  // development: "http://config-admin-api.riding-evolved.com",
   // 生产
   production: productionBase,
 };
