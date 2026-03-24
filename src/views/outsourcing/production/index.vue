@@ -482,9 +482,7 @@
                 : "--"
             }}
           </el-descriptions-item>
-          <el-descriptions-item label="硬件版本号">{{
-            viewData.hwVersion || "--"
-          }}</el-descriptions-item>
+          
           <el-descriptions-item label="备注" :span="3">{{
             viewData.remark || "--"
           }}</el-descriptions-item>

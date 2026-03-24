@@ -242,8 +242,10 @@
       :loading="loading"
       :data="brandList"
       :height="tableHeight(-10)"
-      :virtual-enabled="false"
-      :row-config="{ keyField: 'id', isHover: true }"
+      :virtual-enabled="true"
+      :row-height="56"
+      :virtual-threshold="100"
+      :row-config="{ keyField: 'id', isHover: true, height: 56 }"
       :column-config="{ resizable: false }"
       :checkbox-config="{ reserve: true }"
       show-overflow="ellipsis"
@@ -338,22 +340,19 @@
         title="客户名称"
         field="customerName"
         align="center"
-        width="120"
+        width="90"
         :filters="getFiltersData('customerName')"
         :filter-method="filterHandler"
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.customerName)"
-            :content="getTextValue(row.customerName)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.customerName)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.customerName)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.customerName) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -363,22 +362,19 @@
         title="客退方"
         field="returnParty"
         align="center"
-        width="120"
+        width="90"
         :filters="getFiltersData('returnParty')"
         :filter-method="filterHandler"
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.returnParty)"
-            :content="getTextValue(row.returnParty)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.returnParty)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.returnParty)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.returnParty) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -388,22 +384,19 @@
         title="品类"
         field="categoryName"
         align="center"
-        width="100"
+        width="70"
         :filters="getFiltersData('categoryName')"
         :filter-method="filterHandler"
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.categoryName)"
-            :content="getTextValue(row.categoryName)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.categoryName)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.categoryName)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.categoryName) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -419,16 +412,13 @@
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.computerName)"
-            :content="getTextValue(row.computerName)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.computerName)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.computerName)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.computerName) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -438,25 +428,20 @@
         title="产品SN"
         field="sn"
         align="center"
-        width="160"
+        width="110"
         :filters="getFiltersData('sn')"
         :filter-method="filterHandler"
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <el-link
             v-if="!Is_Empty(row.sn)"
-            :content="getTextValue(row.sn)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.sn)"
+            class="text-clamp-2 text-clamp-center text-link-clamp"
+            @click.stop="toPage(row.sn)"
           >
-            <el-link
-              class="text-clamp-2 text-clamp-center text-link-clamp"
-              @click.stop="toPage(row.sn)"
-            >
-              {{ getTextValue(row.sn) }}
-            </el-link>
-          </el-tooltip>
+            {{ getTextValue(row.sn) }}
+          </el-link>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -500,7 +485,7 @@
         title="一级问题"
         field="confirmMajorClass"
         align="center"
-        width="120"
+        width="90"
         :filters="dictFilterOptions('after_problem_major_class')"
         :filter-method="filterHandler"
       >
@@ -514,7 +499,7 @@
         title="二级问题"
         field="confirmMinorClass"
         align="center"
-        width="120"
+        width="100"
         :filters="dictFilterOptions('after_problem_minor_class')"
         :filter-method="filterHandler"
       >
@@ -532,16 +517,13 @@
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.locationAnalyst)"
-            :content="getTextValue(row.locationAnalyst)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.locationAnalyst)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.locationAnalyst)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.locationAnalyst) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -620,16 +602,13 @@
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.parentResponsibilityPerson)"
-            :content="getTextValue(row.parentResponsibilityPerson)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.parentResponsibilityPerson)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.parentResponsibilityPerson)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.parentResponsibilityPerson) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -644,16 +623,13 @@
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.responsibilityPerson)"
-            :content="getTextValue(row.responsibilityPerson)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.responsibilityPerson)"
+            class="text-clamp-2 text-clamp-center"
           >
-            <span class="text-clamp-2 text-clamp-center">{{
-              getTextValue(row.responsibilityPerson)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.responsibilityPerson) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -731,16 +707,13 @@
         :show-overflow="false"
       >
         <template #default="{ row }">
-          <el-tooltip
+          <span
             v-if="!Is_Empty(row.problemResponsiblePerson)"
-            :content="getTextValue(row.problemResponsiblePerson)"
-            placement="top"
-            :open-delay="200"
+            :title="getTextValue(row.problemResponsiblePerson)"
+            class="text-clamp-2"
           >
-            <span class="text-clamp-2">{{
-              getTextValue(row.problemResponsiblePerson)
-            }}</span>
-          </el-tooltip>
+            {{ getTextValue(row.problemResponsiblePerson) }}
+          </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
@@ -750,7 +723,7 @@
         title="返回日期"
         field="logistics.returnDate"
         align="center"
-        width="100"
+        width="90"
       >
         <template #default="{ row }">
           <span v-NoData="row.logistics && row.logistics.returnDate"></span>
@@ -760,20 +733,26 @@
         title="处理类型"
         field="processType"
         align="center"
-        width="120"
+        width="100"
         :filters="getFiltersData('processType')"
         :filter-method="filterHandler"
-        show-overflow="tooltip"
       >
         <template #default="{ row }">
-          <span v-NoData="row.processType"></span>
+          <span
+            v-if="!Is_Empty(row.processType)"
+            :title="getTextValue(row.processType)"
+            class="text-clamp-2"
+          >
+            {{ getTextValue(row.processType) }}
+          </span>
+          <span v-else>-</span>
         </template>
       </vxe-column>
       <vxe-column
         title="跟踪状态"
         field="afterProblemId"
         align="center"
-        width="80"
+        width="75"
       >
         <template #default="{ row }">
           <el-tag :type="row.afterProblemId ? 'success' : 'info'">
@@ -864,7 +843,7 @@
     <pagination
       v-show="total > 0"
       :total="total"
-      :ls="[50, 100, 200]"
+      :ls="[30, 50, 100, 200]"
       :page.sync="queryParams.p"
       :limit.sync="queryParams.l"
       style="margin:0"
@@ -1065,7 +1044,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 50,
+        l: 30,
         type: undefined,
         returnDate: undefined,
         returnEndDate: undefined, // 客诉结束日期（仅当type=3时生效）
@@ -1701,16 +1680,24 @@ export default {
       this.currentAnalysisRow = row;
       this.analysisDialogVisible = true;
     },
+    normalizeRichTextContent(content) {
+      if (content === null || content === undefined) {
+        return "";
+      }
+      const html = String(content).trim();
+      if (!html) {
+        return "";
+      }
+
+      const plainText = html
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/gi, "")
+        .replace(/\s+/g, "");
+
+      return plainText ? html : "";
+    },
     // 打开问题处理弹窗（从售后记录创建问题处理）
     handleCreateProblem(row) {
-      // 先保存数据，避免闭包问题
-      const rowData = {
-        id: row.id,
-        locationHandleTime: row.locationHandleTime,
-        locationResult: row.locationResult,
-        sn: row.sn,
-        afterType: row.afterType, // 大货类型：1-大货，2-样品
-      };
       this.problemFormVisible = true;
       this.$nextTick(() => {
         // 重置表单
@@ -1719,22 +1706,22 @@ export default {
         this.$nextTick(() => {
           // 映射售后记录数据到问题处理表单
           // 完成时间 -> 时间点
-          // 定位结果 -> 问题描述
+          // 当前行问题描述 -> 问题描述
           // 当前id -> 关联业务
           // 问题来源默认客户反馈(1)
           this.$refs.problemFormRef.form.problemSource = 1; // 客户反馈
           this.$refs.problemFormRef.form.problemTime =
-            rowData.locationHandleTime || ""; // 完成时间 -> 时间点
+            row.locationHandleTime || ""; // 完成时间 -> 时间点
           this.$refs.problemFormRef.form.problemDescription =
-            rowData.locationResult || ""; // 定位结果 -> 问题描述
-          this.$refs.problemFormRef.form.businessIdList = rowData.id
-            ? [rowData.id]
+            this.normalizeRichTextContent(row.problemDescription);
+          this.$refs.problemFormRef.form.businessIdList = row.id
+            ? [row.id]
             : []; // 当前id -> 关联业务
           // 保存来源SN用于显示
-          this.$refs.problemFormRef.form.problemSourceSn = rowData.sn || "";
+          this.$refs.problemFormRef.form.problemSourceSn = row.sn || "";
           // 根据大货类型设置问题管理员：大货->余美君，样品->袁祥
           this.$refs.problemFormRef.form.problemManager =
-            rowData.afterType === 1 ? "余美君" : "袁祥";
+            row.afterType === 1 ? "余美君" : "袁祥";
           console.log(
             "设置后的 businessIdList:",
             this.$refs.problemFormRef.form.businessIdList
@@ -1846,7 +1833,7 @@ export default {
       this.dateRange = [];
       this.queryParams = {
         p: 1,
-        l: 50,
+        l: 30,
         type: undefined,
         returnDate: undefined,
         returnEndDate: undefined,
@@ -2122,9 +2109,18 @@ export default {
 .afterSaleBox {
   /deep/ .text-link-clamp.el-link,
   /deep/ .text-link-clamp.el-link--default {
-    font-size: 14px;
-    font-weight: 400;
-    color: #606266;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    line-height: inherit;
+    text-decoration: none;
+  }
+
+  /deep/ .text-link-clamp .el-link--inner {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    line-height: inherit;
   }
 }
 
@@ -2139,11 +2135,11 @@ export default {
   /deep/ .vxe-table--body .vxe-body--row,
   /deep/ .vxe-table--fixed-left-body-wrapper .vxe-body--row,
   /deep/ .vxe-table--fixed-right-body-wrapper .vxe-body--row {
-    height: auto !important;
+    height: 56px !important;
   }
 
   /deep/ .vxe-body--column {
-    height: auto !important;
+    height: 56px !important;
     vertical-align: middle;
   }
 
@@ -2167,11 +2163,11 @@ export default {
   /deep/ .vxe-cell {
     line-height: 1.5;
     max-height: none !important;
-    height: auto !important;
+    height: 56px !important;
     white-space: normal;
-    overflow: visible;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    overflow: hidden;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   /deep/ .vxe-body--column.rich-text-column {
@@ -2179,14 +2175,14 @@ export default {
   }
 
   /deep/ .vxe-body--column.rich-text-column .vxe-cell {
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   /deep/ .vxe-body--column {
     .cell,
     .vxe-cell {
-      overflow: visible;
+      overflow: hidden;
     }
   }
 

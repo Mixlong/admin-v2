@@ -20,6 +20,7 @@
             v-model="form.categoryId"
             placeholder="请选择产品品类"
             filterable
+            :disabled="mode === 'change'"
             style="width: 100%"
           >
             <el-option
@@ -53,6 +54,9 @@
             clearable
           ></el-input>
         </el-form-item>
+        <el-form-item v-if="mode === 'change'" label="旧版本号">
+          <span>{{ oldVersionName || "--" }}</span>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -74,12 +78,15 @@ export default {
       step: 1,
       modelList: [],
       dialogVisible: false,
+      mode: "add",
+      oldVersionName: "",
       // 表单参数
       form: {
         name: "",
         desc: "",
         categoryId: "",
         partNo: "",
+        oldVersionName: "",
       },
       title: "",
       // 表单校验
@@ -110,18 +117,21 @@ export default {
     // 表单重置
     reset() {
       this.resetForm("form");
+      this.mode = "add";
+      this.oldVersionName = "";
       this.form = {
         name: "",
         desc: "",
         categoryId: "",
         partNo: "",
+        oldVersionName: "",
       };
     },
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.form.id) {
+          if (this.mode === "update" && this.form.id) {
             editComputer(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
@@ -132,7 +142,7 @@ export default {
           } else {
             addComputer(this.form).then((response) => {
               if (response.code === 200) {
-                this.msgSuccess("添加成功");
+                this.msgSuccess(this.mode === "change" ? "变更成功" : "添加成功");
                 this.dialogVisible = false;
                 this.$parent.getList();
                 this.open = false;
@@ -145,4 +155,3 @@ export default {
   },
 };
 </script>
-

@@ -146,6 +146,19 @@
               prefix-icon="el-icon-postcard"
             />
           </el-form-item>
+          <el-form-item
+            label="硬件版本号"
+            prop="hwVersion"
+            v-if="formData.schedulingInfoType === 'schedulingNo'"
+          >
+            <el-input
+              v-model="formData.hwVersion"
+              placeholder="请输入硬件版本号"
+              clearable
+              maxlength="100"
+              prefix-icon="el-icon-cpu"
+            />
+          </el-form-item>
 
           <!-- 品类+型号（仅在选择品类+型号时显示） -->
           <template v-if="formData.schedulingInfoType === 'categoryModel'">
@@ -211,9 +224,21 @@
                 </el-form-item>
               </el-col>
             </el-row>
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form-item label="硬件版本号" prop="hwVersion" style="margin-top:15px;">
+                  <el-input
+                    v-model="formData.hwVersion"
+                    placeholder="请输入硬件版本号"
+                    clearable
+                    maxlength="100"
+                    prefix-icon="el-icon-cpu"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
           </template>
         </fieldset>
-
 
         <!-- 打板流程信息 -->
         <template v-if="formData.productionProcess === '打板'">
@@ -439,6 +464,7 @@ export default {
         productionProcess: "SMT",
         categoryId: "",
         computerId: "",
+        hwVersion: "",
         sn: "",
         pcbaSn: "",
         partNo: "",
@@ -625,6 +651,7 @@ export default {
       this.formData.schedulingInfoType = "schedulingNo";
       this.formData.categoryId = "";
       this.formData.computerId = "";
+      this.formData.hwVersion = "";
       this.formData.sn = "";
       this.formData.pcbaSn = "";
       this.formData.partNo = "";
@@ -689,6 +716,7 @@ export default {
             this.formData.schedulingId = detail.id;
             this.formData.categoryId = detail.categoryId;
             this.formData.computerId = detail.computerId;
+            this.formData.hwVersion = detail.hwVersion || this.formData.hwVersion;
             this.formData.sn = detail.sn || this.formData.sn;
             this.formData.pcbaSn = detail.pcbaSn || this.formData.pcbaSn;
 
@@ -813,6 +841,7 @@ export default {
         productionProcess: "SMT",
         categoryId: "",
         computerId: "",
+        hwVersion: "",
         sn: "",
         pcbaSn: "",
         partNo: "",
@@ -854,6 +883,7 @@ export default {
         productionProcess: productionProcess,
         categoryId: this.editData.categoryId || "",
         computerId: this.editData.computerId || "",
+        hwVersion: this.editData.hwVersion || "",
         sn: this.editData.sn || "",
         pcbaSn: this.editData.pcbaSn || "",
         partNo: this.editData.partNo || "",
@@ -957,4 +987,5 @@ export default {
 .related-send-radio ::v-deep .el-radio {
   margin-right: 28px;
 }
+
 </style>

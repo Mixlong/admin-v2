@@ -38,6 +38,8 @@
         <template slot-scope="scope">
           <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:hardVersion:update']"
             @click="handleUpdate(scope.row)" />
+          <Tooltip icon="el-icon-refresh" content="变更" v-hasPermi="['third:hardVersion:add']"
+            @click="handleChange(scope.row)" />
           <Tooltip icon="el-icon-delete" :className="['text-red']" content="删除"
             v-hasPermi="['third:hardVersion:delete']" @click="handleDelete(scope.row)" />
         </template>
@@ -128,8 +130,23 @@ export default {
     handleUpdate(row) {
       this.$refs.compUpdate.reset();
       this.$refs.compUpdate.dialogVisible = true;
+      this.$refs.compUpdate.mode = "update";
       this.$refs.compUpdate.form = Object.assign({}, row);
       this.$refs.compUpdate.title = "修改版本";
+    },
+    handleChange(row) {
+      this.$refs.compUpdate.reset();
+      this.$refs.compUpdate.dialogVisible = true;
+      this.$refs.compUpdate.mode = "change";
+      this.$refs.compUpdate.oldVersionName = row.name || "--";
+      this.$refs.compUpdate.form = {
+        categoryId: row.categoryId,
+        name: "",
+        partNo: "",
+        desc: "",
+        oldVersionName: row.name || "",
+      };
+      this.$refs.compUpdate.title = "变更版本";
     },
     handleStatus(row) {
       let text = row.status ? "禁用" : "启用";

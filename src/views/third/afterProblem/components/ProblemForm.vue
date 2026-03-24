@@ -674,7 +674,14 @@ export default {
       richTextFields.forEach(field => {
         if (this.form[field] === null || this.form[field] === undefined) {
           this.form[field] = '';
+          return;
         }
+        const html = String(this.form[field]).trim();
+        const plainText = html
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, '')
+          .replace(/\s+/g, '');
+        this.form[field] = plainText ? html : '';
       });
 
       // 确保来源标识字符串存在（用于 SMT 排产单号等）

@@ -60,29 +60,38 @@
       </el-form-item>
     </el-form>
     <div class="file_config_Sn_box">
-      <span>
-        <b>Sn：</b>
-        {{ fileConfigSnData.sn || "- - -" }}
-      </span>
-      <span class="margin-left">
-        <b>pcbaSn：</b>
-        {{ fileConfigSnData.pcbaSn || "- - -" }}
-      </span>
-      <span class="margin-left" v-if="fileConfigSnData.txFileUrl">
-        <b>腾讯文档：</b>
-        <a :href="fileConfigSnData.txFileUrl" v-if="fileConfigSnData.txFileUrl" target="_blank"
-          style="color: #409eff; display: inline-block; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          {{ fileConfigSnData.txFileUrl }}
-        </a>
-        <el-link :underline="false" icon="el-icon-document-copy" v-clipboard:copy="fileConfigSnData.txFileUrl"
-          v-clipboard:success="() => {
-            msgSuccess('复制成功')
-          }" style="float:right" v-if="fileConfigSnData.txFileUrl">复制</el-link>
-      </span>
+      <div class="file-config-sn-content">
+        <span>
+          <b>Sn：</b>
+          {{ fileConfigSnData.sn || "- - -" }}
+        </span>
+        <span class="margin-left">
+          <b>pcbaSn：</b>
+          {{ fileConfigSnData.pcbaSn || "- - -" }}
+        </span>
+        <span class="margin-left" v-if="fileConfigSnData.txFileUrl">
+          <b>腾讯文档：</b>
+          <a :href="fileConfigSnData.txFileUrl" v-if="fileConfigSnData.txFileUrl" target="_blank"
+            style="color: #409eff; display: inline-block; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{ fileConfigSnData.txFileUrl }}
+          </a>
+          <el-link :underline="false" icon="el-icon-document-copy" v-clipboard:copy="fileConfigSnData.txFileUrl"
+            v-clipboard:success="() => {
+              msgSuccess('复制成功')
+            }" style="float:right" v-if="fileConfigSnData.txFileUrl">复制</el-link>
+        </span>
+      </div>
 
+      <span
+        class="issue-toolbar-btn"
+        @click="handleViewHistoricalIssues()"
+      >
+        历史问题
+      </span>
     </div>
+
     <el-table ref="multipleTableRef" v-loading="loading" :data="brandList" :row-key="getRowKeys"
-      :height="tableHeight(0)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
+      :height="tableHeight(-5)" :row-class-name="tableRowClassName" @selection-change="handleSelectionChange" border>
       <el-table-column type="selection" width="55" align="center" :reserve-selection="true"
         :selectable="checkSelectable" />
       <el-table-column label="序号" width="58" type="index" align="center" />
@@ -129,24 +138,6 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="历史问题" align="center" width="260">
-        <template slot-scope="{ row }">
-          <div v-if="row.issuesList && row.issuesList.length > 0" class="issues-list">
-            <div v-for="(issue, index) in row.issuesList" :key="issue.id || index" class="issue-item">
-              <div class="issue-head">
-                <span class="issue-time">{{ issue.createTime || "- - -" }}</span>
-                <el-tag :type="Number(issue.status) === 1 ? 'success' : 'info'" size="mini">
-                  {{ Number(issue.status) === 1 ? '已处理' : '未处理' }}
-                </el-tag>
-              </div>
-              <div class="issue-desc" :title="issue.historicalIssues || '- - -'">
-                {{ issue.historicalIssues || "- - -" }}
-              </div>
-            </div>
-          </div>
-          <span v-else class="text-muted">- - -</span>
-        </template>
-      </el-table-column>
       <el-table-column label="审核状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="isCheckType(scope.row)">
@@ -173,14 +164,12 @@
           <Tooltip icon="el-icon-circle-check" class="text-orange" content="重置审核" v-hasPermi="['third:cad:resetCheck']"
             v-if="isSResetCheck(scope.row)" @click="handleResetCheck(scope.row)" />
 
-          <!-- 蓝牙固件关联 -->
           <Tooltip v-if="scope.row.type === 'ble_ota_fw'" icon="el-icon-link" class="text-primary" content="蓝牙关联"
             v-hasPermi="['third:cad:bleAssociation']" @click="handleBluetoothAssociation(scope.row)" />
 
           <Tooltip icon="el-icon-download" class="text-orange" content="下载STS脚本" v-hasPermi="['third:cad:downloadSts']"
             v-if="scope.row.jsFile" @click="zipFile(scope.row.jsFile)" />
 
-          <!-- 模拟脚本文件 -->
           <template v-if="scope.row.type === 'simulate_script_file' && scope.row.file">
             <Tooltip icon="el-icon-download" class="text-orange" :content="`下载${scope.row.content}脚本`"
               v-hasPermi="['third:cad:downloadFile']" @click="zipFile(scope.row.file)" />
@@ -197,15 +186,109 @@
           <Tooltip icon="el-icon-refresh-right" content="终审撤回" v-hasPermi="['third:cad:resetChecked']"
             v-if="scope.row.status == 2" @click="handleRevocation(scope.row)" />
 
-          <!-- 批量同步 -->
           <Tooltip v-hasPermi="['third:cad:batch']" icon="el-icon-s-claim" content="批量同步"
             @click="handleUpdate(scope.row, (isBatchSync = true))" />
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-if="total > 0" :total="total" :ls="[20, 50, 100, 300, 500]" :page.sync="queryParams.p"
+    <pagination
+    style="margin-top:0"
+    v-if="total > 0" :total="total" :ls="[20, 50, 100, 300, 500]" :page.sync="queryParams.p"
       :limit.sync="queryParams.l" @pagination="getList" />
+
+    <el-dialog
+      title="历史问题列表"
+      :visible.sync="historicalIssuesDialogVisible"
+      width="1200px"
+      center
+      custom-class="historical-issues-dialog"
+      append-to-body
+    >
+      <el-form :inline="true" class="issue-dialog-filter">
+        <el-form-item label="所属品类">
+          <el-select
+            v-model="historicalIssuesFilter.categoryId"
+            filterable
+            clearable
+            placeholder="请选择品类"
+            style="width: 180px"
+            @change="handleHistoricalIssuesCategoryChange"
+          >
+            <el-option
+              v-for="dict in dictList"
+              :key="dict.id"
+              :label="dict.name"
+              :value="dict.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="仪表型号">
+          <el-select
+            v-model="historicalIssuesFilter.computerId"
+            filterable
+            clearable
+            placeholder="请选择仪表型号"
+            style="width: 220px"
+          >
+            <el-option
+              v-for="dict in historicalIssuesComputerOptions"
+              :key="dict.id || dict.model"
+              :label="dict.name"
+              :value="dict.model"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleHistoricalIssuesSearch">
+            搜索
+          </el-button>
+          <el-button icon="el-icon-refresh" @click="resetHistoricalIssuesSearch">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+
+      <div class="issue-dialog-table-wrap">
+        <el-table
+          v-loading="historicalIssuesLoading"
+          :data="historicalIssuesList"
+          border
+          height="calc(70vh - 64px)"
+        >
+          <el-table-column label="序号" width="58" align="center">
+            <template slot-scope="scope">
+              {{ (historicalIssuesQuery.p - 1) * historicalIssuesQuery.l + scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <el-table-column label="品类" prop="categoryName" align="center" width="140" show-overflow-tooltip />
+          <el-table-column label="型号" prop="computerName" align="center" width="160" show-overflow-tooltip />
+          <el-table-column label="问题点" prop="historicalIssues" align="center" show-overflow-tooltip />
+          <el-table-column label="创建时间" prop="createTime" align="center" width="180" />
+          <el-table-column label="处理时间" prop="updateTime" align="center" width="180">
+            <template slot-scope="{ row }">
+              {{ row.updateTime || "- - -" }}
+            </template>
+          </el-table-column>
+          <el-table-column label="处理状态" align="center" width="120">
+            <template slot-scope="{ row }">
+              <el-tag :type="Number(row.status) === 1 ? 'success' : 'info'" size="mini">
+                {{ Number(row.status) === 1 ? "已处理" : "未处理" }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <pagination
+        style="margin-top:0"
+        v-if="historicalIssuesTotal > 0"
+        :total="historicalIssuesTotal"
+        :ls="[10, 20, 50, 100]"
+        :page.sync="historicalIssuesQuery.p"
+        :limit.sync="historicalIssuesQuery.l"
+        @pagination="fetchHistoricalIssues"
+      />
+    </el-dialog>
 
     <el-dialog title="请确认是否通过" :visible.sync="authDialogVisible" width="40%" center :close-on-click-modal="false">
       <el-form ref="form" :model="auth" class="form-data" :inline="false">
@@ -265,6 +348,7 @@ import {
   computerNameList,
   fileConfigSn,
   editFileConfig,
+  listFileConfigIssues,
 } from "@/api/third/fileConfig";
 import { commonStatusList } from "@/utils/commonData";
 import { categoryComputerDictMixins } from "@/mixins/common";
@@ -338,6 +422,19 @@ export default {
       bluetoothAssociationVisible: false,
       currentFileConfig: null,
       isRestoringSelection: false,
+      historicalIssuesDialogVisible: false,
+      historicalIssuesLoading: false,
+      historicalIssuesList: [],
+      historicalIssuesTotal: 0,
+      historicalIssuesQuery: {
+        p: 1,
+        l: 10,
+      },
+      historicalIssuesFilter: {
+        categoryId: "",
+        computerId: "",
+      },
+      historicalIssuesComputerOptions: [],
     };
   },
   computed: {
@@ -403,6 +500,13 @@ export default {
     authDialogVisible(bool) {
       if (!bool) {
         this.isBatchType = undefined;
+      }
+    },
+    historicalIssuesDialogVisible(bool) {
+      if (!bool) {
+        this.historicalIssuesList = [];
+        this.historicalIssuesTotal = 0;
+        this.historicalIssuesQuery.p = 1;
       }
     },
     $route: {
@@ -927,9 +1031,106 @@ export default {
         this.computerOptions = [];
       }
     },
+    getSelectedComputerOption() {
+      const { categoryId, computerId } = this.queryParams;
+      if (!categoryId || !computerId) return null;
+
+      const currentCategory = this.dictList.find((item) => item.id === categoryId);
+      const categoryComputerList = currentCategory?.computerList || [];
+      const candidateList = [...this.computerOptions, ...categoryComputerList];
+
+      return candidateList.find(
+        (item) =>
+          item.id === computerId ||
+          item.model === computerId ||
+          item.name === computerId
+      );
+    },
+    getHistoricalIssuesComputerOptions(categoryId) {
+      const currentCategory = this.dictList.find((item) => item.id === categoryId);
+      return currentCategory?.computerList || [];
+    },
+    syncHistoricalIssuesFilter() {
+      this.historicalIssuesFilter.categoryId = this.queryParams.categoryId || "";
+      this.historicalIssuesFilter.computerId = this.queryParams.computerId || "";
+      this.historicalIssuesComputerOptions = this.getHistoricalIssuesComputerOptions(
+        this.historicalIssuesFilter.categoryId
+      );
+    },
+    getHistoricalIssueQueryParams() {
+      const selectedComputer = this.historicalIssuesComputerOptions.find(
+        (item) =>
+          item.model === this.historicalIssuesFilter.computerId ||
+          item.id === this.historicalIssuesFilter.computerId ||
+          item.name === this.historicalIssuesFilter.computerId
+      );
+      const categoryId = this.historicalIssuesFilter.categoryId || "";
+      const computerId =
+        this.historicalIssuesFilter.computerId ||
+        selectedComputer?.model ||
+        selectedComputer?.id ||
+        "";
+
+      return {
+        categoryId,
+        computerId,
+      };
+    },
+    handleHistoricalIssuesCategoryChange(value) {
+      this.historicalIssuesComputerOptions = this.getHistoricalIssuesComputerOptions(value);
+      this.historicalIssuesFilter.computerId = "";
+    },
+    handleHistoricalIssuesSearch() {
+      this.historicalIssuesQuery.p = 1;
+      this.fetchHistoricalIssues();
+    },
+    resetHistoricalIssuesSearch() {
+      this.syncHistoricalIssuesFilter();
+      this.historicalIssuesQuery.p = 1;
+      this.fetchHistoricalIssues();
+    },
     // 批量同步文件
     handleFileBatchSyncConfig() {
       this.$refs.batchSyncConfigRef.dialogVisible = true;
+    },
+    async fetchHistoricalIssues() {
+      const { categoryId, computerId } = this.getHistoricalIssueQueryParams();
+
+      if (!categoryId) {
+        this.msgWarning("请先选择品类");
+        return;
+      }
+
+      this.historicalIssuesDialogVisible = true;
+      this.historicalIssuesLoading = true;
+
+      try {
+        const params = {
+          categoryId,
+          p: this.historicalIssuesQuery.p,
+          l: this.historicalIssuesQuery.l,
+        };
+        if (computerId) {
+          params.computerId = computerId;
+        }
+
+        const res = await listFileConfigIssues(params);
+
+        this.historicalIssuesList = res?.data?.list || [];
+        this.historicalIssuesTotal = res?.data?.total || 0;
+      } catch (error) {
+        console.error("获取历史问题列表失败:", error);
+        this.historicalIssuesList = [];
+        this.historicalIssuesTotal = 0;
+        this.msgError("获取历史问题列表失败");
+      } finally {
+        this.historicalIssuesLoading = false;
+      }
+    },
+    async handleViewHistoricalIssues() {
+      this.syncHistoricalIssuesFilter();
+      this.historicalIssuesQuery.p = 1;
+      await this.fetchHistoricalIssues();
     },
     // 蓝牙固件关联 - 打开独立对话框
     handleBluetoothAssociation(row) {
@@ -1005,46 +1206,67 @@ export default {
   background: #f0f9eb;
   padding: 8px 16px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 
   b {
     color: #67c23a;
   }
 }
 
-.issues-list {
-  max-height: 92px;
-  overflow-y: auto;
-  text-align: left;
-}
-
-.issue-item {
-  padding: 6px 0;
-  border-bottom: 1px dashed #ebeef5;
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.issue-head {
+.file-config-sn-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
-.issue-time {
-  color: #909399;
-  font-size: 12px;
-  line-height: 1.4;
+.issue-dialog-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.issue-desc {
-  color: #303133;
-  font-size: 12px;
-  line-height: 1.5;
-  word-break: break-all;
+:deep(.issue-dialog-filter .el-form-item) {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+.issue-toolbar-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e6a23c;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.issue-toolbar-count {
+  margin-left: 2px;
+}
+
+.issue-dialog-header {
+  margin-bottom: 12px;
+  color: #606266;
+  font-size: 13px;
+}
+
+.issue-dialog-table-wrap {
+  max-height: 70vh;
+}
+
+:deep(.historical-issues-dialog .pagination-container) {
+  padding: 12px 0 0;
+}
+
+:deep(.historical-issues-dialog .el-dialog__body) {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 /* .Cad-option-box {

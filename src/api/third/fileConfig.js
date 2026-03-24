@@ -212,6 +212,15 @@ export function fileConfigSn(params) {
   })
 }
 
+// 软件管理历史问题列表
+export function listFileConfigIssues(params) {
+  return request({
+    url: '/file/config/issues/list',
+    method: 'get',
+    params
+  })
+}
+
 
 
 // 批量同步

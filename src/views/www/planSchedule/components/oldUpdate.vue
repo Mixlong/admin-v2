@@ -102,6 +102,13 @@
         >
         </el-date-picker>
       </el-form-item>
+      <el-form-item label="BOM编码:" prop="bomCode">
+        <el-input
+          v-model.trim="form.bomCode"
+          clearable
+          placeholder="请输入BOM编码"
+        />
+      </el-form-item>
      <el-form-item label="订单号:" prop="orderCode">
         <el-input
           v-model.number="form.orderCode"
@@ -257,6 +264,7 @@ export default {
         dateRange: [],
         num: "",
         batchNo: "",
+        bomCode: "",
         batchNum: 1,
       },
       defaultTime: this.moment().format("HH:mm:ss"),
@@ -290,6 +298,9 @@ export default {
           { required: false, message: "请输入客户订单号", trigger: "blur" },
         ],
         num: [{ required: true, validator: checkScheduleNum, trigger: "blur" }],
+        bomCode: [
+          { required: false, message: "请输入BOM编码", trigger: "blur" },
+        ],
         batchNo: [
           { required: false, message: "请输入批次号", trigger: "change" },
         ],
@@ -368,6 +379,7 @@ export default {
         dateRange: [],
         num: "",
         batchNo: "",
+        bomCode: "",
         batchNum: 1,
         remark: "",
       };
