@@ -57,6 +57,25 @@
           @click="handleAdd"
           v-hasPermi="['base:processRoute:add']"
         >新增</el-button>
+        <el-dropdown
+          class="fr mr8"
+          size="mini"
+          @command="handleExportCommand"
+          v-hasPermi="['base:processRoute:query']"
+        >
+          <el-button
+            type="warning"
+            icon="el-icon-download"
+            size="mini"
+            :loading="exportLoading"
+          >
+            导出<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="filter">筛选导出</el-dropdown-item>
+            <el-dropdown-item command="all">全部导出</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
         </el-form>
    
     </div>
@@ -69,10 +88,16 @@
         @selection-change="handleSelectionChange" 
         border 
         style="width: 100%" 
-        :height="tableHeight(160)"
+        :height="tableHeight(20)"
         row-key="id"
         :row-class-name="getRowClassName"
         @sort-change="handleSortChange">
+        <el-table-column
+          type="selection"
+          width="50"
+          align="center"
+          reserve-selection
+        />
         
         <!-- 仪表型号 -->
         <el-table-column label="序号" width="58" type="index" align="center">
@@ -96,7 +121,7 @@
               {{ scope.row[`${processType.dictValue}StandardPeople`] || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="标准产能（PCS/H）" align="center" width="95">
+          <el-table-column label="标准产能（PCS/H）" align="center" width="105">
             <template slot-scope="scope">
               {{ scope.row[`${processType.dictValue}StandardCapacity`] || '-' }}
             </template>
@@ -142,52 +167,53 @@
         
         
         
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180" fixed="right">
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="200" fixed="right">
           <template slot-scope="scope">
- 
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-view"
-              @click="handleView(scope.row)"
-              v-hasPermi="['base:processRoute:query']"
-            >查看</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleUpdate(scope.row)"
-              v-hasPermi="['base:processRoute:edit']"
-            >编辑</el-button>
-            <el-button
-              v-if="!scope.row.sopId"
-              size="mini"
-              type="text"
-              icon="el-icon-finished"
-              @click="handleSopAssociation(scope.row)"
-            >关联SOP</el-button>
-            <el-button
-              v-else
-              size="mini"
-              type="text"
-              icon="el-icon-close"
-              class="text-red"
-              @click="handleSopUnbind(scope.row)"
-            >取消关联</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              class="text-red"
-              icon="el-icon-delete"
-              @click="handleDelete(scope.row)"
-              v-hasPermi="['base:processRoute:remove']"
-            >删除</el-button>
+            <div class="action-cell">
+              <div class="action-cell__row">
+                <el-button
+                  size="mini"
+                  type="text"
+                  @click="handleView(scope.row)"
+                  v-hasPermi="['base:processRoute:query']"
+                >查看</el-button>
+                <el-button
+                  size="mini"
+                  type="text"
+                  @click="handleUpdate(scope.row)"
+                  v-hasPermi="['base:processRoute:edit']"
+                >编辑</el-button>
+              </div>
+              <div class="action-cell__row">
+                <el-button
+                  v-if="!scope.row.sopId"
+                  size="mini"
+                  type="text"
+                  @click="handleSopAssociation(scope.row)"
+                >关联SOP</el-button>
+                <el-button
+                  v-else
+                  size="mini"
+                  type="text"
+                  class="text-red"
+                  @click="handleSopUnbind(scope.row)"
+                >取消关联</el-button>
+                <el-button
+                  size="mini"
+                  type="text"
+                  class="text-red"
+                  @click="handleDelete(scope.row)"
+                  v-hasPermi="['base:processRoute:remove']"
+                >删除</el-button>
+              </div>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
     
     <pagination
+     style="margin-top:0"
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
@@ -259,6 +285,7 @@
 <script>
 import { listProcessRoute, getProcessRoute, delProcessRoute, updateProcessRoute } from "@/api/base/processRoute";
 import { getDicts } from '@/api/system/dict/data';
+import { parseTime } from "@/utils/ruoyi";
 import ProcessRouteDialog from './components/ProcessRouteDialog';
 import ViewProcessRouteDialog from './components/ViewProcessRouteDialog';
 import TypedSelectLoadMore from '@/components/TypedSelectLoadMore';
@@ -280,6 +307,7 @@ export default {
       },
       // 遮罩层
       loading: true,
+      exportLoading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -340,36 +368,13 @@ export default {
     /** 查询工艺路线列表 */
     getList() {
       this.loading = true;
-      // 构建分页参数，确保参数名称正确
-      const params = {
-        ...this.queryParams,
-        p: this.queryParams.pageNum,
-        l: this.queryParams.pageSize
-      };
+      const params = this.buildQueryParams();
       listProcessRoute(params).then(response => {
-        // 处理返回的数据，将detailList中的数据映射到对应的工序类型列
-        const processedList = response.data.list.map(route => {
-          // 复制基础数据
-          const processedRoute = { ...route };
-          
-          // 遍历detailList，将每个工序的数据映射到对应的列
-          if (route.detailList && route.detailList.length > 0) {
-            route.detailList.forEach(detail => {
-              const processTypeValue = detail.processType;
-              // 根据processType映射到对应的列
-              processedRoute[`${processTypeValue}StandardPeople`] = detail.standardPersonnel;
-              processedRoute[`${processTypeValue}StandardCapacity`] = detail.standardCapacity;
-              processedRoute[`${processTypeValue}Upph`] = detail.unitCapacityPerPerson;
-              processedRoute[`${processTypeValue}ManHours`] = detail.laborHours;
-              processedRoute[`${processTypeValue}ChangeoverTime`] = detail.changeoverTime;
-            });
-          }
-          
-          return processedRoute;
-        });
-        
-        this.routeList = processedList;
-        this.total = response.data.total;
+        this.routeList = this.formatRouteList(response.data.list || []);
+        this.total = response.data.total || 0;
+        this.loading = false;
+        this.refreshTableLayout();
+      }).catch(() => {
         this.loading = false;
       });
     },
@@ -483,8 +488,269 @@ export default {
       this.queryParams.isAsc = column.order === 'ascending' ? 'asc' : 'desc';
       this.getList();
     },
-    
- 
+
+    buildQueryParams(query = this.queryParams, extraParams = {}) {
+      return {
+        ...query,
+        p: query.pageNum,
+        l: query.pageSize,
+        ...extraParams
+      };
+    },
+
+    formatRouteList(list = []) {
+      return list.map(route => {
+        const processedRoute = { ...route };
+        if (route.detailList && route.detailList.length > 0) {
+          route.detailList.forEach(detail => {
+            const processTypeValue = detail.processType;
+            processedRoute[`${processTypeValue}StandardPeople`] = detail.standardPersonnel;
+            processedRoute[`${processTypeValue}StandardCapacity`] = detail.standardCapacity;
+            processedRoute[`${processTypeValue}Upph`] = detail.unitCapacityPerPerson;
+            processedRoute[`${processTypeValue}ManHours`] = detail.laborHours;
+            processedRoute[`${processTypeValue}ChangeoverTime`] = detail.changeoverTime;
+          });
+        }
+        return processedRoute;
+      });
+    },
+
+    getExportColumns() {
+      const staticPrefix = [
+        { label: '序号', prop: '__index' },
+        { label: '仪表型号', prop: 'categoryName' },
+        { label: '版本号', prop: 'versionCode' },
+        { label: '备注', prop: 'remarks' }
+      ];
+      const staticSuffix = [
+        { label: '制定日期', prop: 'createTime' },
+        { label: '更新日期', prop: 'updateTime' },
+        { label: '责任人', prop: 'responsiblePerson' }
+      ];
+      const dynamicGroups = (this.processTypeOptions || []).map(processType => {
+        const children = [
+          { label: '标准人数', prop: `${processType.dictValue}StandardPeople` },
+          { label: '标准产能（PCS/H）', prop: `${processType.dictValue}StandardCapacity` },
+          { label: 'UPPH', prop: `${processType.dictValue}Upph` },
+          { label: '人工工时', prop: `${processType.dictValue}ManHours` },
+          { label: '换线时间（min）', prop: `${processType.dictValue}ChangeoverTime` }
+        ];
+        if (processType.dictValue === 'assembly') {
+          children.push(
+            { label: '爬坡产能（每日递增）', prop: 'rampUpCapacity' },
+            { label: '爬坡时间', prop: 'rampUpTime' }
+          );
+        }
+        return {
+          label: processType.dictLabel,
+          children
+        };
+      });
+
+      return {
+        staticPrefix,
+        dynamicGroups,
+        staticSuffix
+      };
+    },
+
+    async ensureProcessTypeOptions() {
+      if ((this.processTypeOptions || []).length > 0) {
+        return;
+      }
+      const res = await getDicts('sop_process_type');
+      const sortedData = (res.data || []).sort((a, b) => {
+        const sortA = parseInt(a.dictSort) || 0;
+        const sortB = parseInt(b.dictSort) || 0;
+        return sortA - sortB;
+      });
+      this.processTypeOptions = sortedData;
+    },
+
+    buildExportHeader() {
+      const { staticPrefix, dynamicGroups, staticSuffix } = this.getExportColumns();
+      const multiHeader = [[], []];
+      const merges = [];
+      let columnIndex = 0;
+
+      const appendVerticalHeader = (label) => {
+        multiHeader[0].push(label);
+        multiHeader[1].push(label);
+        const cell = this.getExcelColumnName(columnIndex);
+        merges.push(`${cell}1:${cell}2`);
+        columnIndex += 1;
+      };
+
+      staticPrefix.forEach(column => appendVerticalHeader(column.label));
+
+      dynamicGroups.forEach(group => {
+        const startIndex = columnIndex;
+        multiHeader[0].push(group.label);
+        multiHeader[1].push(group.children[0].label);
+        columnIndex += 1;
+
+        group.children.slice(1).forEach(child => {
+          multiHeader[0].push('');
+          multiHeader[1].push(child.label);
+          columnIndex += 1;
+        });
+
+        merges.push(
+          `${this.getExcelColumnName(startIndex)}1:${this.getExcelColumnName(columnIndex - 1)}1`
+        );
+      });
+
+      staticSuffix.forEach(column => appendVerticalHeader(column.label));
+
+      return {
+        multiHeader,
+        merges
+      };
+    },
+
+    getExcelColumnName(index) {
+      let current = index + 1;
+      let result = '';
+      while (current > 0) {
+        const remainder = (current - 1) % 26;
+        result = String.fromCharCode(65 + remainder) + result;
+        current = Math.floor((current - 1) / 26);
+      }
+      return result;
+    },
+
+    buildExportRows(list = []) {
+      const { staticPrefix, dynamicGroups, staticSuffix } = this.getExportColumns();
+      const dynamicColumns = dynamicGroups.reduce((columns, group) => columns.concat(group.children), []);
+      const columns = [...staticPrefix, ...dynamicColumns, ...staticSuffix];
+
+      return list.map((item, index) => columns.map(column => {
+        if (column.prop === '__index') {
+          return index + 1;
+        }
+        if (column.prop === 'createTime' || column.prop === 'updateTime') {
+          return item[column.prop] ? parseTime(item[column.prop], '{y}-{m}-{d}') : '-';
+        }
+        return item[column.prop] !== undefined && item[column.prop] !== null && item[column.prop] !== ''
+          ? item[column.prop]
+          : '-';
+      }));
+    },
+
+    async exportRoutes(list, fileName) {
+      await this.ensureProcessTypeOptions();
+      const { multiHeader, merges } = this.buildExportHeader();
+      const data = this.buildExportRows(list);
+      const excel = await import('./js/Export2Excel');
+      excel.export_json_to_excel({
+        multiHeader,
+        data,
+        filename: fileName,
+        myMerges: merges
+      });
+    },
+
+    async fetchRouteListForExport(query) {
+      const response = await listProcessRoute(query);
+      return {
+        list: this.formatRouteList(response.data.list || []),
+        total: response.data.total || 0
+      };
+    },
+
+    handleExportCommand(command) {
+      if (command === 'filter') {
+        this.handleFilterExport();
+        return;
+      }
+      this.handleExportAll();
+    },
+
+    isExportCancel(error) {
+      return error === 'cancel' || error === 'close';
+    },
+
+    refreshTableLayout() {
+      this.$nextTick(() => {
+        if (this.$refs.table && this.$refs.table.doLayout) {
+          this.$refs.table.doLayout();
+        }
+      });
+    },
+
+    async handleFilterExport() {
+      const selectedRows = this.$refs.table ? this.$refs.table.selection || [] : [];
+      if (!selectedRows.length) {
+        this.$modal.msgWarning('请先勾选需要导出的数据');
+        return;
+      }
+
+      try {
+        await this.$confirm(`是否确认导出当前勾选的 ${selectedRows.length} 条数据项?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+
+        this.exportLoading = true;
+        await this.ensureProcessTypeOptions();
+        await this.exportRoutes(selectedRows, `工艺路线_勾选导出_${new Date().getTime()}`);
+      } catch (error) {
+        if (!this.isExportCancel(error)) {
+          console.error('筛选导出失败:', error);
+          this.$modal.msgError('筛选导出失败，请重试');
+        }
+      } finally {
+        this.exportLoading = false;
+      }
+    },
+
+    async handleExportAll() {
+      try {
+        this.exportLoading = true;
+        const totalQuery = this.buildQueryParams({
+          pageNum: 1,
+          pageSize: 1,
+          category: null,
+          responsiblePerson: null,
+          versionCode: null,
+          remarks: null,
+          orderByColumn: this.queryParams.orderByColumn,
+          isAsc: this.queryParams.isAsc
+        }, {
+          p: 1,
+          l: 1
+        });
+        const { total: exportTotal } = await this.fetchRouteListForExport(totalQuery);
+
+        if (!exportTotal) {
+          this.$modal.msgWarning('没有可导出的数据');
+          return;
+        }
+
+        await this.$confirm(`是否确认全部导出，共 ${exportTotal} 条数据项?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+
+        const query = {
+          ...totalQuery,
+          pageSize: exportTotal,
+          l: exportTotal
+        };
+        const { list } = await this.fetchRouteListForExport(query);
+        await this.exportRoutes(list, `工艺路线_全部导出_${new Date().getTime()}`);
+      } catch (error) {
+        if (!this.isExportCancel(error)) {
+          console.error('全部导出失败:', error);
+          this.$modal.msgError('全部导出失败，请重试');
+        }
+      } finally {
+        this.exportLoading = false;
+      }
+    },
+
     
     // 取消按钮
     cancel() {
@@ -675,9 +941,57 @@ export default {
 
 <style lang="scss" scoped>
 .process-route{
-  ::v-deep .el-table--scrollable-x {
-  height: 90%!important;
- }
+  ::v-deep .el-table .cell {
+    word-break: break-word;
+  }
+}
+.mr8 {
+  margin-right: 8px;
+}
+.action-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 2px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.action-cell__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1.2;
+  gap: 16px;
+  min-height: 20px;
+}
+
+::v-deep .action-cell .el-button--mini {
+  margin: 0;
+  padding: 0;
+  line-height: 20px;
+}
+
+::v-deep .action-cell .el-button + .el-button {
+  margin-left: 0;
+}
+
+::v-deep .process-route .el-table__body td {
+  padding: 0;
+}
+
+::v-deep .process-route .el-table__body td .cell {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+}
+
+::v-deep .process-route .el-table__fixed-right .el-table__body td .cell {
+  padding-left: 0;
+  padding-right: 0;
 }
 ::v-deep .sop-dialog{
    .el-dialog__body{

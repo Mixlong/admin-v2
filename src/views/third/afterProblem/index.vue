@@ -67,12 +67,13 @@
       @sort-change="handleSortChange"
     />
 
-    <!-- 分页条数显示（右下角） -->
-    <div
-      class="mt10 flex items-center justify-end space-x-2 text-sm text-gray-600"
-      style="position: fixed; bottom: 20px; right: 20px; z-index: 100; min-height: 32px; line-height: 1;   padding: 5px 10px; border-radius: 4px;"
-    >
-      <span class="mr-2">共 {{ total }} 条</span>
+    <div v-show="total > 0" class="after-problem-pagination">
+      <pagination
+        :total="total"
+        :page.sync="queryParams.p"
+        :limit.sync="queryParams.l"
+        @pagination="getList"
+      />
     </div>
 
     <!-- 新增/编辑对话框 -->
@@ -259,7 +260,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 10000,
+        l: 50,
         problemSource: undefined,
         problemDescription: undefined,
         responsiblePerson: undefined,
@@ -403,7 +404,7 @@ export default {
       this.dateRange = [];
       this.queryParams = {
         p: 1,
-        l: 20,
+        l: 50,
         problemSource: undefined,
         problemDescription: undefined,
         responsiblePerson: undefined,
@@ -648,5 +649,24 @@ export default {
 
 .text-red {
   color: #f56c6c;
+}
+
+.after-problem-pagination {
+  position: fixed;
+  right: 20px;
+  bottom: 25px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+}
+
+.after-problem-pagination :deep(.pagination-container) {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
 }
 </style>

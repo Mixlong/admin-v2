@@ -128,6 +128,15 @@
             </el-radio-group>
           </el-form-item>
 
+          <el-form-item label="测试架" prop="testRack">
+            <el-input
+              v-model="formData.testRack"
+              placeholder="请输入测试架"
+              clearable
+              maxlength="100"
+              prefix-icon="el-icon-monitor"
+            />
+          </el-form-item>
           <el-form-item label="SN" prop="sn">
             <el-input
               v-model="formData.sn"
@@ -467,6 +476,7 @@ export default {
         hwVersion: "",
         sn: "",
         pcbaSn: "",
+        testRack: "",
         partNo: "",
         orderCode: "",
         smtBomFile: "",
@@ -844,6 +854,7 @@ export default {
         hwVersion: "",
         sn: "",
         pcbaSn: "",
+        testRack: "",
         partNo: "",
         orderCode: "",
         smtBomFile: "",
@@ -886,6 +897,7 @@ export default {
         hwVersion: this.editData.hwVersion || "",
         sn: this.editData.sn || "",
         pcbaSn: this.editData.pcbaSn || "",
+        testRack: this.editData.testRack || "",
         partNo: this.editData.partNo || "",
         orderCode: this.editData.orderCode || "",
         smtBomFile: this.editData.smtBomFile || "",

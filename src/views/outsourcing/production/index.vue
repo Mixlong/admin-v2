@@ -420,6 +420,12 @@
           >
             {{ viewData.pcbaSn || "--" }}
           </el-descriptions-item>
+          <el-descriptions-item
+            v-if="viewData.productionProcess === 'SMT'"
+            label="测试架"
+          >
+            {{ viewData.testRack || "--" }}
+          </el-descriptions-item>
           <el-descriptions-item label="生产流程">{{
             viewData.productionProcess || "--"
           }}</el-descriptions-item>
@@ -2122,7 +2128,7 @@ export default {
 ::v-deep .operation-column .icon-btn {
   font-size: 15px;
   padding: 2px !important;
-  margin: 0;
+  margin: 0!important;
   min-width: 14px;
   min-height: 14px;
   line-height: 1;

@@ -1719,9 +1719,12 @@ export default {
             : []; // 当前id -> 关联业务
           // 保存来源SN用于显示
           this.$refs.problemFormRef.form.problemSourceSn = row.sn || "";
-          // 根据大货类型设置问题管理员：大货->余美君，样品->袁祥
-          this.$refs.problemFormRef.form.problemManager =
-            row.afterType === 1 ? "余美君" : "袁祥";
+          this.$refs.problemFormRef.form.afterType = row.afterType;
+          this.$refs.problemFormRef.form.problemManager = "";
+          this.$refs.problemFormRef.loadProblemManagerOptions &&
+            this.$refs.problemFormRef.loadProblemManagerOptions();
+          this.$refs.problemFormRef.applyDefaultProblemManager &&
+            this.$refs.problemFormRef.applyDefaultProblemManager();
           console.log(
             "设置后的 businessIdList:",
             this.$refs.problemFormRef.form.businessIdList

@@ -4,7 +4,7 @@
       <!-- 左侧：搜索表单区域 -->
       <div class="search-left" ref="searchLeft">
         <el-form :model="searchForm" ref="searchForm" :inline="true" class="search-form" :label-width="labelWidth"
-          label-position="left">
+          label-position="left" @submit.native.prevent>
           <!-- 第一行：自动计算显示的字段 + 按钮 -->
           <div class="search-row primary-row">
             <!-- 动态显示的字段 -->
@@ -16,6 +16,7 @@
                     <component :is="field.component || 'el-input'" v-model="searchForm[field.key]"
                       v-bind="getFieldProps(field)" 
                       @change="handleFieldChangeAndAutoSearch(field, $event)"
+                      @keydown.enter.native.prevent="handleSearch"
                       @keyup.enter.native="handleSearch">
                       <!-- 为 el-select 组件添加选项渲染 -->
                       <template v-if="field.component === 'el-select' && field.props && field.props.options">
@@ -53,6 +54,7 @@
                           <component :is="field.component || 'el-input'" v-model="tempSearchForm[field.key]"
                             v-bind="getPopoverFieldProps(field)" 
                             @change="handleTempFieldChangeAndAutoConfirm(field, $event)"
+                            @keydown.enter.native.prevent="confirmFilter"
                             @keyup.enter.native="confirmFilter"
                             size="mini">
                             <!-- 为 el-select 组件添加选项渲染 -->

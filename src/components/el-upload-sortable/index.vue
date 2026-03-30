@@ -28,14 +28,17 @@
           <video class="video-box" v-if="isVideo" :src="item"></video>
           <el-image
             v-else
+            :ref="`previewImage-${index}`"
             :src="item"
+            :preview-src-list="imgList"
+            :initial-index="index"
             fit="contain"
             class="el-upload-list__item-thumbnail"
           />
           <span class="el-upload-list__item-actions">
             <span
               class="el-upload-list__item-preview"
-              @click="handlePreview(item)"
+              @click="handlePreview(item, index)"
             >
               <i class="el-icon-zoom-in"></i>
             </span>
@@ -85,11 +88,6 @@
         :src="dialogImageUrl"
       />
     </el-dialog>
-
-    <!-- 图片预览容器，预先渲染所有图片 -->
-    <div v-viewer="{ inline: false, navbar: false, title: false, toolbar: { zoomIn: 1, zoomOut: 1, oneToOne: 1, reset: 1, prev: 0, play: 0, next: 0, rotateLeft: 1, rotateRight: 1, flipHorizontal: 1, flipVertical: 1 } }" style="display: none;" ref="previewContainer">
-      <img v-for="(item, index) in imgList" :key="`preview-${index}`" :src="item" :alt="`preview-${index}`" />
-    </div>
   </div>
 </template>
 
@@ -293,18 +291,20 @@ export default {
       this.$emit("input", this.imgList.toString());
     },
 
-    handlePreview(url) {
+    handlePreview(url, index) {
       if (this.isVideo) {
         this.dialogImageUrl = url;
         this.dialogVisible = true;
       } else {
-        // 使用 VueViewer 预览图片
         this.$nextTick(() => {
-          const container = this.$refs.previewContainer;
-          // 找到对应的图片元素
-          const targetImg = container.querySelector(`img[src="${url}"]`);
+          let imageRef = this.$refs[`previewImage-${index}`];
+          if (Array.isArray(imageRef)) {
+            imageRef = imageRef[0];
+          }
+          const targetImg = imageRef && imageRef.$el
+            ? imageRef.$el.querySelector('img')
+            : null;
           if (targetImg) {
-            // 直接触发点击，因为图片已经预先渲染
             targetImg.click();
           }
         });

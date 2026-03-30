@@ -337,12 +337,9 @@ export default {
         { dictValue: "1", dictLabel: "停用" },
       ],
       // 当前时间（用于日期选择器默认时间）
-      currentTime: this.getCurrentTimeString(),
+      currentTime: "",
       // 处理完成时间选择器配置
-      completionTimePickerOptions: {
-        selectableRange:
-          this.getCurrentTimeString() + " - " + this.getCurrentTimeString(),
-      },
+      completionTimePickerOptions: {},
       // 原始表单数据快照（用于检测是否有修改）
       originalFormSnapshot: null,
       // 是否有字段被修改

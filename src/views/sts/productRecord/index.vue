@@ -427,7 +427,7 @@ export default {
         { key: 'boxNo', label: '箱号', sort: 6, placeholder: '请输入箱号' },
         { key: 'orderCode', label: '工单号', sort: 7, component: 'select-loadMore' },
         { key: 'salesOrderNo', label: '迪太订单号', sort: 8, placeholder: '请输入迪太订单号' },
-        { key: 'processName', label: '测试环节', sort: 10, component: 'el-select' },
+        // { key: 'processName', label: '测试环节', sort: 10, component: 'el-select' },
       ],
       // 箱子列表对话框
       boxListDialogVisible: false,

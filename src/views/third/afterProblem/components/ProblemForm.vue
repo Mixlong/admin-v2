@@ -45,14 +45,21 @@
           <!-- 问题跟踪人字段隐藏，但保留在提交数据中 -->
           <div class="form-row">
             <el-form-item label="问题跟踪人" prop="problemManager" class="form-item-flex-1">
-              <TypedSelectLoadMore
+              <el-select
                 v-model="form.problemManager"
-                type="user"
-                :return-label="true"
                 placeholder="请选择问题追踪人"
                 clearable
-                :custom-style="{ width: '100%' }"
-              />
+                filterable
+                :loading="problemManagerLoading"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in problemManagerOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
           </div>
   
@@ -299,6 +306,7 @@ import {
   afterProblemUpdate,
   afterProblemDetail
 } from "@/api/third/afterProblem";
+import { getDicts } from "@/api/system/dict/data";
 import Editor from "@/components/Editor";
 import MyUpload from "@/components/MyUpload";
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
@@ -340,6 +348,7 @@ export default {
       },
       form: {
         id: undefined,
+        afterType: undefined,
         problemSource: "",
         problemSourceSn: "",
         problemDescription: "",
@@ -401,7 +410,9 @@ export default {
       productionDialogVisible: false,
       
       // 品质记录弹窗
-      qualityDialogVisible: false
+      qualityDialogVisible: false,
+      problemManagerLoading: false,
+      problemManagerOptions: []
     };
   },
   computed: {
@@ -464,7 +475,9 @@ export default {
   },
   methods: {
     /** 对话框打开后的处理 */
-    handleDialogOpened() {
+    async handleDialogOpened() {
+      await this.loadProblemManagerOptions();
+      await this.applyDefaultProblemManager();
       // 防止富文本初始化导致滚动
       this.$nextTick(() => {
         const dialogBody = document.querySelector('.el-dialog__body');
@@ -472,6 +485,99 @@ export default {
           dialogBody.scrollTop = 0;
         }
       });
+    },
+    parsePersonnelNames(value) {
+      return String(value || "")
+        .split(/[,\n，]+/)
+        .map((item) => String(item || "").trim())
+        .filter(Boolean);
+    },
+    getProblemManagerDictValue() {
+      if (Number(this.form.afterType) === 1) return "1";
+      if (Number(this.form.afterType) === 2) return "2";
+      return "";
+    },
+    async getProblemManagerConfigMap() {
+      const res = await getDicts("after_problem_manager");
+      const dictData = Array.isArray(res?.data) ? res.data : [];
+      const latestMap = {};
+
+      dictData.forEach((item) => {
+        const key = String(item?.dictValue ?? "");
+        if (!key) return;
+
+        const current = latestMap[key];
+        if (!current) {
+          latestMap[key] = item;
+          return;
+        }
+
+        const currentTime = current.createTime || "";
+        const nextTime = item.createTime || "";
+        if (nextTime > currentTime) {
+          latestMap[key] = item;
+          return;
+        }
+
+        if (
+          nextTime === currentTime &&
+          Number(item.dictCode || 0) > Number(current.dictCode || 0)
+        ) {
+          latestMap[key] = item;
+        }
+      });
+
+      return latestMap;
+    },
+    async loadProblemManagerOptions() {
+      this.problemManagerLoading = true;
+      try {
+        const configMap = await this.getProblemManagerConfigMap();
+        const mergedNames = [];
+
+        ["1", "2"].forEach((dictValue) => {
+          this.parsePersonnelNames(configMap[dictValue]?.remark).forEach((name) => {
+            if (!mergedNames.includes(name)) {
+              mergedNames.push(name);
+            }
+          });
+        });
+
+        if (this.form.problemManager && !mergedNames.includes(this.form.problemManager)) {
+          mergedNames.push(this.form.problemManager);
+        }
+
+        this.problemManagerOptions = mergedNames.map((name) => ({
+          label: name,
+          value: name,
+        }));
+      } catch (error) {
+        console.error("加载问题跟踪人配置失败:", error);
+        this.problemManagerOptions = this.form.problemManager
+          ? [{ label: this.form.problemManager, value: this.form.problemManager }]
+          : [];
+      } finally {
+        this.problemManagerLoading = false;
+      }
+    },
+    async applyDefaultProblemManager() {
+      if (this.form.problemManager) return;
+
+      const dictValue = this.getProblemManagerDictValue();
+      if (!dictValue) return;
+
+      this.problemManagerLoading = true;
+      try {
+        const configMap = await this.getProblemManagerConfigMap();
+        const firstName = this.parsePersonnelNames(configMap[dictValue]?.remark)[0] || "";
+        if (firstName) {
+          this.form.problemManager = firstName;
+        }
+      } catch (error) {
+        console.error("加载问题跟踪人默认值失败:", error);
+      } finally {
+        this.problemManagerLoading = false;
+      }
     },
     
     /** 切换模块展开状态 */
@@ -576,6 +682,7 @@ export default {
       };
       this.form = {
         id: undefined,
+        afterType: undefined,
         problemSource: "",
         problemSourceSn: "",
         problemDescription: "",
@@ -599,6 +706,7 @@ export default {
       this.afterSaleDialogVisible = false;
       this.productionDialogVisible = false;
       this.qualityDialogVisible = false;
+      this.problemManagerOptions = [];
       
       // 重置模块展开状态
       this.expandedModules = {
