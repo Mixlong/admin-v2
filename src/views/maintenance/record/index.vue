@@ -237,7 +237,7 @@ export default {
         repairPerson: '',
         pcbaSn: '',
         badResult: '',
-        serviceResult: '',
+        repairResult: '',
         repairPlan: '',
         startDate: '',
         endDate: ''
@@ -291,10 +291,10 @@ export default {
         },
         
         {
-          key: 'serviceResult',
-          label: '维修结果',
-          component: 'el-input',
-          placeholder: '请输入维修结果'
+           key: 'repairResult',
+           label: '维修结果',
+           component: 'el-input',
+           placeholder: '请输入维修结果'
         },
    {
           key: 'lineNum',
@@ -350,7 +350,7 @@ export default {
         repairPerson: this.searchForm.repairPerson || undefined,
         pcbaSn: this.searchForm.pcbaSn || undefined,
         badResult: this.searchForm.badResult || undefined,
-        serviceResult: this.searchForm.serviceResult || undefined,
+         repairResult: this.searchForm.repairResult || undefined,
         repairPlan: this.searchForm.repairPlan || undefined,
         startDate: this.searchForm.startDate || undefined,
         endDate: this.searchForm.endDate || undefined
@@ -627,7 +627,7 @@ export default {
           repairPerson: this.searchForm.repairPerson || undefined,
           pcbaSn: this.searchForm.pcbaSn || undefined,
           badResult: this.searchForm.badResult || undefined,
-          serviceResult: this.searchForm.serviceResult || undefined,
+           repairResult: this.searchForm.repairResult || undefined,
           repairPlan: this.searchForm.repairPlan || undefined,
           startDate: this.searchForm.startDate || undefined,
           endDate: this.searchForm.endDate || undefined
