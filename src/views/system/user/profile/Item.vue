@@ -7,12 +7,23 @@
     <div class="user-card__inner">
       <div class="user-card__header">
         <button class="user-card__avatar" type="button" @click="changUpdate">
-          <img :src="avatarUrl" alt="" />
+          <img
+            v-if="showAvatarImage"
+            :src="avatarUrl"
+            :alt="content.nickName || content.userName || '用户头像'"
+            @error="handleAvatarError"
+          />
+          <span v-else class="user-card__avatar-fallback">
+            <i class="el-icon-user-solid" />
+          </span>
         </button>
         <div class="user-card__meta">
           <div class="user-card__name" :title="content.nickName">
             {{ content.nickName }}
             <span v-if="content.status == 1" class="user-card__status">停用</span>
+          </div>
+          <div class="user-card__account" :title="content.userName">
+            {{ content.userName }}
           </div>
           <div class="user-card__dept" :title="content.dept && content.dept.deptName">
             {{ content.dept && content.dept.deptName }}
@@ -77,6 +88,7 @@ export default {
   data() {
     return {
       openFlag: false, //是否展开菜单
+      avatarLoadError: false,
     };
   },
   computed: {
@@ -95,12 +107,23 @@ export default {
       if (this.content && this.content.avatar) {
         return `${baseApi}${this.content.avatar}`;
       }
-      return "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+      return "";
+    },
+    showAvatarImage() {
+      return Boolean(this.avatarUrl) && !this.avatarLoadError;
+    },
+  },
+  watch: {
+    "content.avatar"() {
+      this.avatarLoadError = false;
     },
   },
   methods: {
     changUpdate() {
       this.$emit("changeEdit", this.content);
+    },
+    handleAvatarError() {
+      this.avatarLoadError = true;
     },
     handleDelete() {
       this.$emit("delete", this.content);
@@ -155,42 +178,52 @@ export default {
 <style lang="scss" scoped>
 .user-card {
   width: 100%;
-  min-height: 200px;
+  min-height: 188px;
   height: auto;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #eef1f6;
-  box-shadow: 0 10px 24px rgba(31, 35, 41, 0.08);
-  padding: 14px 14px 12px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  border: 1px solid #e8eef8;
+  box-shadow: 0 12px 28px rgba(31, 35, 41, 0.07);
+  padding: 16px 16px 14px;
   box-sizing: border-box;
   position: relative;
   overflow: visible;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-2px);
+  border-color: #d8e4f6;
+  box-shadow: 0 18px 36px rgba(37, 64, 108, 0.12);
 }
 
 .user-card__inner {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   height: auto;
 }
 
 .user-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 
 .user-card__avatar {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: 2px solid #f0f2f5;
+  border: 1px solid #e3eaf6;
   padding: 0;
-  background: #fff;
+  background: linear-gradient(135deg, #eef3fb 0%, #d9e4f5 100%);
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 6px 14px rgba(23, 27, 35, 0.12);
+  box-shadow: 0 8px 18px rgba(23, 27, 35, 0.12);
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-card__avatar img {
@@ -200,10 +233,21 @@ export default {
   display: block;
 }
 
+.user-card__avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #8d99ab;
+  font-size: 28px;
+}
+
 .user-card__meta {
   flex: 1;
   min-width: 0;
   text-align: left;
+  padding-top: 4px;
 }
 
 .user-card__name {
@@ -214,6 +258,16 @@ export default {
   font-weight: 700;
   color: #1f2d3d;
   line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card__account {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: #73839a;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -230,9 +284,9 @@ export default {
 }
 
 .user-card__dept {
-  margin-top: 2px;
+  margin-top: 6px;
   font-size: 12px;
-  color: #9aa3af;
+  color: #98a3b5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -240,16 +294,20 @@ export default {
 
 .user-card__header-actions {
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   flex: none;
   margin-left: auto;
+  max-width: 84px;
 }
 
 .user-card__header-actions :deep(.el-button) {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .user-card__roles {
@@ -265,13 +323,13 @@ export default {
 .user-card__role-chip {
   display: inline-flex;
   align-items: center;
-  height: 26px;
-  padding: 0 10px;
+  min-height: 28px;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: #f7f8fb;
-  border: 1px solid #eef1f6;
+  background: #f5f7fb;
+  border: 1px solid #e8edf5;
   font-size: 12px;
-  color: #4a5568;
+  color: #56657c;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

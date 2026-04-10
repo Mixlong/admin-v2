@@ -102,6 +102,24 @@ export function delUser(userId) {
   });
 }
 
+// 预览审核人变更影响范围
+export function previewAuditReassign(data) {
+  return request({
+    url: "/audit/reassign/preview",
+    method: "post",
+    data,
+  });
+}
+
+// 执行审核人变更
+export function executeAuditReassign(data) {
+  return request({
+    url: "/audit/reassign/execute",
+    method: "post",
+    data,
+  });
+}
+
 // 导出用户
 export function exportUser(query) {
   return request({

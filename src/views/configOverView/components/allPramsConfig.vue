@@ -46,6 +46,9 @@
           dictLabel="name"
           dictValue="name"
           :request="getCustomerNameList"
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
           style="width: 150px"
         />
       </el-form-item>

@@ -114,6 +114,17 @@
           </el-col>
           <el-col :span="1.5">
             <el-button
+              type="warning"
+              icon="el-icon-refresh"
+              size="mini"
+              @click="openAuditReassignDialog()"
+              v-hasPermi="['system:user:edit']"
+            >
+              变更审核人
+            </el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
               type="danger"
               icon="el-icon-delete"
               size="mini"
@@ -280,6 +291,132 @@
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog
+      title="变更审核人"
+      :visible.sync="auditReassign.open"
+      width="760px"
+      append-to-body
+      :close-on-click-modal="false"
+      @close="resetAuditReassign"
+    >
+      <el-form
+        ref="auditReassignForm"
+        :model="auditReassign.form"
+        :rules="auditReassign.rules"
+        label-width="110px"
+      >
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="原审核人" prop="fromUserId">
+              <el-select
+                v-model="auditReassign.form.fromUserId"
+                filterable
+                clearable
+                placeholder="请选择原审核人"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in auditReassign.userOptions"
+                  :key="item.userId"
+                  :label="item.nickName || item.userName"
+                  :value="item.userId"
+                >
+                  <span>{{ item.nickName || item.userName }}</span>
+                  <span class="audit-user-option">{{ item.userName }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="新审核人" prop="toUserId">
+              <el-select
+                v-model="auditReassign.form.toUserId"
+                filterable
+                clearable
+                placeholder="请选择新审核人"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in reassignTargetOptions"
+                  :key="item.userId"
+                  :label="item.nickName || item.userName"
+                  :value="item.userId"
+                >
+                  <span>{{ item.nickName || item.userName }}</span>
+                  <span class="audit-user-option">{{ item.userName }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="处理模块">
+          <el-checkbox-group v-model="auditReassign.form.moduleCodes">
+            <el-checkbox
+              v-for="item in auditModuleOptions"
+              :key="item.code"
+              :label="item.code"
+            >
+              {{ item.name }}
+            </el-checkbox>
+          </el-checkbox-group>
+          <div class="audit-reassign-tip">
+            不选则默认处理全部已接入模块
+          </div>
+        </el-form-item>
+
+        <el-form-item label="转派备注" prop="remark">
+          <el-input
+            v-model="auditReassign.form.remark"
+            type="textarea"
+            :rows="3"
+            maxlength="200"
+            show-word-limit
+            placeholder="请输入转派备注"
+          />
+        </el-form-item>
+      </el-form>
+
+      <div v-if="auditReassign.previewData" class="audit-preview">
+        <div class="audit-preview__header">
+          <div class="audit-preview__title">影响预览</div>
+          <div class="audit-preview__summary">
+            共影响
+            <span>{{ auditReassign.previewData.totalAffected || 0 }}</span>
+            条数据
+          </div>
+        </div>
+        <el-table
+          :data="auditReassign.previewData.moduleResults || []"
+          size="mini"
+          border
+        >
+          <el-table-column prop="moduleName" label="模块" min-width="140" />
+          <el-table-column prop="affectedCount" label="影响数量" width="100" />
+          <el-table-column prop="detail" label="说明" min-width="220" show-overflow-tooltip />
+        </el-table>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="auditReassign.open = false">取 消</el-button>
+        <el-button
+          type="primary"
+          plain
+          :loading="auditReassign.previewLoading"
+          @click="handleAuditPreview"
+        >
+          预览影响
+        </el-button>
+        <el-button
+          type="primary"
+          :loading="auditReassign.submitLoading"
+          @click="handleAuditExecute"
+        >
+          执行变更
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -294,8 +431,10 @@ import {
   resetUserPwd,
   changeUserStatus,
   importTemplate,
+  dictUserList,
+  previewAuditReassign,
+  executeAuditReassign,
 } from "@/api/system/user";
-import { getToken } from "@/utils/auth";
 import { treeselect } from "@/api/system/dept";
 import Treeselect from "@riophae/vue-treeselect";
 import Item from "./profile/Item.vue";
@@ -347,6 +486,37 @@ export default {
       roleOptions: [],
       // 表单参数
       form: {},
+      auditModuleOptions: [
+        { code: "TODO", name: "待办与交办" },
+        { code: "BOM_CHANGE", name: "硬件 ECR/N 审核" },
+        { code: "SOFTWARE_ECR", name: "软件 ECR/N 审核" },
+        { code: "ORDER_CHANGE", name: "订单 BOM 变更审核" },
+        { code: "SOP", name: "SOP 审核" },
+        { code: "TRIAL_APPLY", name: "试产申请审核" },
+        { code: "ORDER_JUDGE", name: "订单评审审核" },
+        { code: "CONFIG", name: "审核配置" },
+      ],
+      auditReassign: {
+        open: false,
+        previewLoading: false,
+        submitLoading: false,
+        previewData: null,
+        userOptions: [],
+        form: {
+          fromUserId: undefined,
+          toUserId: undefined,
+          moduleCodes: [],
+          remark: "",
+        },
+        rules: {
+          fromUserId: [
+            { required: true, message: "请选择原审核人", trigger: "change" },
+          ],
+          toUserId: [
+            { required: true, message: "请选择新审核人", trigger: "change" },
+          ],
+        },
+      },
       defaultProps: {
         children: "children",
         label: "label",
@@ -391,6 +561,13 @@ export default {
         ],
       },
     };
+  },
+  computed: {
+    reassignTargetOptions() {
+      return this.auditReassign.userOptions.filter(
+        (item) => item.userId !== this.auditReassign.form.fromUserId
+      );
+    },
   },
   watch: {
     // 根据名称筛选部门树
@@ -488,6 +665,98 @@ export default {
         roleIds: [],
       };
       this.resetForm("form");
+    },
+    resetAuditReassign() {
+      this.auditReassign.previewLoading = false;
+      this.auditReassign.submitLoading = false;
+      this.auditReassign.previewData = null;
+      this.auditReassign.form = {
+        fromUserId: undefined,
+        toUserId: undefined,
+        moduleCodes: [],
+        remark: "",
+      };
+      if (this.$refs.auditReassignForm) {
+        this.$refs.auditReassignForm.clearValidate();
+      }
+    },
+    ensureAuditUserOptions() {
+      if (this.auditReassign.userOptions.length) {
+        return Promise.resolve(this.auditReassign.userOptions);
+      }
+      return dictUserList().then((response) => {
+        this.auditReassign.userOptions = response.data || [];
+        return this.auditReassign.userOptions;
+      });
+    },
+    openAuditReassignDialog(row) {
+      this.ensureAuditUserOptions().then(() => {
+        this.auditReassign.open = true;
+        this.auditReassign.previewData = null;
+        this.auditReassign.form = {
+          fromUserId: row ? row.userId : undefined,
+          toUserId: undefined,
+          moduleCodes: [],
+          remark: "",
+        };
+        this.$nextTick(() => {
+          if (this.$refs.auditReassignForm) {
+            this.$refs.auditReassignForm.clearValidate();
+          }
+        });
+      });
+    },
+    getAuditReassignPayload() {
+      const payload = {
+        fromUserId: this.auditReassign.form.fromUserId,
+        toUserId: this.auditReassign.form.toUserId,
+        remark: this.auditReassign.form.remark,
+      };
+      if (this.auditReassign.form.moduleCodes.length) {
+        payload.moduleCodes = this.auditReassign.form.moduleCodes;
+      }
+      return payload;
+    },
+    handleAuditPreview() {
+      this.$refs["auditReassignForm"].validate((valid) => {
+        if (!valid) {
+          return;
+        }
+        if (this.auditReassign.form.fromUserId === this.auditReassign.form.toUserId) {
+          this.msgError("原审核人与新审核人不能相同");
+          return;
+        }
+        this.auditReassign.previewLoading = true;
+        previewAuditReassign(this.getAuditReassignPayload())
+          .then((response) => {
+            this.auditReassign.previewData = response.data || {};
+            this.msgSuccess("预览成功");
+          })
+          .finally(() => {
+            this.auditReassign.previewLoading = false;
+          });
+      });
+    },
+    handleAuditExecute() {
+      this.$refs["auditReassignForm"].validate((valid) => {
+        if (!valid) {
+          return;
+        }
+        if (this.auditReassign.form.fromUserId === this.auditReassign.form.toUserId) {
+          this.msgError("原审核人与新审核人不能相同");
+          return;
+        }
+        this.auditReassign.submitLoading = true;
+        executeAuditReassign(this.getAuditReassignPayload())
+          .then((response) => {
+            this.auditReassign.previewData = response.data || this.auditReassign.previewData;
+            this.msgSuccess("审核人变更成功");
+            this.auditReassign.open = false;
+          })
+          .finally(() => {
+            this.auditReassign.submitLoading = false;
+          });
+      });
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -656,6 +925,48 @@ export default {
 
 .app-container .el-button + .el-button {
   margin-left: 8px;
+}
+
+.audit-user-option {
+  float: right;
+  color: #909399;
+  font-size: 12px;
+}
+
+.audit-reassign-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.4;
+}
+
+.audit-preview {
+  margin-top: 8px;
+  border-top: 1px solid #ebeef5;
+  padding-top: 16px;
+}
+
+.audit-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.audit-preview__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.audit-preview__summary {
+  font-size: 13px;
+  color: #606266;
+}
+
+.audit-preview__summary span {
+  color: #e6a23c;
+  font-weight: 600;
 }
 
 .userList-box {

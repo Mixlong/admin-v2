@@ -44,6 +44,9 @@
             dictLabel="name"
             dictValue="name"
             :request="getCustomerNameList"
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
           />
         </el-form-item>
   
@@ -63,6 +66,16 @@
           >
             导 出
           </el-button> -->
+        </el-form-item>
+        <el-form-item style="float: right; margin-right: 0;">
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            v-hasPermi="['third:productFamily:add']"
+            @click="$emit('handle-add')"
+          >
+            新增
+          </el-button>
         </el-form-item>
         <!-- <el-button class="fr" icon="el-icon-plus" @click="handleParamsCompare">
           对比
