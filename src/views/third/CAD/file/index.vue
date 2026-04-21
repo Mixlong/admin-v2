@@ -145,11 +145,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="createBy" width="90">
-        <span slot-scope="scope" v-NoData="scope.row.createBy || scope.row.updateBy"></span>
+      <el-table-column label="文件修改人" align="center" prop="fileUpdateBy" width="110">
+        <span slot-scope="scope" v-NoData="scope.row.fileUpdateBy || scope.row.fileUpdateBy"></span>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" width="150" sortable>
-        <span slot-scope="scope" v-NoData="scope.row.updateTime"></span>
+      <el-table-column label="文件修改时间" align="center" width="150" sortable>
+        <span slot-scope="scope" v-NoData="scope.row.fileUpdateTime"></span>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width" fixed="right">
         <template slot-scope="scope">

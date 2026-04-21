@@ -105,9 +105,9 @@
           fixed
           :reserve-selection="true"
         />
-        <el-table-column label="操作" align="center" width="100" fixed>
+        <el-table-column label="操作" align="center" width="140" fixed>
           <template slot-scope="{ row }">
-            <div class="flex justify-between">
+            <div class="flex justify-start" style="gap: 8px;">
               <!-- 初审 -->
               <Tooltip
                 v-if="row.state === 0"
@@ -128,19 +128,22 @@
                 @click="handleAuthChange(row, 2)"
               />
   
-              <Tooltip
+              <!-- <Tooltip
                 class="margin-0"
                 icon="el-icon-position"
                 content="送样族谱"
                 v-hasPermi="['product:configOverView:btn']"
                 @click="
-                  handleNameToPage('SampleProductFamily', {
-                    categoryId: row.categoryId,
-                    computerId: row.computerId,
+                  $router.push({
+                    name: 'SampleProductFamily',
+                    query: {
+                      categoryId: row.categoryId,
+                      computerId: row.computerId,
+                    },
                   })
                 "
               />
-  
+   -->
               <!-- 配置详情 -->
               <Tooltip
                 class="margin-0"
@@ -157,6 +160,20 @@
                 content="包装信息"
                 @click="handleSeePackagingInfo(row)"
               />
+
+              <!-- 转生产 -->
+              <el-popconfirm
+                title="确定要转生产吗？"
+                v-hasPermi="['sampleThird:productFamily:product']"
+                @confirm="handleProd(row.computerId)"
+              >
+                <Tooltip
+                  class="margin-0"
+                  icon="el-icon-box"
+                  slot="reference"
+                  content="转生产"
+                />
+              </el-popconfirm>
             </div>
           </template>
         </el-table-column>
@@ -1536,6 +1553,7 @@
     sampleModelConfigState,
     ConfigExport,
   } from "@/api/third/sampleTestApi";
+  import { sampleToProduct } from "@/api/third/sampleProductFamily";
   import commonData from "@/mixins/commonSampleData";
   import { dragTableFn } from "@/mixins/common";
   import ParamsCompare from "./ParamsCompare.vue";
@@ -1800,6 +1818,25 @@
       // 多选框选中数据
       handleSelectionChange(selection) {
         this.uploadIds = selection.map((item) => item.id);
+      },
+      // 转生产
+      handleProd(computerId) {
+        const loading = this.$loading({
+          lock: true,
+          text: "正在转生产...",
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.5)",
+        });
+        sampleToProduct({
+          computerId,
+        })
+          .then(() => {
+            this.msgSuccess("操作成功");
+            this.getList();
+          })
+          .finally(() => {
+            loading.close();
+          });
       },
       /** 导出按钮操作 */
       handleExport() {

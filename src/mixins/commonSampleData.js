@@ -118,7 +118,7 @@ export default {
       if (name) {
         this.product = name;
         const data = this.dictList.filter((item) => item.name === name);
-        this.computerOptions = data[0].computerList;
+        this.computerOptions = data[0]?.computerList || [];
         isHandleQuery && this.handleQuery();
       } else {
         this.computerOptions = [];

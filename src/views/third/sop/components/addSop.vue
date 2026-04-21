@@ -87,8 +87,7 @@
                 <div v-if="mustFullAudit" class="audit-notice warning mb10">
                   <i class="el-icon-warning"></i>
                   <span
-                    >该SOP尚未配置审核记录，必须走完整的审核流程（会审 → 工程审
-                    → 终审）</span
+                    >该SOP尚未配置审核记录，当前不可选择“仅工程审核”；如需重走完整流程，请选择“重新审核”</span
                   >
                 </div>
 
@@ -99,18 +98,14 @@
                       class="audit-type-card"
                       :class="{
                         active: form.auditAdjustType === 'none',
-                        disabled: mustFullAudit,
                       }"
-                      @click="!mustFullAudit && handleAuditTypeChange('none')"
+                      @click="handleAuditTypeChange('none')"
                     >
                       <div class="card-icon">
                         <i class="el-icon-check"></i>
                       </div>
                       <div class="card-title">无需审核</div>
                       <div class="card-desc">保持当前状态</div>
-                      <div v-if="mustFullAudit" class="card-disabled-mask">
-                        不可用
-                      </div>
                     </div>
                   </el-col>
                   <el-col :span="8">
@@ -118,10 +113,11 @@
                       class="audit-type-card"
                       :class="{
                         active: form.auditAdjustType === 'engineer',
-                        disabled: mustFullAudit,
+                        disabled: !canSelectEngineerAudit,
                       }"
                       @click="
-                        !mustFullAudit && handleAuditTypeChange('engineer')
+                        canSelectEngineerAudit &&
+                        handleAuditTypeChange('engineer')
                       "
                     >
                       <div class="card-icon">
@@ -129,7 +125,7 @@
                       </div>
                       <div class="card-title">仅工程审核</div>
                       <div class="card-desc">只需工程审</div>
-                      <div v-if="mustFullAudit" class="card-disabled-mask">
+                      <div v-if="!canSelectEngineerAudit" class="card-disabled-mask">
                         不可用
                       </div>
                     </div>
@@ -145,9 +141,6 @@
                       </div>
                       <div class="card-title">重新审核</div>
                       <div class="card-desc">全流程审核</div>
-                      <div v-if="mustFullAudit" class="card-required-badge">
-                        必选
-                      </div>
                     </div>
                   </el-col>
                 </el-row>
@@ -1038,28 +1031,27 @@ export default {
       if (Number(this.form?.isOldSop) === 1) {
         return true;
       }
-      return (
-        this.form.id &&
-        (this.form.sopChangeNotice || this.form.tsopChangeNotice)
-      );
+      return this.form.id && this.hasConfiguredAuditNotice;
+    },
+    canSelectEngineerAudit() {
+      if (this.mustFullAudit) {
+        return false;
+      }
+      if (Number(this.form?.isOldSop) !== 1) {
+        return true;
+      }
+      return this.hasConfiguredAuditNotice;
+    },
+    hasConfiguredAuditNotice() {
+      return this.isAuditNoticeConfigured(this.getActiveAuditNotice());
     },
     // 判断是否强制走重新审核（sopChangeNotice 为 null 或空对象时必须重新审核）
     mustFullAudit() {
       if (Number(this.form?.isSample) === 1) {
         return false;
       }
-      if (Number(this.form?.isOldSop) === 1) {
-        return false;
-      }
       if (!this.form.id) return false;
-
-      // 检查 sopChangeNotice 是否为 null、undefined 或空对象
-      const notice = this.form.sopChangeNotice;
-      if (!notice) return true; // null 或 undefined
-
-      // 检查是否为空对象（没有任何属性，或只有 __ob__ 等 Vue 内部属性）
-      const keys = Object.keys(notice).filter((key) => !key.startsWith("__"));
-      return keys.length === 0;
+      return !this.isAuditNoticeConfigured(this.getActiveAuditNotice());
     },
     // 计算属性：获取 ECN 编号
     displayEcn() {
@@ -1068,8 +1060,7 @@ export default {
 
       try {
         // 优先从 tsopChangeNotice 或 sopChangeNotice 中获取
-        const changeNotice =
-          this.form.tsopChangeNotice || this.form.sopChangeNotice;
+        const changeNotice = this.getActiveAuditNotice();
         if (changeNotice && changeNotice.ecn) {
           return changeNotice.ecn;
         }
@@ -1259,8 +1250,45 @@ export default {
     toggleAuditPanel() {
       this.auditPanelVisible = !this.auditPanelVisible;
     },
+    isAuditNoticeConfigured(notice) {
+      if (!notice || typeof notice !== "object") {
+        return false;
+      }
+      const keys = Object.keys(notice).filter((key) => !key.startsWith("__"));
+      if (keys.length === 0) {
+        return false;
+      }
+      const list = Array.isArray(notice.list) ? notice.list : [];
+      return Boolean(
+        list.length > 0 ||
+          (notice.engineeringPerson &&
+            String(notice.engineeringPerson).trim() !== "") ||
+          (notice.secondPerson && String(notice.secondPerson).trim() !== "") ||
+          (notice.projectPerson && String(notice.projectPerson).trim() !== "") ||
+          (notice.auditNode !== undefined && notice.auditNode !== null)
+      );
+    },
+    getActiveAuditNotice(source = this.form) {
+      if (!source || typeof source !== "object") {
+        return null;
+      }
+      const candidates = [source.tsopChangeNotice, source.sopChangeNotice];
+      const configuredNotice = candidates.find((item) =>
+        this.isAuditNoticeConfigured(item)
+      );
+      if (configuredNotice) {
+        return configuredNotice;
+      }
+      return candidates.find(
+        (item) => item && typeof item === "object" && Object.keys(item).length > 0
+      ) || null;
+    },
     // 处理审核类型切换
     handleAuditTypeChange(type) {
+      if (type === "engineer" && !this.canSelectEngineerAudit) {
+        this.$message.warning("旧版SOP需先走一次重新审核，之后才能选择仅工程审核");
+        return;
+      }
       // 设置审核调整类型
       this.form.auditAdjustType = type;
 
@@ -1299,8 +1327,7 @@ export default {
             this.form.finalAuditors = "";
 
             // 从sopChangeNotice中回显工程审人员（取第一个）
-            const changeNotice =
-              this.form.sopChangeNotice || this.form.tsopChangeNotice;
+            const changeNotice = this.getActiveAuditNotice();
             if (changeNotice && changeNotice.engineeringPerson) {
               const persons = changeNotice.engineeringPerson
                 .split(",")
@@ -1317,8 +1344,7 @@ export default {
           }
           // 如果选择重新审核，从sopChangeNotice中回显所有审核人员
           else if (type === "full") {
-            const changeNotice =
-              this.form.sopChangeNotice || this.form.tsopChangeNotice;
+            const changeNotice = this.getActiveAuditNotice();
             if (changeNotice) {
               // 解析会审人员
               if (changeNotice.list && Array.isArray(changeNotice.list)) {
@@ -2495,8 +2521,7 @@ export default {
       }
 
       // 从sopChangeNotice中解析审核人员数据和ECN编号
-      const changeNotice =
-        formData.sopChangeNotice || formData.tsopChangeNotice;
+      const changeNotice = this.getActiveAuditNotice(formData);
       if (changeNotice) {
         // 解析ECN编号
         formData.ecn = changeNotice.ecn || "";
@@ -3352,20 +3377,6 @@ export default {
       padding: 2px 8px;
       border-radius: 10px;
       font-weight: 600;
-    }
-
-    // 必选标识
-    .card-required-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #67c23a;
-      color: #ffffff;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
-      animation: pulse 2s ease-in-out infinite;
     }
 
     @keyframes pulse {

@@ -105,51 +105,44 @@
             <div v-else>0</div>
           </template>
         </el-table-column>
-        <!-- 测试环节分组列 -->
-        <el-table-column label="测试" align="center">
-          <el-table-column label="IQC" align="center" width="80">
+        <!-- 生产阶段分组列 -->
+        <el-table-column label="生产阶段" align="center">
+          <el-table-column label="半成品测试" align="center" width="100">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.iqcNum }}</strong>
             </template>
           </el-table-column>
-          
-          <el-table-column label="FQC" align="center" width="80">
+
+          <el-table-column label="成品测试" align="center" width="100">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fqcNum }}</strong>
             </template>
           </el-table-column>
-          
-          <el-table-column label="防水" align="center" width="80">
+
+          <el-table-column label="防水测试" align="center" width="100">
             <template slot-scope="scope">
               <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.fsNum }}</strong>
             </template>
           </el-table-column>
-          
-          <el-table-column label="配置工位" align="center" width="90">
+
+          <el-table-column label="包装" align="center" min-width="100">
             <template slot-scope="scope">
-              <strong style="font-size: 15px; font-weight: 700;">{{ scope.row.dcdNum }}</strong>
+              <div v-if="scope.row.packagingDataList && scope.row.packagingDataList.length > 0" style="padding: 5px 0;">
+                <div
+                  v-for="(item, index) in scope.row.packagingDataList"
+                  :key="index"
+                >
+                  <div style="display: flex; justify-content: center; align-items: center;">
+                    <div>
+                      <div>{{ item.packagingNum }}</div>
+                    </div>
+                  </div>
+                   <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
+                </div>
+              </div>
+              <div v-else>0</div>
             </template>
           </el-table-column>
-        </el-table-column>
-        
-        <!-- 包装列（独立，显示订单详情） -->
-        <el-table-column label="包装" align="center" min-width="100">
-          <template slot-scope="scope">
-            <div v-if="scope.row.packagingDataList && scope.row.packagingDataList.length > 0" style="padding: 5px 0;">
-              <div 
-                v-for="(item, index) in scope.row.packagingDataList" 
-                :key="index"
-              >
-                <div style="display: flex; justify-content: center; align-items: center;">
-                  <div>
-                    <div>{{ item.packagingNum }}</div>
-                  </div>
-                </div>
-                 <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
-              </div>
-            </div>
-            <div v-else>0</div>
-          </template>
         </el-table-column>
       </el-table>
       
