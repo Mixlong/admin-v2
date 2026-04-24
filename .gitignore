@@ -10,7 +10,7 @@ node_modules
 tests/**/coverage/
 tests/e2e/reports
 selenium-debug.log
-admin-v3
+admin-v2
 prod.ssh
 test.ssh
 .serena
@@ -33,3 +33,7 @@ test.ssh
 
 # 忽略子项目的.git目录，但保留文件内容
 micro-apps/*/.git/
+.omx/
+
+# Codex 本地环境/构建产物
+.codex/

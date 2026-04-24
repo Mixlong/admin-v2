@@ -96,12 +96,14 @@
     <!-- 数据表格 -->
     <div class="table-section">
       <el-table
+        class="inspection-data-table"
         :data="tableData"
         v-loading="loading"
         border
         style="width: 100%"
         :height="tableHeight(-120)"
         row-key="id"
+        :header-cell-class-name="getHeaderCellClassName"
       >
         <el-table-column
           prop="inventoryCreateTime"
@@ -517,6 +519,26 @@ export default {
     this.fetchData();
   },
   methods: {
+    getHeaderCellClassName({ column }) {
+      const headerGroupMap = {
+        日期: "inspection-header-group-material",
+        物料编码: "inspection-header-group-material",
+        物料名称: "inspection-header-group-material",
+        规格: "inspection-header-group-material",
+        供应商: "inspection-header-group-material",
+        来料记录: "inspection-header-group-batch",
+        批次号: "inspection-header-group-batch",
+        来料数量: "inspection-header-group-batch",
+        检验数量: "inspection-header-group-batch",
+        不良数量: "inspection-header-group-batch",
+        不良率: "inspection-header-group-result",
+        检验结果: "inspection-header-group-result",
+        检验结果描述: "inspection-header-group-result",
+        备注: "inspection-header-group-result",
+      };
+
+      return headerGroupMap[column.label] || "";
+    },
     // 加载基础信息
     async loadBasicInfo() {
       try {
@@ -1042,6 +1064,35 @@ export default {
     left: 0;
     z-index: 2;
     background: #fff;
+  }
+
+  .inspection-data-table .inspection-header-group-material,
+  .inspection-data-table .inspection-header-group-batch,
+  .inspection-data-table .inspection-header-group-result {
+    color: #1f1f1f !important;
+    font-weight: 600 !important;
+  }
+
+  .inspection-data-table .inspection-header-group-material .cell,
+  .inspection-data-table .inspection-header-group-batch .cell,
+  .inspection-data-table .inspection-header-group-result .cell {
+    color: #1f1f1f !important;
+    font-weight: 600 !important;
+  }
+
+  .inspection-data-table .inspection-header-group-material,
+  .inspection-data-table .inspection-header-group-material .cell {
+    background-color: #4f81bd !important;
+  }
+
+  .inspection-data-table .inspection-header-group-batch,
+  .inspection-data-table .inspection-header-group-batch .cell {
+    background-color: #8064a2 !important;
+  }
+
+  .inspection-data-table .inspection-header-group-result,
+  .inspection-data-table .inspection-header-group-result .cell {
+    background-color: #c0504d !important;
   }
 }
 </style>

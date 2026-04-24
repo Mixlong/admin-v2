@@ -263,12 +263,14 @@
         width="55"
         align="center"
         fixed="left"
+        header-class-name="after-sale-header--overview"
       />
       <vxe-column
         title="客退日期"
         field="returnDate"
         align="center"
         width="88"
+        header-class-name="after-sale-header--overview"
         :filters="getFiltersData('returnDate')"
         :filter-method="filterHandler"
         fixed="left"
@@ -280,6 +282,7 @@
         field="afterType"
         align="center"
         width="65"
+        header-class-name="after-sale-header--overview"
         :filter-method="filterHandler"
         fixed="left"
       >
@@ -296,6 +299,7 @@
         field="generatorStage"
         align="center"
         width="78"
+        header-class-name="after-sale-header--overview"
         :filters="happenStageFilters"
         :filter-method="filterHandler"
         fixed="left"
@@ -311,6 +315,7 @@
         field="status"
         align="center"
         width="78"
+        header-class-name="after-sale-header--overview"
         :filters="handleDataFilter({ '0': 'OPEN', '1': 'CLOSE' })"
         :filter-method="filterHandler"
         fixed="left"
@@ -327,6 +332,7 @@
         field="handleTime"
         align="center"
         width="80"
+        header-class-name="after-sale-header--overview"
       >
         <template #default="{ row }">
           <span>
@@ -341,6 +347,7 @@
         field="customerName"
         align="center"
         width="90"
+        header-class-name="after-sale-header--customer"
         :filters="getFiltersData('customerName')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -363,6 +370,7 @@
         field="returnParty"
         align="center"
         width="90"
+        header-class-name="after-sale-header--customer"
         :filters="getFiltersData('returnParty')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -385,6 +393,7 @@
         field="categoryName"
         align="center"
         width="70"
+        header-class-name="after-sale-header--customer"
         :filters="getFiltersData('categoryName')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -407,6 +416,7 @@
         field="computerName"
         align="center"
         width="140"
+        header-class-name="after-sale-header--customer"
         :filters="getFiltersData('computerName')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -429,6 +439,7 @@
         field="sn"
         align="center"
         width="110"
+        header-class-name="after-sale-header--customer"
         :filters="getFiltersData('sn')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -452,6 +463,7 @@
         field="result"
         align="center"
         width="150"
+        header-class-name="after-sale-header--problem"
         class-name="rich-text-column"
         :filters="getFiltersData('result')"
         :filter-method="filterHandler"
@@ -486,6 +498,7 @@
         field="confirmMajorClass"
         align="center"
         width="90"
+        header-class-name="after-sale-header--problem"
         :filters="dictFilterOptions('after_problem_major_class')"
         :filter-method="filterHandler"
       >
@@ -500,6 +513,7 @@
         field="confirmMinorClass"
         align="center"
         width="100"
+        header-class-name="after-sale-header--problem"
         :filters="dictFilterOptions('after_problem_minor_class')"
         :filter-method="filterHandler"
       >
@@ -512,6 +526,7 @@
         field="locationAnalyst"
         align="center"
         width="90"
+        header-class-name="after-sale-header--problem"
         :filters="getFiltersData('locationAnalyst')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -533,6 +548,7 @@
         field="analysisCause"
         align="center"
         width="200"
+        header-class-name="after-sale-header--analysis"
         class-name="rich-text-column"
         :show-overflow="false"
       >
@@ -565,6 +581,7 @@
         field="analysisOutflowCause"
         align="center"
         width="200"
+        header-class-name="after-sale-header--analysis"
         class-name="rich-text-column"
         :show-overflow="false"
       >
@@ -597,6 +614,7 @@
         field="parentResponsibilityPerson"
         align="center"
         width="90"
+        header-class-name="after-sale-header--responsibility"
         :filters="dictFilterOptions('responsibility_group')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -618,6 +636,7 @@
         field="responsibilityPerson"
         align="center"
         width="90"
+        header-class-name="after-sale-header--responsibility"
         :filters="dictFilterOptions('responsibility_determination')"
         :filter-method="filterHandler"
         :show-overflow="false"
@@ -640,6 +659,7 @@
         field="internalMeasures"
         align="center"
         width="150"
+        header-class-name="after-sale-header--measure"
         class-name="rich-text-column"
         :show-overflow="false"
       >
@@ -672,6 +692,7 @@
         field="externalMeasures"
         align="center"
         width="150"
+        header-class-name="after-sale-header--measure"
         class-name="rich-text-column"
         :show-overflow="false"
       >
@@ -704,6 +725,7 @@
         field="problemResponsiblePerson"
         align="center"
         width="80"
+        header-class-name="after-sale-header--measure"
         :show-overflow="false"
       >
         <template #default="{ row }">
@@ -724,6 +746,7 @@
         field="logistics.returnDate"
         align="center"
         width="90"
+        header-class-name="after-sale-header--measure"
       >
         <template #default="{ row }">
           <span v-NoData="row.logistics && row.logistics.returnDate"></span>
@@ -734,6 +757,7 @@
         field="processType"
         align="center"
         width="100"
+        header-class-name="after-sale-header--measure"
         :filters="getFiltersData('processType')"
         :filter-method="filterHandler"
       >
@@ -753,6 +777,7 @@
         field="afterProblemId"
         align="center"
         width="75"
+        header-class-name="after-sale-header--measure"
       >
         <template #default="{ row }">
           <el-tag :type="row.afterProblemId ? 'success' : 'info'">
@@ -760,7 +785,13 @@
           </el-tag>
         </template>
       </vxe-column>
-      <vxe-column title="操作" align="center" width="120" fixed="right">
+      <vxe-column
+        title="操作"
+        align="center"
+        width="120"
+        fixed="right"
+        header-class-name="after-sale-header--action"
+      >
         <template #default="{ row }">
           <div class="op-actions">
             <el-button
@@ -2129,6 +2160,41 @@ export default {
 
 // 修复固定列遮挡滚动条的问题
 .afterSaleBox {
+  /deep/ .vxe-header--column.after-sale-header--overview {
+    background-color: #dbeafe !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--customer {
+    background-color: #dcfce7 !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--problem {
+    background-color: #fef3c7 !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--analysis {
+    background-color: #fde2e4 !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--responsibility {
+    background-color: #e9d5ff !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--measure {
+    background-color: #fed7aa !important;
+    color: #1a1a1a !important;
+  }
+
+  /deep/ .vxe-header--column.after-sale-header--action {
+    background-color: #e5e7eb !important;
+    color: #1a1a1a !important;
+  }
+
   /deep/ .vxe-header--column {
     background-color: #cfd8e6 !important;
     color: #4a5568;

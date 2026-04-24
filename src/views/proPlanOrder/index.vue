@@ -96,9 +96,10 @@
       </ul>
     </div>
 
-    <el-table classs="plan-order-table" :key="tableKey" ref="planOrderRef" v-loading="loading" :data="productionList"
-      :height="isTestTabHeight" @cell-dblclick="onDbClick" @cell-click="onCellClick" :cell-class-name="getCellClassName"
-      :row-class-name="tableRowClassName" :span-method="arraySpanMethod">
+    <el-table class="plan-order-table" :key="tableKey" ref="planOrderRef" v-loading="loading" :data="productionList"
+      :height="isTestTabHeight" :header-cell-class-name="getHeaderCellClassName" @cell-dblclick="onDbClick"
+      @cell-click="onCellClick" :cell-class-name="getCellClassName" :row-class-name="tableRowClassName"
+      :span-method="arraySpanMethod">
       <el-table-column prop="date" label="生产日期" align="center" width="90" fixed>
         <template slot-scope="{ row }">
           <span v-if="row.date" :class="proDate(row.date)">{{ parseTime(row.date, "{y}-{m}-{d}") }}</span>
@@ -947,6 +948,39 @@ export default {
     this.getPmList();
   },
   methods: {
+    getHeaderCellClassName({ column }) {
+      const headerGroupMap = {
+        "生产日期": "table-header-group-basic",
+        "型号": "table-header-group-basic",
+        "迪太订单号": "table-header-group-order",
+        "客户订单号": "table-header-group-order",
+        "生产阶段": "table-header-group-process",
+        "生产数量": "table-header-group-process",
+        "生产地点": "table-header-group-process",
+        "配置总览": "table-header-group-material",
+        "配置": "table-header-group-material",
+        "包装": "table-header-group-material",
+        "产品图纸": "table-header-group-material",
+        "SMT资料": "table-header-group-material",
+        "JS脚本": "table-header-group-material",
+        "硬件资料": "table-header-group-material",
+        "软件资料": "table-header-group-material",
+        "组装资料": "table-header-group-material",
+        "配置文件": "table-header-group-material",
+        "ITA脚本": "table-header-group-material",
+        "审核状态": "table-header-group-material",
+        "初审": "table-header-group-material",
+        "终审": "table-header-group-material",
+        "软件截止时间": "table-header-group-deadline",
+        "测试截止时间": "table-header-group-deadline",
+        "许可截止时间": "table-header-group-deadline",
+        "许可状态": "table-header-group-result",
+        "任务令": "table-header-group-result",
+        "项目经理": "table-header-group-result"
+      };
+
+      return headerGroupMap[column.label] || "";
+    },
     getPmList(){
       dictPmProject().then((res) => {
           if (res && res.data) {
@@ -1440,6 +1474,53 @@ export default {
 .highlight-row {
   background-color: red;
   color: white;
+}
+
+.plan-order-table {
+  .table-header-group-basic,
+  .table-header-group-order,
+  .table-header-group-process,
+  .table-header-group-material,
+  .table-header-group-deadline,
+  .table-header-group-result {
+    color: #303133 !important;
+    font-weight: 600 !important;
+
+    .cell {
+      color: #303133 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  .table-header-group-basic,
+  .table-header-group-basic .cell {
+    background-color: #9fc5f8 !important;
+  }
+
+  .table-header-group-order,
+  .table-header-group-order .cell {
+    background-color: #b4a7d6 !important;
+  }
+
+  .table-header-group-process,
+  .table-header-group-process .cell {
+    background-color: #93c47d !important;
+  }
+
+  .table-header-group-material,
+  .table-header-group-material .cell {
+    background-color: #f6b26b !important;
+  }
+
+  .table-header-group-deadline,
+  .table-header-group-deadline .cell {
+    background-color: #e06666 !important;
+  }
+
+  .table-header-group-result,
+  .table-header-group-result .cell {
+    background-color: #76a5af !important;
+  }
 }
 </style>
 

@@ -69,12 +69,14 @@
 
     <!-- 数据表格 -->
       <el-table 
+        class="maintenance-record-table"
         :data="tableData" 
         v-loading="loading" 
         border 
         style="width: 100%" 
         :height="tableHeight(-50)"
-        row-key="id">
+        row-key="id"
+        :header-cell-class-name="getHeaderCellClassName">
         <el-table-column prop="createTime" label="日期" align="center" width="120">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') || '--' }}</span>
@@ -329,6 +331,22 @@ export default {
     this.fetchData()
   },
   methods: {
+    getHeaderCellClassName({ column }) {
+      const headerGroupMap = {
+        日期: 'maintenance-header-group-basic',
+        排产单号: 'maintenance-header-group-basic',
+        'PCBA SN': 'maintenance-header-group-basic',
+        机型: 'maintenance-header-group-defect',
+        不良描述: 'maintenance-header-group-defect',
+        不良照片: 'maintenance-header-group-defect',
+        维修方案: 'maintenance-header-group-repair',
+        损耗物料: 'maintenance-header-group-repair',
+        维修结果: 'maintenance-header-group-repair',
+        责任判定: 'maintenance-header-group-judge'
+      }
+
+      return headerGroupMap[column.label] || ''
+    },
     // 处理多图显示 - 将逗号分隔的URL字符串转换为数组
     getImageList(imgStr) {
       if (!imgStr) return []
@@ -680,6 +698,15 @@ export default {
     // IntelligentSearchForm 字段变化处理
     handleFieldChange(fieldKey, value) {
       console.log(`字段 ${fieldKey} 变化为:`, value)
+    },
+
+    // 表头样式
+    getHeaderCellStyle() {
+      return {
+        background: '#eef5ff',
+        color: '#303133',
+        fontWeight: '600'
+      }
     }
   }
 }
@@ -775,5 +802,41 @@ export default {
 
 .el-carousel__arrow--right {
   right: 2px !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-basic,
+::v-deep .maintenance-record-table .maintenance-header-group-defect,
+::v-deep .maintenance-record-table .maintenance-header-group-repair,
+::v-deep .maintenance-record-table .maintenance-header-group-judge {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-basic .cell,
+::v-deep .maintenance-record-table .maintenance-header-group-defect .cell,
+::v-deep .maintenance-record-table .maintenance-header-group-repair .cell,
+::v-deep .maintenance-record-table .maintenance-header-group-judge .cell {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-basic,
+::v-deep .maintenance-record-table .maintenance-header-group-basic .cell {
+  background-color: #9fc5f8 !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-defect,
+::v-deep .maintenance-record-table .maintenance-header-group-defect .cell {
+  background-color: #b4a7d6 !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-repair,
+::v-deep .maintenance-record-table .maintenance-header-group-repair .cell {
+  background-color: #ea9999 !important;
+}
+
+::v-deep .maintenance-record-table .maintenance-header-group-judge,
+::v-deep .maintenance-record-table .maintenance-header-group-judge .cell {
+  background-color: #f9cb9c !important;
 }
 </style>

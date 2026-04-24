@@ -298,6 +298,9 @@ export default {
       },
       bluetoothAssociationVisible: false,
       currentFileConfig: null,
+      latestFileConfigSnRequestId: 0,
+      isListLoading: false,
+      isListRequestPending: false,
     };
   },
   computed: {
@@ -366,13 +369,18 @@ export default {
           this.handleQuery();
         }
       },
-      immediate: true,
     },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      vm.getCategoryData();
-      vm.getList();
+      const { number } = to.params;
+      if (number) {
+        vm.queryParams.number = number;
+      }
+
+      vm.getCategoryData().then(() => {
+        vm.handleQuery();
+      });
     });
   },
   methods: {
@@ -406,18 +414,26 @@ export default {
       });
     },
     async getFileConfigSn() {
+      const requestId = ++this.latestFileConfigSnRequestId;
       const { categoryId, computerId } = this.queryParams;
-      if (categoryId && computerId) {
-        const result = await fileSampleConfigSn({
-          categoryId,
-          computerId,
-        });
-
-        this.fileConfigSnData = result.data ?? {};
+      if (!categoryId || !computerId) {
+        this.fileConfigSnData = {};
+        return;
       }
+
+      const result = await fileSampleConfigSn({
+        categoryId,
+        computerId,
+      });
+
+      if (requestId !== this.latestFileConfigSnRequestId) {
+        return;
+      }
+
+      this.fileConfigSnData = result.data ?? {};
     },
     getCategoryData() {
-      categorySampleComputerDict().then((response) => {
+      return categorySampleComputerDict().then((response) => {
         this.dictList = response.data;
 
         this.getPathData();
@@ -453,13 +469,28 @@ export default {
       };
     },
     /** 查询品牌列表 */
-    getList() {
+    async getList() {
+      if (this.isListLoading) {
+        this.isListRequestPending = true;
+        return;
+      }
+
+      this.isListLoading = true;
       this.loading = true;
-      listSampleFileConfig(this.queryParams).then((response) => {
+
+      try {
+        const response = await listSampleFileConfig(this.queryParams);
         this.brandList = response.data.list;
         this.total = response.data.total;
+      } finally {
+        this.isListLoading = false;
         this.loading = false;
-      });
+
+        if (this.isListRequestPending) {
+          this.isListRequestPending = false;
+          this.getList();
+        }
+      }
     },
     tableRowClassName({ row }) {
       if (row.computerStatus) {

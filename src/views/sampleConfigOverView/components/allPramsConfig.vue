@@ -105,9 +105,17 @@
           fixed
           :reserve-selection="true"
         />
-        <el-table-column label="操作" align="center" width="140" fixed>
+        <el-table-column label="操作" align="center" width="180" fixed>
           <template slot-scope="{ row }">
             <div class="flex justify-start" style="gap: 8px;">
+              <Tooltip
+                class="margin-0"
+                icon="el-icon-edit"
+                content="编辑"
+                v-hasPermi="['third:productFamily:update']"
+                @click="$emit('handle-update', row)"
+              />
+
               <!-- 初审 -->
               <Tooltip
                 v-if="row.state === 0"
@@ -1683,7 +1691,7 @@
       this.getList();
     },
     activated() {
-      this.getCategoryComputerDict();
+      this.getcategorySampleComputerDict();
     },
     methods: {
       /** 查询品牌列表 */

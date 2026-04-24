@@ -1183,6 +1183,13 @@ export default {
     this.getPersonLiableList();
   },
   methods: {
+    normalizeDictOptions(data) {
+      if (!Array.isArray(data)) {
+        return [];
+      }
+
+      return data.filter((item) => item && typeof item === "object");
+    },
     getList() {
       typeCategory().then((res) => {
         this.modelList = res.data;
@@ -1214,7 +1221,7 @@ export default {
     getPersonLiableList() {
       dictByRoles(['project_manager', 'project_manage_s']).then((res) => {
         if (res.code === 200 && res.data) {
-          this.personLiableList = (res.data || []).map(item => ({
+          this.personLiableList = this.normalizeDictOptions(res.data).map(item => ({
             dictValue: item.userName || item.nickName,
             dictLabel: item.nickName || item.userName
           }));
@@ -1299,43 +1306,45 @@ export default {
     getOptions() {
       // 按键型号
       this.getDicts("STS_KEY_TYPE").then((res) => {
-        this.dicts_keyType_list = res.data;
+        this.dicts_keyType_list = this.normalizeDictOptions(res.data);
       });
       //仪表控制器接头
       this.getDicts("instrument_controller_joint").then((res) => {
-        this.dicts_controller_joint = res.data;
+        this.dicts_controller_joint = this.normalizeDictOptions(res.data);
       });
       //仪表通讯方式1
       this.getDicts("instrument_communication_type_1").then((res) => {
-        this.dicts_communication_type = res.data;
+        this.dicts_communication_type = this.normalizeDictOptions(res.data);
       });
       //仪表协议
       this.getDicts("instrument_agreement").then((res) => {
-        this.dicts_agreement = res.data;
+        this.dicts_agreement = this.normalizeDictOptions(res.data);
       });
       //仪表电压
       this.getDicts("instrument_voltage").then((res) => {
-        this.dicts_voltage = res.data.map(({ dictValue }) => +dictValue);
+        this.dicts_voltage = this.normalizeDictOptions(res.data).map(
+          ({ dictValue }) => +dictValue
+        );
       });
       //仪表单位
       this.getDicts("instrument_unit").then((res) => {
-        this.dicts_unit = res.data;
+        this.dicts_unit = this.normalizeDictOptions(res.data);
       });
       //仪表电量计算
       this.getDicts("instrument_power").then((res) => {
-        this.dicts_power = res.data;
+        this.dicts_power = this.normalizeDictOptions(res.data);
       });
       //仪表LOGO界面
       this.getDicts("instrument_logo").then((res) => {
-        this.dicts_logo = res.data;
+        this.dicts_logo = this.normalizeDictOptions(res.data);
       });
       // 车把尺寸
       this.getDicts("handleBar_size").then((res) => {
-        this.handlebarSizeData = res.data;
+        this.handlebarSizeData = this.normalizeDictOptions(res.data);
       });
       // 通讯协议
       this.getDicts("sys_protocol").then((res) => {
-        this.sysProtocolList = res.data;
+        this.sysProtocolList = this.normalizeDictOptions(res.data);
       });
     },
     //查看同配详情

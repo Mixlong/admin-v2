@@ -301,11 +301,13 @@
 
       <!-- 来料列表 -->
       <el-table
+        class="inspection-data-table"
         :data="inventoryTableData"
         v-loading="inventoryLoading"
         border
         style="width: 100%"
         height="60vh"
+        :header-cell-class-name="getInventoryHeaderCellClassName"
         @row-click="handleInventoryRowClick"
         close-on-click-modal="false"
         highlight-current-row
@@ -556,6 +558,18 @@ export default {
     },
   },
   methods: {
+    getInventoryHeaderCellClassName({ column }) {
+      const headerGroupMap = {
+        物料编码: "inspection-header-group-material",
+        物料名称: "inspection-header-group-material",
+        英文名称: "inspection-header-group-material",
+        物料标准: "inspection-header-group-material",
+        供应商: "inspection-header-group-material",
+        创建时间: "inspection-header-group-batch",
+      };
+
+      return headerGroupMap[column.label] || "";
+    },
     // 初始化表单
     initForm() {
       if (this.editData) {
@@ -1007,5 +1021,27 @@ export default {
 .inspection-data-dialog .el-select,
 .inspection-data-dialog .el-input-number {
   scroll-margin: 0 !important;
+}
+
+.inspection-data-table .inspection-header-group-material,
+.inspection-data-table .inspection-header-group-batch {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
+
+.inspection-data-table .inspection-header-group-material .cell,
+.inspection-data-table .inspection-header-group-batch .cell {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
+
+.inspection-data-table .inspection-header-group-material,
+.inspection-data-table .inspection-header-group-material .cell {
+  background-color: #4f81bd !important;
+}
+
+.inspection-data-table .inspection-header-group-batch,
+.inspection-data-table .inspection-header-group-batch .cell {
+  background-color: #8064a2 !important;
 }
 </style>

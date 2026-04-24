@@ -58,7 +58,16 @@
 
     <!-- 生产数据表格 -->
     <div class="table-container">
-      <el-table :data="tableData" v-loading="loading" border stripe style="width: 100%" :height="tableHeight()">
+      <el-table
+        class="production-display-table"
+        :data="tableData"
+        v-loading="loading"
+        border
+        stripe
+        style="width: 100%"
+        :height="tableHeight()"
+        :header-cell-class-name="getHeaderCellClassName"
+      >
         <el-table-column label="生产日期" align="center" width="110">
           <template slot-scope="scope">
             {{ formatDate(scope.row.date) }}
@@ -125,7 +134,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="包装" align="center" min-width="100">
+          <el-table-column label="包装" align="center" width="100">
             <template slot-scope="scope">
               <div v-if="scope.row.packagingDataList && scope.row.packagingDataList.length > 0" style="padding: 5px 0;">
                 <div
@@ -134,7 +143,7 @@
                 >
                   <div style="display: flex; justify-content: center; align-items: center;">
                     <div>
-                      <div>{{ item.packagingNum }}</div>
+                      <strong  style="font-size: 15px; font-weight: 700;">{{ item.packagingNum }}</strong>
                     </div>
                   </div>
                    <div v-if="index !== scope.row.packagingDataList.length - 1" style="width: 100%; height: 1px; background-color: #EBEEF5;"></div>
@@ -298,6 +307,24 @@ export default {
     });
   },
   methods: {
+    getHeaderCellClassName({ column }) {
+      const headerGroupMap = {
+        生产日期: 'production-header-group-basic',
+        仪表型号: 'production-header-group-basic',
+        迪太订单号: 'production-header-group-order',
+        工单号: 'production-header-group-order',
+        生产地点: 'production-header-group-order',
+        客户订单号: 'production-header-group-order',
+        生产数量: 'production-header-group-order',
+        生产阶段: 'production-header-group-stage',
+        半成品测试: 'production-header-group-stage',
+        成品测试: 'production-header-group-stage',
+        防水测试: 'production-header-group-stage',
+        包装: 'production-header-group-stage'
+      }
+
+      return headerGroupMap[column.label] || ''
+    },
     // 获取品类和型号字典数据
     getCategoryComputerData() {
       return new Promise((resolve, reject) => {
@@ -636,6 +663,33 @@ export default {
 </script>
 
 <style scoped>
+::v-deep .production-display-table .production-header-group-basic,
+::v-deep .production-display-table .production-header-group-order,
+::v-deep .production-display-table .production-header-group-stage {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
 
+::v-deep .production-display-table .production-header-group-basic .cell,
+::v-deep .production-display-table .production-header-group-order .cell,
+::v-deep .production-display-table .production-header-group-stage .cell {
+  color: #1f1f1f !important;
+  font-weight: 600 !important;
+}
+
+::v-deep .production-display-table .production-header-group-basic,
+::v-deep .production-display-table .production-header-group-basic .cell {
+  background-color: #9fc5f8 !important;
+}
+
+::v-deep .production-display-table .production-header-group-order,
+::v-deep .production-display-table .production-header-group-order .cell {
+  background-color: #b4a7d6 !important;
+}
+
+::v-deep .production-display-table .production-header-group-stage,
+::v-deep .production-display-table .production-header-group-stage .cell {
+  background-color: #f9cb9c !important;
+}
 
 </style>
