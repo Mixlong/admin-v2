@@ -29,7 +29,7 @@
           style="width: 150px"
           :remote-method="getComputerNameList"
         >
-          <el-option
+        <el-option
             v-for="dict in computerOptions"
             :key="dict.model"
             :label="dict.name"

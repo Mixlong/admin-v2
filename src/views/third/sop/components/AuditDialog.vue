@@ -112,14 +112,6 @@ export default {
       this.currentFieldItem = fieldItem;
       this.visible = true;
       this.resetForm();
-      
-      // 调试信息
-      console.log('审核类型:', type);
-      console.log('行数据:', rowData);
-      console.log('sopChangeNotice:', rowData.sopChangeNotice);
-      if (type === 'project') {
-        console.log('项目审核人:', rowData.sopChangeNotice?.projectPerson);
-      }
     },
     
     handleClose() {
@@ -171,18 +163,14 @@ export default {
         } else if (this.auditType === 'engineering') {
           // 工程审
           apiFunc = sopEngineerAudit;
-          params.secondPerson = this.rowData.sopChangeNotice?.engineeringPerson || '';
         } else if (this.auditType === 'project') {
           // 项目审
           apiFunc = sopProjectAudit;
-          params.secondPerson = this.rowData.sopChangeNotice?.projectPerson || '';
         } else if (this.auditType === 'final') {
           // 终审
           apiFunc = sopFinalAudit;
-          params.secondPerson = this.rowData.sopChangeNotice?.secondPerson || '';
         }
-        
-        console.log('审核参数:', params);
+
         const res = await apiFunc(params);
         
         if (res.code === 200) {

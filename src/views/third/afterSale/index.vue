@@ -1,30 +1,14 @@
 <template>
   <div class="app-container">
     <!-- 智能搜索表单 -->
-    <IntelligentSearchForm
-      :searchForm="queryParams"
-      :fields="searchFields"
-      @search="handleQuery"
-      :defaultVisibleCount="4"
-      :maxVisibleCount="8"
-      @reset="resetQuery"
-    >
+    <IntelligentSearchForm :searchForm="queryParams" :fields="searchFields" @search="handleQuery"
+      :defaultVisibleCount="4" :maxVisibleCount="8" @reset="resetQuery">
       <!-- 自定义字段：日期类型 -->
       <template #field-type="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="searchForm[field.key]"
-            filterable
-            clearable
-            style="width: 110px"
-            @change="handleDateTypeChange"
-          >
-            <el-option
-              v-for="(label, value) in typeDateList"
-              :key="value"
-              :label="label"
-              :value="value"
-            />
+          <el-select v-model="searchForm[field.key]" filterable clearable style="width: 110px"
+            @change="handleDateTypeChange">
+            <el-option v-for="(label, value) in typeDateList" :key="value" :label="label" :value="value" />
           </el-select>
         </el-form-item>
       </template>
@@ -33,47 +17,22 @@
       <template #field-returnDate="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <!-- 当选择"日"时，显示日期范围选择器 -->
-          <el-date-picker
-            v-if="queryParams.type === '3'"
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="yyyy-MM-dd"
-            style="width: 240px"
-            clearable
-            @change="handleDateRangeChange"
-          />
+          <el-date-picker v-if="queryParams.type === '3'" v-model="dateRange" type="daterange" range-separator="至"
+            start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" style="width: 240px" clearable
+            @change="handleDateRangeChange" />
           <!-- 其他类型显示单个日期选择器 -->
-          <el-date-picker
-            v-else
-            v-model="searchForm[field.key]"
-            :type="datePickerType"
-            placeholder="请选择"
-            clearable
-            value-format="yyyy-MM-dd"
-            style="width: 140px"
-          />
+          <el-date-picker v-else v-model="searchForm[field.key]" :type="datePickerType" placeholder="请选择" clearable
+            value-format="yyyy-MM-dd" style="width: 140px" />
         </el-form-item>
       </template>
 
       <!-- 自定义字段：一级问题 -->
       <template #field-confirmMajorClass="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="queryParams.confirmMajorClass"
-            placeholder="请选择一级问题"
-            clearable
-            style="width: 140px"
-            @change="handleMajorClassChange"
-          >
-            <el-option
-              v-for="dict in dict.type.after_problem_major_class"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.label"
-            />
+          <el-select v-model="queryParams.confirmMajorClass" placeholder="请选择一级问题" clearable style="width: 140px"
+            @change="handleMajorClassChange">
+            <el-option v-for="dict in dict.type.after_problem_major_class" :key="dict.value" :label="dict.label"
+              :value="dict.label" />
           </el-select>
         </el-form-item>
       </template>
@@ -81,20 +40,9 @@
       <!-- 自定义字段：二级问题 -->
       <template #field-confirmMinorClass="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="queryParams.confirmMinorClass"
-            placeholder="请选择二级问题"
-            clearable
-            style="width: 140px"
-            :disabled="!searchForm.confirmMajorClass"
-            @change="handleQuery"
-          >
-            <el-option
-              v-for="dict in filteredMinorOptions"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.label"
-            />
+          <el-select v-model="queryParams.confirmMinorClass" placeholder="请选择二级问题" clearable style="width: 140px"
+            :disabled="!searchForm.confirmMajorClass" @change="handleQuery">
+            <el-option v-for="dict in filteredMinorOptions" :key="dict.value" :label="dict.label" :value="dict.label" />
           </el-select>
         </el-form-item>
       </template>
@@ -102,37 +50,19 @@
       <!-- 自定义字段：客户名称 -->
       <template #field-customerName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <select-loadMore
-            v-model="queryParams.customerName"
-            style="width: 100%"
-            :data="customerNameData.data"
-            :page="customerNameData.page"
-            :hasMore="customerNameData.more"
-            dictLabel="name"
-            dictValue="name"
-            :request="getCustomerNameList"
-            placeholder="请选择客户名称"
-            @getChange="handleQuery"
-          />
+          <select-loadMore v-model="queryParams.customerName" style="width: 100%" :data="customerNameData.data"
+            :page="customerNameData.page" :hasMore="customerNameData.more" dictLabel="name" dictValue="name"
+            :request="getCustomerNameList" placeholder="请选择客户名称" @getChange="handleQuery" />
         </el-form-item>
       </template>
 
       <!-- 自定义字段：一级责任 -->
       <template #field-parentResponsibilityPerson="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="queryParams.parentResponsibilityPerson"
-            placeholder="请选择一级责任"
-            clearable
-            style="width: 100%"
-            @change="handleParentResponsibilityChange"
-          >
-            <el-option
-              v-for="dict in dict.type.responsibility_group"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.label"
-            />
+          <el-select v-model="queryParams.parentResponsibilityPerson" placeholder="请选择一级责任" clearable
+            style="width: 100%" @change="handleParentResponsibilityChange">
+            <el-option v-for="dict in dict.type.responsibility_group" :key="dict.value" :label="dict.label"
+              :value="dict.label" />
           </el-select>
         </el-form-item>
       </template>
@@ -140,20 +70,10 @@
       <!-- 自定义字段：二级责任 -->
       <template #field-responsibilityPerson="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="queryParams.responsibilityPerson"
-            placeholder="请选择二级责任"
-            clearable
-            style="width: 100%"
-            :disabled="!queryParams.parentResponsibilityPerson"
-            @change="handleQuery"
-          >
-            <el-option
-              v-for="dict in filteredResponsibilityOptions"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.label"
-            />
+          <el-select v-model="queryParams.responsibilityPerson" placeholder="请选择二级责任" clearable style="width: 100%"
+            :disabled="!queryParams.parentResponsibilityPerson" @change="handleQuery">
+            <el-option v-for="dict in filteredResponsibilityOptions" :key="dict.value" :label="dict.label"
+              :value="dict.label" />
           </el-select>
         </el-form-item>
       </template>
@@ -161,19 +81,9 @@
       <!-- 自定义字段：品类 -->
       <template #field-categoryName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="searchForm[field.key]"
-            filterable
-            clearable
-            style="width: 100%"
-            @change="handleCategoryChange"
-          >
-            <el-option
-              v-for="dict in dictList"
-              :key="dict.id"
-              :label="dict.name"
-              :value="dict.name"
-            />
+          <el-select v-model="searchForm[field.key]" filterable clearable style="width: 100%"
+            @change="handleCategoryChange">
+            <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
           </el-select>
         </el-form-item>
       </template>
@@ -181,19 +91,8 @@
       <!-- 自定义字段：型号 -->
       <template #field-computerName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select
-            v-model="queryParams.computerName"
-            filterable
-            clearable
-            style="width: 100%"
-            @change="handleQuery"
-          >
-            <el-option
-              v-for="dict in computerOptions"
-              :key="dict.model"
-              :label="dict.name"
-              :value="dict.name"
-            />
+          <el-select v-model="queryParams.computerName" filterable clearable style="width: 100%" @change="handleQuery">
+            <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
           </el-select>
         </el-form-item>
       </template>
@@ -203,89 +102,37 @@
         <el-button type="danger" @click="clearFilter">
           清除所有过滤器
         </el-button>
-        <el-button
-          v-hasPermi="['third:afterSale:export']"
-          type="success"
-          icon="el-icon-download"
-          @click="handleMultipleExport"
-        >
+        <el-button v-hasPermi="['third:afterSale:export']" type="success" icon="el-icon-download"
+          @click="handleMultipleExport">
           导出
         </el-button>
-        <el-button
-          v-hasPermi="['third:afterSale:export']"
-          type="warning"
-          icon="el-icon-download"
-          @click="handleExportAll"
-        >
+        <el-button v-hasPermi="['third:afterSale:export']" type="warning" icon="el-icon-download"
+          @click="handleExportAll">
           全部导出
         </el-button>
-        <el-button
-          v-hasPermi="['third:afterSale:add']"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
-        >
+        <el-button v-hasPermi="['third:afterSale:add']" type="primary" icon="el-icon-plus" @click="handleAdd">
           新增
         </el-button>
       </template>
     </IntelligentSearchForm>
 
-    <el-alert
-      title="表格可通过按住Ctrl + 鼠标左键左右拖动"
-      type="success"
-      show-icon
-    ></el-alert>
-    <VirtualTable
-      id="drag_table"
-      ref="afterSaleRef"
-      class="afterSaleBox"
-      :loading="loading"
-      :data="brandList"
-      :height="tableHeight(-10)"
-      :virtual-enabled="true"
-      :row-height="56"
-      :virtual-threshold="100"
-      :row-config="{ keyField: 'id', isHover: true, height: 56 }"
-      :column-config="{ resizable: false }"
-      :checkbox-config="{ reserve: true }"
-      show-overflow="ellipsis"
-      show-header-overflow="tooltip"
-      @row-click="handleRowClick"
-      @cell-click="cellClick"
-      :cell-style="cellStyle"
-      :row-class-name="tableRowClassName"
-      @checkbox-change="handleSelectionChange"
-      @checkbox-all="handleSelectionChange"
-    >
+    <el-alert title="表格可通过按住Ctrl + 鼠标左键左右拖动" type="success" show-icon></el-alert>
+    <VirtualTable id="drag_table" ref="afterSaleRef" class="afterSaleBox" :loading="loading" :data="brandList"
+      :height="tableHeight(-10)" :virtual-enabled="true" :row-height="56" :virtual-threshold="100"
+      :row-config="{ keyField: 'id', isHover: true, height: 56 }" :column-config="{ resizable: false }"
+      :checkbox-config="{ reserve: true }" show-overflow="ellipsis" show-header-overflow="tooltip"
+      @row-click="handleRowClick" @cell-click="cellClick" :cell-style="cellStyle" :row-class-name="tableRowClassName"
+      @checkbox-change="handleSelectionChange" @checkbox-all="handleSelectionChange">
       <!-- 1. 客退日期 -->
-      <vxe-column
-        type="checkbox"
-        width="55"
-        align="center"
-        fixed="left"
-        header-class-name="after-sale-header--overview"
-      />
-      <vxe-column
-        title="客退日期"
-        field="returnDate"
-        align="center"
-        width="88"
-        header-class-name="after-sale-header--overview"
-        :filters="getFiltersData('returnDate')"
-        :filter-method="filterHandler"
-        fixed="left"
-      />
-        <!-- :filters="handleDataFilter({ 1: '大货', 2: '样品' })" -->
+      <vxe-column type="checkbox" width="55" align="center" fixed="left"
+        header-class-name="after-sale-header--overview" />
+      <vxe-column title="客退日期" field="returnDate" align="center" width="88"
+        header-class-name="after-sale-header--overview" :filters="getFiltersData('returnDate')"
+        :filter-method="filterHandler" fixed="left" />
+      <!-- :filters="handleDataFilter({ 1: '大货', 2: '样品' })" -->
       <!-- 2. 客退类型 -->
-      <vxe-column
-        title="客退类型"
-        field="afterType"
-        align="center"
-        width="65"
-        header-class-name="after-sale-header--overview"
-        :filter-method="filterHandler"
-        fixed="left"
-      >
+      <vxe-column title="客退类型" field="afterType" align="center" width="65"
+        header-class-name="after-sale-header--overview" :filter-method="filterHandler" fixed="left">
         <template #default="{ row }">
           <el-tag v-if="row.afterType === 1" type="primary">大货</el-tag>
           <el-tag v-else-if="row.afterType === 2" type="warning">样品</el-tag>
@@ -294,32 +141,17 @@
       </vxe-column>
 
       <!-- 3. 发生阶段 -->
-      <vxe-column
-        title="发生阶段"
-        field="generatorStage"
-        align="center"
-        width="78"
-        header-class-name="after-sale-header--overview"
-        :filters="happenStageFilters"
-        :filter-method="filterHandler"
-        fixed="left"
-      >
+      <vxe-column title="发生阶段" field="generatorStage" align="center" width="78"
+        header-class-name="after-sale-header--overview" :filters="happenStageFilters" :filter-method="filterHandler"
+        fixed="left">
         <template #default="{ row }">
           <span v-NoData="row.generatorStage"></span>
         </template>
       </vxe-column>
 
       <!-- 4. 问题状态 -->
-      <vxe-column
-        title="问题状态"
-        field="status"
-        align="center"
-        width="78"
-        header-class-name="after-sale-header--overview"
-        :filters="handleDataFilter({ '0': 'OPEN', '1': 'CLOSE' })"
-        :filter-method="filterHandler"
-        fixed="left"
-      >
+      <vxe-column title="问题状态" field="status" align="center" width="78" header-class-name="after-sale-header--overview"
+        :filters="handleDataFilter({ '0': 'OPEN', '1': 'CLOSE' })" :filter-method="filterHandler" fixed="left">
         <template #default="{ row }">
           <el-tag v-if="row.status === 0" type="danger">OPEN</el-tag>
           <el-tag v-else type="success">CLOSE</el-tag>
@@ -327,13 +159,8 @@
       </vxe-column>
 
       <!-- 5. 处理时效(h) -->
-      <vxe-column
-        title="处理时效(h)"
-        field="handleTime"
-        align="center"
-        width="80"
-        header-class-name="after-sale-header--overview"
-      >
+      <vxe-column title="处理时效(h)" field="handleTime" align="center" width="80"
+        header-class-name="after-sale-header--overview">
         <template #default="{ row }">
           <span>
             {{ row.processingTime }}
@@ -342,22 +169,12 @@
       </vxe-column>
 
       <!-- 6. 客户名称 -->
-      <vxe-column
-        title="客户名称"
-        field="customerName"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--customer"
-        :filters="getFiltersData('customerName')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="客户名称" field="customerName" align="center" width="90"
+        header-class-name="after-sale-header--customer" :filters="getFiltersData('customerName')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.customerName)"
-            :title="getTextValue(row.customerName)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.customerName)" :title="getTextValue(row.customerName)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.customerName) }}
           </span>
           <span v-else>-</span>
@@ -365,22 +182,12 @@
       </vxe-column>
 
       <!-- 7. 客退方 -->
-      <vxe-column
-        title="客退方"
-        field="returnParty"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--customer"
-        :filters="getFiltersData('returnParty')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="客退方" field="returnParty" align="center" width="90"
+        header-class-name="after-sale-header--customer" :filters="getFiltersData('returnParty')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.returnParty)"
-            :title="getTextValue(row.returnParty)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.returnParty)" :title="getTextValue(row.returnParty)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.returnParty) }}
           </span>
           <span v-else>-</span>
@@ -388,22 +195,12 @@
       </vxe-column>
 
       <!-- 8. 品类 -->
-      <vxe-column
-        title="品类"
-        field="categoryName"
-        align="center"
-        width="70"
-        header-class-name="after-sale-header--customer"
-        :filters="getFiltersData('categoryName')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="品类" field="categoryName" align="center" width="70"
+        header-class-name="after-sale-header--customer" :filters="getFiltersData('categoryName')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.categoryName)"
-            :title="getTextValue(row.categoryName)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.categoryName)" :title="getTextValue(row.categoryName)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.categoryName) }}
           </span>
           <span v-else>-</span>
@@ -411,22 +208,12 @@
       </vxe-column>
 
       <!-- 9. 仪表型号 -->
-      <vxe-column
-        title="仪表型号"
-        field="computerName"
-        align="center"
-        width="140"
-        header-class-name="after-sale-header--customer"
-        :filters="getFiltersData('computerName')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="仪表型号" field="computerName" align="center" width="140"
+        header-class-name="after-sale-header--customer" :filters="getFiltersData('computerName')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.computerName)"
-            :title="getTextValue(row.computerName)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.computerName)" :title="getTextValue(row.computerName)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.computerName) }}
           </span>
           <span v-else>-</span>
@@ -434,23 +221,11 @@
       </vxe-column>
 
       <!-- 10. 产品SN -->
-      <vxe-column
-        title="产品SN"
-        field="sn"
-        align="center"
-        width="110"
-        header-class-name="after-sale-header--customer"
-        :filters="getFiltersData('sn')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="产品SN" field="sn" align="center" width="110" header-class-name="after-sale-header--customer"
+        :filters="getFiltersData('sn')" :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <el-link
-            v-if="!Is_Empty(row.sn)"
-            :title="getTextValue(row.sn)"
-            class="text-clamp-2 text-clamp-center text-link-clamp"
-            @click.stop="toPage(row.sn)"
-          >
+          <el-link v-if="!Is_Empty(row.sn)" :title="getTextValue(row.sn)"
+            class="text-clamp-2 text-clamp-center text-link-clamp" @click.stop="toPage(row.sn)">
             {{ getTextValue(row.sn) }}
           </el-link>
           <span v-else>-</span>
@@ -458,34 +233,17 @@
       </vxe-column>
 
       <!-- 11. 客诉现象 -->
-      <vxe-column
-        title="客诉现象"
-        field="result"
-        align="center"
-        width="150"
-        header-class-name="after-sale-header--problem"
-        class-name="rich-text-column"
-        :filters="getFiltersData('result')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="客诉现象" field="result" align="center" width="150" header-class-name="after-sale-header--problem"
+        class-name="rich-text-column" :filters="getFiltersData('result')" :filter-method="filterHandler"
+        :show-overflow="false">
         <template #default="{ row }">
-          <el-popover
-            v-if="row.result"
-            placement="top-start"
-            trigger="hover"
-            width="420"
-            popper-class="after-sale-rich-popover"
-          >
-            <RichTextDisplay
-              :content="row.result"
-              max-height="320px"
-              placeholder="-"
-            />
+          <el-popover v-if="row.result" placement="top-start" trigger="hover" width="420"
+            popper-class="after-sale-rich-popover">
+            <RichTextDisplay :content="row.result" max-height="320px" placeholder="-" />
             <div slot="reference" class="rich-preview-trigger">
               <span class="rich-preview-text">{{
                 getHtmlPreviewText(row.result)
-              }}</span>
+                }}</span>
             </div>
           </el-popover>
           <span v-else>-</span>
@@ -493,82 +251,44 @@
       </vxe-column>
 
       <!-- 13. 一级问题 -->
-      <vxe-column
-        title="一级问题"
-        field="confirmMajorClass"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--problem"
-        :filters="dictFilterOptions('after_problem_major_class')"
-        :filter-method="filterHandler"
-      >
+      <vxe-column title="一级问题" field="confirmMajorClass" align="center" width="90"
+        header-class-name="after-sale-header--problem" :filters="dictFilterOptions('after_problem_major_class')"
+        :filter-method="filterHandler">
         <template #default="{ row }">
           <span v-NoData="row.confirmMajorClass"></span>
         </template>
       </vxe-column>
 
       <!-- 14. 二级问题 -->
-      <vxe-column
-        title="二级问题"
-        field="confirmMinorClass"
-        align="center"
-        width="100"
-        header-class-name="after-sale-header--problem"
-        :filters="dictFilterOptions('after_problem_minor_class')"
-        :filter-method="filterHandler"
-      >
+      <vxe-column title="二级问题" field="confirmMinorClass" align="center" width="100"
+        header-class-name="after-sale-header--problem" :filters="dictFilterOptions('after_problem_minor_class')"
+        :filter-method="filterHandler">
         <template #default="{ row }">
           <span v-NoData="row.confirmMinorClass"></span>
         </template>
       </vxe-column>
-      <vxe-column
-        title="分析负责人"
-        field="locationAnalyst"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--problem"
-        :filters="getFiltersData('locationAnalyst')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="分析负责人" field="locationAnalyst" align="center" width="90"
+        header-class-name="after-sale-header--problem" :filters="getFiltersData('locationAnalyst')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.locationAnalyst)"
-            :title="getTextValue(row.locationAnalyst)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.locationAnalyst)" :title="getTextValue(row.locationAnalyst)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.locationAnalyst) }}
           </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
       <!-- 15. 发生原因 -->
-      <vxe-column
-        title="发生原因"
-        field="analysisCause"
-        align="center"
-        width="200"
-        header-class-name="after-sale-header--analysis"
-        class-name="rich-text-column"
-        :show-overflow="false"
-      >
+      <vxe-column title="发生原因" field="analysisCause" align="center" width="200"
+        header-class-name="after-sale-header--analysis" class-name="rich-text-column" :show-overflow="false">
         <template #default="{ row }">
-          <el-popover
-            v-if="row.analysisCause"
-            placement="top-start"
-            trigger="hover"
-            width="420"
-            popper-class="after-sale-rich-popover"
-          >
-            <RichTextDisplay
-              :content="row.analysisCause"
-              max-height="320px"
-              placeholder="-"
-            />
+          <el-popover v-if="row.analysisCause" placement="top-start" trigger="hover" width="420"
+            popper-class="after-sale-rich-popover">
+            <RichTextDisplay :content="row.analysisCause" max-height="320px" placeholder="-" />
             <div slot="reference" class="rich-preview-trigger">
               <span class="rich-preview-text">{{
                 getHtmlPreviewText(row.analysisCause)
-              }}</span>
+                }}</span>
             </div>
           </el-popover>
           <span v-else>-</span>
@@ -576,32 +296,16 @@
       </vxe-column>
 
       <!-- 16. 流出原因 -->
-      <vxe-column
-        title="流出原因"
-        field="analysisOutflowCause"
-        align="center"
-        width="200"
-        header-class-name="after-sale-header--analysis"
-        class-name="rich-text-column"
-        :show-overflow="false"
-      >
+      <vxe-column title="流出原因" field="analysisOutflowCause" align="center" width="200"
+        header-class-name="after-sale-header--analysis" class-name="rich-text-column" :show-overflow="false">
         <template #default="{ row }">
-          <el-popover
-            v-if="row.analysisOutflowCause"
-            placement="top-start"
-            trigger="hover"
-            width="420"
-            popper-class="after-sale-rich-popover"
-          >
-            <RichTextDisplay
-              :content="row.analysisOutflowCause"
-              max-height="320px"
-              placeholder="-"
-            />
+          <el-popover v-if="row.analysisOutflowCause" placement="top-start" trigger="hover" width="420"
+            popper-class="after-sale-rich-popover">
+            <RichTextDisplay :content="row.analysisOutflowCause" max-height="320px" placeholder="-" />
             <div slot="reference" class="rich-preview-trigger">
               <span class="rich-preview-text">{{
                 getHtmlPreviewText(row.analysisOutflowCause)
-              }}</span>
+                }}</span>
             </div>
           </el-popover>
           <span v-else>-</span>
@@ -609,44 +313,25 @@
       </vxe-column>
 
       <!-- 17. 责任判定 -->
-      <vxe-column
-        title="一级责任"
-        field="parentResponsibilityPerson"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--responsibility"
-        :filters="dictFilterOptions('responsibility_group')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+      <vxe-column title="一级责任" field="parentResponsibilityPerson" align="center" width="90"
+        header-class-name="after-sale-header--responsibility" :filters="dictFilterOptions('responsibility_group')"
+        :filter-method="filterHandler" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.parentResponsibilityPerson)"
-            :title="getTextValue(row.parentResponsibilityPerson)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.parentResponsibilityPerson)" :title="getTextValue(row.parentResponsibilityPerson)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.parentResponsibilityPerson) }}
           </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
       <!-- 17. 责任判定 -->
-      <vxe-column
-        title="二级责任"
-        field="responsibilityPerson"
-        align="center"
-        width="90"
+      <vxe-column title="二级责任" field="responsibilityPerson" align="center" width="90"
         header-class-name="after-sale-header--responsibility"
-        :filters="dictFilterOptions('responsibility_determination')"
-        :filter-method="filterHandler"
-        :show-overflow="false"
-      >
+        :filters="dictFilterOptions('responsibility_determination')" :filter-method="filterHandler"
+        :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.responsibilityPerson)"
-            :title="getTextValue(row.responsibilityPerson)"
-            class="text-clamp-2 text-clamp-center"
-          >
+          <span v-if="!Is_Empty(row.responsibilityPerson)" :title="getTextValue(row.responsibilityPerson)"
+            class="text-clamp-2 text-clamp-center">
             {{ getTextValue(row.responsibilityPerson) }}
           </span>
           <span v-else>-</span>
@@ -654,32 +339,16 @@
       </vxe-column>
 
       <!-- 18. 内部对策 -->
-      <vxe-column
-        title="短期对策"
-        field="internalMeasures"
-        align="center"
-        width="150"
-        header-class-name="after-sale-header--measure"
-        class-name="rich-text-column"
-        :show-overflow="false"
-      >
+      <vxe-column title="短期对策" field="internalMeasures" align="center" width="150"
+        header-class-name="after-sale-header--measure" class-name="rich-text-column" :show-overflow="false">
         <template #default="{ row }">
-          <el-popover
-            v-if="row.internalMeasures"
-            placement="top-start"
-            trigger="hover"
-            width="420"
-            popper-class="after-sale-rich-popover"
-          >
-            <RichTextDisplay
-              :content="row.internalMeasures"
-              max-height="320px"
-              placeholder="-"
-            />
+          <el-popover v-if="row.internalMeasures" placement="top-start" trigger="hover" width="420"
+            popper-class="after-sale-rich-popover">
+            <RichTextDisplay :content="row.internalMeasures" max-height="320px" placeholder="-" />
             <div slot="reference" class="rich-preview-trigger">
               <span class="rich-preview-text">{{
                 getHtmlPreviewText(row.internalMeasures)
-              }}</span>
+                }}</span>
             </div>
           </el-popover>
           <span v-else>-</span>
@@ -687,32 +356,16 @@
       </vxe-column>
 
       <!-- 19. 外部对策 -->
-      <vxe-column
-        title="长期对策"
-        field="externalMeasures"
-        align="center"
-        width="150"
-        header-class-name="after-sale-header--measure"
-        class-name="rich-text-column"
-        :show-overflow="false"
-      >
+      <vxe-column title="长期对策" field="externalMeasures" align="center" width="150"
+        header-class-name="after-sale-header--measure" class-name="rich-text-column" :show-overflow="false">
         <template #default="{ row }">
-          <el-popover
-            v-if="row.externalMeasures"
-            placement="top-start"
-            trigger="hover"
-            width="420"
-            popper-class="after-sale-rich-popover"
-          >
-            <RichTextDisplay
-              :content="row.externalMeasures"
-              max-height="320px"
-              placeholder="-"
-            />
+          <el-popover v-if="row.externalMeasures" placement="top-start" trigger="hover" width="420"
+            popper-class="after-sale-rich-popover">
+            <RichTextDisplay :content="row.externalMeasures" max-height="320px" placeholder="-" />
             <div slot="reference" class="rich-preview-trigger">
               <span class="rich-preview-text">{{
                 getHtmlPreviewText(row.externalMeasures)
-              }}</span>
+                }}</span>
             </div>
           </el-popover>
           <span v-else>-</span>
@@ -720,20 +373,11 @@
       </vxe-column>
 
       <!-- 20. 改善责任人 -->
-      <vxe-column
-        title="改善责任人"
-        field="problemResponsiblePerson"
-        align="center"
-        width="80"
-        header-class-name="after-sale-header--measure"
-        :show-overflow="false"
-      >
+      <vxe-column title="改善责任人" field="problemResponsiblePerson" align="center" width="80"
+        header-class-name="after-sale-header--measure" :show-overflow="false">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.problemResponsiblePerson)"
-            :title="getTextValue(row.problemResponsiblePerson)"
-            class="text-clamp-2"
-          >
+          <span v-if="!Is_Empty(row.problemResponsiblePerson)" :title="getTextValue(row.problemResponsiblePerson)"
+            class="text-clamp-2">
             {{ getTextValue(row.problemResponsiblePerson) }}
           </span>
           <span v-else>-</span>
@@ -741,127 +385,63 @@
       </vxe-column>
 
       <!-- 21. 返回日期 -->
-      <vxe-column
-        title="返回日期"
-        field="logistics.returnDate"
-        align="center"
-        width="90"
-        header-class-name="after-sale-header--measure"
-      >
+      <vxe-column title="返回日期" field="logistics.returnDate" align="center" width="90"
+        header-class-name="after-sale-header--measure">
         <template #default="{ row }">
           <span v-NoData="row.logistics && row.logistics.returnDate"></span>
         </template>
       </vxe-column>
-      <vxe-column
-        title="处理类型"
-        field="processType"
-        align="center"
-        width="100"
-        header-class-name="after-sale-header--measure"
-        :filters="getFiltersData('processType')"
-        :filter-method="filterHandler"
-      >
+      <vxe-column title="处理类型" field="processType" align="center" width="100"
+        header-class-name="after-sale-header--measure" :filters="getFiltersData('processType')"
+        :filter-method="filterHandler">
         <template #default="{ row }">
-          <span
-            v-if="!Is_Empty(row.processType)"
-            :title="getTextValue(row.processType)"
-            class="text-clamp-2"
-          >
+          <span v-if="!Is_Empty(row.processType)" :title="getTextValue(row.processType)" class="text-clamp-2">
             {{ getTextValue(row.processType) }}
           </span>
           <span v-else>-</span>
         </template>
       </vxe-column>
-      <vxe-column
-        title="跟踪状态"
-        field="afterProblemId"
-        align="center"
-        width="75"
-        header-class-name="after-sale-header--measure"
-      >
+      <vxe-column title="跟踪状态" field="afterProblemId" align="center" width="75"
+        header-class-name="after-sale-header--measure">
         <template #default="{ row }">
           <el-tag :type="row.afterProblemId ? 'success' : 'info'">
             {{ row.afterProblemId ? "已跟踪" : "未跟踪" }}
           </el-tag>
         </template>
       </vxe-column>
-      <vxe-column
-        title="操作"
-        align="center"
-        width="120"
-        fixed="right"
-        header-class-name="after-sale-header--action"
-      >
+      <vxe-column title="操作" align="center" width="120" fixed="right" header-class-name="after-sale-header--action">
         <template #default="{ row }">
           <div class="op-actions">
-            <el-button
-              v-hasPermi="['third:afterSale:edit']"
-              class="text-blue"
-              type="text"
-              @click="handleUpdate(row)"
-            >
+            <el-button v-hasPermi="['third:afterSale:edit']" class="text-blue" type="text" @click="handleUpdate(row)">
               编辑
             </el-button>
-            <el-button
-              v-hasPermi="['third:afterSale:analysis']"
-              class="text-orange"
-              type="text"
-              @click="handleAnalysis(row)"
-            >
+            <el-button v-hasPermi="['third:afterSale:analysis']" class="text-orange" type="text"
+              @click="handleAnalysis(row)">
               售后分析
             </el-button>
-            <el-dropdown
-              size="mini"
-              trigger="click"
-              placement="bottom"
-              @visible-change="
-                (visible) => visible && (currentDropdownRow = row)
-              "
-              @command="handleDropdownCommand"
-            >
+            <el-dropdown size="mini" trigger="click" placement="bottom" @visible-change="
+              (visible) => visible && (currentDropdownRow = row)
+            " @command="handleDropdownCommand">
               <span class="op-more pointer">
                 ...
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item
-                  v-hasPermi="['third:afterSale:query']"
-                  command="detail"
-                  class="text-center"
-                >
+                <el-dropdown-item v-hasPermi="['third:afterSale:query']" command="detail" class="text-center">
                   详情
                 </el-dropdown-item>
-                <el-dropdown-item
-                  v-hasPermi="['third:afterProblem:add']"
-                  command="createProblem"
-                  class="text-center"
-                >
+                <el-dropdown-item v-hasPermi="['third:afterProblem:add']" command="createProblem" class="text-center">
                   问题跟踪
                 </el-dropdown-item>
-                <el-dropdown-item
-                  v-hasPermi="['third:afterSale:log']"
-                  command="viewLog"
-                  class="text-center"
-                >
+                <el-dropdown-item v-hasPermi="['third:afterSale:log']" command="viewLog" class="text-center">
                   日志
                 </el-dropdown-item>
-                <el-dropdown-item
-                  v-hasPermi="['third:afterSale:remove']"
-                  command="delete"
-                  class="text-red text-center"
-                >
+                <el-dropdown-item v-hasPermi="['third:afterSale:remove']" command="delete" class="text-red text-center">
                   删除
                 </el-dropdown-item>
-                <el-dropdown-item
-                  v-if="row.video"
-                  command="downloadVideo"
-                  class="text-center"
-                >
+                <el-dropdown-item v-if="row.video" command="downloadVideo" class="text-center">
                   视频下载
                 </el-dropdown-item>
-                <el-dropdown-item
-                  v-if="!Is_Empty(row.rootMatter)"
-                  command="toggleStatus"
-                >
+                <el-dropdown-item v-if="!Is_Empty(row.rootMatter)" command="toggleStatus">
                   {{ isStatusTxt(row.status) }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -871,72 +451,35 @@
       </vxe-column>
     </VirtualTable>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :ls="[30, 50, 100, 200]"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      style="margin:0"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :ls="[30, 50, 100, 200]" :page.sync="queryParams.p"
+      :limit.sync="queryParams.l" style="margin:0" @pagination="getList" />
 
     <!-- 新增、修改 -->
-    <AddSale
-      ref="isAddSaleRef"
-      :visible.sync="isSaleAddDia"
-      :dictList="dictList"
-      :modelDirList="modelDirList"
-      :pmDictListOptions="pmDictListOptions"
-      :rootClassify="rootClassify"
-    />
+    <AddSale ref="isAddSaleRef" :visible.sync="isSaleAddDia" :dictList="dictList" :modelDirList="modelDirList"
+      :pmDictListOptions="pmDictListOptions" :rootClassify="rootClassify" />
 
     <!-- 详情 -->
-    <after-detail
-      ref="isAfterDetailRef"
-      :visible.sync="isAfterDetailDia"
-      :rootClassify="rootClassify"
-      :directionLabel="directionLabel"
-    />
+    <after-detail ref="isAfterDetailRef" :visible.sync="isAfterDetailDia" :rootClassify="rootClassify"
+      :directionLabel="directionLabel" />
 
     <!-- 处理 -->
-    <handle-problem
-      ref="isHandleProblemRef"
-      :visible.sync="isHandleProblemDia"
-      :handleProblemData="handleProblemData"
-      @clearSaleSelection="clearSaleSelection"
-    />
+    <handle-problem ref="isHandleProblemRef" :visible.sync="isHandleProblemDia" :handleProblemData="handleProblemData"
+      @clearSaleSelection="clearSaleSelection" />
 
     <!-- 批量物流录入 -->
-    <sale-info
-      :visible.sync="isSaleInfoFlag"
-      :saleIdList="saleIdList"
-      :modelDirList="modelDirList"
-      @clearSaleSelection="clearSaleSelection"
-    />
+    <sale-info :visible.sync="isSaleInfoFlag" :saleIdList="saleIdList" :modelDirList="modelDirList"
+      @clearSaleSelection="clearSaleSelection" />
     <!-- 当前处理进展 -->
     <deal-progress ref="isDealProgressRef" :visible.sync="isDealProgressDia" />
 
     <!-- 售后分析弹窗 -->
-    <after-analysis
-      :visible.sync="analysisDialogVisible"
-      :row-data="currentAnalysisRow"
-      @refresh="getList"
-    />
+    <after-analysis :visible.sync="analysisDialogVisible" :row-data="currentAnalysisRow" @refresh="getList" />
 
     <!-- 问题处理弹窗 -->
-    <problem-form
-      ref="problemFormRef"
-      :visible.sync="problemFormVisible"
-      @success="handleProblemFormSuccess"
-    />
+    <problem-form ref="problemFormRef" :visible.sync="problemFormVisible" @success="handleProblemFormSuccess" />
 
     <!-- 操作日志弹窗 -->
-    <oper-log-dialog
-      :visible.sync="operLogVisible"
-      :record-id="currentLogRecordId"
-      :dict-list="dictList"
-    />
+    <oper-log-dialog :visible.sync="operLogVisible" :record-id="currentLogRecordId" :dict-list="dictList" />
   </div>
 </template>
 
@@ -1764,7 +1307,7 @@ export default {
       });
     },
     // 问题处理表单提交成功
-    handleProblemFormSuccess() {},
+    handleProblemFormSuccess() { },
     // 处理下拉菜单命令
     handleDropdownCommand(command) {
       const row = this.currentDropdownRow;
@@ -2006,7 +1549,7 @@ export default {
               loading.close();
             });
         })
-        .catch(() => {});
+        .catch(() => { });
     },
     /** 每项筛选方法 */
     filterHandler(value, row, column) {
@@ -2141,6 +1684,7 @@ export default {
 }
 
 .afterSaleBox {
+
   /deep/ .text-link-clamp.el-link,
   /deep/ .text-link-clamp.el-link--default {
     font-size: inherit;
@@ -2214,18 +1758,10 @@ export default {
 
   /deep/ .vxe-body--row.tracked-problem-row .vxe-body--column,
   /deep/ .vxe-body--row.progress-board-row .vxe-body--column,
-  /deep/ .vxe-table--fixed-left-wrapper
-    .vxe-body--row.tracked-problem-row
-    .vxe-body--column,
-  /deep/ .vxe-table--fixed-right-wrapper
-    .vxe-body--row.tracked-problem-row
-    .vxe-body--column,
-  /deep/ .vxe-table--fixed-left-wrapper
-    .vxe-body--row.progress-board-row
-    .vxe-body--column,
-  /deep/ .vxe-table--fixed-right-wrapper
-    .vxe-body--row.progress-board-row
-    .vxe-body--column {
+  /deep/ .vxe-table--fixed-left-wrapper .vxe-body--row.tracked-problem-row .vxe-body--column,
+  /deep/ .vxe-table--fixed-right-wrapper .vxe-body--row.tracked-problem-row .vxe-body--column,
+  /deep/ .vxe-table--fixed-left-wrapper .vxe-body--row.progress-board-row .vxe-body--column,
+  /deep/ .vxe-table--fixed-right-wrapper .vxe-body--row.progress-board-row .vxe-body--column {
     background-color: #f0f9eb !important;
   }
 

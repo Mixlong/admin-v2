@@ -1536,7 +1536,7 @@ export default {
 
         // 页面内跳转
         this.$router.push({
-          path: "/device/productData/versionManage",
+          name: "Ids-version-manage",
           query: query,
         });
       }

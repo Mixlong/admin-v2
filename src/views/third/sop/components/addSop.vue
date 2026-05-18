@@ -287,6 +287,7 @@
                         label-width="85px"
                       >
                         <el-select
+                          multiple
                           v-model="form.engineerAuditors"
                           filterable
                           placeholder="选择工程审人员"
@@ -346,11 +347,12 @@
                     <div class="auditor-card highlight">
                       <el-form-item
                         label="工程审人员"
-                        prop="engineeringPerson"
+                        prop="engineerAuditors"
                         label-width="110px"
                       >
                         <el-select
-                          v-model="form.engineeringPerson"
+                          multiple
+                          v-model="form.engineerAuditors"
                           filterable
                           placeholder="选择工程审人员"
                           style="width: 100%"
@@ -379,6 +381,7 @@
                         label-width="75px"
                       >
                         <el-select
+                          multiple
                           v-model="form.projectPerson"
                           filterable
                           placeholder="选择项目人员"
@@ -408,6 +411,7 @@
                         label-width="75px"
                       >
                         <el-select
+                          multiple
                           v-model="form.finalAuditors"
                           filterable
                           placeholder="选择终审人员"
@@ -779,9 +783,9 @@ export default {
         rdAuditors: [], // 会审-研发人员
         qualityAuditors: [], // 会审-品质人员
         productionAuditors: [], // 会审-生产人员
-        engineerAuditors: "", // 工程审人员（单选）
-        finalAuditors: "", // 终审人员（单选）
-        projectPerson: "", // 项目人员（单选）
+        engineerAuditors: [], // 工程审人员（多选）
+        finalAuditors: [], // 终审人员（多选）
+        projectPerson: [], // 项目人员（多选）
         isSample: 0, // 品类是否样品
         isOldSop: 0, // 是否旧版SOP
         ccPersons: [], // 抄送人员
@@ -919,7 +923,7 @@ export default {
                   this.form.auditAdjustType === "engineer"
                 )
               ) {
-                if (!value || value.trim() === "") {
+                if (!Array.isArray(value) || value.length === 0) {
                   callback(new Error("请选择工程审人员"));
                   return;
                 }
@@ -934,7 +938,7 @@ export default {
             validator: (rule, value, callback) => {
               // 新增或重新审核时必填
               if (!this.form.id || this.form.auditAdjustType === "full") {
-                if (!value || value.trim() === "") {
+                if (!Array.isArray(value) || value.length === 0) {
                   callback(new Error("请选择终审人员"));
                   return;
                 }
@@ -1137,6 +1141,28 @@ export default {
       }
       return [String(value).trim()].filter((item) => item);
     },
+    normalizeAuditPersonsArray(value, fallbackValue) {
+      const candidate =
+        Array.isArray(value) && value.length > 0 ? value : fallbackValue;
+      if (Array.isArray(candidate)) {
+        return candidate
+          .map((item) => (item == null ? "" : String(item).trim()))
+          .filter((item) => item);
+      }
+      if (candidate === undefined || candidate === null) {
+        return [];
+      }
+      if (typeof candidate === "string") {
+        return candidate
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item);
+      }
+      return [String(candidate).trim()].filter((item) => item);
+    },
+    joinAuditPersons(value) {
+      return this.normalizeAuditPersonsArray(value).join(",");
+    },
     // 生成ECN编号
     generateDTString() {
       const date = new Date(); // 获取当前日期和时间
@@ -1261,6 +1287,12 @@ export default {
       const list = Array.isArray(notice.list) ? notice.list : [];
       return Boolean(
         list.length > 0 ||
+          (Array.isArray(notice.engineeringPersonList) &&
+            notice.engineeringPersonList.length > 0) ||
+          (Array.isArray(notice.projectPersonList) &&
+            notice.projectPersonList.length > 0) ||
+          (Array.isArray(notice.secondPersonList) &&
+            notice.secondPersonList.length > 0) ||
           (notice.engineeringPerson &&
             String(notice.engineeringPerson).trim() !== "") ||
           (notice.secondPerson && String(notice.secondPerson).trim() !== "") ||
@@ -1314,8 +1346,9 @@ export default {
             this.form.rdAuditors = [];
             this.form.qualityAuditors = [];
             this.form.productionAuditors = [];
-            this.form.engineerAuditors = "";
-            this.form.finalAuditors = "";
+            this.form.engineerAuditors = [];
+            this.form.finalAuditors = [];
+            this.form.projectPerson = [];
             this.form.ccPersons = [];
             this.form.legacyEngineeringPerson = "";
           }
@@ -1324,16 +1357,15 @@ export default {
             this.form.rdAuditors = [];
             this.form.qualityAuditors = [];
             this.form.productionAuditors = [];
-            this.form.finalAuditors = "";
+            this.form.finalAuditors = [];
+            this.form.projectPerson = [];
 
-            // 从sopChangeNotice中回显工程审人员（取第一个）
+            // 从sopChangeNotice中回显工程审人员
             const changeNotice = this.getActiveAuditNotice();
-            if (changeNotice && changeNotice.engineeringPerson) {
-              const persons = changeNotice.engineeringPerson
-                .split(",")
-                .filter((item) => item.trim());
-              this.form.engineerAuditors = persons.length > 0 ? persons[0] : "";
-            }
+            this.form.engineerAuditors = this.normalizeAuditPersonsArray(
+              changeNotice && changeNotice.engineeringPersonList,
+              changeNotice && changeNotice.engineeringPerson
+            );
             this.form.ccPersons = this.normalizeCcPersonsArray(
               changeNotice && changeNotice.ccPersons
             );
@@ -1367,24 +1399,25 @@ export default {
                   .filter((name) => name);
               }
 
-              // 解析工程审人员（取第一个）
-              if (changeNotice.engineeringPerson) {
-                const persons = changeNotice.engineeringPerson
-                  .split(",")
-                  .filter((item) => item.trim());
-                this.form.engineerAuditors =
-                  persons.length > 0 ? persons[0] : "";
-              }
+              // 解析工程审人员
+              this.form.engineerAuditors = this.normalizeAuditPersonsArray(
+                changeNotice.engineeringPersonList,
+                changeNotice.engineeringPerson
+              );
               this.form.legacyEngineeringPerson =
                 changeNotice.engineeringPerson || "";
 
-              // 解析终审人员（取第一个）
-              if (changeNotice.secondPerson) {
-                const persons = changeNotice.secondPerson
-                  .split(",")
-                  .filter((item) => item.trim());
-                this.form.finalAuditors = persons.length > 0 ? persons[0] : "";
-              }
+              // 解析项目人员
+              this.form.projectPerson = this.normalizeAuditPersonsArray(
+                changeNotice.projectPersonList,
+                changeNotice.projectPerson
+              );
+
+              // 解析终审人员
+              this.form.finalAuditors = this.normalizeAuditPersonsArray(
+                changeNotice.secondPersonList,
+                changeNotice.secondPerson
+              );
               this.form.ccPersons = this.normalizeCcPersonsArray(
                 changeNotice.ccPersons
               );
@@ -1393,8 +1426,9 @@ export default {
               this.form.rdAuditors = [];
               this.form.qualityAuditors = [];
               this.form.productionAuditors = [];
-              this.form.engineerAuditors = "";
-              this.form.finalAuditors = "";
+              this.form.engineerAuditors = [];
+              this.form.finalAuditors = [];
+              this.form.projectPerson = [];
               this.form.ccPersons = [];
               this.form.legacyEngineeringPerson = "";
             }
@@ -1465,9 +1499,9 @@ export default {
         rdAuditors: [], // 会审-研发人员
         qualityAuditors: [], // 会审-品质人员
         productionAuditors: [], // 会审-生产人员
-        engineerAuditors: "", // 工程审人员（单选）
-        finalAuditors: "", // 终审人员（单选）
-        projectPerson: "", // 项目人员（单选）
+        engineerAuditors: [], // 工程审人员（多选）
+        finalAuditors: [], // 终审人员（多选）
+        projectPerson: [], // 项目人员（多选）
         isSample: 0,
         isOldSop: 0,
         ccPersons: [],
@@ -2158,13 +2192,7 @@ export default {
             ) {
               return submitData.legacyEngineeringPerson.trim();
             }
-            if (
-              submitData.engineerAuditors &&
-              submitData.engineerAuditors.trim() !== ""
-            ) {
-              return submitData.engineerAuditors.trim();
-            }
-            return "";
+            return this.joinAuditPersons(submitData.engineerAuditors);
           };
 
           if (!submitData.id) {
@@ -2234,28 +2262,32 @@ export default {
             const engineerValue = resolveEngineeringPersonValue();
             if (engineerValue) {
               submitData.tsopChangeNotice.engineeringPerson = engineerValue;
+              submitData.tsopChangeNotice.engineeringPersonList =
+                this.normalizeAuditPersonsArray(submitData.engineerAuditors);
               submitData.tsopChangeNotice.engineerState = 0; // 待审核
             }
 
             delete submitData.tsopChangeNotice.ccPersons;
 
-            // 终审人员（单选，直接赋值）
-            if (
-              submitData.finalAuditors &&
-              submitData.finalAuditors.trim() !== ""
-            ) {
+            // 终审人员
+            const finalAuditorList = this.normalizeAuditPersonsArray(
+              submitData.finalAuditors
+            );
+            if (finalAuditorList.length > 0) {
               submitData.tsopChangeNotice.secondPerson =
-                submitData.finalAuditors;
+                finalAuditorList.join(",");
+              submitData.tsopChangeNotice.secondPersonList = finalAuditorList;
               submitData.tsopChangeNotice.secondState = 0; // 待审核
             }
 
-            // 项目人员（单选，直接赋值）
-            if (
-              submitData.projectPerson &&
-              submitData.projectPerson.trim() !== ""
-            ) {
+            // 项目人员
+            const projectPersonList = this.normalizeAuditPersonsArray(
+              submitData.projectPerson
+            );
+            if (projectPersonList.length > 0) {
               submitData.tsopChangeNotice.projectPerson =
-                submitData.projectPerson;
+                projectPersonList.join(",");
+              submitData.tsopChangeNotice.projectPersonList = projectPersonList;
               submitData.tsopChangeNotice.projectState = 0;
             }
 
@@ -2297,6 +2329,8 @@ export default {
               const engineerValue = resolveEngineeringPersonValue();
               if (engineerValue) {
                 submitData.tsopChangeNotice.engineeringPerson = engineerValue;
+                submitData.tsopChangeNotice.engineeringPersonList =
+                  this.normalizeAuditPersonsArray(submitData.engineerAuditors);
                 submitData.tsopChangeNotice.engineerState = 0;
               }
 
@@ -2308,6 +2342,12 @@ export default {
               // 重新审核：构建完整的审核人员数据
               submitData.tsopChangeNotice.auditNode = 1;
               submitData.tsopChangeNotice.list = [];
+              submitData.tsopChangeNotice.engineeringPerson = "";
+              submitData.tsopChangeNotice.engineeringPersonList = [];
+              submitData.tsopChangeNotice.secondPerson = "";
+              submitData.tsopChangeNotice.secondPersonList = [];
+              submitData.tsopChangeNotice.projectPerson = "";
+              submitData.tsopChangeNotice.projectPersonList = [];
 
               // 会审人员 - 研发
               if (submitData.rdAuditors && submitData.rdAuditors.length > 0) {
@@ -2358,26 +2398,32 @@ export default {
               const engineerValue = resolveEngineeringPersonValue();
               if (engineerValue) {
                 submitData.tsopChangeNotice.engineeringPerson = engineerValue;
+                submitData.tsopChangeNotice.engineeringPersonList =
+                  this.normalizeAuditPersonsArray(submitData.engineerAuditors);
                 submitData.tsopChangeNotice.engineerState = 0;
               }
 
-              // 终审人员（单选，直接赋值）
-              if (
-                submitData.finalAuditors &&
-                submitData.finalAuditors.trim() !== ""
-              ) {
+              // 终审人员
+              const finalAuditorList = this.normalizeAuditPersonsArray(
+                submitData.finalAuditors
+              );
+              if (finalAuditorList.length > 0) {
                 submitData.tsopChangeNotice.secondPerson =
-                  submitData.finalAuditors;
+                  finalAuditorList.join(",");
+                submitData.tsopChangeNotice.secondPersonList =
+                  finalAuditorList;
                 submitData.tsopChangeNotice.secondState = 0;
               }
 
-              // 项目人员（单选，直接赋值）
-              if (
-                submitData.projectPerson &&
-                submitData.projectPerson.trim() !== ""
-              ) {
+              // 项目人员
+              const projectPersonList = this.normalizeAuditPersonsArray(
+                submitData.projectPerson
+              );
+              if (projectPersonList.length > 0) {
                 submitData.tsopChangeNotice.projectPerson =
-                  submitData.projectPerson;
+                  projectPersonList.join(",");
+                submitData.tsopChangeNotice.projectPersonList =
+                  projectPersonList;
                 submitData.tsopChangeNotice.projectState = 0;
               }
             }
@@ -2551,43 +2597,36 @@ export default {
           formData.productionAuditors = [];
         }
 
-        // 解析工程审人员（单选，取第一个）
-        if (
-          changeNotice.engineeringPerson &&
-          typeof changeNotice.engineeringPerson === "string"
-        ) {
-          const persons = changeNotice.engineeringPerson
-            .split(",")
-            .filter((item) => item.trim());
-          formData.engineerAuditors = persons.length > 0 ? persons[0] : "";
-        } else {
-          formData.engineerAuditors = "";
-        }
+        // 解析工程审人员
+        formData.engineerAuditors = this.normalizeAuditPersonsArray(
+          changeNotice.engineeringPersonList,
+          changeNotice.engineeringPerson
+        );
         formData.legacyEngineeringPerson = changeNotice.engineeringPerson || "";
         formData.ccPersons = this.normalizeCcPersonsArray(
           changeNotice.ccPersons
         );
 
-        // 解析终审人员（单选，取第一个）
-        if (
-          changeNotice.secondPerson &&
-          typeof changeNotice.secondPerson === "string"
-        ) {
-          const persons = changeNotice.secondPerson
-            .split(",")
-            .filter((item) => item.trim());
-          formData.finalAuditors = persons.length > 0 ? persons[0] : "";
-        } else {
-          formData.finalAuditors = "";
-        }
+        // 解析项目人员
+        formData.projectPerson = this.normalizeAuditPersonsArray(
+          changeNotice.projectPersonList,
+          changeNotice.projectPerson
+        );
+
+        // 解析终审人员
+        formData.finalAuditors = this.normalizeAuditPersonsArray(
+          changeNotice.secondPersonList,
+          changeNotice.secondPerson
+        );
       } else {
         // 如果没有sopChangeNotice，初始化为空
         formData.ecn = "";
         formData.rdAuditors = [];
         formData.qualityAuditors = [];
         formData.productionAuditors = [];
-        formData.engineerAuditors = "";
-        formData.finalAuditors = "";
+        formData.engineerAuditors = [];
+        formData.finalAuditors = [];
+        formData.projectPerson = [];
         formData.ccPersons = [];
         formData.legacyEngineeringPerson = "";
       }

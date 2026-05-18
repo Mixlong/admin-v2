@@ -375,6 +375,8 @@ export default {
       fileListCover: [],
       auth: { id: undefined, why: "", idList: [], status: undefined },
       isBatchType: undefined,
+      lastAppliedRouteQueryKey: "",
+      pendingRouteQueryTimer: null,
       // 查询参数
       queryParams: {
         p: 1,
@@ -436,10 +438,52 @@ export default {
   mounted() {
     fileVersionList().then((response) => {
       this.dictList = response.data;
-      this.applyRouteQuery(this.$route.query);
+      this.handleInitialRouteQuery();
     });
   },
+  beforeDestroy() {
+    if (this.pendingRouteQueryTimer) {
+      clearTimeout(this.pendingRouteQueryTimer);
+      this.pendingRouteQueryTimer = null;
+    }
+  },
   methods: {
+    handleInitialRouteQuery() {
+      const routeQuery = this.$route.query || {};
+      const hasRouteQuery = Object.keys(routeQuery).length > 0;
+
+      if (hasRouteQuery || !window.__POWERED_BY_WUJIE__) {
+        this.applyRouteQuery(routeQuery);
+        return;
+      }
+
+      if (this.pendingRouteQueryTimer) {
+        clearTimeout(this.pendingRouteQueryTimer);
+      }
+
+      this.pendingRouteQueryTimer = setTimeout(() => {
+        this.pendingRouteQueryTimer = null;
+        this.applyRouteQuery(this.$route.query || {});
+      }, 250);
+    },
+    getRouteQueryKey(routeQuery = {}) {
+      const {
+        type = "",
+        status = "",
+        categoryId = "",
+        categoryName = "",
+        version = "",
+        model = "",
+      } = routeQuery;
+      return JSON.stringify({
+        type,
+        status,
+        categoryId,
+        categoryName,
+        version,
+        model,
+      });
+    },
     getComputerOptionsByCategoryId(categoryId) {
       const matchedCategory = this.dictList.find(
         (item) => String(item.id) === String(categoryId)
@@ -449,6 +493,17 @@ export default {
         : [];
     },
     applyRouteQuery(routeQuery = {}) {
+      if (this.pendingRouteQueryTimer) {
+        clearTimeout(this.pendingRouteQueryTimer);
+        this.pendingRouteQueryTimer = null;
+      }
+
+      const routeQueryKey = this.getRouteQueryKey(routeQuery);
+      if (routeQueryKey === this.lastAppliedRouteQueryKey) {
+        return;
+      }
+      this.lastAppliedRouteQueryKey = routeQueryKey;
+
       const {
         type,
         status,
@@ -486,10 +541,14 @@ export default {
           );
           this.queryParams.versionId = versionOption
             ? versionOption.model
-            : undefined;
+            : version;
         } else if (model) {
           this.queryParams.versionId = model;
         }
+      } else if (version) {
+        this.queryParams.versionId = version;
+      } else if (model) {
+        this.queryParams.versionId = model;
       }
 
       this.getList();

@@ -440,7 +440,7 @@ export function sopFieldAudit(data) {
 }
 
 // SOP工程审
-// 参数: { id, state, remark, result, secondPerson }
+// 参数: { id, state, remark, result }
 export function sopEngineerAudit(data) {
   return request({
     url: "/sop/change/engineering/state",
@@ -450,7 +450,7 @@ export function sopEngineerAudit(data) {
 }
 
 // SOP终审
-// 参数: { id, state, remark, result, secondPerson }
+// 参数: { id, state, remark, result }
 export function sopFinalAudit(data) {
   return request({
     url: "/sop/change/second/state",
@@ -460,7 +460,7 @@ export function sopFinalAudit(data) {
 }
 
 // SOP项目审
-// 参数: { id, state, remark, result, secondPerson }
+// 参数: { id, state, remark, result }
 export function sopProjectAudit(data) {
   return request({
     url: "/sop/change/project/state",

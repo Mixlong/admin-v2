@@ -1,9 +1,7 @@
 <template>
   <div class="app-container">
     <!-- 智能搜索区域 -->
-    <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" 
-      
-    @search="handleSearch"
+    <IntelligentSearchForm :searchForm="searchForm" :fields="searchFields" @search="handleSearch"
       :defaultVisibleCount="4" @reset="handleReset" @field-change="handleFieldChange">
 
       <!-- 自定义客户字段渲染 -->
@@ -28,8 +26,7 @@
 
       <!-- 页面操作按钮 -->
       <template #page-actions>
-            <el-button type="primary" @click="handleAdd" icon="el-icon-plus" size="mini" v-hasPermi="['bomChange:add']"
-             >
+        <el-button type="primary" @click="handleAdd" icon="el-icon-plus" size="mini" v-hasPermi="['bomChange:add']">
           新增变更申请
         </el-button>
         <el-button type="info" plain @click="handleAddPeople" icon="el-icon-user" v-hasPermi="['bomChange:people']"
@@ -291,8 +288,7 @@
           </el-button>
 
           <!-- 上传附件按钮 - 审核流程完成后显示 -->
-          <el-button
-            size="mini" type="success" @click="handleUploadAttachment(row)" style="margin-left: 5px;">
+          <el-button size="mini" type="success" @click="handleUploadAttachment(row)" style="margin-left: 5px;">
             <i class="el-icon-upload2"></i> 附件
           </el-button>
 
@@ -631,7 +627,7 @@ export default {
   mixins: [digiSmartJumpMixin],
   data() {
     return {
-      // nickName:'杨贵来',
+      // nickName: '黄江龙',
       // 型号
       computerOptions: [],
       customerData: {
@@ -1018,7 +1014,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userId","nickName"]),
+    ...mapGetters(["userId", "nickName"]),
     // 判断是否为初审状态
     isFirstStateFlag() {
       return this.isAuthFlag === 1;

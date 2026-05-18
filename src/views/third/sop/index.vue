@@ -141,58 +141,77 @@
       </el-table-column>
 
       <!-- 工程审状态 -->
-      <el-table-column label="工程审" width="120" align="center">
+      <el-table-column label="工程审" min-width="150" align="center">
         <template slot-scope="scope">
           <div v-if="scope.row.sopChangeNotice">
-            <div style="margin-bottom: 4px">
-              {{ scope.row.sopChangeNotice.engineeringPerson || "-" }}
-            </div>
-            <el-tag
-              :type="
-                getAuditTagType(scope.row.sopChangeNotice.engineeringState)
-              "
-              size="small"
+            <div
+              v-for="(item, index) in getStageAuditEntries(scope.row.sopChangeNotice, 'engineering')"
+              :key="`engineering-${index}`"
+              style="margin: 4px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px"
             >
-              {{
-                getAuditStateName(scope.row.sopChangeNotice.engineeringState)
-              }}
-            </el-tag>
+              <span style="flex: 1; text-align: right">{{ item.name || "-" }}</span>
+              <el-tag :type="getAuditTagType(item.state)" size="small">
+                {{ getAuditStateName(item.state) }}
+              </el-tag>
+            </div>
+            <div
+              v-if="getStageAuditEntries(scope.row.sopChangeNotice, 'engineering').length === 0"
+              style="margin-bottom: 4px"
+            >
+              -
+            </div>
           </div>
-          <span v-else-if="scope.row.engineeringPerson">{{ scope.row.engineeringPerson }}</span>
+          <span v-else-if="scope.row.engineeringPerson">{{
+            scope.row.engineeringPerson
+          }}</span>
           <span v-else>-</span>
         </template>
       </el-table-column>
 
       <!-- 项目人员 -->
-      <el-table-column label="项目人员" width="120" align="center">
+      <el-table-column label="项目人员" min-width="150" align="center">
         <template slot-scope="scope">
           <div v-if="scope.row.sopChangeNotice">
-            <div style="margin-bottom: 4px">
-              {{ scope.row.sopChangeNotice.projectPerson || "-" }}
-            </div>
-            <el-tag
-              :type="getAuditTagType(scope.row.sopChangeNotice.projectState)"
-              size="small"
+            <div
+              v-for="(item, index) in getStageAuditEntries(scope.row.sopChangeNotice, 'project')"
+              :key="`project-${index}`"
+              style="margin: 4px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px"
             >
-              {{ getAuditStateName(scope.row.sopChangeNotice.projectState) }}
-            </el-tag>
+              <span style="flex: 1; text-align: right">{{ item.name || "-" }}</span>
+              <el-tag :type="getAuditTagType(item.state)" size="small">
+                {{ getAuditStateName(item.state) }}
+              </el-tag>
+            </div>
+            <div
+              v-if="getStageAuditEntries(scope.row.sopChangeNotice, 'project').length === 0"
+              style="margin-bottom: 4px"
+            >
+              -
+            </div>
           </div>
           <span v-else>-</span>
         </template>
       </el-table-column>
       <!-- 终审状态 -->
-      <el-table-column label="终审" width="120" align="center">
+      <el-table-column label="终审" min-width="150" align="center">
         <template slot-scope="scope">
           <div v-if="scope.row.sopChangeNotice">
-            <div style="margin-bottom: 4px">
-              {{ scope.row.sopChangeNotice.secondPerson || "-" }}
-            </div>
-            <el-tag
-              :type="getAuditTagType(scope.row.sopChangeNotice.secondState)"
-              size="small"
+            <div
+              v-for="(item, index) in getStageAuditEntries(scope.row.sopChangeNotice, 'second')"
+              :key="`second-${index}`"
+              style="margin: 4px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px"
             >
-              {{ getAuditStateName(scope.row.sopChangeNotice.secondState) }}
-            </el-tag>
+              <span style="flex: 1; text-align: right">{{ item.name || "-" }}</span>
+              <el-tag :type="getAuditTagType(item.state)" size="small">
+                {{ getAuditStateName(item.state) }}
+              </el-tag>
+            </div>
+            <div
+              v-if="getStageAuditEntries(scope.row.sopChangeNotice, 'second').length === 0"
+              style="margin-bottom: 4px"
+            >
+              -
+            </div>
           </div>
           <span v-else>-</span>
         </template>
@@ -647,6 +666,127 @@ export default {
     this.getUserList();
   },
   methods: {
+    normalizeAuditPersons(value, fallbackValue) {
+      const candidate =
+        Array.isArray(value) && value.length > 0 ? value : fallbackValue;
+      if (Array.isArray(candidate)) {
+        return candidate
+          .map((item) => (item == null ? '' : String(item).trim()))
+          .filter((item) => item);
+      }
+      if (candidate === undefined || candidate === null) {
+        return [];
+      }
+      if (typeof candidate === 'string') {
+        return candidate
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item);
+      }
+      return [String(candidate).trim()].filter((item) => item);
+    },
+    getStageConfig(stage) {
+      const stageMap = {
+        engineering: {
+          personField: 'engineeringPerson',
+          personListField: 'engineeringPersonList',
+          stateField: 'engineeringState',
+          stateListField: 'engineeringStateList',
+          detailFields: [
+            'engineeringAuditDetailList',
+            'engineeringDetailList',
+            'engineeringDetails',
+            'engineeringAuditList',
+          ],
+        },
+        project: {
+          personField: 'projectPerson',
+          personListField: 'projectPersonList',
+          stateField: 'projectState',
+          stateListField: 'projectStateList',
+          detailFields: [
+            'projectAuditDetailList',
+            'projectDetailList',
+            'projectDetails',
+            'projectAuditList',
+          ],
+        },
+        second: {
+          personField: 'secondPerson',
+          personListField: 'secondPersonList',
+          stateField: 'secondState',
+          stateListField: 'secondStateList',
+          detailFields: [
+            'secondAuditDetailList',
+            'secondDetailList',
+            'secondDetails',
+            'secondAuditList',
+            'finalAuditDetailList',
+            'finalDetailList',
+          ],
+        },
+      };
+      return stageMap[stage] || stageMap.engineering;
+    },
+    getStageAuditEntries(notice, stage) {
+      if (!notice || typeof notice !== 'object') {
+        return [];
+      }
+      const config = this.getStageConfig(stage);
+      const detailField = config.detailFields.find(
+        (field) => Array.isArray(notice[field]) && notice[field].length > 0
+      );
+
+      if (detailField) {
+        return notice[detailField]
+          .map((item) => {
+            if (item == null) {
+              return null;
+            }
+            if (typeof item === 'string') {
+              return { name: item.trim(), state: notice[config.stateField] };
+            }
+            const name =
+              item.auditPerson ||
+              item.personName ||
+              item.userName ||
+              item.name ||
+              item.fieldName ||
+              item.secondPerson ||
+              item.projectPerson ||
+              item.engineeringPerson ||
+              '';
+            const state =
+              item.state !== undefined ? item.state : notice[config.stateField];
+            return name ? { name, state } : null;
+          })
+          .filter((item) => item && item.name);
+      }
+
+      const names = this.normalizeAuditPersons(
+        notice[config.personListField],
+        notice[config.personField]
+      );
+      const stateList = Array.isArray(notice[config.stateListField])
+        ? notice[config.stateListField]
+        : [];
+
+      return names.map((name, index) => ({
+        name,
+        state:
+          stateList[index] !== undefined
+            ? stateList[index]
+            : notice[config.stateField],
+      }));
+    },
+    hasStageAuditor(notice, stage, currentUser) {
+      return this.getStageAuditEntries(notice, stage).some(
+        (item) => item.name === currentUser && Number(item.state) === 0
+      );
+    },
+    hasStageAssignee(notice, stage) {
+      return this.getStageAuditEntries(notice, stage).length > 0;
+    },
     /** 查询品牌列表 */
     getList() {
       this.loading = true;
@@ -775,7 +915,9 @@ export default {
         // 全部通过 - 绿色背景（会审、工程审、项目审、终审都通过）
         const allJointAuditPassed = !notice.list || notice.list.every(item => item.state === 1);
         const engineeringPassed = notice.engineeringState === 1;
-        const projectPassed = !notice.projectPerson || notice.projectState === 1; // 如果没有项目人员，视为通过
+        const projectPassed =
+          !this.hasStageAssignee(notice, 'project') ||
+          notice.projectState === 1; // 如果没有项目人员，视为通过
         const finalPassed = notice.secondState === 1;
         
         if (allJointAuditPassed && engineeringPassed && projectPassed && finalPassed) {
@@ -837,7 +979,10 @@ export default {
       }
       
       // 2. 检查工程审状态（第二阶段，需要所有会审都通过）
-      if (notice.engineeringPerson === currentUser && notice.engineeringState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'engineering', currentUser) &&
+        notice.engineeringState === 0
+      ) {
         // 检查是否所有会审都已通过
         const allJointAuditPassed = notice.list && notice.list.length > 0 
           ? notice.list.every(item => item.state === 1)
@@ -850,7 +995,10 @@ export default {
       }
       
       // 3. 检查项目审状态（第三阶段，需要工程审通过）
-      if (notice.projectPerson === currentUser && notice.projectState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'project', currentUser) &&
+        notice.projectState === 0
+      ) {
         // 检查是否所有会审都已通过
         const allJointAuditPassed = notice.list && notice.list.length > 0 
           ? notice.list.every(item => item.state === 1)
@@ -866,7 +1014,10 @@ export default {
       }
       
       // 4. 检查终审状态（第四阶段，需要项目审通过）
-      if (notice.secondPerson === currentUser && notice.secondState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'second', currentUser) &&
+        notice.secondState === 0
+      ) {
         // 检查是否所有会审都已通过
         const allJointAuditPassed = notice.list && notice.list.length > 0 
           ? notice.list.every(item => item.state === 1)
@@ -876,7 +1027,9 @@ export default {
         const engineeringPassed = notice.engineeringState === 1;
         
         // 检查项目审是否已通过（如果有项目人员）
-        const projectPassed = !notice.projectPerson || notice.projectState === 1;
+        const projectPassed =
+          !this.hasStageAssignee(notice, 'project') ||
+          notice.projectState === 1;
         
         // 只有会审全部通过、工程审通过、项目审通过后，才能终审
         if (allJointAuditPassed && engineeringPassed && projectPassed) {
@@ -912,12 +1065,19 @@ export default {
         }
 
         const engineeringPassed = notice.engineeringState === 1;
-        if (allJointAuditPassed && engineeringPassed && notice.projectPerson && notice.projectState === 0) {
+        if (
+          allJointAuditPassed &&
+          engineeringPassed &&
+          this.hasStageAssignee(notice, 'project') &&
+          notice.projectState === 0
+        ) {
           this.$refs.auditDialog.open('project', row);
           return;
         }
 
-        const projectPassed = !notice.projectPerson || notice.projectState === 1;
+        const projectPassed =
+          !this.hasStageAssignee(notice, 'project') ||
+          notice.projectState === 1;
         if (allJointAuditPassed && engineeringPassed && projectPassed && notice.secondState === 0) {
           this.$refs.auditDialog.open('final', row);
           return;
@@ -938,19 +1098,28 @@ export default {
       }
       
       // 2. 检查是否是工程审人员（第二阶段）
-      if (notice.engineeringPerson === currentUser && notice.engineeringState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'engineering', currentUser) &&
+        notice.engineeringState === 0
+      ) {
         this.$refs.auditDialog.open('engineering', row);
         return;
       }
       
       // 3. 检查是否是项目审人员（第三阶段）
-      if (notice.projectPerson === currentUser && notice.projectState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'project', currentUser) &&
+        notice.projectState === 0
+      ) {
         this.$refs.auditDialog.open('project', row);
         return;
       }
       
       // 4. 检查是否是终审人员（第四阶段）
-      if (notice.secondPerson === currentUser && notice.secondState === 0) {
+      if (
+        this.hasStageAuditor(notice, 'second', currentUser) &&
+        notice.secondState === 0
+      ) {
         this.$refs.auditDialog.open('final', row);
         return;
       }
