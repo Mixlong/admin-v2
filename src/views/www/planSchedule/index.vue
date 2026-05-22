@@ -368,11 +368,6 @@ import {
 import { listComputer } from "@/api/third/computer";
 import { computerNameList, categoryComputerDict } from "@/api/third/fileConfig";
 import VueQr from "vue-qr";
-import table2excel from "js-table2excel";
-import XLSX from "xlsx";
-import "./table2excel";
-import reqUrl from "@/utils/requestUrl";
-import axios from "axios";
 import { commonData } from "./mixins/common";
 import IntelligentSearchForm from '@/components/IntelligentSearchForm';
 import dynamicTableHeightMixin from '@/mixins/dynamicTableHeight'
@@ -392,7 +387,6 @@ export default {
   },
   data() {
     return {
-      actionUrl: reqUrl + "/oss/batch-upload",
       isExcelFile: false,
       // ✅ 控制更新组件的销毁和重建
       showUpdateComponent: true,
@@ -690,112 +684,6 @@ export default {
         .finally(() => {
           downloadLoadingInstance.close();
         });
-    },
-    handleExcel(data) {
-      const column = [
-        {
-          title: "属性",
-          key: "name",
-          type: "text",
-        },
-        {
-          title: "值",
-          key: "value",
-          type: "text",
-        },
-        {
-          title: "图片",
-          key: "url",
-          type: "image",
-        },
-      ];
-      const excelName = "生产资料确认表";
-      const datas = this.Format(data);
-      table2excel(column, datas, excelName);
-    },
-
-    textExcel(id) {
-      const table2excel = new Table2Excel();
-      table2excel.export(document.getElementById("table"));
-      const wb = XLSX.utils.table_to_book(document.getElementById("table"));
-
-      const wbout = XLSX.write(wb, {
-        bookType: "xlsx",
-        bookSST: true,
-        type: "binary",
-      });
-
-      const blob = new Blob([this.s2ab(wbout)], {
-        type: "application/octet-stream",
-      });
-
-      this.uploadExcelFile(blob, id);
-
-      // 上传到服务器
-
-      const formData = new FormData();
-      formData.append(
-        "file",
-        new Blob([wbout], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        }),
-        fileName
-      );
-
-      axios
-        .post(this.actionUrl, formData, {
-          "Content-type": "multipart/form-data",
-        })
-        .then(
-          (res) => {
-            // 上传成功后的处理
-            console.log(res);
-          },
-          (err) => {
-            // 出现错误时的处理
-          }
-        );
-    },
-
-    // uploadExcelFile(fileData) {
-    //   const formData = new FormData();
-    //   formData.append("file", fileData);
-    //   let reader = new FileReader();
-    //   reader.readAsBinaryString(fileData);
-    //   reader.onload = function (event) {
-    //     let data = event.target.result;
-    //     console.log(data);
-    //     axios
-    //       .post(this.actionUrl, data, {
-    //         "Content-type": "application/octet-stream",
-    //       })
-    //       .then(
-    //         (res) => {
-    //           // 上传成功后的处理
-    //           console.log(res, "success");
-    //         },
-    //         (err) => {
-    //           // 出现错误时的处理
-    //         }
-    //       );
-    //   };
-    // },
-    // s2ab(s) {
-    //   const buf = new ArrayBuffer(s.length);
-    //   const view = new Uint8Array(buf);
-    //   for (let i = 0; i < s.length; ++i) {
-    //     view[i] = s.charCodeAt(i) & 0xff;
-    //   }
-    //   return buf;
-    // },
-
-    Format(data) {
-      data.forEach((item) => {
-        if (item.value === null) {
-          item.value = "";
-        }
-      });
-      return data;
     },
     // 上传资料清单
     uploadFile(row) {

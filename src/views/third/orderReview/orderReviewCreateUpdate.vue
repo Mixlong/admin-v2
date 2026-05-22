@@ -228,6 +228,7 @@
               >
                 <el-radio
                   v-for="cItem in scope.row.list"
+                  :key="cItem.value"
                   :label="cItem.value"
                   @dblclick.native.prevent="
                     handleRadioDblClick(scope.row, cItem)
@@ -270,6 +271,7 @@
                   >
                     <el-radio
                       v-for="cItem in scope.row.list"
+                      :key="cItem.value"
                       :label="cItem.value"
                       @dblclick.native.prevent="
                         handleRadioDblClick(scope.row, cItem)

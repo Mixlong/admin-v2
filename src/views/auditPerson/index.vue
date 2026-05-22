@@ -191,7 +191,7 @@
 
                 <el-form-item label="审核人员："></el-form-item>
                 <el-row :gutter="15">
-                    <el-col v-for="(item, index) in form.list" :span="6">
+                    <el-col v-for="(item, index) in form.list" :key="item.id || index" :span="6">
                         <el-form-item :label="auditTypePeopleData[index + 1]" :prop="`list[${index}].personnel`"
                             :rules="rules.personnel">
                             <el-select v-model="item.personnel" filterable clearable>
@@ -428,7 +428,7 @@ import {
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 import { dictUserList } from "@/api/system/user";
 import { responsibleList, responsibleEdit, responsibleUpdate, responsiblePersonnel, responsiblePersonnelList } from "@/api/home/index";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 export default {
     name: "AuditPerson",

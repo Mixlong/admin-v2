@@ -73,7 +73,7 @@
             justify="space-between"
             align="middle"
             v-for="(item, index) in form.list"
-            :key="index"
+            :key="item.__key"
             class="margin-bottom-sm"
           >
             <el-col :span="isSpan">
@@ -194,27 +194,24 @@ export default {
     }
   },
   methods: {
-    // 表单重置
-    reset() {
-      this.resetForm("form");
-      this.form = {
-        list: [
-          {
-            content: "",
-            preconditions: "",
-            inter: "",
-            result: "",
-          },
-        ],
-      };
-    },
-    onAddStationFile() {
-      this.form.list.push({
+    createUseCaseRow() {
+      return {
+        __key: `${Date.now()}-${Math.random()}`,
         content: "",
         preconditions: "",
         inter: "",
         result: "",
-      });
+      };
+    },
+    // 表单重置
+    reset() {
+      this.resetForm("form");
+      this.form = {
+        list: [this.createUseCaseRow()],
+      };
+    },
+    onAddStationFile() {
+      this.form.list.push(this.createUseCaseRow());
 
       const scrollRef = this.$refs.stationBoxRef.$el;
       const scrollHeight = scrollRef.scrollHeight;
@@ -242,6 +239,7 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           const form = Object.assign({}, this.form);
+          form.list = form.list.map(({ __key, ...item }) => item);
           if (form.id) {
             this.$confirm(
               `修改后，审核状态会变为“待审核”，确认修改吗？`,
@@ -308,4 +306,3 @@ export default {
   }
 }
 </style>
-

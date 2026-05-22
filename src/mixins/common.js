@@ -1,4 +1,4 @@
-import _, { method } from "lodash";
+import throttle from "lodash/throttle";
 import { categoryComputerDict, computerNameList } from "@/api/third/fileConfig";
 
 
@@ -95,7 +95,7 @@ const dragTable = {
 
         tableBodyWrapper.addEventListener(
           "mousemove",
-          _.throttle(handleMouseMove, 200)
+          throttle(handleMouseMove, 200)
         );
 
         // tableBodyWrapper.style.overflowX = "hidden";
@@ -214,8 +214,11 @@ const CategoryMixin = {
       });
     },
     changeCategory(categoryName) {
-      if (!categoryName) return;
       this.queryParams.computerName = "";
+      if (!categoryName) {
+        this.computerOptions = [];
+        return;
+      }
       this.computerOptions = this.dictList.filter(
         (item) => item.name === categoryName
       )[0]?.computerList;

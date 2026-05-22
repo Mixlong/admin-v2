@@ -358,7 +358,7 @@ import { treeselect, listDept } from "@/api/system/dept";
 import tinymce from "@/views/components/Editor";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 export default {
   components: { tinymce, Treeselect },

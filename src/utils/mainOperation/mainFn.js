@@ -5,7 +5,7 @@ import { urlDownload, zipFile, readOfficeFile } from "@/utils";
 import { download as fileDownload } from "@/utils/request";
 import moment from "moment";
 import axios from "axios";
-import lodash from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 import {
   extend,
@@ -64,4 +64,4 @@ Vue.prototype.handleNameToPage = handleNameToPage;
 Vue.prototype.handlePathToPage = handlePathToPage;
 Vue.prototype.getConfigDicts = getConfigDicts;
 Vue.prototype.formattedTime = formattedTime;
-Vue.prototype.lodash = lodash;
+Vue.prototype.lodash = { cloneDeep };

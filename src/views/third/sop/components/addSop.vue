@@ -717,7 +717,7 @@ import axios from "axios";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import reqUrl from "@/utils/requestUrl";
 import draggable from "vuedraggable";
-import _ from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 import DrUpload from "@/components/Upload";
 import ImageUpload from "@/components/el-upload-sortable/index.vue";
 import WorkstationItem from "./WorkstationItem.vue";
@@ -2157,7 +2157,7 @@ export default {
           this.isSubLoading = true;
 
           // 深拷贝表单数据
-          const submitData = _.cloneDeep(this.form);
+          const submitData = cloneDeep(this.form);
           const normalizeCcPersonsValue = () => {
             const value = submitData.ccPersons;
             if (value === undefined || value === null) return "";
@@ -2690,7 +2690,7 @@ export default {
 
       this.form = formData;
       // 保存原始数据副本用于对比
-      this.originalForm = _.cloneDeep(formData);
+      this.originalForm = cloneDeep(formData);
 
       // 确保数据加载后重新排序工位序号（连续编号）
       this.$nextTick(() => {
@@ -2849,7 +2849,7 @@ export default {
             ? this.getDraftById(this.currentDraftId)?.createTime
             : new Date().toISOString(),
           updateTime: new Date().toISOString(),
-          formData: _.cloneDeep(this.form),
+          formData: cloneDeep(this.form),
           categoryName: categoryName, // 保存品类名称用于显示
           categoryId: this.form.categoryId, // 同时保存品类ID
           versionCode: this.form.versionCode || "",
@@ -2921,7 +2921,7 @@ export default {
 
       try {
         // 加载表单数据
-        this.form = _.cloneDeep(draft.formData);
+        this.form = cloneDeep(draft.formData);
         this.form.ccPersons = this.normalizeCcPersonsArray(this.form.ccPersons);
         this.currentDraftId = draftId;
 

@@ -1,6 +1,5 @@
 import { parseTime, transFileUrl } from "./ruoyi";
 import axios from "axios";
-import JSZip from "jszip";
 import FileSaver, { saveAs } from "file-saver";
 import { Loading } from "element-ui";
 /**
@@ -442,7 +441,7 @@ export async function urlDownload(url) {
   };
 }
 
-export function zipFile(value, fileName) {
+export async function zipFile(value, fileName) {
   try {
     if(!value) {
        throw new Error('下载文件地址为空')
@@ -451,6 +450,7 @@ export function zipFile(value, fileName) {
     if (data.length === 1) {
       urlDownload(data[0]);
     } else {
+      const { default: JSZip } = await import("jszip");
       const zip = new JSZip();
       const cache = {};
       const promises = [];

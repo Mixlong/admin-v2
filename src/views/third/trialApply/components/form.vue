@@ -326,7 +326,7 @@ import { treeselect, listDept } from '@/api/system/dept'
 import { categoryComputerDict } from '@/api/third/fileConfig'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 
 export default {
   components: { Treeselect },

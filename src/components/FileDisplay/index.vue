@@ -51,11 +51,11 @@
 </template>
 
 <script>
-import FilePreview from "@/components/FilePreview";
-
 export default {
   name: "FileDisplay",
-  components: { FilePreview },
+  components: {
+    FilePreview: () => import(/* webpackChunkName: "file-preview" */ "@/components/FilePreview")
+  },
   props: {
     fileUrl: { type: String, default: "" },
     fileName: { type: String, default: "" },

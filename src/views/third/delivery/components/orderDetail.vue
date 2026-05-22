@@ -69,7 +69,12 @@
 
     <template v-if="form.list">
       <el-divider content-position="center">订单列表</el-divider>
-      <el-card shadow="nerver" v-for="item in form.list" class="margin-bottom-xs">
+      <el-card
+        v-for="item in form.list"
+        :key="item.id || item.orderId || item.customerOrderNo || item.oddNumbers"
+        shadow="nerver"
+        class="margin-bottom-xs"
+      >
         <el-table
           :data="[item]"
           border

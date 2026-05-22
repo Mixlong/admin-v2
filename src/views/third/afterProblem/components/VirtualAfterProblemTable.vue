@@ -233,12 +233,20 @@
 </template>
 
 <script>
+import { VxeTable, VxeColumn, VxeColgroup } from "vxe-table";
+import "vxe-table/es/style.css";
 import { checkPermi } from "@/utils/permission";
 import { parseTime } from "@/utils/ruoyi";
 import { mapGetters } from "vuex";
 
 export default {
   name: "VirtualAfterProblemTable",
+
+  components: {
+    VxeTable,
+    VxeColumn,
+    VxeColgroup,
+  },
 
   props: {
     data: {

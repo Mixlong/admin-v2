@@ -1,72 +1,65 @@
 <template>
-  <div class="app-container">
-    <transition name="fade-transform-tb">
-      <el-form
-        :model="queryParams"
-        ref="queryForm"
-        :inline="true"
-        v-show="showSearch"
-      >
-        <el-form-item label="客户名称" prop="customerName">
-          <el-input
-            v-model.trim="queryParams.customerName"
-            clearable
-            @keyup.native.enter="handleQuery"
-            placeholder="请输入"
+  <div class="app-container order-review-page">
+    <el-form
+      :model="queryParams"
+      ref="queryForm"
+      :inline="true"
+      class="order-review-query"
+    >
+      <el-form-item label="客户名称" prop="customerName">
+        <el-input
+          v-model.trim="queryParams.customerName"
+          clearable
+          @keyup.native.enter="handleQuery"
+          placeholder="请输入"
+        />
+      </el-form-item>
+
+      <el-form-item label="客户订单号" prop="customerOrderNo">
+        <el-input
+          v-model.trim="queryParams.customerOrderNo"
+          clearable
+          @keyup.native.enter="handleQuery"
+          placeholder="请输入"
+        />
+      </el-form-item>
+
+      <el-form-item label="型号名称" prop="computerName">
+        <el-input
+          v-model.trim="queryParams.computerName"
+          clearable
+          @keyup.native.enter="handleQuery"
+          placeholder="请输入"
+        />
+      </el-form-item>
+
+      <el-form-item label="订单类型" prop="orderType">
+        <el-select
+          v-model="queryParams.orderType"
+          filterable
+          clearable
+          placeholder="请选择"
+        >
+          <el-option
+            v-for="(label, value) in orderTypeList"
+            :key="label"
+            :label="label"
+            :value="String(value)"
           />
-        </el-form-item>
-
-        <el-form-item label="客户订单号" prop="customerOrderNo">
-          <el-input
-            v-model.trim="queryParams.customerOrderNo"
-            clearable
-            @keyup.native.enter="handleQuery"
-            placeholder="请输入"
-          />
-        </el-form-item>
-
-        <el-form-item label="型号名称" prop="computerName">
-          <el-input
-            v-model.trim="queryParams.computerName"
-            clearable
-            @keyup.native.enter="handleQuery"
-            placeholder="请输入"
-          />
-        </el-form-item>
-
-        <el-form-item label="订单类型" prop="orderType">
-          <el-select
-            v-model="queryParams.orderType"
-            filterable
-            clearable
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="(label, value) in orderTypeList"
-              :key="label"
-              :label="label"
-              :value="String(value)"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            icon="el-icon-search"
-            size="mini"
-            @click="handleQuery"
-          >
-            搜 索
-          </el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
-            重 置
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </transition>
-
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+        >
+          搜 索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重 置
+        </el-button>
         <el-button
           type="primary"
           icon="el-icon-plus"
@@ -76,13 +69,13 @@
         >
           新 增
         </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" />
-    </el-row>
+      </el-form-item>
+    </el-form>
 
     <el-table
+      ref="orderReviewTable"
       v-loading="loading"
-      :height="tableHeight()"
+      :max-height="orderReviewTableHeight"
       :data="dataList"
       border
     >
@@ -239,10 +232,10 @@ export default {
   },
   data() {
     return {
-      showSearch: true,
       loading: false,
       total: 0,
       dataList: [],
+      orderReviewTableHeight: 400,
       orderTypeList: {
         0: "首次订单",
         1: "新增订单",
@@ -271,6 +264,18 @@ export default {
   created() {
     this.getList();
   },
+  mounted() {
+    this.updateTableHeight();
+    window.addEventListener("resize", this.updateTableHeight);
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.updateTableHeight);
+  },
+  watch: {
+    total() {
+      this.$nextTick(this.updateTableHeight);
+    },
+  },
   methods: {
     getList() {
       this.loading = true;
@@ -282,7 +287,35 @@ export default {
         })
         .finally(() => {
           this.loading = false;
+          this.$nextTick(this.updateTableHeight);
         });
+    },
+    updateTableHeight() {
+      this.$nextTick(() => {
+        if (!this.$refs.orderReviewTable) {
+          return;
+        }
+
+        let clientHeight = document.documentElement.clientHeight;
+        if (window.__POWERED_BY_WUJIE__) {
+          try {
+            clientHeight = window.parent.document.documentElement.clientHeight;
+          } catch (e) {
+            clientHeight = document.documentElement.clientHeight;
+          }
+        }
+
+        const tableTop =
+          this.$refs.orderReviewTable.$el.getBoundingClientRect().top;
+        const containerStyle = window.getComputedStyle(this.$el);
+        const containerBottom =
+          parseFloat(containerStyle.paddingBottom || 0) +
+          parseFloat(containerStyle.marginBottom || 0);
+        this.orderReviewTableHeight = Math.max(
+          clientHeight - tableTop - containerBottom - 44,
+          260
+        );
+      });
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -361,4 +394,30 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.order-review-page {
+  padding-top: 20px;
+  padding-bottom: 16px;
+}
+
+.order-review-query {
+  margin-bottom: 10px;
+
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+  }
+}
+
+::v-deep .pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: auto;
+  margin: 6px 0 0;
+  padding: 0 16px !important;
+  background: #fff;
+}
+
+::v-deep .pagination-container .el-pagination {
+  position: static;
+}
 </style>

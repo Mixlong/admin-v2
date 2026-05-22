@@ -15,7 +15,7 @@
                 <el-col>
                     <el-form-item label="升级项目" prop="upgradeProject">
                         <el-checkbox-group v-model="form.upgradeProject">
-                            <el-checkbox v-for="item in upgradeProjectData" :label="item.dictValue" border>
+                            <el-checkbox v-for="item in upgradeProjectData" :key="item.dictValue" :label="item.dictValue" border>
                                 {{ item.dictLabel }}
                             </el-checkbox>
                         </el-checkbox-group>
@@ -24,7 +24,7 @@
                 <el-col :span="12">
                     <el-form-item label="供电电压" prop="supplyVoltage">
                         <el-radio-group v-model="form.supplyVoltage">
-                            <el-radio v-for="item in supplyVoltageData" :label="item.dictValue" border>
+                            <el-radio v-for="item in supplyVoltageData" :key="item.dictValue" :label="item.dictValue" border>
                                 {{ item.dictLabel }}
                             </el-radio>
                         </el-radio-group>

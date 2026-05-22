@@ -453,7 +453,7 @@ import CompUpdate from "./components/update";
 import CompDetail from "./components/detail";
 import { mapGetters } from "vuex";
 import { listDept } from "@/api/system/dept";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 import CompUpdate1 from "./components/update1";
 import digiSmartJumpMixin from "@/mixins/digiSmartJump";
 

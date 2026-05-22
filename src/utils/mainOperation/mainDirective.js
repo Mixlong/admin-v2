@@ -11,8 +11,6 @@ import Element from "element-ui";
 import VueViewer from "v-viewer";
 // 头部标签组件
 import VueMeta from 'vue-meta'
-// 引入组件库
-import VueEasytable from "vue-easytable";
 // 测试
 import ellipsisPlugings from "@/directive/commonDirective/myDirectives";
 import VueSeamlessScroll from 'vue-seamless-scroll';
@@ -39,7 +37,6 @@ Vue.use(Element, {
 });
 console.log('✅ Element UI 已注册，size:', elementSize);
 Vue.use(VueMeta);
-Vue.use(VueEasytable);
 Vue.use(VueViewer, {
   defaultOptions: {
     zIndex: 9999

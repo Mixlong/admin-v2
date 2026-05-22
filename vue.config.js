@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -9,7 +10,7 @@ module.exports = {
   outputDir: process.env.NODE_ENV === 'development' ? 'dist' : 'admin-v2',
   
   // 公共路径配置 - 部署到服务器的访问路径
-  publicPath:'./',
+  publicPath: process.env.NODE_ENV === 'development' ? '/' : './',
   
   // 关闭生产环境的source map以减少内存使用
   productionSourceMap: false,
@@ -42,21 +43,46 @@ module.exports = {
   },
   
   configureWebpack: {
+    plugins: [
+      new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /zh-cn/)
+    ],
     // 减少内存使用的优化
     optimization: {
+      runtimeChunk: 'single',
       splitChunks: {
         chunks: 'all',
         cacheGroups: {
+          elementUI: {
+            name: 'chunk-elementUI',
+            priority: 40,
+            test: /[\\/]node_modules[\\/]_?element-ui(.*)/
+          },
+          vxe: {
+            name: 'chunk-vxe',
+            priority: 35,
+            test: /[\\/]node_modules[\\/]_?(vxe-table|vxe-pc-ui|xe-utils)([\\/]|$)/
+          },
+          echarts: {
+            name: 'chunk-echarts',
+            priority: 30,
+            test: /[\\/]node_modules[\\/]_?(echarts|zrender)([\\/]|$)/
+          },
+          excel: {
+            name: 'chunk-excel',
+            chunks: 'async',
+            priority: 25,
+            test: /[\\/]node_modules[\\/]_?(xlsx|xlsx-style|jszip|cpexcel)([\\/]|$)/
+          },
+          bpmn: {
+            name: 'chunk-bpmn',
+            priority: 25,
+            test: /[\\/]node_modules[\\/]_?(bpmn-js|diagram-js|bpmn-moddle|moddle|moddle-xml|min-dash|min-dom|ids)([\\/]|$)/
+          },
           vendor: {
             name: 'chunk-vendors',
             test: /[\\/]node_modules[\\/]/,
             priority: 10,
             chunks: 'initial'
-          },
-          elementUI: {
-            name: 'chunk-elementUI',
-            priority: 20,
-            test: /[\\/]node_modules[\\/]_?element-ui(.*)/
           }
         }
       }
@@ -73,6 +99,14 @@ module.exports = {
     // 禁用预加载
     config.plugins.delete('preload')
     config.plugins.delete('prefetch')
+
+    // Monaco 运行时当前使用 CDN 加载，避免把 public/libs 中的本地副本复制进产物
+    config.plugin('copy').tap(args => {
+      args[0].forEach(pattern => {
+        pattern.ignore = (pattern.ignore || []).concat(['libs/monaco-editor/**'])
+      })
+      return args
+    })
     
     // svg处理
     config.module

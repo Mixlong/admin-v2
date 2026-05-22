@@ -249,7 +249,7 @@
             </el-button>
             <!-- 旧版SOP审核按钮 -->
             <el-button
-              v-else-if="row.isOldSop == 1 && (row.state === 0 || isAdmin)"
+              v-else-if="row.isOldSop == 1 && row.state === 0"
               class="text-orange"
               type="text"
               size="small"
@@ -679,7 +679,7 @@ export default {
       }
       if (typeof candidate === 'string') {
         return candidate
-          .split(',')
+          .split(/[,，]/)
           .map((item) => item.trim())
           .filter((item) => item);
       }
@@ -693,6 +693,7 @@ export default {
           stateField: 'engineeringState',
           stateListField: 'engineeringStateList',
           detailFields: [
+            'engineeringAuditUserList',
             'engineeringAuditDetailList',
             'engineeringDetailList',
             'engineeringDetails',
@@ -705,6 +706,7 @@ export default {
           stateField: 'projectState',
           stateListField: 'projectStateList',
           detailFields: [
+            'projectAuditUserList',
             'projectAuditDetailList',
             'projectDetailList',
             'projectDetails',
@@ -717,6 +719,7 @@ export default {
           stateField: 'secondState',
           stateListField: 'secondStateList',
           detailFields: [
+            'secondAuditUserList',
             'secondAuditDetailList',
             'secondDetailList',
             'secondDetails',
@@ -747,6 +750,7 @@ export default {
               return { name: item.trim(), state: notice[config.stateField] };
             }
             const name =
+              item.reviewer ||
               item.auditPerson ||
               item.personName ||
               item.userName ||
@@ -786,6 +790,51 @@ export default {
     },
     hasStageAssignee(notice, stage) {
       return this.getStageAuditEntries(notice, stage).length > 0;
+    },
+    hasStagePendingAuditor(notice, stage) {
+      return this.getStageAuditEntries(notice, stage).some(
+        (item) => Number(item.state) === 0
+      );
+    },
+    canAdminAudit(notice) {
+      if (!notice) {
+        return false;
+      }
+
+      const list = Array.isArray(notice.list) ? notice.list : [];
+      const pendingJoint = list.some((item) => Number(item.state) === 0);
+      if (pendingJoint) {
+        return true;
+      }
+
+      const hasJointRejected = list.some((item) => Number(item.state) === 2);
+      if (hasJointRejected) {
+        return false;
+      }
+
+      const allJointAuditPassed =
+        list.length > 0 ? list.every((item) => Number(item.state) === 1) : false;
+      const engineeringPassed = Number(notice.engineeringState) === 1;
+      const projectPassed =
+        !this.hasStageAssignee(notice, 'project') ||
+        Number(notice.projectState) === 1;
+
+      if (allJointAuditPassed && this.hasStagePendingAuditor(notice, 'engineering')) {
+        return true;
+      }
+      if (
+        allJointAuditPassed &&
+        engineeringPassed &&
+        this.hasStagePendingAuditor(notice, 'project')
+      ) {
+        return true;
+      }
+      return (
+        allJointAuditPassed &&
+        engineeringPassed &&
+        projectPassed &&
+        this.hasStagePendingAuditor(notice, 'second')
+      );
     },
     /** 查询品牌列表 */
     getList() {
@@ -943,11 +992,6 @@ export default {
     },
     /** 判断是否可以审核（新版SOP） */
     canAudit(row) {
-      // 管理员可以进行审核
-      if (this.isAdmin) {
-        return true;
-      }
-
       // 只对新版SOP进行判断
       if (row.isOldSop !== 0 || !row.sopChangeNotice) {
         return false;
@@ -956,6 +1000,11 @@ export default {
       // 获取当前用户信息
       const currentUser = this.nickName || '';
       const notice = row.sopChangeNotice;
+
+      // 管理员仅在存在待审核节点时显示审核按钮
+      if (this.isAdmin) {
+        return this.canAdminAudit(notice);
+      }
       
       // 检查是否有会审被驳回
       const hasJointAuditRejected = notice.list && notice.list.length > 0 

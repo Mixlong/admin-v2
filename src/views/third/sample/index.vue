@@ -298,7 +298,7 @@ import Verify from "vue2-verify";
 import { pmList } from "@/utils/commonData";
 import TypeInSn from "./components/typeInSn.vue";
 import { dragTableFn } from "@/mixins/common";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 export default {
   name: "Sample",

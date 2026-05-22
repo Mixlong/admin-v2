@@ -4,10 +4,6 @@ import store from "@/store";
 import router from "@/router";
 import plugins from "./plugins"; // plugins
 import WujieVue from "wujie-vue2"; // 无界微前端
-import VxeUIBase from "vxe-pc-ui";
-import "vxe-pc-ui/es/style.css";
-import VxeUITable from "vxe-table";
-import "vxe-table/es/style.css";
 
 // 全局表单输入修复补丁（解决 loading 卡死、输入框禁用等问题）
 // import '@/plugins/fixFormBlock';
@@ -60,8 +56,6 @@ Vue.prototype.msgWarning = function (msg) {
 Vue.config.productionTip = false;
 
 Vue.use(plugins);
-Vue.use(VxeUIBase);
-Vue.use(VxeUITable);
 
 // VXE-Table 全局配置（已禁用）
 // 由于 vxe-table 原生 tooltip 在无界 iframe 中定位偏移
@@ -93,10 +87,6 @@ Vue.prototype.$preloadMicroApps = preloadMicroApps;
 // 初始化微应用token同步
 import { watchTokenChange } from "@/utils/microAppAuth";
 watchTokenChange();
-
-// 🆕 版本检查插件（手动触发模式，不自动加载）
-import VersionCheckPlugin from "@/plugins/versionCheck";
-Vue.use(VersionCheckPlugin);
 
 // ==================== 微前端生命周期钩子 ====================
 if (window.__POWERED_BY_WUJIE__) {

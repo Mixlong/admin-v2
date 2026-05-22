@@ -6,7 +6,7 @@
       <template #field-categoryName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
           <el-select v-model="searchForm[field.key]" clearable filterable style="max-width: 135px"
-            @change="changeCategory">
+            @change="changeCategory" @clear="changeCategory('')">
             <el-option v-for="dict in dictList" :key="dict.id" :label="dict.name" :value="dict.name" />
           </el-select>
         </el-form-item>
@@ -15,7 +15,7 @@
       <!-- 型号选择器自定义插槽 -->
       <template #field-computerName="{ field, searchForm }">
         <el-form-item :label="field.label" :prop="field.key">
-          <el-select v-model="searchForm[field.key]" clearable filterable @change="getList" style="max-width: 135px">
+          <el-select v-model="searchForm[field.key]" clearable filterable style="max-width: 135px">
             <el-option v-for="dict in computerOptions" :key="dict.model" :label="dict.name" :value="dict.name" />
           </el-select>
         </el-form-item>
@@ -401,6 +401,7 @@ export default {
       queryParams: {
         p: 1,
         l: 40,
+        categoryName: '',
         categoryId: "",
         computerName: "",
         sn: "",

@@ -67,13 +67,10 @@
 </template>
 
 <script>
-import VueOfficeExcel from "@vue-office/excel";
-// import "@vue-office/excel/lib/index.css"; // CSS file not available in current version
-
 export default {
   name: "FilePreview",
   components: {
-    VueOfficeExcel
+    VueOfficeExcel: () => import(/* webpackChunkName: "file-preview-excel" */ "@vue-office/excel")
   },
   props: {
     visible: {

@@ -52,6 +52,7 @@
 
 <script>
 import { VxeTable, VxeColumn } from "vxe-table";
+import "vxe-table/es/style.css";
 
 /**
  * 通用虚拟滚动表格组件

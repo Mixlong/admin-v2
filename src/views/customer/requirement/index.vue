@@ -477,7 +477,7 @@ import { getCustomerList } from '@/api/order'
 import AddRequirementDialog from './components/AddRequirementDialog'
 import ViewRequirementDialog from './components/ViewRequirementDialog'
 import { dictPmProject as dictUserList } from '@/api/third/project'
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 import { categoryComputerDict } from '@/api/third/fileConfig'
 export default {
   name: 'CustomerRequirement',

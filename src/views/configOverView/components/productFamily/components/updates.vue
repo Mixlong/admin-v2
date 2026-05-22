@@ -1955,7 +1955,9 @@ import commonData from "@/mixins/commonData";
 import ElUploadSortable from "@/components/el-upload-sortable";
 import tinymce from "@/views/components/Editor";
 import PackagingInfoEdit from "@/views/configOverView/components/packagingInfoEdit.vue";
-import { add, isEqual, omit } from "lodash";
+import add from "lodash/add";
+import isEqual from "lodash/isEqual";
+import omit from "lodash/omit";
 import MyUpload from "@/components/MyUpload";
 
 export default {

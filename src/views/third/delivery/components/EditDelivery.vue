@@ -96,6 +96,7 @@
               >
                 <el-option
                   v-for="item in deliveryType"
+                  :key="item.dictValue"
                   :label="item.dictLabel"
                   :value="item.dictValue"
                 ></el-option>

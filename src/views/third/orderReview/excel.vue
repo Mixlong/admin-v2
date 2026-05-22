@@ -13,7 +13,13 @@
 </template>
 
 <script>
+import VueEasytable from "vue-easytable";
+import "vue-easytable/libs/theme-default/index.css";
+
 export default {
+  components: {
+    VeTable: VueEasytable.VeTable,
+  },
   data() {
     return {
       columns: [

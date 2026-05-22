@@ -1,11 +1,56 @@
 import { login, logout, getInfo } from '@/api/login';
 import { getToken, setToken, removeToken } from '@/utils/auth';
 import { setSharedToken, removeSharedToken, syncUserInfo } from '@/utils/microAppAuth';
+import { getCachedAdminV3Info } from '@/utils/adminV3Cache';
 import { projectLisReceiveRemind, remindMum } from '@/api/third/project';
 import { taskNotice } from '@/api/third/task';
 
 import { MessageBox } from 'element-ui';
 import router from '@/router';
+
+function applyUserInfo(commit, dispatch, res) {
+  const user = res.user;
+  const avatar = user.avatar == ''
+    ? require('@/assets/image/profile.jpg')
+    : user.avatar.startsWith('http')
+      ? user.avatar
+      : process.env.VUE_APP_BASE_API + user.avatar;
+
+  if (res.roles && res.roles.length > 0) {
+    commit('SET_ROLES', res.roles);
+    commit('SET_PERMISSIONS', res.permissions);
+  } else {
+    commit('SET_ROLES', ['ROLE_DEFAULT']);
+  }
+  commit('SET_NAME', user.userName);
+  commit('SET_AVATAR', avatar);
+  commit('SET_ID', user.userId);
+  commit('SET_NICK_NAME', user.nickName);
+  commit('SET_READ_NUM', res.readNum);
+
+  console.log('GetInfo用户数据:', user);
+  console.log('用户部门信息:', user.dept);
+
+  if (user.dept) {
+    console.log('正在存储部门信息:', user.dept.deptId, user.dept.deptName);
+    commit('SET_DEPT_ID', user.dept.deptId);
+    commit('SET_DEPT_NAME', user.dept.deptName);
+  } else {
+    console.warn('API返回的用户数据中没有dept字段');
+  }
+
+  const userInfo = {
+    userId: user.userId,
+    userName: user.userName,
+    nickName: user.nickName,
+    avatar: avatar,
+    roles: res.roles,
+    permissions: res.permissions
+  };
+  syncUserInfo(userInfo);
+  dispatch('SyncStoreToMicroApp');
+}
+
 const user = {
   state: {
     token: getToken(),
@@ -81,54 +126,17 @@ const user = {
     // 获取用户信息
     GetInfo({ commit, state, dispatch }) {
       return new Promise((resolve, reject) => {
+        const cachedInfo = getCachedAdminV3Info(state.token);
+        if (cachedInfo && cachedInfo.user) {
+          console.log('[GetInfo] 复用 ADMIN_V3_GET_INFO_CACHE');
+          applyUserInfo(commit, dispatch, cachedInfo);
+          resolve(cachedInfo);
+          return;
+        }
+
         getInfo(state.token)
           .then(res => {
-            const user = res.user;
-            // 处理头像 URL：如果是完整 URL 则直接使用，否则拼接 BASE_API
-            const avatar = user.avatar == ''
-              ? require('@/assets/image/profile.jpg')
-              : user.avatar.startsWith('http') 
-                ? user.avatar 
-                : process.env.VUE_APP_BASE_API + user.avatar;
-            if (res.roles && res.roles.length > 0) {
-              // 验证返回的roles是否是一个非空数组
-              commit('SET_ROLES', res.roles);
-              commit('SET_PERMISSIONS', res.permissions);
-            } else {
-              commit('SET_ROLES', ['ROLE_DEFAULT']);
-            }
-            commit('SET_NAME', user.userName);
-            commit('SET_AVATAR', avatar);
-            commit('SET_ID', user.userId);
-            commit('SET_NICK_NAME', user.nickName);
-            commit('SET_READ_NUM', res.readNum);
-            
-            // 调试：显示API返回的用户数据
-            console.log('GetInfo API返回的用户数据:', user);
-            console.log('用户部门信息:', user.dept);
-            
-            // 存储部门信息
-            if (user.dept) {
-              console.log('正在存储部门信息:', user.dept.deptId, user.dept.deptName);
-              commit('SET_DEPT_ID', user.dept.deptId);
-              commit('SET_DEPT_NAME', user.dept.deptName);
-            } else {
-              console.warn('API返回的用户数据中没有dept字段');
-            }
-
-            // 同步用户信息到微应用
-            const userInfo = {
-              userId: user.userId,
-              userName: user.userName,
-              nickName: user.nickName,
-              avatar: avatar,
-              roles: res.roles,
-              permissions: res.permissions
-            }
-            syncUserInfo(userInfo);
-
-            // 通过bus同步store数据到微应用
-            dispatch('SyncStoreToMicroApp');
+            applyUserInfo(commit, dispatch, res);
 
             // 因不知是否有用，暂时注释
             
