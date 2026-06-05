@@ -1,132 +1,64 @@
 <template>
   <div class="app-container order-review-page">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      :inline="true"
-      class="order-review-query"
-    >
+    <el-form :model="queryParams" ref="queryForm" :inline="true" class="order-review-query">
       <el-form-item label="客户名称" prop="customerName">
-        <el-input
-          v-model.trim="queryParams.customerName"
-          clearable
-          @keyup.native.enter="handleQuery"
-          placeholder="请输入"
-        />
+        <el-input v-model.trim="queryParams.customerName" clearable @keyup.native.enter="handleQuery"
+          placeholder="请输入" />
       </el-form-item>
 
       <el-form-item label="客户订单号" prop="customerOrderNo">
-        <el-input
-          v-model.trim="queryParams.customerOrderNo"
-          clearable
-          @keyup.native.enter="handleQuery"
-          placeholder="请输入"
-        />
+        <el-input v-model.trim="queryParams.customerOrderNo" clearable @keyup.native.enter="handleQuery"
+          placeholder="请输入" />
       </el-form-item>
 
       <el-form-item label="型号名称" prop="computerName">
-        <el-input
-          v-model.trim="queryParams.computerName"
-          clearable
-          @keyup.native.enter="handleQuery"
-          placeholder="请输入"
-        />
+        <el-input v-model.trim="queryParams.computerName" clearable @keyup.native.enter="handleQuery"
+          placeholder="请输入" />
       </el-form-item>
 
       <el-form-item label="订单类型" prop="orderType">
-        <el-select
-          v-model="queryParams.orderType"
-          filterable
-          clearable
-          placeholder="请选择"
-        >
-          <el-option
-            v-for="(label, value) in orderTypeList"
-            :key="label"
-            :label="label"
-            :value="String(value)"
-          />
+        <el-select v-model="queryParams.orderType" filterable clearable placeholder="请选择">
+          <el-option v-for="(label, value) in orderTypeList" :key="label" :label="label" :value="String(value)" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-        >
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">
           搜 索
         </el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
           重 置
         </el-button>
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          v-hasPermi="['third:orderReview:add']"
-          @click="handleAdd"
-        >
+        <el-button type="primary" icon="el-icon-plus" size="mini" v-hasPermi="['third:orderReview:add']"
+          @click="handleAdd">
           新 增
         </el-button>
       </el-form-item>
     </el-form>
 
-    <el-table
-      ref="orderReviewTable"
-      v-loading="loading"
-      :max-height="orderReviewTableHeight"
-      :data="dataList"
-      border
-    >
+    <el-table ref="orderReviewTable" v-loading="loading" :max-height="orderReviewTableHeight" :data="dataList" border>
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="客户名称"
-        align="center"
-        prop="customerName"
-        width="100"
-      />
-      <el-table-column
-        label="客户订单号"
-        align="center"
-        prop="customerOrderNo"
-        width="150"
-      />
+      <el-table-column label="客户名称" align="center" prop="customerName" width="100" />
+      <el-table-column label="客户订单号" align="center" prop="customerOrderNo" width="150" />
       <el-table-column label="型号名称" align="center" min-width="140">
         <template slot-scope="{ row }">
           {{ isComputerList(row.list) }}
         </template>
       </el-table-column>
-      <el-table-column
-        label="下单日期"
-        align="center"
-        prop="orderDate"
-        width="100"
-      >
+      <el-table-column label="下单日期" align="center" prop="orderDate" width="100">
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.orderDate, '{y}-{m}-{d}')"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="期望日期"
-        align="center"
-        prop="expectedDate"
-        width="100"
-      >
+      <el-table-column label="期望交期" align="center" prop="expectedDate" width="100">
         <template slot-scope="{ row }">
           <span v-NoData="parseTime(row.expectedDate, '{y}-{m}-{d}')"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="订单类型"
-        align="center"
-        prop="orderType"
-        width="90"
-      >
+      <el-table-column label="订单类型" align="center" prop="orderType" width="90">
         <template slot-scope="{ row }">
           <el-tag v-if="row.orderType === 0" type="primary">首次订单</el-tag>
           <el-tag v-if="row.orderType === 1" type="success">新增订单</el-tag>
@@ -135,32 +67,15 @@
       </el-table-column>
       <el-table-column label="图片" align="center" prop="file" width="80">
         <template slot-scope="{ row }">
-          <preview-img
-            :url="row.file"
-            :srcList="[row.file]"
-            width="45px"
-            height="45px"
-            :isDisBadge="false"
-          />
+          <preview-img :url="row.file" :srcList="[row.file]" width="45px" height="45px" :isDisBadge="false" />
         </template>
       </el-table-column>
-      <el-table-column
-        label="备注"
-        align="center"
-        prop="remark"
-        min-width="200"
-      >
+      <el-table-column label="备注" align="center" prop="remark" min-width="200">
         <template slot-scope="{ row }">
           <span v-NoData="row.remark"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        sortable
-        width="130"
-      >
+      <el-table-column label="创建时间" align="center" prop="createTime" sortable width="130">
         <template slot-scope="{ row }">
           <span>
             {{ parseTime(row.createTime, "{y}-{m}-{d} {h}:{i}") }}
@@ -169,32 +84,15 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="130" fixed="right">
         <template slot-scope="{ row }">
-          <Tooltip
-            icon="el-icon-edit"
-            content="编辑"
-            v-hasPermi="['third:orderReview:update']"
-            @click="handleUpdate(row)"
-          />
+          <Tooltip icon="el-icon-edit" content="编辑" v-hasPermi="['third:orderReview:update']"
+            @click="handleUpdate(row)" />
 
-          <Tooltip
-            icon="el-icon-tickets"
-            content="查看详情"
-            v-hasPermi="['third:orderReview:review']"
-            @click="handleReview(row)"
-          />
+          <Tooltip icon="el-icon-tickets" content="查看详情" v-hasPermi="['third:orderReview:review']"
+            @click="handleReview(row)" />
 
-          <el-popconfirm
-            title="确定要删除吗？"
-            @confirm="handleDelete(row)"
-            v-hasPermi="['third:orderReview:delete']"
-          >
-            <Tooltip
-              style="margin: 0 10px"
-              slot="reference"
-              icon="el-icon-delete"
-              :className="['text-red']"
-              content="删除"
-            />
+          <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(row)" v-hasPermi="['third:orderReview:delete']">
+            <Tooltip style="margin: 0 10px" slot="reference" icon="el-icon-delete" :className="['text-red']"
+              content="删除" />
           </el-popconfirm>
           <!-- <Tooltip
             icon="el-icon-coordinate"
@@ -206,17 +104,10 @@
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.p"
-      :limit.sync="queryParams.l"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.p" :limit.sync="queryParams.l"
+      @pagination="getList" />
 
-    <order-review-create-update
-      ref="orderReviewRef"
-    ></order-review-create-update>
+    <order-review-create-update ref="orderReviewRef"></order-review-create-update>
   </div>
 </template>
 

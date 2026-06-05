@@ -262,7 +262,6 @@ if (window.__POWERED_BY_WUJIE__) {
 
       /* 分页样式 */
       .el-pagination {
-        margin-top: 15px !important;
         text-align: right !important;
       }
       .el-pagination button {
@@ -544,7 +543,7 @@ if (window.__POWERED_BY_WUJIE__) {
       .wujie-micro-app .app-container,
       .wujie-micro-app .dashboard-editor-container {
         min-height: calc(100vh - 104px) !important;
-        height: auto !important;
+        // height: auto !important;
       }
 
       /* 通用页面容器高度 */

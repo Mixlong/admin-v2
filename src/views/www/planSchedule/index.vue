@@ -74,7 +74,7 @@
       </template>
     </IntelligentSearchForm>
 
-    <el-table border v-loading="loading" :height="tableHeight(-50)" :data="list" :cell-class-name="cellClassName"
+    <el-table border v-loading="loading" :height="tableHeight(-250)" :data="list" :cell-class-name="cellClassName"
       class="table-section" @cell-click="cellClick">
       <el-table-column label="序号" width="60" type="index" align="center">
         <template slot-scope="scope">
@@ -125,7 +125,7 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="250" fixed="right">
-        <div class="flex align-center justify-between" slot-scope="{ row }">
+        <div class="op-cell" slot-scope="{ row }">
           <el-button v-if="row.salesOrderNo" v-hasPermi="['www:planSchedule:update']" type="text"
             @click="handleUpdate(row)">
             编辑
@@ -143,7 +143,7 @@
             MUA配置
           </el-button>
           <el-dropdown>
-            <span class="el-dropdown-link text-blue font12">
+            <span class="el-dropdown-link text-blue font12" style="white-space:nowrap">
               更多操作<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
 
@@ -387,6 +387,7 @@ export default {
   },
   data() {
     return {
+      tableHeight:tableHeight,
       isExcelFile: false,
       // ✅ 控制更新组件的销毁和重建
       showUpdateComponent: true,
@@ -422,7 +423,7 @@ export default {
       // 查询参数
       queryParams: {
         p: 1,
-        l: 20,
+        l: 30,
         categoryId: "",
         computerId: "",
         salesOrderNo: "",
@@ -1055,6 +1056,33 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.table-section {
+  ::v-deep .el-table__row td {
+    height: 40px;
+    padding: 0;
+  }
+}
+
+.op-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 2px;
+
+  ::v-deep .el-button--text,
+  ::v-deep .el-button--mini {
+    padding: 0 3px !important;
+    margin-left: 0 !important;
+    white-space: nowrap;
+  }
+
+  .el-dropdown-link {
+    white-space: nowrap;
+    padding: 0 3px;
+  }
+}
+
 .data-box {
   .detail_item_box {
     min-height: 150px;

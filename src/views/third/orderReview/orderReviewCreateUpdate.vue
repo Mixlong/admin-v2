@@ -1,67 +1,35 @@
 <template>
-  <el-dialog
-    class="fixed_bottom_dialog"
-    title="订单评审Checklist"
-    :visible.sync="dialogVisible"
-    fullscreen
-    center
-  >
+  <el-dialog class="fixed_bottom_dialog" title="订单评审Checklist" :visible.sync="dialogVisible" fullscreen center>
     <table id="order-review-table">
       <tr>
         <th class="labelW custom-cell">客户名称</th>
         <td class="full-td-box">
-          <el-input
-            v-model.trim.lazy="form.customerName"
-            class="full-input"
-            :readonly="isReadonly"
-          ></el-input>
+          <el-input v-model.trim.lazy="form.customerName" class="full-input" :readonly="isReadonly"></el-input>
         </td>
 
         <th class="labelW custom-cell">客户订单号</th>
         <td class="full-td-box">
-          <el-input
-            v-model.trim.lazy="form.customerOrderNo"
-            class="full-input"
-            :readonly="isReadonly"
-          ></el-input>
+          <el-input v-model.trim.lazy="form.customerOrderNo" class="full-input" :readonly="isReadonly"></el-input>
         </td>
 
         <th class="labelW custom-cell">下单日期</th>
         <td class="full-td-box">
-          <el-date-picker
-            v-model="form.orderDate"
-            type="date"
-            value-format="timestamp"
-            placeholder="请选择下单日期"
-            style="width: 100%"
-            class="full-input"
-            :readonly="isReadonly"
-          >
+          <el-date-picker v-model="form.orderDate" type="date" value-format="timestamp" placeholder="请选择下单日期"
+            style="width: 100%" class="full-input" :readonly="isReadonly">
           </el-date-picker>
         </td>
 
-        <th class="labelW custom-cell">期望日期</th>
+        <th class="labelW custom-cell">期望交期</th>
         <td class="full-td-box">
-          <el-date-picker
-            v-model="form.expectedDate"
-            type="date"
-            value-format="timestamp"
-            placeholder="请选择期望日期"
-            style="width: 100%"
-            class="full-input"
-            :readonly="isReadonly"
-          >
+          <el-date-picker v-model="form.expectedDate" type="date" value-format="timestamp" placeholder="请选择期望交期"
+            style="width: 100%" class="full-input" :readonly="isReadonly">
           </el-date-picker>
         </td>
       </tr>
       <tr>
         <th class="labelW custom-cell">订单类型</th>
         <td colspan="7" class="order_pad">
-          <el-radio-group
-            v-model="form.orderType"
-            size="mini"
-            :disabled="isReadonly"
-          >
+          <el-radio-group v-model="form.orderType" size="mini" :disabled="isReadonly">
             <el-radio :label="0">首次订单</el-radio>
             <el-radio :label="1">新增订单</el-radio>
             <el-radio :label="2">其他</el-radio>
@@ -70,148 +38,64 @@
       </tr>
     </table>
 
-    <el-table
-      class="order-full-table"
-      :data="form.list"
-      style="width: 100%"
-      border
-      :header-cell-class-name="headerCellClassNameOrderInfo"
-    >
+    <el-table class="order-full-table" :data="form.list" style="width: 100%" border
+      :header-cell-class-name="headerCellClassNameOrderInfo">
       <el-table-column label="具体订单信息" align="center">
-        <el-table-column
-          label="序号"
-          type="index"
-          width="100"
-          align="center"
-        ></el-table-column>
+        <el-table-column label="序号" type="index" width="100" align="center"></el-table-column>
 
-        <el-table-column
-          label="产品型号"
-          prop="computerName"
-          align="center"
-          class-name="full-cell"
-        >
+        <el-table-column label="产品型号" prop="computerName" align="center" class-name="full-cell">
           <template slot-scope="scope">
             <div class="input-container">
-              <el-input
-                v-model.trim.lazy="scope.row.computerName"
-                class="full-size-input"
-                :readonly="isReadonly"
-              ></el-input>
+              <el-input v-model.trim.lazy="scope.row.computerName" class="full-size-input"
+                :readonly="isReadonly"></el-input>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-          label="规格描述"
-          prop="description"
-          align="center"
-          class-name="full-textarea-cell"
-        >
+        <el-table-column label="规格描述" prop="description" align="center" class-name="full-textarea-cell">
           <template slot-scope="scope">
-            <el-input
-              v-model="scope.row.description"
-              type="textarea"
-              autosize
-              :readonly="isReadonly"
-            ></el-input>
+            <el-input v-model="scope.row.description" type="textarea" autosize :readonly="isReadonly"></el-input>
           </template>
         </el-table-column>
-        <el-table-column
-          label="订单数量(pcs)"
-          prop="num"
-          align="center"
-          class-name="full-cell"
-        >
+        <el-table-column label="订单数量(pcs)" prop="num" align="center" class-name="full-cell">
           <template slot-scope="scope">
             <div class="input-container">
-              <el-input
-                v-model.trim.lazy="scope.row.num"
-                oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
-                class="full-size-input"
-                :readonly="isReadonly"
-              ></el-input>
+              <el-input v-model.trim.lazy="scope.row.num" oninput="value=value.replace(/^\.+|[^\d.]/g, '')"
+                class="full-size-input" :readonly="isReadonly"></el-input>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-          label="客供物料"
-          prop="material"
-          align="center"
-          class-name="full-textarea-cell"
-        >
+        <el-table-column label="客供物料" prop="material" align="center" class-name="full-textarea-cell">
           <template slot-scope="scope">
             <div class="input-container">
-              <el-input
-                v-model="scope.row.material"
-                type="textarea"
-                autosize
-                class="full-size-input"
-                :readonly="isReadonly"
-              ></el-input>
+              <el-input v-model="scope.row.material" type="textarea" autosize class="full-size-input"
+                :readonly="isReadonly"></el-input>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-          label="备注"
-          prop="remark"
-          align="center"
-          class-name="full-textarea-cell"
-        >
+        <el-table-column label="备注" prop="remark" align="center" class-name="full-textarea-cell">
           <template slot-scope="scope">
             <div class="input-container">
-              <el-input
-                v-model="scope.row.remark"
-                type="textarea"
-                autosize
-                class="full-size-input"
-                :readonly="isReadonly"
-              ></el-input>
+              <el-input v-model="scope.row.remark" type="textarea" autosize class="full-size-input"
+                :readonly="isReadonly"></el-input>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-          label="操作"
-          align="center"
-          width="80"
-          class-name="full-cell"
-          v-if="!isReadonly"
-        >
+        <el-table-column label="操作" align="center" width="80" class-name="full-cell" v-if="!isReadonly">
           <template slot="header" slot-scope="scope">
-            <el-button
-              icon="el-icon-plus"
-              type="primary"
-              size="mini"
-              @click="handleAddOrderInfo"
-            ></el-button>
+            <el-button icon="el-icon-plus" type="primary" size="mini" @click="handleAddOrderInfo"></el-button>
           </template>
           <template slot-scope="scope">
-            <el-button
-              icon="el-icon-minus"
-              type="danger"
-              size="mini"
-              :disabled="form.list.length < 2"
-              @click="handleRemoveOrderInfo(scope.$index)"
-            ></el-button>
+            <el-button icon="el-icon-minus" type="danger" size="mini" :disabled="form.list.length < 2"
+              @click="handleRemoveOrderInfo(scope.$index)"></el-button>
           </template>
         </el-table-column>
       </el-table-column>
     </el-table>
 
-    <el-table
-      class="order-review-table order-full-table"
-      :data="form.resultList"
-      border
-      :header-cell-style="headerStyle"
-      :header-cell-class-name="headerCellClassName"
-      :span-method="objectSpanMethod"
-      :cell-class-name="cellClassName"
-    >
-      <el-table-column
-        prop="departmentName"
-        label="评审部门"
-        width="100"
-        align="center"
-      />
+    <el-table class="order-review-table order-full-table" :data="form.resultList" border
+      :header-cell-style="headerStyle" :header-cell-class-name="headerCellClassName" :span-method="objectSpanMethod"
+      :cell-class-name="cellClassName">
+      <el-table-column prop="departmentName" label="评审部门" width="100" align="center" />
       <el-table-column label="评审项目" align="center" header-align="center">
         <el-table-column align="left" width="300">
           <template slot-scope="scope">
@@ -221,19 +105,11 @@
         <el-table-column align="left" class-name="review-project-box">
           <template slot-scope="scope">
             <template v-if="scope.row.moduleType === 1">
-              <el-radio-group
-                v-model="scope.row.selectValue"
-                size="mini"
-                :disabled="isReadonly"
-              >
-                <el-radio
-                  v-for="cItem in scope.row.list"
-                  :key="cItem.value"
-                  :label="cItem.value"
+              <el-radio-group v-model="scope.row.selectValue" size="mini" :disabled="isReadonly">
+                <el-radio v-for="cItem in scope.row.list" :key="cItem.value" :label="cItem.value"
                   @dblclick.native.prevent="
                     handleRadioDblClick(scope.row, cItem)
-                  "
-                >
+                    ">
                   {{ cItem.label }}
                 </el-radio>
               </el-radio-group>
@@ -246,103 +122,48 @@
                 >
                   请描述:
                 </b> -->
-                <el-input
-                  v-model="scope.row.inputValue"
-                  size="mini"
-                  type="textarea"
-                  autosize
-                  :readonly="isReadonly"
-                  placeholder="请描述"
-                ></el-input>
+                <el-input v-model="scope.row.inputValue" size="mini" type="textarea" autosize :readonly="isReadonly"
+                  placeholder="请描述"></el-input>
               </div>
             </template>
             <template v-if="scope.row.moduleType === 3">
-              <el-row
-                :gutter="20"
-                type="flex"
-                justify="space-between"
-                align="middle"
-              >
+              <el-row :gutter="20" type="flex" justify="space-between" align="middle">
                 <el-col :span="6">
-                  <el-radio-group
-                    v-model="scope.row.selectValue"
-                    size="mini"
-                    :disabled="isReadonly"
-                  >
-                    <el-radio
-                      v-for="cItem in scope.row.list"
-                      :key="cItem.value"
-                      :label="cItem.value"
+                  <el-radio-group v-model="scope.row.selectValue" size="mini" :disabled="isReadonly">
+                    <el-radio v-for="cItem in scope.row.list" :key="cItem.value" :label="cItem.value"
                       @dblclick.native.prevent="
                         handleRadioDblClick(scope.row, cItem)
-                      "
-                    >
+                        ">
                       {{ cItem.label }}
                     </el-radio>
                   </el-radio-group>
                 </el-col>
                 <el-col :span="18">
-                  <el-input
-                    v-model="scope.row.inputValue"
-                    size="mini"
-                    type="textarea"
-                    autosize
-                    :readonly="isReadonly"
-                    placeholder="请描述"
-                  ></el-input>
+                  <el-input v-model="scope.row.inputValue" size="mini" type="textarea" autosize :readonly="isReadonly"
+                    placeholder="请描述"></el-input>
                 </el-col>
               </el-row>
             </template>
           </template>
         </el-table-column>
       </el-table-column>
-      <el-table-column
-        prop="view"
-        label="评审意见"
-        align="center"
-        width="500"
-        class-name="full-cell"
-      >
+      <el-table-column prop="view" label="评审意见" align="center" width="500" class-name="full-cell">
         <template slot-scope="scope">
-          <el-input
-            v-model="scope.row.view"
-            type="textarea"
-            autosize
-            :readonly="isReadonly"
-          ></el-input>
+          <el-input v-model="scope.row.view" type="textarea" autosize :readonly="isReadonly"></el-input>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="completeTime"
-        label="完成日期"
-        align="center"
-        width="150"
-        class-name="full-cell"
-      >
+      <el-table-column prop="completeTime" label="完成日期" align="center" width="150" class-name="full-cell">
         <template slot-scope="scope">
           <div class="input-container">
-            <el-input
-              v-model.trim.lazy="scope.row.completeTime"
-              class="full-size-input"
-              :readonly="isReadonly"
-            ></el-input>
+            <el-input v-model.trim.lazy="scope.row.completeTime" class="full-size-input"
+              :readonly="isReadonly"></el-input>
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="nickName"
-        label="责任人"
-        align="center"
-        width="150"
-        class-name="full-cell"
-      >
+      <el-table-column prop="nickName" label="责任人" align="center" width="150" class-name="full-cell">
         <template slot-scope="scope">
           <div class="input-container">
-            <el-input
-              v-model.trim.lazy="scope.row.nickName"
-              class="full-size-input"
-              :readonly="isReadonly"
-            ></el-input>
+            <el-input v-model.trim.lazy="scope.row.nickName" class="full-size-input" :readonly="isReadonly"></el-input>
           </div>
         </template>
       </el-table-column>
@@ -351,24 +172,14 @@
       <tr>
         <th class="labelW custom-cell">备注</th>
         <td class="full-td-box" colspan="7">
-          <el-input
-            v-model.trim.lazy="form.remark"
-            class="full-input"
-            :readonly="isReadonly"
-          ></el-input>
+          <el-input v-model.trim.lazy="form.remark" class="full-input" :readonly="isReadonly"></el-input>
         </td>
       </tr>
       <tr>
         <th class="labelW custom-cell">图片</th>
         <td class="full-td-box" colspan="7">
-          <el-upload-sortable
-            v-model="form.file"
-            :imgW="150"
-            :imgH="98"
-            :max="10"
-            accept="image/jpeg, image/gif, image/png"
-            :isDisabled="isReadonly"
-          />
+          <el-upload-sortable v-model="form.file" :imgW="150" :imgH="98" :max="10"
+            accept="image/jpeg, image/gif, image/png" :isDisabled="isReadonly" />
         </td>
       </tr>
     </table>
@@ -552,6 +363,7 @@ export default {
   padding: 0;
 
   .full-input {
+
     .el-input__inner,
     .el-date-editor {
       border-color: transparent;
@@ -627,6 +439,7 @@ export default {
     padding: 0;
 
     .cell {
+
       /* textarea */
       .el-textarea__inner {
         min-height: 35px !important;

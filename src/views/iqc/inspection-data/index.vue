@@ -101,7 +101,7 @@
         v-loading="loading"
         border
         style="width: 100%"
-        :height="tableHeight(-120)"
+        :height="tableHeight(-150)"
         row-key="id"
         :header-cell-class-name="getHeaderCellClassName"
       >

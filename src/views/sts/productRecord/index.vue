@@ -55,8 +55,7 @@
         </el-button>
       </template>
     </IntelligentSearchForm>
-
-    <el-table v-loading="loading" :data="brandList" height="100%" :cell-class-name="cellClassName" border>
+    <el-table v-loading="loading" :data="brandList"   height="500px" :cell-class-name="cellClassName" border>
       <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -145,6 +144,7 @@
       @pagination="getList" />
 
     <el-dialog title="版本信息" :visible.sync="isStsDetailShow" center append-to-body top="1vh" width="1300px"
+      
       class=" custom-dialog">
       <el-table :data="stsDetail" bordered height="450">
         <el-table-column label="工序名称" prop="processName" align="center" width="100" />
@@ -366,6 +366,7 @@ import { orderWorkList } from "@/api/third/prodPlant";
 import { getBoxPageList, deleteBox, getPackingRecords, cancelPacking } from "@/api/www/planSchedule";
 import { CategoryMixin } from "@/mixins/common";
 import dynamicTableHeightMixin from "@/mixins/dynamicTableHeight";
+import { tableHeight } from "../../../utils/ruoyi";
 
 export default {
   name: "ProductRecord",
