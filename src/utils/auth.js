@@ -28,112 +28,148 @@ export function removeToken() {
   }
 }
 
+// 获取所有可能包含 token 的 URL (支持无界微前端及 iframe 环境)
+function getPossibleUrls() {
+  const urls = []
+  if (window.location && window.location.href) {
+    urls.push(window.location.href)
+  }
+  // 无界主应用 location (如果是无界微前端环境)
+  if (window.$wujie && window.$wujie.location && window.$wujie.location.href) {
+    urls.push(window.$wujie.location.href)
+  }
+  try {
+    if (window.top && window.top.location && window.top.location.href) {
+      urls.push(window.top.location.href)
+    }
+  } catch (e) {}
+  try {
+    if (window.parent && window.parent.location && window.parent.location.href) {
+      urls.push(window.parent.location.href)
+    }
+  } catch (e) {}
+  // 过滤空值并去重
+  return [...new Set(urls.filter(Boolean))]
+}
+
+// 清理特定 URL 中的 token 参数
+function cleanUrlToken(urlStr, paramKey) {
+  try {
+    const url = new URL(urlStr)
+    // 1. 处理 query 中的参数
+    url.searchParams.delete(paramKey)
+    // 2. 处理 hash 中的参数 (兼容 [?&#] 三种前缀形式的清理)
+    if (url.hash) {
+      url.hash = url.hash.replace(new RegExp(`[?&#]${paramKey}=[^&#]*`), '')
+    }
+    // 3. 处理 pathname 异常格式的参数
+    const cleanedPath = url.pathname.replace(new RegExp(`&${paramKey}=[^/&#?]*`), '')
+    if (cleanedPath !== url.pathname) {
+      url.pathname = cleanedPath
+    }
+    // 4. 清理残留的多余符号
+    let result = url.toString()
+    result = result.replace(/[?&]+$/, '')
+    return result
+  } catch (e) {
+    return urlStr
+  }
+}
+
 // 从 URL 中读取 token 并写入 Cookie，供外部跳转时携带认证
 export function syncTokenFromUrl(paramKey = 'ddsToken') {
   console.log('[Auth] 🔍 开始查找token，参数名:', paramKey)
-  console.log('[Auth] 完整URL:', window.location.href)
+  const possibleUrls = getPossibleUrls()
+  console.log('[Auth] 待查找的 URL 列表:', possibleUrls)
 
+  for (const urlStr of possibleUrls) {
+    try {
+      let token = ''
+      const url = new URL(urlStr)
+
+      // 1. 尝试从标准 query 参数获取
+      token = url.searchParams.get(paramKey) || ''
+
+      // 2. 尝试从 hash 中获取（Vue Router hash 模式）
+      if (!token && url.hash) {
+        const hashIndex = url.hash.indexOf('?')
+        const hashAmpIndex = url.hash.indexOf('&')
+
+        if (hashIndex > -1) {
+          const hashQuery = url.hash.substring(hashIndex + 1)
+          const hashParams = new URLSearchParams(hashQuery)
+          token = hashParams.get(paramKey) || ''
+        }
+
+        if (!token && hashAmpIndex > -1) {
+          const hashQuery = url.hash.substring(hashAmpIndex + 1)
+          const hashParams = new URLSearchParams(hashQuery)
+          token = hashParams.get(paramKey) || ''
+        }
+      }
+
+      // 3. 兜底：使用正则从整个 URL 中匹配
+      if (!token) {
+        const regex = new RegExp(`[?&#]${paramKey}=([^&#]+)`)
+        const match = urlStr.match(regex)
+        token = match && match[1] ? decodeURIComponent(match[1]) : ''
+      }
+
+      if (token) {
+        console.log(`[Auth] ✅ 在 URL [${urlStr.substring(0, 60)}...] 中成功找到 token`)
+        setToken(token)
+        console.log('[Auth] ✅ Token已写入Cookie，验证:', !!getToken())
+        window.__URL_TOKEN_SYNCED__ = true
+
+        // 清理当前窗口 URL
+        const cleanedCurrent = cleanUrlToken(window.location.href, paramKey)
+        if (cleanedCurrent !== window.location.href) {
+          window.history.replaceState({}, document.title, cleanedCurrent)
+        }
+
+        // 尝试清理顶层窗口 URL (防跨域保护)
+        try {
+          if (window.top && window.top.location && window.top.location.href) {
+            const cleanedTop = cleanUrlToken(window.top.location.href, paramKey)
+            if (cleanedTop !== window.top.location.href) {
+              window.top.history.replaceState({}, window.top.document.title, cleanedTop)
+            }
+          }
+        } catch (e) {}
+
+        // 尝试清理父级窗口 URL (防跨域保护)
+        try {
+          if (window.parent && window.parent.location && window.parent.location.href) {
+            const cleanedParent = cleanUrlToken(window.parent.location.href, paramKey)
+            if (cleanedParent !== window.parent.location.href) {
+              window.parent.history.replaceState({}, window.parent.document.title, cleanedParent)
+            }
+          }
+        } catch (e) {}
+
+        console.log('[Auth] ✅ URL已清理')
+        return true
+      }
+    } catch (err) {
+      console.warn('[Auth] 解析 URL 匹配 Token 失败:', urlStr, err)
+    }
+  }
+
+  // 4. 终极兜底：直接匹配当前窗口 href 作为防线
   try {
-    let token = ''
-    let hasExternalParam = false
-    const url = new URL(window.location.href)
-
-    // 1. 尝试从标准query参数获取
-    token = url.searchParams.get(paramKey) || ''
-    hasExternalParam = hasExternalParam || url.searchParams.has(paramKey)
-    console.log('[Auth] 从query获取:', token ? '✅ 找到' : '❌ 未找到')
-
-    // 2. 如果没有，尝试从hash中获取（Vue Router hash模式）
-    if (!token && url.hash) {
-      console.log('[Auth] 尝试从hash获取...')
-      // hash格式: #/path?param=value 或 #/path&param=value (错误格式)
-      const hashIndex = url.hash.indexOf('?')
-      const hashAmpIndex = url.hash.indexOf('&')
-
-      // 处理正确格式: #/path?param=value
-      if (hashIndex > -1) {
-        const hashQuery = url.hash.substring(hashIndex + 1)
-        console.log('[Auth] hash中的query:', hashQuery)
-        const hashParams = new URLSearchParams(hashQuery)
-        token = hashParams.get(paramKey) || ''
-        hasExternalParam = hasExternalParam || hashParams.has(paramKey)
-        console.log('[Auth] 从hash的?后获取:', token ? '✅ 找到' : '❌ 未找到')
-      }
-
-      // 处理错误格式: #/path&param=value (兼容DigiSmart的错误格式)
-      if (!token && hashAmpIndex > -1) {
-        const hashQuery = url.hash.substring(hashAmpIndex + 1)
-        console.log('[Auth] hash中的&参数:', hashQuery)
-        const hashParams = new URLSearchParams(hashQuery)
-        token = hashParams.get(paramKey) || ''
-        hasExternalParam = hasExternalParam || hashParams.has(paramKey)
-        console.log('[Auth] 从hash的&后获取:', token ? '✅ 找到' : '❌ 未找到')
-      }
-    }
-
-    // 3. 兜底：使用正则从整个URL中匹配
-    if (!token) {
-      console.log('[Auth] 使用正则兜底匹配...')
-      const regex = new RegExp(`[?&#]${paramKey}=([^&#]+)`)
-      const match = window.location.href.match(regex)
-      token = match && match[1] ? decodeURIComponent(match[1]) : ''
-      hasExternalParam = hasExternalParam || !!match
-      console.log('[Auth] 正则匹配结果:', token ? '✅ 找到' : '❌ 未找到')
-    }
-
-    if (token) {
-      console.log('[Auth] ✅ 成功找到token，长度:', token.length)
-      console.log('[Auth] Token前30字符:', token.substring(0, 30))
-      setToken(token)
-      console.log('[Auth] ✅ Token已写入Cookie，验证:', !!getToken())
-
-      // 清理URL中的token
-      // 处理query参数
-      url.searchParams.delete(paramKey)
-
-      // 处理hash中的token
-      if (url.hash) {
-        // 移除 ?param=value 格式
-        url.hash = url.hash.replace(new RegExp(`[?&]${paramKey}=[^&#]*`), '')
-        // 移除 &param=value 格式（错误格式）
-        url.hash = url.hash.replace(new RegExp(`&${paramKey}=[^&#]*`), '')
-      }
-
-      // 清理 pathname 中类似 /redirect&ddsToken=xxx 的异常格式
-      const cleanedPath = url.pathname.replace(new RegExp(`&${paramKey}=[^/&#?]*`), '')
-      if (cleanedPath !== url.pathname) {
-        url.pathname = cleanedPath
-      }
-
-      window.history.replaceState({}, document.title, url.toString())
-      console.log('[Auth] ✅ URL已清理')
-      return true
-    }
-
-    if (hasExternalParam) {
-      console.log('[Auth] ✅ 检测到外部跳转参数但未成功解析token')
-      return true
-    }
-
-    console.log('[Auth] ❌ 未找到token')
-    return false
-  } catch (e) {
-    console.error('[Auth] ❌ Token同步失败:', e)
-    // 最终兜底
     const regex = new RegExp(`[?&#]${paramKey}=([^&#]+)`)
     const match = window.location.href.match(regex)
     const token = match && match[1] ? decodeURIComponent(match[1]) : ''
     if (token) {
-      console.log('[Auth] 兜底逻辑成功获取token')
+      console.log('[Auth] 终极正则兜底匹配成功')
       setToken(token)
+      window.__URL_TOKEN_SYNCED__ = true
       return true
-    } else {
-      const hasParam = !!match
-      if (hasParam) {
-        console.log('[Auth] 兜底逻辑检测到外部跳转参数但无token')
-      }
-      console.log('[Auth] ❌ 未找到token')
-      return hasParam
     }
+  } catch (e) {
+    console.error('[Auth] 终极正则兜底匹配出错:', e)
   }
+
+  console.log(`[Auth] ❌ 未找到参数 [${paramKey}] 对应的 token`)
+  return false
 }

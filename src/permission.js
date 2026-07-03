@@ -1,7 +1,7 @@
 import router from "./router";
 import store from "./store";
 import { Message } from "element-ui";
-import { getToken } from "@/utils/auth";
+import { getToken, setToken, syncTokenFromUrl } from "@/utils/auth";
 import { start, done } from "@/utils/nprogress";
 import { filterAsyncRouter } from "@/store/modules/permission";
 
@@ -62,6 +62,35 @@ function isMainAppSyncEnabled() {
   );
 }
 
+function syncWujieAuthFromProps() {
+  if (!window.__POWERED_BY_WUJIE__) {
+    return "";
+  }
+
+  const props = window.$wujie?.props || {};
+  const userInfo = props.userInfo || props.user || {};
+  const token = props.token || userInfo.token || "";
+
+  if (!token) {
+    return "";
+  }
+
+  setToken(token);
+  store.commit("SET_TOKEN", token);
+
+  const roles = props.roles || userInfo.roles;
+  const permissions = props.permissions || userInfo.permissions;
+  if (Array.isArray(roles)) {
+    store.commit("SET_ROLES", roles);
+  }
+  if (Array.isArray(permissions)) {
+    store.commit("SET_PERMISSIONS", permissions);
+  }
+
+  console.log("[Permission] 已从 Wujie props 同步 token");
+  return token;
+}
+
 // 记录原始目标路由，用于动态路由加载后重新导航
 let pendingRoute = null;
 // 标记是否正在加载动态路由
@@ -72,9 +101,31 @@ const MAX_RETRY = 2;
 
 router.beforeEach((to, from, next) => {
   start();
-  const token = getToken();
+
+  // URL 携带 Token 兜底同步，支持 toekn、token、Token 和 ddsToken 参数
+  syncTokenFromUrl("toekn");
+  syncTokenFromUrl("token");
+  syncTokenFromUrl("Token");
+  syncTokenFromUrl("ddsToken");
+
+  let token = getToken();
+  if (token && store.getters.token !== token) {
+    store.commit("SET_TOKEN", token);
+  }
+
+  // 如果刚刚从 URL 同步了新 Token，强制清空旧的 roles 以便守卫重新拉取用户信息与动态路由
+  if (window.__URL_TOKEN_SYNCED__) {
+    console.log("[Permission] 检测到新 URL Token 写入，强制清空旧 roles 以重新加载用户信息");
+    store.commit("SET_ROLES", []);
+    window.__URL_TOKEN_SYNCED__ = false; // 重置标记
+  }
+
   const isWujie = window.__POWERED_BY_WUJIE__;
   const allowMainSync = isMainAppSyncEnabled();
+
+  if (!token && allowMainSync) {
+    token = syncWujieAuthFromProps();
+  }
   console.log(
     "[Permission] 路由守卫检查 - to:",
     to.path,

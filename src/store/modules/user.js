@@ -8,13 +8,20 @@ import { taskNotice } from '@/api/third/task';
 import { MessageBox } from 'element-ui';
 import router from '@/router';
 
+function resolveAvatar(avatar) {
+  if (typeof avatar !== 'string' || avatar.trim() === '') {
+    return require('@/assets/image/profile.jpg')
+  }
+
+  const avatarUrl = avatar.trim()
+  return avatarUrl.startsWith('http')
+    ? avatarUrl
+    : process.env.VUE_APP_BASE_API + avatarUrl
+}
+
 function applyUserInfo(commit, dispatch, res) {
   const user = res.user;
-  const avatar = user.avatar == ''
-    ? require('@/assets/image/profile.jpg')
-    : user.avatar.startsWith('http')
-      ? user.avatar
-      : process.env.VUE_APP_BASE_API + user.avatar;
+  const avatar = resolveAvatar(user.avatar)
 
   if (res.roles && res.roles.length > 0) {
     commit('SET_ROLES', res.roles);

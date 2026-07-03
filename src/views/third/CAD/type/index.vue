@@ -52,9 +52,9 @@
       v-loading="loading"
       :data="typeList"
       border
-      :height="tableHeight()"
+      :height="tableHeight(50)"
     >
-      <el-table-column label="序号" width="50" type="index" align="center" />
+      <el-table-column label="序号" width="60" type="index" align="center" />
       <el-table-column label="键" prop="key" align="center" width="140" show-overflow-tooltip />
       <el-table-column label="值" prop="value" align="center" width="160" show-overflow-tooltip />
       <el-table-column label="上传文件" align="center" width="100">
@@ -127,7 +127,7 @@
       :close-on-click-modal="false"
       :title="title"
       :visible.sync="open"
-      width="760px"
+      width="1200px"
       append-to-body
     >
       <el-form
@@ -136,46 +136,53 @@
         :rules="rules"
         label-width="110px"
         @submit.native.prevent
-        class="form-data-inline"
-        inline
       >
-        <el-form-item label="键:" prop="key">
-          <el-input
-            v-model="form.key"
-            placeholder="请输入文件属性名称"
-            @keyup.enter.native.prevent="submitForm"
-          />
-        </el-form-item>
-        <el-form-item label="值:" prop="value">
-          <el-input
-            v-model="form.value"
-            placeholder="请输入文件属性名称"
-            @keyup.enter.native.prevent="submitForm"
-          />
-        </el-form-item>
-        <el-form-item label="排序:" prop="sort">
-          <el-input
-            v-model="form.sort"
-            type="text"
-            oninput="value=value.replace(/[^\d]/g,'')"
-            placeholder="数字越小越靠前"
-            maxLength="5"
-            @keyup.enter.native.prevent="submitForm"
-          />
-        </el-form-item>
-        <el-form-item label="需要上传文件:">
-          <el-radio-group v-model="form.up">
-            <el-radio :label="1">是</el-radio>
-            <el-radio :label="0">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="键:" prop="key">
+              <el-input
+                v-model="form.key"
+                placeholder="请输入文件属性名称"
+                @keyup.enter.native.prevent="submitForm"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="值:" prop="value">
+              <el-input
+                v-model="form.value"
+                placeholder="请输入文件属性名称"
+                @keyup.enter.native.prevent="submitForm"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-        <el-form-item
-          label="可见性"
-          style="width: 100%"
-          class="flex checkbox-wrap"
-        >
-          <el-checkbox-group class="role-type" v-model="roleTypeCheckedList">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="排序:" prop="sort">
+              <el-input
+                v-model="form.sort"
+                type="text"
+                oninput="value=value.replace(/[^\d]/g,'')"
+                placeholder="数字越小越靠前"
+                maxLength="5"
+                @keyup.enter.native.prevent="submitForm"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="需要上传文件:">
+              <el-radio-group v-model="form.up">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="可见性" class="visibility-form-item">
+          <el-checkbox-group class="role-type-checkboxes" v-model="roleTypeCheckedList">
             <el-checkbox
               v-for="(item, index) in roleTypeDictList"
               :key="index"
@@ -234,6 +241,7 @@ import {
 } from "@/api/third/type";
 import { getCodeImg } from "@/api/base/code";
 import { commonJs } from "@/mixins/common";
+import { tableHeight } from "@/utils/ruoyi";
 
 export default {
   name: "CadType",
@@ -314,6 +322,7 @@ export default {
     this.getList();
   },
   methods: {
+    tableHeight,
     /** 查询客户列表 */
     getList() {
       this.loading = true;
@@ -456,14 +465,32 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.checkbox-wrap {
+<style lang="scss" scoped>
+.visibility-form-item {
   .el-form-item__content {
-    width: 80%;
-    .role-type {
-      display: grid;
-      grid-auto-rows: 30px;
-      grid-template-columns: auto auto auto auto;
+    line-height: normal;
+  }
+}
+
+.role-type-checkboxes {
+  width: 100%;
+  max-height: 380px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px 20px;
+
+  .el-checkbox {
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+
+    ::v-deep .el-checkbox__label {
+      padding-left: 8px;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }

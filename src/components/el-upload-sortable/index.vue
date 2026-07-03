@@ -25,13 +25,17 @@
           v-for="(item, index) in imgList"
           :key="`${item}-${index}`"
         >
-          <video class="video-box" v-if="isVideo" :src="item"></video>
+          <video
+            class="video-box"
+            v-if="isVideoItem(item)"
+            :src="item"
+          ></video>
           <el-image
             v-else
             :ref="`previewImage-${index}`"
             :src="item"
-            :preview-src-list="imgList"
-            :initial-index="index"
+            :preview-src-list="imagePreviewList"
+            :initial-index="getImagePreviewIndex(item)"
             fit="contain"
             class="el-upload-list__item-thumbnail"
           />
@@ -183,6 +187,37 @@ export default {
     isUploadIcon() {
       return this.isLoading ? "el-icon-loading" : "el-icon-plus";
     },
+    normalizedAccept() {
+      return (this.accept || "").toLowerCase();
+    },
+    acceptAllowsImage() {
+      if (!this.normalizedAccept) {
+        return !this.isVideo;
+      }
+      return (
+        this.normalizedAccept.includes("image") ||
+        [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"].some((type) =>
+          this.normalizedAccept.includes(type)
+        )
+      );
+    },
+    acceptAllowsVideo() {
+      if (this.isVideo) {
+        return true;
+      }
+      return (
+        this.normalizedAccept.includes("video") ||
+        [".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".webm"].some(
+          (type) => this.normalizedAccept.includes(type)
+        )
+      );
+    },
+    isMixedUpload() {
+      return !this.isVideo && this.acceptAllowsImage && this.acceptAllowsVideo;
+    },
+    imagePreviewList() {
+      return this.imgList.filter((url) => !this.isVideoUrl(url));
+    },
   },
   watch: {
     value(value) {
@@ -238,9 +273,21 @@ export default {
       
       if (this.isVideo) {
         return this.handleCheckVideo(file);
+      } else if (this.isMixedUpload) {
+        return this.handleCheckMedia(file);
       } else {
         return this.handleCheckImage(file);
       }
+    },
+    handleCheckMedia(file) {
+      if (file.type.indexOf("video") !== -1) {
+        return this.handleCheckVideo(file);
+      }
+      if (file.type.indexOf("image") !== -1) {
+        return this.handleCheckImage(file);
+      }
+      this.msgError("请上传图片或视频文件!");
+      return false;
     },
     handleCheckVideo(file) {
       const isValidFormat = file.type.indexOf("video") !== -1;
@@ -292,7 +339,7 @@ export default {
     },
 
     handlePreview(url, index) {
-      if (this.isVideo) {
+      if (this.isVideoItem(url)) {
         this.dialogImageUrl = url;
         this.dialogVisible = true;
       } else {
@@ -309,6 +356,22 @@ export default {
           }
         });
       }
+    },
+    isVideoItem(url) {
+      return this.isVideo || this.isVideoUrl(url);
+    },
+    isVideoUrl(url) {
+      if (!url || typeof url !== "string") {
+        return false;
+      }
+      const cleanUrl = url.split("?")[0].split("#")[0].toLowerCase();
+      return [".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".webm"].some(
+        (ext) => cleanUrl.endsWith(ext)
+      );
+    },
+    getImagePreviewIndex(url) {
+      const index = this.imagePreviewList.indexOf(url);
+      return index > -1 ? index : 0;
     },
   },
 };

@@ -42,8 +42,8 @@
       </vxe-column>
       <vxe-column field="problemDescription" title="问题描述" min-width="200" align="center" class-name="col-problem" header-class-name="col-problem">
         <template #default="{ row }">
-          <el-tooltip effect="dark" placement="top" :open-delay="500">
-            <div slot="content" style="max-width: 500px; max-height: 400px; overflow-y: auto;">
+          <el-tooltip effect="light" placement="top" :open-delay="500" popper-class="after-problem-tooltip">
+            <div slot="content" class="tooltip-content">
               <div v-html="row.problemDescription"></div>
             </div>
             <div class="html-content" v-html="row.problemDescription"></div>
@@ -79,8 +79,8 @@
     <vxe-colgroup title="迪太研发&品质" header-class-name="group-research" header-align="center">
       <vxe-column field="problemAnalysis" title="问题分析（过程）" min-width="180" align="center" class-name="col-research" header-class-name="col-research">
         <template #default="{ row }">
-          <el-tooltip effect="dark" placement="top" :open-delay="500">
-            <div slot="content" style="max-width: 500px; max-height: 400px; overflow-y: auto;">
+          <el-tooltip effect="light" placement="top" :open-delay="500" popper-class="after-problem-tooltip">
+            <div slot="content" class="tooltip-content">
               <div v-html="row.problemAnalysis"></div>
             </div>
             <div class="html-content" v-html="row.problemAnalysis"></div>

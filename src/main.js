@@ -27,10 +27,10 @@ import directives from "@/directives";
 // import VueNativeSock from 'vue-native-websocket';
 import TypedSelectLoadMore from "@/components/TypedSelectLoadMore";
 import IntelligentSearchForm from "@/components/IntelligentSearchForm"; // 会自动解析到 index.js
-import { syncTokenFromUrl } from "@/utils/auth";
+import { syncTokenFromUrl, setToken } from "@/utils/auth";
 
 // 处理外部携带 token 的场景,优先写入 Cookie，并标记外部跳转（10分钟有效）
-const isExternalJump = syncTokenFromUrl();
+const isExternalJump = syncTokenFromUrl("toekn") || syncTokenFromUrl("token") || syncTokenFromUrl("Token") || syncTokenFromUrl("ddsToken");
 store.dispatch("app/initExternalFlag");
 if (isExternalJump) {
   store.dispatch("app/setExternalFlag", { value: true });
@@ -595,9 +595,44 @@ if (window.__POWERED_BY_WUJIE__) {
 
   let instance = null;
 
+  const syncWujieUserData = (data = {}) => {
+    const userData = data.user || data.userInfo || data;
+    const token = data.token || userData.token || "";
+
+    if (token) {
+      setToken(token);
+      store.commit("SET_TOKEN", token);
+    }
+    if (userData.id || userData.userId) {
+      store.commit("SET_ID", userData.id || userData.userId);
+    }
+    if (userData.name || userData.userName) {
+      store.commit("SET_NAME", userData.name || userData.userName);
+    }
+    if (userData.nickName) {
+      store.commit("SET_NICK_NAME", userData.nickName);
+    }
+    if (userData.avatar) {
+      store.commit("SET_AVATAR", userData.avatar);
+    }
+    if (Array.isArray(data.roles)) {
+      store.commit("SET_ROLES", data.roles);
+    } else if (Array.isArray(userData.roles)) {
+      store.commit("SET_ROLES", userData.roles);
+    }
+    if (Array.isArray(data.permissions)) {
+      store.commit("SET_PERMISSIONS", data.permissions);
+    } else if (Array.isArray(userData.permissions)) {
+      store.commit("SET_PERMISSIONS", userData.permissions);
+    }
+
+    return token;
+  };
+
   // 子应用挂载
   window.__WUJIE_MOUNT = () => {
     console.log("🚀 V2 子应用开始挂载");
+    syncWujieUserData(window.$wujie?.props || {});
     // 确保样式加载
     initStyles();
     // 确保标识类存在
@@ -629,24 +664,7 @@ if (window.__POWERED_BY_WUJIE__) {
   // 监听主应用的数据同步
   window.$wujie?.bus.$on("main-store-sync", (data) => {
     console.log("📥 V2 收到主应用数据:", data);
-    if (data.user && data.user.token) {
-      // 使用 setToken 函数而不是 vuex action
-      const { setToken } = require("@/utils/auth");
-      setToken(data.user.token);
-      // 同步用户信息到 vuex
-      if (data.user.name) {
-        store.commit("SET_NAME", data.user.name);
-      }
-      if (data.user.avatar) {
-        store.commit("SET_AVATAR", data.user.avatar);
-      }
-      if (data.user.roles) {
-        store.commit("SET_ROLES", data.user.roles);
-      }
-      if (data.user.permissions) {
-        store.commit("SET_PERMISSIONS", data.user.permissions);
-      }
-    }
+    syncWujieUserData(data);
   });
 
   // 监听主应用的路由导航

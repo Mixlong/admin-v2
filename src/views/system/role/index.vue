@@ -16,6 +16,7 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
           <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+          <el-button type="warning" icon="el-icon-setting" size="mini" @click="handleDictManage">分配管理</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -30,9 +31,21 @@
             <el-button type="primary" size="mini" icon="el-icon-plus" @click="handleAdd" v-hasPermi="['system:role:add']">新增</el-button>
           </div>
         </div>
+        <!-- 类型切换 Tabs -->
+        <div class="role-type-tabs-wrapper">
+          <el-tabs v-model="activeRoleType" class="role-type-tabs">
+            <el-tab-pane label="全部" name="all" />
+            <el-tab-pane
+              v-for="dict in dict.type.sys_role_type"
+              :key="dict.value"
+              :label="dict.label"
+              :name="dict.value"
+            />
+          </el-tabs>
+        </div>
         <div class="role-list" v-loading="loading">
           <div
-            v-for="role in roleList"
+            v-for="role in displayRoleList"
             :key="role.roleId"
             class="role-item"
             :class="{ active: selectedRole && selectedRole.roleId === role.roleId }"
@@ -41,7 +54,12 @@
             <div class="role-info">
               <i class="el-icon-user"></i>
               <div class="role-text-content">
-                <div class="role-name">{{ role.roleName }}</div>
+                <div class="role-name">
+                  {{ role.roleName }}
+                  <el-tag v-if="role.roleType" size="mini" type="info" style="margin-left: 5px; height: 18px; line-height: 16px; padding: 0 4px;">
+                    {{ selectDictLabel(dict.type.sys_role_type, role.roleType) }}
+                  </el-tag>
+                </div>
                 <div class="role-key">{{ role.roleKey }}</div>
               </div>
             </div>
@@ -107,6 +125,16 @@
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" placeholder="请输入角色名称" />
         </el-form-item>
+        <el-form-item label="角色类型" prop="roleType">
+          <el-select v-model="form.roleType" placeholder="请选择角色类型" clearable style="width: 100%">
+            <el-option
+              v-for="dict in dict.type.sys_role_type"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item prop="roleKey">
           <span slot="label">
             <el-tooltip content="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasRole('admin')`)" placement="top">
@@ -152,18 +180,27 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <!-- 角色类型字典管理弹窗 -->
+    <role-type-dict-dialog
+      ref="roleTypeDictDialogRef"
+      :status-options="dict.type.sys_normal_disable"
+      @success="handleDictSuccess"
+    />
   </div>
 </template>
 
 <script>
 import { listRole, getRole, delRole, addRole, updateRole } from "@/api/system/role"
 import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu"
+import RoleTypeDictDialog from "./components/RoleTypeDictDialog"
 
 export default {
   name: "Role",
-  dicts: ['sys_normal_disable'],
+  components: { RoleTypeDictDialog },
+  dicts: ['sys_normal_disable', 'sys_role_type'],
   data() {
     return {
+      activeRoleType: "all",
       loading: true,
       total: 0,
       roleList: [],
@@ -202,6 +239,22 @@ export default {
         { key: 'download', label: '下载' }
       ],
       checkedActions: ['view'] // 默认选中访问管理
+    }
+  },
+  computed: {
+    displayRoleList() {
+      let list = this.roleList;
+      if (this.queryParams.roleName) {
+        const query = this.queryParams.roleName.toLowerCase().trim();
+        list = list.filter(role => 
+          role.roleName?.toLowerCase().includes(query) || 
+          role.roleKey?.toLowerCase().includes(query)
+        );
+      }
+      if (this.activeRoleType === 'all') {
+        return list;
+      }
+      return list.filter(role => String(role.roleType) === String(this.activeRoleType));
     }
   },
   created() {
@@ -392,6 +445,7 @@ export default {
         roleKey: undefined,
         roleSort: 0,
         status: "0",
+        roleType: undefined,
         menuIds: [],
         deptIds: [],
         menuCheckStrictly: true,
@@ -537,6 +591,18 @@ export default {
           }
         }
       })
+    },
+    
+    /** 打开字典管理弹窗 */
+    handleDictManage() {
+      this.$refs.roleTypeDictDialogRef.open()
+    },
+    
+    /** 字典数据管理成功后回调 */
+    handleDictSuccess() {
+      // 重新加载该字典数据
+      this.dict.reloadDict('sys_role_type')
+      this.getList()
     }
   }
 }
@@ -570,7 +636,7 @@ export default {
 
 // 左侧角色列表
 .role-list-panel {
-  width: 240px;
+  width: 280px; // 拓宽角色面板以适应 Tabs 的排布
   border-right: 1px solid #e4e7ed;
   display: flex;
   flex-direction: column;
@@ -589,7 +655,36 @@ export default {
       font-size: 14px;
     }
   }
-  
+
+  .role-type-tabs-wrapper {
+    padding: 0;
+    background: #fff;
+    border-bottom: 1px solid #e4e7ed;
+
+    ::v-deep .el-tabs__header {
+      margin: 0 !important;
+    }
+    ::v-deep .el-tabs__nav-wrap::after {
+      height: 0;
+    }
+    ::v-deep .el-tabs__content {
+      display: none;
+    }
+    ::v-deep .el-tabs__nav-wrap:not(.is-scrollable) .el-tabs__nav-scroll {
+      display: flex;
+      justify-content: center;
+    }
+    ::v-deep .el-tabs__nav-wrap:not(.is-scrollable) .el-tabs__nav {
+      float: none;
+    }
+    ::v-deep .el-tabs__item {
+      font-size: 13px;
+      height: 38px;
+      line-height: 38px;
+      padding: 0 16px !important; // 强制使用均匀的 16px 边距，覆盖首尾元素 padding: 0 的影响
+    }
+  }
+
   .role-list {
     flex: 1;
     overflow-y: auto;
