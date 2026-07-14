@@ -406,17 +406,13 @@ export default {
       this.title = "添加文件属性";
     },
     handleUpdate(row) {
-      console.log('row', row)
       this.reset();
       this.form = Object.assign({}, row);
 
-      this.roleTypeCheckedList = [];
+      this.roleTypeCheckedList = (row.typeRoleList || [])
+        .map((item) => this.getRoleName(item.roleId))
+        .filter(Boolean);
       this.form.typeRoleList = [];
-      row.typeRoleList.forEach((item) => {
-        this.roleTypeCheckedList.push(
-          this.roleTypeDictMap[item.roleId].roleName
-        );
-      });
 
       this.open = true;
       this.title = "修改文件属性";

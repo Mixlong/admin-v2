@@ -53,6 +53,11 @@ export default {
       type: Boolean,
       default: false,
     },
+    // 是否按品类名称排序
+    sortByName: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -129,7 +134,7 @@ export default {
     async loadCategoryList() {
       // 如果已经有缓存，直接使用
       if (categoryCache) {
-        this.categoryList = categoryCache;
+        this.categoryList = this.getCategoryList(categoryCache);
         return;
       }
 
@@ -138,7 +143,7 @@ export default {
         this.loading = true;
         try {
           const data = await categoryPromise;
-          this.categoryList = data;
+          this.categoryList = this.getCategoryList(data);
         } finally {
           this.loading = false;
         }
@@ -151,7 +156,7 @@ export default {
         .then((res) => {
           const data = res.data || [];
           categoryCache = data; // 缓存数据
-          this.categoryList = data;
+          this.categoryList = this.getCategoryList(data);
           return data;
         })
         .catch((err) => {
@@ -171,6 +176,19 @@ export default {
     },
     handleClear() {
       this.$emit("clear");
+    },
+    getCategoryList(list) {
+      if (!this.sortByName) {
+        return list || [];
+      }
+      return [...(list || [])].sort((a, b) => {
+        const nameA = String(a?.name || "");
+        const nameB = String(b?.name || "");
+        return nameA.localeCompare(nameB, "zh-CN", {
+          numeric: true,
+          sensitivity: "base",
+        });
+      });
     },
     // 手动刷新数据（清除缓存并重新加载）
     refresh() {

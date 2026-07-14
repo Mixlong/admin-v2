@@ -594,8 +594,7 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="实际轮径(inch)" prop="instrumentModel.showWheelDiameter"
-                :rules="isCheckConfigItem({ message: '实际轮径' })">
+              <el-form-item label="实际轮径(inch)" prop="instrumentModel.showWheelDiameter">
                 <el-select v-model="form.instrumentModel.showWheelDiameter" placeholder="请选择实际轮径" filterable
                   class="w100" clearable>
                   <el-option v-for="(value, key) in wheelDiameterData" :key="key" :label="value" :value="value">
@@ -642,8 +641,7 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="实际协议" prop="instrumentModel.showAgreement"
-                :rules="isCheckConfigItem({ message: '实际协议' })">
+              <el-form-item label="实际协议" prop="instrumentModel.showAgreement">
                 <el-select v-model="form.instrumentModel.showAgreement" placeholder="请选择实际协议" filterable allow-create class="w100" clearable>
                   <el-option v-for="item in dicts_agreement" :key="item.dictValue" :label="item.dictLabel"
                     :value="item.dictLabel">
@@ -894,8 +892,7 @@
                 </el-radio-group>
               </el-form-item>
 
-              <el-form-item label="有无高级菜单" prop="instrumentModel.isHighMenuPassword"
-                :rules="isCheckConfigItem({ message: '高级菜单' })">
+              <el-form-item label="有无高级菜单" prop="instrumentModel.isHighMenuPassword">
                 <el-radio-group v-model="form.instrumentModel.isHighMenuPassword">
                   <el-radio :label="0"> YES </el-radio>
                   <el-radio :label="1"> NO </el-radio>

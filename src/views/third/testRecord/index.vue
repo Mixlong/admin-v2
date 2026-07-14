@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div ref="recordContainer" class="app-container" :class="{ 'dialog-record-container': dialogMode }">
     <!-- 智能搜索表单 -->
     <IntelligentSearchForm
       :searchForm="queryParams"
@@ -7,6 +7,7 @@
       @search="handleQuery"
       :defaultVisibleCount="5"
       @reset="resetQuery"
+      @layout-changed="refreshRecordTableHeight"
       @field-change="handleFieldChange">
       
       <!-- 自定义品类字段 -->
@@ -61,7 +62,7 @@
       </template>
     </IntelligentSearchForm>
 
-    <el-table v-loading="loading" :data="brandList" :height="tableHeight()" border>
+    <el-table ref="recordTable" v-loading="loading" :data="brandList" :height="recordTableHeight" border>
       <el-table-column label="序号" width="58" type="index" align="center" fixed="left">
         <template slot-scope="scope">
           {{ (queryParams.p - 1) * queryParams.l + scope.$index + 1 }}
@@ -69,34 +70,34 @@
       </el-table-column>
       <el-table-column label="品类" prop="categoryName" align="center" width="120" fixed="left" />
       <el-table-column label="型号" prop="computerName" align="center" width="140" fixed="left" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="190" />
-      <el-table-column label="整机SN" prop="sn" align="center" width="190">
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" min-width="190" />
+      <el-table-column label="整机SN" prop="sn" align="center" min-width="190">
         <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
-      <el-table-column label="箱号" prop="boxNo" align="center" width="190">
+      <el-table-column label="箱号" prop="boxNo" align="center" min-width="190">
         <span slot-scope="scope" v-NoData="scope.row.boxNo"></span>
       </el-table-column>
-      <el-table-column label="销售订单号" prop="salesOrderNo" align="center" width="150">
+      <el-table-column label="销售订单号" prop="salesOrderNo" align="center" min-width="150">
         <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
       </el-table-column>
-      <el-table-column label="工单号" prop="orderCode" align="center" width="150">
+      <el-table-column label="工单号" prop="orderCode" align="center" min-width="150">
         <span slot-scope="scope" v-NoData="scope.row.orderCode"></span>
       </el-table-column>
-      <el-table-column label="测试环节" prop="processName" align="center" width="100" />
-      <el-table-column label="判断结果" prop="result" align="center" width="100">
+      <el-table-column label="测试环节" prop="processName" align="center" min-width="100" />
+      <el-table-column label="判断结果" prop="result" align="center" min-width="100">
         <span slot-scope="{ row }" :class="stsResultStyle(row.result)">
           {{ row.result }}
         </span>
       </el-table-column>
-      <el-table-column label="测试设备SN" prop="cpuId" align="center" width="120">
+      <el-table-column label="测试设备SN" prop="cpuId" align="center" min-width="120">
         <span slot-scope="{ row }" v-NoData="row.cpuId"></span>
       </el-table-column>
-      <el-table-column label="测试时长" prop="time" align="center" width="100">
+      <el-table-column label="测试时长" prop="time" align="center" min-width="100">
         <template slot-scope="{ row }">
           {{ formattedTime({ time: row.time, timeType: "ms" }) }}
         </template>
       </el-table-column>
-      <el-table-column label="测试时间" prop="testTime" align="center" width="150" sortable>
+      <el-table-column label="测试时间" prop="testTime" align="center" min-width="150" sortable>
         <template slot-scope="{ row }">
           {{ parseTime(row.testTime) }}
         </template>
@@ -256,6 +257,10 @@ export default {
       type: String,
       default: "",
     },
+    dialogMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -273,6 +278,8 @@ export default {
       loading: true,
       // 总条数
       total: 0,
+      dialogTableHeight: 400,
+      recordResizeObserver: null,
       dictList: [],
       brandList: [],
       testList: [],
@@ -529,6 +536,9 @@ export default {
     };
   },
   computed: {
+    recordTableHeight() {
+      return this.dialogMode ? this.dialogTableHeight : this.tableHeight();
+    },
     stsResultStyle() {
       return (stsResult) => {
         switch (stsResult) {
@@ -592,6 +602,25 @@ export default {
       this.testList = res.data;
     });
   },
+  mounted() {
+    if (!this.dialogMode) return;
+
+    window.addEventListener("resize", this.refreshRecordTableHeight);
+    this.$nextTick(() => {
+      this.initRecordResizeObserver();
+      this.refreshRecordTableHeight();
+      setTimeout(() => {
+        this.refreshRecordTableHeight();
+      }, 100);
+    });
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.refreshRecordTableHeight);
+    if (this.recordResizeObserver) {
+      this.recordResizeObserver.disconnect();
+      this.recordResizeObserver = null;
+    }
+  },
   methods: {
     /** 查询品牌列表 */
     getList() {
@@ -626,8 +655,59 @@ export default {
         // 只有当这是最新的请求时才关闭loading
         if (currentRequest === this.requestCounter) {
           this.loading = false;
+          this.refreshRecordTableHeight();
         }
       });
+    },
+    initRecordResizeObserver() {
+      if (!this.dialogMode || !window.ResizeObserver) return;
+
+      const dialogBody = this.$el.closest(".el-dialog__body");
+      const searchForm = this.$el.querySelector(".intelligent-search-form");
+
+      this.recordResizeObserver = new ResizeObserver(() => {
+        this.refreshRecordTableHeight();
+      });
+
+      [dialogBody, searchForm].forEach((element) => {
+        if (element) {
+          this.recordResizeObserver.observe(element);
+        }
+      });
+    },
+    refreshRecordTableHeight() {
+      if (!this.dialogMode) return;
+
+      this.$nextTick(() => {
+        const container = this.$refs.recordContainer;
+
+        if (!container) return;
+
+        const searchForm = container.querySelector(".intelligent-search-form");
+        const pagination = container.querySelector(".pagination-container");
+        const searchHeight = this.getElementOuterHeight(searchForm);
+        const paginationHeight =
+          pagination && pagination.offsetParent !== null ? this.getElementOuterHeight(pagination) : 0;
+        const gap = paginationHeight ? 6 : 0;
+        const tableHeight = container.clientHeight - searchHeight - paginationHeight - gap;
+
+        this.dialogTableHeight = Math.max(tableHeight, 300);
+
+        this.$nextTick(() => {
+          if (this.$refs.recordTable) {
+            this.$refs.recordTable.doLayout();
+          }
+        });
+      });
+    },
+    getElementOuterHeight(element) {
+      if (!element) return 0;
+
+      const style = window.getComputedStyle(element);
+      const marginTop = parseFloat(style.marginTop || 0);
+      const marginBottom = parseFloat(style.marginBottom || 0);
+
+      return element.offsetHeight + marginTop + marginBottom;
     },
     // 测试详情
     seeDetail(row) {
@@ -737,6 +817,23 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.dialog-record-container {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  ::v-deep .pagination-container {
+    flex: 0 0 42px;
+    height: 42px;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 6px 16px !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+
 .gas-config-box {
   /* height: 440px; */
   height: 240px;

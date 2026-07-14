@@ -65,6 +65,11 @@ export default {
     returnLabel: {
       type: Boolean,
       default: false
+    },
+    // 是否按显示文本排序
+    sortByLabel: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -180,10 +185,17 @@ export default {
         }).then((res) => {
           if (res.code === 200 && res.data) {
             const { list, total, pageNum, pageSize } = res.data;
+            const optionList = this.sortOptionsByLabel(list || []);
             if (more) {
-              this.componentData.data = [...this.componentData.data, ...list];
+              this.componentData.data = [
+                ...this.componentData.data,
+                ...optionList
+              ];
             } else {
-              this.componentData.data = list || [];
+              this.componentData.data = optionList;
+            }
+            if (this.sortByLabel) {
+              this.componentData.data = this.sortOptionsByLabel(this.componentData.data);
             }
             this.componentData.more = pageNum * pageSize < total;
             this.componentData.page = pageNum;
@@ -317,6 +329,19 @@ export default {
     // 处理值变化
     handleChange(value) {
       this.$emit('change', value);
+    },
+    sortOptionsByLabel(options) {
+      if (!this.sortByLabel) {
+        return options || [];
+      }
+      return [...(options || [])].sort((a, b) => {
+        const labelA = String(a?.[this.computedDictLabel] || '');
+        const labelB = String(b?.[this.computedDictLabel] || '');
+        return labelA.localeCompare(labelB, 'zh-CN', {
+          numeric: true,
+          sensitivity: 'base'
+        });
+      });
     }
   }
 };

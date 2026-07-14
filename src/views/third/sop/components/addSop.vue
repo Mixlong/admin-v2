@@ -32,6 +32,7 @@
                     <CategorySelect
                       v-model="form.categoryId"
                       :return-id="true"
+                      :sort-by-name="true"
                       placeholder="请选择产品品类"
                       clearable
                       style="width: 100%"

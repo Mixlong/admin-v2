@@ -63,24 +63,31 @@
       </el-table-column>
       <el-table-column label="品类" prop="categoryName" align="center" width="120" fixed="left" />
       <el-table-column label="型号" prop="computerName" align="center" width="180" fixed="left" />
-      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="200" />
-      <el-table-column label="整机SN" prop="sn" align="center" width="250">
-        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
-      </el-table-column>
       <el-table-column label="客户订单号" prop="customerOrderNo" align="center" width="140">
         <span slot-scope="scope" v-NoData="scope.row.customerOrderNo"></span>
       </el-table-column>
       <el-table-column label="迪太订单号" prop="salesOrderNo" align="center" width="140">
         <span slot-scope="scope" v-NoData="scope.row.salesOrderNo"></span>
       </el-table-column>
-      <el-table-column label="批次号" prop="batchNo" align="center" width="120">
-        <span slot-scope="scope" v-NoData="scope.row.batchNo"></span>
-      </el-table-column>
-      <el-table-column label="蓝牙地址" prop="mac" align="center" width="120">
-        <span slot-scope="scope" v-NoData="scope.row.mac"></span>
+      <el-table-column label="工单号" prop="orderCode" align="center" width="160">
+        <template slot-scope="{ row }">
+          <el-tooltip effect="dark" content="点击跳转物料追踪" placement="top" :disabled="Is_Empty(row.orderCode)">
+            <el-link type="primary" :underline="!Is_Empty(row.orderCode)" :disabled="Is_Empty(row.orderCode)" @click="
+              handleNameToPage('Parts', {
+                orderCode: row.orderCode,
+              })
+              ">
+              {{ Is_Empty(row.orderCode) ? "- - -" : row.orderCode }}
+            </el-link>
+          </el-tooltip>
+        </template>
       </el-table-column>
       <el-table-column label="生产地点" prop="factory" align="center" width="100">
         <span slot-scope="scope" v-NoData="scope.row.factory"></span>
+      </el-table-column>
+      <el-table-column label="PCBA SN" prop="pcbaSn" align="center" width="200" />
+      <el-table-column label="整机SN" prop="sn" align="center" width="250">
+        <span slot-scope="scope" v-NoData="scope.row.sn"></span>
       </el-table-column>
       <el-table-column label="箱号" prop="boxNo" align="center" width="260">
         <template slot-scope="{ row }">
@@ -99,21 +106,14 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="工单号" prop="orderCode" align="center" width="160">
-        <template slot-scope="{ row }">
-          <el-tooltip effect="dark" content="点击跳转物料追踪" placement="top" :disabled="Is_Empty(row.orderCode)">
-            <el-link type="primary" :underline="!Is_Empty(row.orderCode)" :disabled="Is_Empty(row.orderCode)" @click="
-              handleNameToPage('Parts', {
-                orderCode: row.orderCode,
-              })
-              ">
-              {{ Is_Empty(row.orderCode) ? "- - -" : row.orderCode }}
-            </el-link>
-          </el-tooltip>
-        </template>
-      </el-table-column>
       <el-table-column label="装箱时间" prop="packingTime" align="center" sortable width="140">
         <span slot-scope="{ row }" v-NoData="parseTime(row.packingTime)"></span>
+      </el-table-column>
+      <el-table-column label="批次号" prop="batchNo" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.batchNo"></span>
+      </el-table-column>
+      <el-table-column label="蓝牙地址" prop="mac" align="center" width="120">
+        <span slot-scope="scope" v-NoData="scope.row.mac"></span>
       </el-table-column>
       <el-table-column label="版本信息" align="center" width="90" fixed="right">
         <template slot-scope="scope">
@@ -174,7 +174,11 @@
       :sn="queryDialogParams.sn" />
     <el-dialog :visible.sync="stsTestResult" width="90%" append-to-body :title="stsTestResulTtitle" v-if="stsTestResult"
       class="dialog-scroll custom-dialog" :class="{ 'surface-board': stsTestResulTtitle === '通用仪表2' }">
-      <StsTestResult :sn="queryDialogParams.sn" :pcbaSn="queryDialogParams.pcbaSn" />
+      <StsTestResult
+        :sn="queryDialogParams.sn"
+        :pcbaSn="queryDialogParams.pcbaSn"
+        :dialog-mode="stsTestResulTtitle === '通用仪表2'"
+      />
     </el-dialog>
 
     <!-- 箱子列表对话框 -->
@@ -562,21 +566,14 @@ export default {
         batchNo: "",
       };
       this.handleQuery();
-    },     /**
-     * @descr     n: 鼠标移入表格显示小手帕
-          ram {*} row
-     * @pa     *} column
-     * @param {     wIndex
-     *      m {*} columnIndex
-     * @return {*}
-     */
-    cellClassName({ row, column, rowIndex, columnIndex }) {
-      const columnIndexData = [7];
+    },
+    /** 箱号列有数据时显示手型光标 */
+    cellClassName({ row, column }) {
       if (this.Is_Empty(row.boxNo)) {
         return;
       }
 
-      if (columnIndexData.includes(columnIndex)) {
+      if (column.property === "boxNo") {
         return "pointer";
       } else {
         return "";
@@ -983,6 +980,26 @@ export default {
 
   &.surface-board {
     ::v-deep {
+      .el-dialog {
+        height: calc(100vh - 4vh);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .el-dialog__body {
+        flex: 1;
+        max-height: none;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .app-container {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
 
       .el-form,
       .pagination-container {

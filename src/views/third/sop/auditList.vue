@@ -6,6 +6,7 @@
         <TypedSelectLoadMore
           v-model="queryParams.categoryId"
           type="category"
+          :sort-by-label="true"
           customStyle="width: 150px"
           size="mini"
         />
