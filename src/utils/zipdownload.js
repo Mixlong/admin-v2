@@ -1,12 +1,13 @@
 import axios from 'axios'
 import { getToken } from '@/utils/auth'
+import { resolveBaseUrl } from '@/utils/requestUrl'
 
 const mimeMap = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   zip: 'application/zip'
 }
 
-const baseUrl = process.env.VUE_APP_BASE_API
+const baseUrl = resolveBaseUrl(process.env.VUE_APP_BASE_API)
 export function downLoadZip(str, filename) {
   var url = baseUrl + str
   axios({

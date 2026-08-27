@@ -345,226 +345,491 @@
 
               <fieldset class="margin-top">
                 <legend class="text-green">仪表配置区</legend>
-                <el-row :gutter="10">
-                  <el-col :span="6">
-                    <el-form-item
-                      label="通讯方式"
-                      prop="instrumentModel.serialLevel"
-                      :rules="isCheckConfigItem({ message: '通讯方式' })"
-                    >
-                      <el-select
-                        v-model="form.instrumentModel.serialLevel"
-                        placeholder="请选择通讯方式"
-                        class="w100"
-                        clearable
-                        @change="clearRateOrType"
-                      >
-                        <el-option
-                          v-for="(item, index) in dicts_communication_type"
-                          :key="index"
-                          :label="item.dictLabel"
-                          :value="+item.dictValue"
+                <div class="cq-config-section">
+                  <div class="cq-config-card">
+                    <div class="cq-config-card__title">公共配置</div>
+                    <el-row :gutter="10">
+                      <el-col :span="6">
+                        <el-form-item
+                          label="通讯方式"
+                          prop="instrumentModel.serialLevel"
+                          :rules="isCheckConfigItem({ message: '通讯方式' })"
                         >
-                          <span style="float: left">
-                            <b>展示值：</b>
-                            {{ item.dictLabel }}
-                          </span>
-                          <span style="float: right">
-                            <b>实际值：</b>
-                            {{ item.dictValue }}
-                          </span>
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="6">
-                    <el-form-item
-                      label="串口波特率"
-                      prop="instrumentModel.baudRate"
-                      :rules="isCheckConfigItem({ message: '串口波特率' })"
-                    >
-                      <el-select
-                        v-model="form.instrumentModel.baudRate"
-                        placeholder="请选择串口波特率"
-                        class="w100"
-                        clearable
-                      >
-                        <el-option
-                          v-for="(value, key) in baudRateList"
-                          :label="value"
-                          :value="+value"
-                          :key="key"
-                        >
-                          <span style="float: left">
-                            <b>展示值：</b>
-                            {{ value }}
-                          </span>
-                          <span style="float: right">
-                            <b>实际值：</b>
-                            {{ value }}
-                          </span>
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="6">
-                    <el-form-item
-                      label="通讯协议"
-                      prop="instrumentModel.sysProtocol"
-                      :rules="isCheckConfigItem({ message: '通讯协议' })"
-                    >
-                      <el-select
-                        v-model="form.instrumentModel.sysProtocol"
-                        placeholder="请选择通讯协议"
-                        class="w100"
-                        clearable
-                      >
-                        <el-option
-                          v-for="item in sysProtocolList"
-                          :label="item.dictLabel"
-                          :value="+item.dictValue"
-                          :key="item.dictValue"
-                        >
-                          <span style="float: left">
-                            <b>展示值：</b>
-                            {{ item.dictLabel }}
-                          </span>
-                          <span style="float: right">
-                            <b>实际值：</b>
-                            {{ item.dictValue }}
-                          </span>
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                  <template v-if="form.instrumentModel.serialLevel === 2">
-                    <el-col :span="6">
-                      <el-form-item
-                        label="帧类型"
-                        prop="instrumentModel.msgType"
-                        :rules="isCheckConfigItem({ message: '帧类型' })"
-                      >
-                        <el-select
-                          v-model.number="form.instrumentModel.msgType"
-                          filterable
-                          clearable
-                          placeholder="请选择帧类型"
-                          class="w100"
-                        >
-                          <el-option
-                            v-for="item in [
-                              { dictLabel: '标准帧', dictValue: 0 },
-                              { dictLabel: '扩展帧', dictValue: 1 },
-                            ]"
-                            :label="item.dictLabel"
-                            :value="item.dictValue"
-                            :key="item.dictValue"
+                          <el-select
+                            v-model="form.instrumentModel.serialLevel"
+                            placeholder="请选择通讯方式"
+                            class="w100"
+                            clearable
+                            @change="handleCqCommTypeChange"
                           >
-                            <span style="float: left">
-                              <b>展示值：</b>
-                              {{ item.dictLabel }}
-                            </span>
-                            <span style="float: right">
-                              <b>实际值：</b>
-                              {{ item.dictValue }}
-                            </span>
-                          </el-option>
-                        </el-select>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                      <el-form-item
-                        label="CAN波特率"
-                        prop="instrumentModel.canRate"
-                        :rules="isCheckConfigItem({ message: 'CAN波特率' })"
-                      >
-                        <el-select
-                          v-model="form.instrumentModel.canRate"
-                          placeholder="请选择CAN波特率"
-                          class="w100"
-                          clearable
+                            <el-option
+                              v-for="item in cqCommTypeOptions"
+                              :key="`comm-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6">
+                        <el-form-item
+                          label="供电电压"
+                          prop="instrumentModel.cqPowerVoltage"
+                          :rules="isCheckConfigItem({ message: '供电电压' })"
                         >
-                          <el-option
-                            v-for="(value, key) in canRateList"
-                            :key="key"
-                            :label="value"
-                            :value="+key"
+                          <el-select
+                            v-model="form.instrumentModel.cqPowerVoltage"
+                            placeholder="请选择供电电压"
+                            class="w100"
+                            clearable
                           >
-                            <span style="float: left">
-                              <b>展示值：</b>
-                              {{ value }}
-                            </span>
-                            <span style="float: right">
-                              <b>实际值：</b>
-                              {{ key }}
-                            </span>
-                          </el-option>
-                        </el-select>
-                      </el-form-item>
-                    </el-col>
-                  </template>
-                  <el-col :span="6">
-                    <el-form-item
-                      label="标签规则"
-                      prop="instrumentModel.labelRule"
-                    >
-                      <el-select
-                        v-model="form.instrumentModel.labelRule"
-                        clearable
-                        @change="handleLabelRule"
-                        class="w100"
-                      >
-                        <el-option label="通用" :value="1"></el-option>
-                        <el-option label="图片" :value="2"></el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-
-                  <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
-                    <el-form-item
-                      label="标签图片"
-                      prop="instrumentModel.labelRuleImg"
-                      :rules="isCheckConfigItem({ message: '标签图片' })"
-                    >
-                      <el-upload-sortable
-                        v-model="form.instrumentModel.labelRuleImg"
-                        :imgW="80"
-                        :imgH="80"
-                        :isLimit="1"
-                        :max="1"
-                      />
-                    </el-form-item>
-                  </el-col>
-
-                  <el-col>
-                    <el-form-item
-                      label="包装信息"
-                      prop="instrumentModel.packagingInfo"
-                    >
-                      <div
-                        style="display: flex; align-items: center; gap: 10px"
-                      >
-                        <el-button
-                          type="primary"
-                          size="small"
-                          @click="openPackagingInfoEdit"
+                            <el-option
+                              v-for="item in cqPowerVoltageOptions"
+                              :key="`power-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6">
+                        <el-form-item
+                          label="VLK5V开关"
+                          prop="instrumentModel.cqVlk5vSwitch"
+                          :rules="isCheckConfigItem({ message: 'VLK5V开关' })"
                         >
-                          编辑包装信息
-                        </el-button>
-                        <el-tag
-                          v-if="hasPackagingInfo"
-                          type="success"
-                          size="small"
+                          <el-select
+                            v-model="form.instrumentModel.cqVlk5vSwitch"
+                            placeholder="请选择VLK5V开关"
+                            class="w100"
+                            clearable
+                            disabled
+                          >
+                            <el-option
+                              v-for="item in cqVlk5vOptions"
+                              :key="`vlk-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6">
+                        <el-form-item
+                          label="升级协议类型"
+                          prop="instrumentModel.cqUpgradeProtocolType"
+                          :rules="isCheckConfigItem({ message: '升级协议类型' })"
                         >
-                          已配置
-                        </el-tag>
-                        <el-tag v-else type="info" size="small">
-                          未配置
-                        </el-tag>
-                      </div>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
+                          <el-select
+                            v-model="form.instrumentModel.cqUpgradeProtocolType"
+                            placeholder="请选择升级协议类型"
+                            class="w100"
+                            clearable
+                          >
+                            <el-option
+                              v-for="item in cqProtocolTypeOptions"
+                              :key="`protocol-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6">
+                        <el-form-item
+                          label="烧录文件类型"
+                          prop="instrumentModel.cqBurnFileType"
+                          :rules="isCheckConfigItem({ message: '烧录文件类型' })"
+                        >
+                          <el-select
+                            v-model="form.instrumentModel.cqBurnFileType"
+                            placeholder="请选择烧录文件类型"
+                            class="w100"
+                            clearable
+                            disabled
+                            @change="handleBurnFileTypeChange"
+                          >
+                            <el-option
+                              v-for="item in cqBurnFileTypeOptions"
+                              :key="`burn-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6" v-if="isCqCanType">
+                        <el-form-item
+                          label="帧ID"
+                          prop="instrumentModel.cqFrameId"
+                          :rules="
+                            isCqCanType
+                              ? isCheckConfigItem({ message: '帧ID' })
+                              : []
+                          "
+                        >
+                          <el-select
+                            v-model="form.instrumentModel.cqFrameId"
+                            placeholder="请选择帧ID"
+                            class="w100"
+                            clearable
+                            @change="handleCqFrameIdChange"
+                          >
+                            <el-option
+                              v-for="item in cqFrameIdOptions"
+                              :key="`frame-id-${item.value}`"
+                              :label="item.label"
+                              :value="item.value"
+                            >
+                              <span style="float: left">
+                                <b>展示值：</b>
+                                {{ item.label }}
+                              </span>
+                              <span style="float: right">
+                                <b>实际值：</b>
+                                {{ item.value }}
+                              </span>
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="6" v-if="shouldShowCustomFrameIdInput">
+                        <el-form-item
+                          label="自定义帧ID"
+                          prop="instrumentModel.cqCustomFrameId"
+                          :rules="customFrameIdRules"
+                        >
+                        <el-input
+                          v-model.trim="form.instrumentModel.cqCustomFrameId"
+                          placeholder="请输入十六进制帧ID"
+                          clearable
+                          @input="normalizeCustomFrameId"
+                        />
+                        </el-form-item>
+                      </el-col>
+                    </el-row>
+                  </div>
+
+                  <div
+                    class="cq-config-version-row"
+                    v-if="
+                      form.instrumentModel.serialLevel !== null &&
+                      form.instrumentModel.serialLevel !== undefined &&
+                      form.instrumentModel.serialLevel !== ''
+                    "
+                  >
+                    <div class="cq-config-card cq-config-card--half">
+                      <div class="cq-config-card__title">BOOT配置</div>
+                      <el-row :gutter="10">
+                        <el-col :span="12">
+                          <el-form-item
+                            :label="isCqCanType ? '波特率' : '串口波特率'"
+                            :prop="
+                              isCqCanType
+                                ? 'instrumentModel.bootCanRate'
+                                : 'instrumentModel.bootBaudRate'
+                            "
+                            :rules="
+                              isCheckConfigItem({
+                                message: isCqCanType
+                                  ? 'BOOT波特率'
+                                  : 'BOOT串口波特率',
+                              })
+                            "
+                          >
+                            <el-select
+                              v-if="isCqCanType"
+                              v-model="form.instrumentModel.bootCanRate"
+                              placeholder="请选择BOOT波特率"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqBootBaudOptions"
+                                :key="`boot-baud-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                            <el-select
+                              v-else
+                              v-model="form.instrumentModel.bootBaudRate"
+                              placeholder="请选择BOOT串口波特率"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqBaudOptions"
+                                :key="`boot-uart-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="12" v-if="isCqCanType">
+                          <el-form-item
+                            label="帧类型"
+                            prop="instrumentModel.bootMsgType"
+                            :rules="isCheckConfigItem({ message: 'BOOT帧类型' })"
+                          >
+                            <el-select
+                              v-model.number="form.instrumentModel.bootMsgType"
+                              placeholder="请选择BOOT帧类型"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqBootFrameTypeOptions"
+                                :key="`boot-frame-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                    </div>
+
+                    <div class="cq-config-card cq-config-card--half">
+                      <div class="cq-config-card__title">APP配置</div>
+                      <el-row :gutter="10">
+                        <el-col :span="12">
+                          <el-form-item
+                            :label="isCqCanType ? '波特率' : '串口波特率'"
+                            :prop="
+                              isCqCanType
+                                ? 'instrumentModel.canRate'
+                                : 'instrumentModel.baudRate'
+                            "
+                            :rules="
+                              isCheckConfigItem({
+                                message: isCqCanType
+                                  ? 'APP波特率'
+                                  : 'APP串口波特率',
+                              })
+                            "
+                          >
+                            <el-select
+                              v-if="isCqCanType"
+                              v-model="form.instrumentModel.canRate"
+                              placeholder="请选择APP波特率"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqAppBaudOptions"
+                                :key="`app-baud-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                            <el-select
+                              v-else
+                              v-model="form.instrumentModel.baudRate"
+                              placeholder="请选择APP串口波特率"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqBaudOptions"
+                                :key="`app-uart-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="12" v-if="isCqCanType">
+                          <el-form-item
+                            label="帧类型"
+                            prop="instrumentModel.msgType"
+                            :rules="isCheckConfigItem({ message: 'APP帧类型' })"
+                          >
+                            <el-select
+                              v-model.number="form.instrumentModel.msgType"
+                              placeholder="请选择APP帧类型"
+                              class="w100"
+                              clearable
+                            >
+                              <el-option
+                                v-for="item in cqAppFrameTypeOptions"
+                                :key="`app-frame-${item.value}`"
+                                :label="item.label"
+                                :value="item.value"
+                              >
+                                <span style="float: left">
+                                  <b>展示值：</b>
+                                  {{ item.label }}
+                                </span>
+                                <span style="float: right">
+                                  <b>实际值：</b>
+                                  {{ item.value }}
+                                </span>
+                              </el-option>
+                            </el-select>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+
+                  <div class="cq-config-card cq-config-card--compact">
+                    <el-row :gutter="10">
+                      <el-col :span="6">
+                        <el-form-item
+                          label="标签规则"
+                          prop="instrumentModel.labelRule"
+                        >
+                          <el-select
+                            v-model="form.instrumentModel.labelRule"
+                            clearable
+                            @change="handleLabelRule"
+                            class="w100"
+                          >
+                            <el-option label="通用" :value="1"></el-option>
+                            <el-option label="图片" :value="2"></el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+
+                      <el-col :span="6" v-if="form.instrumentModel.labelRule === 2">
+                        <el-form-item
+                          label="标签图片"
+                          prop="instrumentModel.labelRuleImg"
+                          :rules="isCheckConfigItem({ message: '标签图片' })"
+                        >
+                          <el-upload-sortable
+                            v-model="form.instrumentModel.labelRuleImg"
+                            :imgW="80"
+                            :imgH="80"
+                            :isLimit="1"
+                            :max="1"
+                          />
+                        </el-form-item>
+                      </el-col>
+
+                      <el-col :span="12">
+                        <el-form-item
+                          label="包装信息"
+                          prop="instrumentModel.packagingInfo"
+                        >
+                          <div
+                            style="display: flex; align-items: center; gap: 10px"
+                          >
+                            <el-button
+                              type="primary"
+                              size="small"
+                              @click="openPackagingInfoEdit"
+                            >
+                              编辑包装信息
+                            </el-button>
+                            <el-tag
+                              v-if="hasPackagingInfo"
+                              type="success"
+                              size="small"
+                            >
+                              已配置
+                            </el-tag>
+                            <el-tag v-else type="info" size="small">
+                              未配置
+                            </el-tag>
+                          </div>
+                        </el-form-item>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </div>
               </fieldset>
               <template>
                 <fieldset class="margin-top">
@@ -2048,6 +2313,19 @@ export default {
         callback();
       }
     };
+
+    const validateCustomFrameId = (rule, value, callback) => {
+      if (this.form.instrumentModel.cqFrameId !== 2) {
+        callback();
+      } else if (this.Is_Empty(value)) {
+        callback(new Error("自定义帧ID不能为空"));
+      } else if (!/^[0-9A-F]+$/i.test(String(value))) {
+        callback(new Error("请输入十六进制帧ID"));
+      } else {
+        callback();
+      }
+    };
+
     return {
       isSubmitLoading: false,
       isCopyProduct: false,
@@ -2067,6 +2345,16 @@ export default {
         name: null,
         instrumentModel: {
           relatedModelIdList: [],
+          bootBaudRate: null,
+          bootMsgType: null,
+          bootCanRate: null,
+          cqPowerVoltage: null,
+          cqVlk5vSwitch: 0,
+          cqUpgradeProtocolType: null,
+          cqBurnFileType: 0,
+          fileFormat: 0,
+          cqFrameId: null,
+          cqCustomFrameId: '',
         },
       },
       // 原始表单数据，用于比较字段变化
@@ -2076,12 +2364,47 @@ export default {
       // 包装信息编辑弹窗
       packagingInfoEditVisible: false,
       currentPackagingInfo: null,
+      cqDictMap: {},
       serialLevelLogData: {
         0: "3.3V",
         1: "5V",
       },
       // 表单校验
       formRules: {
+        "instrumentModel.cqCustomFrameId": [
+          {
+            validator: validateCustomFrameId,
+            trigger: ["blur", "change"],
+          },
+        ],
+        "instrumentModel.bootCanRate": [
+          {
+            required: true,
+            message: "BOOT CAN波特率不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.bootMsgType": [
+          {
+            required: true,
+            message: "BOOT帧类型不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.canRate": [
+          {
+            required: true,
+            message: "APP CAN波特率不能为空",
+            trigger: "change",
+          },
+        ],
+        "instrumentModel.msgType": [
+          {
+            required: true,
+            message: "APP帧类型不能为空",
+            trigger: "change",
+          },
+        ],
         "instrumentModel.backlightBrightness": [
           {
             required: true,
@@ -2159,6 +2482,119 @@ export default {
         return { required, message: `${message}不能为空`, trigger };
       };
     },
+    isCqCanType() {
+      return Number(this.form.instrumentModel?.serialLevel) === 2;
+    },
+    shouldShowCustomFrameIdInput() {
+      return this.isCqCanType && Number(this.form.instrumentModel?.cqFrameId) === 2;
+    },
+    customFrameIdRules() {
+      return [
+        {
+          validator: (_, value, callback) => {
+            if (!this.shouldShowCustomFrameIdInput) {
+              callback();
+            } else if (this.Is_Empty(value)) {
+              callback(new Error("自定义帧ID不能为空"));
+            } else if (!/^[0-9A-F]+$/i.test(String(value))) {
+              callback(new Error("请输入十六进制帧ID"));
+            } else {
+              callback();
+            }
+          },
+          trigger: ["blur", "change"],
+        },
+      ];
+    },
+    cqCommTypeOptions() {
+      return this.getCqOptionsByValue(1);
+    },
+    cqBaudOptions() {
+      return this.getCqOptionsByValue(2, 'uart');
+    },
+    cqBootBaudOptions() {
+      return this.filterCqOptionsByBurnFileType(
+        this.getCqOptionsByValue(2, 'can'),
+        'boot'
+      );
+    },
+    cqAppBaudOptions() {
+      return this.filterCqOptionsByBurnFileType(
+        this.getCqOptionsByValue(2, 'can'),
+        'app'
+      );
+    },
+    cqBootFrameTypeOptions() {
+      return this.filterCqOptionsByBurnFileType(
+        this.getCqOptionsByValue(3, 'can'),
+        'boot'
+      );
+    },
+    cqAppFrameTypeOptions() {
+      return this.filterCqOptionsByBurnFileType(
+        this.getCqOptionsByValue(3, 'can'),
+        'app'
+      );
+    },
+    cqPowerVoltageOptions() {
+      return this.getCqOptionsByValue(4);
+    },
+    cqVlk5vOptions() {
+      return this.getCqOptionsByValue(5);
+    },
+    cqProtocolTypeOptions() {
+      return this.getCqOptionsByValue(6);
+    },
+    cqBurnFileTypeOptions() {
+      return this.getCqOptionsByValue(7);
+    },
+    cqFrameIdOptions() {
+      return this.getCqOptionsByValue(8);
+    },
+    cqBurnFileTypeLabel() {
+      const currentValue = Number(this.form.instrumentModel?.cqBurnFileType);
+      const matched = this.cqBurnFileTypeOptions.find(
+        (item) => Number(item.value) === currentValue
+      );
+      return matched ? matched.label : "";
+    },
+    cqConfigCode() {
+      const model = this.form.instrumentModel || {};
+      const selectedCanBaudCode = this.getSelectedCanBaudCode();
+      const frameTypeValue = this.isCqCanType
+        ? this.getSelectedCanFrameType()
+        : 0;
+      const frameIdValue = this.isCqCanType
+        ? model.cqFrameId
+        : 0;
+      const fields = [
+        model.serialLevel,
+        this.isCqCanType ? selectedCanBaudCode : model.baudRate,
+        frameTypeValue,
+        model.cqPowerVoltage,
+        model.cqVlk5vSwitch,
+        model.cqUpgradeProtocolType,
+        model.cqBurnFileType,
+        frameIdValue,
+      ];
+      const hasEmpty = fields.some((item) => this.Is_Empty(item) && item !== 0);
+
+      if (hasEmpty) {
+        return "";
+      }
+
+      const baseCode = `CQ${fields.map((item) => String(item)).join("")}`;
+      if (!this.isCqCanType || Number(model.cqFrameId) !== 2) {
+        return baseCode;
+      }
+
+      const customFrameId = String(model.cqCustomFrameId || "")
+        .trim()
+        .toUpperCase();
+      return customFrameId
+        ? `${baseCode}-${customFrameId}-${customFrameId}`
+        : `${baseCode}-`;
+    },
     // 判断是否已配置包装信息
     hasPackagingInfo() {
       const packagingInfo = this.form.instrumentModel?.packagingInfo;
@@ -2206,6 +2642,8 @@ export default {
         ) {
           this.$set(this.form.instrumentModel, "relatedModelIdList", []);
         }
+        this.ensureCqFields(this.form.instrumentModel);
+        this.applyFixedCqDefaults(this.form.instrumentModel);
         this.getList();
       }
     },
@@ -2287,8 +2725,369 @@ export default {
     this.echoWheelDiameter();
     this.getOptions();
     this.getPersonLiableList();
+    this.ensureCqFields();
+    this.applyFixedCqDefaults();
   },
   methods: {
+    getDefaultCqDictMap() {
+      return {
+        1: [
+          { label: "3.3V 串口", value: 0 },
+          { label: "5V 串口", value: 1 },
+          { label: "CAN", value: 2 },
+        ],
+        2: [
+          { label: "1200", value: 1, type: "uart" },
+          { label: "2400", value: 2, type: "uart" },
+          { label: "4800", value: 3, type: "uart" },
+          { label: "9600", value: 4, type: "uart" },
+          { label: "14400", value: 5, type: "uart" },
+          { label: "19200", value: 6, type: "uart" },
+          { label: "38400", value: 7, type: "uart" },
+          { label: "43000", value: 8, type: "uart" },
+          { label: "57600", value: 9, type: "uart" },
+          { label: "76800", value: 10, type: "uart" },
+          { label: "115200", value: 11, type: "uart" },
+          { label: "128000", value: 12, type: "uart" },
+          { label: "100k", value: 1, type: "can" },
+          { label: "125k", value: 2, type: "can" },
+          { label: "150k", value: 3, type: "can" },
+          { label: "200k", value: 4, type: "can" },
+          { label: "250k", value: 5, type: "can" },
+          { label: "300k", value: 6, type: "can" },
+          { label: "400k", value: 7, type: "can" },
+          { label: "500k", value: 8, type: "can" },
+          { label: "600k", value: 9, type: "can" },
+          { label: "900k", value: 10, type: "can" },
+        ],
+        3: [
+          { label: "串口默认", value: 0, type: "uart" },
+          { label: "标准帧", value: 1, type: "can" },
+          { label: "扩展帧", value: 2, type: "can" },
+        ],
+        4: [
+          { label: "12V", value: 0 },
+          { label: "24V", value: 1 },
+        ],
+        5: [
+          { label: "关闭", value: 0 },
+          { label: "打开", value: 1 },
+        ],
+        6: [
+          { label: "通用彩屏", value: 1 },
+          { label: "通用段码屏", value: 2 },
+          { label: "高标", value: 3 },
+          { label: "华芯微特", value: 4 },
+          { label: "开阳", value: 5 },
+          { label: "LIME", value: 6 },
+          { label: "SPARROW", value: 7 },
+          { label: "美的", value: 8 },
+          { label: "IOT", value: 9 },
+          { label: "K71U", value: 10 },
+        ],
+        7: [
+          { label: "BOOT", value: 0 },
+          { label: "APP", value: 1 },
+          { label: "UI", value: 2 },
+          { label: "配置文件", value: 3 },
+        ],
+        8: [
+          { label: "默认帧ID", value: 1 },
+          { label: "自定义帧ID", value: 2 },
+        ],
+      };
+    },
+    normalizeCqOptions(options = []) {
+      if (!Array.isArray(options)) {
+        return [];
+      }
+
+      return options
+        .filter((item) => item && item.label !== undefined && item.value !== undefined)
+        .map((item) => ({
+          label: String(item.label),
+          value: Number(item.value),
+          type: item.type || undefined,
+        }));
+    },
+    parseCqDictMap(dictRows = []) {
+      const nextMap = { ...this.getDefaultCqDictMap() };
+
+      (dictRows || []).forEach((item) => {
+        const position = Number(item.dictValue);
+        if (!position || position < 1 || position > 8) {
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(item.remark || "[]");
+          const options = this.normalizeCqOptions(parsed);
+          if (options.length > 0) {
+            nextMap[position] = options;
+          }
+        } catch (error) {
+          console.warn("CQ字典remark解析失败:", item, error);
+        }
+      });
+
+      this.cqDictMap = nextMap;
+    },
+    loadCqDictConfig() {
+      this.cqDictMap = this.getDefaultCqDictMap();
+      this.getDicts("dt_upgrade_cq_config")
+        .then((res) => {
+          this.parseCqDictMap(res.data || []);
+        })
+        .catch((error) => {
+          console.warn("加载CQ字典失败，已使用前端默认配置:", error);
+        });
+    },
+    getCqOptionsByValue(dictValue, type) {
+      const options = this.cqDictMap[dictValue] || [];
+      if (!type) {
+        return options;
+      }
+      return options.filter((item) => item.type === type);
+    },
+    getCqOptionByValue(dictValue, optionValue, type) {
+      return this.getCqOptionsByValue(dictValue, type).find(
+        (item) => Number(item.value) === Number(optionValue)
+      );
+    },
+    normalizeBurnFileTypeKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase();
+    },
+    getCurrentBurnFileTypeKeys() {
+      return this.getBurnFileTypeKeys();
+    },
+    getBurnFileTypeKeys(version) {
+      const model = this.form.instrumentModel || {};
+      const keys = [];
+      const currentValue = Number(model.cqBurnFileType);
+      const matched = this.getCqOptionByValue(7, currentValue);
+
+      if (version === 'boot') {
+        keys.push('0', 'boot');
+        return keys;
+      }
+      if (version === 'app') {
+        keys.push('1', 'app');
+        return keys;
+      }
+
+      if (!this.Is_Empty(currentValue) || currentValue === 0) {
+        keys.push(String(currentValue));
+      }
+      if (matched && matched.label) {
+        keys.push(this.normalizeBurnFileTypeKey(matched.label));
+      }
+
+      return keys.filter(Boolean);
+    },
+    filterCqOptionsByBurnFileType(options = [], version) {
+      if (!this.isCqCanType) {
+        return options;
+      }
+
+      const burnKeys = this.getBurnFileTypeKeys(version);
+      if (burnKeys.length === 0) {
+        return options;
+      }
+
+      const filtered = options.filter((item) => {
+        const rawKey =
+          item.fileType !== undefined
+            ? item.fileType
+            : item.burnFileType !== undefined
+              ? item.burnFileType
+              : item.version;
+
+        if (rawKey === undefined || rawKey === null || rawKey === '') {
+          return true;
+        }
+
+        return burnKeys.includes(this.normalizeBurnFileTypeKey(rawKey));
+      });
+
+      return filtered.length > 0 ? filtered : options;
+    },
+    getSelectedCanVersion() {
+      const burnKeys = this.getBurnFileTypeKeys();
+      return burnKeys.includes('0') || burnKeys.includes('boot') ? 'boot' : 'app';
+    },
+    getSelectedCanBaudCode() {
+      return this.getSelectedCanVersion() === 'boot'
+        ? this.form.instrumentModel.bootCanRate
+        : this.form.instrumentModel.canRate;
+    },
+    getSelectedCanFrameType() {
+      return this.getSelectedCanVersion() === 'boot'
+        ? this.form.instrumentModel.bootMsgType
+        : this.form.instrumentModel.msgType;
+    },
+    ensureCqFields(model = this.form.instrumentModel) {
+      if (!model) {
+        return;
+      }
+
+      const defaults = {
+        bootBaudRate: null,
+        bootMsgType: null,
+        bootCanRate: null,
+        cqPowerVoltage: null,
+        cqVlk5vSwitch: 0,
+        cqUpgradeProtocolType: null,
+        cqBurnFileType: 0,
+        fileFormat: 0,
+        cqFrameId: null,
+        cqCustomFrameId: '',
+      };
+
+      Object.keys(defaults).forEach((key) => {
+        if (
+          !Object.prototype.hasOwnProperty.call(model, key) ||
+          model[key] === undefined ||
+          model[key] === null
+        ) {
+          this.$set(model, key, defaults[key]);
+        }
+      });
+    },
+    getFirstOptionValue(list = []) {
+      return list.length > 0 ? list[0].value : null;
+    },
+    getDefaultBootFrameType() {
+      const standardOption = this.cqBootFrameTypeOptions.find(
+        (item) => item.label === '标准帧'
+      );
+      return standardOption
+        ? standardOption.value
+        : this.getFirstOptionValue(this.cqBootFrameTypeOptions);
+    },
+    getDefaultAppFrameType() {
+      const extendedOption = this.cqAppFrameTypeOptions.find(
+        (item) => item.label === '扩展帧'
+      );
+      return extendedOption
+        ? extendedOption.value
+        : this.getFirstOptionValue(this.cqAppFrameTypeOptions);
+    },
+    applyFixedCqDefaults(model = this.form.instrumentModel) {
+      if (!model) {
+        return;
+      }
+
+      model.cqVlk5vSwitch = 0;
+      model.cqBurnFileType = 0;
+      model.fileFormat = 0;
+    },
+    syncCqFieldsFromLegacy(model = this.form.instrumentModel) {
+      this.ensureCqFields(model);
+      if (!model) {
+        return;
+      }
+      this.applyFixedCqDefaults(model);
+
+      if (Number(model.serialLevel) !== 2) {
+        model.msgType = 0;
+        model.cqFrameId = 0;
+        model.cqCustomFrameId = '';
+      }
+
+      if (Number(model.serialLevel) === 2) {
+        if (this.Is_Empty(model.bootCanRate) && model.bootCanRate !== 0) {
+          model.bootCanRate = model.canRate;
+        }
+        if (this.Is_Empty(model.bootMsgType) && model.bootMsgType !== 0) {
+          model.bootMsgType = this.getDefaultBootFrameType();
+        }
+        if (this.Is_Empty(model.msgType) && model.msgType !== 0) {
+          model.msgType = this.getDefaultAppFrameType();
+        }
+      } else {
+        if (this.Is_Empty(model.bootBaudRate) && model.bootBaudRate !== 0) {
+          model.bootBaudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        }
+        if (this.Is_Empty(model.baudRate) && model.baudRate !== 0) {
+          model.baudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        }
+      }
+    },
+    syncLegacyFieldsFromCq(model = this.form.instrumentModel) {
+      this.ensureCqFields(model);
+      if (!model) {
+        return;
+      }
+      this.applyFixedCqDefaults(model);
+
+      if (Number(model.serialLevel) === 2) {
+        if (this.Is_Empty(model.bootCanRate) && model.bootCanRate !== 0) {
+          model.bootCanRate = this.getFirstOptionValue(this.cqBootBaudOptions);
+        }
+        if (this.Is_Empty(model.canRate) && model.canRate !== 0) {
+          model.canRate = this.getFirstOptionValue(this.cqAppBaudOptions);
+        }
+        if (this.Is_Empty(model.bootMsgType) && model.bootMsgType !== 0) {
+          model.bootMsgType = this.getDefaultBootFrameType();
+        }
+        if (this.Is_Empty(model.msgType) && model.msgType !== 0) {
+          model.msgType = this.getDefaultAppFrameType();
+        }
+      } else {
+        model.canRate = null;
+        if (this.Is_Empty(model.bootBaudRate) && model.bootBaudRate !== 0) {
+          model.bootBaudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        }
+        if (this.Is_Empty(model.baudRate) && model.baudRate !== 0) {
+          model.baudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        }
+        model.msgType = 0;
+        model.cqFrameId = 0;
+        model.cqCustomFrameId = '';
+      }
+    },
+    handleCqCommTypeChange(type) {
+      this.applyFixedCqDefaults(this.form.instrumentModel);
+      if (Number(type) === 2) {
+        this.form.instrumentModel.bootCanRate = this.getFirstOptionValue(
+          this.cqBootBaudOptions
+        );
+        this.form.instrumentModel.bootMsgType = this.getDefaultBootFrameType();
+        this.form.instrumentModel.canRate = this.getFirstOptionValue(
+          this.cqAppBaudOptions
+        );
+        this.form.instrumentModel.msgType = this.getDefaultAppFrameType();
+        this.form.instrumentModel.cqFrameId = this.getFirstOptionValue(this.cqFrameIdOptions);
+      } else {
+        this.form.instrumentModel.bootBaudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        this.form.instrumentModel.baudRate = this.getFirstOptionValue(this.cqBaudOptions);
+        this.form.instrumentModel.msgType = 0;
+        this.form.instrumentModel.cqFrameId = 0;
+        this.form.instrumentModel.cqCustomFrameId = '';
+      }
+
+      this.syncLegacyFieldsFromCq();
+    },
+    handleBurnFileTypeChange() {
+      if (!this.isCqCanType) {
+        return;
+      }
+      this.applyFixedCqDefaults(this.form.instrumentModel);
+      this.syncLegacyFieldsFromCq();
+    },
+    handleCqFrameIdChange(value) {
+      if (Number(value) !== 2) {
+        this.form.instrumentModel.cqCustomFrameId = '';
+      }
+      this.clearValidateItem("form", "instrumentModel.cqCustomFrameId");
+    },
+    normalizeCustomFrameId(value) {
+      this.form.instrumentModel.cqCustomFrameId = String(value || "")
+        .toUpperCase()
+        .replace(/[^0-9A-F]/g, "");
+    },
     getList() {
       typeCategory().then((res) => {
         this.modelList = res.data;
@@ -2505,6 +3304,7 @@ export default {
       this.getDicts("sys_protocol").then((res) => {
         this.sysProtocolList = res.data;
       });
+      this.loadCqDictConfig();
     },
     //查看同配详情
     getDetail(row) {
@@ -2634,6 +3434,7 @@ export default {
             val.instrumentModel.relatedModelIdList = [];
           }
           this.$set(this, "form", val);
+          this.syncCqFieldsFromLegacy(this.form.instrumentModel);
 
           // 先加载关联型号列表选项
           this.loadBistOptions().then(() => {
@@ -2834,9 +3635,19 @@ export default {
           keyLineType: null,
           keyLineLen: null,
           customerName: null,
+          bootBaudRate: null,
+          bootMsgType: null,
+          bootCanRate: null,
+          cqPowerVoltage: null,
+          cqVlk5vSwitch: 0,
+          cqUpgradeProtocolType: null,
+          cqBurnFileType: 0,
+          fileFormat: 0,
+          cqFrameId: null,
+          cqCustomFrameId: '',
           serialLevel: null,
           serialLevelLog: 1,
-          msgType: 1,
+          msgType: 2,
           canRate: 4,
           baudRate: null,
           topGear: null,
@@ -2899,6 +3710,7 @@ export default {
           sysProtocol: null,
         },
       };
+      this.ensureCqFields(this.form.instrumentModel);
     },
     handleFleetnessAdd() {
       this.open = true;
@@ -2976,6 +3788,7 @@ export default {
           }
 
           this.form = copyData;
+          this.syncCqFieldsFromLegacy(this.form.instrumentModel);
         } else {
           // 新增拷贝
           // 确保 instrumentModel.relatedModelIdList 存在
@@ -2986,6 +3799,7 @@ export default {
             data.instrumentModel.relatedModelIdList = [];
           }
           this.form = Object.assign({}, data);
+          this.syncCqFieldsFromLegacy(this.form.instrumentModel);
         }
       } catch (error) {
         this.msgError("操作失败");
@@ -3093,6 +3907,9 @@ export default {
     submitForm(forName) {
       this.$refs[forName].validate((valid) => {
         if (valid) {
+          this.applyFixedCqDefaults(this.form.instrumentModel);
+          this.syncLegacyFieldsFromCq();
+
           if (!this.isEditCopy) {
             this.isSubmitLoading = true;
           }
@@ -3439,7 +4256,6 @@ export default {
     ElUploadSortable,
     tinymce,
     PackagingInfoEdit,
-    MyUpload,
   },
 };
 </script>
@@ -3485,6 +4301,45 @@ export default {
     max-height: 80vh;
     overflow: hidden;
     overflow-y: auto;
+  }
+}
+
+.cq-config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cq-config-version-row {
+  display: flex;
+  gap: 12px;
+}
+
+.cq-config-card {
+  padding: 14px 16px 4px;
+  border: 1px solid #e8edf5;
+  border-radius: 8px;
+  background: #fafcff;
+}
+
+.cq-config-card--half {
+  flex: 1;
+}
+
+.cq-config-card--compact {
+  background: #fff;
+}
+
+.cq-config-card__title {
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3a4a66;
+}
+
+@media (max-width: 1200px) {
+  .cq-config-version-row {
+    flex-direction: column;
   }
 }
 

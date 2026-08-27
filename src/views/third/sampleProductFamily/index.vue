@@ -165,7 +165,16 @@ export default {
     },
     // 页面初次带参 或 初次打开当前页面
     handleFirstLink() {
-      const { categoryId, computerId } = this.$route.params;
+      const {
+        categoryId: paramsCategoryId,
+        computerId: paramsComputerId,
+      } = this.$route.params || {};
+      const {
+        categoryId: queryCategoryId,
+        computerId: queryComputerId,
+      } = this.$route.query || {};
+      const categoryId = queryCategoryId || paramsCategoryId;
+      const computerId = queryComputerId || paramsComputerId;
 
       if (categoryId && computerId) {
         this.changeCategory(categoryId);
@@ -177,7 +186,16 @@ export default {
       }
     },
     handleCacheLink() {
-      const { categoryId, computerId } = this.$route.params;
+      const {
+        categoryId: paramsCategoryId,
+        computerId: paramsComputerId,
+      } = this.$route.params || {};
+      const {
+        categoryId: queryCategoryId,
+        computerId: queryComputerId,
+      } = this.$route.query || {};
+      const categoryId = queryCategoryId || paramsCategoryId;
+      const computerId = queryComputerId || paramsComputerId;
 
       if (categoryId && computerId) {
         this.changeCategory(categoryId);

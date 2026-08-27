@@ -26,13 +26,26 @@ const baseApiList = {
   // development: "http://192.168.2.127:8808",
   development: "http://test-admin.riding-evolved.com",
   test: "http://test-admin.riding-evolved.com",
-  development: "http://192.168.2.114:8111",
+  // development: "http://192.168.2.114:8111",
   // development: "http://192.168.2.26:8100",
   // development: "http://config-admin-api.riding-evolved.com",
   // 生产
   production: productionBase,
 };
 
-const url = baseApiList[currentEnv] || productionBase;
+export function resolveBaseUrl(baseUrl) {
+  const isHttpsPage =
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.protocol === "https:";
+
+  if (isHttpsPage && typeof baseUrl === "string") {
+    return baseUrl.replace(/^http:\/\//i, "https://");
+  }
+
+  return baseUrl;
+}
+
+const url = resolveBaseUrl(baseApiList[currentEnv] || productionBase);
 
 export default url;

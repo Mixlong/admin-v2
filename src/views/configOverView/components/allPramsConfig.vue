@@ -111,7 +111,7 @@
 
     <div style="position: relative">
       <!-- 固定的基础信息分组标题 -->
-      <div class="fixed-group-header"></div>
+      <div class="fixed-group-header" :style="fixedGroupHeaderStyle"></div>
 
       <el-table
         id="drag_table"
@@ -2137,6 +2137,12 @@ export default {
     },
   },
   computed: {
+    fixedGroupHeaderStyle() {
+      const fixedLeftColumnWidths = [200, 120, 120];
+      return {
+        width: `${fixedLeftColumnWidths.reduce((sum, width) => sum + width, 0)}px`,
+      };
+    },
     isShow() {
       const list = [null, "null", undefined, "undefined", false, "false"];
       return (val) => {
@@ -3518,8 +3524,6 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  width: 562px;
-  /* 操作100 + 审核140 + 品类120 + 型号120 + 客户120 + 客户料号120 + 实际客户车名130 + 项目经理120 + 是否配置90 + BIST120 */
   height: 41px;
   line-height: 40px;
   box-sizing: border-box;

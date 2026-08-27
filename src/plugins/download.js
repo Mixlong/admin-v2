@@ -4,8 +4,9 @@ import { saveAs } from 'file-saver'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { blobValidate } from "@/utils/ruoyi";
+import { resolveBaseUrl } from '@/utils/requestUrl'
 
-const baseURL = process.env.VUE_APP_BASE_API
+const baseURL = resolveBaseUrl(process.env.VUE_APP_BASE_API)
 let downloadLoadingInstance;
 
 export default {
@@ -62,4 +63,3 @@ export default {
     Message.error(errMsg);
   }
 }
-

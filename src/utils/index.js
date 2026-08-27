@@ -1,4 +1,5 @@
 import { parseTime, transFileUrl } from "./ruoyi";
+import { resolveBaseUrl } from "./requestUrl";
 import axios from "axios";
 import FileSaver, { saveAs } from "file-saver";
 import { Loading } from "element-ui";
@@ -411,14 +412,15 @@ const loadingFn = () => {
 
 export async function urlDownload(url) {
   let downloadLoadingInstance = await loadingFn();
+  const downloadUrl = resolveBaseUrl(url);
   axios({
-    url,
+    url: downloadUrl,
     method: "get",
     responseType: "arraybuffer",
   })
     .then((res) => {
       const { data, headers } = res;
-      const fileName = transFileUrl(url);
+      const fileName = transFileUrl(downloadUrl);
       saveImage(data, headers, fileName);
     })
     .catch(() => {
@@ -480,7 +482,7 @@ export function getFile(url) {
   return new Promise((resolve, reject) => {
     axios({
       method: "get",
-      url,
+      url: resolveBaseUrl(url),
       responseType: "arraybuffer",
     })
       .then((res) => {
